@@ -175,6 +175,32 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
 
    }
+   
+   public void delete() throws Exception
+   {
+      synchronized (this)
+      {
+         long tx = storage.generateUniqueID();
+         
+         boolean txUsed = false;
+         for (Long record : incrementRecords)
+         {
+            txUsed = true;
+            storage.deleteIncrementRecord(tx, record.longValue());
+         }
+         
+         if (recordID >= 0)
+         {
+            txUsed = true;
+            storage.deletePageCounter(tx, this.recordID);
+         }
+         
+         if (txUsed)
+         {
+            storage.commit(tx);
+         }
+      }
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#loadInc(long, int)

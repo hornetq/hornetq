@@ -71,7 +71,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A PagingTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
+ * 
  * Created Dec 5, 2008 8:25:58 PM
  *
  *
@@ -79,8 +79,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class PagingTest extends ServiceTestBase
 {
    private ServerLocator locator;
-   private HornetQServer server;
-   private ClientSessionFactory sf;
+
    static final int MESSAGE_SIZE = 1024; // 1k
 
    public PagingTest(final String name)
@@ -127,8 +126,8 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true, config,
+      HornetQServer server = createServer(true,
+                                          config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
@@ -147,7 +146,7 @@ public class PagingTest extends ServiceTestBase
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-      sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -199,7 +198,7 @@ public class PagingTest extends ServiceTestBase
          server.start();
 
          locator = createInVMNonHALocator();
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
 
          Queue queue = server.locateQueue(ADDRESS);
 
@@ -259,7 +258,7 @@ public class PagingTest extends ServiceTestBase
          queue = server.locateQueue(ADDRESS);
 
          locator = createInVMNonHALocator();
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(true, false, false);
 
@@ -272,8 +271,6 @@ public class PagingTest extends ServiceTestBase
          ClientMessage msg = consumer.receive(5000);
          if (msg != null)
          {
-            // System.out.println("Msg " + msg.getIntProperty("id"));
-
             while (true)
             {
                ClientMessage msg2 = consumer.receive(1000);
@@ -292,7 +289,6 @@ public class PagingTest extends ServiceTestBase
             Xid xid = xids.get(i);
             session.rollback(xid);
          }
-         // System.out.println("msgCount = " + queue.getMessageCount());
 
          xids.clear();
 
@@ -336,6 +332,93 @@ public class PagingTest extends ServiceTestBase
          assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
    }
 
+   public void testSendOverBlockingNoFlowControl() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          AddressFullMessagePolicy.BLOCK,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int biggerMessageSize = 10 * 1024;
+
+      final int numberOfMessages = 500;
+
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+         locator.setProducerWindowSize(-1);
+         locator.setMinLargeMessageSize(1024 * 1024);
+
+         ClientSessionFactory sf = createSessionFactory(locator);
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[biggerMessageSize];
+
+         ByteBuffer bb = ByteBuffer.wrap(body);
+
+         for (int j = 1; j <= biggerMessageSize; j++)
+         {
+            bb.put(getSamplebyte(j));
+         }
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(true);
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty(new SimpleString("id"), i);
+
+            producer.send(message);
+
+            if (i % 10 == 0)
+            {
+               session.commit();
+            }
+         }
+         session.commit();
+
+         session.start();
+
+         ClientConsumer cons = session.createConsumer(ADDRESS);
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = cons.receive(5000);
+            assertNotNull(message);
+            message.acknowledge();
+
+            if (i % 10 == 0)
+            {
+               session.commit();
+            }
+         }
+
+         session.commit();
+
+   }
+
    public void testReceiveImmediate() throws Exception
    {
       clearData();
@@ -344,8 +427,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -353,19 +435,17 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 1000;
 
-      ServerLocator locator = createInVMNonHALocator();
       try
       {
+         ServerLocator locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -424,12 +504,14 @@ public class PagingTest extends ServiceTestBase
 
          assertEquals(numberOfMessages, queue.getMessageCount());
 
+         int msgReceived = 0;
          ClientSession sessionConsumer = sf.createSession(false, false, false);
          sessionConsumer.start();
          ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
          for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
          {
             log.info("Received " + msgCount);
+            msgReceived++;
             ClientMessage msg = consumer.receiveImmediate();
             if (msg == null)
             {
@@ -465,9 +547,15 @@ public class PagingTest extends ServiceTestBase
       }
       finally
       {
-         closeServerLocator(locator);
-         stopComponent(server);
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
+
    }
 
    /**
@@ -482,8 +570,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -491,17 +578,17 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 1000;
 
+      try
+      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-      sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -554,18 +641,20 @@ public class PagingTest extends ServiceTestBase
          server.start();
 
          locator = createInVMNonHALocator();
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
 
          Queue queue = server.locateQueue(ADDRESS);
 
          assertEquals(numberOfMessages, queue.getMessageCount());
 
+         int msgReceived = 0;
          ClientSession sessionConsumer = sf.createSession(false, false, false);
          sessionConsumer.start();
          ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
          for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
          {
             log.info("Received " + msgCount);
+            msgReceived++;
             ClientMessage msg = consumer.receiveImmediate();
             if (msg == null)
             {
@@ -612,17 +701,16 @@ public class PagingTest extends ServiceTestBase
                                new HashMap<String, AddressSettings>());
          server.start();
 
-
          locator = createInVMNonHALocator();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
 
          queue = server.locateQueue(ADDRESS);
 
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
          session = sf.createSession(false, false, false);
 
          producer = session.createProducer(PagingTest.ADDRESS);
@@ -656,18 +744,20 @@ public class PagingTest extends ServiceTestBase
          server.start();
 
          locator = createInVMNonHALocator();
-      sf = createSessionFactory(locator);
+         sf = createSessionFactory(locator);
 
          queue = server.locateQueue(ADDRESS);
 
-        // assertEquals(numberOfMessages, queue.getMessageCount());
+         // assertEquals(numberOfMessages, queue.getMessageCount());
 
+         msgReceived = 0;
          sessionConsumer = sf.createSession(false, false, false);
          sessionConsumer.start();
          consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
          for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
          {
             log.info("Received " + msgCount);
+            msgReceived++;
             ClientMessage msg = consumer.receiveImmediate();
             if (msg == null)
             {
@@ -687,6 +777,19 @@ public class PagingTest extends ServiceTestBase
          sessionConsumer.commit();
 
          sessionConsumer.close();
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testMissingTXEverythingAcked() throws Exception
@@ -697,16 +800,13 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
 
       server.start();
-
-
 
       final int numberOfMessages = 5000;
 
@@ -722,7 +822,7 @@ public class PagingTest extends ServiceTestBase
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -880,16 +980,13 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
 
       server.start();
-
-
 
       final int numberOfMessages = 6;
 
@@ -905,7 +1002,7 @@ public class PagingTest extends ServiceTestBase
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -989,45 +1086,55 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      ServerLocator locator = createInVMNonHALocator();
-
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
-      locator.setBlockOnAcknowledge(true);
-
-      ClientSessionFactory csf = createSessionFactory(locator);
-
-      ClientSession session = csf.createSession();
-
-      session.start();
-
-      for (int i = 1; i <= 2; i++)
+      try
       {
-         ClientConsumer cons = session.createConsumer("q" + i);
 
-         for (int j = 3; j < 6; j++)
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory csf = createSessionFactory(locator);
+
+         ClientSession session = csf.createSession();
+
+         session.start();
+
+         for (int i = 1; i <= 2; i++)
          {
-            ClientMessage msg = cons.receive(5000);
+            ClientConsumer cons = session.createConsumer("q" + i);
 
-            assertNotNull(msg);
+            for (int j = 3; j < 6; j++)
+            {
+               ClientMessage msg = cons.receive(5000);
 
-            assertEquals("str-" + j, msg.getStringProperty("id"));
+               assertNotNull(msg);
 
-            msg.acknowledge();
+               assertEquals("str-" + j, msg.getStringProperty("id"));
+
+               msg.acknowledge();
+            }
+
+            session.commit();
+            assertNull(cons.receive(500));
+
          }
 
-         session.commit();
-         assertNull(cons.receive(500));
+         session.close();
 
+         long timeout = System.currentTimeMillis() + 5000;
+
+         while (System.currentTimeMillis() < timeout && server.getPagingManager().getPageStore(ADDRESS).isPaging())
+         {
+            Thread.sleep(100);
+         }
+
+         locator.close();
       }
-
-      session.close();
-
-      long timeout = System.currentTimeMillis() + 5000;
-
-      while (System.currentTimeMillis() < timeout && server.getPagingManager().getPageStore(ADDRESS).isPaging())
+      finally
       {
-         Thread.sleep(100);
+         server.stop();
       }
    }
 
@@ -1041,8 +1148,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -1050,16 +1156,17 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 1000;
-   ServerLocator locator = createInVMNonHALocator();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -1128,7 +1235,23 @@ public class PagingTest extends ServiceTestBase
 
          // It's async, so need to wait a bit for it happening
          assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
- }
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    public void testSendReceivePagingPersistent() throws Exception
    {
@@ -1158,8 +1281,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -1192,8 +1314,6 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 3000;
 
       final byte[] body = new byte[MESSAGE_SIZE];
@@ -1215,17 +1335,17 @@ public class PagingTest extends ServiceTestBase
          {
             this.queue = queue;
          }
-         @Override
+
          public void run()
          {
             try
             {
                while (running.get())
                {
-                 // log.info("Message count = " + queue.getMessageCount() + " on queue " + queue.getName());
+                  // log.info("Message count = " + queue.getMessageCount() + " on queue " + queue.getName());
                   queue.getMessagesAdded();
                   queue.getMessageCount();
-                  //log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
+                  // log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
                   Thread.sleep(10);
                }
             }
@@ -1239,7 +1359,6 @@ public class PagingTest extends ServiceTestBase
       TCount tcount1 = null;
       TCount tcount2 = null;
 
-
       try
       {
          {
@@ -1249,7 +1368,7 @@ public class PagingTest extends ServiceTestBase
             locator.setBlockOnDurableSend(true);
             locator.setBlockOnAcknowledge(true);
 
-            sf = createSessionFactory(locator);
+            ClientSessionFactory sf = createSessionFactory(locator);
 
             ClientSession session = sf.createSession(false, false, false);
 
@@ -1266,7 +1385,6 @@ public class PagingTest extends ServiceTestBase
                session.createQueue(PagingTest.ADDRESS.toString(), PagingTest.ADDRESS + "-2", null, true);
             }
 
-
             ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
             ClientMessage message = null;
@@ -1275,6 +1393,7 @@ public class PagingTest extends ServiceTestBase
             {
                if (i % 500 == 0)
                {
+                  log.info("Sent " + i + " messages");
                   session.commit();
                }
                message = session.createMessage(true);
@@ -1336,7 +1455,6 @@ public class PagingTest extends ServiceTestBase
 
             threads[start - 1] = new Thread()
             {
-               @Override
                public void run()
                {
                   try
@@ -1460,16 +1578,13 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
 
       server.start();
-
-
 
       final int numberOfMessages = 3000;
 
@@ -1482,14 +1597,16 @@ public class PagingTest extends ServiceTestBase
          bb.put(getSamplebyte(j));
       }
 
+      try
       {
+         {
             ServerLocator locator = createInVMNonHALocator();
 
             locator.setBlockOnNonDurableSend(true);
             locator.setBlockOnDurableSend(true);
             locator.setBlockOnAcknowledge(true);
 
-            sf = createSessionFactory(locator);
+            ClientSessionFactory sf = createSessionFactory(locator);
 
             ClientSession session = sf.createSession(false, false, false);
 
@@ -1542,7 +1659,6 @@ public class PagingTest extends ServiceTestBase
 
          Thread t = new Thread()
          {
-            @Override
             public void run()
             {
                try
@@ -1617,20 +1733,32 @@ public class PagingTest extends ServiceTestBase
          }
 
          assertEquals(0, server.getPostOffice().getPagingManager().getTransactions().size());
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    private void internaltestSendReceivePaging(final boolean persistentMessages) throws Exception
    {
 
-      // System.out.println("PageDir:" + getPageDir());
+      System.out.println("PageDir:" + getPageDir());
       clearData();
 
       Configuration config = createDefaultConfig();
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -1642,13 +1770,15 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfMessages = 1000;
 
-      ServerLocator locator = createInVMNonHALocator();
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1737,6 +1867,22 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    private void assertBodiesEqual(final byte[] body, final HornetQBuffer buffer)
@@ -1754,7 +1900,7 @@ public class PagingTest extends ServiceTestBase
     * - Consume the entire destination (not in page mode any more)
     * - Add stuff to a transaction again
     * - Check order
-    *
+    * 
     */
    public void testDepageDuringTransaction() throws Exception
    {
@@ -1762,20 +1908,22 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
 
       server.start();
-      ServerLocator locator = createInVMNonHALocator();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1867,6 +2015,22 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    /**
@@ -1875,9 +2039,9 @@ public class PagingTest extends ServiceTestBase
     * - Consume the entire destination (not in page mode any more)
     * - Add stuff to a transaction again
     * - Check order
-    *
+    * 
     *  Test under discussion at : http://community.jboss.org/thread/154061?tstart=0
-    *
+    * 
     */
    public void testDepageDuringTransaction2() throws Exception
    {
@@ -1886,17 +2050,22 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX,
-                            new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
 
       server.start();
-      ServerLocator locator = createInVMNonHALocator();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          byte[] body = new byte[MESSAGE_SIZE];
 
@@ -1961,9 +2130,9 @@ public class PagingTest extends ServiceTestBase
 
                if (msgReceived != null)
                {
-//                  System.out.println("new = " + msgReceived.getBooleanProperty("new") +
-//                                     " id = " +
-//                                     msgReceived.getIntProperty("id"));
+                  System.out.println("new = " + msgReceived.getBooleanProperty("new") +
+                                     " id = " +
+                                     msgReceived.getIntProperty("id"));
                }
 
                Assert.assertNull(msgReceived);
@@ -2005,6 +2174,22 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testDepageDuringTransaction3() throws Exception
@@ -2013,8 +2198,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2022,12 +2206,14 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      ServerLocator locator = createInVMNonHALocator();
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          byte[] body = new byte[MESSAGE_SIZE];
 
@@ -2043,7 +2229,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 50; i++)
          {
-            // System.out.println("Sending " + i);
+            System.out.println("Sending " + i);
             ClientMessage message = sessionNonTX.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
@@ -2053,7 +2239,7 @@ public class PagingTest extends ServiceTestBase
 
             if (i % 2 == 0)
             {
-               // System.out.println("Sending 20 msgs to make it page");
+               System.out.println("Sending 20 msgs to make it page");
                for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
@@ -2065,7 +2251,7 @@ public class PagingTest extends ServiceTestBase
             }
             else
             {
-               // System.out.println("Consuming 20 msgs to make it page");
+               System.out.println("Consuming 20 msgs to make it page");
                ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
                for (int j = 0; j < 20; j++)
                {
@@ -2105,8 +2291,11 @@ public class PagingTest extends ServiceTestBase
 
             Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
-            Assert.assertNotNull("MessageID", messageID);
-            Assert.assertEquals("message received out of order " + messageID, i, messageID.intValue());
+            // System.out.println(messageID);
+            Assert.assertNotNull(messageID);
+            Assert.assertEquals("message received out of order", i, messageID.intValue());
+
+            System.out.println("MessageID = " + messageID);
 
             message.acknowledge();
          }
@@ -2116,6 +2305,22 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          sessionNonTX.close();
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testDepageDuringTransaction4() throws Exception
@@ -2124,8 +2329,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2138,7 +2342,6 @@ public class PagingTest extends ServiceTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-
       final int numberOfMessages = 10000;
 
       ServerLocator locator = createInVMNonHALocator();
@@ -2147,13 +2350,15 @@ public class PagingTest extends ServiceTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(false);
 
-      sf = createSessionFactory(locator);
+      try
+      {
+
+         final ClientSessionFactory sf = createSessionFactory(locator);
 
          final byte[] body = new byte[MESSAGE_SIZE];
 
          Thread producerThread = new Thread()
          {
-            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -2234,6 +2439,17 @@ public class PagingTest extends ServiceTestBase
          sf.close();
 
          assertEquals(0, errors.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    public void testOrderingNonTX() throws Exception
@@ -2242,8 +2458,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      final HornetQServer server = createServer(true,
                                                 config,
                                                 PagingTest.PAGE_SIZE,
                                                 PagingTest.PAGE_SIZE * 2,
@@ -2256,12 +2471,14 @@ public class PagingTest extends ServiceTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-
       final int numberOfMessages = 2000;
-      locator.setBlockOnNonDurableSend(true);
+
+      try
+      {
+         locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
-         sf = createSessionFactory(locator);
+         final ClientSessionFactory sf = createSessionFactory(locator);
 
          final CountDownLatch ready = new CountDownLatch(1);
 
@@ -2269,7 +2486,6 @@ public class PagingTest extends ServiceTestBase
 
          Thread producerThread = new Thread()
          {
-            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -2330,14 +2546,14 @@ public class PagingTest extends ServiceTestBase
 
          producerThread.start();
 
-         assertTrue(ready.await(10, TimeUnit.SECONDS));
+         assertTrue(ready.await(100, TimeUnit.SECONDS));
 
          ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
 
          for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);
-            assertNotNull(String.valueOf(i), msg);
+            assertNotNull(msg);
             log.info("Received " + i + " with property = " + msg.getIntProperty("count"));
             if (i != msg.getIntProperty("count").intValue())
             {
@@ -2352,6 +2568,18 @@ public class PagingTest extends ServiceTestBase
          producerThread.join();
 
          assertEquals(0, errors.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testPageOnSchedulingNoRestart() throws Exception
@@ -2372,8 +2600,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2384,11 +2611,15 @@ public class PagingTest extends ServiceTestBase
       final int numberOfMessages = 1000;
 
       final int numberOfBytes = 1024;
-      locator.setBlockOnNonDurableSend(true);
+
+      try
+      {
+
+         locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2414,8 +2645,8 @@ public class PagingTest extends ServiceTestBase
             message.putIntProperty(new SimpleString("id"), i);
 
             PagingStore store = server.getPostOffice()
-                                                                     .getPagingManager()
-                                                                     .getPageStore(PagingTest.ADDRESS);
+                                             .getPagingManager()
+                                             .getPageStore(PagingTest.ADDRESS);
 
             // Worse scenario possible... only schedule what's on pages
             if (store.getCurrentPage() != null)
@@ -2482,6 +2713,18 @@ public class PagingTest extends ServiceTestBase
          consumer.close();
 
          session.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testRollbackOnSend() throws Exception
@@ -2490,8 +2733,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2503,11 +2745,14 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfMessages = 10;
 
-      locator.setBlockOnNonDurableSend(true);
+      try
+      {
+
+         locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, false, true, false, 0);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2541,7 +2786,19 @@ public class PagingTest extends ServiceTestBase
          Assert.assertNull(consumer.receiveImmediate());
 
          session.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
          }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    public void testCommitOnSend() throws Exception
    {
@@ -2549,8 +2806,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2562,11 +2818,14 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfMessages = 500;
 
+      try
+      {
+
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2618,18 +2877,31 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 0; i < numberOfMessages; i++)
          {
+            System.out.println("Received " + i);
             if (i == 55)
             {
                System.out.println("i = 55");
             }
             ClientMessage msg = consumer.receive(5000);
-            Assert.assertNotNull("Received " + i, msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
             session.commit();
          }
 
          session.close();
       }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    public void testParialConsume() throws Exception
    {
@@ -2637,8 +2909,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2648,11 +2919,14 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfMessages = 1000;
 
+      try
+      {
+
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2702,9 +2976,10 @@ public class PagingTest extends ServiceTestBase
          // 347 = I just picked any odd number, not rounded, to make sure it's not at the beggining of any page
          for (int i = 0; i < 347; i++)
          {
+            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull("Received " + i, msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
             session.commit();
          }
@@ -2734,14 +3009,27 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 347; i < numberOfMessages; i++)
          {
+            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull("Received " + i, msg);
+            Assert.assertNotNull(msg);
             msg.acknowledge();
             session.commit();
          }
 
          session.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testPageMultipleDestinations() throws Exception
@@ -2767,16 +3055,20 @@ public class PagingTest extends ServiceTestBase
 
       settings.put(PagingTest.ADDRESS.toString(), set);
 
-      server = createServer(true, config, 1024, 10 * 1024, settings);
+      HornetQServer server = createServer(true, config, 1024, 10 * 1024, settings);
 
       server.start();
 
       final int numberOfMessages = 1000;
-      locator.setBlockOnNonDurableSend(true);
+
+      try
+      {
+
+         locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2878,6 +3170,17 @@ public class PagingTest extends ServiceTestBase
                                       .getPageStore(PagingTest.ADDRESS)
                                       .getAddressSize());
 
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
 
    }
 
@@ -2894,14 +3197,18 @@ public class PagingTest extends ServiceTestBase
 
       settings.put(PagingTest.ADDRESS.toString(), set);
 
-      server = createServer(true, config, 1024, 1024 * 1024, settings);
+      HornetQServer server = createServer(true, config, 1024, 1024 * 1024, settings);
 
       server.start();
 
       final int numberOfMessages = 30000;
+
+      try
+      {
+
          locator.setAckBatchSize(0);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession();
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
@@ -2963,6 +3270,18 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
       }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    private void internalTestPageMultipleDestinations(final boolean transacted) throws Exception
    {
@@ -2972,8 +3291,7 @@ public class PagingTest extends ServiceTestBase
 
       int NUMBER_OF_MESSAGES = 2;
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -2981,11 +3299,14 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
+      try
+      {
+
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, !transacted, true, false, 0);
 
          for (int i = 0; i < NUMBER_OF_BINDINGS; i++)
@@ -3058,14 +3379,26 @@ public class PagingTest extends ServiceTestBase
             Assert.assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getMessageCount());
             Assert.assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getDeliveringCount());
          }
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testSyncPage() throws Exception
    {
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -3165,8 +3498,7 @@ public class PagingTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -3174,7 +3506,9 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      server.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true, false);
+      try
+      {
+         server.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true, false);
 
          final CountDownLatch pageUp = new CountDownLatch(0);
          final CountDownLatch pageDone = new CountDownLatch(1);
@@ -3242,6 +3576,20 @@ public class PagingTest extends ServiceTestBase
 
          assertTrue(pageDone.await(10, TimeUnit.SECONDS));
 
+         server.stop();
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testPagingOneDestinationOnly() throws Exception
@@ -3261,11 +3609,13 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS.toString(), pagedDestination);
 
-      server = createServer(true, configuration, -1, -1, addresses);
+      HornetQServer server = createServer(true, configuration, -1, -1, addresses);
 
+      try
+      {
          server.start();
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, true, false);
 
@@ -3333,6 +3683,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
    }
 
    public void testPagingDifferentSizes() throws Exception
@@ -3360,11 +3718,13 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
-      server = createServer(true, configuration, -1, -1, addresses);
+      HornetQServer server = createServer(true, configuration, -1, -1, addresses);
 
+      try
+      {
          server.start();
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, true, false);
 
@@ -3453,6 +3813,15 @@ public class PagingTest extends ServiceTestBase
          consumerB.close();
 
          session.close();
+
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
    }
 
    public void testPageAndDepageRapidly() throws Exception
@@ -3466,21 +3835,23 @@ public class PagingTest extends ServiceTestBase
       config.setJournalSyncNonTransactional(false);
       config.setJournalFileSize(10 * 1024 * 1024);
 
-      server = createServer(true, config, 512 * 1024, 1024 * 1024, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, 512 * 1024, 1024 * 1024, new HashMap<String, AddressSettings>());
 
       server.start();
 
-      final int messageSize = 51527;
+      final int MESSAGE_SIZE = 51527;
 
       final int numberOfMessages = 200;
 
+      try
+      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         final ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(true, true);
 
@@ -3492,7 +3863,6 @@ public class PagingTest extends ServiceTestBase
 
          Thread consumeThread = new Thread()
          {
-            @Override
             public void run()
             {
                ClientSession sessionConsumer = null;
@@ -3506,13 +3876,13 @@ public class PagingTest extends ServiceTestBase
                   for (int i = 0; i < numberOfMessages; i++)
                   {
                      ClientMessage msg = cons.receive(PagingTest.RECEIVE_TIMEOUT);
-                     // System.out.println("Message " + i + " consumed");
+                     System.out.println("Message " + i + " consumed");
                      assertNotNull(msg);
                      msg.acknowledge();
 
                      if (i % 20 == 0)
                      {
-                        // System.out.println("Commit consumer");
+                        System.out.println("Commit consumer");
                         sessionConsumer.commit();
                      }
                   }
@@ -3543,13 +3913,13 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createMessage(persistentMessages);
 
-            // System.out.println("Message " + i + " sent");
+            System.out.println("Message " + i + " sent");
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -3577,6 +3947,22 @@ public class PagingTest extends ServiceTestBase
          assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
 
          assertEquals(1, server.getPagingManager().getPageStore(ADDRESS).getNumberOfPages());
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    public void testTwoQueuesDifferentFilters() throws Exception
@@ -3589,8 +3975,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -3598,10 +3983,10 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 200;
 
+      try
+      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(120000);
@@ -3612,7 +3997,7 @@ public class PagingTest extends ServiceTestBase
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -3686,6 +4071,21 @@ public class PagingTest extends ServiceTestBase
 
          // It's async, so need to wait a bit for it happening
          assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    public void testTwoQueues() throws Exception
@@ -3698,8 +4098,7 @@ public class PagingTest extends ServiceTestBase
 
       config.setJournalSyncNonTransactional(false);
 
-      server =
-               createServer(true,
+      HornetQServer server = createServer(true,
                                           config,
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
@@ -3707,10 +4106,10 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-
-
       final int numberOfMessages = 1000;
 
+      try
+      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(120000);
@@ -3721,7 +4120,7 @@ public class PagingTest extends ServiceTestBase
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -3767,7 +4166,7 @@ public class PagingTest extends ServiceTestBase
 
                // assertEquals(msg, message.getIntProperty("propTest").intValue());
 
-               // System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
+               System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
             }
 
             session.commit();
@@ -3792,6 +4191,147 @@ public class PagingTest extends ServiceTestBase
 
          // It's async, so need to wait a bit for it happening
          assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testTwoQueuesConsumeOneRestart() throws Exception
+   {
+      boolean persistentMessages = true;
+
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int numberOfMessages = 1000;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setClientFailureCheckPeriod(120000);
+         locator.setConnectionTTL(5000000);
+         locator.setCallTimeout(120000);
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory sf = createSessionFactory(locator);
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS.concat("=1"), null, true);
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS.concat("=2"), null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[MESSAGE_SIZE];
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(persistentMessages);
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty("propTest", i % 2 == 0 ? 1 : 2);
+
+            producer.send(message);
+            if (i % 1000 == 0)
+            {
+               session.commit();
+            }
+         }
+
+         session.commit();
+
+         session.start();
+
+         session.deleteQueue(PagingTest.ADDRESS.concat("=1"));
+
+         sf = createSessionFactory(locator);
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS.concat("=2"));
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = consumer.receive(500000);
+            assertNotNull(message);
+            message.acknowledge();
+
+            System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
+         }
+
+         session.commit();
+
+         assertNull(consumer.receiveImmediate());
+
+         consumer.close();
+         
+         long timeout = System.currentTimeMillis() + 10000;
+         
+         PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
+
+         // It's async, so need to wait a bit for it happening
+         while (timeout > System.currentTimeMillis() && store.isPaging())
+         {
+            Thread.sleep(100);
+         }
+
+         assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
+
+         server.stop();
+
+         server.start();
+
+         server.stop();
+         server.start();
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    public void testDLAOnLargeMessageAndPaging() throws Exception
@@ -3809,11 +4349,9 @@ public class PagingTest extends ServiceTestBase
       dla.setDeadLetterAddress(new SimpleString("DLA"));
       settings.put(ADDRESS.toString(), dla);
 
-      server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, settings);
+      final HornetQServer server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, settings);
 
       server.start();
-
-
 
       ServerLocator locator = null;
       ClientSessionFactory sf = null;
@@ -4010,7 +4548,7 @@ public class PagingTest extends ServiceTestBase
 
          pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
 
-         pgStoreAddress.getCursorProvider().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
+         pgStoreAddress.getCursorProvider().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries(false);
 
          pgStoreAddress.getCursorProvider().cleanup();
 
@@ -4026,6 +4564,15 @@ public class PagingTest extends ServiceTestBase
       finally
       {
          session.close();
+         sf.close();
+         locator.close();
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
    }
 
@@ -4045,18 +4592,21 @@ public class PagingTest extends ServiceTestBase
       dla.setExpiryAddress(new SimpleString("DLA"));
       settings.put(ADDRESS.toString(), dla);
 
-      server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, settings);
+      final HornetQServer server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, settings);
 
       server.start();
 
-      final int messageSize = 20;
+      final int MESSAGE_SIZE = 20;
 
-      ServerLocator locator = createInVMNonHALocator();
-      locator.setBlockOnNonDurableSend(true);
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -4066,7 +4616,7 @@ public class PagingTest extends ServiceTestBase
 
          PagingStore pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
          pgStoreAddress.startPaging();
-      server.getPagingManager().getPageStore(new SimpleString("DLA"));
+         PagingStore pgStoreDLA = server.getPagingManager().getPageStore(new SimpleString("DLA"));
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -4084,11 +4634,11 @@ public class PagingTest extends ServiceTestBase
 
             if (i % 2 == 0)
             {
-               message.setBodyInputStream(createFakeLargeStream(messageSize));
+               message.setBodyInputStream(createFakeLargeStream(MESSAGE_SIZE));
             }
             else
             {
-               byte bytes[] = new byte[messageSize];
+               byte bytes[] = new byte[MESSAGE_SIZE];
                for (int s = 0; s < bytes.length; s++)
                {
                   bytes[s] = getSamplebyte(s);
@@ -4137,7 +4687,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < 500; i++)
          {
             log.info("Received message " + i);
-            message = cons.receive(5000);
+            message = cons.receive(10000);
             assertNotNull(message);
             message.acknowledge();
 
@@ -4169,6 +4719,18 @@ public class PagingTest extends ServiceTestBase
          assertFalse(pgStoreAddress.isPaging());
 
          session.close();
+      }
+      finally
+      {
+         locator.close();
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    // Package protected ---------------------------------------------

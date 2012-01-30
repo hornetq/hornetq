@@ -60,6 +60,7 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
@@ -81,6 +82,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    // Constants
    // ------------------------------------------------------------------------------------
+
+   private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
@@ -163,7 +166,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+   public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
                                    final long clientFailureCheckPeriod,
@@ -537,6 +540,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       stopPingingAfterOne = true;
    }
 
+   public void resumePinging()
+   {
+      stopPingingAfterOne = false;
+   }
+
    // Protected
    // ------------------------------------------------------------------------------------
 
@@ -667,9 +675,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
          else
          {
-            if (connection != null)
+            CoreRemotingConnection connectionToDestory = connection;
+            if (connectionToDestory != null)
             {
-               connection.destroy();
+               connectionToDestory.destroy();
             }
 
             connection = null;
@@ -826,6 +835,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      connection,
                                                                      response.getServerVersion(),
                                                                      sessionChannel,
+                                                                     orderedExecutorFactory.getExecutor(),
                                                                      orderedExecutorFactory.getExecutor());
 
                synchronized (sessions)
@@ -881,9 +891,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       // Should never get here
-      throw new IllegalStateException("Internal Error! ClientSessionFactoryImpl::createSessionInternal " +
-                                      "just reached a condition that was not supposed to happen. " +
-                                      "Please inform this condition to the HornetQ team");
+      throw new IllegalStateException("Internal Error! ClientSessionFactoryImpl::createSessionInternal " + "just reached a condition that was not supposed to happen. "
+                                      + "Please inform this condition to the HornetQ team");
    }
 
    private void callFailureListeners(final HornetQException me, final boolean afterReconnect, final boolean failedOver)
@@ -918,6 +927,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
     */
    private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts)
    {
+      HashSet<ClientSessionInternal> sessionsToFailover;
+      synchronized (sessions)
+      {
+         sessionsToFailover = new HashSet<ClientSessionInternal>(sessions);
+      }
+
+      for (ClientSessionInternal session : sessionsToFailover)
+      {
+         session.preHandleFailover(connection);
+      }
+
       getConnectionWithRetry(reconnectAttempts);
 
       if (connection == null)
@@ -943,12 +963,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       connection.setFailureListeners(newListeners);
 
-      HashSet<ClientSessionInternal> sessionsToFailover;
-      synchronized (sessions)
-      {
-         sessionsToFailover = new HashSet<ClientSessionInternal>(sessions);
-      }
-
       for (ClientSessionInternal session : sessionsToFailover)
       {
          session.handleFailover(connection);
@@ -959,10 +973,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       if (ClientSessionFactoryImpl.log.isTraceEnabled())
       {
-         ClientSessionFactoryImpl.log.trace("getConnectionWithRetry::" + reconnectAttempts + " with retryInterval = " +
-                  retryInterval + " multiplier = " + retryIntervalMultiplier, new Exception("trace"));
+         ClientSessionFactoryImpl.log.trace("getConnectionWithRetry::" + reconnectAttempts +
+                                            " with retryInterval = " +
+                                            retryInterval +
+                                            " multiplier = " +
+                                            retryIntervalMultiplier, new Exception("trace"));
       }
-
+      
       long interval = retryInterval;
 
       int count = 0;
@@ -1036,6 +1053,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             }
             else
             {
+               if (log.isDebugEnabled())
+               {
+            	   log.debug("Reconnection successfull");
+               }
                return;
             }
          }
@@ -1047,8 +1068,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (pingerFuture != null)
       {
          pingRunnable.cancel();
+
          pingerFuture.cancel(false);
+
          pingRunnable = null;
+
          pingerFuture = null;
       }
    }
@@ -1283,7 +1307,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                ClientSessionFactoryImpl.log.trace(this + "::Subscribing Topology");
             }
 
-            channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(), VersionLoader.getVersion().getIncrementingVersion()));
+            channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(),
+                                                                       VersionLoader.getVersion()
+                                                                                    .getIncrementingVersion()));
 
          }
       }
@@ -1304,13 +1330,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    /**
     * @param channel0
     */
-   public void sendNodeAnnounce(final long currentEventID, String nodeID, boolean isBackup, TransportConfiguration config, TransportConfiguration backupConfig)
+   public void sendNodeAnnounce(final long currentEventID,
+                                String nodeID,
+                                boolean isBackup,
+                                TransportConfiguration config,
+                                TransportConfiguration backupConfig)
    {
       Channel channel0 = connection.getChannel(0, -1);
       if (ClientSessionFactoryImpl.isDebug)
       {
-         ClientSessionFactoryImpl.log.debug("Announcing node " + serverLocator.getNodeID() +
-                                            ", isBackup=" + isBackup);
+         ClientSessionFactoryImpl.log.debug("Announcing node " + serverLocator.getNodeID() + ", isBackup=" + isBackup);
       }
       channel0.send(new NodeAnnounceMessage(currentEventID, nodeID, isBackup, config, backupConfig));
    }
@@ -1337,18 +1366,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          public ConnectorFactory run()
          {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(connectorFactoryClassName);
-               return (ConnectorFactory)clazz.newInstance();
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
-                                                           "\"",
-                                                  e);
-            }
+            return (ConnectorFactory) ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
          }
       });
    }
@@ -1469,7 +1487,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      " csf created at\nserverLocator=" +
                                                      serverLocator, e);
                }
-               serverLocator.notifyNodeUp(System.currentTimeMillis(), topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
+               serverLocator.notifyNodeUp(System.currentTimeMillis(),
+                                          topMessage.getNodeID(),
+                                          topMessage.getPair(),
+                                          topMessage.isLast());
             }
          }
          else if (type == PacketImpl.CLUSTER_TOPOLOGY_V2)
@@ -1496,17 +1517,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      " csf created at\nserverLocator=" +
                                                      serverLocator, e);
                }
-               serverLocator.notifyNodeUp(topMessage.getUniqueEventID(), topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
+               serverLocator.notifyNodeUp(topMessage.getUniqueEventID(),
+                                          topMessage.getNodeID(),
+                                          topMessage.getPair(),
+                                          topMessage.isLast());
             }
          }
-         else if (type == PacketImpl.BACKUP_REGISTRATION_FAILED)
-         {
-            // no-op
-         }
       }
-
    }
-
+   
    public class CloseRunnable implements Runnable
    {
       private final CoreRemotingConnection conn;
@@ -1540,6 +1559,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
    }
+
    private class DelegatingBufferHandler implements BufferHandler
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
@@ -1638,7 +1658,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       /**
-       *
+       * 
        */
       public void send()
       {
@@ -1657,6 +1677,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          cancelled = true;
       }
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "ClientSessionFactoryImpl [serverLocator=" + serverLocator +
+             ", connectorConfig=" +
+             connectorConfig +
+             ", backupConfig=" +
+             backupConfig +
+             "]";
    }
 
    /* (non-Javadoc)

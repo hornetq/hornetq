@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * A SyncSpeedTest
- *
+ * 
  * This class just provides some diagnostics on how fast your disk can sync
  * Useful when determining performance issues
  *
@@ -168,11 +168,7 @@ public class SyncSpeedTest
 
          if (file.exists())
          {
-            if (!file.delete())
-            {
-               log.error("failed to delete file " + file);
-            }
-
+            file.delete();
          }
 
          file.createNewFile();

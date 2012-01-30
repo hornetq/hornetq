@@ -52,12 +52,12 @@ public abstract class MessageImpl implements MessageInternal
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
-
-   // used by the bridges to set duplicates
+   
+   // used by the bridges to set duplicates 
    public static final SimpleString HDR_BRIDGE_DUPLICATE_ID = new SimpleString("_HQ_BRIDGE_DUP");
 
    public static final int BUFFER_HEADER_SPACE = PacketImpl.PACKET_HEADERS_SIZE;
-
+   
    public static final int BODY_OFFSET = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
 
 
@@ -91,7 +91,7 @@ public abstract class MessageImpl implements MessageInternal
    private boolean copied = true;
 
    private boolean bufferUsed;
-
+   
    private UUID userID;
 
    // Constructors --------------------------------------------------
@@ -201,7 +201,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return DataConstants.SIZE_LONG + // Message ID
              DataConstants.SIZE_BYTE + // user id null?
-             (userID == null ? 0 : 16) +
+             (userID == null ? 0 : 16) + 
              /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
@@ -210,7 +210,7 @@ public abstract class MessageImpl implements MessageInternal
              DataConstants./* Priority */SIZE_BYTE +
              /* PropertySize and Properties */properties.getEncodeSize();
    }
-
+   
 
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
@@ -254,7 +254,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = buffer.readByte();
       properties.decode(buffer);
    }
-
+   
    public void copyHeadersAndProperties(final MessageInternal msg)
    {
       messageID = msg.getMessageID();
@@ -267,7 +267,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = msg.getPriority();
       properties = msg.getTypedProperties();
    }
-
+   
    public HornetQBuffer getBodyBuffer()
    {
       if (bodyBuffer == null)
@@ -282,30 +282,41 @@ public abstract class MessageImpl implements MessageInternal
    {
       return messageID;
    }
-
+   
    public UUID getUserID()
    {
       return userID;
    }
-
+   
    public void setUserID(final UUID userID)
    {
       this.userID = userID;
    }
 
-   public synchronized SimpleString getAddress()
+   /** this doesn't need to be synchronized as setAddress is protecting the buffer, 
+    *  not the address*/
+   public SimpleString getAddress()
    {
       return address;
    }
 
-   public synchronized void setAddress(final SimpleString address)
+   /**
+    * The only reason this is synchronized is because of encoding a message versus invalidating the buffer.
+    * This synchronization can probably be removed since setAddress is always called from a single thread.
+    * However I will keep it as it's harmless and it's been well tested
+    */
+   public void setAddress(final SimpleString address)
    {
-      if (this.address != address)
-      {
-         this.address = address;
-
-         bufferValid = false;
-      }
+	  // This is protecting the buffer
+	  synchronized (this)
+	  {
+	      if (this.address != address)
+	      {
+	         this.address = address;
+	
+	         bufferValid = false;
+	      }
+	  }
    }
 
    public byte getType()
@@ -502,7 +513,7 @@ public abstract class MessageImpl implements MessageInternal
          return buffer;
       }
    }
-
+   
    public void setAddressTransient(final SimpleString address)
    {
       this.address = address;
@@ -574,7 +585,7 @@ public abstract class MessageImpl implements MessageInternal
 
       bufferValid = false;
    }
-
+   
    public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
    {
       if (value == null)
@@ -815,7 +826,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }
-
+   
    public Object getObjectProperty(final String key)
    {
       return properties.getProperty(new SimpleString(key));
@@ -859,7 +870,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return new DecodingContext();
    }
-
+   
    public TypedProperties getTypedProperties()
    {
       return this.properties;

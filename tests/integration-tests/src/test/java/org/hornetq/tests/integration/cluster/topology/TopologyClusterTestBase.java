@@ -17,6 +17,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
@@ -44,7 +45,7 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class TopologyClusterTestBase extends ClusterTestBase
 {
 
-   private static final Logger log = Logger.getLogger(TopologyClusterTestBase.class);
+    private static final Logger log = Logger.getLogger(TopologyClusterTestBase.class);
 
    private static final long WAIT_TIMEOUT = 5000;
 
@@ -131,8 +132,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          if (e.getCode() == HornetQException.OBJECT_CLOSED || e.getCode() == HornetQException.UNBLOCKED)
          {
-            ClientSessionFactory sf = createSessionFactory(locator);
-         return sf.createSession();
+             ClientSessionFactory sf = createSessionFactory(locator);
+            return sf.createSession();
          }
          else
          {
@@ -160,7 +161,14 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          for (ClusterConnection clusterConn : clusterManager.getClusterConnections())
          {
-            nodesCount += clusterConn.getNodes().size();
+            Map<String, String> nodes = clusterConn.getNodes();
+            for (String id : nodes.keySet())
+            {
+               if (clusterConn.isNodeActive(id))
+               {
+                  nodesCount++;
+               }
+            }
          }
 
          if (nodesCount == count)
@@ -176,80 +184,82 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       throw new IllegalStateException("Timed out waiting for cluster connections ");
    }
 
+   
    public void testReceiveNotificationsWhenOtherNodesAreStartedAndStopped() throws Throwable
    {
       startServers(0);
 
       ServerLocator locator = createHAServerLocator();
 
-      ((ServerLocatorImpl)locator).getTopology().setOwner("testReceive");
+         ((ServerLocatorImpl)locator).getTopology().setOwner("testReceive");
 
-      final List<String> nodes = new ArrayList<String>();
-      final CountDownLatch upLatch = new CountDownLatch(5);
-      final CountDownLatch downLatch = new CountDownLatch(4);
+         final List<String> nodes = new ArrayList<String>();
+         final CountDownLatch upLatch = new CountDownLatch(5);
+         final CountDownLatch downLatch = new CountDownLatch(4);
 
-      locator.addClusterTopologyListener(new ClusterTopologyListener()
-      {
-         public void nodeUP(final long uniqueEventID,
-                            String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
+         locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-            if(!nodes.contains(nodeID))
+            public void nodeUP(final long uniqueEventID,
+                               String nodeID,
+                               Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                               boolean last)
             {
-               System.out.println("Node UP " + nodeID + " added");
-               log.info("Node UP " + nodeID + " added");
-               nodes.add(nodeID);
-               upLatch.countDown();
+               if (!nodes.contains(nodeID))
+               {
+                  System.out.println("Node UP " + nodeID + " added");
+                  log.info("Node UP " + nodeID + " added");
+                  nodes.add(nodeID);
+                  upLatch.countDown();
+               }
+               else
+               {
+                  System.out.println("Node UP " + nodeID + " was already here");
+                  log.info("Node UP " + nodeID + " was already here");
+               }
             }
-            else
+
+            public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               System.out.println("Node UP " + nodeID + " was already here");
-               log.info("Node UP " + nodeID + " was already here");
+               if (nodes.contains(nodeID))
+               {
+                  log.info("Node down " + nodeID + " accepted");
+                  System.out.println("Node down " + nodeID + " accepted");
+                  nodes.remove(nodeID);
+                  downLatch.countDown();
+               }
+               else
+               {
+                  log.info("Node down " + nodeID + " already removed");
+                  System.out.println("Node down " + nodeID + " already removed");
+               }
             }
-         }
+         });
 
-         public void nodeDown(final long uniqueEventID, String nodeID)
-         {
-            if (nodes.contains(nodeID))
-            {
-               log.info("Node down " + nodeID + " accepted");
-               System.out.println("Node down " + nodeID + " accepted");
-               nodes.remove(nodeID);
-               downLatch.countDown();
-            }
-            else
-            {
-               log.info("Node down " + nodeID + " already removed");
-               System.out.println("Node down " + nodeID + " already removed");
-            }
-         }
-      });
+         ClientSessionFactory sf = createSessionFactory(locator);
 
-      ClientSessionFactory sf = createSessionFactory(locator);
+         startServers(1, 4, 3, 2);
+         String[] nodeIDs = getNodeIDs(0, 1, 2, 3, 4);
 
-      startServers(1, 4, 3, 2);
-      String[] nodeIDs = getNodeIDs(0, 1, 2, 3, 4);
+         assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
+         checkContains(new int[] { 0, 1, 4, 3, 2 }, nodeIDs, nodes);
 
-      assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
-      checkContains(new int[] { 0, 1, 4, 3, 2 }, nodeIDs, nodes);
+         waitForClusterConnections(0, 4);
+         waitForClusterConnections(1, 4);
+         waitForClusterConnections(2, 4);
+         waitForClusterConnections(3, 4);
+         waitForClusterConnections(4, 4);
 
-      waitForClusterConnections(0, 4);
-      waitForClusterConnections(1, 4);
-      waitForClusterConnections(2, 4);
-      waitForClusterConnections(3, 4);
-      waitForClusterConnections(4, 4);
+         stopServers(2, 3, 1, 4);
 
-      stopServers(2, 3, 1, 4);
+         assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
+         checkContains(new int[] { 0 }, nodeIDs, nodes);
 
-      assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
-      checkContains(new int[] { 0 }, nodeIDs, nodes);
+         sf.close();
+         
+         locator.close();
 
-      sf.close();
+         stopServers(0);
 
-      locator.close();
-
-      stopServers(0);
    }
 
    public void testReceiveNotifications() throws Throwable
@@ -259,72 +269,71 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       ServerLocator locator = createHAServerLocator();
 
-      final List<String> nodes = new ArrayList<String>();
-      final CountDownLatch upLatch = new CountDownLatch(5);
-      final CountDownLatch downLatch = new CountDownLatch(4);
+         waitForClusterConnections(0, 4);
+         waitForClusterConnections(1, 4);
+         waitForClusterConnections(2, 4);
+         waitForClusterConnections(3, 4);
+         waitForClusterConnections(4, 4);
 
-      locator.addClusterTopologyListener(new ClusterTopologyListener()
-      {
-         public void nodeUP(final long uniqueEventID,
-                            String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
+         final List<String> nodes = new ArrayList<String>();
+         final CountDownLatch upLatch = new CountDownLatch(5);
+         final CountDownLatch downLatch = new CountDownLatch(4);
+
+         locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-            if (!nodes.contains(nodeID))
+            public void nodeUP(final long uniqueEventID,
+                               String nodeID,
+                               Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                               boolean last)
             {
-               nodes.add(nodeID);
-               upLatch.countDown();
+               if (!nodes.contains(nodeID))
+               {
+                  nodes.add(nodeID);
+                  upLatch.countDown();
+               }
             }
-         }
 
-         public void nodeDown(final long uniqueEventID, String nodeID)
-         {
-            if (nodes.contains(nodeID))
+            public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               nodes.remove(nodeID);
-               downLatch.countDown();
+               if (nodes.contains(nodeID))
+               {
+                  nodes.remove(nodeID);
+                  downLatch.countDown();
+               }
             }
-         }
-      });
+         });
 
-      ClientSessionFactory sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
-      assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
-      checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
+         assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
+         checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
 
-      ClientSession session = sf.createSession();
+         ClientSession session = sf.createSession();
 
-      waitForClusterConnections(0, 4);
-      waitForClusterConnections(1, 4);
-      waitForClusterConnections(2, 4);
-      waitForClusterConnections(3, 4);
-      waitForClusterConnections(4, 4);
+         stopServers(0);
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1, 2, 3, 4 }, nodeIDs, nodes);
 
-      stopServers(0);
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 2, 3, 4 }, nodeIDs, nodes);
+         stopServers(2);
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1, 3, 4 }, nodeIDs, nodes);
 
-      stopServers(2);
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 3, 4 }, nodeIDs, nodes);
+         stopServers(4);
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1, 3 }, nodeIDs, nodes);
 
-      stopServers(4);
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 3 }, nodeIDs, nodes);
+         stopServers(3);
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1 }, nodeIDs, nodes);
 
-      stopServers(3);
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1 }, nodeIDs, nodes);
+         stopServers(1);
 
-      stopServers(1);
+         assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
+         checkContains(new int[] {}, nodeIDs, nodes);
 
-      assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
-      checkContains(new int[] {}, nodeIDs, nodes);
-
-      sf.close();
-
-      locator.close();
+         sf.close();
    }
+
 
    public void testStopNodes() throws Throwable
    {
@@ -333,78 +342,76 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       ServerLocator locator = createHAServerLocator();
 
-      final List<String> nodes = new ArrayList<String>();
-      final CountDownLatch upLatch = new CountDownLatch(5);
+         waitForClusterConnections(0, 4);
+         waitForClusterConnections(1, 4);
+         waitForClusterConnections(2, 4);
+         waitForClusterConnections(3, 4);
+         waitForClusterConnections(4, 4);
 
-      locator.addClusterTopologyListener(new ClusterTopologyListener()
-      {
-         public void nodeUP(final long uniqueEventID, String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
+         final List<String> nodes = new ArrayList<String>();
+         final CountDownLatch upLatch = new CountDownLatch(5);
+
+         locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-            if (!nodes.contains(nodeID))
+             public void nodeUP(final long uniqueEventID, String nodeID,
+                     Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                     boolean last)
             {
-               nodes.add(nodeID);
-               upLatch.countDown();
+               if (!nodes.contains(nodeID))
+               {
+                  nodes.add(nodeID);
+                  upLatch.countDown();
+               }
             }
-         }
 
-         public void nodeDown(final long uniqueEventID, String nodeID)
-         {
-            if (nodes.contains(nodeID))
+            public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               nodes.remove(nodeID);
+               if (nodes.contains(nodeID))
+               {
+                  nodes.remove(nodeID);
+               }
             }
-         }
-      });
+         });
 
-      ClientSessionFactory sf = createSessionFactory(locator);
+         ClientSessionFactory sf = createSessionFactory(locator);
 
-      assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
-      checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
+         assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
+         checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
 
-      waitForClusterConnections(0, 4);
-      waitForClusterConnections(1, 4);
-      waitForClusterConnections(2, 4);
-      waitForClusterConnections(3, 4);
-      waitForClusterConnections(4, 4);
+         ClientSession session = sf.createSession();
 
-      ClientSession session = sf.createSession();
-
-      stopServers(0);
-      assertFalse(servers[0].isStarted());
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 2, 3, 4 }, nodeIDs, nodes);
-
-      stopServers(2);
-      assertFalse(servers[2].isStarted());
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 3, 4 }, nodeIDs, nodes);
-
-      stopServers(4);
-      assertFalse(servers[4].isStarted());
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1, 3 }, nodeIDs, nodes);
-
-      stopServers(3);
-      assertFalse(servers[3].isStarted());
-
-      session = checkSessionOrReconnect(session, locator);
-      checkContains(new int[] { 1 }, nodeIDs, nodes);
-
-      stopServers(1);
-      assertFalse(servers[1].isStarted());
-      try
-      {
+         stopServers(0);
+         assertFalse(servers[0].isStarted());
          session = checkSessionOrReconnect(session, locator);
-         fail();
-      }
-      catch (Exception e)
-      {
+         checkContains(new int[] { 1, 2, 3, 4 }, nodeIDs, nodes);
 
-      }
+         stopServers(2);
+         assertFalse(servers[2].isStarted());
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1, 3, 4 }, nodeIDs, nodes);
 
-      locator.close();
+         stopServers(4);
+         assertFalse(servers[4].isStarted());
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1, 3 }, nodeIDs, nodes);
+
+         stopServers(3);
+         assertFalse(servers[3].isStarted());
+
+         session = checkSessionOrReconnect(session, locator);
+         checkContains(new int[] { 1 }, nodeIDs, nodes);
+
+         stopServers(1);
+         assertFalse(servers[1].isStarted());
+         try
+         {
+            session = checkSessionOrReconnect(session, locator);
+            fail();
+         }
+         catch (Exception e)
+         {
+
+         }
    }
 
    public void testMultipleClientSessionFactories() throws Throwable
@@ -414,67 +421,68 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       ServerLocator locator = createHAServerLocator();
 
-      final List<String> nodes = new ArrayList<String>();
-      final CountDownLatch upLatch = new CountDownLatch(5);
-      final CountDownLatch downLatch = new CountDownLatch(4);
+         waitForClusterConnections(0, 4);
+         waitForClusterConnections(1, 4);
+         waitForClusterConnections(2, 4);
+         waitForClusterConnections(3, 4);
+         waitForClusterConnections(4, 4);
 
-      locator.addClusterTopologyListener(new ClusterTopologyListener()
-      {
-         public void nodeUP(final long uniqueEventID, String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
+         final List<String> nodes = new ArrayList<String>();
+         final CountDownLatch upLatch = new CountDownLatch(5);
+         final CountDownLatch downLatch = new CountDownLatch(4);
+
+         locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-            if (!nodes.contains(nodeID))
+             public void nodeUP(final long uniqueEventID, String nodeID,
+                     Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                     boolean last)
             {
-               nodes.add(nodeID);
-               upLatch.countDown();
+               if (!nodes.contains(nodeID))
+               {
+                  nodes.add(nodeID);
+                  upLatch.countDown();
+               }
             }
-         }
 
-         public void nodeDown(final long uniqueEventID, String nodeID)
+            public void nodeDown(final long uniqueEventID, String nodeID)
+            {
+               if (nodes.contains(nodeID))
+               {
+                  nodes.remove(nodeID);
+                  downLatch.countDown();
+               }
+            }
+         });
+
+         ClientSessionFactory[] sfs = new ClientSessionFactory[] {
+                 locator.createSessionFactory(),
+                 locator.createSessionFactory(),
+                 locator.createSessionFactory(),
+                 locator.createSessionFactory(),
+                 locator.createSessionFactory() };
+         assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
+         checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
+
+         // we cant close all of the servers, we need to leave one up to notify us
+         stopServers(4, 2, 3, 1);
+
+         boolean ok = downLatch.await(10, SECONDS);
+         if (!ok)
          {
-            if (nodes.contains(nodeID))
-            {
-               nodes.remove(nodeID);
-               downLatch.countDown();
-            }
+            log.warn("TopologyClusterTestBase.testMultipleClientSessionFactories will fail");
          }
-      });
+         assertTrue("Was not notified that all servers are Down", ok);
+         checkContains(new int[] { 0 }, nodeIDs, nodes);
 
-      ClientSessionFactory[] sfs = new ClientSessionFactory[] {
-                                                               locator.createSessionFactory(),
-                                                               locator.createSessionFactory(),
-                                                               locator.createSessionFactory(),
-                                                               locator.createSessionFactory(),
-                                                               locator.createSessionFactory() };
-      assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
-      checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
+         for (ClientSessionFactory sf : sfs)
+         {
+            sf.close();
+         }
+         
+         locator.close();
 
-      waitForClusterConnections(0, 4);
-      waitForClusterConnections(1, 4);
-      waitForClusterConnections(2, 4);
-      waitForClusterConnections(3, 4);
-      waitForClusterConnections(4, 4);
-      //we cant close all of the servers, we need to leave one up to notify us
-      stopServers(4, 2, 3, 1);
-
-      boolean ok = downLatch.await(10, SECONDS);
-      if(!ok)
-      {
-         System.out.println("TopologyClusterTestBase.testMultipleClientSessionFactories");
+         stopServers(0);
       }
-      assertTrue("Was not notified that all servers are Down", ok);
-      checkContains(new int[] { 0 }, nodeIDs, nodes);
-
-      for (ClientSessionFactory sf : sfs)
-      {
-         sf.close();
-      }
-
-      locator.close();
-
-      stopServers(0);
-   }
 
    // Private -------------------------------------------------------
 

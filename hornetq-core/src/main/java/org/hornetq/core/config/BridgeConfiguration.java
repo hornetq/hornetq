@@ -16,6 +16,8 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hornetq.api.core.client.HornetQClient;
+
 /**
  * A BridgeConfiguration
  *
@@ -40,7 +42,7 @@ public class BridgeConfiguration implements Serializable
    private List<String> staticConnectors;
 
    private String discoveryGroupName;
-   
+
    private boolean ha;
 
    private String transformerClassName;
@@ -56,21 +58,66 @@ public class BridgeConfiguration implements Serializable
    private int confirmationWindowSize;
 
    private final long clientFailureCheckPeriod;
-   
+
    private String user;
-   
+
    private String password;
 
    private final long connectionTTL;
-   
+
    private final long maxRetryInterval;
 
+   private final int minLargeMessageSize;
+   
+   // At this point this is only changed on testcases
+   // The bridge shouldn't be sending blocking anyways
+   private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
+
+   /**
+    *  For backward compatibility on the API... no MinLargeMessage on this constructor
+    */
+   public BridgeConfiguration(final String name,
+                              final String queueName,
+                              final String forwardingAddress,
+                              final String filterString,
+                              final String transformerClassName,
+                              final long retryInterval,
+                              final double retryIntervalMultiplier,
+                              final int reconnectAttempts,
+                              final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
+                              final List<String> staticConnectors,
+                              final boolean ha,
+                              final String user,
+                              final String password)
+   {
+      this(name,
+           queueName,
+           forwardingAddress,
+           filterString,
+           transformerClassName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+           clientFailureCheckPeriod,
+           HornetQClient.DEFAULT_CONNECTION_TTL,
+           retryInterval,
+           retryInterval,
+           retryIntervalMultiplier,
+           reconnectAttempts,
+           useDuplicateDetection,
+           confirmationWindowSize,
+           staticConnectors,
+           ha,
+           user,
+           password);
+   }
 
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final int minLargeMessageSize,
                               final long clientFailureCheckPeriod,
                               final long connectionTTL,
                               final long retryInterval,
@@ -87,6 +134,7 @@ public class BridgeConfiguration implements Serializable
       this.name = name;
       this.queueName = queueName;
       this.forwardingAddress = forwardingAddress;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.filterString = filterString;
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
@@ -96,11 +144,51 @@ public class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.staticConnectors = staticConnectors;
-      this. user = user;
+      this.user = user;
       this.password = password;
       this.connectionTTL = connectionTTL;
       this.maxRetryInterval = maxRetryInterval;
       discoveryGroupName = null;
+   }
+
+   /**
+    *  For backward compatibility on the API... no MinLareMessage, checkPeriod and TTL  on this constructor
+    */            
+   
+    public BridgeConfiguration(final String name,
+                              final String queueName,
+                              final String forwardingAddress,
+                              final String filterString,
+                              final String transformerClassName,
+                              final long retryInterval,
+                              final double retryIntervalMultiplier,
+                              final int reconnectAttempts,
+                              final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
+                              final String discoveryGroupName,
+                              final boolean ha,
+                              final String user,
+                              final String password)
+   {
+      this(name,
+           queueName,
+           forwardingAddress,
+           filterString,
+           transformerClassName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+           clientFailureCheckPeriod,
+           HornetQClient.DEFAULT_CONNECTION_TTL,
+           retryInterval,
+           retryInterval,
+           retryIntervalMultiplier,
+           reconnectAttempts,
+           useDuplicateDetection,
+           confirmationWindowSize,
+           discoveryGroupName,
+           ha,
+           user,
+           password);
    }
 
    public BridgeConfiguration(final String name,
@@ -108,6 +196,7 @@ public class BridgeConfiguration implements Serializable
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final int minLargeMessageSize,
                               final long clientFailureCheckPeriod,
                               final long connectionTTL,
                               final long retryInterval,
@@ -126,6 +215,7 @@ public class BridgeConfiguration implements Serializable
       this.forwardingAddress = forwardingAddress;
       this.filterString = filterString;
       this.transformerClassName = transformerClassName;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.reconnectAttempts = reconnectAttempts;
@@ -191,7 +281,7 @@ public class BridgeConfiguration implements Serializable
    {
       return discoveryGroupName;
    }
-   
+
    public boolean isHA()
    {
       return ha;
@@ -244,6 +334,14 @@ public class BridgeConfiguration implements Serializable
    }
 
    /**
+    * @return the minLargeMessageSize
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+
+   /**
     * @param forwardingAddress the forwardingAddress to set
     */
    public void setForwardingAddress(final String forwardingAddress)
@@ -274,7 +372,7 @@ public class BridgeConfiguration implements Serializable
    {
       this.discoveryGroupName = discoveryGroupName;
    }
-   
+
    /**
     * 
     * @param ha is the bridge supporting HA?
@@ -351,4 +449,26 @@ public class BridgeConfiguration implements Serializable
    {
       this.password = password;
    }
+   
+
+   /**
+    * @return the callTimeout
+    */
+   public long getCallTimeout()
+   {
+      return callTimeout;
+   }
+
+   /**
+    * 
+    * At this point this is only changed on testcases
+    * The bridge shouldn't be sending blocking anyways
+    * @param callTimeout the callTimeout to set
+    */
+   public void setCallTimeout(long callTimeout)
+   {
+      this.callTimeout = callTimeout;
+   }
+
+
 }

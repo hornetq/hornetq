@@ -210,6 +210,18 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       }
    }
 
+   public String getTopology()
+   {
+      clearIO();
+      try
+      {
+         return clusterConnection.getTopology().describe();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
    public Map<String, String> getNodes() throws Exception
    {
       clearIO();

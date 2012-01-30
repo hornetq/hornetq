@@ -22,7 +22,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  * A NullStorageLargeServerMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
+ * 
  * Created 30-Sep-08 1:51:42 PM
  *
  *
@@ -90,21 +90,6 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#getLinkedMessage()
-    */
-   public LargeServerMessage getLinkedMessage()
-   {
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
-    */
-   public void setLinkedMessage(final LargeServerMessage message)
-   {
-   }
-
-   /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#isComplete()
     */
    public boolean isComplete()
@@ -166,15 +151,19 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
    }
 
-   @Override
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#getPendingRecordID()
+    */
    public long getPendingRecordID()
    {
       return -1;
    }
+
 
    @Override
    public SequentialFile getFile()
    {
       return null;
    }
+
 }

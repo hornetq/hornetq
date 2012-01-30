@@ -691,6 +691,22 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
       return connection;
    }
+   
+   @Override
+   public String toString()
+   {
+      return "HornetQConnectionFactory [serverLocator=" + serverLocator +
+             ", clientID=" +
+             clientID +
+             ", dupsOKBatchSize=" +
+             dupsOKBatchSize +
+             ", transactionBatchSize=" +
+             transactionBatchSize +
+             ", readOnly=" +
+             readOnly +
+             "]";
+   }
+
 
    // Private --------------------------------------------------------------------------------------
 

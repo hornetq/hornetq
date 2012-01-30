@@ -477,7 +477,7 @@ public class StompConnection implements RemotingConnection
       
       if (Stomp.Commands.DISCONNECT.equals(cmd))
       {
-         this.disconnect();
+         this.disconnect(false);
       }
    }
 
@@ -551,7 +551,7 @@ public class StompConnection implements RemotingConnection
    }
 
    @Override
-   public void disconnect()
+   public void disconnect(final boolean criticalError)
    {
       destroy();
    }

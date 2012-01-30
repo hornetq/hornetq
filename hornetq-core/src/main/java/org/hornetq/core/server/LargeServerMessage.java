@@ -17,6 +17,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.replication.ReplicatedLargeMessage;
 
+
 /**
  * A LargeMessage
  *
@@ -26,11 +27,8 @@ public interface LargeServerMessage extends ServerMessage, ReplicatedLargeMessag
 {
    void addBytes(byte[] bytes) throws Exception;
 
-   /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
-   void setLinkedMessage(LargeServerMessage message);
-
    void setPendingRecordID(long pendingRecordID);
-
+   
    long getPendingRecordID();
 
    boolean isFileExists() throws Exception;
@@ -40,7 +38,7 @@ public interface LargeServerMessage extends ServerMessage, ReplicatedLargeMessag
     * For that we need to pre-mark the LargeMessage with a flag when it is paged
     */
    void setPaged();
-
+   
    /** Close the files if opened */
    void releaseResources();
 

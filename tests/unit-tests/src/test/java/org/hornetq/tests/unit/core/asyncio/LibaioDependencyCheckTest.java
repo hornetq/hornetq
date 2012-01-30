@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,25 +11,19 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.config.impl;
+package org.hornetq.tests.unit.core.asyncio;
 
-import junit.framework.Assert;
-
-import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.XMLUtil;
-import org.w3c.dom.Element;
 
 /**
- * A ConfigurationValidationTr
+ * A LibaioDependencyCheckTest
  *
- * @author jmesnil
- * 
- * Created 22 janv. 2009 14:53:19
+ * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class ConfigurationValidationTest extends UnitTestCase
+public class LibaioDependencyCheckTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -42,25 +36,12 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   /**
-    * test does not pass in eclipse (because it can not find hornetq-configuration.xsd).
-    * It runs fine on the CLI with the proper env setting.
-    */
-   public void testMinimalConfiguration() throws Exception
+   public void testDependency() throws Exception
    {
-      String xml = "<configuration xmlns='urn:hornetq'>" + "</configuration>";
-      Element element = XMLUtil.stringToElement(xml);
-      Assert.assertNotNull(element);
-      XMLUtil.validate(element, "hornetq-configuration.xsd");
-   }
-
-   public void testFullConfiguration() throws Exception
-   {
-      FileConfiguration fc = new FileConfiguration();
-      fc.setConfigurationUrl("ConfigurationTest-full-config.xml");
-      fc.start();
-
-      Assert.assertEquals(true, fc.isPersistDeliveryCountBeforeDelivery());
+      if (System.getProperties().get("os.name").equals("Linux"))
+      {
+         assertTrue("Libaio is not available on this platform", AsynchronousFileImpl.isLoaded());
+      }
    }
 
    // Package protected ---------------------------------------------

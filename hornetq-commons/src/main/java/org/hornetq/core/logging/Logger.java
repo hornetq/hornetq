@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.spi.core.logging.LogDelegate;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * 
@@ -201,47 +202,17 @@ public class Logger
    {
       delegate.trace(message, t);
    }
-
    
-   /**
-    * This seems duplicate code all over the place, but for security reasons we can't let something like this
-    * open on the JDK for every method or have a common class, as it would open a gate for other applications to load any class they like.
-    * @param className
-    * @return
-    */
+   
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
          public Object run()
          {
-            ClassLoader loader = Logger.class.getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+            return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
 
-   
 }

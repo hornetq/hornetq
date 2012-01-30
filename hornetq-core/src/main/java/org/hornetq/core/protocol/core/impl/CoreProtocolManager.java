@@ -54,18 +54,20 @@ import org.hornetq.spi.core.remoting.Connection;
  * A CoreProtocolManager
  *
  * @author Tim Fox
+ *
+ *
  */
-class CoreProtocolManager implements ProtocolManager
+public class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
-
+   
    private static final boolean isTrace = log.isTraceEnabled();
-
+   
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
 
-   CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   public CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
 
@@ -75,7 +77,7 @@ class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
-
+      
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
@@ -121,12 +123,12 @@ class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-
+               
                if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
                {
                   channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
                }
-
+               
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
                   public void nodeUP(final long uniqueEventID,
@@ -173,7 +175,7 @@ class CoreProtocolManager implements ProtocolManager
                         }
                      });
                   }
-
+                  
                   @Override
                   public String toString()
                   {
@@ -181,16 +183,15 @@ class CoreProtocolManager implements ProtocolManager
                   }
                };
 
-               final boolean isCC = msg.isClusterConnection();
                if (acceptorUsed.getClusterConnection() != null)
                {
-                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener, isCC);
-
+                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
+                  
                   rc.addCloseListener(new CloseListener()
                   {
                      public void connectionClosed()
                      {
-                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener, isCC);
+                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener);
                      }
                   });
                }
@@ -199,15 +200,36 @@ class CoreProtocolManager implements ProtocolManager
             {
                NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
-               final boolean backup = msg.isBackup();
-              Pair<TransportConfiguration, TransportConfiguration> pair =  getPair(msg.getConnector(), backup);
-
+               Pair<TransportConfiguration, TransportConfiguration> pair;
+               if (msg.isBackup())
+               {
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
+               }
+               else
+               {
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
+               }
                if (isTrace)
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-
-               acceptorUsed.getClusterConnection().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+               
+               if (acceptorUsed != null)
+               {
+                  ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
+                  if (clusterConn != null)
+                  {
+                     clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+                  }
+                  else
+                  {
+                     log.debug("Cluster connection is null on acceptor = " + acceptorUsed);
+                  }
+               }
+               else
+               {
+                  log.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
+               }
             } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
                BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
@@ -231,7 +253,7 @@ class CoreProtocolManager implements ProtocolManager
             }
          }
 
-          private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
+         private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
                                                                               boolean isBackup)
          {
             if (isBackup)
@@ -247,12 +269,12 @@ class CoreProtocolManager implements ProtocolManager
 
    private final Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
 
-   ServerSessionPacketHandler getSessionHandler(final String sessionName)
+   public ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
       return sessionHandlers.get(sessionName);
    }
 
-   void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
+   public void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
    {
       sessionHandlers.put(name, handler);
    }
@@ -271,11 +293,5 @@ class CoreProtocolManager implements ProtocolManager
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;
-   }
-
-   @Override
-   public String toString()
-   {
-      return "CoreProtocolManager(server=" + server + ")";
    }
 }

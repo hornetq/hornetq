@@ -41,10 +41,11 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
-import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
@@ -57,10 +58,12 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverTest extends FailoverTestBase
 {
-   private static final int NUM_MESSAGES = 100;
+	private static final Logger log = Logger.getLogger(FailoverTest.class);
 
-   private ServerLocator locator;
-   private ClientSessionFactoryInternal sf;
+	   private static final int NUM_MESSAGES = 100;
+
+	   private ServerLocator locator;
+	   private ClientSessionFactoryInternal sf;
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -90,41 +93,385 @@ public class FailoverTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-   protected ClientSession createSession(ClientSessionFactory sf,
-                                         boolean autoCommitSends,
-                                         boolean autoCommitAcks,
-                                         int ackBatchSize) throws Exception
-   {
-      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
-   }
+	protected ClientSession createSession(ClientSessionFactory sf,
+			boolean autoCommitSends, 
+			boolean autoCommitAcks,
+			int ackBatchSize) throws Exception
+	{
+		return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
+	}
 
-   protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
-   {
-      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks));
-   }
+	protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
+	{
+		return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks));
+	}
 
-   protected ClientSession createSession(ClientSessionFactory sf) throws Exception
-   {
-      return addClientSession(sf.createSession());
-   }
+	protected ClientSession createSession(ClientSessionFactory sf) throws Exception
+	{
+		return addClientSession(sf.createSession());
+	}
 
    protected ClientSession createSession(ClientSessionFactory sf,
                                          boolean xa,
                                          boolean autoCommitSends,
                                          boolean autoCommitAcks) throws Exception
    {
-      return addClientSession(sf.createSession(xa, autoCommitSends, autoCommitAcks));
+      return sf.createSession(xa, autoCommitSends, autoCommitAcks);
    }
 
-   @Override
-   protected void crash(ClientSession... sessions) throws Exception
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailover() throws Exception
    {
-      if (backupServer != null && backupServer.isStarted())
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      final CountDownLatch latch = new CountDownLatch(10);
+
+      Runnable r = new Runnable()
       {
-         // some tests crash the liveServer before the backupServer is sync'ed
-         waitForBackup(sf, 3);
+         public void run()
+         {
+            for (int i = 0; i < 500; i++)
+            {
+               ClientMessage message = session.createMessage(true);
+               message.putIntProperty("counter", i);
+               try
+               {
+                  System.out.println("sending message: " + i);
+                  producer.send(message);
+                  if (i < 10)
+                  {
+                     latch.countDown();
+                  }
+               }
+               catch (HornetQException e)
+               {
+                  // this is our retry
+                  try
+                  {
+                     producer.send(message);
+                  }
+                  catch (HornetQException e1)
+                  {
+                     e1.printStackTrace();
+                  }
+               }
+            }
+         }
+      };
+      Thread t = new Thread(r);
+      t.start();
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      t.join(5000);
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage m = consumer.receive(1000);
+         assertNotNull(m);
+         System.out.println("received message " + i);
+         // assertEquals(i, m.getIntProperty("counter").intValue());
       }
-      super.crash(sessions);
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverConsume() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(500);
+      locator.setAckBatchSize(0);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+         producer.send(message);
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch endLatch = new CountDownLatch(1);
+
+      final ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      final Map<Integer, ClientMessage> received = new HashMap<Integer, ClientMessage>();
+
+      consumer.setMessageHandler(new MessageHandler()
+      {
+
+         public void onMessage(ClientMessage message)
+         {
+            Integer counter = message.getIntProperty("counter");
+            received.put(counter, message);
+            try
+            {
+               log.info("acking message = id = " + message.getMessageID() +
+                        ", counter = " +
+                        message.getIntProperty("counter"));
+               message.acknowledge();
+            }
+            catch (HornetQException e)
+            {
+               e.printStackTrace();
+               return;
+            }
+            log.info("Acked counter = " + counter);
+            if (counter.equals(10))
+            {
+               latch.countDown();
+            }
+            if (received.size() == 500)
+            {
+               endLatch.countDown();
+            }
+         }
+
+      });
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      endLatch.await(60, TimeUnit.SECONDS);
+      assertTrue("received only " + received.size(), received.size() == 500);
+
+      session.close();
+   }
+   
+   public void testTimeoutOnFailoverConsumeBlocked() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setConsumerWindowSize(0);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(500);
+      locator.setAckBatchSize(0);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+         message.putBooleanProperty("end", i == 499);
+         producer.send(message);
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch endLatch = new CountDownLatch(1);
+
+      final ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      final Map<Integer, ClientMessage> received = new HashMap<Integer, ClientMessage>();
+
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            ClientMessage message = null;
+            try
+            {
+               while ((message = getMessage()) != null)
+               {
+                  Integer counter = message.getIntProperty("counter");
+                  received.put(counter, message);
+                  try
+                  {
+                     log.info("acking message = id = " + message.getMessageID() +
+                              ", counter = " +
+                              message.getIntProperty("counter"));
+                     message.acknowledge();
+                  }
+                  catch (HornetQException e)
+                  {
+                     e.printStackTrace();
+                     continue;
+                  }
+                  log.info("Acked counter = " + counter);
+                  if (counter.equals(10))
+                  {
+                     latch.countDown();
+                  }
+                  if (received.size() == 500)
+                  {
+                     endLatch.countDown();
+                  }
+                  
+                  if (message.getBooleanProperty("end"))
+                  {
+                     break;
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+
+         }
+         
+         private ClientMessage getMessage()
+         {
+            while (true)
+            {
+               try
+               {
+                  ClientMessage msg = consumer.receive(20000);
+                  if (msg == null)
+                  {
+                     log.info("Returning null message on consuming");
+                  }
+                  return msg;
+               }
+               catch (Exception ignored)
+               {
+                  // retry
+                  ignored.printStackTrace();
+               }
+            }
+         }
+      };
+      t.start();
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      endLatch.await(60, TimeUnit.SECONDS);
+      t.join();
+      assertTrue("received only " + received.size(), received.size() == 500);
+
+      session.close();
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverTransactionCommit() throws Exception
+   {
+      locator.setCallTimeout(2000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, false, false);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+
+         System.out.println("sending message: " + i);
+         producer.send(message);
+
+      }
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      System.out.println("crashing session");
+      crash(false, session);
+
+      session.commit(xid, false);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage m = consumer.receive(1000);
+         assertNotNull(m);
+         System.out.println("received message " + i);
+         assertEquals(i, m.getIntProperty("counter").intValue());
+      }
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverTransactionRollback() throws Exception
+   {
+      locator.setCallTimeout(2000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, false, false);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+
+         System.out.println("sending message: " + i);
+         producer.send(message);
+      }
+
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      System.out.println("crashing session");
+      crash(false, session);
+
+      session.rollback(xid);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      ClientMessage m = consumer.receive(1000);
+      assertNull(m);
+
    }
 
    // https://jira.jboss.org/browse/HORNETQ-522
@@ -135,13 +482,15 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
 
-      createClientSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      
 
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -195,17 +544,24 @@ public class FailoverTest extends FailoverTestBase
       System.out.println("received.size() = " + received.size());
       session.close();
 
-      Assert.assertTrue(retry <= 5);
-   }
+      sf.close();
 
-   private void createClientSessionFactory() throws Exception
-   {
-      sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      Assert.assertTrue(retry <= 5);
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testNonTransacted() throws Exception
    {
-      createSessionFactory();
+      ClientSessionFactoryInternal sf;
+
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, true);
 
@@ -213,7 +569,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       crash(session);
 
@@ -221,23 +588,40 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      receiveDurableMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            Assert.assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+            message.acknowledge();
+         }
+      }
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
-   private void createSessionFactory() throws Exception
+   public void testConsumeTransacted() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setReconnectAttempts(-1);
 
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
-   }
-
-   public void testConsumeTransacted() throws Exception
-   {
-      createSessionFactory();
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, false, false);
 
@@ -247,7 +631,16 @@ public class FailoverTest extends FailoverTestBase
 
       final int numMessages = 10;
 
-      sendMessages(session, producer, numMessages);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session.commit();
 
@@ -258,7 +651,6 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         assertNotNull("Just crashed? " + (i == 6) + " " + i, message);
 
          message.acknowledge();
 
@@ -291,7 +683,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = consumer.receive(1000);
 
-         assertNotNull("Expecting message #" + i, message);
+         assertNotNull(message);
 
          message.acknowledge();
       }
@@ -299,6 +691,12 @@ public class FailoverTest extends FailoverTestBase
       session.commit();
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-285
@@ -309,7 +707,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
 
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       // Crash live server
       crash();
@@ -320,21 +718,52 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
+      
 
-      sendMessages(session, producer, NUM_MESSAGES);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testTransactedMessagesSentSoRollback() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, false, false);
 
@@ -342,7 +771,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       crash(session);
 
@@ -365,9 +805,15 @@ public class FailoverTest extends FailoverTestBase
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull("message should be null! Was: " + message, message);
+      Assert.assertNull(message);
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    /**
@@ -376,7 +822,11 @@ public class FailoverTest extends FailoverTestBase
     */
    public void testTransactedMessagesSentSoRollbackAndContinueWork() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, false, false);
 
@@ -384,7 +834,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       crash(session);
 
@@ -418,15 +879,25 @@ public class FailoverTest extends FailoverTestBase
 
       message = consumer.receiveImmediate();
 
-      Assert.assertNotNull("expecting a message", message);
+      Assert.assertNotNull(message);
       Assert.assertEquals(counter, message.getIntProperty("counter").intValue());
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testTransactedMessagesNotSentSoNoRollback() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, false, false);
 
@@ -434,7 +905,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session.commit();
 
@@ -450,18 +932,44 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      receiveDurableMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            Assert.assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+            message.acknowledge();
+         }
+      }
 
       Assert.assertNull(consumer.receiveImmediate());
 
       session.commit();
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testTransactedMessagesWithConsumerStartedBeforeFailover() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, false, false);
 
@@ -474,7 +982,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       // messages will be delivered to the consumer when the session is committed
       session.commit();
@@ -493,16 +1012,44 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      receiveDurableMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            Assert.assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+            message.acknowledge();
+         }
+      }
 
       Assert.assertNull(consumer.receiveImmediate());
 
       session.commit();
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testTransactedMessagesConsumedSoRollback() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session1 = createSession(sf, false, false);
 
@@ -510,7 +1057,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session1, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session1.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session1.commit();
 
@@ -520,7 +1078,18 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start();
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       crash(session2);
 
@@ -536,11 +1105,25 @@ public class FailoverTest extends FailoverTestBase
       {
          Assert.assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
       }
+
+      session1.close();
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testTransactedMessagesNotConsumedSoNoRollback() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session1 = createSession(sf, false, false);
 
@@ -548,7 +1131,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-
+      
 
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -596,7 +1179,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = consumer.receive(1000);
 
-         Assert.assertNotNull("expecting message " + i, message);
+         Assert.assertNotNull(message);
 
          assertMessageBody(i, message);
 
@@ -608,11 +1191,25 @@ public class FailoverTest extends FailoverTestBase
       session2.commit();
 
       Assert.assertNull(consumer.receiveImmediate());
+
+      session1.close();
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testXAMessagesSentSoRollbackOnEnd() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, false, false);
 
@@ -622,11 +1219,20 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-
+      
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessagesSomeDurable(session, producer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       crash(session);
 
@@ -648,25 +1254,46 @@ public class FailoverTest extends FailoverTestBase
       ClientMessage message = consumer.receiveImmediate();
 
       Assert.assertNull(message);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testXAMessagesSentSoRollbackOnPrepare() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
 
-      final ClientSession session = createSession(sf, true, false, false);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+
+      ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
-      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-
+      
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessagesSomeDurable(session, producer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -681,7 +1308,6 @@ public class FailoverTest extends FailoverTestBase
       catch (XAException e)
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
-         session.rollback();
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -692,14 +1318,23 @@ public class FailoverTest extends FailoverTestBase
 
       Assert.assertNull(message);
 
-      producer.close();
-      consumer.close();
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    // This might happen if 1PC optimisation kicks in
    public void testXAMessagesSentSoRollbackOnCommit() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, false, false);
 
@@ -709,11 +1344,20 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-
+      
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessagesSomeDurable(session, producer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -737,11 +1381,23 @@ public class FailoverTest extends FailoverTestBase
       ClientMessage message = consumer.receiveImmediate();
 
       Assert.assertNull(message);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testXAMessagesNotSentSoNoRollbackOnCommit() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, false, false);
 
@@ -751,11 +1407,20 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-
+      
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessagesSomeDurable(session, producer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -773,18 +1438,46 @@ public class FailoverTest extends FailoverTestBase
 
       session.start(xid2, XAResource.TMNOFLAGS);
 
-      receiveDurableMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            Assert.assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+            message.acknowledge();
+         }
+      }
 
       session.end(xid2, XAResource.TMSUCCESS);
 
       session.prepare(xid2);
 
       session.commit(xid2, false);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testXAMessagesConsumedSoRollbackOnEnd() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session1 = createSession(sf, false, false);
 
@@ -792,7 +1485,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session1, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session1.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session1.commit();
 
@@ -806,7 +1510,18 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start(xid, XAResource.TMNOFLAGS);
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       crash(session2);
 
@@ -820,11 +1535,25 @@ public class FailoverTest extends FailoverTestBase
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
+
+      session1.close();
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testXAMessagesConsumedSoRollbackOnPrepare() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session1 = createSession(sf, false, false);
 
@@ -832,7 +1561,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session1, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session1.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session1.commit();
 
@@ -846,7 +1586,18 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start(xid, XAResource.TMNOFLAGS);
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       session2.end(xid, XAResource.TMSUCCESS);
 
@@ -862,19 +1613,44 @@ public class FailoverTest extends FailoverTestBase
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
+
+      session1.close();
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    // 1PC optimisation
    public void testXAMessagesConsumedSoRollbackOnCommit() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session1, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session1.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session1.commit();
 
@@ -888,11 +1664,22 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start(xid, XAResource.TMNOFLAGS);
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       session2.end(xid, XAResource.TMSUCCESS);
 
-     // session2.prepare(xid);
+      // session2.prepare(xid);
 
       crash(session2);
 
@@ -911,6 +1698,12 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testCreateNewFactoryAfterFailover() throws Exception
@@ -918,7 +1711,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = sendAndConsume(sf, true);
 
@@ -928,14 +1721,26 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(5000);
 
-      createClientSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       session = sendAndConsume(sf, true);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testFailoverMultipleSessionsWithConsumers() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       final int numSessions = 5;
 
@@ -967,8 +1772,18 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = sendSession.createProducer(FailoverTestBase.ADDRESS);
 
+      
 
-      sendMessages(sendSession, producer,NUM_MESSAGES);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = sendSession.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       Set<ClientSession> sessionSet = sessionConsumerMap.keySet();
       ClientSession[] sessions = new ClientSession[sessionSet.size()];
@@ -984,7 +1799,18 @@ public class FailoverTest extends FailoverTestBase
       {
          for (ClientConsumer consumer : consumerList)
          {
-            receiveMessages(consumer);
+            for (int i = 0; i < NUM_MESSAGES; i++)
+            {
+               ClientMessage message = consumer.receive(1000);
+
+               Assert.assertNotNull(message);
+
+               assertMessageBody(i, message);
+
+               Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+               message.acknowledge();
+            }
          }
       }
 
@@ -992,6 +1818,14 @@ public class FailoverTest extends FailoverTestBase
       {
          session.close();
       }
+
+      sendSession.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    /*
@@ -999,42 +1833,81 @@ public class FailoverTest extends FailoverTestBase
     */
    public void testFailWithBrowser() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS, true);
 
       session.start();
 
-      receiveMessages(consumer, 0, NUM_MESSAGES, false);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+      }
 
       crash(session);
 
-      receiveDurableMessages(consumer);
-   }
-
-   private void sendMessagesSomeDurable(ClientSession session, ClientProducer producer) throws Exception, HornetQException
-   {
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         // some are durable, some are not!
-         boolean durable = isDurable(i);
-         ClientMessage message = session.createMessage(durable);
-         setBody(i, message);
-         message.putIntProperty("counter", i);
-         producer.send(message);
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            Assert.assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+            message.acknowledge();
+         }
       }
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testFailThenReceiveMoreMessagesAfterFailover() throws Exception
    {
-      createSessionFactory();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, true);
 
@@ -1042,13 +1915,23 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
 
-      // Receive MSGs but don't ack!
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message = consumer.receive(1000);
@@ -1064,29 +1947,31 @@ public class FailoverTest extends FailoverTestBase
 
       // Should get the same ones after failover since we didn't ack
 
-      receiveDurableMessages(consumer);
-   }
-
-   private void receiveDurableMessages(ClientConsumer consumer) throws HornetQException
-   {
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          // Only the persistent messages will survive
 
-         if (isDurable(i))
+         if (i % 2 == 0)
          {
             ClientMessage message = consumer.receive(1000);
-            Assert.assertNotNull("expecting durable msg " + i, message);
+
+            Assert.assertNotNull(message);
+
             assertMessageBody(i, message);
+
             Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
             message.acknowledge();
          }
       }
-   }
 
-   private boolean isDurable(int i)
-   {
-      return i % 2 == 0;
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testFailThenReceiveMoreMessagesAfterFailover2() throws Exception
@@ -1095,7 +1980,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, true, 0);
 
@@ -1103,13 +1988,35 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessagesSomeDurable(session, producer);
+      
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       crash(session);
 
@@ -1117,7 +2024,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = NUM_MESSAGES; i < NUM_MESSAGES * 2; i++)
       {
-         ClientMessage message = session.createMessage(isDurable(i));
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
          setBody(i, message);
 
@@ -1127,12 +2034,27 @@ public class FailoverTest extends FailoverTestBase
       }
 
       // Should get the same ones after failover since we didn't ack
-      receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
-   }
 
-   private void receiveMessages(ClientConsumer consumer) throws HornetQException
-   {
-      receiveMessages(consumer, 0, NUM_MESSAGES, true);
+      for (int i = NUM_MESSAGES; i < NUM_MESSAGES * 2; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testSimpleSendAfterFailoverDurableTemporary() throws Exception
@@ -1161,7 +2083,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       ClientSession session = createSession(sf, true, true, 0);
 
@@ -1176,15 +2098,45 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
+      
+
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
 
       crash(session);
 
-      sendMessagesSomeDurable(session, producer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(i % 2 == 0);
 
-      receiveMessages(consumer);
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void _testForceBlockingReturn() throws Exception
@@ -1193,7 +2145,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      createClientSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       // Add an interceptor to delay the send method so we can get time to cause failover before it returns
 
@@ -1242,6 +2194,12 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(sender.e.getCode(), HornetQException.UNBLOCKED);
 
       session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testCommitOccurredUnblockedAndResendNoDuplicates() throws Exception
@@ -1251,14 +2209,13 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
 
       locator.setBlockOnAcknowledge(true);
-
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       final ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
-
+      
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1310,7 +2267,7 @@ public class FailoverTest extends FailoverTestBase
                   }
                   catch (HornetQException e2)
                   {
-                     throw new RuntimeException(e2);
+
                   }
 
                }
@@ -1322,8 +2279,8 @@ public class FailoverTest extends FailoverTestBase
 
       Committer committer = new Committer();
 
-      // Commit will occur, but response will never get back, connection is failed, and commit
-      // should be unblocked with transaction rolled back
+      // Commit will occur, but response will never get back, connetion is failed, and commit should be unblocked
+      // with transaction rolled back
 
       committer.start();
 
@@ -1336,7 +2293,7 @@ public class FailoverTest extends FailoverTestBase
 
       committer.join();
 
-      Assert.assertFalse("second attempt succeed?", committer.failed);
+      Assert.assertFalse(committer.failed);
 
       session.close();
 
@@ -1367,22 +2324,40 @@ public class FailoverTest extends FailoverTestBase
       try
       {
          session2.commit();
-         fail("expecting DUPLICATE_ID_REJECTED exception");
       }
       catch (HornetQException e)
       {
-         assertEquals(e.getMessage(), HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
+         assertEquals(HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
       }
 
+      ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
       session2.start();
 
-      ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       ClientMessage message = consumer.receiveImmediate();
 
       Assert.assertNull(message);
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testCommitDidNotOccurUnblockedAndResend() throws Exception
@@ -1391,14 +2366,26 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       final ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
+      
+
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-      sendMessages(session, producer,NUM_MESSAGES);
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       class Committer extends Thread
       {
@@ -1456,7 +2443,17 @@ public class FailoverTest extends FailoverTestBase
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
 
       // We now try and resend the messages since we get a transaction rolled back exception
-      sendMessages(session2, producer,NUM_MESSAGES);
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = session2.createMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
 
       session2.commit();
 
@@ -1464,28 +2461,57 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start();
 
-      receiveMessages(consumer);
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull("expecting null message", message);
+      Assert.assertNull(message);
+
+      session2.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testBackupServerNotRemoved() throws Exception
    {
-      // HORNETQ-720 Disabling test for replicating backups.
-      if (!backupServer.getServer().getConfiguration().isSharedStore())
-      {
-         waitForComponent(backupServer, 1);
-         return;
-      }
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      createSessionFactory();
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
+
       ClientSession session = sendAndConsume(sf, true);
 
-      session.addFailureListener(listener);
+      session.addFailureListener(new MyListener());
 
       backupServer.stop();
 
@@ -1496,7 +2522,7 @@ public class FailoverTest extends FailoverTestBase
 
       backupServer.start();
 
-      assertTrue("session failure listener", listener.getLatch().await(5, TimeUnit.SECONDS));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1505,12 +2531,23 @@ public class FailoverTest extends FailoverTestBase
       setBody(0, message);
 
       producer.send(message);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testLiveAndBackupLiveComesBack() throws Exception
    {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      createSessionFactory();
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener implements SessionFailureListener
@@ -1550,13 +2587,23 @@ public class FailoverTest extends FailoverTestBase
       setBody(0, message);
 
       producer.send(message);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      createSessionFactory();
-
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener implements SessionFailureListener
@@ -1599,7 +2646,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      createClientSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       session = createSession(sf);
 
@@ -1612,6 +2659,14 @@ public class FailoverTest extends FailoverTestBase
       assertNotNull(cm);
 
       Assert.assertEquals("message0", cm.getBodyBuffer().readString());
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
@@ -1620,12 +2675,25 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
 
       ClientSession session = sendAndConsume(sf, true);
 
-      session.addFailureListener(listener);
+      session.addFailureListener(new MyListener());
 
       backupServer.stop();
 
@@ -1634,15 +2702,9 @@ public class FailoverTest extends FailoverTestBase
       // To reload security or other settings that are read during startup
       beforeRestart(backupServer);
 
-      if (!backupServer.getServer().getConfiguration().isSharedStore())
-      {
-         // this test would not make sense in the remote replication use case, without the following
-         backupServer.getServer().getConfiguration().setBackup(false);
-      }
-
       backupServer.start();
 
-      assertTrue("session failure listener", listener.getLatch().await(5, TimeUnit.SECONDS));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1656,7 +2718,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      createClientSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       session = createSession(sf);
 
@@ -1669,6 +2731,14 @@ public class FailoverTest extends FailoverTestBase
       assertNotNull(cm);
 
       Assert.assertEquals("message0", cm.getBodyBuffer().readString());
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
    }
 
    // Package protected ---------------------------------------------
@@ -1685,6 +2755,25 @@ public class FailoverTest extends FailoverTestBase
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
       return TransportConfigurationUtils.getInVMConnector(live);
+   }
+
+   /**
+    * @param i
+    * @param message
+    */
+   protected void assertMessageBody(final int i, final ClientMessage message)
+   {
+      Assert.assertEquals("message" + i, message.getBodyBuffer().readString());
+   }
+
+   /**
+    * @param i
+    * @param message
+    * @throws Exception 
+    */
+   protected void setBody(final int i, final ClientMessage message) throws Exception
+   {
+      message.getBodyBuffer().writeString("message" + i);
    }
 
    protected void beforeRestart(TestableServer liveServer)
@@ -1704,9 +2793,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      final int numMessages = 1000;
-
-      for (int i = 0; i < numMessages; i++)
+      for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
                                                        false,
@@ -1722,7 +2809,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      for (int i = 0; i < numMessages; i++)
+      for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message2 = consumer.receive();
 

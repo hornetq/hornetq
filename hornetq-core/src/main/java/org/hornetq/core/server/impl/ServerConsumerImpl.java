@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -53,7 +54,7 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
+ * 
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
 public class ServerConsumerImpl implements ServerConsumer, ReadyListener
@@ -119,7 +120,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    /* As well as consumer credit based flow control, we also tap into TCP flow control (assuming transport is using TCP)
     * This is useful in the case where consumer-window-size = -1, but we don't want to OOM by sending messages ad infinitum to the Netty
-    * write queue when the TCP buffer is full, e.g. the client is slow or has died.
+    * write queue when the TCP buffer is full, e.g. the client is slow or has died.    
     */
    private final AtomicBoolean writeReady = new AtomicBoolean(true);
 
@@ -390,33 +391,47 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       promptDelivery();
 
-      Future future = new Future();
-
-      messageQueue.getExecutor().execute(future);
-
-      boolean ok = future.await(10000);
-
-      if (!ok)
+      // JBPAPP-6030 - Using the executor to avoid distributed dead locks 
+      messageQueue.getExecutor().execute(new Runnable()
       {
-         log.warn("Timed out waiting for executor");
-      }
+         public void run()
+         {
+            try
+            {
+               // We execute this on the same executor to make sure the force delivery message is written after
+               // any delivery is completed
 
-      try
-      {
-         // We execute this on the same executor to make sure the force delivery message is written after
-         // any delivery is completed
+               synchronized (lock)
+               {
+                  if (transferring)
+                  {
+                     // Case it's transferring (reattach), we will retry later
+                     messageQueue.getExecutor().execute(new Runnable()
+                     {
+                        public void run()
+                        {
+                           forceDelivery(sequence);
+                        }
+                     });
+                  }
+                  else
+                  {
+                     ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+      
+                     forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+                     forcedDeliveryMessage.setAddress(messageQueue.getName());
+      
+                     callback.sendMessage(forcedDeliveryMessage, id, 0);
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
+            }
+         }
+      });
 
-         ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
-
-         forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-         forcedDeliveryMessage.setAddress(messageQueue.getName());
-
-         callback.sendMessage(forcedDeliveryMessage, id, 0);
-      }
-      catch (Exception e)
-      {
-         ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
-      }
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean failed,
@@ -573,7 +588,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return messageQueue;
    }
 
-   public void acknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
+   public void acknowledge(final boolean autoCommitAcks, Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
@@ -582,34 +597,78 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
-
-      MessageReference ref;
-      do
+      
+      // We use a transaction here as if the message is not found, we should rollback anything done
+      // This could eventually happen on retries during transactions, and we need to make sure we don't ACK things we are not supposed to acknowledge
+      
+      boolean startedTransaction = false;
+      
+      if (tx == null || autoCommitAcks)
       {
-         ref = deliveringRefs.poll();
-
-         if (ref == null)
+         startedTransaction = true;
+         tx = new TransactionImpl(storageManager);
+      }
+      
+      try
+      {
+   
+         MessageReference ref;
+         do
          {
-            throw new IllegalStateException(System.identityHashCode(this) + " Could not find reference on consumerID=" +
-                                            id +
-                                            ", messageId = " +
-                                            messageID +
-                                            " queue = " +
-                                            messageQueue.getName() +
-                                            " closed = " +
-                                            closed);
+            ref = deliveringRefs.poll();
+            
+            if (log.isTraceEnabled())
+            {
+               log.trace("ACKing ref " + ref + " on " + this);
+            }
+   
+            if (ref == null)
+            {
+               
+               HornetQException e = new HornetQException(HornetQException.ILLEGAL_STATE, "Could not find reference on consumerID=" +
+                                id +
+                                ", messageId = " +
+                                messageID +
+                                " queue = " +
+                                messageQueue.getName());
+               throw e;
+            }
+   
+            ref.getQueue().acknowledge(tx, ref);
          }
-
-         if (autoCommitAcks || tx == null)
+         while (ref.getMessage().getMessageID() != messageID);
+         
+         if (startedTransaction)
          {
-            ref.getQueue().acknowledge(ref);
+            tx.commit();
+         }
+      }
+      catch (HornetQException e)
+      {
+         if (startedTransaction)
+         {
+            tx.rollback();
          }
          else
          {
-            ref.getQueue().acknowledge(tx, ref);
+            tx.markAsRollbackOnly(e);
          }
+         throw e;
       }
-      while (ref.getMessage().getMessageID() != messageID);
+      catch (Throwable e)
+      {
+         log.error(e.getMessage(), e);
+         HornetQException hqex = new HornetQException(HornetQException.ILLEGAL_STATE, e.getMessage());
+         if (startedTransaction)
+         {
+            tx.rollback();
+         }
+         else
+         {
+            tx.markAsRollbackOnly(hqex);
+         }
+         throw hqex;
+      }
    }
 
    public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
@@ -872,7 +931,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                int localChunkLen = 0;
 
                localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
-
+               
                HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(localChunkLen);
 
                context.encode(bodyBuffer, localChunkLen);

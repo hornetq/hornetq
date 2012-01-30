@@ -48,13 +48,19 @@ public class FileDeploymentManagerTest extends UnitTestCase
    public void testStartStop1WithWhitespace() throws Exception
    {
       testStartStop1("fdm test file.xml");
-      testStartStop1("fdm\ttest\tfile.xml");
+      if (!isWindows())
+      {
+         testStartStop1("fdm\ttest\tfile.xml");
+      }
    }
 
    public void testStartStop2WithWhitespace() throws Exception
    {
       testStartStop2("fdm test file.xml");
-      testStartStop2("fdm\ttest\tfile.xml");
+      if (!isWindows())
+      {
+    	  testStartStop2("fdm\ttest\tfile.xml");
+      }
    }
 
    private void testStartStop1(final String filename) throws Exception

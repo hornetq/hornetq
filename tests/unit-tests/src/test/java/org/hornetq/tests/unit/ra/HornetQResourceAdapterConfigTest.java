@@ -21,15 +21,6 @@
 */
 package org.hornetq.tests.unit.ra;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Document;
@@ -37,6 +28,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -73,13 +72,13 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "      <config-property>\n" +
          "        <description>Does we support HA</description>\n" +
          "        <config-property-name>HA</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value>false</config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>Use A local Transaction instead of XA?</description>\n" +
          "        <config-property-name>UseLocalTx</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value>false</config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
@@ -109,19 +108,19 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "      <config-property>\n" +
          "        <description>The discovery group port</description>\n" +
          "        <config-property-name>DiscoveryPort</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The discovery refresh timeout</description>\n" +
          "        <config-property-name>DiscoveryRefreshTimeout</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The discovery initial wait timeout</description>\n" +
          "        <config-property-name>DiscoveryInitialWaitTimeout</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property> \n" +
          "      <config-property>\n" +
@@ -133,103 +132,103 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "      <config-property>\n" +
          "         <description>number of reconnect attempts for connections after failover occurs</description>\n" +
          "         <config-property-name>ReconnectAttempts</config-property-name>\n" +
-         "         <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The client failure check period</description>\n" +
          "        <config-property-name>ClientFailureCheckPeriod</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The connection TTL</description>\n" +
          "        <config-property-name>ConnectionTTL</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The call timeout</description>\n" +
          "        <config-property-name>CallTimeout</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The dups ok batch size</description>\n" +
          "        <config-property-name>DupsOKBatchSize</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The transaction batch size</description>\n" +
          "        <config-property-name>TransactionBatchSize</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The consumer window size</description>\n" +
          "        <config-property-name>ConsumerWindowSize</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The consumer max rate</description>\n" +
          "        <config-property-name>ConsumerMaxRate</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The confirmation window size</description>\n" +
          "        <config-property-name>ConfirmationWindowSize</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The producer max rate</description>\n" +
          "        <config-property-name>ProducerMaxRate</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The min large message size</description>\n" +
          "        <config-property-name>MinLargeMessageSize</config-property-name>\n" +
-         "        <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "        <config-property-type>int</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The block on acknowledge</description>\n" +
          "        <config-property-name>BlockOnAcknowledge</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The block on non durable send</description>\n" +
          "        <config-property-name>BlockOnNonDurableSend</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The block on durable send</description>\n" +
          "        <config-property-name>BlockOnDurableSend</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The auto group</description>\n" +
          "        <config-property-name>AutoGroup</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The pre acknowledge</description>\n" +
          "        <config-property-name>PreAcknowledge</config-property-name>\n" +
-         "        <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "        <config-property-type>boolean</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The retry interval</description>\n" +
          "        <config-property-name>RetryInterval</config-property-name>\n" +
-         "        <config-property-type>java.lang.Long</config-property-type>\n" +
+         "        <config-property-type>long</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
@@ -247,19 +246,19 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "      <config-property>\n" +
          "         <description>use global pools for client</description>\n" +
          "         <config-property-name>UseGlobalPools</config-property-name>\n" +
-         "         <config-property-type>java.lang.Boolean</config-property-type>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "         <description>max number of threads for scheduled threrad pool</description>\n" +
          "         <config-property-name>ScheduledThreadPoolMaxSize</config-property-name>\n" +
-         "         <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
          "         <description>max number of threads in pool</description>\n" +
          "         <config-property-name>ThreadPoolMaxSize</config-property-name>\n" +
-         "         <config-property-type>java.lang.Integer</config-property-type>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
          "      <config-property>\n" +
@@ -274,18 +273,18 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-type>long</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
-         "      <config-property>" +
-         "         <description></description>" +
-         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" +
-         "         <config-property-type>java.lang.String</config-property-type>" +
-         "         <config-property-value></config-property-value>" +
-         "      </config-property>" +
-         "      <config-property>" +
-         "         <description></description>" +
-         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" +
-         "         <config-property-type>java.lang.String</config-property-type>" +
-         "         <config-property-value></config-property-value>" +
-         "      </config-property>" +
+         "      <config-property>" + 
+         "         <description></description>" + 
+         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" + 
+         "         <config-property-type>java.lang.String</config-property-type>" + 
+         "         <config-property-value></config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description></description>" + 
+         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" + 
+         "         <config-property-type>java.lang.String</config-property-type>" + 
+         "         <config-property-value></config-property-value>" + 
+         "      </config-property>" + 
          "      <config-property>\n" +
          "         <description>How many attempts should be made when connecting the MDB</description>\n" +
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
@@ -323,9 +322,10 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          assertEquals(el.toString(), elementsByTagName.getLength(), 1);
          Node configPropertyNameNode = elementsByTagName.item(0);
          String configPropertyName = configPropertyNameNode.getTextContent();
+         System.out.println("configPropertyName = " + configPropertyName);
          Method setter = methodList.remove("set" + configPropertyName);
          assertNotNull("setter " + configPropertyName + " does not exist", setter);
-         Class<?> c = setter.getParameterTypes()[0];
+         Class c = lookupType(setter);
          elementsByTagName = el.getElementsByTagName("config-property-type");
          assertEquals("setter " + configPropertyName + " has no type set", elementsByTagName.getLength(), 1);
          Node configPropertyTypeNode = elementsByTagName.item(0);
@@ -341,11 +341,42 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
             newConfig.append("\"      <config-property>\" + \n");
             newConfig.append("\"         <description>***add***</description>\" + \n");
             newConfig.append("\"         <config-property-name>").append(method.getName().substring(3)).append("</config-property-name>\" + \n");
-            newConfig.append("\"         <config-property-type>").append(method.getParameterTypes()[0].getName()).append("</config-property-type>\" + \n");
+            newConfig.append("\"         <config-property-type>").append(lookupType(method).getName()).append("</config-property-type>\" + \n");
             newConfig.append("\"         <config-property-value></config-property-value>\" + \n");
             newConfig.append("\"      </config-property>\" + \n");
          }
+         System.out.println(newConfig);
          fail("methods not shown please see previous and add");
+      }
+      else
+      {
+         System.out.println(commentedOutConfigs);
+      }
+   }
+
+   /**
+    * @param setter
+    * @return
+    */
+   private Class<?> lookupType(Method setter)
+   {
+      Class<?> clzz = setter.getParameterTypes()[0];
+      
+      if (clzz == Boolean.class)
+      {
+         return Boolean.TYPE;
+      }
+      else if (clzz == Long.class)
+      {
+         return Long.TYPE;
+      }
+      else if (clzz == Integer.class)
+      {
+         return Integer.TYPE;
+      }
+      else
+      {
+         return clzz;
       }
    }
 }

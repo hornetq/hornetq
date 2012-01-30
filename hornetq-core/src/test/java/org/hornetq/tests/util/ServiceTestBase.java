@@ -93,9 +93,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       closeAllServerLocatorsFactories();
 
       super.tearDown();
-//      checkFreePort(5445);
-//      checkFreePort(5446);
-//      checkFreePort(5447);
       if (InVMRegistry.instance.size() > 0)
       {
          fail("InVMREgistry size > 0");

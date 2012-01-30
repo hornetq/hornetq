@@ -14,8 +14,12 @@
 package org.hornetq.core.client.impl;
 
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -45,10 +49,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 {
    // Constants
    // ------------------------------------------------------------------------------------
-
+   
    private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
-
-   private static final boolean isTrace = ClientConsumerImpl.log.isTraceEnabled();
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
@@ -72,6 +76,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final boolean browseOnly;
 
    private final Executor sessionExecutor;
+   
+   // For failover we can't send credits back
+   // while holding a lock or failover could dead lock eventually
+   // And we can't use the sessionExecutor as that's being used for message handlers
+   // for that reason we have a separate flowControlExecutor that's using the thread pool 
+   // Which is a OrderedExecutor
+   private final Executor flowControlExecutor;
 
    private final int clientWindowSize;
 
@@ -100,6 +111,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean closed;
 
    private volatile int creditsToSend;
+   
+   private volatile boolean failedOver;
 
    private volatile Exception lastException;
 
@@ -114,6 +127,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final SessionQueueQueryResponseMessage queueInfo;
 
    private volatile boolean ackIndividually;
+   
+   private final ClassLoader contextClassLoader;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -127,8 +142,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final int ackBatchSize,
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
+                             final Executor flowControlExecutor,
                              final Channel channel,
-                             final SessionQueueQueryResponseMessage queueInfo)
+                             final SessionQueueQueryResponseMessage queueInfo,
+                             final ClassLoader contextClassLoader)
    {
       this.id = id;
 
@@ -151,12 +168,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.ackBatchSize = ackBatchSize;
 
       this.queueInfo = queueInfo;
+      
+      this.contextClassLoader = contextClassLoader;
+      
+      this.flowControlExecutor = flowControlExecutor;
    }
 
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   private ClientMessage receive(long timeout, final boolean forcingDelivery) throws HornetQException
+   private ClientMessage receive(final long timeout, final boolean forcingDelivery) throws HornetQException
    {
       checkClosed();
 
@@ -185,17 +206,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       receiverThread = Thread.currentThread();
 
-      if (timeout == 0)
-      {
-         // Effectively infinite
-         timeout = Long.MAX_VALUE;
-      }
-
+      // To verify if deliveryForced was already call
       boolean deliveryForced = false;
+      // To control when to call deliveryForce
+      boolean callForceDelivery = false;
 
       long start = -1;
 
-      long toWait = timeout;
+      long toWait = timeout == 0 ? Long.MAX_VALUE : timeout;
 
       try
       {
@@ -222,13 +240,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
-                        if (isTrace)
-                        {
-                           log.trace("Forcing delivery");
-                        }
-                        session.forceDelivery(id, forceDeliveryCount++);
-
-                        deliveryForced = true;
+                        callForceDelivery = true;
+                        break;
                      }
                   }
 
@@ -253,6 +266,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                }
             }
 
+            if (failedOver)
+            {
+               if (m == null)
+               {
+                  // if failed over and the buffer is null, we reset the state and try it again
+                  failedOver = false;
+                  deliveryForced = false;
+                  toWait = timeout == 0 ? Long.MAX_VALUE : timeout;
+                  continue;
+               }
+               else
+               {
+                  failedOver = false;
+               }
+            }
+            
+            if (callForceDelivery)
+            {
+               if (isTrace)
+               {
+                  log.trace("Forcing delivery");
+               }
+               // JBPAPP-6030 - Calling forceDelivery outside of the lock to avoid distributed dead locks
+               session.forceDelivery(id, forceDeliveryCount++);
+               callForceDelivery = false;
+               deliveryForced = true;
+               continue;
+            }
+
             if (m != null)
             {
                session.workDone();
@@ -267,7 +309,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue
                      resetIfSlowConsumer();
-
+                     
                      if (isTrace)
                      {
                         log.trace("There was nothing on the queue, leaving it now:: returning null");
@@ -293,7 +335,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                if (expired)
                {
                   m.discardBody();
-
+                  
                   session.expire(id, m.getMessageID());
 
                   if (clientWindowSize == 0)
@@ -315,7 +357,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   largeMessageReceived = m;
                }
-
+               
                if (isTrace)
                {
                   log.trace("Returning " + m);
@@ -342,19 +384,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public ClientMessage receive(final long timeout) throws HornetQException
    {
-      if (isBrowseOnly())
+      ClientMessage msg = receive(timeout, false);
+      
+      if (msg == null && !closed)
       {
-         ClientMessage msg = receive(timeout, false);
-         if (msg == null)
-         {
-            msg = receive(0, true);
-         }
-         return msg;
+         msg = receive(0, true);
       }
-      else
-      {
-         return receive(timeout, false);
-      }
+      
+      return msg;
    }
 
    public ClientMessage receive() throws HornetQException
@@ -367,7 +404,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return receive(0, true);
    }
 
-   public synchronized MessageHandler getMessageHandler() throws HornetQException
+   public MessageHandler getMessageHandler() throws HornetQException
    {
       checkClosed();
 
@@ -456,6 +493,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       lastAckedMessage = null;
 
       creditsToSend = 0;
+      
+      failedOver = true;
 
       ackIndividually = false;
    }
@@ -479,7 +518,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return session;
    }
-
+   
    public SessionQueueQueryResponseMessage getQueueInfo()
    {
       return queueInfo;
@@ -529,7 +568,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // consumed in, which means that acking all up to won't work
          ackIndividually = true;
       }
-
+      
       // Add it to the buffer
       buffer.addTail(messageToHandle, messageToHandle.getPriority());
 
@@ -557,9 +596,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Flow control for the first packet, we will have others
 
-      flowControl(packet.getPacketSize(), false);
-
       ClientLargeMessageInternal currentChunkMessage = (ClientLargeMessageInternal)packet.getLargeMessage();
+
+      currentChunkMessage.setFlowControlSize(packet.getPacketSize());
 
       currentChunkMessage.setDeliveryCount(packet.getDeliveryCount());
 
@@ -582,8 +621,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          currentChunkMessage.setLargeMessageController(currentLargeMessageController);
       }
-
-      currentChunkMessage.setFlowControlSize(0);
 
       handleMessage(currentChunkMessage);
    }
@@ -621,7 +658,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             try
             {
                ClientMessageInternal message = iter.next();
-
+               
                if (message.isLargeMessage())
                {
                   ClientLargeMessageInternal largeMessage = (ClientLargeMessageInternal)message;
@@ -637,7 +674,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          }
 
          clearBuffer();
-
+         
          try
          {
             if (currentLargeMessageController != null)
@@ -704,11 +741,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   /**
-    *
+   /** 
+    * 
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
-    *
+    * 
     * @param discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
@@ -716,12 +753,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
-
-         if (log.isTraceEnabled())
-         {
-            log.trace(this + "::FlowControl::creditsToSend=" + creditsToSend + ", clientWindowSize = " + clientWindowSize + " messageBytes = " + messageBytes);
-         }
-
+         
          if (creditsToSend >= clientWindowSize)
          {
             if (clientWindowSize == 0 && discountSlowConsumer)
@@ -744,9 +776,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               if (ClientConsumerImpl.isTrace)
+               if (log.isDebugEnabled())
                {
-                  ClientConsumerImpl.log.trace("Sending " + messageBytes + " from flow-control");
+                  ClientConsumerImpl.log.debug("Sending " + messageBytes + " from flow-control");
                }
 
                final int credits = creditsToSend;
@@ -774,7 +806,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // ---------------------------------------------------------------------------------------
 
-   /**
+   /** 
     * Sending a initial credit for slow consumers
     * */
    private void startSlowConsumer()
@@ -791,6 +823,25 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize == 0)
       {
          sendCredits(0);
+
+         // If resetting a slow consumer, we need to wait the execution
+         final CountDownLatch latch = new CountDownLatch(1);
+         flowControlExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         try
+         {
+            latch.await(10, TimeUnit.SECONDS);
+         }
+         catch (InterruptedException ignored)
+         {
+            // no big deal
+         }
       }
    }
 
@@ -808,7 +859,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          ClientConsumerImpl.log.trace("Adding Runner on Executor for delivery");
       }
-
+      
       sessionExecutor.execute(runner);
    }
 
@@ -817,7 +868,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    private void sendCredits(final int credits)
    {
-      channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+      flowControlExecutor.execute(new Runnable()
+      {
+         public void run()
+         {
+            channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+         }
+      });
    }
 
    private void waitForOnMessageToComplete(boolean waitForOnMessage)
@@ -859,7 +916,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-
+      
       session.workDone();
 
       // We pull the message from the buffer from inside the Runnable so we can ensure priority
@@ -878,6 +935,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             rateLimiter.limit();
          }
+         
+         failedOver = false;
 
          synchronized (this)
          {
@@ -891,7 +950,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                //Ignore, this could be a relic from a previous receiveImmediate();
                return;
             }
-
+            
+            
+            
             boolean expired = message.isExpired();
 
             flowControlBeforeConsumption(message);
@@ -904,7 +965,32 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   ClientConsumerImpl.log.trace("Calling handler.onMessage");
                }
-               theHandler.onMessage(message);
+               final ClassLoader originalLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+               {
+                  public ClassLoader run()
+                  {
+                     ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+
+                     Thread.currentThread().setContextClassLoader(contextClassLoader);
+
+                     return originalLoader;
+                  }
+               });
+               try
+               {
+                  theHandler.onMessage(message);
+               }
+               finally
+               {
+                  AccessController.doPrivileged(new PrivilegedAction<Object>()
+                  {
+                     public Object run()
+                     {
+                        Thread.currentThread().setContextClassLoader(originalLoader);
+                        return null;
+                     }
+                  });
+               }
 
                if (ClientConsumerImpl.isTrace)
                {
@@ -939,7 +1025,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Chunk messages will execute the flow control while receiving the chunks
       if (message.getFlowControlSize() != 0)
       {
-         flowControl(message.getFlowControlSize(), true);
+         // on large messages we should discount 1 on the first packets as we need continuity until the last packet
+         flowControl(message.getFlowControlSize(), !message.isLargeMessage());
       }
    }
 

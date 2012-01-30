@@ -13,13 +13,13 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A OneWayChainClusterTest
@@ -346,7 +346,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
       assertEquals(1, connectionSet.size());
       ClusterConnectionImpl ccon = (ClusterConnectionImpl) connectionSet.iterator().next();
 
-      Map<String, MessageFlowRecord> records =  ccon.getRecords();
+      long timeout = System.currentTimeMillis() + 5000;
+      Map<String, MessageFlowRecord> records = null;
+      while (timeout > System.currentTimeMillis())
+      {
+         records =  ccon.getRecords();
+         if (records != null && records.size() == 1)
+         {
+            break;
+         }
+      }
       assertNotNull(records);
       assertEquals(records.size(), 1);
       getServer(1).getClusterManager().getClusterConnections();

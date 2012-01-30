@@ -496,7 +496,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          return;
       }
-      SequentialFile file = jf.getFile().copy();
+      SequentialFile file = jf.getFile().cloneFile();
       try
       {
          log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);

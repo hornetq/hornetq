@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.xa.Xid;
@@ -122,57 +123,60 @@ import org.hornetq.utils.XidCodecSupport;
  */
 public class JournalStorageManager implements StorageManager
 {
-    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
+   private static final Logger log = Logger.getLogger(JournalStorageManager.class);
 
-    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
+   private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
-    // grouping journal record type
-    private static final byte GROUP_RECORD = 20;
+   // grouping journal record type
+   public static final byte GROUP_RECORD = 20;
 
-    // Bindings journal record type
+   // Bindings journal record type
 
-    private static final byte QUEUE_BINDING_RECORD = 21;
+   public static final byte QUEUE_BINDING_RECORD = 21;
 
-    public static final byte ID_COUNTER_RECORD = 24;
+   public static final byte ID_COUNTER_RECORD = 24;
 
-    private static final byte ADDRESS_SETTING_RECORD = 25;
+   public static final byte ADDRESS_SETTING_RECORD = 25;
 
-    private static final byte SECURITY_RECORD = 26;
+   public static final byte SECURITY_RECORD = 26;
 
-    // Message journal record types
+   // Message journal record types
 
-    // This is used when a large message is created but not yet stored on the system.
-   // Used to avoid temporary files missing
-    public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
+   // This is used when a large message is created but not yet stored on the system.
+   // We use this to avoid temporary files missing
+   public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
-    private static final byte ADD_LARGE_MESSAGE = 30;
+   public static final byte ADD_LARGE_MESSAGE = 30;
 
-    private static final byte ADD_MESSAGE = 31;
+   public static final byte ADD_MESSAGE = 31;
 
    public static final byte ADD_REF = 32;
 
-    private static final byte ACKNOWLEDGE_REF = 33;
+   public static final byte ACKNOWLEDGE_REF = 33;
 
-    public static final byte UPDATE_DELIVERY_COUNT = 34;
+   public static final byte UPDATE_DELIVERY_COUNT = 34;
 
-    public static final byte PAGE_TRANSACTION = 35;
+   public static final byte PAGE_TRANSACTION = 35;
 
-    private static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
+   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
-    private static final byte DUPLICATE_ID = 37;
+   public static final byte DUPLICATE_ID = 37;
 
-    private static final byte HEURISTIC_COMPLETION = 38;
+   public static final byte HEURISTIC_COMPLETION = 38;
 
-    public static final byte ACKNOWLEDGE_CURSOR = 39;
+   public static final byte ACKNOWLEDGE_CURSOR = 39;
 
-    private static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
+   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
-    private static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   
+   private final Semaphore pageMaxConcurrentIO;
 
-    private final BatchingIDGenerator idGenerator;
-    private final ReentrantReadWriteLock storageManagerLock = new ReentrantReadWriteLock(true);
+   private final BatchingIDGenerator idGenerator;
+   
+   private final ReentrantReadWriteLock storageManagerLock = new ReentrantReadWriteLock(true);
 
-    private ReplicationManager replicator;
+   private ReplicationManager replicator;
 
    public enum JournalContent
     {
@@ -193,41 +197,47 @@ public class JournalStorageManager implements StorageManager
          throw new InvalidParameterException("invalid byte: " + type);
         }
     }
-
+   
+   private final SequentialFileFactory journalFF;
+   
    private Journal messageJournal;
+
    private Journal bindingsJournal;
+
    private final Journal originalMessageJournal;
+
    private final Journal originalBindingsJournal;
+
    private final SequentialFileFactory largeMessagesFactory;
+   
+   private volatile boolean started;
 
-    private volatile boolean started;
+   /** Used to create Operation Contexts */
+   private final ExecutorFactory executorFactory;
 
-    /** Used to create Operation Contexts */
-    private final ExecutorFactory executorFactory;
+   private final Executor executor;
 
-    private final Executor executor;
+   private ExecutorService singleThreadExecutor;
 
-    private ExecutorService singleThreadExecutor;
+   private final boolean syncTransactional;
 
-    private final boolean syncTransactional;
+   private final boolean syncNonTransactional;
 
-    private final boolean syncNonTransactional;
+   private final int perfBlastPages;
 
-    private final int perfBlastPages;
+   private final boolean createBindingsDir;
 
-    private final boolean createBindingsDir;
+   private final String bindingsDir;
 
-    private final String bindingsDir;
+   private final boolean createJournalDir;
 
-    private final boolean createJournalDir;
+   private final String journalDir;
 
-    private final String journalDir;
+   private final String largeMessagesDirectory;
 
-    private final String largeMessagesDirectory;
+   private boolean journalLoaded = false;
 
-    private boolean journalLoaded = false;
-
-    // Persisted core configuration
+   // Persisted core configuration
    private final Map<SimpleString, PersistedRoles> mapPersistedRoles =
             new ConcurrentHashMap<SimpleString, PersistedRoles>();
 
@@ -253,20 +263,20 @@ public class JournalStorageManager implements StorageManager
          throw new NullPointerException("bindings-dir is null");
       }
 
-        createBindingsDir = config.isCreateBindingsDir();
+      createBindingsDir = config.isCreateBindingsDir();
 
-        journalDir = config.getJournalDirectory();
+      journalDir = config.getJournalDirectory();
 
-        SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, criticalErrorListener);
+      SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, criticalErrorListener);
 
-        Journal localBindings = new JournalImpl(1024 * 1024,
-                                                2,
-                                                config.getJournalCompactMinFiles(),
-                                                config.getJournalCompactPercentage(),
-                                                bindingsFF,
-                                                "hornetq-bindings",
-                                                "bindings",
-                                                1);
+      Journal localBindings = new JournalImpl(1024 * 1024,
+                                              2,
+                                              config.getJournalCompactMinFiles(),
+                                              config.getJournalCompactPercentage(),
+                                              bindingsFF,
+                                              "hornetq-bindings",
+                                              "bindings",
+                                              1);
 
       bindingsJournal = localBindings;
       originalBindingsJournal = localBindings;
@@ -276,33 +286,31 @@ public class JournalStorageManager implements StorageManager
          throw new NullPointerException("journal-dir is null");
       }
 
-        createJournalDir = config.isCreateJournalDir();
+      createJournalDir = config.isCreateJournalDir();
 
-        syncNonTransactional = config.isJournalSyncNonTransactional();
+      syncNonTransactional = config.isJournalSyncNonTransactional();
 
-        syncTransactional = config.isJournalSyncTransactional();
+      syncTransactional = config.isJournalSyncTransactional();
 
-        SequentialFileFactory journalFF = null;
+      if (config.getJournalType() == JournalType.ASYNCIO)
+      {
+         JournalStorageManager.log.info("Using AIO Journal");
 
-        if (config.getJournalType() == JournalType.ASYNCIO)
-            {
-                JournalStorageManager.log.info("Using AIO Journal");
-
-                journalFF = new AIOSequentialFileFactory(journalDir,
-                                                         config.getJournalBufferSize_AIO(),
-                                                         config.getJournalBufferTimeout_AIO(),
-                                                         config.isLogJournalWriteRate(),
-                                                         criticalErrorListener);
-            }
-        else if (config.getJournalType() == JournalType.NIO)
-            {
-                JournalStorageManager.log.info("Using NIO Journal");
-                journalFF = new NIOSequentialFileFactory(journalDir,
-                                                         true,
-                                                         config.getJournalBufferSize_NIO(),
-                                                         config.getJournalBufferTimeout_NIO(),
-                                                         config.isLogJournalWriteRate(),
-                                                         criticalErrorListener);
+         journalFF = new AIOSequentialFileFactory(journalDir,
+                                                  config.getJournalBufferSize_AIO(),
+                                                  config.getJournalBufferTimeout_AIO(),
+                                                  config.isLogJournalWriteRate(),
+                                                  criticalErrorListener);
+      }
+      else if (config.getJournalType() == JournalType.NIO)
+      {
+         JournalStorageManager.log.info("Using NIO Journal");
+         journalFF = new NIOSequentialFileFactory(journalDir,
+                                                  true,
+                                                  config.getJournalBufferSize_NIO(),
+                                                  config.getJournalBufferTimeout_NIO(),
+                                                  config.isLogJournalWriteRate(),
+                                                  criticalErrorListener);
       }
       else
       {
@@ -310,33 +318,45 @@ public class JournalStorageManager implements StorageManager
       }
 
       idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
-        Journal localMessage = new JournalImpl(config.getJournalFileSize(),
-                                               config.getJournalMinFiles(),
-                                               config.getJournalCompactMinFiles(),
-                                               config.getJournalCompactPercentage(),
-                                               journalFF,
-                                               "hornetq-data",
-                                               "hq",
-                                               config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
-                                               : config.getJournalMaxIO_NIO());
+
+      Journal localMessage = new JournalImpl(config.getJournalFileSize(),
+                                             config.getJournalMinFiles(),
+                                             config.getJournalCompactMinFiles(),
+                                             config.getJournalCompactPercentage(),
+                                             journalFF,
+                                             "hornetq-data",
+                                             "hq",
+                                             config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
+                                                                                           : config.getJournalMaxIO_NIO());
 
       messageJournal = localMessage;
       originalMessageJournal = localMessage;
 
       largeMessagesDirectory = config.getLargeMessagesDirectory();
+
       largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
+
       perfBlastPages = config.getJournalPerfBlastPages();
+      
+      if (config.getPageMaxConcurrentIO() != 1)
+      {
+         pageMaxConcurrentIO = new Semaphore(config.getPageMaxConcurrentIO());
+      }
+      else
+      {
+         pageMaxConcurrentIO = null;
+      }
    }
 
-    public void clearContext()
-    {
-        OperationContextImpl.clearContext();
-    }
+   public void clearContext()
+   {
+      OperationContextImpl.clearContext();
+   }
 
-    public boolean isReplicated()
-    {
-        return replicator != null;
-    }
+   public boolean isReplicated()
+   {
+      return replicator != null;
+   }
 
    /**
     * @param replicationManager
@@ -547,33 +567,34 @@ public class JournalStorageManager implements StorageManager
       replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
       return datafiles;
     }
+    
 
    @Override
    public void waitOnOperations() throws Exception
-    {
+   {
       if (!started)
       {
          JournalStorageManager.log.warn("Server is stopped");
          throw new IllegalStateException("Server is stopped");
       }
       waitOnOperations(0);
-    }
+   }
 
    @Override
-    public boolean waitOnOperations(final long timeout) throws Exception
-    {
+   public boolean waitOnOperations(final long timeout) throws Exception
+   {
       if (!started)
       {
          JournalStorageManager.log.warn("Server is stopped");
          throw new IllegalStateException("Server is stopped");
       }
       return getContext().waitCompletion(timeout);
-    }
+   }
 
    @Override
    public void pageClosed(final SimpleString storeName, final int pageNumber)
-    {
-        if (isReplicated())
+   {
+      if (isReplicated())
       {
          readLock();
          try
@@ -585,7 +606,7 @@ public class JournalStorageManager implements StorageManager
             readUnLock();
          }
       }
-    }
+   }
 
    @Override
    public void pageDeleted(final SimpleString storeName, final int pageNumber)
@@ -623,56 +644,55 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    public OperationContext getContext()
-    {
-        return OperationContextImpl.getContext(executorFactory);
-    }
+   public OperationContext getContext()
+   {
+      return OperationContextImpl.getContext(executorFactory);
+   }
 
-    public void setContext(final OperationContext context)
-    {
-        OperationContextImpl.setContext(context);
-    }
+   public void setContext(final OperationContext context)
+   {
+      OperationContextImpl.setContext(context);
+   }
 
-    public Executor getSingleThreadExecutor()
-    {
-        return singleThreadExecutor;
-    }
+   public Executor getSingleThreadExecutor()
+   {
+      return singleThreadExecutor;
+   }
 
-    public OperationContext newSingleThreadContext()
-    {
-        return newContext(singleThreadExecutor);
-    }
+   public OperationContext newSingleThreadContext()
+   {
+      return newContext(singleThreadExecutor);
+   }
 
-    public OperationContext newContext(final Executor executor)
-    {
-        return new OperationContextImpl(executor);
-    }
+   public OperationContext newContext(final Executor executor)
+   {
+      return new OperationContextImpl(executor);
+   }
 
-    public void afterCompleteOperations(final IOAsyncTask run)
-    {
-        getContext().executeOnCompletion(run);
-    }
+   public void afterCompleteOperations(final IOAsyncTask run)
+   {
+      getContext().executeOnCompletion(run);
+   }
 
-    public long generateUniqueID()
-    {
-        long id = idGenerator.generateID();
+   public long generateUniqueID()
+   {
+      long id = idGenerator.generateID();
 
-        return id;
-    }
+      return id;
+   }
 
-    public long getCurrentUniqueID()
-    {
-        return idGenerator.getCurrentID();
-    }
+   public long getCurrentUniqueID()
+   {
+      return idGenerator.getCurrentID();
+   }
 
-    public LargeServerMessage createLargeMessage()
-    {
-        return new LargeServerMessageImpl(this);
-    }
+   public LargeServerMessage createLargeMessage()
+   {
+      return new LargeServerMessageImpl(this);
+   }
 
-   public final void
-            addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
-      throws Exception
+   public final void addBytesToLargeMessage(final SequentialFile file, 
+                    final long messageId, final byte[] bytes) throws Exception
    {
       readLock();
       try
@@ -724,7 +744,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-      // Non transactional operations
+   // Non transactional operations
 
    public long storePendingLargeMessage(final long messageID) throws Exception
    {
@@ -933,7 +953,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-      // Transactional operations
+   // Transactional operations
 
    public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
    {
@@ -995,6 +1015,7 @@ public class JournalStorageManager implements StorageManager
          readUnLock();
       }
    }
+
 
    public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depages) throws Exception
    {
@@ -1061,9 +1082,9 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
-       */
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
+    */
       public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
       {
           readLock();
@@ -1097,7 +1118,7 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      public void deleteHeuristicCompletion(final long id) throws Exception
+     public void deleteHeuristicCompletion(final long id) throws Exception
       {
           readLock();
       try
@@ -1124,7 +1145,7 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
+     public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
       {
           ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(), ref.getQueue()
                                                                              .getID());
@@ -1156,10 +1177,10 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      public void commit(final long txID) throws Exception
-      {
-          commit(txID, true);
-      }
+   public void commit(final long txID) throws Exception
+   {
+      commit(txID, true);
+   }
 
       public void commit(final long txID, final boolean lineUpContext) throws Exception
       {
@@ -1192,6 +1213,7 @@ public class JournalStorageManager implements StorageManager
               readUnLock();
           }
       }
+
 
       public void storeDuplicateIDTransactional(final long txID,
                                                 final SimpleString address,
@@ -1304,9 +1326,10 @@ public class JournalStorageManager implements StorageManager
           return list;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
-       */
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
+    */
       public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
       {
 
@@ -1360,489 +1383,493 @@ public class JournalStorageManager implements StorageManager
               }
       }
 
-      public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
-                                                       final PagingManager pagingManager,
-                                                       final ResourceManager resourceManager,
-                                                       final Map<Long, Queue> queues,
-                                                       Map<Long, QueueBindingInfo> queueInfos,
-                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                       final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
-      {
-          List<RecordInfo> records = new ArrayList<RecordInfo>();
+   public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
+                                                    final PagingManager pagingManager,
+                                                    final ResourceManager resourceManager,
+                                                    final Map<Long, Queue> queues,
+                                                    Map<Long, QueueBindingInfo> queueInfos,
+                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                    final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+   {
+      List<RecordInfo> records = new ArrayList<RecordInfo>();
 
-          List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
+      List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-          Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+      Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
           readLock();
       try
           {
 
-              JournalLoadInformation info = messageJournal.load(records,
-                                                                preparedTransactions,
-                                                                new LargeMessageTXFailureCallback(messages));
+      JournalLoadInformation info = messageJournal.load(records,
+                                                        preparedTransactions,
+                                                        new LargeMessageTXFailureCallback(messages));
 
-              ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
+      ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
-              Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
+      Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
 
-              Map<Long, PageSubscription> pageSubscriptions = new HashMap<Long, PageSubscription>();
+      Map<Long, PageSubscription> pageSubscriptions = new HashMap<Long, PageSubscription>();
 
-              final int totalSize = records.size();
+      final int totalSize = records.size();
 
-              for (int reccount = 0; reccount < totalSize; reccount++)
-                  {
-                      // It will show log.info only with large journals (more than 1 million records)
-                      if (reccount > 0 && reccount % 1000000 == 0)
-                          {
-                              long percent = (long)((((double)reccount) / ((double)totalSize)) * 100f);
+      for (int reccount = 0; reccount < totalSize; reccount++)
+      {
+         // It will show log.info only with large journals (more than 1 million records)
+         if (reccount > 0 && reccount % 1000000 == 0)
+         {
+            long percent = (long)((((double)reccount) / ((double)totalSize)) * 100f);
 
-                              log.info(percent + "% loaded");
-                          }
+            log.info(percent + "% loaded");
+         }
 
-                      RecordInfo record = records.get(reccount);
-                      byte[] data = record.data;
+         RecordInfo record = records.get(reccount);
+         byte[] data = record.data;
 
-                      HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+         HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
-                      byte recordType = record.getUserRecordType();
+         byte recordType = record.getUserRecordType();
 
-                      switch (recordType)
-                          {
-                          case ADD_LARGE_MESSAGE_PENDING:
-                              {
-                                  PendingLargeMessageEncoding pending = new PendingLargeMessageEncoding();
+         switch (recordType)
+         {
+            case ADD_LARGE_MESSAGE_PENDING:
+            {
+               PendingLargeMessageEncoding pending = new PendingLargeMessageEncoding();
 
-                                  pending.decode(buff);
+               pending.decode(buff);
 
-                                  if (pendingLargeMessages != null)
-                                      {
-                                          // it could be null on tests, and we don't need anything on that case
-                                          pendingLargeMessages.add(new Pair<Long, Long>(record.id, pending.largeMessageID));
-                                      }
-                                  break;
-                              }
-                          case ADD_LARGE_MESSAGE:
-                              {
-                                  LargeServerMessage largeMessage = parseLargeMessage(messages, buff);
+               if (pendingLargeMessages != null)
+               {
+                  // it could be null on tests, and we don't need anything on that case
+                  pendingLargeMessages.add(new Pair<Long, Long>(record.id, pending.largeMessageID));
+               }
+               break;
+            }
+            case ADD_LARGE_MESSAGE:
+            {
+               LargeServerMessage largeMessage = parseLargeMessage(messages, buff);
 
-                                  messages.put(record.id, largeMessage);
+               messages.put(record.id, largeMessage);
 
-                                  largeMessages.add(largeMessage);
+               largeMessages.add(largeMessage);
 
-                                  break;
-                              }
-                          case ADD_MESSAGE:
-                              {
-                                  ServerMessage message = new ServerMessageImpl(record.id, 50);
+               break;
+            }
+            case ADD_MESSAGE:
+            {
+               ServerMessage message = new ServerMessageImpl(record.id, 50);
 
-                                  message.decode(buff);
+               message.decode(buff);
 
-                                  messages.put(record.id, message);
+               messages.put(record.id, message);
 
-                                  break;
-                              }
-                          case ADD_REF:
-                              {
-                                  long messageID = record.id;
+               break;
+            }
+            case ADD_REF:
+            {
+               long messageID = record.id;
 
-                                  RefEncoding encoding = new RefEncoding();
+               RefEncoding encoding = new RefEncoding();
 
-                                  encoding.decode(buff);
+               encoding.decode(buff);
 
-                                  Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-                                  if (queueMessages == null)
-                                      {
-                                          queueMessages = new LinkedHashMap<Long, AddMessageRecord>();
+               if (queueMessages == null)
+               {
+                  queueMessages = new LinkedHashMap<Long, AddMessageRecord>();
 
-                                          queueMap.put(encoding.queueID, queueMessages);
-                                      }
+                  queueMap.put(encoding.queueID, queueMessages);
+               }
 
-                                  ServerMessage message = messages.get(messageID);
+               ServerMessage message = messages.get(messageID);
 
-                                  if (message == null)
-                                      {
-                                          log.error("Cannot find message " + record.id);
-                                      }
-                                  else
-                                      {
-                                          queueMessages.put(messageID, new AddMessageRecord(message));
-                                      }
+               if (message == null)
+               {
+                  log.error("Cannot find message " + record.id);
+               }
+               else
+               {
+                  queueMessages.put(messageID, new AddMessageRecord(message));
+               }
 
-                                  break;
-                              }
-                          case ACKNOWLEDGE_REF:
-                              {
-                                  long messageID = record.id;
+               break;
+            }
+            case ACKNOWLEDGE_REF:
+            {
+               long messageID = record.id;
 
-                                  RefEncoding encoding = new RefEncoding();
+               RefEncoding encoding = new RefEncoding();
 
-                                  encoding.decode(buff);
+               encoding.decode(buff);
 
-                                  Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-                                  if (queueMessages == null)
-                                      {
-                                          log.error("Cannot find queue messages for queueID=" + encoding.queueID +
+               if (queueMessages == null)
+               {
+                  log.error("Cannot find queue messages for queueID=" + encoding.queueID +
                             " on ack for messageID=" +
-                                                    messageID);
-                                      }
-                                  else
-                                      {
-                                          AddMessageRecord rec = queueMessages.remove(messageID);
+                            messageID);
+               }
+               else
+               {
+                  AddMessageRecord rec = queueMessages.remove(messageID);
 
-                                          if (rec == null)
-                                              {
-                                                  log.error("Cannot find message " + messageID);
-                                              }
-                                      }
+                  if (rec == null)
+                  {
+                     log.error("Cannot find message " + messageID);
+                  }
+               }
 
-                                  break;
-                              }
-                          case UPDATE_DELIVERY_COUNT:
-                              {
-                                  long messageID = record.id;
+               break;
+            }
+            case UPDATE_DELIVERY_COUNT:
+            {
+               long messageID = record.id;
 
-                                  DeliveryCountUpdateEncoding encoding = new DeliveryCountUpdateEncoding();
+               DeliveryCountUpdateEncoding encoding = new DeliveryCountUpdateEncoding();
 
-                                  encoding.decode(buff);
+               encoding.decode(buff);
 
-                                  Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-                                  if (queueMessages == null)
-                                      {
-                                          log.warn("Cannot find queue " + encoding.queueID + " to update delivery count");
-                                      }
-                                  else
-                                      {
-                                          AddMessageRecord rec = queueMessages.get(messageID);
+               if (queueMessages == null)
+               {
+                  log.warn("Cannot find queue " + encoding.queueID + " to update delivery count");
+               }
+               else
+               {
+                  AddMessageRecord rec = queueMessages.get(messageID);
 
-                                          if (rec == null)
-                                              {
-                                                  log.warn("Cannot find message " + messageID + " to update delivery count");
-                                              }
-                                          else
-                                              {
-                                                  rec.deliveryCount = encoding.count;
-                                              }
-                                      }
+                  if (rec == null)
+                  {
+                     log.warn("Cannot find message " + messageID + " to update delivery count");
+                  }
+                  else
+                  {
+                     rec.deliveryCount = encoding.count;
+                  }
+               }
 
-                                  break;
-                              }
-                          case PAGE_TRANSACTION:
-                              {
-                                  if (record.isUpdate)
-                                      {
-                                          PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
+               break;
+            }
+            case PAGE_TRANSACTION:
+            {
+               if (record.isUpdate)
+               {
+                  PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
 
-                                          pageUpdate.decode(buff);
+                  pageUpdate.decode(buff);
 
-                                          PageTransactionInfo pageTX = pagingManager.getTransaction(pageUpdate.pageTX);
+                  PageTransactionInfo pageTX = pagingManager.getTransaction(pageUpdate.pageTX);
 
-                                          pageTX.onUpdate(pageUpdate.recods, null, null);
-                                      }
-                                  else
-                                      {
-                                          PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+                  pageTX.onUpdate(pageUpdate.recods, null, null);
+               }
+               else
+               {
+                  PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
 
-                                          pageTransactionInfo.decode(buff);
+                  pageTransactionInfo.decode(buff);
 
-                                          pageTransactionInfo.setRecordID(record.id);
+                  pageTransactionInfo.setRecordID(record.id);
 
-                                          pagingManager.addTransaction(pageTransactionInfo);
-                                      }
+                  pagingManager.addTransaction(pageTransactionInfo);
+               }
 
-                                  break;
-                              }
-                          case SET_SCHEDULED_DELIVERY_TIME:
-                              {
-                                  long messageID = record.id;
+               break;
+            }
+            case SET_SCHEDULED_DELIVERY_TIME:
+            {
+               long messageID = record.id;
 
-                                  ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+               ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
 
-                                  encoding.decode(buff);
+               encoding.decode(buff);
 
-                                  Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
+               Map<Long, AddMessageRecord> queueMessages = queueMap.get(encoding.queueID);
 
-                                  if (queueMessages == null)
-                                      {
-                                          log.error("Cannot find queue messages " + encoding.queueID +
+               if (queueMessages == null)
+               {
+                  log.error("Cannot find queue messages " + encoding.queueID +
                             " for message " +
                             messageID +
-                                                    " while processing scheduled messages");
-                                      }
-                                  else
-                                      {
+                            " while processing scheduled messages");
+               }
+               else
+               {
 
-                                          AddMessageRecord rec = queueMessages.get(messageID);
+                  AddMessageRecord rec = queueMessages.get(messageID);
 
-                                          if (rec == null)
-                                              {
-                                                  log.error("Cannot find message " + messageID);
-                                              }
-                                          else
-                                              {
-                                                  rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
-                                              }
-                                      }
-
-                                  break;
-                              }
-                          case DUPLICATE_ID:
-                              {
-                                  DuplicateIDEncoding encoding = new DuplicateIDEncoding();
-
-                                  encoding.decode(buff);
-
-                                  List<Pair<byte[], Long>> ids = duplicateIDMap.get(encoding.address);
-
-                                  if (ids == null)
-                                      {
-                                          ids = new ArrayList<Pair<byte[], Long>>();
-
-                                          duplicateIDMap.put(encoding.address, ids);
-                                      }
-
-                                  ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
-
-                                  break;
-                              }
-                          case HEURISTIC_COMPLETION:
-                              {
-                                  HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
-                                  encoding.decode(buff);
-                                  resourceManager.putHeuristicCompletion(record.id, encoding.xid, encoding.isCommit);
-                                  break;
-                              }
-                          case ACKNOWLEDGE_CURSOR:
-                              {
-                                  CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
-                                  encoding.decode(buff);
-
-                                  encoding.position.setRecordID(record.id);
-
-                                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
-
-                                  if (sub != null)
-                                      {
-                                          sub.reloadACK(encoding.position);
-                                      }
-                                  else
-                                      {
-                                          log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
-                                      }
-
-                                  break;
-                              }
-                          case PAGE_CURSOR_COUNTER_VALUE:
-                              {
-                                  PageCountRecord encoding = new PageCountRecord();
-
-                                  encoding.decode(buff);
-
-                                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
-
-                                  if (sub != null)
-                                      {
-                                          sub.getCounter().loadValue(record.id, encoding.value);
-                                      }
-                                  else
-                                      {
-                                          log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
-                                      }
-
-                                  break;
-                              }
-
-                          case PAGE_CURSOR_COUNTER_INC:
-                              {
-                                  PageCountRecordInc encoding = new PageCountRecordInc();
-
-                                  encoding.decode(buff);
-
-                                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
-
-                                  if (sub != null)
-                                      {
-                                          sub.getCounter().loadInc(record.id, encoding.value);
-                                      }
-                                  else
-                                      {
-                                          log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
-                                      }
-
-                                  break;
-                              }
-                          default:
-                              {
-                                  throw new IllegalStateException("Invalid record type " + recordType);
-                              }
-                          }
-
-                      // This will free up memory sooner. The record is not needed any more
-                      // and its byte array would consume memory during the load process even though it's not necessary any longer
-                      // what would delay processing time during load
-                      records.set(reccount, null);
-                  }
-
-              // Release the memory as soon as not needed any longer
-              records.clear();
-              records = null;
-
-              for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry : queueMap.entrySet())
+                  if (rec == null)
                   {
-                      long queueID = entry.getKey();
-
-                      Map<Long, AddMessageRecord> queueRecords = entry.getValue();
-
-                      Queue queue = queues.get(queueID);
-
-                      if (queue == null)
-                          {
-                              log.warn("Message for queue " + queueID + " which does not exist. This message will be ignored.");
-
-                              continue;
-                          }
-
-                      // Redistribution could install a Redistributor while we are still loading records, what will be an issue with
-                      // prepared ACKs
-                      // We make sure te Queue is paused before we reroute values.
-                      queue.pause();
-
-                      Collection<AddMessageRecord> valueRecords = queueRecords.values();
-
-                      long currentTime = System.currentTimeMillis();
-
-                      for (AddMessageRecord record : valueRecords)
-                          {
-                              long scheduledDeliveryTime = record.scheduledDeliveryTime;
-
-                              if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
-                                  {
-                                      scheduledDeliveryTime = 0;
-                                      record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-                                  }
-
-                              if (scheduledDeliveryTime != 0)
-                                  {
-                                      record.message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
-                                  }
-
-                              MessageReference ref = postOffice.reroute(record.message, queue, null);
-
-                              ref.setDeliveryCount(record.deliveryCount);
-
-                              if (scheduledDeliveryTime != 0)
-                                  {
-                                      record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-                                  }
-                          }
+                     log.error("Cannot find message " + messageID);
                   }
-
-              loadPreparedTransactions(postOffice,
-                                       pagingManager,
-                                       resourceManager,
-                                       queues,
-                                       queueInfos,
-                                       preparedTransactions,
-                                       duplicateIDMap,
-                                       pageSubscriptions,
-                                       pendingLargeMessages);
-
-              for (PageSubscription sub : pageSubscriptions.values())
+                  else
                   {
-                      sub.getCounter().processReload();
+                     rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
                   }
+               }
 
-              for (LargeServerMessage msg : largeMessages)
-                  {
-                      if (msg.getRefCount() == 0)
-                          {
-                              JournalStorageManager.log.debug("Large message: " + msg.getMessageID() +
-                                                              " didn't have any associated reference, file will be deleted");
-                              msg.decrementDelayDeletionCount();
-                          }
-                  }
+               break;
+            }
+            case DUPLICATE_ID:
+            {
+               DuplicateIDEncoding encoding = new DuplicateIDEncoding();
 
-              for (ServerMessage msg : messages.values())
-                  {
-                      if (msg.getRefCount() == 0)
-                          {
-                              log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
+               encoding.decode(buff);
+
+               List<Pair<byte[], Long>> ids = duplicateIDMap.get(encoding.address);
+
+               if (ids == null)
+               {
+                  ids = new ArrayList<Pair<byte[], Long>>();
+
+                  duplicateIDMap.put(encoding.address, ids);
+               }
+
+               ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
+
+               break;
+            }
+            case HEURISTIC_COMPLETION:
+            {
+               HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
+               encoding.decode(buff);
+               resourceManager.putHeuristicCompletion(record.id, encoding.xid, encoding.isCommit);
+               break;
+            }
+            case ACKNOWLEDGE_CURSOR:
+            {
+               CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+               encoding.decode(buff);
+
+               encoding.position.setRecordID(record.id);
+
+               PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+
+               if (sub != null)
+               {
+                  sub.reloadACK(encoding.position);
+               }
+               else
+               {
+                  log.info("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR, deleting record now");
+                  messageJournal.appendDeleteRecord(record.id, false);
+                  
+               }
+
+               break;
+            }
+            case PAGE_CURSOR_COUNTER_VALUE:
+            {
+               PageCountRecord encoding = new PageCountRecord();
+
+               encoding.decode(buff);
+
+               PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+
+               if (sub != null)
+               {
+                  sub.getCounter().loadValue(record.id, encoding.value);
+               }
+               else
+               {
+                  log.info("Can't find queue " + encoding.queueID + " while reloading PAGE_CURSOR_COUNTER_VALUE, deleting record now");
+                  messageJournal.appendDeleteRecord(record.id, false);
+               }
+
+               break;
+            }
+
+            case PAGE_CURSOR_COUNTER_INC:
+            {
+               PageCountRecordInc encoding = new PageCountRecordInc();
+
+               encoding.decode(buff);
+
+               PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+
+               if (sub != null)
+               {
+                  sub.getCounter().loadInc(record.id, encoding.value);
+               }
+               else
+               {
+                  log.info("Can't find queue " + encoding.queueID + " while reloading PAGE_CURSOR_COUNTER_INC, deleting record now");
+                  messageJournal.appendDeleteRecord(record.id, false);
+               }
+
+               break;
+            }
+            default:
+            {
+               throw new IllegalStateException("Invalid record type " + recordType);
+            }
+         }
+
+         // This will free up memory sooner. The record is not needed any more
+         // and its byte array would consume memory during the load process even though it's not necessary any longer
+         // what would delay processing time during load
+         records.set(reccount, null);
+      }
+
+      // Release the memory as soon as not needed any longer
+      records.clear();
+      records = null;
+
+      for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry : queueMap.entrySet())
+      {
+         long queueID = entry.getKey();
+
+         Map<Long, AddMessageRecord> queueRecords = entry.getValue();
+
+         Queue queue = queues.get(queueID);
+
+         if (queue == null)
+         {
+            log.warn("Message for queue " + queueID + " which does not exist. This message will be ignored.");
+
+            continue;
+         }
+
+         // Redistribution could install a Redistributor while we are still loading records, what will be an issue with
+         // prepared ACKs
+         // We make sure te Queue is paused before we reroute values.
+         queue.pause();
+
+         Collection<AddMessageRecord> valueRecords = queueRecords.values();
+
+         long currentTime = System.currentTimeMillis();
+
+         for (AddMessageRecord record : valueRecords)
+         {
+            long scheduledDeliveryTime = record.scheduledDeliveryTime;
+
+            if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
+            {
+               scheduledDeliveryTime = 0;
+               record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            }
+
+            if (scheduledDeliveryTime != 0)
+            {
+               record.message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
+            }
+
+            MessageReference ref = postOffice.reroute(record.message, queue, null);
+
+            ref.setDeliveryCount(record.deliveryCount);
+
+            if (scheduledDeliveryTime != 0)
+            {
+               record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            }
+         }
+      }
+
+      loadPreparedTransactions(postOffice,
+                               pagingManager,
+                               resourceManager,
+                               queues,
+                               queueInfos,
+                               preparedTransactions,
+                               duplicateIDMap,
+                               pageSubscriptions,
+                               pendingLargeMessages);
+
+      for (PageSubscription sub : pageSubscriptions.values())
+      {
+         sub.getCounter().processReload();
+      }
+
+      for (LargeServerMessage msg : largeMessages)
+      {
+         if (msg.getRefCount() == 0)
+         {
+            JournalStorageManager.log.info("Large message: " + msg.getMessageID() +
+                                            " didn't have any associated reference, file will be deleted");
+            msg.decrementDelayDeletionCount();
+         }
+      }
+
+      for (ServerMessage msg : messages.values())
+      {
+         if (msg.getRefCount() == 0)
+         {
+            log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
             try
-                {
-                    deleteMessage(msg.getMessageID());
-                }
+            {
+                deleteMessage(msg.getMessageID());
+            }
             catch (Exception ignored)
-                {
-                    log.warn("It wasn't possible to delete message " + msg.getMessageID());
-                }
-                          }
-                  }
+            {
+               log.warn("It wasn't possible to delete message " + msg.getMessageID(), ignored);
+            }
+         }
+      }
 
-              // To recover positions on Iterators
-              if (pagingManager != null)
-                  {
-                      // it could be null on certain tests that are not dealing with paging
-                      // This could also be the case in certain embedded conditions
-                      pagingManager.processReload();
-                  }
+      // To recover positions on Iterators
+      if (pagingManager != null)
+      {
+         // it could be null on certain tests that are not dealing with paging
+         // This could also be the case in certain embedded conditions
+         pagingManager.processReload();
+      }
 
-              if (perfBlastPages != -1)
-                  {
-                      messageJournal.perfBlast(perfBlastPages);
-                  }
+      if (perfBlastPages != -1)
+      {
+         messageJournal.perfBlast(perfBlastPages);
+      }
 
-              for (Queue queue : queues.values())
-                  {
-                      queue.resume();
-                  }
+      for (Queue queue : queues.values())
+      {
+         queue.resume();
+      }
 
-              if (System.getProperty("org.hornetq.opt.directblast") != null)
-                  {
-                      messageJournal.runDirectJournalBlast();
-                  }
-              journalLoaded = true;
-              return info;
+      if (System.getProperty("org.hornetq.opt.directblast") != null)
+      {
+         messageJournal.runDirectJournalBlast();
+      }
+      journalLoaded = true;
+      return info;
           }
       finally
           {
               readUnLock();
           }
+   }
+
+   /**
+    * @param queueID
+    * @param pageSubscriptions
+    * @param queueInfos
+    * @return
+    */
+   private static PageSubscription locateSubscription(final long queueID,
+                                               final Map<Long, PageSubscription> pageSubscriptions,
+                                               final Map<Long, QueueBindingInfo> queueInfos,
+                                               final PagingManager pagingManager) throws Exception
+   {
+
+      PageSubscription subs = pageSubscriptions.get(queueID);
+      if (subs == null)
+      {
+         QueueBindingInfo queueInfo = queueInfos.get(queueID);
+
+         if (queueInfo != null)
+         {
+            SimpleString address = queueInfo.getAddress();
+            PagingStore store = pagingManager.getPageStore(address);
+            subs = store.getCursorProvider().getSubscription(queueID);
+            pageSubscriptions.put(queueID, subs);
+         }
       }
 
-      /**
-       * @param queueID
-       * @param pageSubscriptions
-       * @param queueInfos
-       * @return
-       */
-      private static PageSubscription locateSubscription(final long queueID,
-                                                         final Map<Long, PageSubscription> pageSubscriptions,
-                                                         final Map<Long, QueueBindingInfo> queueInfos,
-                                                         final PagingManager pagingManager) throws Exception
-      {
+      return subs;
+   }
 
-          PageSubscription subs = pageSubscriptions.get(queueID);
-          if (subs == null)
-              {
-                  QueueBindingInfo queueInfo = queueInfos.get(queueID);
-
-                  if (queueInfo != null)
-                      {
-                          SimpleString address = queueInfo.getAddress();
-                          PagingStore store = pagingManager.getPageStore(address);
-                          subs = store.getCursorProvider().getSubscription(queueID);
-                          pageSubscriptions.put(queueID, subs);
-                      }
-              }
-
-          return subs;
-      }
-
-      // grouping handler operations
-      public void addGrouping(final GroupBinding groupBinding) throws Exception
-      {
+   // grouping handler operations
+   public void addGrouping(final GroupBinding groupBinding) throws Exception
+   {
       GroupingEncoding groupingEncoding = new GroupingEncoding(groupBinding.getId(),
                                                                groupBinding.getGroupId(),
                                                                groupBinding.getClusterName());
@@ -1856,10 +1883,10 @@ public class JournalStorageManager implements StorageManager
           {
               readUnLock();
           }
-    }
+   }
 
-    public void deleteGrouping(final GroupBinding groupBinding) throws Exception
-    {
+   public void deleteGrouping(final GroupBinding groupBinding) throws Exception
+   {
         readLock();
       try
           {
@@ -1869,21 +1896,22 @@ public class JournalStorageManager implements StorageManager
           {
               readUnLock();
           }
-    }
+   }
 
-    // Bindings operations
+   // Bindings operations
 
-    public void addQueueBinding(final Binding binding) throws Exception
-    {
-        Queue queue = (Queue)binding.getBindable();
+   public void addQueueBinding(final Binding binding) throws Exception
+   {
+      Queue queue = (Queue)binding.getBindable();
 
-        Filter filter = queue.getFilter();
+      Filter filter = queue.getFilter();
 
-        SimpleString filterString = filter == null ? null : filter.getFilterString();
+      SimpleString filterString = filter == null ? null : filter.getFilterString();
 
-        PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding(queue.getName(),
-                                                                                            binding.getAddress(),
-                                                                                            filterString);
+      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding(queue.getName(),
+                                                                                          binding.getAddress(),
+                                                                                          filterString);
+
         readLock();
       try
           {
@@ -1896,10 +1924,10 @@ public class JournalStorageManager implements StorageManager
           {
               readUnLock();
           }
-    }
+   }
 
-    public void deleteQueueBinding(final long queueBindingID) throws Exception
-    {
+   public void deleteQueueBinding(final long queueBindingID) throws Exception
+   {
         readLock();
       try
           {
@@ -1909,7 +1937,7 @@ public class JournalStorageManager implements StorageManager
           {
               readUnLock();
           }
-    }
+   }
 
     /* (non-Javadoc)
      * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
@@ -1932,9 +1960,9 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
-     */
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
+    */
     public long storePageCounterInc(long queueID, int value) throws Exception
     {
         readLock();
@@ -2013,80 +2041,80 @@ public class JournalStorageManager implements StorageManager
         describeJournal(bindingsFF, bindings);
     }
 
-    static void describeMessagesJournal(final String messagesDir) throws Exception
-    {
+   public static void describeMessagesJournal(final String messagesDir) throws Exception
+   {
 
-        SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
 
-        // Will use only default values. The load function should adapt to anything different
-        ConfigurationImpl defaultValues = new ConfigurationImpl();
+      // Will use only default values. The load function should adapt to anything different
+      ConfigurationImpl defaultValues = new ConfigurationImpl();
 
-        JournalImpl messagesJournal = new JournalImpl(defaultValues.getJournalFileSize(),
-                                                      defaultValues.getJournalMinFiles(),
-                                                      0,
-                                                      0,
-                                                      messagesFF,
-                                                      "hornetq-data",
-                                                      "hq",
-                                                      1);
+      JournalImpl messagesJournal = new JournalImpl(defaultValues.getJournalFileSize(),
+                                                    defaultValues.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
 
-        describeJournal(messagesFF, messagesJournal);
-    }
+      describeJournal(messagesFF, messagesJournal);
+   }
 
-    public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
-                                                     final List<GroupingInfo> groupingInfos) throws Exception
-    {
-        List<RecordInfo> records = new ArrayList<RecordInfo>();
+   public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
+                                                    final List<GroupingInfo> groupingInfos) throws Exception
+   {
+      List<RecordInfo> records = new ArrayList<RecordInfo>();
 
-        List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
+      List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-        JournalLoadInformation bindingsInfo = bindingsJournal.load(records, preparedTransactions, null);
+      JournalLoadInformation bindingsInfo = bindingsJournal.load(records, preparedTransactions, null);
 
-        for (RecordInfo record : records)
-            {
-                long id = record.id;
+      for (RecordInfo record : records)
+      {
+         long id = record.id;
 
-                HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(record.data);
+         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(record.data);
 
-                byte rec = record.getUserRecordType();
+         byte rec = record.getUserRecordType();
 
-                if (rec == JournalStorageManager.QUEUE_BINDING_RECORD)
-                    {
-                        PersistentQueueBindingEncoding bindingEncoding = newBindingEncoding(id, buffer);
+         if (rec == JournalStorageManager.QUEUE_BINDING_RECORD)
+         {
+            PersistentQueueBindingEncoding bindingEncoding = newBindingEncoding(id, buffer);
 
-                        queueBindingInfos.add(bindingEncoding);
-                    }
-                else if (rec == JournalStorageManager.ID_COUNTER_RECORD)
-                    {
-                        idGenerator.loadState(record.id, buffer);
-                    }
-                else if (rec == JournalStorageManager.GROUP_RECORD)
-                    {
-                        GroupingEncoding encoding = newGroupEncoding(id, buffer);
-                        groupingInfos.add(encoding);
-                    }
-                else if (rec == JournalStorageManager.ADDRESS_SETTING_RECORD)
-                    {
-                        PersistedAddressSetting setting = newAddressEncoding(id, buffer);
-                        mapPersistedAddressSettings.put(setting.getAddressMatch(), setting);
-                    }
-                else if (rec == JournalStorageManager.SECURITY_RECORD)
-                    {
-                        PersistedRoles roles = newSecurityRecord(id, buffer);
-                        mapPersistedRoles.put(roles.getAddressMatch(), roles);
-                    }
-                else
-                    {
-                        throw new IllegalStateException("Invalid record type " + rec);
-                    }
-            }
+            queueBindingInfos.add(bindingEncoding);
+         }
+         else if (rec == JournalStorageManager.ID_COUNTER_RECORD)
+         {
+            idGenerator.loadState(record.id, buffer);
+         }
+         else if (rec == JournalStorageManager.GROUP_RECORD)
+         {
+            GroupingEncoding encoding = newGroupEncoding(id, buffer);
+            groupingInfos.add(encoding);
+         }
+         else if (rec == JournalStorageManager.ADDRESS_SETTING_RECORD)
+         {
+            PersistedAddressSetting setting = newAddressEncoding(id, buffer);
+            mapPersistedAddressSettings.put(setting.getAddressMatch(), setting);
+         }
+         else if (rec == JournalStorageManager.SECURITY_RECORD)
+         {
+            PersistedRoles roles = newSecurityRecord(id, buffer);
+            mapPersistedRoles.put(roles.getAddressMatch(), roles);
+         }
+         else
+         {
+            throw new IllegalStateException("Invalid record type " + rec);
+         }
+      }
 
-        return bindingsInfo;
-    }
+      return bindingsInfo;
+   }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
-     */
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+    */
     public void lineUpContext()
     {
         readLock();
@@ -2100,72 +2128,73 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-    // HornetQComponent implementation
-    // ------------------------------------------------------
+   // HornetQComponent implementation
+   // ------------------------------------------------------
 
-    public synchronized void start() throws Exception
-    {
-        if (started)
-            {
-                return;
-            }
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         return;
+      }
 
-        checkAndCreateDir(bindingsDir, createBindingsDir);
+      checkAndCreateDir(bindingsDir, createBindingsDir);
 
-        checkAndCreateDir(journalDir, createJournalDir);
+      checkAndCreateDir(journalDir, createJournalDir);
 
-        checkAndCreateDir(largeMessagesDirectory, createJournalDir);
+      checkAndCreateDir(largeMessagesDirectory, createJournalDir);
 
-        cleanupIncompleteFiles();
+      cleanupIncompleteFiles();
 
-        singleThreadExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-IO-SingleThread",
-                                                                                          true,
-                                                                                          getThisClassLoader()));
+      singleThreadExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-IO-SingleThread",
+                                                                                        true,
+                                                                                        getThisClassLoader()));
 
-        bindingsJournal.start();
+      bindingsJournal.start();
 
-        messageJournal.start();
+      messageJournal.start();
 
-        started = true;
-    }
+      started = true;
+   }
 
-    public  void stop() throws Exception
-    {
-        stop(false);
-    }
+   public  void stop() throws Exception
+   {
+      stop(false);
+   }
 
-    public synchronized void stop(boolean ioCriticalError) throws Exception
-    {
-        if (!started)
-            {
-                return;
-            }
+   public synchronized void stop(boolean ioCriticalError) throws Exception
+   {
+      if (!started)
+      {
+         return;
+      }
 
-        if (!ioCriticalError && journalLoaded && idGenerator != null)
-            {
-                // Must call close to make sure last id is persisted
-                idGenerator.close();
-            }
+      if (!ioCriticalError && journalLoaded && idGenerator != null)
+      {
+         // Must call close to make sure last id is persisted
+         idGenerator.close();
+      }
 
       if (replicator != null)
          replicator.stop();
 
-        bindingsJournal.stop();
+      bindingsJournal.stop();
 
-        messageJournal.stop();
+      messageJournal.stop();
 
-        singleThreadExecutor.shutdown();
+      singleThreadExecutor.shutdown();
 
-        journalLoaded = false;
+      journalLoaded = false;
 
-        started = false;
-    }
+      started = false;
+   }
 
-    public synchronized boolean isStarted()
-    {
-        return started;
-    }
+   public synchronized boolean isStarted()
+   {
+      return started;
+   }
 
+    /** TODO: Is this still being used ? */
     public JournalLoadInformation[] loadInternalOnly() throws Exception
     {
       readLock();
@@ -2183,21 +2212,60 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    // Public -----------------------------------------------------------------------------------
 
-    public Journal getMessageJournal()
-    {
-        return messageJournal;
-    }
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#startPageRead()
+    */
+   public void beforePageRead() throws Exception
+   {
+      if (pageMaxConcurrentIO != null)
+      {
+         pageMaxConcurrentIO.acquire();
+      }
+   }
 
-    public Journal getBindingsJournal()
-    {
-        return bindingsJournal;
-    }
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
+    */
+   public void afterPageRead() throws Exception
+   {
+      if (pageMaxConcurrentIO != null)
+      {
+         pageMaxConcurrentIO.release();
+      }
+   }
 
-    // Package protected ---------------------------------------------
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(long)
+    */
+   public ByteBuffer allocateDirectBuffer(int size)
+   {
+      return journalFF.allocateDirectBuffer(size);
+   }
 
-    // This should be accessed from this package only
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
+    */
+   public void freeDirectBuffer(ByteBuffer buffer)
+   {
+      journalFF.releaseBuffer(buffer);
+   }
+
+   // Public -----------------------------------------------------------------------------------
+
+   public Journal getMessageJournal()
+   {
+      return messageJournal;
+   }
+
+   public Journal getBindingsJournal()
+   {
+      return bindingsJournal;
+   }
+
+   // Package protected ---------------------------------------------
+
+   // This should be accessed from this package only
    void deleteLargeMessageFile(final LargeServerMessage largeServerMessageImpl) throws HornetQException
     {
       final SequentialFile file = largeServerMessageImpl.getFile();
@@ -2243,326 +2311,337 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    /**
-     * @param messageID
-     * @return
-     */
+   SequentialFile createFileForLargeMessage(final long messageID, final boolean durable)
+   {
+      if (durable)
+      {
+    	 return createFileForLargeMessage(messageID, ".msg");
+      }
+      else
+      {
+     	 return createFileForLargeMessage(messageID, ".tmp");
+      }
+   }
+   
+   
    public SequentialFile createFileForLargeMessage(final long messageID, String extension)
-    {
-      return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
-    }
+   {
+	   return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
+   }
 
-    // Private ----------------------------------------------------------------------------------
 
-    private void checkAndCreateDir(final String dir, final boolean create)
-    {
-        File f = new File(dir);
+   // Private ----------------------------------------------------------------------------------
 
-        if (!f.exists())
+   private void checkAndCreateDir(final String dir, final boolean create)
+   {
+      File f = new File(dir);
+
+      if (!f.exists())
+      {
+         if (create)
+         {
+            if (!f.mkdirs())
             {
-                if (create)
-                    {
-                        if (!f.mkdirs())
-                            {
-                                throw new IllegalStateException("Failed to create directory " + dir);
-                            }
-                    }
-                else
-                    {
-                        throw new IllegalArgumentException("Directory " + dir + " does not exist and will not create it");
-                    }
+               throw new IllegalStateException("Failed to create directory " + dir);
             }
-    }
+         }
+         else
+         {
+            throw new IllegalArgumentException("Directory " + dir + " does not exist and will not create it");
+         }
+      }
+   }
 
-    /**
-     * @param messages
-     * @param buff
-     * @return
-     * @throws Exception
-     */
-    private LargeServerMessage parseLargeMessage(final Map<Long, ServerMessage> messages, final HornetQBuffer buff) throws Exception
-    {
-        LargeServerMessage largeMessage = createLargeMessage();
+   /**
+    * @param messages
+    * @param buff
+    * @return
+    * @throws Exception
+    */
+   private LargeServerMessage parseLargeMessage(final Map<Long, ServerMessage> messages, final HornetQBuffer buff) throws Exception
+   {
+      LargeServerMessage largeMessage = createLargeMessage();
 
-        LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+      LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 
-        messageEncoding.decode(buff);
+      messageEncoding.decode(buff);
 
-        if (largeMessage.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
+      if (largeMessage.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
+      {
+         // for compatibility: couple with old behaviour, copying the old file to avoid message loss
+         long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
+         
+         SequentialFile currentFile = createFileForLargeMessage(largeMessage.getMessageID(), true);
+         
+         if (!currentFile.exists())
+         {
+            SequentialFile linkedFile = createFileForLargeMessage(originalMessageID, true);
+            if (linkedFile.exists())
             {
-                long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
-
-                LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
-
-                if (originalMessage == null)
-                    {
-                        // this could happen if the message was deleted but the file still exists as the file still being used
-                        originalMessage = createLargeMessage();
-                        originalMessage.setDurable(true);
-                        originalMessage.setMessageID(originalMessageID);
-                        messages.put(originalMessageID, originalMessage);
-                    }
-
-                originalMessage.incrementDelayDeletionCount();
-
-                largeMessage.setLinkedMessage(originalMessage);
+               linkedFile.copyTo(currentFile);
+               linkedFile.close();
             }
-        return largeMessage;
-    }
+         }
+         
+         currentFile.close();
+      }
 
-    private void loadPreparedTransactions(final PostOffice postOffice,
-                                          final PagingManager pagingManager,
-                                          final ResourceManager resourceManager,
-                                          final Map<Long, Queue> queues,
-                                          final Map<Long, QueueBindingInfo> queueInfos,
-                                          final List<PreparedTransactionInfo> preparedTransactions,
-                                          final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                          final Map<Long, PageSubscription> pageSubscriptions,
-                                          final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
-    {
-        // recover prepared transactions
-        for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
+      return largeMessage;
+   }
+
+   private void loadPreparedTransactions(final PostOffice postOffice,
+                                         final PagingManager pagingManager,
+                                         final ResourceManager resourceManager,
+                                         final Map<Long, Queue> queues,
+                                         final Map<Long, QueueBindingInfo> queueInfos,
+                                         final List<PreparedTransactionInfo> preparedTransactions,
+                                         final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                         final Map<Long, PageSubscription> pageSubscriptions,
+                                         final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+   {
+      // recover prepared transactions
+      for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
+      {
+         XidEncoding encodingXid = new XidEncoding(preparedTransaction.extraData);
+
+         Xid xid = encodingXid.xid;
+
+         Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this);
+
+         List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
+
+         Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+
+         // Use same method as load message journal to prune out acks, so they don't get added.
+         // Then have reacknowledge(tx) methods on queue, which needs to add the page size
+
+         // first get any sent messages for this tx and recreate
+         for (RecordInfo record : preparedTransaction.records)
+         {
+            byte[] data = record.data;
+
+            HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+
+            byte recordType = record.getUserRecordType();
+
+            switch (recordType)
             {
-                XidEncoding encodingXid = new XidEncoding(preparedTransaction.extraData);
+               case ADD_LARGE_MESSAGE:
+               {
+                  messages.put(record.id, parseLargeMessage(messages, buff));
 
-                Xid xid = encodingXid.xid;
+                  break;
+               }
+               case ADD_MESSAGE:
+               {
+                  ServerMessage message = new ServerMessageImpl(record.id, 50);
 
-                Transaction tx = new TransactionImpl(preparedTransaction.id, xid, this);
+                  message.decode(buff);
 
-                List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
+                  messages.put(record.id, message);
 
-                Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+                  break;
+               }
+               case ADD_REF:
+               {
+                  long messageID = record.id;
 
-                // Use same method as load message journal to prune out acks, so they don't get added.
-                // Then have reacknowledge(tx) methods on queue, which needs to add the page size
+                  RefEncoding encoding = new RefEncoding();
 
-                // first get any sent messages for this tx and recreate
-                for (RecordInfo record : preparedTransaction.records)
-                    {
-                        byte[] data = record.data;
+                  encoding.decode(buff);
 
-                        HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+                  Queue queue = queues.get(encoding.queueID);
 
-                        byte recordType = record.getUserRecordType();
+                  if (queue == null)
+                  {
+                     log.warn("Message in prepared tx for queue " + encoding.queueID +
+                              " which does not exist. This message will be ignored.");
 
-                        switch (recordType)
-                            {
-                            case ADD_LARGE_MESSAGE:
-                                {
-                                    messages.put(record.id, parseLargeMessage(messages, buff));
+                  }
+                  else
+                  {
+                     ServerMessage message = messages.get(messageID);
 
-                                    break;
-                                }
-                            case ADD_MESSAGE:
-                                {
-                                    ServerMessage message = new ServerMessageImpl(record.id, 50);
+                     if (message == null)
+                     {
+                        throw new IllegalStateException("Cannot find message with id " + messageID);
+                     }
 
-                                    message.decode(buff);
+                     postOffice.reroute(message, queue, tx);
+                  }
 
-                                    messages.put(record.id, message);
+                  break;
+               }
+               case ACKNOWLEDGE_REF:
+               {
+                  long messageID = record.id;
 
-                                    break;
-                                }
-                            case ADD_REF:
-                                {
-                                    long messageID = record.id;
+                  RefEncoding encoding = new RefEncoding();
 
-                                    RefEncoding encoding = new RefEncoding();
+                  encoding.decode(buff);
 
-                                    encoding.decode(buff);
+                  Queue queue = queues.get(encoding.queueID);
 
-                                    Queue queue = queues.get(encoding.queueID);
+                  if (queue == null)
+                  {
+                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+                  }
 
-                                    if (queue == null)
-                                        {
-                                            log.warn("Message in prepared tx for queue " + encoding.queueID +
-                                                     " which does not exist. This message will be ignored.");
+                  MessageReference removed = queue.removeReferenceWithID(messageID);
 
-                                        }
-                                    else
-                                        {
-                                            ServerMessage message = messages.get(messageID);
+                  if (removed == null)
+                  {
+                     log.warn("Failed to remove reference for " + messageID);
+                  }
+                  else
+                  {
+                     referencesToAck.add(removed);
+                  }
 
-                                            if (message == null)
-                                                {
-                                                    throw new IllegalStateException("Cannot find message with id " + messageID);
-                                                }
+                  break;
+               }
+               case PAGE_TRANSACTION:
+               {
 
-                                            postOffice.reroute(message, queue, tx);
-                                        }
+                  PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
 
-                                    break;
-                                }
-                            case ACKNOWLEDGE_REF:
-                                {
-                                    long messageID = record.id;
+                  pageTransactionInfo.decode(buff);
 
-                                    RefEncoding encoding = new RefEncoding();
+                  if (record.isUpdate)
+                  {
+                     PageTransactionInfo pgTX = pagingManager.getTransaction(pageTransactionInfo.getTransactionID());
+                     pgTX.reloadUpdate(this, pagingManager, tx, pageTransactionInfo.getNumberOfMessages());
+                  }
+                  else
+                  {
+                     pageTransactionInfo.setCommitted(false);
 
-                                    encoding.decode(buff);
+                     tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
 
-                                    Queue queue = queues.get(encoding.queueID);
+                     pagingManager.addTransaction(pageTransactionInfo);
 
-                                    if (queue == null)
-                                        {
-                                            throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-                                        }
+                     tx.addOperation(new FinishPageMessageOperation());
+                  }
 
-                                    MessageReference removed = queue.removeReferenceWithID(messageID);
+                  break;
+               }
+               case SET_SCHEDULED_DELIVERY_TIME:
+               {
+                  // Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
+                  // case the message will already have the header for the scheduled delivery time, so no need to do
+                  // anything.
 
-                                    if (removed == null)
-                                        {
-                                            log.warn("Failed to remove reference for " + messageID);
-                                        }
-                                    else
-                                        {
-                                            referencesToAck.add(removed);
-                                        }
+                  break;
+               }
+               case DUPLICATE_ID:
+               {
+                  // We need load the duplicate ids at prepare time too
+                  DuplicateIDEncoding encoding = new DuplicateIDEncoding();
 
-                                    break;
-                                }
-                            case PAGE_TRANSACTION:
-                                {
+                  encoding.decode(buff);
 
-                                    PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
+                  DuplicateIDCache cache = postOffice.getDuplicateIDCache(encoding.address);
 
-                                    pageTransactionInfo.decode(buff);
+                  cache.load(tx, encoding.duplID);
 
-                                    if (record.isUpdate)
-                                        {
-                                            PageTransactionInfo pgTX = pagingManager.getTransaction(pageTransactionInfo.getTransactionID());
-                                            pgTX.reloadUpdate(this, pagingManager, tx, pageTransactionInfo.getNumberOfMessages());
-                                        }
-                                    else
-                                        {
-                                            pageTransactionInfo.setCommitted(false);
+                  break;
+               }
+               case ACKNOWLEDGE_CURSOR:
+               {
+                  CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+                  encoding.decode(buff);
 
-                                            tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
+                  encoding.position.setRecordID(record.id);
 
-                                            pagingManager.addTransaction(pageTransactionInfo);
+                  PageSubscription sub = locateSubscription(encoding.queueID,
+                                                            pageSubscriptions,
+                                                            queueInfos,
+                                                            pagingManager);
 
-                                            tx.addOperation(new FinishPageMessageOperation());
-                                        }
+                  if (sub != null)
+                  {
+                     sub.reloadPreparedACK(tx, encoding.position);
+                     referencesToAck.add(new PagedReferenceImpl(encoding.position, null, sub));
+                  }
+                  else
+                  {
+                     log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+                  }
+                  break;
+               }
+               case PAGE_CURSOR_COUNTER_VALUE:
+               {
+                  log.warn("PAGE_CURSOR_COUNTER_VALUE record used on a prepared statement, what shouldn't happen");
 
-                                    break;
-                                }
-                            case SET_SCHEDULED_DELIVERY_TIME:
-                                {
-                                    // Do nothing - for prepared txs, the set scheduled delivery time will only occur in a send in which
-                                    // case the message will already have the header for the scheduled delivery time, so no need to do
-                                    // anything.
+                  break;
+               }
 
-                                    break;
-                                }
-                            case DUPLICATE_ID:
-                                {
-                                    // We need load the duplicate ids at prepare time too
-                                    DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+               case PAGE_CURSOR_COUNTER_INC:
+               {
+                  PageCountRecordInc encoding = new PageCountRecordInc();
 
-                                    encoding.decode(buff);
+                  encoding.decode(buff);
 
-                                    DuplicateIDCache cache = postOffice.getDuplicateIDCache(encoding.address);
+                  PageSubscription sub = locateSubscription(encoding.queueID,
+                                                            pageSubscriptions,
+                                                            queueInfos,
+                                                            pagingManager);
 
-                                    cache.load(tx, encoding.duplID);
+                  if (sub != null)
+                  {
+                     sub.getCounter().applyIncrement(tx, record.id, encoding.value);
+                  }
+                  else
+                  {
+                     log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+                  }
 
-                                    break;
-                                }
-                            case ACKNOWLEDGE_CURSOR:
-                                {
-                                    CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
-                                    encoding.decode(buff);
+                  break;
+               }
 
-                                    encoding.position.setRecordID(record.id);
-
-                                    PageSubscription sub = locateSubscription(encoding.queueID,
-                                                                              pageSubscriptions,
-                                                                              queueInfos,
-                                                                              pagingManager);
-
-                                    if (sub != null)
-                                        {
-                                            sub.reloadPreparedACK(tx, encoding.position);
-                                            referencesToAck.add(new PagedReferenceImpl(encoding.position, null, sub));
-                                        }
-                                    else
-                                        {
-                                            log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
-                                        }
-                                    break;
-                                }
-                            case PAGE_CURSOR_COUNTER_VALUE:
-                                {
-                                    log.warn("PAGE_CURSOR_COUNTER_VALUE record used on a prepared statement, what shouldn't happen");
-
-                                    break;
-                                }
-
-                            case PAGE_CURSOR_COUNTER_INC:
-                                {
-                                    PageCountRecordInc encoding = new PageCountRecordInc();
-
-                                    encoding.decode(buff);
-
-                                    PageSubscription sub = locateSubscription(encoding.queueID,
-                                                                              pageSubscriptions,
-                                                                              queueInfos,
-                                                                              pagingManager);
-
-                                    if (sub != null)
-                                        {
-                                            sub.getCounter().applyIncrement(tx, record.id, encoding.value);
-                                        }
-                                    else
-                                        {
-                                            log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
-                                        }
-
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    JournalStorageManager.log.warn("InternalError: Record type " + recordType +
-                                                                   " not recognized. Maybe you're using journal files created on a different version");
-                                }
-                            }
-                    }
-
-                for (RecordInfo recordDeleted : preparedTransaction.recordsToDelete)
-                    {
-                        byte[] data = recordDeleted.data;
-
-                        if (data.length > 0)
-                            {
-                                HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
-                                byte b = buff.readByte();
-
-                                switch (b)
-                                    {
-                                    case ADD_LARGE_MESSAGE_PENDING:
-                                        {
-                                            long messageID = buff.readLong();
-                                            pendingLargeMessages.remove(new Pair<Long, Long>(recordDeleted.id, messageID));
-                                            installLargeMessageConfirmationOnTX(tx, recordDeleted.id);
-                                            break;
-                                        }
-                                    default:
-                                        log.warn("can't locate recordType=" + b + " on loadPreparedTransaction//deleteRecords");
-                                    }
-                            }
-
-                    }
-
-                for (MessageReference ack : referencesToAck)
-                    {
-                        ack.getQueue().reacknowledge(tx, ack);
-                    }
-
-                tx.setState(Transaction.State.PREPARED);
-
-                resourceManager.putTransaction(xid, tx);
+               default:
+               {
+                  JournalStorageManager.log.warn("InternalError: Record type " + recordType +
+                                                 " not recognized. Maybe you're using journal files created on a different version");
+               }
             }
-    }
+         }
+
+         for (RecordInfo recordDeleted : preparedTransaction.recordsToDelete)
+         {
+            byte[] data = recordDeleted.data;
+
+            if (data.length > 0)
+            {
+               HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+               byte b = buff.readByte();
+
+               switch (b)
+               {
+                  case ADD_LARGE_MESSAGE_PENDING:
+                  {
+                     long messageID = buff.readLong();
+                     pendingLargeMessages.remove(new Pair<Long, Long>(recordDeleted.id, messageID));
+                     installLargeMessageConfirmationOnTX(tx, recordDeleted.id);
+                     break;
+                  }
+                  default:
+                     log.warn("can't locate recordType=" + b + " on loadPreparedTransaction//deleteRecords");
+               }
+            }
+
+         }
+
+         for (MessageReference ack : referencesToAck)
+         {
+            ack.getQueue().reacknowledge(tx, ack);
+         }
+
+         tx.setState(Transaction.State.PREPARED);
+
+         resourceManager.putTransaction(xid, tx);
+      }
+   }
 
    private void cleanupIncompleteFiles() throws Exception
    {
@@ -2577,7 +2656,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private OperationContext getContext(final boolean sync)
+   protected OperationContext getContext(final boolean sync)
    {
       if (sync)
       {
@@ -2589,142 +2668,142 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    private static ClassLoader getThisClassLoader()
-    {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
-                                             {
-                                                 public ClassLoader run()
-                                                 {
-                                                     return JournalStorageManager.class.getClassLoader();
-                                                 }
-                                             });
-    }
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return JournalStorageManager.class.getClassLoader();
+         }
+      });
+   }
 
-    // Inner Classes
-    // ----------------------------------------------------------------------------
+   // Inner Classes
+   // ----------------------------------------------------------------------------
 
    private final static class DummyOperationContext implements OperationContext
    {
 
-       private static DummyOperationContext instance = new DummyOperationContext();
+      private static DummyOperationContext instance = new DummyOperationContext();
 
-       public static OperationContext getInstance()
-       {
-           return DummyOperationContext.instance;
-       }
+      public static OperationContext getInstance()
+      {
+         return DummyOperationContext.instance;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#executeOnCompletion(org.hornetq.core.journal.IOAsyncTask)
-        */
-       public void executeOnCompletion(final IOAsyncTask runnable)
-       {
-           // There are no executeOnCompletion calls while using the DummyOperationContext
-           // However we keep the code here for correctness
-           runnable.done();
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#executeOnCompletion(org.hornetq.core.journal.IOAsyncTask)
+       */
+      public void executeOnCompletion(final IOAsyncTask runnable)
+      {
+         // There are no executeOnCompletion calls while using the DummyOperationContext
+         // However we keep the code here for correctness
+         runnable.done();
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#replicationDone()
-        */
-       public void replicationDone()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#replicationDone()
+       */
+      public void replicationDone()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#replicationLineUp()
-        */
-       public void replicationLineUp()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#replicationLineUp()
+       */
+      public void replicationLineUp()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.IOCompletion#lineUp()
-        */
-       public void storeLineUp()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.IOCompletion#lineUp()
+       */
+      public void storeLineUp()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.asyncio.AIOCallback#done()
-        */
-       public void done()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.asyncio.AIOCallback#done()
+       */
+      public void done()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
-        */
-       public void onError(final int errorCode, final String errorMessage)
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
+       */
+      public void onError(final int errorCode, final String errorMessage)
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
-        */
-       public void waitCompletion()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
+       */
+      public void waitCompletion()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
-        */
-       public boolean waitCompletion(final long timeout)
-       {
-           return true;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
+       */
+      public boolean waitCompletion(final long timeout)
+      {
+         return true;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#pageLineUp()
-        */
-       public void pageSyncLineUp()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#pageLineUp()
+       */
+      public void pageSyncLineUp()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#pageDone()
-        */
-       public void pageSyncDone()
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#pageDone()
+       */
+      public void pageSyncDone()
+      {
+      }
 
    }
 
-    /** It's public as other classes may want to unparse data on tools*/
+   /** It's public as other classes may want to unparse data on tools*/
    public static class XidEncoding implements EncodingSupport
    {
-       public final Xid xid;
+      public final Xid xid;
 
-       XidEncoding(final Xid xid)
-       {
-           this.xid = xid;
-       }
+      XidEncoding(final Xid xid)
+      {
+         this.xid = xid;
+      }
 
-       XidEncoding(final byte[] data)
-       {
-           xid = XidCodecSupport.decodeXid(HornetQBuffers.wrappedBuffer(data));
-       }
+      XidEncoding(final byte[] data)
+      {
+         xid = XidCodecSupport.decodeXid(HornetQBuffers.wrappedBuffer(data));
+      }
 
-       public void decode(final HornetQBuffer buffer)
-       {
-           throw new IllegalStateException("Non Supported Operation");
-       }
+      public void decode(final HornetQBuffer buffer)
+      {
+         throw new IllegalStateException("Non Supported Operation");
+      }
 
-       public void encode(final HornetQBuffer buffer)
-       {
-           XidCodecSupport.encodeXid(xid, buffer);
-       }
+      public void encode(final HornetQBuffer buffer)
+      {
+         XidCodecSupport.encodeXid(xid, buffer);
+      }
 
-       public int getEncodeSize()
-       {
-           return XidCodecSupport.getXidEncodeLength(xid);
-       }
+      public int getEncodeSize()
+      {
+         return XidCodecSupport.getXidEncodeLength(xid);
+      }
    }
 
-   private static class HeuristicCompletionEncoding implements EncodingSupport
+   public static class HeuristicCompletionEncoding implements EncodingSupport
    {
-       public Xid xid;
+      public Xid xid;
 
-       public boolean isCommit;
+      public boolean isCommit;
 
       @Override
       public String toString()
@@ -2732,89 +2811,89 @@ public class JournalStorageManager implements StorageManager
          return "HeuristicCompletionEncoding [xid=" + xid + ", isCommit=" + isCommit + "]";
       }
 
-       HeuristicCompletionEncoding(final Xid xid, final boolean isCommit)
-       {
-           this.xid = xid;
-           this.isCommit = isCommit;
-       }
+      HeuristicCompletionEncoding(final Xid xid, final boolean isCommit)
+      {
+         this.xid = xid;
+         this.isCommit = isCommit;
+      }
 
-       HeuristicCompletionEncoding()
-       {
-       }
+      HeuristicCompletionEncoding()
+      {
+      }
 
-       public void decode(final HornetQBuffer buffer)
-       {
-           xid = XidCodecSupport.decodeXid(buffer);
-           isCommit = buffer.readBoolean();
-       }
+      public void decode(final HornetQBuffer buffer)
+      {
+         xid = XidCodecSupport.decodeXid(buffer);
+         isCommit = buffer.readBoolean();
+      }
 
-       public void encode(final HornetQBuffer buffer)
-       {
-           XidCodecSupport.encodeXid(xid, buffer);
-           buffer.writeBoolean(isCommit);
-       }
+      public void encode(final HornetQBuffer buffer)
+      {
+         XidCodecSupport.encodeXid(xid, buffer);
+         buffer.writeBoolean(isCommit);
+      }
 
-       public int getEncodeSize()
-       {
-           return XidCodecSupport.getXidEncodeLength(xid) + DataConstants.SIZE_BOOLEAN;
-       }
+      public int getEncodeSize()
+      {
+         return XidCodecSupport.getXidEncodeLength(xid) + DataConstants.SIZE_BOOLEAN;
+      }
    }
 
-   private static class GroupingEncoding implements EncodingSupport, GroupingInfo
-    {
-        public long id;
+   public static class GroupingEncoding implements EncodingSupport, GroupingInfo
+   {
+      public long id;
 
-        public SimpleString groupId;
+      public SimpleString groupId;
 
-        public SimpleString clusterName;
+      public SimpleString clusterName;
 
-        public GroupingEncoding(final long id, final SimpleString groupId, final SimpleString clusterName)
-        {
-            this.id = id;
-            this.groupId = groupId;
-            this.clusterName = clusterName;
-        }
+      public GroupingEncoding(final long id, final SimpleString groupId, final SimpleString clusterName)
+      {
+         this.id = id;
+         this.groupId = groupId;
+         this.clusterName = clusterName;
+      }
 
-        public GroupingEncoding()
-        {
-        }
+      public GroupingEncoding()
+      {
+      }
 
-        public int getEncodeSize()
-        {
-            return SimpleString.sizeofString(groupId) + SimpleString.sizeofString(clusterName);
-        }
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(groupId) + SimpleString.sizeofString(clusterName);
+      }
 
-        public void encode(final HornetQBuffer buffer)
-        {
-            buffer.writeSimpleString(groupId);
-            buffer.writeSimpleString(clusterName);
-        }
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeSimpleString(groupId);
+         buffer.writeSimpleString(clusterName);
+      }
 
-        public void decode(final HornetQBuffer buffer)
-        {
-            groupId = buffer.readSimpleString();
-            clusterName = buffer.readSimpleString();
-        }
+      public void decode(final HornetQBuffer buffer)
+      {
+         groupId = buffer.readSimpleString();
+         clusterName = buffer.readSimpleString();
+      }
 
-        public long getId()
-        {
-            return id;
-        }
+      public long getId()
+      {
+         return id;
+      }
 
-        public void setId(final long id)
-        {
-            this.id = id;
-        }
+      public void setId(final long id)
+      {
+         this.id = id;
+      }
 
-        public SimpleString getGroupId()
-        {
-            return groupId;
-        }
+      public SimpleString getGroupId()
+      {
+         return groupId;
+      }
 
-        public SimpleString getClusterName()
-        {
-            return clusterName;
-        }
+      public SimpleString getClusterName()
+      {
+         return clusterName;
+      }
 
       @Override
       public String toString()
@@ -2824,232 +2903,239 @@ public class JournalStorageManager implements StorageManager
    }
 
    public static class PersistentQueueBindingEncoding implements EncodingSupport, QueueBindingInfo
-    {
-        public long id;
+   {
+      public long id;
 
-        public SimpleString name;
+      public SimpleString name;
 
-        public SimpleString address;
+      public SimpleString address;
 
-        public SimpleString filterString;
+      public SimpleString filterString;
 
-        public PersistentQueueBindingEncoding()
-        {
-        }
+      public PersistentQueueBindingEncoding()
+      {
+      }
 
       @Override
       public String toString()
       {
-         return "PersistentQueueBindingEncoding [id=" + id + ", name=" + name + ", address=" + address +
-                  ", filterString=" + filterString + "]";
+         return "PersistentQueueBindingEncoding [id=" + id +
+                ", name=" +
+                name +
+                ", address=" +
+                address +
+                ", filterString=" +
+                filterString +
+                "]";
       }
 
-        public PersistentQueueBindingEncoding(final SimpleString name,
-                                              final SimpleString address,
-                                              final SimpleString filterString)
-        {
-            this.name = name;
-            this.address = address;
-            this.filterString = filterString;
-        }
+      public PersistentQueueBindingEncoding(final SimpleString name,
+                                            final SimpleString address,
+                                            final SimpleString filterString)
+      {
+         this.name = name;
+         this.address = address;
+         this.filterString = filterString;
+      }
 
-        public long getId()
-        {
-            return id;
-        }
+      public long getId()
+      {
+         return id;
+      }
 
-        public void setId(final long id)
-        {
-            this.id = id;
-        }
+      public void setId(final long id)
+      {
+         this.id = id;
+      }
 
-        public SimpleString getAddress()
-        {
-            return address;
-        }
+      public SimpleString getAddress()
+      {
+         return address;
+      }
 
-        public SimpleString getFilterString()
-        {
-            return filterString;
-        }
+      public SimpleString getFilterString()
+      {
+         return filterString;
+      }
 
-        public SimpleString getQueueName()
-        {
-            return name;
-        }
+      public SimpleString getQueueName()
+      {
+         return name;
+      }
 
-        public void decode(final HornetQBuffer buffer)
-        {
-            name = buffer.readSimpleString();
-            address = buffer.readSimpleString();
-            filterString = buffer.readNullableSimpleString();
-        }
+      public void decode(final HornetQBuffer buffer)
+      {
+         name = buffer.readSimpleString();
+         address = buffer.readSimpleString();
+         filterString = buffer.readNullableSimpleString();
+      }
 
-        public void encode(final HornetQBuffer buffer)
-        {
-            buffer.writeSimpleString(name);
-            buffer.writeSimpleString(address);
-            buffer.writeNullableSimpleString(filterString);
-        }
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeSimpleString(name);
+         buffer.writeSimpleString(address);
+         buffer.writeNullableSimpleString(filterString);
+      }
 
-        public int getEncodeSize()
-        {
-            return SimpleString.sizeofString(name) + SimpleString.sizeofString(address) +
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(name) + SimpleString.sizeofString(address) +
                 SimpleString.sizeofNullableString(filterString);
-        }
-    }
+      }
+   }
 
    public static class LargeMessageEncoding implements EncodingSupport
    {
-       public final LargeServerMessage message;
+      public final LargeServerMessage message;
 
-       public LargeMessageEncoding(final LargeServerMessage message)
-       {
-           this.message = message;
-       }
+      public LargeMessageEncoding(final LargeServerMessage message)
+      {
+         this.message = message;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
-        */
-       public void decode(final HornetQBuffer buffer)
-       {
-           message.decodeHeadersAndProperties(buffer);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void decode(final HornetQBuffer buffer)
+      {
+         message.decodeHeadersAndProperties(buffer);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
-        */
-       public void encode(final HornetQBuffer buffer)
-       {
-           message.encode(buffer);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void encode(final HornetQBuffer buffer)
+      {
+         message.encode(buffer);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
-       public int getEncodeSize()
-       {
-           return message.getEncodeSize();
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return message.getEncodeSize();
+      }
 
    }
 
    public static class PendingLargeMessageEncoding implements EncodingSupport
    {
-       public long largeMessageID;
+      public long largeMessageID;
 
-       public PendingLargeMessageEncoding(final long pendingLargeMessageID)
-       {
-           this.largeMessageID = pendingLargeMessageID;
-       }
+      public PendingLargeMessageEncoding(final long pendingLargeMessageID)
+      {
+         this.largeMessageID = pendingLargeMessageID;
+      }
 
-       public PendingLargeMessageEncoding()
-       {
-       }
+      public PendingLargeMessageEncoding()
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
-        */
-       public void decode(final HornetQBuffer buffer)
-       {
-           largeMessageID = buffer.readLong();
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void decode(final HornetQBuffer buffer)
+      {
+         largeMessageID = buffer.readLong();
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
-        */
-       public void encode(final HornetQBuffer buffer)
-       {
-           buffer.writeLong(largeMessageID);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeLong(largeMessageID);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
-       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_LONG;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG;
+      }
 
-       @Override
+      @Override
       public String toString()
-       {
-           return "PendingLargeMessageEncoding::MessageID=" + largeMessageID;
-       }
+      {
+         return "PendingLargeMessageEncoding::MessageID=" + largeMessageID;
+      }
 
    }
 
    public static class DeliveryCountUpdateEncoding implements EncodingSupport
    {
-       public long queueID;
+      public long queueID;
 
-       public int count;
+      public int count;
 
-       public DeliveryCountUpdateEncoding()
-       {
-           super();
-       }
+      public DeliveryCountUpdateEncoding()
+      {
+         super();
+      }
 
-       public DeliveryCountUpdateEncoding(final long queueID, final int count)
-       {
-           super();
-           this.queueID = queueID;
-           this.count = count;
-       }
+      public DeliveryCountUpdateEncoding(final long queueID, final int count)
+      {
+         super();
+         this.queueID = queueID;
+         this.count = count;
+      }
 
-       public void decode(final HornetQBuffer buffer)
-       {
-           queueID = buffer.readLong();
-           count = buffer.readInt();
-       }
+      public void decode(final HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         count = buffer.readInt();
+      }
 
-       public void encode(final HornetQBuffer buffer)
-       {
-           buffer.writeLong(queueID);
-           buffer.writeInt(count);
-       }
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeInt(count);
+      }
 
-       public int getEncodeSize()
-       {
-           return 8 + 4;
-       }
+      public int getEncodeSize()
+      {
+         return 8 + 4;
+      }
 
       @Override
       public String toString()
       {
          return "DeliveryCountUpdateEncoding [queueID=" + queueID + ", count=" + count + "]";
       }
+
    }
 
    public static class QueueEncoding implements EncodingSupport
    {
-       public long queueID;
+      public long queueID;
 
-       public QueueEncoding(final long queueID)
-       {
-           super();
-           this.queueID = queueID;
-       }
+      public QueueEncoding(final long queueID)
+      {
+         super();
+         this.queueID = queueID;
+      }
 
-       public QueueEncoding()
-       {
-           super();
-       }
+      public QueueEncoding()
+      {
+         super();
+      }
 
-       public void decode(final HornetQBuffer buffer)
-       {
-           queueID = buffer.readLong();
-       }
+      public void decode(final HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+      }
 
-       public void encode(final HornetQBuffer buffer)
-       {
-           buffer.writeLong(queueID);
-       }
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+      }
 
-       public int getEncodeSize()
-       {
-           return 8;
-       }
+      public int getEncodeSize()
+      {
+         return 8;
+      }
 
       @Override
       public String toString()
@@ -3059,11 +3145,16 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class DeleteEncoding extends QueueEncoding
+   public static class DeleteEncoding implements EncodingSupport
    {
       public byte recordType;
 
       public long id;
+
+      public DeleteEncoding()
+      {
+         super();
+      }
 
       public DeleteEncoding(final byte recordType, final long id)
       {
@@ -3071,47 +3162,47 @@ public class JournalStorageManager implements StorageManager
          this.id = id;
       }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
        @Override
       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
-       }
+      {
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-        */
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
        @Override
       public void encode(HornetQBuffer buffer)
-       {
-           buffer.writeByte(recordType);
-           buffer.writeLong(id);
-       }
+      {
+         buffer.writeByte(recordType);
+         buffer.writeLong(id);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-        */
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
        @Override
       public void decode(HornetQBuffer buffer)
-       {
-           recordType = buffer.readByte();
-           id = buffer.readLong();
-       }
+      {
+         recordType = buffer.readByte();
+         id = buffer.readLong();
+      }
    }
 
    public static class RefEncoding extends QueueEncoding
    {
-       public RefEncoding()
-       {
-           super();
-       }
+      public RefEncoding()
+      {
+         super();
+      }
 
-       public RefEncoding(final long queueID)
-       {
-           super(queueID);
-       }
+      public RefEncoding(final long queueID)
+      {
+         super(queueID);
+      }
    }
 
    public static class PageUpdateTXEncoding implements EncodingSupport
@@ -3127,48 +3218,48 @@ public class JournalStorageManager implements StorageManager
          return "PageUpdateTXEncoding [pageTX=" + pageTX + ", recods=" + recods + "]";
       }
 
-       public PageUpdateTXEncoding()
-       {
-       }
+      public PageUpdateTXEncoding()
+      {
+      }
 
-       public PageUpdateTXEncoding(final long pageTX, final int records)
-       {
-           this.pageTX = pageTX;
-           this.recods = records;
-       }
+      public PageUpdateTXEncoding(final long pageTX, final int records)
+      {
+         this.pageTX = pageTX;
+         this.recods = records;
+      }
 
-       public void decode(HornetQBuffer buffer)
-       {
-           this.pageTX = buffer.readLong();
-           this.recods = buffer.readInt();
-       }
+      public void decode(HornetQBuffer buffer)
+      {
+         this.pageTX = buffer.readLong();
+         this.recods = buffer.readInt();
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void encode(HornetQBuffer buffer)
-       {
-           buffer.writeLong(pageTX);
-           buffer.writeInt(recods);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(pageTX);
+         buffer.writeInt(recods);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
-       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+      }
 
-       public List<MessageReference> getRelatedMessageReferences()
-       {
-           return null;
-       }
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
    }
 
-   private static class ScheduledDeliveryEncoding extends QueueEncoding
+   public static class ScheduledDeliveryEncoding extends QueueEncoding
    {
-       long scheduledDeliveryTime;
+      long scheduledDeliveryTime;
 
       @Override
       public String toString()
@@ -3176,141 +3267,141 @@ public class JournalStorageManager implements StorageManager
          return "ScheduledDeliveryEncoding [scheduledDeliveryTime=" + scheduledDeliveryTime + "]";
       }
 
-       private ScheduledDeliveryEncoding(final long scheduledDeliveryTime, final long queueID)
-       {
-           super(queueID);
-           this.scheduledDeliveryTime = scheduledDeliveryTime;
-       }
+      private ScheduledDeliveryEncoding(final long scheduledDeliveryTime, final long queueID)
+      {
+         super(queueID);
+         this.scheduledDeliveryTime = scheduledDeliveryTime;
+      }
 
-       public ScheduledDeliveryEncoding()
-       {
-       }
-
-      @Override
-          public int getEncodeSize()
-       {
-           return super.getEncodeSize() + 8;
-       }
+      public ScheduledDeliveryEncoding()
+      {
+      }
 
       @Override
-          public void encode(final HornetQBuffer buffer)
-       {
-           super.encode(buffer);
-           buffer.writeLong(scheduledDeliveryTime);
-       }
+      public int getEncodeSize()
+      {
+         return super.getEncodeSize() + 8;
+      }
 
       @Override
-          public void decode(final HornetQBuffer buffer)
-       {
-           super.decode(buffer);
-           scheduledDeliveryTime = buffer.readLong();
-       }
+      public void encode(final HornetQBuffer buffer)
+      {
+         super.encode(buffer);
+         buffer.writeLong(scheduledDeliveryTime);
+      }
+
+      @Override
+      public void decode(final HornetQBuffer buffer)
+      {
+         super.decode(buffer);
+         scheduledDeliveryTime = buffer.readLong();
+      }
    }
 
    public static class DuplicateIDEncoding implements EncodingSupport
    {
-       SimpleString address;
+      SimpleString address;
 
-       byte[] duplID;
+      byte[] duplID;
 
-       public DuplicateIDEncoding(final SimpleString address, final byte[] duplID)
-       {
-           this.address = address;
+      public DuplicateIDEncoding(final SimpleString address, final byte[] duplID)
+      {
+         this.address = address;
 
-           this.duplID = duplID;
-       }
+         this.duplID = duplID;
+      }
 
-       public DuplicateIDEncoding()
-       {
-       }
+      public DuplicateIDEncoding()
+      {
+      }
 
-       public void decode(final HornetQBuffer buffer)
-       {
-           address = buffer.readSimpleString();
+      public void decode(final HornetQBuffer buffer)
+      {
+         address = buffer.readSimpleString();
 
-           int size = buffer.readInt();
+         int size = buffer.readInt();
 
-           duplID = new byte[size];
+         duplID = new byte[size];
 
-           buffer.readBytes(duplID);
-       }
+         buffer.readBytes(duplID);
+      }
 
-       public void encode(final HornetQBuffer buffer)
-       {
-           buffer.writeSimpleString(address);
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeSimpleString(address);
 
-           buffer.writeInt(duplID.length);
+         buffer.writeInt(duplID.length);
 
-           buffer.writeBytes(duplID);
-       }
+         buffer.writeBytes(duplID);
+      }
 
-       public int getEncodeSize()
-       {
-           return SimpleString.sizeofString(address) + DataConstants.SIZE_INT + duplID.length;
-       }
+      public int getEncodeSize()
+      {
+         return SimpleString.sizeofString(address) + DataConstants.SIZE_INT + duplID.length;
+      }
 
       @Override
       public String toString()
       {
-           // this would be useful when testing. Most tests on the testsuite will use a SimpleString on the duplicate ID
-           // and this may be useful to validate the journal on those tests
-           // You may uncomment these two lines on that case and replcate the toString for the PrintData
+         // this would be useful when testing. Most tests on the testsuite will use a SimpleString on the duplicate ID
+         // and this may be useful to validate the journal on those tests
+         // You may uncomment these two lines on that case and replcate the toString for the PrintData
 
-           // SimpleString simpleStr = new SimpleString(duplID);
-           // return "DuplicateIDEncoding [address=" + address + ", duplID=" + simpleStr + "]";
+         // SimpleString simpleStr = new SimpleString(duplID);
+         // return "DuplicateIDEncoding [address=" + address + ", duplID=" + simpleStr + "]";
 
-           return "DuplicateIDEncoding [address=" + address + ", duplID=" + Arrays.toString(duplID) + "]";
-       }
+         return "DuplicateIDEncoding [address=" + address + ", duplID=" + Arrays.toString(duplID) + "]";
+      }
 
    }
 
    private static class FinishPageMessageOperation implements TransactionOperation
    {
 
-       public void afterCommit(final Transaction tx)
-       {
-           // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
-           // transaction until all the messages were added to the queue
-           // or else we could deliver the messages out of order
+      public void afterCommit(final Transaction tx)
+      {
+         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
+         // transaction until all the messages were added to the queue
+         // or else we could deliver the messages out of order
 
-           PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
 
-           if (pageTransaction != null)
-               {
-                   pageTransaction.commit();
-               }
-       }
+         if (pageTransaction != null)
+         {
+            pageTransaction.commit();
+         }
+      }
 
-       public void afterPrepare(final Transaction tx)
-       {
-       }
+      public void afterPrepare(final Transaction tx)
+      {
+      }
 
-       public void afterRollback(final Transaction tx)
-       {
-           PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+      public void afterRollback(final Transaction tx)
+      {
+         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
 
-           if (tx.getState() == State.PREPARED && pageTransaction != null)
-               {
-                   pageTransaction.rollback();
-               }
-       }
+         if (tx.getState() == State.PREPARED && pageTransaction != null)
+         {
+            pageTransaction.rollback();
+         }
+      }
 
-       public void beforeCommit(final Transaction tx) throws Exception
-       {
-       }
+      public void beforeCommit(final Transaction tx) throws Exception
+      {
+      }
 
-       public void beforePrepare(final Transaction tx) throws Exception
-       {
-       }
+      public void beforePrepare(final Transaction tx) throws Exception
+      {
+      }
 
-       public void beforeRollback(final Transaction tx) throws Exception
-       {
-       }
+      public void beforeRollback(final Transaction tx) throws Exception
+      {
+      }
 
-       public List<MessageReference> getRelatedMessageReferences()
-       {
-           return null;
-       }
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
 
    }
 
@@ -3323,40 +3414,40 @@ public class JournalStorageManager implements StorageManager
          return "PageCountRecord [queueID=" + queueID + ", value=" + value + "]";
       }
 
-       PageCountRecord()
-       {
+      PageCountRecord()
+      {
 
-       }
+      }
 
-       PageCountRecord(long queueID, long value)
-       {
-           this.queueID = queueID;
-           this.value = value;
-       }
+      PageCountRecord(long queueID, long value)
+      {
+         this.queueID = queueID;
+         this.value = value;
+      }
 
-       long queueID;
+      long queueID;
 
-       long value;
-
-      @Override
-       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_LONG * 2;
-       }
+      long value;
 
       @Override
-       public void encode(HornetQBuffer buffer)
-       {
-           buffer.writeLong(queueID);
-           buffer.writeLong(value);
-       }
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG * 2;
+      }
+
+      @Override
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeLong(value);
+      }
 
       @Override
       public void decode(HornetQBuffer buffer)
-       {
-           queueID = buffer.readLong();
-           value = buffer.readLong();
-       }
+      {
+         queueID = buffer.readLong();
+         value = buffer.readLong();
+      }
 
    }
 
@@ -3369,75 +3460,75 @@ public class JournalStorageManager implements StorageManager
          return "PageCountRecordInc [queueID=" + queueID + ", value=" + value + "]";
       }
 
-       PageCountRecordInc()
-       {
+      PageCountRecordInc()
+      {
 
-       }
+      }
 
-       PageCountRecordInc(long queueID, int value)
-       {
-           this.queueID = queueID;
-           this.value = value;
-       }
+      PageCountRecordInc(long queueID, int value)
+      {
+         this.queueID = queueID;
+         this.value = value;
+      }
 
-       long queueID;
+      long queueID;
 
-       int value;
+      int value;
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
-       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void encode(HornetQBuffer buffer)
-       {
-           buffer.writeLong(queueID);
-           buffer.writeInt(value);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeInt(value);
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void decode(HornetQBuffer buffer)
-       {
-           queueID = buffer.readLong();
-           value = buffer.readInt();
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void decode(HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         value = buffer.readInt();
+      }
 
    }
 
    private static final class AddMessageRecord
    {
-       public AddMessageRecord(final ServerMessage message)
-       {
-           this.message = message;
-       }
+      public AddMessageRecord(final ServerMessage message)
+      {
+         this.message = message;
+      }
 
-       final ServerMessage message;
+      final ServerMessage message;
 
-       long scheduledDeliveryTime;
+      long scheduledDeliveryTime;
 
-       int deliveryCount;
+      int deliveryCount;
    }
 
    public static final class CursorAckRecordEncoding implements EncodingSupport
    {
-       public CursorAckRecordEncoding(final long queueID, final PagePosition position)
-       {
-           this.queueID = queueID;
-           this.position = position;
-       }
+      public CursorAckRecordEncoding(final long queueID, final PagePosition position)
+      {
+         this.queueID = queueID;
+         this.position = position;
+      }
 
-       public CursorAckRecordEncoding()
-       {
-           this.position = new PagePositionImpl();
-       }
+      public CursorAckRecordEncoding()
+      {
+         this.position = new PagePositionImpl();
+      }
 
       @Override
       public String toString()
@@ -3445,38 +3536,38 @@ public class JournalStorageManager implements StorageManager
          return "CursorAckRecordEncoding [queueID=" + queueID + ", position=" + position + "]";
       }
 
-       public long queueID;
+      public long queueID;
 
-       public PagePosition position;
+      public PagePosition position;
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
-       public int getEncodeSize()
-       {
-           return DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void encode(HornetQBuffer buffer)
-       {
-           buffer.writeLong(queueID);
-           buffer.writeLong(position.getPageNr());
-           buffer.writeInt(position.getMessageNr());
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeLong(position.getPageNr());
+         buffer.writeInt(position.getMessageNr());
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void decode(HornetQBuffer buffer)
-       {
-           queueID = buffer.readLong();
-           long pageNR = buffer.readLong();
-           int messageNR = buffer.readInt();
-           this.position = new PagePositionImpl(pageNR, messageNR);
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void decode(HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         long pageNR = buffer.readLong();
+         int messageNR = buffer.readInt();
+         this.position = new PagePositionImpl(pageNR, messageNR);
+      }
    }
 
    private class LargeMessageTXFailureCallback implements TransactionFailureCallback
@@ -3489,8 +3580,9 @@ public class JournalStorageManager implements StorageManager
          this.messages = messages;
       }
 
-      public void failedTransaction(final long transactionID, final List<RecordInfo> records,
-         final List<RecordInfo> recordsToDelete)
+      public void failedTransaction(final long transactionID,
+                                    final List<RecordInfo> records,
+                                    final List<RecordInfo> recordsToDelete)
       {
          for (RecordInfo record : records)
          {
@@ -3512,12 +3604,18 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
+
    }
 
    private static String describeRecord(RecordInfo info)
    {
-      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" +
-               newObjectEncoding(info);
+      return "recordID=" + info.id +
+             ";userRecordType=" +
+             info.userRecordType +
+             ";isUpdate=" +
+             info.isUpdate +
+             ";" +
+             newObjectEncoding(info);
    }
 
    private static String describeRecord(RecordInfo info, Object o)
@@ -3525,302 +3623,302 @@ public class JournalStorageManager implements StorageManager
       return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
    }
 
-    // Encoding functions for binding Journal
+   // Encoding functions for binding Journal
 
-    public static Object newObjectEncoding(RecordInfo info)
-    {
-        HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
-        long id = info.id;
-        int rec = info.getUserRecordType();
+   public static Object newObjectEncoding(RecordInfo info)
+   {
+      HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
+      long id = info.id;
+      int rec = info.getUserRecordType();
 
-        switch (rec)
+      switch (rec)
+      {
+         case ADD_LARGE_MESSAGE_PENDING:
+         {
+            PendingLargeMessageEncoding lmEncoding = new PendingLargeMessageEncoding();
+            lmEncoding.decode(buffer);
+
+            return lmEncoding;
+         }
+         case ADD_LARGE_MESSAGE:
+         {
+
+            LargeServerMessage largeMessage = new LargeServerMessageImpl(null);
+
+            LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+
+            messageEncoding.decode(buffer);
+
+            return new MessageDescribe(largeMessage);
+         }
+         case ADD_MESSAGE:
+         {
+            ServerMessage message = new ServerMessageImpl(rec, 50);
+
+            message.decode(buffer);
+
+            return new MessageDescribe(message);
+         }
+         case ADD_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new ReferenceDescribe(encoding);
+         }
+
+         case ACKNOWLEDGE_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new AckDescribe(encoding);
+         }
+
+         case UPDATE_DELIVERY_COUNT:
+         {
+            DeliveryCountUpdateEncoding updateDeliveryCount = new DeliveryCountUpdateEncoding();
+            updateDeliveryCount.decode(buffer);
+            return updateDeliveryCount;
+         }
+
+         case PAGE_TRANSACTION:
+         {
+            if (info.isUpdate)
             {
-            case ADD_LARGE_MESSAGE_PENDING:
-                {
-                    PendingLargeMessageEncoding lmEncoding = new PendingLargeMessageEncoding();
-                    lmEncoding.decode(buffer);
+               PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
 
-                    return lmEncoding;
-                }
-            case ADD_LARGE_MESSAGE:
-                {
+               pageUpdate.decode(buffer);
 
-                    LargeServerMessage largeMessage = new LargeServerMessageImpl(null);
-
-                    LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
-
-                    messageEncoding.decode(buffer);
-
-                    return new MessageDescribe(largeMessage);
-                }
-            case ADD_MESSAGE:
-                {
-                    ServerMessage message = new ServerMessageImpl(rec, 50);
-
-                    message.decode(buffer);
-
-                    return new MessageDescribe(message);
-                }
-            case ADD_REF:
-                {
-                    final RefEncoding encoding = new RefEncoding();
-                    encoding.decode(buffer);
-                    return new ReferenceDescribe(encoding);
-                }
-
-            case ACKNOWLEDGE_REF:
-                {
-                    final RefEncoding encoding = new RefEncoding();
-                    encoding.decode(buffer);
-                    return new AckDescribe(encoding);
-                }
-
-            case UPDATE_DELIVERY_COUNT:
-                {
-                    DeliveryCountUpdateEncoding updateDeliveryCount = new DeliveryCountUpdateEncoding();
-                    updateDeliveryCount.decode(buffer);
-                    return updateDeliveryCount;
-                }
-
-            case PAGE_TRANSACTION:
-                {
-                    if (info.isUpdate)
-                        {
-                            PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
-
-                            pageUpdate.decode(buffer);
-
-                            return pageUpdate;
-                        }
-                    else
-                        {
-                            PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
-
-                            pageTransactionInfo.decode(buffer);
-
-                            pageTransactionInfo.setRecordID(info.id);
-
-                            return pageTransactionInfo;
-                        }
-                }
-
-            case SET_SCHEDULED_DELIVERY_TIME:
-                {
-                    ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-            case DUPLICATE_ID:
-                {
-                    DuplicateIDEncoding encoding = new DuplicateIDEncoding();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-            case HEURISTIC_COMPLETION:
-                {
-                    HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-            case ACKNOWLEDGE_CURSOR:
-                {
-                    CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-            case PAGE_CURSOR_COUNTER_VALUE:
-                {
-                    PageCountRecord encoding = new PageCountRecord();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-
-            case PAGE_CURSOR_COUNTER_INC:
-                {
-                    PageCountRecordInc encoding = new PageCountRecordInc();
-
-                    encoding.decode(buffer);
-
-                    return encoding;
-                }
-
-            case JournalStorageManager.QUEUE_BINDING_RECORD:
-                return newBindingEncoding(id, buffer);
-
-            case JournalStorageManager.ID_COUNTER_RECORD:
-                IDCounterEncoding idReturn = new IDCounterEncoding();
-
-                idReturn.decode(buffer);
-
-                return idReturn;
-
-            case JournalStorageManager.GROUP_RECORD:
-                return newGroupEncoding(id, buffer);
-
-            case JournalStorageManager.ADDRESS_SETTING_RECORD:
-                return newAddressEncoding(id, buffer);
-
-            case JournalStorageManager.SECURITY_RECORD:
-                return newSecurityRecord(id, buffer);
-
-            default:
-                return null;
+               return pageUpdate;
             }
-    }
+            else
+            {
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+
+               pageTransactionInfo.decode(buffer);
+
+               pageTransactionInfo.setRecordID(info.id);
+
+               return pageTransactionInfo;
+            }
+         }
+
+         case SET_SCHEDULED_DELIVERY_TIME:
+         {
+            ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case DUPLICATE_ID:
+         {
+            DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case HEURISTIC_COMPLETION:
+         {
+            HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case ACKNOWLEDGE_CURSOR:
+         {
+            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case PAGE_CURSOR_COUNTER_VALUE:
+         {
+            PageCountRecord encoding = new PageCountRecord();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case PAGE_CURSOR_COUNTER_INC:
+         {
+            PageCountRecordInc encoding = new PageCountRecordInc();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case JournalStorageManager.QUEUE_BINDING_RECORD:
+            return newBindingEncoding(id, buffer);
+
+         case JournalStorageManager.ID_COUNTER_RECORD:
+            IDCounterEncoding idReturn = new IDCounterEncoding();
+
+            idReturn.decode(buffer);
+
+            return idReturn;
+
+         case JournalStorageManager.GROUP_RECORD:
+            return newGroupEncoding(id, buffer);
+
+         case JournalStorageManager.ADDRESS_SETTING_RECORD:
+            return newAddressEncoding(id, buffer);
+
+         case JournalStorageManager.SECURITY_RECORD:
+            return newSecurityRecord(id, buffer);
+
+         default:
+            return null;
+      }
+   }
 
    public static class ReferenceDescribe
    {
-       public RefEncoding refEncoding;
+      public RefEncoding refEncoding;
 
-       public ReferenceDescribe(RefEncoding refEncoding)
-       {
-           this.refEncoding = refEncoding;
-       }
+      public ReferenceDescribe(RefEncoding refEncoding)
+      {
+         this.refEncoding = refEncoding;
+      }
 
       @Override
-       public String toString()
-       {
-           return "AddRef;" + refEncoding;
-       }
+      public String toString()
+      {
+         return "AddRef;" + refEncoding;
+      }
 
    }
 
    public static class AckDescribe
    {
-       RefEncoding refEncoding;
+      RefEncoding refEncoding;
 
-       public AckDescribe(RefEncoding refEncoding)
-       {
-           this.refEncoding = refEncoding;
-       }
+      public AckDescribe(RefEncoding refEncoding)
+      {
+         this.refEncoding = refEncoding;
+      }
 
       @Override
-       public String toString()
-       {
-           return "ACK;" + refEncoding;
-       }
+      public String toString()
+      {
+         return "ACK;" + refEncoding;
+      }
 
    }
 
-   private static class MessageDescribe
+   public static class MessageDescribe
    {
-       public MessageDescribe(Message msg)
-       {
-           this.msg = msg;
-       }
+      public MessageDescribe(Message msg)
+      {
+         this.msg = msg;
+      }
 
-       Message msg;
+      Message msg;
 
       @Override
-       public String toString()
-       {
-           StringBuffer buffer = new StringBuffer();
-           buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
-           buffer.append("messageID=" + msg.getMessageID());
-           buffer.append(";properties=[");
+      public String toString()
+      {
+         StringBuffer buffer = new StringBuffer();
+         buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
+         buffer.append("messageID=" + msg.getMessageID());
+         buffer.append(";properties=[");
 
-           Set<SimpleString> properties = msg.getPropertyNames();
+         Set<SimpleString> properties = msg.getPropertyNames();
 
-           for (SimpleString prop : properties)
-               {
-                   Object value = msg.getObjectProperty(prop);
-                   if (value instanceof byte[])
-                       {
-                           buffer.append(prop + "=" + Arrays.toString((byte[])value) + ",");
+         for (SimpleString prop : properties)
+         {
+            Object value = msg.getObjectProperty(prop);
+            if (value instanceof byte[])
+            {
+               buffer.append(prop + "=" + Arrays.toString((byte[])value) + ",");
 
-                       }
-                   else
-                       {
-                           buffer.append(prop + "=" + value + ",");
-                       }
-               }
+            }
+            else
+            {
+               buffer.append(prop + "=" + value + ",");
+            }
+         }
 
-           buffer.append("#properties = " + properties.size());
+         buffer.append("#properties = " + properties.size());
 
-           buffer.append("]");
+         buffer.append("]");
 
-           buffer.append(" - " + msg.toString());
+         buffer.append(" - " + msg.toString());
 
-           return buffer.toString();
-       }
+         return buffer.toString();
+      }
 
    }
 
-    /**
-     * @param id
-     * @param buffer
-     * @return
-     */
-   private static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
-    {
-        PersistedRoles roles = new PersistedRoles();
-        roles.decode(buffer);
-        roles.setStoreId(id);
-        return roles;
-    }
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
+   {
+      PersistedRoles roles = new PersistedRoles();
+      roles.decode(buffer);
+      roles.setStoreId(id);
+      return roles;
+   }
 
-    /**
-     * @param id
-     * @param buffer
-     * @return
-     */
-   private static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
-    {
-        PersistedAddressSetting setting = new PersistedAddressSetting();
-        setting.decode(buffer);
-        setting.setStoreId(id);
-        return setting;
-    }
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
+   {
+      PersistedAddressSetting setting = new PersistedAddressSetting();
+      setting.decode(buffer);
+      setting.setStoreId(id);
+      return setting;
+   }
 
-    /**
-     * @param id
-     * @param buffer
-     * @return
-     */
-   private static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
-    {
-        GroupingEncoding encoding = new GroupingEncoding();
-        encoding.decode(buffer);
-        encoding.setId(id);
-        return encoding;
-    }
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
+   {
+      GroupingEncoding encoding = new GroupingEncoding();
+      encoding.decode(buffer);
+      encoding.setId(id);
+      return encoding;
+   }
 
-    /**
-     * @param id
-     * @param buffer
-     * @return
-     */
-   private static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
-    {
-        PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
+   {
+      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
 
-        bindingEncoding.decode(buffer);
+      bindingEncoding.decode(buffer);
 
-        bindingEncoding.setId(id);
-        return bindingEncoding;
-    }
+      bindingEncoding.setId(id);
+      return bindingEncoding;
+   }
 
-    private static String encode(final byte[] data)
-    {
-        return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
-    }
+   private static String encode(final byte[] data)
+   {
+      return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
+   }
 
    /**
     * @param fileFactory
     * @param journal
     * @throws Exception
     */
-   private static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
+   protected static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
    {
       List<JournalFile> files = journal.orderFiles();
 
@@ -3848,12 +3946,13 @@ public class JournalStorageManager implements StorageManager
                out.println("operation@Rollback;txID=" + transactionID);
             }
 
-            public void
-               onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords)
-                  throws Exception
+            public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
             {
-               out.println("operation@Prepare,txID=" + transactionID + ",numberOfRecords=" + numberOfRecords +
-                        ",extraData=" + encode(extraData));
+               out.println("operation@Prepare,txID=" + transactionID +
+                           ",numberOfRecords=" +
+                           numberOfRecords +
+                           ",extraData=" +
+                           encode(extraData));
             }
 
             public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
@@ -4040,8 +4139,7 @@ public class JournalStorageManager implements StorageManager
 
    private void installLargeMessageConfirmationOnTX(Transaction tx, long recordID)
    {
-      TXLargeMessageConfirmationOperation txoper =
-               (TXLargeMessageConfirmationOperation)tx.getProperty(TransactionPropertyIndexes.LARGE_MESSAGE_CONFIRMATIONS);
+      TXLargeMessageConfirmationOperation txoper = (TXLargeMessageConfirmationOperation)tx.getProperty(TransactionPropertyIndexes.LARGE_MESSAGE_CONFIRMATIONS);
       if (txoper == null)
       {
          txoper = new TXLargeMessageConfirmationOperation();
@@ -4053,67 +4151,66 @@ public class JournalStorageManager implements StorageManager
    class TXLargeMessageConfirmationOperation implements TransactionOperation
    {
 
-       public List<Long> confirmedMessages = new LinkedList<Long>();
+      public List<Long> confirmedMessages = new LinkedList<Long>();
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-        */
-       public void beforePrepare(Transaction tx) throws Exception
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforePrepare(Transaction tx) throws Exception
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
-        */
-       public void afterPrepare(Transaction tx)
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
+       */
+      public void afterPrepare(Transaction tx)
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-        */
-       public void beforeCommit(Transaction tx) throws Exception
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforeCommit(Transaction tx) throws Exception
+      {
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
-        */
-       public void afterCommit(Transaction tx)
-       {
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
+       */
+      public void afterCommit(Transaction tx)
+      {
+      }
 
-       public void beforeRollback(Transaction tx) throws Exception
-       {
-       }
+      public void beforeRollback(Transaction tx) throws Exception
+      {
+      }
 
-       public void afterRollback(Transaction tx)
-       {
-           for (Long msg : confirmedMessages)
-               {
+      public void afterRollback(Transaction tx)
+      {
+         for (Long msg : confirmedMessages)
+         {
             try
-                {
-                    JournalStorageManager.this.confirmPendingLargeMessage(msg);
-                }
+            {
+               JournalStorageManager.this.confirmPendingLargeMessage(msg);
+            }
             catch (Throwable e)
-                {
-                    log.warn("Error while confirming large message completion on rollback for recordID=" + msg +
+            {
+               log.warn("Error while confirming large message completion on rollback for recordID=" + msg +
                                  "->" +
-                             e.getMessage(),
-                             e);
-                }
-               }
-       }
+                                 e.getMessage(),
+                        e);
+            }
+         }
+      }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
-        */
-       public List<MessageReference> getRelatedMessageReferences()
-       {
-           return null;
-       }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
+       */
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
 
    }
-
 
 }

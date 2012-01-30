@@ -100,18 +100,34 @@ public class IncompatibleVersionTest extends ServiceTestBase
       doTestClientVersionCompatibility(false);
    }
 
-   public void testCompatibleClientVersionWithRealConnection() throws Exception
+   public void testCompatibleClientVersionWithRealConnection1() throws Exception
    {
-      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",1));
-      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",5));
-      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",10));
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 1));
    }
 
-   public void testIncompatibleClientVersionWithRealConnection() throws Exception
+   public void testCompatibleClientVersionWithRealConnection2() throws Exception
    {
-      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",0));
-      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",4));
-      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",100));
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 5));
+   }
+
+   public void testCompatibleClientVersionWithRealConnection3() throws Exception
+   {
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 10));
+   }
+
+   public void testIncompatibleClientVersionWithRealConnection1() throws Exception
+   {
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 0));
+   }
+
+   public void testIncompatibleClientVersionWithRealConnection2() throws Exception
+   {
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 4));
+   }
+
+   public void testIncompatibleClientVersionWithRealConnection3() throws Exception
+   {
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 100));
    }
 
    private void doTestClientVersionCompatibility(boolean compatible) throws Exception

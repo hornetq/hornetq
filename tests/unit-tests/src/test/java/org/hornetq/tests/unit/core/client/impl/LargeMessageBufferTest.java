@@ -425,7 +425,6 @@ public class LargeMessageBufferTest extends UnitTestCase
                   dataRead = input.read(line);
                   if (dataRead > 0)
                   {
-                     // System.out.println("Read one line with " + dataRead + " bytes");
                      totalBytes.addAndGet(dataRead);
                      if (count.incrementAndGet() == 3)
                      {
@@ -578,9 +577,9 @@ public class LargeMessageBufferTest extends UnitTestCase
       for (int i = 100; i < byteArray.length; i += 10)
       {
          byte readBytes[] = new byte[10];
-
+         
          int size = is.read(readBytes);
-
+         
          for (int j = 0; j < size; j++)
          {
             assertEquals(getSamplebyte(i + j), readBytes[j]);

@@ -25,23 +25,22 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * This is a _mock_ NodeManager and is used only in tests.
- * <p>
- * It allows writing tests without the need to spawn a new JVM.
- * 
- * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a> Date: Oct 13, 2010 Time: 3:55:47
- *         PM
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ *         Date: Oct 13, 2010
+ *         Time: 3:55:47 PM
  */
 public class InVMNodeManager extends NodeManager
 {
 
-   private final Semaphore liveLock;
+   private Semaphore liveLock;
 
-   private final Semaphore backupLock;
+   private Semaphore backupLock;
 
    public enum State {LIVE, PAUSED, FAILING_BACK, NOT_STARTED}
 
    public State state = NOT_STARTED;
+
+   public long failoverPause = 0l;
 
    public InVMNodeManager()
    {
@@ -79,6 +78,10 @@ public class InVMNodeManager extends NodeManager
          }
       }
       while (true);
+      if(failoverPause > 0l)
+      {
+         Thread.sleep(failoverPause);
+      }
    }
 
    @Override
@@ -125,7 +128,7 @@ public class InVMNodeManager extends NodeManager
    @Override
    public boolean isAwaitingFailback() throws Exception
    {
-      return state == FAILING_BACK;
+      return state == FAILING_BACK; 
    }
 
    @Override

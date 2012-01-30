@@ -117,6 +117,8 @@ public abstract class UnitTestCase extends TestCase
    public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    protected static final String CLUSTER_PASSWORD = "UnitTestsClusterPassword";
+  
+   private static final String OS_TYPE = System.getProperty("os.name").toLowerCase();
 
    // Attributes ----------------------------------------------------
 
@@ -133,6 +135,11 @@ public abstract class UnitTestCase extends TestCase
    protected void disableCheckThread()
    {
       checkThread = false;
+   }
+
+   protected boolean isWindows()
+   {
+      return (OS_TYPE.indexOf("win") >= 0);
    }
 
    // Static --------------------------------------------------------

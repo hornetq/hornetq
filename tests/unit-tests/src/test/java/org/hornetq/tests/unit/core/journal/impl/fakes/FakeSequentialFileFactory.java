@@ -29,11 +29,12 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.TimedBuffer;
+import org.hornetq.core.logging.Logger;
 
 /**
- *
+ * 
  * A FakeSequentialFileFactory
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -490,7 +491,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          writeDirect(bytes, sync, null);
       }
-
+      
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#writeInternal(java.nio.ByteBuffer)
        */
@@ -499,7 +500,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          writeDirect(bytes, true);
       }
 
-
+      
 
       private void checkAndResize(final int size)
       {
@@ -601,7 +602,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
-      public SequentialFile copy()
+      public SequentialFile cloneFile()
       {
          return null; // To change body of implemented methods use File | Settings | File Templates.
       }
@@ -672,6 +673,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       public void copyTo(SequentialFile newFileName)
       {
          // TODO Auto-generated method stub
+         
       }
 
       @Override
@@ -679,6 +681,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          throw new UnsupportedOperationException();
       }
+
    }
 
    /* (non-Javadoc)
@@ -758,6 +761,30 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
     */
    public void onIOError(int errorCode, String message, SequentialFile file)
    {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#newDirectBuffer(int)
+    */
+   public ByteBuffer allocateDirectBuffer(int size)
+   {
+      return ByteBuffer.allocateDirect(size);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#releaseDirectBuffer(java.nio.ByteBuffer)
+    */
+   public void releaseDirectBuffer(ByteBuffer buffer)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#getDirectory()
+    */
+   public String getDirectory()
+   {
+      // TODO Auto-generated method stub
+      return null;
    }
 
 }

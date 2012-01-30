@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.client.impl;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,6 +84,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectorFactory;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -109,6 +112,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
 
+   private final boolean trace = ClientSessionImpl.log.isTraceEnabled();
+
    // Attributes ----------------------------------------------------------------------------
 
    private final Map<String, String> metadata = new HashMap<String, String>();
@@ -124,6 +129,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean xa;
 
    private final Executor executor;
+   
+   // to be sent to consumers as consumers will need a separate consumer for flow control
+   private final Executor flowControlExecutor;
 
    private volatile CoreRemotingConnection remotingConnection;
 
@@ -133,6 +141,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Map<Long, ClientConsumerInternal> consumers = new LinkedHashMap<Long, ClientConsumerInternal>();
 
    private volatile boolean closed;
+   
+   private volatile boolean closing;
 
    private final boolean autoCommitAcks;
 
@@ -221,7 +231,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final CoreRemotingConnection remotingConnection,
                             final int version,
                             final Channel channel,
-                            final Executor executor) throws HornetQException
+                            final Executor executor,
+                            final Executor flowControlExecutor) throws HornetQException
    {
       this.sessionFactory = sessionFactory;
 
@@ -234,6 +245,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.remotingConnection = remotingConnection;
 
       this.executor = executor;
+      
+      this.flowControlExecutor = flowControlExecutor;
 
       this.xa = xa;
 
@@ -392,7 +405,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       checkClosed();
 
       SessionForceConsumerDelivery request = new SessionForceConsumerDelivery(consumerID, sequence);
-
       channel.send(request);
    }
 
@@ -450,13 +462,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    /*
-    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on
-    * the remoting thread. Direct consumers have issues with blocking and failover. E.g. if direct
-    * then inside MessageHandler call a blocking method like rollback or acknowledge (blocking) This
-    * can block until failover completes, which disallows the thread to be used to deliver any
-    * responses to the client during that period, so failover won't occur. If we want direct
-    * consumers we need to rethink how they work
-    */
+    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
+    * Direct consumers have issues with blocking and failover.
+    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
+    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
+    * during that period, so failover won't occur.
+    * If we want direct consumers we need to rethink how they work
+   */
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final int windowSize,
@@ -581,8 +593,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          stop();
       }
 
+      
       // We need to make sure we don't get any inflight messages
-      for (ClientConsumerInternal consumer : consumers.values())
+      for (ClientConsumerInternal consumer : cloneConsumers())
       {
          consumer.clear(true);
       }
@@ -659,7 +672,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (!started)
       {
-         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         for (ClientConsumerInternal clientConsumerInternal : cloneConsumers())
          {
             clientConsumerInternal.start();
          }
@@ -681,7 +694,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (started)
       {
-         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         for (ClientConsumerInternal clientConsumerInternal : cloneConsumers())
          {
             clientConsumerInternal.stop(waitForOnMessage);
          }
@@ -743,7 +756,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       checkClosed();
-
+      if (log.isDebugEnabled())
+      {
+         log.debug("client ack messageID = " + messageID);
+      }
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
 
       if (blockOnAcknowledge)
@@ -803,7 +819,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addProducer(final ClientProducerInternal producer)
    {
-      producers.add(producer);
+      synchronized (producers)
+      {
+         producers.add(producer);
+      }
    }
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
@@ -816,12 +835,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeProducer(final ClientProducerInternal producer)
    {
-      producers.remove(producer);
+      synchronized (producers)
+      {
+         producers.remove(producer);
+      }
    }
 
    public void handleReceiveMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -837,7 +859,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveLargeMessage message) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -847,7 +869,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -866,6 +888,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (log.isDebugEnabled())
       {
          log.debug("Calling close on session "  + this);
+      }
+
+      synchronized (this)
+      {
+         closing = true;
       }
 
       try
@@ -910,6 +937,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       sendAckHandler = handler;
    }
 
+   public void preHandleFailover(CoreRemotingConnection connection)
+   {
+      // We lock the channel to prevent any packets to be added to the resend
+      // cache during the failover process
+      //we also do this before the connection fails over to give the session a chance to block for failover
+      channel.lock();
+   }
+
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
 
    public void handleFailover(final CoreRemotingConnection backupConnection)
@@ -923,9 +958,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          boolean resetCreditManager = false;
 
-         // We lock the channel to prevent any packets to be added to the resend
-         // cache during the failover process
-         channel.lock();
          try
          {
             channel.transferConnection(backupConnection);
@@ -1072,7 +1104,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                   // Now start the session if it was already started
                   if (started)
                   {
-                     for (ClientConsumerInternal consumer : consumers.values())
+                     for (ClientConsumerInternal consumer : cloneConsumers())
                      {
                         consumer.clearAtFailover();
                         consumer.start();
@@ -1114,8 +1146,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
       }
 
+      HashMap<String, String> metaDataToSend;
+      
+      synchronized (metadata)
+      {
+         metaDataToSend = new HashMap<String, String>(metadata);
+      }
+      
       // Resetting the metadata after failover
-      for (Map.Entry<String, String> entries : metadata.entrySet())
+      for (Map.Entry<String, String> entries : metaDataToSend.entrySet())
       {
          sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }
@@ -1509,7 +1548,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
 
          // We need to make sure we don't get any inflight messages
-         for (ClientConsumerInternal consumer : consumers.values())
+         for (ClientConsumerInternal consumer : cloneConsumers())
          {
             consumer.clear(false);
          }
@@ -1657,7 +1696,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return remotingConnection;
    }
-
+   
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
    @Override
    public String toString()
    {
@@ -1675,7 +1717,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
              username +
              ", closed=" +
              closed +
-             " metaData=(" +
+             ", factory = " + this.sessionFactory +
+             ", metaData=(" +
              buffer +
              ")]@" +
              Integer.toHexString(hashCode());
@@ -1765,8 +1808,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                                 false)
                                                                                   : null,
                                                                executor,
+                                                               flowControlExecutor,
                                                                channel,
-                                                               queueInfo);
+                                                               queueInfo,
+                                                               lookupTCCL());
 
       addConsumer(consumer);
 
@@ -1836,6 +1881,31 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          throw new HornetQException(HornetQException.OBJECT_CLOSED, "Session is closed");
       }
    }
+   
+   private ClassLoader lookupTCCL()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return Thread.currentThread().getContextClassLoader();
+         }
+      });
+
+   }
+   
+   /**
+    * @param consumerID
+    * @return
+    */
+   private ClientConsumerInternal getConsumer(final long consumerID)
+   {
+      synchronized (consumers)
+      {
+         ClientConsumerInternal consumer = consumers.get(consumerID);
+         return consumer;
+      }
+   }
 
    private void doCleanup(boolean failingOver)
    {
@@ -1865,14 +1935,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void cleanUpChildren() throws Exception
    {
-      Set<ClientConsumerInternal> consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
+      Set<ClientConsumerInternal> consumersClone = cloneConsumers();
 
       for (ClientConsumerInternal consumer : consumersClone)
       {
          consumer.cleanUp();
       }
 
-      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers);
+      Set<ClientProducerInternal> producersClone = cloneProducers();
 
       for (ClientProducerInternal producer : producersClone)
       {
@@ -1880,16 +1950,41 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
+   /**
+    * @return
+    */
+   private Set<ClientProducerInternal> cloneProducers()
+   {
+      Set<ClientProducerInternal> producersClone;
+      
+      synchronized (producers)
+      {
+         producersClone = new HashSet<ClientProducerInternal>(producers);
+      }
+      return producersClone;
+   }
+
+   /**
+    * @return
+    */
+   private Set<ClientConsumerInternal> cloneConsumers()
+   {
+      synchronized (consumers)
+      {
+         return new HashSet<ClientConsumerInternal>(consumers.values());
+      }
+   }
+
    private void closeChildren() throws HornetQException
    {
-      Set<ClientConsumer> consumersClone = new HashSet<ClientConsumer>(consumers.values());
+      Set<ClientConsumerInternal> consumersClone = cloneConsumers();
 
       for (ClientConsumer consumer : consumersClone)
       {
          consumer.close();
       }
 
-      Set<ClientProducer> producersClone = new HashSet<ClientProducer>(producers);
+      Set<ClientProducerInternal> producersClone = cloneProducers();
 
       for (ClientProducer producer : producersClone)
       {
@@ -1899,12 +1994,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void flushAcks() throws HornetQException
    {
-      synchronized (consumers)
+      for (ClientConsumerInternal consumer : cloneConsumers())
       {
-         for (ClientConsumerInternal consumer : consumers.values())
-         {
-            consumer.flushAcks();
-         }
+         consumer.flushAcks();
       }
    }
 

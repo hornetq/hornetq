@@ -91,6 +91,16 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    {
       jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.jms.management.TopicControl#removeJNDI(java.lang.String)
+    */
+   public void removeJNDI(String jndi) throws Exception
+   {
+      jmsServerManager.removeTopicFromJNDI(managedTopic.getName(), jndi);
+   }
+
 
    public String[] getJNDIBindings()
    {

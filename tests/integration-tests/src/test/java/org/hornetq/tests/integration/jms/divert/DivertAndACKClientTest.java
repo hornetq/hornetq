@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.jms.divert;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -24,6 +25,7 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -33,7 +35,7 @@ import org.hornetq.tests.util.JMSTestBase;
 
 /**
  * A DivertAndACKClientTest
- *
+ * 
  * https://jira.jboss.org/jira/browse/HORNETQ-165
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -58,20 +60,22 @@ public class DivertAndACKClientTest extends JMSTestBase
       Queue queueSource = createQueue("Source");
       Queue queueTarget = createQueue("Dest");
 
-      conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       final MessageProducer producer = session.createProducer(queueSource);
 
       final TextMessage message = session.createTextMessage("message text");
       producer.send(message);
 
-      conn.start();
+      connection.start();
 
       final MessageConsumer consumer = session.createConsumer(queueTarget);
       TextMessage receivedMessage = (TextMessage)consumer.receive(1000);
 
       Assert.assertNotNull(receivedMessage);
+
+      connection.close();
    }
 
    public void testClientACK() throws Exception
@@ -79,20 +83,22 @@ public class DivertAndACKClientTest extends JMSTestBase
       Queue queueSource = createQueue("Source");
       Queue queueTarget = createQueue("Dest");
 
-      conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
       final MessageProducer producer = session.createProducer(queueSource);
 
       final TextMessage message = session.createTextMessage("message text");
       producer.send(message);
 
-      conn.start();
+      connection.start();
 
       final MessageConsumer consumer = session.createConsumer(queueTarget);
       TextMessage receivedMessage = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(receivedMessage);
       receivedMessage.acknowledge();
+
+      connection.close();
    }
 
    // Package protected ---------------------------------------------

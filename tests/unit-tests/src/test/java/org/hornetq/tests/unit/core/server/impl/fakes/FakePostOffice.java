@@ -36,7 +36,7 @@ public class FakePostOffice implements PostOffice
     */
    public boolean isStarted()
    {
-      // TODO Auto-generated method stub
+      
       return false;
    }
 
@@ -45,7 +45,7 @@ public class FakePostOffice implements PostOffice
     */
    public void start() throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
@@ -54,7 +54,7 @@ public class FakePostOffice implements PostOffice
     */
    public void stop() throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
@@ -63,7 +63,7 @@ public class FakePostOffice implements PostOffice
     */
    public void addBinding(final Binding binding) throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
@@ -72,7 +72,7 @@ public class FakePostOffice implements PostOffice
     */
    public Binding getBinding(final SimpleString uniqueName)
    {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
@@ -81,7 +81,13 @@ public class FakePostOffice implements PostOffice
     */
    public Bindings getBindingsForAddress(final SimpleString address) throws Exception
    {
-      // TODO Auto-generated method stub
+      
+      return null;
+   }
+
+   public Bindings lookupBindingsForAddress(final SimpleString address) throws Exception
+   {
+      
       return null;
    }
 
@@ -98,7 +104,7 @@ public class FakePostOffice implements PostOffice
     */
    public Bindings getMatchingBindings(final SimpleString address)
    {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
@@ -107,7 +113,7 @@ public class FakePostOffice implements PostOffice
     */
    public Object getNotificationLock()
    {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
@@ -116,7 +122,7 @@ public class FakePostOffice implements PostOffice
     */
    public PagingManager getPagingManager()
    {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
@@ -125,7 +131,7 @@ public class FakePostOffice implements PostOffice
     */
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       return false;
    }
 
@@ -134,7 +140,7 @@ public class FakePostOffice implements PostOffice
     */
    public Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
@@ -143,7 +149,7 @@ public class FakePostOffice implements PostOffice
     */
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
@@ -152,13 +158,13 @@ public class FakePostOffice implements PostOffice
     */
    public void route(final ServerMessage message) throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       return false;
    }
 
@@ -170,31 +176,31 @@ public class FakePostOffice implements PostOffice
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      // TODO Auto-generated method stub
+      
 
    }
 
    public void route(ServerMessage message, boolean direct) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       
    }
 
    public void route(ServerMessage message, RoutingContext context, boolean direct) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       
    }
 
    public void route(ServerMessage message, Transaction tx, boolean direct) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       
    }
 
@@ -203,7 +209,7 @@ public class FakePostOffice implements PostOffice
     */
    public void route(ServerMessage message, RoutingContext context, boolean direct, boolean rejectDuplicates) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       
    }
 
@@ -212,7 +218,7 @@ public class FakePostOffice implements PostOffice
     */
    public void route(ServerMessage message, Transaction tx, boolean direct, boolean rejectDuplicates) throws Exception
    {
-      // TODO Auto-generated method stub
+      
       
    }
 

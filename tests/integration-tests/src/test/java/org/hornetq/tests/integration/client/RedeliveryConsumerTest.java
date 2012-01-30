@@ -233,7 +233,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(1000);
       Assert.assertNotNull(msg);
-      Assert.assertEquals(2, msg.getDeliveryCount());
+      Assert.assertEquals(strictUpdate ? 1 : 2, msg.getDeliveryCount());
       session.close();
    }
 

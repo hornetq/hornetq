@@ -60,9 +60,9 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.Future;
 
 /**
- *
+ * 
  * @see PagingStore
- *
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -208,7 +208,7 @@ public class PagingStoreImpl implements PagingStore
       pageSize = addressSettings.getPageSizeBytes();
 
       addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
-
+      
       if (cursorProvider != null)
       {
          cursorProvider.setCacheMaxSize(addressSettings.getPageCacheMaxSize());
@@ -217,7 +217,6 @@ public class PagingStoreImpl implements PagingStore
 
    // Public --------------------------------------------------------
 
-   @Override
    public String toString()
    {
       return "PagingStoreImpl(" + this.address + ")";
@@ -285,6 +284,19 @@ public class PagingStoreImpl implements PagingStore
    public long getPageSizeBytes()
    {
       return pageSize;
+   }
+   
+   public String getFolder()
+   {
+      SequentialFileFactory factoryUsed = this.fileFactory;
+      if (factoryUsed != null)
+      {
+         return factoryUsed.getDirectory();
+      }
+      else
+      {
+         return null;
+      }
    }
 
    public boolean isPaging()
@@ -388,9 +400,10 @@ public class PagingStoreImpl implements PagingStore
    {
       if (running)
       {
-         running = false;
 
          cursorProvider.stop();
+
+         running = false;
 
          flushExecutors();
 
@@ -442,6 +455,10 @@ public class PagingStoreImpl implements PagingStore
             {
 
                currentPageId = 0;
+               if (currentPage != null)
+               {
+                  currentPage.close();
+               }
                currentPage = null;
 
                List<String> files = fileFactory.listFiles("page");
@@ -577,7 +594,7 @@ public class PagingStoreImpl implements PagingStore
    {
       return currentPage;
    }
-
+   
    public boolean checkPageFileExists(final int pageNumber)
    {
       String fileName = createFileName(pageNumber);
@@ -613,7 +630,7 @@ public class PagingStoreImpl implements PagingStore
       openNewPage();
    }
 
-   /**
+    /**
     * Returns a Page out of the Page System without reading it.
     * <p>
     * The method calling this method will remove the page and will start reading it outside of any
@@ -828,6 +845,11 @@ public class PagingStoreImpl implements PagingStore
 
                PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
             }
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
+            }
 
             // Address is full, we just pretend we are paging, and drop the data
             return true;
@@ -878,7 +900,7 @@ public class PagingStoreImpl implements PagingStore
 
 
          PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
-
+         
          if (message.isLargeMessage())
          {
             ((LargeServerMessage)message).setPaged();
@@ -892,22 +914,23 @@ public class PagingStoreImpl implements PagingStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
-
+ 
          currentPage.write(pagedMessage);
 
          if (isTrace)
          {
-            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
+            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() + 
                       " pageId=" + currentPage.getPageId());
          }
-
-
+         
+        
          if (tx != null)
          {
             installPageTransaction(tx, listCtx);
             tx.setWaitBeforeCommit(true);
          }
-         else if (sync)
+         else
+         if (sync && tx == null)
          {
             sync();
          }
@@ -963,15 +986,15 @@ public class PagingStoreImpl implements PagingStore
    private static class FinishPageMessageOperation implements TransactionOperation
    {
       public final PageTransactionInfo pageTransaction;
-
+      
       private final StorageManager storageManager;
-
+      
       private final PagingManager pagingManager;
-
+      
       private final Set<PagingStore> usedStores = new HashSet<PagingStore>();
 
       private boolean stored = false;
-
+      
       public void addStore(PagingStore store)
       {
          this.usedStores.add(store);
@@ -1096,9 +1119,9 @@ public class PagingStoreImpl implements PagingStore
    }
 
    /**
-    *
+    * 
     * Note: Decimalformat is not thread safe, Use synchronization before calling this method
-    *
+    * 
     * @param pageID
     * @return
     */
@@ -1117,7 +1140,6 @@ public class PagingStoreImpl implements PagingStore
    {
       return maxSize > 0 && getAddressSize() > maxSize;
    }
-
    @Override
    public Collection<Integer> getCurrentIds() throws Exception
    {
@@ -1153,6 +1175,7 @@ public class PagingStoreImpl implements PagingStore
          unlock();
       }
    }
+
 
    // Inner classes -------------------------------------------------
 }

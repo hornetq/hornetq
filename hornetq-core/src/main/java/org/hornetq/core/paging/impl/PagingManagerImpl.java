@@ -32,7 +32,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- *
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -46,6 +46,7 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean started = false;
 
+
    /**
     * Lock used at the start of synchronization between a live server and its backup.
     * Synchronization will lock all {@link PagingStore} instances, and so any operation here that
@@ -53,6 +54,7 @@ public class PagingManagerImpl implements PagingManager
     * {@link #syncLock} to avoid dead-locks.
     */
    private final ReentrantReadWriteLock syncLock = new ReentrantReadWriteLock();
+
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
@@ -61,7 +63,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final StorageManager storageManager;
 
-   private final ConcurrentMap<Long, PageTransactionInfo> transactions =
+   private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = 
             new ConcurrentHashMap<Long, PageTransactionInfo>();
 
    // Static
@@ -86,9 +88,9 @@ public class PagingManagerImpl implements PagingManager
    // Public
    // ---------------------------------------------------------------------------------------------------------------------------
 
-
+   
    // Hierarchical changes listener
-
+   
    /* (non-Javadoc)
     * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
     */
@@ -97,18 +99,20 @@ public class PagingManagerImpl implements PagingManager
       reaplySettings();
    }
 
+
+   
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
    public void reaplySettings()
    {
-    for (PagingStore store : stores.values())
+      for (PagingStore store : stores.values())
       {
          AddressSettings settings = this.addressSettingsRepository.getMatch(store.getAddress().toString());
          store.applySetting(settings);
       }
    }
-
+   
    public SimpleString[] getStoreNames()
    {
       Set<SimpleString> names = stores.keySet();
@@ -198,7 +202,7 @@ public class PagingManagerImpl implements PagingManager
       }
       return transactions.get(id);
    }
-
+   
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.PagingManager#getTransactions()
     */
@@ -298,7 +302,12 @@ public class PagingManagerImpl implements PagingManager
          syncLock.readLock().unlock();
       }
    }
-
+   
+   protected PagingStoreFactory getStoreFactory()
+   {
+      return pagingStoreFactory;
+   }
+   
    public void unlock()
    {
       syncLock.writeLock().unlock();
@@ -308,4 +317,5 @@ public class PagingManagerImpl implements PagingManager
    {
       syncLock.writeLock().lock();
    }
+
 }

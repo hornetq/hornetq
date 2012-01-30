@@ -491,30 +491,30 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(atestq);
       long time = System.currentTimeMillis();
       time += 1000;
-
-      for (int i = 0; i < 1000; i++)
+      
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.putIntProperty("value", i);
          message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
          producer.send(message);
       }
-
+      
       session.commit();
-
-
+      
+      
       session.start();
       ClientConsumer consumer = session.createConsumer(atestq);
-
-      for (int i = 0 ; i < 1000; i++)
+      
+      for (int i = 0 ; i < 10; i++)
       {
          ClientMessage message = consumer.receive(15000);
          assertNotNull(message);
          message.acknowledge();
-
+         
          assertEquals(i, message.getIntProperty("value").intValue());
       }
-
+      
       session.commit();
 
       Assert.assertNull(consumer.receiveImmediate());
@@ -645,19 +645,19 @@ public class ScheduledMessageTest extends ServiceTestBase
       Assert.assertNull(consumer.receiveImmediate());
       session.close();
    }
-
-
+   
+   
    public void testPendingACKOnPrepared() throws Exception
    {
-
+      
       int NUMBER_OF_MESSAGES = 100;
-
+      
       ClientSessionFactory sessionFactory = createSessionFactory(locator);
       ClientSession session = sessionFactory.createSession(true, false, false);
       session.createQueue(atestq, atestq, null, true);
 
       ClientProducer producer = session.createProducer(atestq);
-
+      
       long scheduled = System.currentTimeMillis() + 1000;
       for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -666,51 +666,51 @@ public class ScheduledMessageTest extends ServiceTestBase
          msg.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduled);
          producer.send(msg);
       }
-
+      
       session.close();
-
-
+      
+      
       for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
       {
          Xid xid = newXID();
 
          session = sessionFactory.createSession(true, false, false);
-
+         
          ClientConsumer consumer = session.createConsumer(atestq);
-
+         
          session.start();
 
          session.start(xid, XAResource.TMNOFLAGS);
-
+         
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
          msg.acknowledge();
          session.end(xid, XAResource.TMSUCCESS);
-
+         
          session.prepare(xid);
-
+         
          session.close();
       }
-
+      
       sessionFactory.close();
       locator.close();
-
+      
       server.stop();
-
+      
       startServer();
-
+      
       sessionFactory = createSessionFactory(locator);
-
+      
       session = sessionFactory.createSession(false, false);
-
+      
       ClientConsumer consumer = session.createConsumer(atestq);
-
+      
       session.start();
-
+      
       assertNull(consumer.receive(1000));
-
+      
       session.close();
-
+      
       sessionFactory.close();
 
    }
@@ -786,7 +786,6 @@ public class ScheduledMessageTest extends ServiceTestBase
       final AtomicInteger count = new AtomicInteger(0);
       Thread t = new Thread()
       {
-         @Override
          public void run()
          {
             try

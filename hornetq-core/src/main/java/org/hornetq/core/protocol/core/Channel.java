@@ -36,7 +36,7 @@ public interface Channel
     * @return the id
     */
    long getID();
-
+   
    /** For protocol check */
    boolean supports(byte packetID);
 
@@ -46,7 +46,7 @@ public interface Channel
     * @param packet the packet to send
     */
    void send(Packet packet);
-
+   
    /**
     * sends a packet on this channel using batching algorithm if appropriate
     *

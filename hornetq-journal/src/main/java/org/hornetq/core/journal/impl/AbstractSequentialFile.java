@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
@@ -37,7 +36,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-abstract class AbstractSequentialFile implements SequentialFile
+public abstract class AbstractSequentialFile implements SequentialFile
 {
 
    // Constants -----------------------------------------------------
@@ -103,21 +102,21 @@ abstract class AbstractSequentialFile implements SequentialFile
          close();
       }
 
-      if (!file.delete())
-      {
-         log.error("Failed to delete file " + this);
-      }
+      file.delete();
    }
-
+   
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       log.debug("Copying "  + this + " as " + newFileName);
       newFileName.open();
-      this.open();
-
-
+      if (!isOpen())
+      {
+         this.open();
+      }
+      
+      
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-
+      
       for (;;)
       {
          buffer.rewind();
@@ -149,11 +148,7 @@ abstract class AbstractSequentialFile implements SequentialFile
 
       if (!file.equals(newFile))
       {
-         if (!file.renameTo(newFile))
-         {
-            throw new HornetQException(HornetQException.IO_ERROR, "failed to rename file " + file.getName() + " to " +
-                     newFileName);
-         }
+         file.renameTo(newFile);
          file = newFile;
       }
    }

@@ -62,6 +62,8 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final boolean allowDirectConnectionsOnly;
    
+   private final int minLargeMessageSize;
+   
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -76,6 +78,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this(name,
            address,
            connectorName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
            ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
            ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
            retryInterval,
@@ -95,6 +98,7 @@ public class ClusterConnectionConfiguration implements Serializable
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
+                                         final int minLargeMessageSize,
                                          final long clientFailureCheckPeriod,
                                          final long connectionTTL,
                                          final long retryInterval,
@@ -126,6 +130,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
       this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    
@@ -142,6 +147,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this(name,
            address,
            connectorName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
            ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
            ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
            retryInterval,
@@ -160,6 +166,7 @@ public class ClusterConnectionConfiguration implements Serializable
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
+                                         final int minLargeMessageSize,
                                          final long clientFailureCheckPeriod,
                                          final long connectionTTL,
                                          final long retryInterval,
@@ -189,6 +196,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.staticConnectors = null;
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
+      this.minLargeMessageSize = minLargeMessageSize;
       allowDirectConnectionsOnly = false;
    }
 
@@ -291,4 +299,15 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return allowDirectConnectionsOnly;
    }
+
+
+   /**
+    * @return the minLargeMessageSize
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+   
+   
 }

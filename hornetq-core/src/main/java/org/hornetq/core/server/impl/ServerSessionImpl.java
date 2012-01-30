@@ -76,10 +76,10 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /*
- * Session implementation
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * Session implementation 
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
@@ -153,7 +153,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private OperationContext sessionContext;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
-   private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString,  Pair<UUID, AtomicLong>>();
+   private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
 
    private final long creationTime = System.currentTimeMillis();
 
@@ -288,7 +288,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (tx != null && tx.getXid() == null)
       {
          // We only rollback local txs on close, not XA tx branches
-         rollback(failed, true);
+
+         try
+         {
+            rollback(false);
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
       }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -569,12 +577,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
-      consumer.forceDelivery(sequence);
+      // this would be possible if the server consumer was closed by pings/pongs.. etc
+      if (consumer != null)
+      {
+         consumer.forceDelivery(sequence);
+      }
    }
 
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
+      
+      if (consumer == null)
+      {
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server");
+      }
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
@@ -601,7 +618,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void commit() throws Exception
+   public synchronized void commit() throws Exception
    {
       if (isTrace)
       {
@@ -617,14 +634,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
+   public synchronized void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
-      rollback(considerLastMessageAsDelivered, false);
-   }
-
-   private void rollback(final boolean considerLastMessageAsDelivered, final boolean closing) throws Exception
-   {
-
       if (tx == null)
       {
          // Might be null if XA
@@ -632,7 +643,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
 
-      doRollback(considerLastMessageAsDelivered, tx, closing);
+      doRollback(considerLastMessageAsDelivered, tx);
 
       if (xa)
       {
@@ -644,7 +655,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
+   public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -692,7 +703,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaEnd(final Xid xid) throws Exception
+   public synchronized void xaEnd(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -737,7 +748,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaForget(final Xid xid) throws Exception
+   public synchronized void xaForget(final Xid xid) throws Exception
    {
       long id = resourceManager.removeHeuristicCompletion(xid);
 
@@ -760,7 +771,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaJoin(final Xid xid) throws Exception
+   public synchronized void xaJoin(final Xid xid) throws Exception
    {
       Transaction theTx = resourceManager.getTransaction(xid);
 
@@ -783,7 +794,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaResume(final Xid xid) throws Exception
+   public synchronized void xaResume(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -818,7 +829,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaRollback(final Xid xid) throws Exception
+   public synchronized void xaRollback(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -861,13 +872,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else
             {
-               doRollback(false, theTx, false);
+               doRollback(false, theTx);
             }
          }
       }
    }
 
-   public void xaStart(final Xid xid) throws Exception
+   public synchronized void xaStart(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -890,7 +901,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaSuspend() throws Exception
+   public synchronized void xaSuspend() throws Exception
    {
       if (tx == null)
       {
@@ -915,7 +926,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaPrepare(final Xid xid) throws Exception
+   public synchronized void xaPrepare(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -1064,11 +1075,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (consumer == null)
       {
-         ServerSessionImpl.log.error("There is no consumer with id " + consumerID);
+         ServerSessionImpl.log.debug("There is no consumer with id " + consumerID);
 
          return;
       }
-
+      
       consumer.receiveCredits(credits);
    }
 
@@ -1083,7 +1094,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.trace("sendLarge::" + largeMsg);
       }
-
+      
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
@@ -1095,11 +1106,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
-
+      
       SimpleString address = message.getAddress();
 
       message.setMessageID(id);
       message.encodeMessageIDToBuffer();
+
+      if (defaultAddress == null && address != null)
+      {
+         defaultAddress = address;
+      }
 
       if (address == null)
       {
@@ -1121,6 +1137,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          log.trace("send(message=" + message + ", direct=" + direct + ") being called");
       }
 
+      if (message.getAddress() == null)
+      {
+         // This could happen with some tests that are ignoring messages
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "You don't have an address at the Server's Session");
+      }
+
       if (message.getAddress().equals(managementAddress))
       {
          // It's a management message
@@ -1130,11 +1152,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          doSend(message, direct);
-      }
-
-      if (defaultAddress == null)
-      {
-         defaultAddress = address;
       }
    }
 
@@ -1298,7 +1315,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Public
    // ----------------------------------------------------------------------------
-
+   
    public void clearLargeMessage()
    {
       currentLargeMessage = null;
@@ -1351,9 +1368,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void
-            doRollback(final boolean lastMessageAsDelived, final Transaction theTx, final boolean closing)
-                                                                                                          throws Exception
+   private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
    {
       boolean wasStarted = started;
 
@@ -1376,7 +1391,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       theTx.rollback();
 
-      if (wasStarted && !closing)
+      if (wasStarted)
       {
          for (ServerConsumer consumer : consumers.values())
          {

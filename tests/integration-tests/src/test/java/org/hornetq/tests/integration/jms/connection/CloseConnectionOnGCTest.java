@@ -23,16 +23,17 @@ import javax.jms.Session;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- *
+ * 
  * A CloseConnectionOnGCTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -41,6 +42,8 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class CloseConnectionOnGCTest extends JMSTestBase
 {
+   private static final Logger log = Logger.getLogger(CloseConnectionOnGCTest.class);
+
    private HornetQConnectionFactory cf;
 
    @Override
@@ -48,17 +51,15 @@ public class CloseConnectionOnGCTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
-
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (cf != null)
-         cf.close();
+      cf = null;
 
       super.tearDown();
    }

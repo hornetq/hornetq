@@ -311,6 +311,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       buff.putLong(remoteQueueID);
 
       message.putBytesProperty(idsHeaderName, ids);
+      
+      if (log.isTraceEnabled())
+      {
+         log.trace("Adding remoteQueue ID = " + remoteQueueID + " into message=" + message + " store-forward-queue=" + storeAndForwardQueue);
+      }
    }
 
 }

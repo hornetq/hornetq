@@ -61,28 +61,25 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
-      locator.setIdentity("testAutoFailback");
-
+      ((ServerLocatorInternal)locator).setIdentity("testAutoFailback");
+       
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
-
+      
       System.out.println(locator.getTopology().describe());
 
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
 
       session.addFailureListener(listener);
-
-      backupServer.stop();
-
+      
       liveServer.crash();
-
-      backupServer.start();
+      
       assertTrue(latch.await(5, TimeUnit.SECONDS));
-
+      
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection().getTopology().describe());
-
+      
       log.info("Server Crash!!!");
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -96,7 +93,7 @@ public class FailBackAutoTest extends FailoverTestBase
       verifyMessageOnServer(1, 1);
 
       System.out.println(locator.getTopology().describe());
-
+      
 
       session.removeFailureListener(listener);
 
@@ -108,9 +105,9 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("******* starting live server back");
       liveServer.start();
-
+      
       Thread.sleep(1000);
-
+      
       System.out.println("After failback: " + locator.getTopology().describe());
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
@@ -190,7 +187,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("restarting live node now");
       liveServer.start();
-
+      
       assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
@@ -266,13 +263,13 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return TransportConfigurationUtils.getInVMAcceptor(live);
+	      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return TransportConfigurationUtils.getInVMConnector(live);
+	      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 
@@ -282,7 +279,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       if (createQueue)
       {
-         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
+          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -317,7 +314,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
 
       ClientMessage message3 = consumer.receiveImmediate();
-
+      
       consumer.close();
 
       Assert.assertNull(message3);

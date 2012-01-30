@@ -43,15 +43,17 @@ public interface RemotingConnection extends BufferHandler
    long getCreationTime();
 
    /**
-    * Returns a string representation of the remote address of this connection.
+    * returns a string representation of the remote address of this connection
+    *
     * @return the remote address
     */
    String getRemoteAddress();
 
    /**
-    * Adds a failure listener.
+    * add a failure listener.
     * <p/>
     * The listener will be called in the event of connection failure.
+    *
     * @param listener the listener
     */
    void addFailureListener(FailureListener listener);
@@ -80,27 +82,27 @@ public interface RemotingConnection extends BufferHandler
     * @return true if removed
     */
    boolean removeCloseListener(CloseListener listener);
-
+   
    List<CloseListener> removeCloseListeners();
-
+   
    void setCloseListeners(List<CloseListener> listeners);
-
-
+   
+   
    /**
     * return all the failure listeners
     *
     * @return the listeners
     */
    List<FailureListener> getFailureListeners();
-
+   
    List<FailureListener> removeFailureListeners();
 
 
    /**
-    * Sets the failure listeners.
+    * set the failure listeners.
     * <p/>
-    * These will be called in the event of the connection being closed. Any previously added
-    * listeners will be removed.
+    * These will be called in the event of the connection being closed. Any previosuly added listeners will be removed.
+    *
     * @param listeners the listeners to add.
     */
    void setFailureListeners(List<FailureListener> listeners);
@@ -144,20 +146,20 @@ public interface RemotingConnection extends BufferHandler
     *
     * @return true if destroyed, otherwise false
     */
-   boolean isDestroyed();
-
+   boolean isDestroyed();    
+   
    /**
     * Disconnect the connection, closing all channels
     */
-   void disconnect();
-
+   void disconnect(boolean criticalError);
+   
    /**
     * returns true if any data has been received since the last time this method was called.
     *
     * @return true if data has been received.
     */
    boolean checkDataReceived();
-
+   
    /**
     * flush all outstanding data from the connection.
     */

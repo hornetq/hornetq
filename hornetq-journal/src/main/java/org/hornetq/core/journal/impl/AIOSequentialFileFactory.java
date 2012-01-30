@@ -111,6 +111,28 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
    {
       return AsynchronousFileImpl.isLoaded();
    }
+   
+   public ByteBuffer allocateDirectBuffer(final int size)
+   {
+      
+      int blocks = size / 512;
+      if (size % 512 != 0)
+      {
+         blocks ++;
+      }
+      
+      // The buffer on AIO has to be a multiple of 512
+      ByteBuffer buffer = AsynchronousFileImpl.newBuffer(blocks * 512);
+      
+      buffer.limit(size);
+
+      return buffer;
+   }
+   
+   public void releaseDirectBuffer(final ByteBuffer buffer)
+   {
+      AsynchronousFileImpl.destroyBuffer(buffer);
+   }
 
    public ByteBuffer newBuffer(int size)
    {
@@ -327,10 +349,4 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 
    }
 
-   @Override
-   public String toString()
-   {
-      return AIOSequentialFileFactory.class.getSimpleName() + "(buffersControl.stopped=" + buffersControl.stopped +
-               "):" + super.toString();
-   }
 }

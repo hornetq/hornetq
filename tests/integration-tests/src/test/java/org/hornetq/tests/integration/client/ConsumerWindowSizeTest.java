@@ -272,7 +272,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          consumers.add(consumer);
          session1.start();
          sessions.add(session1);
-         consumer.receive(10);
+         assertNull(consumer.receive(10));
 
       }
 
@@ -290,7 +290,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       senderSession.start();
 
       ClientConsumer consumer = consumers.get(2);
-      ClientMessage received = consumer.receiveImmediate();
+      ClientMessage received = consumer.receive(5000);
       assertNotNull(received);
 
       for (ClientSession tmpSess : sessions)

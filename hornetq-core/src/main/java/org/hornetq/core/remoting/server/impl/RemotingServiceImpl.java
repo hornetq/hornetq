@@ -52,6 +52,7 @@ import org.hornetq.spi.core.remoting.AcceptorFactory;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -262,7 +263,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   public void stop() throws Exception
+   public void stop(final boolean criticalError) throws Exception
    {
       if (!started)
       {
@@ -274,7 +275,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          return;
       }
 
-      failureCheckAndFlushThread.close();
+      failureCheckAndFlushThread.close(criticalError);
 
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
@@ -291,9 +292,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          log.debug("Sending disconnect on live connections");
       }
 
+      HashSet<ConnectionEntry> connectionEntries = new HashSet<ConnectionEntry>();
+      
+      connectionEntries.addAll(connections.values());
+      
       // Now we ensure that no connections will process any more packets after this method is complete
       // then send a disconnect packet
-      for (ConnectionEntry entry : connections.values())
+      for (ConnectionEntry entry : connectionEntries)
       {
          RemotingConnection conn = entry.connection;
 
@@ -302,7 +307,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.trace("Sending connection.disconnection packet to " + conn);
          }
 
-         conn.disconnect();
+         conn.disconnect(criticalError);
       }
 
       for (Acceptor acceptor : acceptors)
@@ -320,12 +325,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       threadPool.shutdown();
-
-      boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-
-      if (!ok)
+      
+      if (!criticalError)
       {
-         log.warn("Timed out waiting for remoting thread pool to terminate");
+         boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
+   
+         if (!ok)
+         {
+            log.warn("Timed out waiting for remoting thread pool to terminate");
+         }
       }
 
       started = false;
@@ -534,7 +542,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          this.pauseInterval = pauseInterval;
       }
 
-      public void close()
+      public void close(final boolean criticalError)
       {
          closed = true;
 
@@ -543,12 +551,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             notify();
          }
 
-         try
+         if (!criticalError)
          {
-            join();
-         }
-         catch (InterruptedException ignore)
-         {
+            try
+            {
+               join();
+            }
+            catch (InterruptedException ignore)
+            {
+            }
          }
       }
 
@@ -640,44 +651,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
    
-   
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
-    */
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
          public Object run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+         	return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
-
 
 }

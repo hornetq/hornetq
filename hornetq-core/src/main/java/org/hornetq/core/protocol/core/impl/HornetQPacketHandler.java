@@ -150,6 +150,7 @@ public class HornetQPacketHandler implements ChannelHandler
                                        "Server will not accept create session requests");
          }*/
 
+
          if (connection.getClientVersion() == 0)
          {
             connection.setClientVersion(request.getVersion());
@@ -239,7 +240,7 @@ public class HornetQPacketHandler implements ChannelHandler
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());
 
          // HORNETQ-720 XXX ataylor?
-         if (sessionHandler == null)
+         if (/*!server.checkActivate() || */ sessionHandler == null)
          {
             response = new ReattachSessionResponseMessage(-1, false);
          }
@@ -250,7 +251,7 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
-
+               
                log.warn("Reattach request from " + connection.getRemoteAddress() + " failed as there is no confirmationWindowSize configured, which may be ok for your system");
 
                sessionHandler.closeListeners();

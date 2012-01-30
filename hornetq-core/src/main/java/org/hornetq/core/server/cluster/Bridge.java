@@ -59,4 +59,6 @@ public interface Bridge extends Consumer, HornetQComponent
     * Basically this is for cluster bridges being disconnected
     */
    void disconnect();
+
+   boolean isConnected();
 }

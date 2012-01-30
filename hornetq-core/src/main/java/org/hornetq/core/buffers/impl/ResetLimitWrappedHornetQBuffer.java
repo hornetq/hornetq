@@ -22,7 +22,7 @@ import org.hornetq.core.message.impl.MessageInternal;
 
 /**
  * A ResetLimitWrappedHornetQBuffer
- *
+ * TODO: Move this to commons
  * @author Tim Fox
  *
  */

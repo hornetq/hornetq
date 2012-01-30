@@ -250,7 +250,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
       if (reply.needsDisconnect())
       {
-         connection.disconnect();
+         connection.disconnect(false);
       }
       else
       {
@@ -361,7 +361,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
                   if (dur2 > (2 * serverAcceptPing))
                   {
-                     connection.disconnect();
+                     connection.disconnect(false);
                      shutdown = true;
                      break;
                   }

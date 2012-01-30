@@ -28,6 +28,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -226,6 +227,11 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          public void done()
          {
             PageTransactionInfoImpl.this.onUpdate(1, storageManager, pagingManager);
+         }
+
+         public List<MessageReference> getRelatedMessageReferences()
+         {
+            return null;
          }
       });
    }

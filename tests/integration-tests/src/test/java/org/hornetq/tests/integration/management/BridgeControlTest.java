@@ -165,6 +165,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              targetQueueConfig.getAddress(),
                                              null,
                                              null,
+                                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                              HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              HornetQClient.DEFAULT_CONNECTION_TTL,
                                              RandomUtil.randomPositiveLong(),

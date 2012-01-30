@@ -116,6 +116,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                            forwardAddress,
                                                                            null,
                                                                            null,
+                                                                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                            HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                            1000,

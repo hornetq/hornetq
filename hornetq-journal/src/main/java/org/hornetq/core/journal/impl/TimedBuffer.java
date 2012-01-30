@@ -293,7 +293,7 @@ public class TimedBuffer
       flush(false);
    }
 
-   /**
+   /** 
     * force means the Journal is moving to a new file. Any pending write need to be done immediately
     * or data could be lost
     * */
@@ -323,7 +323,10 @@ public class TimedBuffer
 
             bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
-            bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+            if (bufferToFlush != null)
+            {
+               bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+            }
 
             if (spinning)
             {

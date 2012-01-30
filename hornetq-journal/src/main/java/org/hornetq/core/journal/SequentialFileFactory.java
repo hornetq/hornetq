@@ -17,9 +17,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- *
+ * 
  * A SequentialFileFactory
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -28,18 +28,20 @@ public interface SequentialFileFactory
 {
    SequentialFile createSequentialFile(String fileName, int maxIO);
 
-   /**
-    * @param extension extension to filter files with. Its value should not contain '.', as the
-    *           method appends one to it.
-    * @return
-    * @throws Exception
-    */
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();
    
    /** The SequentialFile will call this method when a disk IO Error happens during the live phase. */
    void onIOError(int errorCode, String message, SequentialFile file);
+
+   /** used for cases where you need direct buffer outside of the journal context.
+    *  This is because the native layer has a method that can be reused in certain cases like paging */
+   ByteBuffer allocateDirectBuffer(int size);
+   
+   /** used for cases where you need direct buffer outside of the journal context.
+    *  This is because the native layer has a method that can be reused in certain cases like paging */
+   void releaseDirectBuffer(ByteBuffer buffer);
 
    /**
     * Note: You need to release the buffer if is used for reading operations.
@@ -61,6 +63,8 @@ public interface SequentialFileFactory
    int getAlignment();
 
    int calculateBlockSize(int bytes);
+   
+   String getDirectory();
 
    void clearBuffer(ByteBuffer buffer);
 
@@ -68,7 +72,7 @@ public interface SequentialFileFactory
 
    void stop();
 
-   /**
+   /** 
     * Create the directory if it doesn't exist yet
     */
    void createDirs() throws Exception;

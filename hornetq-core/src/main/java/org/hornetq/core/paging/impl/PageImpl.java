@@ -32,7 +32,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -41,7 +41,7 @@ public class PageImpl implements Page, Comparable<Page>
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageImpl.class);
-
+   
    private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isDebug = log.isDebugEnabled();
 
@@ -62,7 +62,7 @@ public class PageImpl implements Page, Comparable<Page>
    private final SequentialFile file;
 
    private final SequentialFileFactory fileFactory;
-
+   
    /**
     * The page cache that will be filled with data as we write more data
     */
@@ -99,7 +99,7 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return pageId;
    }
-
+   
    public void setLiveCache(LivePageCache pageCache)
    {
       this.pageCache = pageCache;
@@ -107,67 +107,76 @@ public class PageImpl implements Page, Comparable<Page>
 
    public List<PagedMessage> read(StorageManager storage) throws Exception
    {
-	  if (isDebug)
-	  {
-	     log.debug("reading page " + this.pageId + " on address = " + storeName);
-	  }
+      if (isDebug)
+      {
+         log.debug("reading page " + this.pageId + " on address = " + storeName);
+      }
 
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer buffer2 = ByteBuffer.allocateDirect(size.get());
+      ByteBuffer directBuffer = storage.allocateDirectBuffer((int)file.size());
 
-      file.position(0);
-      file.read(buffer2);
-
-      buffer2.rewind();
-
-      HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(buffer2);
-      fileBuffer.writerIndex(fileBuffer.capacity());
-
-      while (fileBuffer.readable())
+      try
       {
-         final int position = fileBuffer.readerIndex();
 
-         byte byteRead = fileBuffer.readByte();
+         file.position(0);
+         file.read(directBuffer);
 
-         if (byteRead == PageImpl.START_BYTE)
+         directBuffer.rewind();
+
+         HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(directBuffer);
+         fileBuffer.writerIndex(fileBuffer.capacity());
+
+         while (fileBuffer.readable())
          {
-            if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
+            final int position = fileBuffer.readerIndex();
+
+            byte byteRead = fileBuffer.readByte();
+
+            if (byteRead == PageImpl.START_BYTE)
             {
-               int messageSize = fileBuffer.readInt();
-               int oldPos = fileBuffer.readerIndex();
-               if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
+               if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
                {
-                  PagedMessage msg = new PagedMessageImpl();
-                  msg.decode(fileBuffer);
-                  byte b = fileBuffer.readByte();
-                  if (b != PageImpl.END_BYTE)
+                  int messageSize = fileBuffer.readInt();
+                  int oldPos = fileBuffer.readerIndex();
+                  if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
                   {
-                     // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
-                     // constraint was already checked
-                     throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
+                     PagedMessage msg = new PagedMessageImpl();
+                     msg.decode(fileBuffer);
+                     byte b = fileBuffer.readByte();
+                     if (b != PageImpl.END_BYTE)
+                     {
+                        // Sanity Check: This would only happen if there is a bug on decode or any internal code, as
+                        // this
+                        // constraint was already checked
+                        throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
+                     }
+                     msg.initMessage(storage);
+                     if (isTrace)
+                     {
+                        log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                     }
+                     messages.add(msg);
                   }
-                  msg.initMessage(storage);
-                  if (isTrace)
+                  else
                   {
-                     log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                     markFileAsSuspect(position, messages.size());
+                     break;
                   }
-                  messages.add(msg);
-               }
-               else
-               {
-                  markFileAsSuspect(position, messages.size());
-                  break;
                }
             }
+            else
+            {
+               markFileAsSuspect(position, messages.size());
+               break;
+            }
          }
-         else
-         {
-            markFileAsSuspect(position, messages.size());
-            break;
-         }
+      }
+      finally
+      {
+         storage.freeDirectBuffer(directBuffer);
       }
 
       numberOfMessages.set(messages.size());
@@ -193,7 +202,7 @@ public class PageImpl implements Page, Comparable<Page>
       buffer.rewind();
 
       file.writeDirect(buffer, false);
-
+      
       if (pageCache != null)
       {
          pageCache.addLiveMessage(message);
@@ -212,7 +221,10 @@ public class PageImpl implements Page, Comparable<Page>
 
    public void open() throws Exception
    {
-      file.open();
+      if (!file.isOpen())
+      {
+         file.open();
+      }
       size.set((int)file.size());
       file.position(0);
    }
@@ -238,7 +250,7 @@ public class PageImpl implements Page, Comparable<Page>
       {
          storageManager.pageDeleted(storeName, pageId);
       }
-
+      
       if (isDebug)
       {
          log.debug("Deleting pageId=" + pageId + " on store " + storeName);
@@ -251,7 +263,7 @@ public class PageImpl implements Page, Comparable<Page>
             if (msg.getMessage().isLargeMessage())
             {
                LargeServerMessage lmsg = (LargeServerMessage)msg.getMessage();
-
+               
                // Remember, cannot call delete directly here
                // Because the large-message may be linked to another message
                // or it may still being delivered even though it has been acked already
@@ -274,7 +286,7 @@ public class PageImpl implements Page, Comparable<Page>
          {
             file.delete();
          }
-
+         
          return true;
       }
       catch (Exception e)
@@ -293,19 +305,38 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return size.intValue();
    }
-
+   
    @Override
    public String toString()
    {
       return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
    }
-
+   
 
    public int compareTo(Page otherPage)
    {
       return otherPage.getPageId() - this.pageId;
    }
+   
+   public void finalize()
+   {
+      try
+      {
+         if (file != null && file.isOpen())
+         {
+            file.close();
+         }
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+      }
+   }
 
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
    @Override
    public int hashCode()
    {
@@ -315,6 +346,16 @@ public class PageImpl implements Page, Comparable<Page>
       return result;
    }
 
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
    @Override
    public boolean equals(Object obj)
    {
@@ -329,12 +370,6 @@ public class PageImpl implements Page, Comparable<Page>
          return false;
       return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    /**
     * @param position

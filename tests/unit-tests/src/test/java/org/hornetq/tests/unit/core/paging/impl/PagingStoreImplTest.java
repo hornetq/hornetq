@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +57,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- *
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -295,8 +296,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      PagingStoreImpl storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                            null,
                                                            100,
                                                            createMockManager(),
@@ -723,7 +723,7 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.startPaging();
 
       assertNotNull(storeImpl.getCurrentPage());
-
+      
       storeImpl.stop();
    }
 
@@ -1016,6 +1016,39 @@ public class PagingStoreImplTest extends UnitTestCase
        * @see org.hornetq.core.paging.PagingStoreFactory#stop()
        */
       public void stop() throws InterruptedException
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#startPageRead()
+       */
+      public void beforePageRead() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
+       */
+      public void afterPageRead() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(int)
+       */
+      public ByteBuffer allocateDirectBuffer(int size)
+      {
+         return ByteBuffer.allocateDirect(size);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
+       */
+      public void freeDirectuffer(ByteBuffer buffer)
       {
       }
 

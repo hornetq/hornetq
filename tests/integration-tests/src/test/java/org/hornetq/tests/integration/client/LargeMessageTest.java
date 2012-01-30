@@ -37,6 +37,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -883,6 +884,88 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
 
          validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testSentWithDuplicateIDBridge() throws Exception
+   {
+      internalTestSentWithDuplicateID(true);
+   }
+
+   public void testSentWithDuplicateID() throws Exception
+   {
+      internalTestSentWithDuplicateID(false);
+   }
+
+   private void internalTestSentWithDuplicateID(final boolean isSimulateBridge) throws Exception
+   {
+      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
+      ClientSession session = null;
+
+      try
+      {
+         HornetQServer server = createServer(true, isNetty());
+
+         server.start();
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         session = sf.createSession(true, true, 0);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         String someDuplicateInfo = "Anything";
+
+         for (int i = 0; i < 10; i++)
+         {
+            Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+            if (isSimulateBridge)
+            {
+               clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID,  someDuplicateInfo.getBytes());
+            }
+            else
+            {
+               clientFile.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID,  someDuplicateInfo.getBytes());
+            }
+
+            producer.send(clientFile);
+         }
+         
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         
+         session.start();
+         
+         ClientMessage msg = consumer.receive(10000);
+         
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+         }
+         
+         assertNotNull(msg);
+         
+         msg.acknowledge();
+         
+         assertNull(consumer.receiveImmediate());
+         
+         session.commit();
+         
+         validateNoFilesOnLargeDir();
+         
       }
       finally
       {

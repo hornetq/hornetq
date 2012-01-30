@@ -477,6 +477,15 @@ public interface Configuration extends Serializable
     * Sets the file system directory used to store bindings.
     */
    void setBindingsDirectory(String dir);
+   
+   /** The max number of concurrent reads allowed on paging.
+    * 
+    *  Default = 5 */
+   int getPageMaxConcurrentIO();
+   
+   /** The max number of concurrent reads allowed on paging.
+    *  Default = 5 */
+   void setPageMaxConcurrentIO(int maxIO);
 
    /**
     * Returns the file system directory used to store journal log.
@@ -741,7 +750,7 @@ public interface Configuration extends Serializable
    void setWildcardRoutingEnabled(boolean enabled);
 
    /**
-    * Returns the timeout (in milliseconds) after which transactions is removed
+    * Returns the timeout (in milliseconds) after which transactions is removed 
     * from the resource manager after it was created.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_TRANSACTION_TIMEOUT}.
@@ -749,7 +758,7 @@ public interface Configuration extends Serializable
    long getTransactionTimeout();
 
    /**
-    * Sets the timeout (in milliseconds) after which transactions is removed
+    * Sets the timeout (in milliseconds) after which transactions is removed 
     * from the resource manager after it was created.
     */
    void setTransactionTimeout(long timeout);

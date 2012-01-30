@@ -292,7 +292,7 @@ public abstract class VersionedStompFrameHandler
          //request null, disconnect if so.
          if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
          {
-            this.connection.disconnect();
+            this.connection.disconnect(false);
          }         
       }
       return response;

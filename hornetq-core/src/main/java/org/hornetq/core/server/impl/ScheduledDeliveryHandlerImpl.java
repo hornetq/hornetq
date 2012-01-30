@@ -115,7 +115,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          while (iter.hasNext())
          {
             MessageReference ref = iter.next();
-            if (filter.match(ref.getMessage()))
+            if (filter == null || filter.match(ref.getMessage()))
             {
                iter.remove();
                refs.add(ref);

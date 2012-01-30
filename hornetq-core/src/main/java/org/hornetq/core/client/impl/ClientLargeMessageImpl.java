@@ -219,6 +219,9 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          this.bufferOut = out;
       }
 
+      /* (non-Javadoc)
+       * @see java.io.OutputStream#write(int)
+       */
       @Override
       public void write(int b) throws IOException
       {

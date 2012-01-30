@@ -90,6 +90,8 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
+   
+   public static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
 
@@ -267,6 +269,8 @@ public class ConfigurationImpl implements Configuration
    protected String pagingDirectory = ConfigurationImpl.DEFAULT_PAGING_DIR;
 
    // File related attributes -----------------------------------------------------------
+   
+   protected int maxConcurrentPageIO = ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO;
 
    protected String largeMessagesDirectory = ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR;
 
@@ -625,6 +629,24 @@ public class ConfigurationImpl implements Configuration
    {
       bindingsDirectory = dir;
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#getPageMaxConcurrentIO()
+    */
+   public int getPageMaxConcurrentIO()
+   {
+      return maxConcurrentPageIO;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#setPageMaxConcurrentIO(int)
+    */
+   public void setPageMaxConcurrentIO(int maxIO)
+   {
+      this.maxConcurrentPageIO = maxIO;
+   }
+
 
    public String getJournalDirectory()
    {

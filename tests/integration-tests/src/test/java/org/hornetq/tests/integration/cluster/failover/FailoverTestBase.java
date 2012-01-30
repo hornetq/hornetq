@@ -110,23 +110,24 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
-
+      
+      
+      
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
-
+      
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
       {
          backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServer");
-        if (startBackupServer)
-        {
-         backupServer.start();
-         waitForServer(backupServer.getServer());
-        }
+         if (startBackupServer)
+         {
+          backupServer.start();
+          waitForServer(backupServer.getServer());
+         }
       }
-
    }
 
    protected TestableServer createTestableServer(Configuration config)
@@ -185,7 +186,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
-                                                        liveConnector.getName());
+              liveConnector.getName());
       backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
@@ -264,117 +265,123 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-         throws Exception
-   {
-      ClientSessionFactoryInternal sf;
-      CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
+	protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
+	        throws Exception
+	{
+		ClientSessionFactoryInternal sf;
+		CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
-      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+		locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
-      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
-      addSessionFactory(sf);
-      assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
-      return sf;
-   }
+		sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+		addSessionFactory(sf);
+		assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
+		return sf;
+	}
 
-   /**
-    * Waits for backup to be in the "started" state and to finish synchronization with its live.
-    * @param sessionFactory
-    * @param seconds
-    * @throws Exception
-    */
-   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
-   {
-      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
-      if (actualServer.getConfiguration().isSharedStore())
-      {
-         waitForServer(actualServer);
-      }
-      else
-      {
-         waitForRemoteBackup(sessionFactory, seconds, true, actualServer);
-      }
-   }
+	protected void waitForBackup(ClientSessionFactoryInternal sf, long seconds) throws Exception
+	{
+		long time = System.currentTimeMillis();
+		long toWait = seconds * 1000;
+		while (sf.getBackupConnector() == null)
+		{
+			try
+			{
+				Thread.sleep(100);
+			} catch (InterruptedException e)
+			{
+				// ignore
+			}
+			if (sf.getBackupConnector() != null)
+			{
+				break;
+			} else if (System.currentTimeMillis() > (time + toWait))
+			{
+				fail("backup server never started");
+			}
+		}
+		System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
+	}
 
-   /**
-    * @param sessionFactory
-    * @param seconds
-    * @param waitForSync
-    * @param actualServer
-    */
-   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory,
-                                    int seconds,
-                                    boolean waitForSync,
-                                    final HornetQServer backup)
-   {
-      final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
-      final long toWait = seconds * 1000;
-      final long time = System.currentTimeMillis();
-      while (true)
-      {
-         if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
-                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
-         {
-            break;
-         }
-         if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
-                     actualServer.isRemoteBackupUpToDate() + ")");
-         }
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            fail(e.getMessage());
-         }
-      }
-   }
+	   /**
+	    * @param sessionFactory
+	    * @param seconds
+	    * @param waitForSync
+	    * @param actualServer
+	    */
+	   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory,
+	                                    int seconds,
+	                                    boolean waitForSync,
+	                                    final HornetQServer backup)
+	   {
+	      final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
+	      final long toWait = seconds * 1000;
+	      final long time = System.currentTimeMillis();
+	      while (true)
+	      {
+	         if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
+	                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
+	         {
+	            break;
+	         }
+	         if (System.currentTimeMillis() > (time + toWait))
+	         {
+	            fail("backup server never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
+	                     actualServer.isRemoteBackupUpToDate() + ")");
+	         }
+	         try
+	         {
+	            Thread.sleep(100);
+	         }
+	         catch (InterruptedException e)
+	         {
+	            fail(e.getMessage());
+	         }
+	      }
+	   }
 
-   protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
-      }
+	   protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
+	   {
+	      if (live)
+	      {
+	         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
+	      }
 
-      Map<String, Object> server1Params = new HashMap<String, Object>();
+	      Map<String, Object> server1Params = new HashMap<String, Object>();
 
-      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+	      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+	                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
-   }
+	      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
+	   }
 
-   protected TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
-      }
+	   protected TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
+	   {
+	      if (live)
+	      {
+	         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
+	      }
 
-      Map<String, Object> server1Params = new HashMap<String, Object>();
+	      Map<String, Object> server1Params = new HashMap<String, Object>();
 
-      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
-      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
-   }
+	      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+	                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+	      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
+	   }
 
-   protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
+	   protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
 
-   protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
+	   protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
 
-   protected ServerLocatorInternal getServerLocator() throws Exception
-   {
-      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
-      addServerLocator(locator);
-      return (ServerLocatorInternal) locator;
-   }
+	   protected ServerLocatorInternal getServerLocator() throws Exception
+	   {
+	      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+	      addServerLocator(locator);
+	      return (ServerLocatorInternal) locator;
+	   }
 
-   protected void crash(final ClientSession... sessions) throws Exception
+
+	   protected void crash(final ClientSession... sessions) throws Exception
    {
       liveServer.crash(sessions);
    }

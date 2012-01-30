@@ -36,7 +36,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 /**
  * A PageProviderIMpl
- *
+ * 
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
  *       However I want to keep this isolated as much as possible during development
  *
@@ -81,6 +81,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    }
 
    // Public --------------------------------------------------------
+
+   public PagingStore getAssociatedStore()
+   {
+      return pagingStore;
+   }
 
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
@@ -178,6 +183,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                page = pagingStore.createPage((int)pageId);
 
+               storageManager.beforePageRead();
                page.open();
 
                List<PagedMessage> pgdMessages = page.read(storageManager);
@@ -195,6 +201,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                catch (Throwable ignored)
                {
                }
+               storageManager.afterPageRead();
                cache.unlock();
             }
          }
@@ -246,11 +253,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public void stop()
    {
-      for (PageSubscription cursor : activeCursors.values())
-      {
-         cursor.disableAutoCleanup();
-      }
-
       for (PageSubscription cursor : activeCursors.values())
       {
          cursor.stop();
@@ -334,6 +336,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          if (!pagingStore.isStarted())
             return;
       }
+
       synchronized (this)
       {
          try
@@ -427,7 +430,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
             if (pagingStore.getNumberOfPages() == 0 || pagingStore.getNumberOfPages() == 1 &&
                 pagingStore.getCurrentPage().getNumberOfMessages() == 0)
             {
-
                pagingStore.stopPaging();
             }
             else
@@ -474,8 +476,26 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // The page is not on cache any more
                // We need to read the page-file before deleting it
                // to make sure we remove any large-messages pending
-               depagedPage.open();
-               List<PagedMessage> pgdMessagesList = depagedPage.read(storageManager);
+               storageManager.beforePageRead();
+               
+               List<PagedMessage> pgdMessagesList = null;
+               try
+               {
+                  depagedPage.open();
+                  pgdMessagesList = depagedPage.read(storageManager);
+               }
+               finally
+               {
+                  try
+                  {
+                     depagedPage.close();
+                  }
+                  catch (Exception e)
+                  {
+                  }
+                  
+                  storageManager.afterPageRead();
+               }
                depagedPage.close();
                pgdMessages = pgdMessagesList.toArray(new PagedMessage[pgdMessagesList.size()]);
             }
@@ -505,7 +525,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     * @param currentPage
     * @throws Exception
     */
-   private void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
    {
       try
       {
@@ -542,7 +562,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    // Protected -----------------------------------------------------
 
-   private PageCacheImpl createPageCache(final long pageId) throws Exception
+   /* Protected as we may let test cases to instrument the test */
+   protected PageCacheImpl createPageCache(final long pageId) throws Exception
    {
       return new PageCacheImpl(pagingStore.createPage((int)pageId));
    }

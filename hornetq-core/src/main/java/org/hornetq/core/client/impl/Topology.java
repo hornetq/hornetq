@@ -41,7 +41,7 @@ public class Topology implements Serializable
 
    private static final Logger log = Logger.getLogger(Topology.class);
 
-   private transient Executor executor = null;
+   private Executor executor = null;
 
    /**
     * Used to debug operations.
@@ -58,9 +58,9 @@ public class Topology implements Serializable
     * keys are node IDs
     * values are a pair of live/backup transport configurations
     */
-   private final Map<String, TopologyMember> mapTopology = new ConcurrentHashMap<String, TopologyMember>();
+   private final Map<String, TopologyMember> topology = new ConcurrentHashMap<String, TopologyMember>();
 
-   private final Map<String, Long> mapDelete = new ConcurrentHashMap<String, Long>();
+   private transient Map<String, Long> mapDelete;
 
    public Topology(final Object owner)
    {
@@ -111,8 +111,8 @@ public class Topology implements Serializable
             log.debug(this + "::node " + nodeId + "=" + memberInput);
          }
          memberInput.setUniqueEventID(System.currentTimeMillis());
-         mapTopology.remove(nodeId);
-         mapTopology.put(nodeId, memberInput);
+         topology.remove(nodeId);
+         topology.put(nodeId, memberInput);
          sendMemberUp(memberInput.getUniqueEventID(), nodeId, memberInput);
       }
    }
@@ -130,17 +130,17 @@ public class Topology implements Serializable
          TopologyMember currentMember = getMember(nodeId);
          if (currentMember == null)
          {
-            log.warn("There's no live to be updated on backup update, node=" + nodeId + " memberInput=" + memberInput,
+            log.debug("There's no live to be updated on backup update, node=" + nodeId + " memberInput=" + memberInput,
                      new Exception("trace"));
 
             currentMember = memberInput;
-            mapTopology.put(nodeId, currentMember);
+            topology.put(nodeId, currentMember);
          }
 
          TopologyMember newMember = new TopologyMember(currentMember.getA(), memberInput.getB());
          newMember.setUniqueEventID(System.currentTimeMillis());
-         mapTopology.remove(nodeId);
-         mapTopology.put(nodeId, newMember);
+         topology.remove(nodeId);
+         topology.put(nodeId, newMember);
          sendMemberUp(newMember.getUniqueEventID(), nodeId, newMember);
 
          return newMember;
@@ -148,9 +148,9 @@ public class Topology implements Serializable
    }
 
    /**
-    *
+    * 
     * @param <p>uniqueIdentifier an unique identifier for when the change was made
-    *           We will use current time millis for starts, and a ++ of that number for shutdown. </p>
+    *           We will use current time millis for starts, and a ++ of that number for shutdown. </p> 
     * @param nodeId
     * @param memberInput
     * @return
@@ -158,7 +158,7 @@ public class Topology implements Serializable
    public boolean updateMember(final long uniqueEventID, final String nodeId, final TopologyMember memberInput)
    {
 
-      Long deleteTme = mapDelete.get(nodeId);
+      Long deleteTme = getMapDelete().get(nodeId);
       if (deleteTme != null && uniqueEventID < deleteTme)
       {
          log.debug("Update uniqueEvent=" + uniqueEventID +
@@ -172,7 +172,7 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         TopologyMember currentMember = mapTopology.get(nodeId);
+         TopologyMember currentMember = topology.get(nodeId);
 
          if (currentMember == null)
          {
@@ -184,7 +184,7 @@ public class Topology implements Serializable
                                   memberInput, new Exception("trace"));
             }
             memberInput.setUniqueEventID(uniqueEventID);
-            mapTopology.put(nodeId, memberInput);
+            topology.put(nodeId, memberInput);
             sendMemberUp(uniqueEventID, nodeId, memberInput);
             return true;
          }
@@ -207,7 +207,7 @@ public class Topology implements Serializable
                if (log.isDebugEnabled())
                {
                   log.debug(this + "::updated currentMember=nodeID=" +
-                            nodeId +
+                            nodeId + 
                             ", currentMember=" +
                             currentMember +
                             ", memberInput=" +
@@ -217,14 +217,19 @@ public class Topology implements Serializable
 
 
                newMember.setUniqueEventID(uniqueEventID);
-               mapTopology.remove(nodeId);
-               mapTopology.put(nodeId, newMember);
+               topology.remove(nodeId);
+               topology.put(nodeId, newMember);
                sendMemberUp(uniqueEventID, nodeId, newMember);
 
                return true;
             }
             else
             {
+               /*always add the backup, better to try to reconnect to something thats not there then to not know about it at all*/
+               if(currentMember.getB() == null && memberInput.getB() != null)
+               {
+                  currentMember.setB(memberInput.getB());
+               }
                return false;
             }
          }
@@ -262,7 +267,7 @@ public class Topology implements Serializable
                                         " connector = " +
                                         memberToSend.getConnector());
                   }
-
+   
                   try
                   {
                      listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
@@ -296,7 +301,7 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         member = mapTopology.get(nodeId);
+         member = topology.get(nodeId);
          if (member != null)
          {
             if (member.getUniqueEventID() > uniqueEventID)
@@ -306,8 +311,8 @@ public class Topology implements Serializable
             }
             else
             {
-               mapDelete.put(nodeId, uniqueEventID);
-               member = mapTopology.remove(nodeId);
+               getMapDelete().put(nodeId, uniqueEventID);
+               member = topology.remove(nodeId);
             }
          }
       }
@@ -320,7 +325,7 @@ public class Topology implements Serializable
                             ", result=" +
                             member +
                             ", size = " +
-                            mapTopology.size(), new Exception("trace"));
+                            topology.size(), new Exception("trace"));
       }
 
       if (member != null)
@@ -414,7 +419,7 @@ public class Topology implements Serializable
 
             synchronized (Topology.this)
             {
-               copy = new HashMap<String, TopologyMember>(mapTopology);
+               copy = new HashMap<String, TopologyMember>(topology);
             }
 
             for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
@@ -439,12 +444,12 @@ public class Topology implements Serializable
 
    public synchronized TopologyMember getMember(final String nodeID)
    {
-      return mapTopology.get(nodeID);
+      return topology.get(nodeID);
    }
 
    public synchronized boolean isEmpty()
    {
-      return mapTopology.isEmpty();
+      return topology.isEmpty();
    }
 
    public Collection<TopologyMember> getMembers()
@@ -452,7 +457,7 @@ public class Topology implements Serializable
       ArrayList<TopologyMember> members;
       synchronized (this)
       {
-         members = new ArrayList<TopologyMember>(mapTopology.values());
+         members = new ArrayList<TopologyMember>(topology.values());
       }
       return members;
    }
@@ -460,7 +465,7 @@ public class Topology implements Serializable
    public synchronized int nodes()
    {
       int count = 0;
-      for (TopologyMember member : mapTopology.values())
+      for (TopologyMember member : topology.values())
       {
          if (member.getA() != null)
          {
@@ -481,22 +486,23 @@ public class Topology implements Serializable
 
    public synchronized String describe(final String text)
    {
-      StringBuilder desc = new StringBuilder(text + "topology on " + this + ":\n");
-      for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(mapTopology).entrySet())
+
+      String desc = text + "topology on " + this + ":\n";
+      for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(topology).entrySet())
       {
-         desc.append("\t" + entry.getKey() + " => " + entry.getValue() + "\n");
+         desc += "\t" + entry.getKey() + " => " + entry.getValue() + "\n";
       }
-      desc.append("\t" + "nodes=" + nodes() + "\t" + "members=" + members());
-      if (mapTopology.isEmpty())
+      desc += "\t" + "nodes=" + nodes() + "\t" + "members=" + members();
+      if (topology.isEmpty())
       {
-         desc.append("\tEmpty");
+         desc += "\tEmpty";
       }
-      return desc.toString();
+      return desc;
    }
 
    public int members()
    {
-      return mapTopology.size();
+      return topology.size();
    }
 
    /** The owner exists mainly for debug purposes.
@@ -509,7 +515,7 @@ public class Topology implements Serializable
 
    public TransportConfiguration getBackupForConnector(final TransportConfiguration connectorConfiguration)
    {
-      for (TopologyMember member : mapTopology.values())
+      for (TopologyMember member : topology.values())
       {
          if (member.getA() != null && member.getA().equals(connectorConfiguration))
          {
@@ -533,6 +539,15 @@ public class Topology implements Serializable
       {
          return "Topology@" + Integer.toHexString(System.identityHashCode(this)) + "[owner=" + owner + "]";
       }
+   }
+
+   private synchronized Map<String, Long> getMapDelete()
+   {
+      if (mapDelete == null)
+      {
+         mapDelete = new ConcurrentHashMap<String, Long>();      
+      }
+      return mapDelete;
    }
 
 }

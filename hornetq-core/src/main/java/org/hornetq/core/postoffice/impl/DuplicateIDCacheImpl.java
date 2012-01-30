@@ -228,12 +228,16 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          // The recordID could be negative if the duplicateCache is configured to not persist, 
          // -1 would mean null on this case
          id.setB(recordID >= 0 ? recordID : null);
+         
+         holder.pos = pos;
       }
       else
       {
          id = new Pair<ByteArrayHolder, Long>(holder, recordID >= 0 ? recordID : null);
 
          ids.add(id);
+         
+         holder.pos = pos;
       }
 
       if (pos++ == cacheSize - 1)
@@ -310,6 +314,8 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       int hash;
       
+      int pos;
+
       @Override
       public boolean equals(final Object other)
       {

@@ -13,24 +13,11 @@
 
 package org.hornetq.tests.unit.ra;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 import javax.jms.Connection;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
-import javax.resource.spi.work.WorkListener;
-import javax.resource.spi.work.WorkManager;
-import javax.transaction.xa.XAResource;
 
 import junit.framework.Assert;
 
@@ -465,7 +452,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
-         ra.start(fakeCTX);
+         ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
 
          Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
 
@@ -486,7 +473,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          spec.setMinSession(1);
          spec.setMaxSession(1);
 
-         HornetQActivation activation = new HornetQActivation(ra, new FakeMessageEndpointFactory(), spec);
+         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
          activation.start();
          activation.stop();
@@ -526,81 +513,4 @@ public class ResourceAdapterTest extends ServiceTestBase
       }*/
    }
 
-   BootstrapContext fakeCTX = new BootstrapContext()
-   {
-
-      public Timer createTimer() throws UnavailableException
-      {
-         return null;
-      }
-
-      public WorkManager getWorkManager()
-      {
-         return new WorkManager()
-         {
-            public void doWork(final Work work) throws WorkException
-            {
-            }
-
-            public void doWork(final Work work,
-                               final long l,
-                               final ExecutionContext executionContext,
-                               final WorkListener workListener) throws WorkException
-            {
-            }
-
-            public long startWork(final Work work) throws WorkException
-            {
-               return 0;
-            }
-
-            public long startWork(final Work work,
-                                  final long l,
-                                  final ExecutionContext executionContext,
-                                  final WorkListener workListener) throws WorkException
-            {
-               return 0;
-            }
-
-            public void scheduleWork(final Work work) throws WorkException
-            {
-               work.run();
-            }
-
-            public void scheduleWork(final Work work,
-                                     final long l,
-                                     final ExecutionContext executionContext,
-                                     final WorkListener workListener) throws WorkException
-            {
-            }
-         };
-      }
-
-      public XATerminator getXATerminator()
-      {
-         return null;
-      }
-
-   };
-
-   class FakeMessageEndpointFactory implements MessageEndpointFactory
-   {
-
-      /* (non-Javadoc)
-       * @see javax.resource.spi.endpoint.MessageEndpointFactory#createEndpoint(javax.transaction.xa.XAResource)
-       */
-      public MessageEndpoint createEndpoint(final XAResource arg0) throws UnavailableException
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see javax.resource.spi.endpoint.MessageEndpointFactory#isDeliveryTransacted(java.lang.reflect.Method)
-       */
-      public boolean isDeliveryTransacted(final Method arg0) throws NoSuchMethodException
-      {
-         return false;
-      }
-
-   }
 }

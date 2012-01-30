@@ -530,40 +530,18 @@ public class XMLUtil
       }
       return nodes;
    }
-
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
-    */
+   
    private static URL findResource(final String resourceName)
    {
       return AccessController.doPrivileged(new PrivilegedAction<URL>()
       {
          public URL run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               URL resource = loader.getResource(resourceName);
-               if (resource != null)
-                   return resource;
-            }
-            catch (Throwable t)
-            {
-            }
-
-            loader = Thread.currentThread().getContextClassLoader();
-            if (loader == null)
-                return null;
-
-            URL resource = loader.getResource(resourceName);
-            if (resource != null)
-                return resource;
-
-             return null;
+         	return ClassloadingUtil.findResource(resourceName);
          }
       });
    }
+
 
    // Inner classes --------------------------------------------------------------------------------
 

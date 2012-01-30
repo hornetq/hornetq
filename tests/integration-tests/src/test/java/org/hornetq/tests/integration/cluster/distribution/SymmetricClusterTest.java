@@ -18,11 +18,11 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A SymmetricClusterTest
- *
+ * 
  * Most of the cases are covered in OneWayTwoNodeClusterTest - we don't duplicate them all here
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * 
  * Created 3 Feb 2009 09:10:43
  *
  *
@@ -1085,7 +1085,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    public void testRouteWhenNoConsumersFalseNoLocalConsumerLoadBalancedQueues() throws Exception
    {
       setupCluster(false);
-
+      
       startServers();
 
       for (int i = 0 ; i <= 4; i++)
@@ -1382,7 +1382,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    {
       doTestStartStopServers(1, 3000);
    }
-
+   
    public void doTestStartStopServers(long pauseBeforeServerRestarts, long pauseAfterServerRestarts) throws Exception
    {
       setupCluster();
@@ -1478,7 +1478,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       System.out.println(clusterDescription(servers[3]));
       System.out.println(clusterDescription(servers[4]));
       System.out.println("#####################################");
-
+      
       waitForBindings(0, "queues.testaddress", 23, 23, false);
       waitForBindings(1, "queues.testaddress", 23, 23, false);
       waitForBindings(2, "queues.testaddress", 23, 23, false);
@@ -1521,9 +1521,9 @@ public class SymmetricClusterTest extends ClusterTestBase
       System.out.println(clusterDescription(servers[3]));
       System.out.println(clusterDescription(servers[4]));
       System.out.println("#####################################");
-
+      
       Thread.sleep(pauseBeforeServerRestarts);
-
+      
       startServers(3, 0);
 
       Thread.sleep(pauseAfterServerRestarts);
@@ -1572,7 +1572,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 5, 5, true);
       waitForBindings(3, "queues.testaddress", 6, 6, true);
       waitForBindings(4, "queues.testaddress", 7, 7, true);
-
+      
       System.out.println("### after servers 0 & 3 restarted ###");
       System.out.println(clusterDescription(servers[0]));
       System.out.println(clusterDescription(servers[1]));
@@ -1716,12 +1716,12 @@ public class SymmetricClusterTest extends ClusterTestBase
       closeSessionFactory(0);
 
       stopServers(0);
-
+      
       waitForBindings(1, "queues.testaddress", 5, 5, true);
       waitForBindings(2, "queues.testaddress", 5, 5, true);
       waitForBindings(3, "queues.testaddress", 6, 6, true);
       waitForBindings(4, "queues.testaddress", 7, 7, true);
-
+      
       waitForBindings(1, "queues.testaddress", 18, 18, false);
       waitForBindings(2, "queues.testaddress", 18, 18, false);
       waitForBindings(3, "queues.testaddress", 17, 17, false);
@@ -1737,11 +1737,11 @@ public class SymmetricClusterTest extends ClusterTestBase
       closeSessionFactory(1);
 
       stopServers(1);
-
+      
       waitForBindings(2, "queues.testaddress", 5, 5, true);
       waitForBindings(3, "queues.testaddress", 6, 6, true);
       waitForBindings(4, "queues.testaddress", 7, 7, true);
-
+      
       waitForBindings(2, "queues.testaddress", 13, 13, false);
       waitForBindings(3, "queues.testaddress", 12, 12, false);
       waitForBindings(4, "queues.testaddress", 11, 11, false);
@@ -1756,10 +1756,10 @@ public class SymmetricClusterTest extends ClusterTestBase
       closeSessionFactory(2);
 
       stopServers(2);
-
+      
       waitForBindings(3, "queues.testaddress", 6, 6, true);
       waitForBindings(4, "queues.testaddress", 7, 7, true);
-
+      
       waitForBindings(3, "queues.testaddress", 7, 7, false);
       waitForBindings(4, "queues.testaddress", 6, 6, false);
 
@@ -1774,9 +1774,9 @@ public class SymmetricClusterTest extends ClusterTestBase
       closeSessionFactory(3);
 
       stopServers(3);
-
+      
       waitForBindings(4, "queues.testaddress", 7, 7, true);
-
+      
       waitForBindings(4, "queues.testaddress", 0, 0, false);
    }
 
@@ -1822,11 +1822,12 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       stopServers(0, 1, 2, 3, 4);
    }
+   
 
-
-   @Override
    protected boolean isFileStorage()
    {
       return false;
    }
+
+
 }

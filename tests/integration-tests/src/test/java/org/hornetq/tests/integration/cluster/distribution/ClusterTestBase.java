@@ -1865,22 +1865,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      connectorFrom.getName(),
-                                                                                      ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-                                                                                      ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
-                                                                                      retryInterval,
-                                                                                      ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-                                                                                      ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-                                                                                      reconnectAttempts,
-                                                                                      1000,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs,
-                                                                                      false);
+      
+		ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
+				name, address, connectorFrom.getName(),
+				HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+				ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+				ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+				retryInterval,
+				ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+				ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+				reconnectAttempts, 1000, true, forwardWhenNoConsumers, maxHops,
+				1024, pairs, false);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
