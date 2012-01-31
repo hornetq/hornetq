@@ -36,8 +36,10 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptor;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -244,6 +246,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failureCheckAndFlushThread.start();
 
       started = true;
+   }
+
+   public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
+   {
+      for (Acceptor acceptor : acceptors)
+      {
+         if(acceptor.isUnsecurable())
+         {
+            acceptor.setDefaultHornetQPrincipal(principal);
+         }
+      }
    }
 
    public synchronized void freeze()

@@ -16,6 +16,7 @@ package org.hornetq.core.remoting.server;
 import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -48,6 +49,8 @@ public interface RemotingService
    boolean isStarted();
 
    void freeze();
+
+   void allowInvmSecurityOverride(HornetQPrincipal principal);
 
    RemotingConnection getServerSideReplicatingConnection();
 }

@@ -861,7 +861,7 @@ Content-Type: application/xml
     pull works almost identically for queues and topics with some minor, but
     important caveats. To start consuming you must create a consumer resource
     on the server that is dedicated to your client. Now, this pretty much
-    breaks the stateless principle of REST, but after much prototyping, this
+    breaks the stateless principal of REST, but after much prototyping, this
     is the best way to work most effectively with HornetQ through a REST
     interface.</para>
 

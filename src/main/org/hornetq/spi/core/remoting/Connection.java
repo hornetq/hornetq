@@ -14,6 +14,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.security.HornetQPrincipal;
 
 /**
  * The connection used by a channel to write data to.
@@ -74,4 +75,6 @@ public interface Connection
    void addReadyListener(ReadyListener listener);
    
    void removeReadyListener(ReadyListener listener);
+
+   HornetQPrincipal getDefaultHornetQPrincipal();
 }

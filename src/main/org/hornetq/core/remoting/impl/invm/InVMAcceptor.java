@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -63,6 +64,8 @@ public class InVMAcceptor implements Acceptor
    private NotificationService notificationService;
    
    private final Map<String, Object> configuration;
+
+   private HornetQPrincipal defaultHornetQPrincipal;
 
    public InVMAcceptor(final ClusterConnection clusterConnection,
                        final Map<String, Object> configuration,
@@ -209,7 +212,7 @@ public class InVMAcceptor implements Acceptor
          throw new IllegalStateException("Acceptor is not started");
       }
 
-      new InVMConnection(this, id, connectionID, remoteHandler, new Listener(connector), clientExecutor);
+      new InVMConnection(this, id, connectionID, remoteHandler, new Listener(connector), clientExecutor, defaultHornetQPrincipal);
    }
 
    public void disconnect(final String connectionID)
@@ -225,6 +228,16 @@ public class InVMAcceptor implements Acceptor
       {
          conn.close();
       }
+   }
+
+   public boolean isUnsecurable()
+   {
+      return true;
+   }
+
+   public void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal)
+   {
+      this.defaultHornetQPrincipal = defaultHornetQPrincipal;
    }
 
    private class Listener implements ConnectionLifeCycleListener

@@ -34,6 +34,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.version.Version;
@@ -176,9 +177,16 @@ public class HornetQPacketHandler implements ChannelHandler
          
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
+         HornetQPrincipal hornetQPrincipal = null;
+
+         if(request.getUsername() == null)
+         {
+            hornetQPrincipal = connection.getDefaultHornetQPrincipal();
+         }
+
          ServerSession session = server.createSession(request.getName(),
-                                                      request.getUsername(),
-                                                      request.getPassword(),
+                                                      hornetQPrincipal == null?request.getUsername(): hornetQPrincipal.getUserName(),
+                                                      hornetQPrincipal == null?request.getPassword(): hornetQPrincipal.getPassword(),
                                                       request.getMinLargeMessageSize(),
                                                       connection,
                                                       request.isAutoCommitSends(),

@@ -15,6 +15,7 @@ package org.hornetq.spi.core.remoting;
 
 import java.util.Map;
 
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.NotificationService;
@@ -46,4 +47,8 @@ public interface Acceptor extends HornetQComponent
     * @param notificationService the notification service
     */
    void setNotificationService(NotificationService notificationService);
+
+   void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal);
+
+   boolean isUnsecurable();
 }

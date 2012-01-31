@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.remoting.impl.invm.InVMConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -102,6 +103,11 @@ public class MockConnector extends InVMConnector
          }
 
          super.write(buffer, flush, batch);
+      }
+
+      public HornetQPrincipal getDefaultHornetQPrincipal()
+      {
+         return null;
       }
    }
 }
