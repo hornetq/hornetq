@@ -242,10 +242,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    public void stop()
    {
-      //if (HornetQResourceAdapter.trace)
-     // {
+      if (HornetQResourceAdapter.trace)
+      {
          HornetQResourceAdapter.log.info("stop()*******************************************************************");
-     // }
+      }
 
       for (Map.Entry<ActivationSpec, HornetQActivation> entry : activations.entrySet())
       {
