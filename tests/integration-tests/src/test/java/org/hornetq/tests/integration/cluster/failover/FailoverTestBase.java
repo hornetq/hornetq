@@ -279,29 +279,24 @@ public abstract class FailoverTestBase extends ServiceTestBase
 		return sf;
 	}
 
-	protected void waitForBackup(ClientSessionFactoryInternal sf, long seconds) throws Exception
-	{
-		long time = System.currentTimeMillis();
-		long toWait = seconds * 1000;
-		while (sf.getBackupConnector() == null)
-		{
-			try
-			{
-				Thread.sleep(100);
-			} catch (InterruptedException e)
-			{
-				// ignore
-			}
-			if (sf.getBackupConnector() != null)
-			{
-				break;
-			} else if (System.currentTimeMillis() > (time + toWait))
-			{
-				fail("backup server never started");
-			}
-		}
-		System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
-	}
+   /**
+    * Waits for backup to be in the "started" state and to finish synchronization with its live.
+    * @param sessionFactory
+    * @param seconds
+    * @throws Exception
+    */
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
+   {
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
+      if (actualServer.getConfiguration().isSharedStore())
+      {
+         waitForServer(actualServer);
+      }
+      else
+      {
+         waitForRemoteBackup(sessionFactory, seconds, true, actualServer);
+      }
+   }
 
 	   /**
 	    * @param sessionFactory
