@@ -36,7 +36,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 /**
  * A PageProviderIMpl
- * 
+ *
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
  *       However I want to keep this isolated as much as possible during development
  *
@@ -49,7 +49,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageCursorProviderImpl.class);
-   
+
    boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -350,7 +350,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
-            
+
             if (log.isDebugEnabled())
             {
                log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
@@ -373,7 +373,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      {
                         log.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
                      }
-                     
+
                      complete = false;
                      break;
                   }
@@ -399,7 +399,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      log.debug("Address " + pagingStore.getAddress() +
                            " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   }
-                  
+
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();
@@ -465,7 +465,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                cache = softCache.get((long)depagedPage.getPageId());
             }
-            
+
             if (isTrace)
             {
                log.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
@@ -477,7 +477,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // We need to read the page-file before deleting it
                // to make sure we remove any large-messages pending
                storageManager.beforePageRead();
-               
+
                List<PagedMessage> pgdMessagesList = null;
                try
                {
@@ -493,7 +493,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   catch (Exception e)
                   {
                   }
-                  
+
                   storageManager.afterPageRead();
                }
                depagedPage.close();
@@ -505,7 +505,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             }
 
             depagedPage.delete(pgdMessages);
-            
+
             synchronized (softCache)
             {
                softCache.remove((long)depagedPage.getPageId());
@@ -525,7 +525,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     * @param currentPage
     * @throws Exception
     */
-   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   private void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
    {
       try
       {

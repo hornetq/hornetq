@@ -1238,7 +1238,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       doClose(true);
    }
 
-   protected void doClose(final boolean sendClose)
+   private void doClose(final boolean sendClose)
    {
       if (state == STATE.CLOSED)
       {
@@ -1477,7 +1477,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       List<DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntries();
 
-      
+
       TransportConfiguration[] newInitialconnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
                                                                            newConnectors.size());
 
@@ -1493,14 +1493,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             topology.updateMember(0, entry.getNodeID(), member);
          }
       }
-      
+
       this.initialConnectors = newInitialconnectors;
 
       if (clusterConnection && !receivedTopology && initialConnectors.length > 0)
       {
          // The node is alone in the cluster. We create a connection to the new node
          // to trigger the node notification to form the cluster.
-         
+
          Runnable connectRunnable = new Runnable()
          {
             public void run()
@@ -1531,13 +1531,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       synchronized (factories)
       {
          factories.remove(factory);
-   
+
          if (!clusterConnection && factories.isEmpty())
          {
             // Go back to using the broadcast or static list
-   
+
             receivedTopology = false;
-   
+
             topologyArray = null;
          }
       }
@@ -1586,7 +1586,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   class StaticConnector implements Serializable
+   private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
 
@@ -1729,7 +1729,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
       }
 
-      public void finalize() throws Throwable
+      @Override
+      protected void finalize() throws Throwable
       {
          if (!isClosed() && finalizeCheck)
          {
@@ -1749,9 +1750,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          super.finalize();
       }
 
-      class Connector
+      private final class Connector
       {
-         private TransportConfiguration initialConnector;
+         private final TransportConfiguration initialConnector;
 
          private volatile ClientSessionFactoryInternal factory;
 
@@ -1777,7 +1778,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                if (factoryToUse != null)
                {
                   addToConnecting(factoryToUse);
-                  
+
                   try
                   {
                      factoryToUse.connect(1, false);
