@@ -321,6 +321,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       }
 
       this.ra = (HornetQResourceAdapter)ra;
+      this.ra.setManagedConnectionFactory(this);
    }
 
    /**

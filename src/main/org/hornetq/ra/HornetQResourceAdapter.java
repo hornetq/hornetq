@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -112,7 +113,9 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private String unparsedJndiParams;
 
-   RecoveryManager recoveryManager;
+   private RecoveryManager recoveryManager;
+
+   private final List<HornetQRAManagedConnectionFactory> managedConnectionFactories = new ArrayList<HornetQRAManagedConnectionFactory>();
 
    /**
     * Constructor
@@ -260,6 +263,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       activations.clear();
+
+      for (HornetQRAManagedConnectionFactory managedConnectionFactory : managedConnectionFactories)
+      {
+         managedConnectionFactory.stop();
+      }
+
+      managedConnectionFactories.clear();
 
       if (defaultHornetQConnectionFactory != null)
       {
@@ -1909,6 +1919,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
    }
 
+
+   public void setManagedConnectionFactory(HornetQRAManagedConnectionFactory hornetQRAManagedConnectionFactory)
+   {
+      managedConnectionFactories.add(hornetQRAManagedConnectionFactory);
+   }
 
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.

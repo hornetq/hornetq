@@ -249,8 +249,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          HornetQRAManagedConnection.log.debug("Error unsetting the exception listener " + this, e);
       }
 
-      mcf.stop();
-
       destroyHandles();
 
       try
