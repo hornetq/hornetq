@@ -1327,9 +1327,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       return connection;
    }
 
-   /**
-    * @param channel0
-    */
    public void sendNodeAnnounce(final long currentEventID,
                                 String nodeID,
                                 boolean isBackup,

@@ -148,9 +148,8 @@ public class Topology implements Serializable
    }
 
    /**
-    * 
-    * @param <p>uniqueIdentifier an unique identifier for when the change was made
-    *           We will use current time millis for starts, and a ++ of that number for shutdown. </p> 
+    * @param uniqueEventID an unique identifier for when the change was made We will use current
+    *           time millis for starts, and a ++ of that number for shutdown.
     * @param nodeId
     * @param memberInput
     * @return
@@ -207,7 +206,7 @@ public class Topology implements Serializable
                if (log.isDebugEnabled())
                {
                   log.debug(this + "::updated currentMember=nodeID=" +
-                            nodeId + 
+                            nodeId +
                             ", currentMember=" +
                             currentMember +
                             ", memberInput=" +
@@ -267,7 +266,7 @@ public class Topology implements Serializable
                                         " connector = " +
                                         memberToSend.getConnector());
                   }
-   
+
                   try
                   {
                      listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
@@ -545,7 +544,7 @@ public class Topology implements Serializable
    {
       if (mapDelete == null)
       {
-         mapDelete = new ConcurrentHashMap<String, Long>();      
+         mapDelete = new ConcurrentHashMap<String, Long>();
       }
       return mapDelete;
    }
