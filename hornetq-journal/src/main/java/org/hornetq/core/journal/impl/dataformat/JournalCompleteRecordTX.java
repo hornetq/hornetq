@@ -15,26 +15,23 @@ package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 
 /**
- * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
- * <p>For example, a transaction was spread along 3 journal files with 10 pendingTransactions on each file. 
- *    (What could happen if there are too many pendingTransactions, or if an user event delayed pendingTransactions to come in time to a single file).</p>
- * <p>The element-summary will then have</p>
- * <p>FileID1, 10</p>
- * <p>FileID2, 10</p>
- * <p>FileID3, 10</p>
- * 
- * <br>
- * <p> During the load, the transaction needs to have 30 pendingTransactions spread across the files as originally written.</p>
- * <p> If for any reason there are missing pendingTransactions, that means the transaction was not completed and we should ignore the whole transaction </p>
- * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed. 
- *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
- *
+ * <p>
+ * A transaction record (Commit or Prepare), will hold the number of elements the transaction has in
+ * the current file.
+ * <p>
+ * While loading the {@link JournalFile}, the number of operations found is matched against this
+ * number. If for any reason there are missing operations, the transaction will be ignored.
+ * <p>
+ * We can't just use a global counter as reclaiming could delete files after the transaction was
+ * successfully committed. That also means not having a whole file on journal-reload doesn't mean we
+ * have to invalidate the transaction
+ * <p>
+ * The commit operation itself is not included in this total.
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalCompleteRecordTX extends JournalInternalRecord
 {
@@ -70,7 +67,7 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
       }
 
       buffer.writeInt(fileID);
-      
+
       buffer.writeByte(compactCount);
 
       buffer.writeLong(txID);
