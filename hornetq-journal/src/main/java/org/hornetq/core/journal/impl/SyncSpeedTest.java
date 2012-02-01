@@ -168,7 +168,10 @@ public class SyncSpeedTest
 
          if (file.exists())
          {
-            file.delete();
+            if (!file.delete())
+            {
+               log.error("failed to delete file " + file);
+            }
          }
 
          file.createNewFile();
