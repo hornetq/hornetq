@@ -47,7 +47,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * all the matches
     */
    private final Map<String, Match<T>> matches = new HashMap<String, Match<T>>();
-   
+
    /**
     * Certain values cannot be removed after installed.
     * This is because we read a few records from the main config.
@@ -60,7 +60,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * a regex comparator
     */
-   private final MatchComparator<String> matchComparator = new MatchComparator<String>();
+   private final MatchComparator matchComparator = new MatchComparator();
 
    /**
     * a cache
@@ -72,12 +72,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    private final ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
 
-   
+
    public void addMatch(final String match, final T value)
    {
       addMatch(match, value, false);
    }
-   
+
 
    /**
     * Add a new match to the repository
@@ -98,7 +98,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       matches.put(match, match1);
       onChange();
    }
-   
+
    public int getCacheSize()
    {
       return cache.size();
@@ -220,12 +220,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       listeners.clear();
       matches.clear();
    }
-   
+
    public void clearListeners()
    {
       listeners.clear();
    }
-   
+
    public void clearCache()
    {
       cache.clear();
@@ -268,7 +268,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * compares to matches to see which one is more specific
     */
-   private static class MatchComparator<T extends String> implements Comparator<T>
+   private static class MatchComparator implements Comparator<String>
    {
       public int compare(final String o1, final String o2)
       {
