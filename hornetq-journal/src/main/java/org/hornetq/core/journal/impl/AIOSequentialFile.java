@@ -25,19 +25,16 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A AIOSequentialFile
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class AIOSequentialFile extends AbstractSequentialFile implements IOExceptionListener
 {
-   private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
-
    private boolean opened = false;
 
    private final int maxIO;
@@ -237,7 +234,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
 
    public void sync()
    {
-      throw new IllegalArgumentException("This method is not supported on AIO");
+      throw new UnsupportedOperationException("This method is not supported on AIO");
    }
 
    public long size() throws Exception
@@ -268,7 +265,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    {
       factory.onIOError(code, message, this);
    }
-   
+
 
    public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
    {
@@ -287,7 +284,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    }
 
    /**
-    * 
+    *
     * @param sync Not used on AIO
     *  */
    public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
@@ -299,7 +296,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
 
-   public void writeInternal(final ByteBuffer bytes) throws Exception
+   public void writeInternal(final ByteBuffer bytes) throws HornetQException
    {
       final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
 
@@ -332,5 +329,5 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
          throw new IllegalStateException("File not opened");
       }
    }
-   
+
 }
