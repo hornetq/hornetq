@@ -25,7 +25,6 @@ public class JBossASSecurityManagerService implements JBossASSecurityManagerServ
    public void create()
    {
       jBossASSecurityManager = new JBossASSecurityManager();
-      jBossASSecurityManager.setAs5(false);
    }
 
    public JBossASSecurityManager getJBossASSecurityManager()
