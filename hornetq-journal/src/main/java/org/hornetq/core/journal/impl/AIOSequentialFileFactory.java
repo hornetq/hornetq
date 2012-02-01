@@ -349,4 +349,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 
    }
 
+   @Override
+   public String toString()
+   {
+      return AIOSequentialFileFactory.class.getSimpleName() + "(buffersControl.stopped=" + buffersControl.stopped +
+               "):" + super.toString();
+   }
 }
