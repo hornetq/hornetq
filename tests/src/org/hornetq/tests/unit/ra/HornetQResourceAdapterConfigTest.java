@@ -307,7 +307,7 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
       Map<String,Method> methodList = new HashMap<String, Method>();
       for (Method method : methods)
       {
-         if(method.getName().startsWith("set"))
+         if(method.getName().startsWith("set") && !method.getName().equals("setManagedConnectionFactory"))
          {
             methodList.put(method.getName(), method);
          }
