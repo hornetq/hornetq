@@ -39,7 +39,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public abstract class AbstractSequentialFileFactory implements SequentialFileFactory
+abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 {
 
    // Timeout used to wait executors to shutdown
@@ -64,7 +64,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
     *  */
    protected ExecutorService writeExecutor;
 
-   public AbstractSequentialFileFactory(final String journalDir,
+   AbstractSequentialFileFactory(final String journalDir,
                                         final boolean buffered,
                                         final int bufferSize,
                                         final int bufferTimeout,

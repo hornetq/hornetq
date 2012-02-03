@@ -57,7 +57,7 @@ import org.hornetq.spi.core.remoting.Connection;
  *
  *
  */
-public class CoreProtocolManager implements ProtocolManager
+class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
    
@@ -67,7 +67,7 @@ public class CoreProtocolManager implements ProtocolManager
 
    private final List<Interceptor> interceptors;
 
-   public CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
 
@@ -269,12 +269,12 @@ public class CoreProtocolManager implements ProtocolManager
 
    private final Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
 
-   public ServerSessionPacketHandler getSessionHandler(final String sessionName)
+   ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
       return sessionHandlers.get(sessionName);
    }
 
-   public void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
+   void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
    {
       sessionHandlers.put(name, handler);
    }
@@ -293,5 +293,11 @@ public class CoreProtocolManager implements ProtocolManager
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "CoreProtocolManager(server=" + server + ")";
    }
 }

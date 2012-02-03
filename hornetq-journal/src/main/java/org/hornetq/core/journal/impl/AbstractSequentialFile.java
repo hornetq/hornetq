@@ -36,7 +36,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public abstract class AbstractSequentialFile implements SequentialFile
+abstract class AbstractSequentialFile implements SequentialFile
 {
 
    // Constants -----------------------------------------------------

@@ -35,7 +35,7 @@ public class FileLockNodeManager extends NodeManager
 {
    private final Logger log = Logger.getLogger(this.getClass());
 
-   protected static final String SERVER_LOCK_NAME = "server.lock";
+   private static final String SERVER_LOCK_NAME = "server.lock";
 
    private static final String ACCESS_MODE = "rw";
 

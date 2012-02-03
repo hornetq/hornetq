@@ -128,17 +128,17 @@ public class JournalStorageManager implements StorageManager
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
    // grouping journal record type
-   public static final byte GROUP_RECORD = 20;
+   private static final byte GROUP_RECORD = 20;
 
    // Bindings journal record type
 
-   public static final byte QUEUE_BINDING_RECORD = 21;
+   private static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte ID_COUNTER_RECORD = 24;
 
-   public static final byte ADDRESS_SETTING_RECORD = 25;
+   private static final byte ADDRESS_SETTING_RECORD = 25;
 
-   public static final byte SECURITY_RECORD = 26;
+   private static final byte SECURITY_RECORD = 26;
 
    // Message journal record types
 
@@ -146,29 +146,29 @@ public class JournalStorageManager implements StorageManager
    // We use this to avoid temporary files missing
    public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
-   public static final byte ADD_LARGE_MESSAGE = 30;
+   private static final byte ADD_LARGE_MESSAGE = 30;
 
-   public static final byte ADD_MESSAGE = 31;
+   private static final byte ADD_MESSAGE = 31;
 
    public static final byte ADD_REF = 32;
 
-   public static final byte ACKNOWLEDGE_REF = 33;
+   private static final byte ACKNOWLEDGE_REF = 33;
 
    public static final byte UPDATE_DELIVERY_COUNT = 34;
 
    public static final byte PAGE_TRANSACTION = 35;
 
-   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
+   private static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
-   public static final byte DUPLICATE_ID = 37;
+   private static final byte DUPLICATE_ID = 37;
 
-   public static final byte HEURISTIC_COMPLETION = 38;
+   private static final byte HEURISTIC_COMPLETION = 38;
 
    public static final byte ACKNOWLEDGE_CURSOR = 39;
 
-   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
+   private static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
-   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   private static final byte PAGE_CURSOR_COUNTER_INC = 41;
    
    private final Semaphore pageMaxConcurrentIO;
 
@@ -2041,7 +2041,7 @@ public class JournalStorageManager implements StorageManager
         describeJournal(bindingsFF, bindings);
     }
 
-   public static void describeMessagesJournal(final String messagesDir) throws Exception
+   static void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
@@ -2656,7 +2656,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   protected OperationContext getContext(final boolean sync)
+   private OperationContext getContext(final boolean sync)
    {
       if (sync)
       {
@@ -2799,7 +2799,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public static class HeuristicCompletionEncoding implements EncodingSupport
+   private static class HeuristicCompletionEncoding implements EncodingSupport
    {
       public Xid xid;
 
@@ -2839,7 +2839,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public static class GroupingEncoding implements EncodingSupport, GroupingInfo
+   private static class GroupingEncoding implements EncodingSupport, GroupingInfo
    {
       public long id;
 
@@ -3145,16 +3145,11 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   public static class DeleteEncoding implements EncodingSupport
+   private static class DeleteEncoding implements EncodingSupport
    {
       public byte recordType;
 
       public long id;
-
-      public DeleteEncoding()
-      {
-         super();
-      }
 
       public DeleteEncoding(final byte recordType, final long id)
       {
@@ -3257,7 +3252,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public static class ScheduledDeliveryEncoding extends QueueEncoding
+   private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
       long scheduledDeliveryTime;
 
@@ -3810,7 +3805,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   public static class MessageDescribe
+   private static class MessageDescribe
    {
       public MessageDescribe(Message msg)
       {
@@ -3859,7 +3854,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
+   private static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
    {
       PersistedRoles roles = new PersistedRoles();
       roles.decode(buffer);
@@ -3872,7 +3867,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
+   private static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
    {
       PersistedAddressSetting setting = new PersistedAddressSetting();
       setting.decode(buffer);
@@ -3885,7 +3880,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
+   private static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
    {
       GroupingEncoding encoding = new GroupingEncoding();
       encoding.decode(buffer);
@@ -3898,7 +3893,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
+   private static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
    {
       PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
 
@@ -3918,7 +3913,7 @@ public class JournalStorageManager implements StorageManager
     * @param journal
     * @throws Exception
     */
-   protected static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
+   private static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
    {
       List<JournalFile> files = journal.orderFiles();
 
