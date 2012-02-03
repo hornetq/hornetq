@@ -52,6 +52,8 @@ public class ConnectionFactoryProperties
 
    private Integer discoveryPort;
 
+   private String discoveryLocalBindAddress;
+
    private Long discoveryRefreshTimeout;
 
    private Long discoveryInitialWaitTimeout;
@@ -181,6 +183,25 @@ public class ConnectionFactoryProperties
          ConnectionFactoryProperties.log.trace("getDiscoveryPort()");
       }
       return discoveryPort;
+   }
+
+   public void setDiscoveryLocalBindAddress(final String discoveryLocalBindAddress)
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         ConnectionFactoryProperties.log.trace("setDiscoveryLocalBindAddress(" + discoveryLocalBindAddress + ")");
+      }
+      hasBeenUpdated = true;
+      this.discoveryLocalBindAddress = discoveryLocalBindAddress;
+   }
+
+   public String getDiscoveryLocalBindAddress()
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         ConnectionFactoryProperties.log.trace("getDiscoveryLocalBindAddress()");
+      }
+      return discoveryLocalBindAddress;
    }
 
    public void setDiscoveryPort(final Integer discoveryPort)
