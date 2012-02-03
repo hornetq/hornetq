@@ -38,7 +38,6 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.ra.recovery.RecoveryManager;
@@ -352,6 +351,36 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       return raProperties.getDiscoveryPort();
+   }
+
+   /**
+    * set the discovery local bind address
+    *
+    * @param discoveryLocalBindAddress the address value
+    */
+   public void setDiscoveryLocalBindAddress(final String discoveryLocalBindAddress)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("setDiscoveryLocalBindAddress(" + discoveryLocalBindAddress + ")");
+      }
+
+      raProperties.setDiscoveryLocalBindAddress(discoveryLocalBindAddress);
+   }
+
+   /**
+    * get the discovery local bind address
+    *
+    * @return the address value
+    */
+   public String getDiscoveryLocalBindAddress()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("getDiscoveryLocalBindAddress()");
+      }
+
+      return raProperties.getDiscoveryLocalBindAddress();
    }
 
    /**
@@ -1447,7 +1476,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         
+
          if(discoveryPort == null)
          {
             discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
@@ -1478,6 +1507,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
 
          groupConfiguration.setRefreshTimeout(refreshTimeout);
+
+         String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
+                                                                        : raProperties.getDiscoveryLocalBindAddress();
+
+         groupConfiguration.setLocalBindAdress(localBindAddress);
 
          if (ha)
          {
@@ -1586,6 +1620,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
 
          groupConfiguration.setRefreshTimeout(refreshTimeout);
+
+         String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
+                                                                        : raProperties.getDiscoveryLocalBindAddress();
+
+         groupConfiguration.setLocalBindAdress(localBindAddress);
 
          cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
       }
