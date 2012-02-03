@@ -385,6 +385,10 @@ public class ChannelImpl implements Channel
          throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
       }
 
+      if(failingOver)
+      {
+         unlock();
+      }
       closed = true;
    }
 
