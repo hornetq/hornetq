@@ -472,12 +472,12 @@ public class ManagementServiceImpl implements ManagementService
       return reply;
    }
 
-   public Object getResource(final String resourceName)
+   public synchronized Object getResource(final String resourceName)
    {
       return registry.get(resourceName);
    }
 
-   public Object[] getResources(final Class<?> resourceType)
+   public synchronized Object[] getResources(final Class<?> resourceType)
    {
       List<Object> resources = new ArrayList<Object>();
       Collection<Object> clone = new ArrayList<Object>(registry.values());
