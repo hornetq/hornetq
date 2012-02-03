@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -58,6 +59,8 @@ public class InVMConnection implements Connection
    
    private volatile boolean closing;
 
+   private HornetQPrincipal defaultHornetQPrincipal;
+
    public InVMConnection(final Acceptor acceptor, 
                          final int serverID,
                          final BufferHandler handler,
@@ -74,6 +77,17 @@ public class InVMConnection implements Connection
                          final ConnectionLifeCycleListener listener,
                          final Executor executor)
    {
+      this(acceptor, serverID, id, handler, listener, executor, null);
+   }
+
+   public InVMConnection(final Acceptor acceptor,
+                         final int serverID,
+                         final String id,
+                         final BufferHandler handler,
+                         final ConnectionLifeCycleListener listener,
+                         final Executor executor,
+                         HornetQPrincipal defaultHornetQPrincipal)
+   {
       this.serverID = serverID;
 
       this.handler = handler;
@@ -83,6 +97,8 @@ public class InVMConnection implements Connection
       this.id = id;
 
       this.executor = executor;
+
+      this.defaultHornetQPrincipal = defaultHornetQPrincipal;
 
       listener.connectionCreated(acceptor, this, ProtocolType.CORE);
    }
@@ -213,7 +229,12 @@ public class InVMConnection implements Connection
    public void removeReadyListener(ReadyListener listener)
    {
    }
-   
+
+   public HornetQPrincipal getDefaultHornetQPrincipal()
+   {
+      return defaultHornetQPrincipal;
+   }
+
    public void disableFlush()
    {
       flushEnabled = false;

@@ -37,6 +37,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -645,6 +646,25 @@ public class NettyAcceptor implements Acceptor
    public void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;
+   }
+
+   /**
+    * we dont allow this
+    *
+    * @param defaultHornetQPrincipal
+    */
+   public void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal)
+   {
+      throw new IllegalStateException("unsecure connections not allowed");
+   }
+
+   /**
+    * only InVM acceptors should allow this
+    * @return
+    */
+   public boolean isUnsecurable()
+   {
+      return false;
    }
 
    /* (non-Javadoc)

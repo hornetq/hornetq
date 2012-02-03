@@ -13,6 +13,7 @@
 
 package org.hornetq.core.protocol.core;
 
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 
@@ -100,4 +101,11 @@ public interface CoreRemotingConnection extends RemotingConnection
     * Called periodically to flush any data in the batch buffer
     */
    void checkFlushBatchBuffer();
+
+   /**
+    * get the default security principal
+    *
+    * @return the principal
+    */
+   HornetQPrincipal getDefaultHornetQPrincipal();
 }

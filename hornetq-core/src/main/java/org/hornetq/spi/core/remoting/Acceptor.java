@@ -15,6 +15,7 @@ package org.hornetq.spi.core.remoting;
 
 import java.util.Map;
 
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.NotificationService;
@@ -46,4 +47,15 @@ public interface Acceptor extends HornetQComponent
     * @param notificationService the notification service
     */
    void setNotificationService(NotificationService notificationService);
+
+   /**
+   * Set the default security Principal to be used when no user/pass are defined, only for InVM
+   */
+   void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal);
+
+   /**
+    * does this acceptor allow unsecure connections,
+    * if false @setDefaultHornetQPrincipal should throw an @java.lang.IllegalStatException
+    */
+   boolean isUnsecurable();
 }

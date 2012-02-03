@@ -33,6 +33,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -459,6 +460,11 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    public void checkFlushBatchBuffer()
    {
       transportConnection.checkFlushBatchBuffer();
+   }
+
+   public HornetQPrincipal getDefaultHornetQPrincipal()
+   {
+      return transportConnection.getDefaultHornetQPrincipal();
    }
 
    // Buffer Handler implementation

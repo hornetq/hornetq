@@ -20,6 +20,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
@@ -260,6 +261,12 @@ public class NettyConnection implements Connection
    public void removeReadyListener(final ReadyListener listener)
    {
       readyListeners.remove(listener);
+   }
+
+    //never allow this
+   public HornetQPrincipal getDefaultHornetQPrincipal()
+   {
+      return null;
    }
 
    void fireReady(final boolean ready)
