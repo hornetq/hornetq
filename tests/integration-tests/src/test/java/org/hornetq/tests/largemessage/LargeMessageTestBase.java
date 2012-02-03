@@ -69,17 +69,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   public LargeMessageTestBase(String test)
-   {
-      super(test);
-   }
-   
-   public LargeMessageTestBase()
-   {
-      super();
-   }
-
 
    @Override
    protected void tearDown() throws Exception
