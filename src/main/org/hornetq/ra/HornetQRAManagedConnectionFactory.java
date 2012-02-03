@@ -77,6 +77,12 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     */
    private HornetQConnectionFactory connectionFactory;
 
+
+   /**
+    * Connection Factory used if properties are set
+    */
+   private HornetQConnectionFactory recoveryConnectionFactory;
+
    /*
    * The resource recovery if there is one
    * */
@@ -141,7 +147,8 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       if (connectionFactory == null)
       {
          connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
-         resourceRecovery = ra.getRecoveryManager().register(connectionFactory, null, null);
+         recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
+         resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
       }
       return cf;
    }
@@ -314,6 +321,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       }
 
       this.ra = (HornetQResourceAdapter)ra;
+      this.ra.setManagedConnectionFactory(this);
    }
 
    /**
@@ -758,7 +766,8 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       if (connectionFactory == null)
       {
          connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
-         resourceRecovery = ra.getRecoveryManager().register(connectionFactory, null, null);
+         recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
+         resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
       }
       return connectionFactory;
    }
@@ -809,6 +818,18 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       if(resourceRecovery != null)
       {
          ra.getRecoveryManager().unRegister(resourceRecovery);
+      }
+
+      if(connectionFactory != null)
+      {
+         connectionFactory.close();
+         connectionFactory = null;
+      }
+
+      if(recoveryConnectionFactory != null)
+      {
+         recoveryConnectionFactory.close();
+         recoveryConnectionFactory = null;
       }
    }
 }
