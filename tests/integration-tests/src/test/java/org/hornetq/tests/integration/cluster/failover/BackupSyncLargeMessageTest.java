@@ -7,7 +7,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import junit.framework.Assert;
+
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -81,7 +85,8 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
       final ClientMessage message = session.createMessage(true);
-      message.setBodyInputStream(UnitTestCase.createFakeLargeStream(1000 * MIN_LARGE_MESSAGE));
+      final int largeMessageSize = 1000 * MIN_LARGE_MESSAGE;
+      message.setBodyInputStream(UnitTestCase.createFakeLargeStream(largeMessageSize));
 
       final AtomicBoolean caughtException = new AtomicBoolean(false);
       final CountDownLatch latch = new CountDownLatch(1);
@@ -115,6 +120,20 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       latch2.await();
       crash(session);
       assertFalse("no exceptions while sending message", caughtException.get());
+
+      session.start();
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      ClientMessage msg = consumer.receive(2000);
+      HornetQBuffer buffer = msg.getBodyBuffer();
+
+      for (int j = 0; j < largeMessageSize; j++)
+      {
+         Assert.assertTrue("large msg , expecting " + largeMessageSize + " bytes, got " + j, buffer.readable());
+         Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
+      }
+      assertNull("there should be no more messages!", consumer.receiveImmediate());
+      consumer.close();
+      session.commit();
    }
 
    private Set<Long> getAllMessageFileIds(File dir)

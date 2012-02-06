@@ -103,7 +103,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       session.start();
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
-      ClientMessage msg = consumer.receive(200);
+      ClientMessage msg = consumer.receiveImmediate();
       assertNull("there should be no more messages to receive! " + msg, msg);
       consumer.close();
       session.commit();

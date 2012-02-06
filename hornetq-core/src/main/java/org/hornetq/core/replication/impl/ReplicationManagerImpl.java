@@ -548,7 +548,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          while (true)
          {
             buffer.clear();
-            int bytesRead = channel.read(buffer);
+            final int bytesRead = channel.read(buffer);
             int toSend = bytesRead;
             if (bytesRead > 0)
             {
@@ -566,7 +566,7 @@ public class ReplicationManagerImpl implements ReplicationManager
             buffer.rewind();
 
             // sending -1 or 0 bytes will close the file at the backup
-            sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, bytesRead, buffer));
+            sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, toSend, buffer));
             if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
                break;
          }

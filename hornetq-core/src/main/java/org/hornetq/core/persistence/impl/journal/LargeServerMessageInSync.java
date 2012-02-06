@@ -36,12 +36,15 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
       SequentialFile mainSeqFile = mainLM.getFile();
       if (appendFile != null)
       {
+         appendFile.close();
+         appendFile.open();
          for (;;)
          {
             buffer.rewind();
-            int size = appendFile.read(buffer);
+            int bytesRead = appendFile.read(buffer);
+            if (bytesRead > 0)
             mainSeqFile.writeInternal(buffer);
-            if (size < buffer.capacity())
+            if (bytesRead < buffer.capacity())
             {
                break;
             }
