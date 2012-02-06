@@ -35,7 +35,8 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    private volatile String errorMessage;
 
    private volatile int errorCode = 0;
-   
+
+   @Override
    public String toString()
    {
       return "simpleWaitIOCallback";
@@ -60,7 +61,11 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    @Override
    public void waitCompletion() throws Exception
    {
-      latch.await();
+      while (true)
+      {
+         if (latch.await(2, TimeUnit.SECONDS))
+            break;
+      }
 
       if (errorMessage != null)
       {
