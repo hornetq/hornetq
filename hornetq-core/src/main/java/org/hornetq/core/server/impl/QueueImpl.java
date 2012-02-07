@@ -1223,8 +1223,10 @@ public class QueueImpl implements Queue
                try
                {
                   boolean expired = false;
+                  boolean hasElements = false;
                   while (iter.hasNext())
                   {
+                     hasElements = true;
                      MessageReference ref = iter.next();
                      try
                      {
@@ -1243,7 +1245,8 @@ public class QueueImpl implements Queue
                      }
                   }
                   
-                  if (expired && pageIterator != null && pageIterator.hasNext())
+                  // If empty we need to schedule depaging to make sure we would depage expired messages as well
+                  if ((!hasElements || expired && pageIterator != null) && pageIterator.hasNext())
                   {
                      scheduleDepage();
                   }
