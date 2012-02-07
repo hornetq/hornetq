@@ -31,6 +31,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -189,6 +190,68 @@ public class PagingFailoverTest extends FailoverTestBase
             int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
             Assert.assertEquals(i, result);
          }
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Exception ignored)
+         {
+         }
+      }
+   }
+
+   public void testExpireMessage() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSession session = sf.createSession(true, true, 0);
+
+      try
+      {
+
+         session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
+
+         ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
+
+         final int TOTAL_MESSAGES = 1000;
+
+         for (int i = 0; i < TOTAL_MESSAGES; i++)
+         {
+            ClientMessage msg = session.createMessage(true);
+            msg.putIntProperty(new SimpleString("key"), i);
+            msg.setExpiration(System.currentTimeMillis() + 1000);
+            prod.send(msg);
+         }
+
+         crash(session);
+
+         session.close();
+         
+         Queue queue = backupServer.getServer().locateQueue(ADDRESS);
+         
+         long timeout = System.currentTimeMillis() + 60000;
+         System.out.println("Starting now");
+         while (timeout > System.currentTimeMillis() && queue.getPageSubscription().isPaging())
+         {
+            Thread.sleep(100);
+         }
+         
+         try
+         {
+            assertFalse(queue.getPageSubscription().isPaging());
+         }
+         catch (Throwable e)
+         {
+            e.printStackTrace();
+            System.exit(-1);
+         }
+
       }
       finally
       {
