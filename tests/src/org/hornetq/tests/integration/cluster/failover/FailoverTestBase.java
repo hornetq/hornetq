@@ -138,7 +138,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
       backupConfig.setClustered(true);
-      backupConfig.setMessageExpiryScanPeriod(100);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -157,7 +156,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      liveConfig.setMessageExpiryScanPeriod(100);
       List<String> pairs = null;
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
             pairs, false);
