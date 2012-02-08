@@ -1246,7 +1246,7 @@ public class QueueImpl implements Queue
                   }
                   
                   // If empty we need to schedule depaging to make sure we would depage expired messages as well
-                  if ((!hasElements || expired && pageIterator != null) && pageIterator.hasNext())
+                  if ((!hasElements || expired) && pageIterator != null && pageIterator.hasNext())
                   {
                      scheduleDepage();
                   }
