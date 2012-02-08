@@ -34,6 +34,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -123,9 +124,15 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          for (ClientSession cs : clientSessions)
          {
+            if (cs == null)
+               continue;
             try
             {
-               if (cs != null)
+               if (cs instanceof ClientSessionInternal)
+               {
+                  ((ClientSessionInternal)cs).cleanUp(false);
+               }
+               else
                {
                   cs.close();
                }
