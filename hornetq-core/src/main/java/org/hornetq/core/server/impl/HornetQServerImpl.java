@@ -571,6 +571,12 @@ public class HornetQServerImpl implements HornetQServer
             pagingManager.stop();
          }
 
+            if (replicationEndpoint != null)
+            {
+               replicationEndpoint.stop();
+               replicationEndpoint = null;
+            }
+
          if (!criticalIOError && storageManager != null)
          {
             storageManager.stop();
@@ -580,12 +586,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             replicationManager.stop();
             replicationManager = null;
-         }
-
-         if (replicationEndpoint != null)
-         {
-            replicationEndpoint.stop();
-            replicationEndpoint = null;
          }
 
          if (securityManager != null)
