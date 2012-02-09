@@ -13,26 +13,7 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.transaction.xa.Xid;
-
 import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
@@ -43,12 +24,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.paging.Page;
-import org.hornetq.core.paging.PageTransactionInfo;
-import org.hornetq.core.paging.PagedMessage;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.PagingStoreFactory;
+import org.hornetq.core.paging.*;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
@@ -80,6 +56,13 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
+
+import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -1254,7 +1237,15 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
+      public void rollbackBindings(long txID) throws Exception
+      {
+      }
+
+      public void commitBindings(long txID) throws Exception
+      {
+      }
+
+       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#storeAcknowledge(long, long)
        */
       public void storeAcknowledge(final long queueID, final long messageID) throws Exception
@@ -1329,7 +1320,11 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
+      public void addQueueBinding(long tx, Binding binding) throws Exception
+      {
+      }
+
+       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#updateDeliveryCount(org.hornetq.core.server.MessageReference)
        */
       public void updateDeliveryCount(final MessageReference ref) throws Exception
