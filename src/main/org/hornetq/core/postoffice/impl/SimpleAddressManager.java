@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
@@ -56,7 +57,7 @@ public class SimpleAddressManager implements AddressManager
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
-         throw new IllegalStateException("Binding already exists " + binding);
+         throw new HornetQException(HornetQException.QUEUE_EXISTS, "Binding already exists " + binding);
       }
       
       if (log.isDebugEnabled())
