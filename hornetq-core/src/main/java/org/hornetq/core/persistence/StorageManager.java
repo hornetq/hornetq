@@ -200,6 +200,10 @@ public interface StorageManager extends HornetQComponent
    void commit(long txID, boolean lineUpContext) throws Exception;
 
    void rollback(long txID) throws Exception;
+   
+   void rollbackBindings(long txID) throws Exception;
+   
+   void commitBindings(long txID) throws Exception;
 
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
    
@@ -224,7 +228,7 @@ public interface StorageManager extends HornetQComponent
 
    // Bindings related operations
 
-   void addQueueBinding(Binding binding) throws Exception;
+   void addQueueBinding(long tx, Binding binding) throws Exception;
 
    void deleteQueueBinding(long queueBindingID) throws Exception;
 

@@ -1182,9 +1182,20 @@ public class JournalStorageManager implements StorageManager
       commit(txID, true);
    }
 
-      public void commit(final long txID, final boolean lineUpContext) throws Exception
-      {
-          readLock();
+   public void commitBindings(final long txID) throws Exception
+   {
+      bindingsJournal.appendCommitRecord(txID, true);
+   }
+   
+   public void rollbackBindings(final long txID) throws Exception
+   {
+      // no need to sync, it's going away anyways
+      bindingsJournal.appendRollbackRecord(txID, false);
+   }
+
+   public void commit(final long txID, final boolean lineUpContext) throws Exception
+   {
+      readLock();
       try
           {
               messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional), lineUpContext);
@@ -1900,7 +1911,7 @@ public class JournalStorageManager implements StorageManager
 
    // Bindings operations
 
-   public void addQueueBinding(final Binding binding) throws Exception
+   public void addQueueBinding(final long tx, final Binding binding) throws Exception
    {
       Queue queue = (Queue)binding.getBindable();
 
@@ -1912,6 +1923,7 @@ public class JournalStorageManager implements StorageManager
                                                                                           binding.getAddress(),
                                                                                           filterString);
 
+<<<<<<< .working
         readLock();
       try
           {
@@ -1924,6 +1936,11 @@ public class JournalStorageManager implements StorageManager
           {
               readUnLock();
           }
+=======
+      bindingsJournal.appendAddRecordTransactional(tx, binding.getID(),
+                                      JournalStorageManager.QUEUE_BINDING_RECORD,
+                                      bindingEncoding);
+>>>>>>> .merge-right.r12106
    }
 
    public void deleteQueueBinding(final long queueBindingID) throws Exception

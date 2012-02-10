@@ -13,16 +13,6 @@
 
 package org.hornetq.core.persistence.impl.nullpm;
 
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.transaction.xa.Xid;
-
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -54,6 +44,15 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+
+import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -146,7 +145,15 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
+   public void rollbackBindings(long txID) throws Exception
+   {
+   }
+
+   public void commitBindings(long txID) throws Exception
+   {
+   }
+
+    public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
    {
    }
 
@@ -233,7 +240,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   /* (non-Javadoc)
+   public void addQueueBinding(long tx, Binding binding) throws Exception
+   {
+   }
+
+    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)
     */
    public LargeServerMessage createLargeMessage()
