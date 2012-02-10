@@ -1682,6 +1682,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Filter filter = FilterImpl.createFilter(filterString);
 
+      long txID = storageManager.generateUniqueID();;
       long queueID = storageManager.generateUniqueID();
 
       PageSubscription pageSubscription;
@@ -1709,10 +1710,28 @@ public class HornetQServerImpl implements HornetQServer
 
       if (durable)
       {
-         storageManager.addQueueBinding(binding);
+         storageManager.addQueueBinding(txID, binding);
       }
 
-      postOffice.addBinding(binding);
+      try
+      {
+         postOffice.addBinding(binding);
+         if (durable)
+         {
+            storageManager.commitBindings(txID);
+         }
+      }
+      catch (Exception e)
+      {
+         if (durable)
+         {
+            storageManager.rollbackBindings(txID);
+         }
+         queue.close();
+         pageSubscription.close();
+         throw e;
+      }
+      
 
       managementService.registerAddress(address);
       managementService.registerQueue(queue, address, storageManager);
