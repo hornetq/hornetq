@@ -1923,24 +1923,17 @@ public class JournalStorageManager implements StorageManager
                                                                                           binding.getAddress(),
                                                                                           filterString);
 
-<<<<<<< .working
         readLock();
       try
           {
-              bindingsJournal.appendAddRecord(binding.getID(),
-                                              JournalStorageManager.QUEUE_BINDING_RECORD,
-                                              bindingEncoding,
-                                              true);
+              bindingsJournal.appendAddRecordTransactional(tx, binding.getID(),
+	                                      JournalStorageManager.QUEUE_BINDING_RECORD,
+	                                      bindingEncoding);
           }
       finally
           {
               readUnLock();
           }
-=======
-      bindingsJournal.appendAddRecordTransactional(tx, binding.getID(),
-                                      JournalStorageManager.QUEUE_BINDING_RECORD,
-                                      bindingEncoding);
->>>>>>> .merge-right.r12106
    }
 
    public void deleteQueueBinding(final long queueBindingID) throws Exception
