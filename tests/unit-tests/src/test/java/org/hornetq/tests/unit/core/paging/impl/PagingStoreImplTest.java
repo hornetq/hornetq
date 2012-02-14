@@ -16,6 +16,7 @@ package org.hornetq.tests.unit.core.paging.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -29,22 +30,40 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.*;
+import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.config.PersistedAddressSetting;
+import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
+import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.server.*;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
@@ -1092,6 +1111,14 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
+      public void lock()
+      {
+      }
+
+      public void unlock()
+      {
+      }
+
    }
 
    class FakeStorageManager implements StorageManager
@@ -1202,20 +1229,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
       public void sync()
       {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
-       */
-      public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
-                                                       final PagingManager pagingManager,
-                                                       final ResourceManager resourceManager,
-                                                       final Map<Long, Queue> queues,
-                                                       Map<Long, QueueBindingInfo> queueInfos,
-                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                       Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
-      {
-         return new JournalLoadInformation();
       }
 
       /* (non-Javadoc)
@@ -1405,7 +1418,12 @@ public class PagingStoreImplTest extends UnitTestCase
          return null;
       }
 
-      /* (non-Javadoc)
+       @Override
+       public SequentialFile createFileForLargeMessage(long messageID, String extension) {
+           return null;
+       }
+
+       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#isReplicated()
        */
       public boolean isReplicated()
@@ -1560,7 +1578,19 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
+       @Override
+       public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
+                                                        PagingManager pagingManager,
+                                                        ResourceManager resourceManager,
+                                                        Map<Long, org.hornetq.core.server.Queue> queues,
+                                                        Map<Long, QueueBindingInfo> queueInfos,
+                                                        Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                        Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+       {
+           return new JournalLoadInformation();
+       }
+
+       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo, int)
        */
       public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
@@ -1648,7 +1678,17 @@ public class PagingStoreImplTest extends UnitTestCase
          return 0;
       }
 
-      /* (non-Javadoc)
+       @Override
+       public Journal getBindingsJournal() {
+           return null;
+       }
+
+       @Override
+       public Journal getMessageJournal() {
+           return null;
+       }
+
+       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#newSingleThreadContext()
        */
       public OperationContext newSingleThreadContext()
@@ -1730,6 +1770,29 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          
+      }
+
+      public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+         ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+         throws Exception
+      {
+      }
+
+      public boolean addToPage(PagingManager pagingManager,
+         SimpleString address,
+         ServerMessage message,
+         RoutingContext ctx,
+         RouteContextList listCtx) throws Exception
+      {
+         return true;
+      }
+
+      public void stopReplication()
+      {
+      }
+
+      public void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception
+      {
       }
 
     }
