@@ -33,12 +33,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.paging.Page;
-import org.hornetq.core.paging.PageTransactionInfo;
-import org.hornetq.core.paging.PagedMessage;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.PagingStoreFactory;
+import org.hornetq.core.paging.*;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.persistence.StorageManager;
@@ -55,6 +50,13 @@ import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
+
+import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -943,6 +945,794 @@ public class PagingStoreImplTest extends UnitTestCase
    }
 
    // Inner classes -------------------------------------------------
+
+   class FakePagingManager implements PagingManager
+   {
+
+      public void activate()
+      {
+      }
+
+      public long addSize(final long size)
+      {
+         return 0;
+      }
+
+      public void addTransaction(final PageTransactionInfo pageTransaction)
+      {
+      }
+
+      public PagingStore createPageStore(final SimpleString destination) throws Exception
+      {
+         return null;
+      }
+
+      public long getTotalMemory()
+      {
+         return 0;
+      }
+
+      public SimpleString[] getStoreNames()
+      {
+         return null;
+      }
+
+      public long getMaxMemory()
+      {
+         return 0;
+      }
+
+      public PagingStore getPageStore(final SimpleString address) throws Exception
+      {
+         return null;
+      }
+
+      public void deletePageStore(SimpleString storeName) throws Exception
+      {
+      }
+
+      public PageTransactionInfo getTransaction(final long transactionID)
+      {
+         return null;
+      }
+
+      public boolean isBackup()
+      {
+         return false;
+      }
+
+      public boolean isGlobalPageMode()
+      {
+         return false;
+      }
+
+      public boolean isPaging(final SimpleString destination) throws Exception
+      {
+         return false;
+      }
+
+      public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
+      {
+         return false;
+      }
+
+      public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
+      {
+         return false;
+      }
+
+      public void reloadStores() throws Exception
+      {
+      }
+
+      public void removeTransaction(final long transactionID)
+      {
+
+      }
+
+      public void setGlobalPageMode(final boolean globalMode)
+      {
+      }
+
+      public void setPostOffice(final PostOffice postOffice)
+      {
+      }
+
+      public void resumeDepages()
+      {
+      }
+
+      public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
+      {
+      }
+
+      public boolean isStarted()
+      {
+         return false;
+      }
+
+      public void start() throws Exception
+      {
+      }
+
+      public void stop() throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#isGlobalFull()
+       */
+      public boolean isGlobalFull()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#getTransactions()
+       */
+      public Map<Long, PageTransactionInfo> getTransactions()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#processReload()
+       */
+      public void processReload()
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
+       */
+      public void onChange()
+      {
+      }
+
+   }
+
+   class FakeStorageManager implements StorageManager
+   {
+
+      public void setUniqueIDSequence(final long id)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#addQueueBinding(org.hornetq.core.postoffice.Binding)
+       */
+      public void addQueueBinding(final Binding binding) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#commit(long)
+       */
+      public void commit(final long txID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#createLargeMessage()
+       */
+      public LargeServerMessage createLargeMessage()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteDuplicateID(long)
+       */
+      public void deleteDuplicateID(final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteDuplicateIDTransactional(long, long)
+       */
+      public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteMessage(long)
+       */
+      public void deleteMessage(final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteMessageTransactional(long, long, long)
+       */
+      public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long, long)
+       */
+      public void deletePageTransactional(final long txID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteQueueBinding(long)
+       */
+      public void deleteQueueBinding(final long queueBindingID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#generateUniqueID()
+       */
+      public long generateUniqueID()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#getCurrentUniqueID()
+       */
+      public long getCurrentUniqueID()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
+       */
+      public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
+                                                       final List<GroupingInfo> groupingInfos) throws Exception
+      {
+         return new JournalLoadInformation();
+      }
+
+      public void addGrouping(final GroupBinding groupBinding) throws Exception
+      {
+         // To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void deleteGrouping(final GroupBinding groupBinding) throws Exception
+      {
+         // To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void sync()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
+       */
+      public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
+                                                       final PagingManager pagingManager,
+                                                       final ResourceManager resourceManager,
+                                                       final Map<Long, Queue> queues,
+                                                       Map<Long, QueueBindingInfo> queueInfos,
+                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                       Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+      {
+         return new JournalLoadInformation();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#prepare(long, javax.transaction.xa.Xid)
+       */
+      public void prepare(final long txID, final Xid xid) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#rollback(long)
+       */
+      public void rollback(final long txID) throws Exception
+      {
+      }
+
+      public void rollbackBindings(long txID) throws Exception
+      {
+      }
+
+      public void commitBindings(long txID) throws Exception
+      {
+      }
+
+       /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeAcknowledge(long, long)
+       */
+      public void storeAcknowledge(final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeAcknowledgeTransactional(long, long, long)
+       */
+      public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeDuplicateID(org.hornetq.utils.SimpleString, byte[], long)
+       */
+      public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeDuplicateIDTransactional(long, org.hornetq.utils.SimpleString, byte[], long)
+       */
+      public void storeDuplicateIDTransactional(final long txID,
+                                                final SimpleString address,
+                                                final byte[] duplID,
+                                                final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeMessage(org.hornetq.core.server.ServerMessage)
+       */
+      public void storeMessage(final ServerMessage message) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeMessageTransactional(long, org.hornetq.core.server.ServerMessage)
+       */
+      public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo)
+       */
+      public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeReference(long, long)
+       */
+      public void storeReference(final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeReferenceTransactional(long, long, long)
+       */
+      public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
+      {
+         return -1;
+      }
+
+      public void deleteHeuristicCompletion(final long txID) throws Exception
+      {
+      }
+
+      public void addQueueBinding(long tx, Binding binding) throws Exception
+      {
+      }
+
+       /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updateDeliveryCount(org.hornetq.core.server.MessageReference)
+       */
+      public void updateDeliveryCount(final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updateDuplicateID(org.hornetq.utils.SimpleString, byte[], long)
+       */
+      public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updateDuplicateIDTransactional(long, org.hornetq.utils.SimpleString, byte[], long)
+       */
+      public void updateDuplicateIDTransactional(final long txID,
+                                                 final SimpleString address,
+                                                 final byte[] duplID,
+                                                 final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updateScheduledDeliveryTime(org.hornetq.core.server.MessageReference)
+       */
+      public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updateScheduledDeliveryTimeTransactional(long, org.hornetq.core.server.MessageReference)
+       */
+      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.HornetQComponent#isStarted()
+       */
+      public boolean isStarted()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.HornetQComponent#start()
+       */
+      public void start() throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.HornetQComponent#stop()
+       */
+      public void stop() throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
+       */
+      public void afterCompleteOperations(final Runnable run)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#completeReplication()
+       */
+      public void completeOperations()
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#createLargeMessage(byte[])
+       */
+      public LargeServerMessage createLargeMessage(final long messageId, final MessageInternal msg)
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#isReplicated()
+       */
+      public boolean isReplicated()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
+       */
+      public JournalLoadInformation[] loadInternalOnly() throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
+       */
+      public void pageClosed(final SimpleString storeName, final int pageNumber)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
+       */
+      public void pageDeleted(final SimpleString storeName, final int pageNumber)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
+       */
+      public void pageWrite(final PagedMessage message, final int pageNumber)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
+       */
+      public boolean waitOnOperations(final long timeout) throws Exception
+      {
+         return true;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
+       */
+      public void setReplicator(final ReplicationManager replicator)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
+       */
+      public void afterCompleteOperations(final IOAsyncTask run)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#waitOnOperations()
+       */
+      public void waitOnOperations() throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#getContext()
+       */
+      public OperationContext getContext()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#newContext(java.util.concurrent.Executor)
+       */
+      public OperationContext newContext(final Executor executor)
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#clearContext()
+       */
+      public void clearContext()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
+       */
+      public void setContext(final OperationContext context)
+      {
+      }
+
+      public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#recoverAddressSettings()
+       */
+      public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
+      {
+         return Collections.emptyList();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
+       */
+      public List<PersistedRoles> recoverPersistedRoles() throws Exception
+      {
+         return Collections.emptyList();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeAddressSetting(org.hornetq.core.persistconfig.PersistedAddressSetting)
+       */
+      public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
+       */
+      public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteAddressSetting(org.hornetq.api.core.SimpleString)
+       */
+      public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.SimpleString)
+       */
+      public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long)
+       */
+      public void deletePageTransactional(long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo, int)
+       */
+      public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledge(long, org.hornetq.core.paging.cursor.PagePosition)
+       */
+      public void storeCursorAcknowledge(long queueID, PagePosition position)
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
+       */
+      public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position)
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
+       */
+      public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(org.hornetq.core.paging.PageTransactionInfo, int)
+       */
+      public void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounter(long, long, long)
+       */
+      public long storePageCounter(long txID, long queueID, long value) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
+       */
+      public void deleteIncrementRecord(long txID, long recordID) throws Exception
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
+       */
+      public void deletePageCounter(long txID, long recordID) throws Exception
+      {
+         // TODO Auto-generated method stub
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, long, int)
+       */
+      public long storePageCounterInc(long txID, long queueID, int add) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, int)
+       */
+      public long storePageCounterInc(long queueID, int add) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#newSingleThreadContext()
+       */
+      public OperationContext newSingleThreadContext()
+      {
+         return getContext();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#commit(long, boolean)
+       */
+      public void commit(long txID, boolean lineUpContext) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+       */
+      public void lineUpContext()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessageTX(org.hornetq.core.transaction.Transaction, long, long)
+       */
+      public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
+       */
+      public void confirmPendingLargeMessage(long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
+       */
+      public void stop(boolean ioCriticalError) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#beforePageRead()
+       */
+      public void beforePageRead() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#afterPageRead()
+       */
+      public void afterPageRead() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(int)
+       */
+      public ByteBuffer allocateDirectBuffer(int size)
+      {
+         return ByteBuffer.allocateDirect(size);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
+       */
+      public void freeDirectBuffer(ByteBuffer buffer)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+    }
 
    class FakeStoreFactory implements PagingStoreFactory
    {
