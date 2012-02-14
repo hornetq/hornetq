@@ -272,7 +272,6 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          jmsJournal.appendDeleteRecord(destination.getId(), false);
       }
-      deleteJNDI(type, name);
    }
 
    /* (non-Javadoc)

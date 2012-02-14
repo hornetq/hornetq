@@ -237,12 +237,65 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
 
          cachedCommands.clear();
+         
+         recoverJndiBindings();
 
       }
       catch (Exception e)
       {
          JMSServerManagerImpl.log.error("Failed to start jms deployer", e);
       }
+   }
+   
+   private void recoverJndiBindings() throws Exception
+   {
+      //now its time to add journal recovered stuff
+      List<PersistedJNDI> jndiSpace = storage.recoverPersistedJNDI();
+      
+      for (PersistedJNDI record : jndiSpace)
+      {
+         Map<String, List<String>> mapJNDI;
+         Map<String, ?> objects;
+
+         switch (record.getType())
+         {
+            case Queue:
+               mapJNDI = queueJNDI;
+               objects = queues;
+               break;
+            case Topic:
+               mapJNDI = topicJNDI;
+               objects = topics;
+               break;
+            default:
+            case ConnectionFactory:
+               mapJNDI = connectionFactoryJNDI;
+               objects = connectionFactories;
+               break;
+         }
+
+         Object objectToBind = objects.get(record.getName());
+
+         if (objectToBind == null)
+         {
+            continue;
+         }
+
+         List<String> jndiList = mapJNDI.get(record.getName());
+         if (jndiList == null)
+         {
+            jndiList = new ArrayList<String>();
+            mapJNDI.put(record.getName(), jndiList);
+         }
+
+         for (String jndi : record.getJndi())
+         {
+            jndiList.add(jndi);
+            bindToJndi(jndi, objectToBind);
+         }
+      }
+
+
    }
 
    // HornetQComponent implementation -----------------------------------
@@ -1533,50 +1586,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          else if (destination.getType() == PersistedType.Topic)
          {
             internalCreateTopic(destination.getName());
-         }
-      }
-
-      List<PersistedJNDI> jndiSpace = storage.recoverPersistedJNDI();
-      for (PersistedJNDI record : jndiSpace)
-      {
-         Map<String, List<String>> mapJNDI;
-         Map<String, ?> objects;
-
-         switch (record.getType())
-         {
-            case Queue:
-               mapJNDI = queueJNDI;
-               objects = queues;
-               break;
-            case Topic:
-               mapJNDI = topicJNDI;
-               objects = topics;
-               break;
-            default:
-            case ConnectionFactory:
-               mapJNDI = connectionFactoryJNDI;
-               objects = connectionFactories;
-               break;
-         }
-
-         Object objectToBind = objects.get(record.getName());
-
-         if (objectToBind == null)
-         {
-            continue;
-         }
-
-         List<String> jndiList = mapJNDI.get(record.getName());
-         if (jndiList == null)
-         {
-            jndiList = new ArrayList<String>();
-            mapJNDI.put(record.getName(), jndiList);
-         }
-
-         for (String jndi : record.getJndi())
-         {
-            jndiList.add(jndi);
-            bindToJndi(jndi, objectToBind);
          }
       }
    }

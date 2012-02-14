@@ -22,7 +22,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
@@ -1178,6 +1177,54 @@ public class JMSQueueControlTest extends ManagementTestBase
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+   }
+   
+   public void testQueueAddJndi() throws Exception
+   {
+      String testQueueName = "testQueueAddJndi";
+      serverManager.createQueue(true, testQueueName, null, true, testQueueName);
+      HornetQQueue testQueue = (HornetQQueue)HornetQJMSClient.createQueue(testQueueName);
+
+      JMSQueueControl queueControl = createManagementControl(testQueue);
+      String[] bindings = queueControl.getJNDIBindings();
+      
+      String newJndi = "newTestQueueAddJndi";
+      
+      for (String b : bindings)
+      {
+         assertFalse(b.equals(newJndi));
+      }
+      queueControl.addJNDI(newJndi);
+      
+      bindings = queueControl.getJNDIBindings();
+      boolean newBindingAdded = false;
+      for (String b : bindings)
+      {
+         if (b.equals(newJndi))
+         {
+            newBindingAdded = true;
+         }
+      }
+      assertTrue(newBindingAdded); 
+
+      serverManager.stop();
+      
+      serverManager.start();
+      
+      testQueue = (HornetQQueue)HornetQJMSClient.createQueue(testQueueName);
+      
+      queueControl = createManagementControl(testQueue);
+      
+      bindings = queueControl.getJNDIBindings();
+      newBindingAdded = false;
+      for (String b : bindings)
+      {
+         if (b.equals(newJndi))
+         {
+            newBindingAdded = true;
+         }
+      }
+      assertTrue(newBindingAdded); 
    }
 
    // Package protected ---------------------------------------------
