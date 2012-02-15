@@ -162,7 +162,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       log.info("#test tearDown");
-      closeAllConsumers();
+      // closeAllConsumers();
+      for (ConsumerHolder ch : consumers)
+      {
+         addClientConsumer(ch.consumer);
+         addClientSession(ch.session);
+      }
+      closeAllClientConsumers();
+      closeAllClientSessions();
+
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
       for (int i = 0; i < MAX_SERVERS; i++)
@@ -534,7 +542,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             filterString = ClusterTestBase.FILTER_PROP.toString() + "='" + filterVal + "'";
          }
 
-         ClientConsumer consumer = session.createConsumer(queueName, filterString);
+         ClientConsumer consumer = addClientConsumer(session.createConsumer(queueName, filterString));
 
          session.start();
 
