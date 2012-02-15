@@ -1,3 +1,8 @@
+.idea
+*.iml
+*/*.iml
+*/*/*.iml
+*/*/*/*.iml
 *~
 target
 tests/jms-tests/data
