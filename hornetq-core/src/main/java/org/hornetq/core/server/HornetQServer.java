@@ -15,7 +15,9 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -142,6 +144,15 @@ public interface HornetQServer extends HornetQComponent
    SimpleString getNodeID();
 
    boolean isInitialised();
+
+   /**
+    * Wait for server initialization.
+    * @param timeout
+    * @param unit
+    * @see CountDownLatch#await(long, TimeUnit)
+    * @throws InterruptedException
+    */
+   boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException;
 
    Queue createQueue(SimpleString address,
                      SimpleString queueName,

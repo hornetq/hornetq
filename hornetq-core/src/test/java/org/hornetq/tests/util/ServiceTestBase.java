@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
@@ -331,16 +332,8 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (!server.getConfiguration().isBackup())
       {
-         timetowait = System.currentTimeMillis() + 5000;
-         while (!server.isInitialised() && System.currentTimeMillis() < timetowait)
-         {
-            Thread.sleep(50);
-         }
-
-         if (!server.isInitialised())
-         {
+         if (!server.waitForInitialization(5000, TimeUnit.MILLISECONDS))
             fail("Server didn't initialize: " + server);
-         }
       }
    }
 

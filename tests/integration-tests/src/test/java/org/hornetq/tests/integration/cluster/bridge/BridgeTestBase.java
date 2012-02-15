@@ -15,12 +15,12 @@ package org.hornetq.tests.integration.cluster.bridge;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -34,7 +34,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 21 Nov 2008 10:32:23
  *
  *
@@ -187,21 +187,8 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected void waitForServerStart(HornetQServer server) throws Exception
    {
-      long start = System.currentTimeMillis();
-      do
-      {
-         if (server.isInitialised())
-         {
-            return;
-         }
-         Thread.sleep(10);
-      }
-      while (System.currentTimeMillis() - start < 5000);
-
-      String msg = "Timed out waiting for server starting = " + server;
-
-
-      throw new IllegalStateException(msg);
+      if (!server.waitForInitialization(5000L, TimeUnit.MILLISECONDS))
+         throw new IllegalStateException("Timed out waiting for server starting = " + server);
    }
 
     // Inner classes -------------------------------------------------

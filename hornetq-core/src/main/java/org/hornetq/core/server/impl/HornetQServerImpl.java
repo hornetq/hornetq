@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -225,8 +226,13 @@ public class HornetQServerImpl implements HornetQServer
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
+   /**
+    * We guard the {@code initialised} field because if we restart a {@code HornetQServer}, we need
+    * to replace the {@code CountDownLatch} by a new one.
+    */
    private final Object initialiseLock = new Object();
-   private boolean initialised;
+   private CountDownLatch initialised = new CountDownLatch(1);
+
    private final Object startUpLock = new Object();
    private final Object replicationLock = new Object();
 
@@ -666,7 +672,13 @@ public class HornetQServerImpl implements HornetQServer
          sessions.clear();
 
          started = false;
-         initialised = false;
+            synchronized (initialiseLock)
+            {
+               // replace the latch only if necessary. It could still be '1' in case of errors
+               // during start-up.
+               if (initialised.getCount() < 1)
+                  initialised = new CountDownLatch(1);
+            }
          }
          
          // to display in the log message
@@ -910,12 +922,24 @@ public class HornetQServerImpl implements HornetQServer
       return new HashSet<ServerSession>(sessions.values());
    }
 
+   @Override
    public boolean isInitialised()
    {
       synchronized (initialiseLock)
       {
-         return initialised;
+         return initialised.getCount() < 1;
       }
+   }
+
+   @Override
+   public boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException
+   {
+      CountDownLatch latch;
+      synchronized (initialiseLock)
+      {
+         latch = initialised;
+      }
+      return latch.await(timeout, unit);
    }
 
    public HornetQServerControlImpl getHornetQServerControl()
@@ -1482,8 +1506,7 @@ public class HornetQServerImpl implements HornetQServer
 
       remotingService.start();
 
-      initialised = true;
-
+      initialised.countDown();
    }
 
    /**

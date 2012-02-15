@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -296,21 +297,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void waitForServerRestart(final int node) throws Exception
    {
-      long start = System.currentTimeMillis();
-      do
+      if (!servers[node].waitForInitialization(ServiceTestBase.WAIT_TIMEOUT, TimeUnit.MILLISECONDS))
       {
-         if (servers[node].isInitialised())
-         {
-            return;
-         }
-         Thread.sleep(10);
+         String msg = "Timed out waiting for server starting = " + node;
+
+         log.error(msg);
+
+         throw new IllegalStateException(msg);
       }
-      while (System.currentTimeMillis() - start < ServiceTestBase.WAIT_TIMEOUT);
-      String msg = "Timed out waiting for server starting = " + node;
-
-      log.error(msg);
-
-      throw new IllegalStateException(msg);
    }
 
    protected void waitForBindings(final int node,
@@ -1865,7 +1859,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-      
+
 		ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
 				name, address, connectorFrom.getName(),
 				HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
