@@ -15,8 +15,6 @@ package org.hornetq.tests.util;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +33,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -82,18 +79,9 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
-   private final Collection<ClientSession> clientSessions = new ArrayList<ClientSession>();
-
    @Override
    protected void tearDown() throws Exception
    {
-      closeAllClientSessions();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
       super.tearDown();
       if (InVMRegistry.instance.size() > 0)
       {
@@ -101,51 +89,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   /**
-    *
-    */
-   protected void closeAllSessionFactories()
-   {
-      synchronized (sessionFactories)
-      {
-         for (ClientSessionFactory sf : sessionFactories)
-         {
-            closeSessionFactory(sf);
-         }
-         sessionFactories.clear();
-      }
-   }
 
-   /**
-    *
-    */
-   protected void closeAllClientSessions()
-   {
-      synchronized (clientSessions)
-      {
-         for (ClientSession cs : clientSessions)
-         {
-            if (cs == null)
-               continue;
-            try
-            {
-               if (cs instanceof ClientSessionInternal)
-               {
-                  ((ClientSessionInternal)cs).cleanUp(false);
-               }
-               else
-               {
-                  cs.close();
-               }
-            }
-            catch (Exception e)
-            {
-               // no-op
-            }
-         }
-         clientSessions.clear();
-      }
-   }
 
    protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
    {
@@ -376,22 +320,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected ClientSession addClientSession(ClientSession session)
-   {
-      synchronized (clientSessions)
-      {
-         clientSessions.add(session);
-      }
-      return session;
-   }
-
-   protected void addSessionFactory(ClientSessionFactory sf)
-   {
-      synchronized (sessionFactories)
-      {
-         sessionFactories.add(sf);
-      }
-   }
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final int pageSize,
@@ -659,13 +587,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          return createInVMNonHALocator();
       }
-   }
-
-   protected final ClientSessionFactory createSessionFactory(ServerLocator locator) throws Exception
-   {
-      ClientSessionFactory sf = locator.createSessionFactory();
-      addSessionFactory(sf);
-      return sf;
    }
 
    protected void createQueue(final String address, final String queue) throws Exception

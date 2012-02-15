@@ -61,6 +61,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -117,7 +118,7 @@ public abstract class UnitTestCase extends TestCase
    public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    protected static final String CLUSTER_PASSWORD = "UnitTestsClusterPassword";
-  
+
    private static final String OS_TYPE = System.getProperty("os.name").toLowerCase();
 
    // Attributes ----------------------------------------------------
@@ -129,6 +130,8 @@ public abstract class UnitTestCase extends TestCase
 
    private final Collection<HornetQServer> servers = new ArrayList<HornetQServer>();
    private final Collection<ServerLocator> locators = new ArrayList<ServerLocator>();
+   private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
+   private final Collection<ClientSession> clientSessions = new ArrayList<ClientSession>();
 
    private boolean checkThread = true;
 
@@ -933,6 +936,11 @@ public abstract class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+      closeAllClientSessions();
+
+      closeAllSessionFactories();
+
+      closeAllServerLocatorsFactories();
 
       synchronized (servers)
       {
@@ -1446,14 +1454,6 @@ public abstract class UnitTestCase extends TestCase
 
    }
 
-   protected HornetQServer addServer(HornetQServer server)
-   {
-      synchronized (servers)
-      {
-         servers.add(server);
-      }
-      return server;
-   }
    protected static final void stopComponent(HornetQComponent component)
    {
       if (component == null)
@@ -1469,6 +1469,22 @@ public abstract class UnitTestCase extends TestCase
          }
    }
 
+   protected final ClientSessionFactory createSessionFactory(ServerLocator locator) throws Exception
+   {
+      ClientSessionFactory sf = locator.createSessionFactory();
+      addSessionFactory(sf);
+      return sf;
+   }
+
+   protected HornetQServer addServer(HornetQServer server)
+   {
+      synchronized (servers)
+      {
+         servers.add(server);
+      }
+      return server;
+   }
+
    protected final ServerLocator addServerLocator(ServerLocator locator)
    {
       synchronized (locators)
@@ -1476,6 +1492,63 @@ public abstract class UnitTestCase extends TestCase
          locators.add(locator);
       }
       return locator;
+   }
+
+   protected ClientSession addClientSession(ClientSession session)
+   {
+      synchronized (clientSessions)
+      {
+         clientSessions.add(session);
+      }
+      return session;
+   }
+
+   protected void addSessionFactory(ClientSessionFactory sf)
+   {
+      synchronized (sessionFactories)
+      {
+         sessionFactories.add(sf);
+      }
+   }
+
+   protected void closeAllClientSessions()
+   {
+      synchronized (clientSessions)
+      {
+         for (ClientSession cs : clientSessions)
+         {
+            if (cs == null)
+               continue;
+            try
+            {
+               if (cs instanceof ClientSessionInternal)
+               {
+                  ((ClientSessionInternal)cs).cleanUp(false);
+               }
+               else
+               {
+                  cs.close();
+               }
+            }
+            catch (Exception e)
+            {
+               // no-op
+            }
+         }
+         clientSessions.clear();
+      }
+   }
+
+   protected void closeAllSessionFactories()
+   {
+      synchronized (sessionFactories)
+      {
+         for (ClientSessionFactory sf : sessionFactories)
+         {
+            closeSessionFactory(sf);
+         }
+         sessionFactories.clear();
+      }
    }
 
    protected void closeAllServerLocatorsFactories()

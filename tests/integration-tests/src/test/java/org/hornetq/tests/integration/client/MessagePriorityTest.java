@@ -45,7 +45,7 @@ public class MessagePriorityTest extends UnitTestCase
 
    private static final Logger log = Logger.getLogger(MessagePriorityTest.class);
 
-   
+
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
@@ -105,11 +105,11 @@ public class MessagePriorityTest extends UnitTestCase
       SimpleString address = RandomUtil.randomSimpleString();
 
       session.createQueue(address, queue, false);
-      
+
       session.start();
 
       ClientProducer producer = session.createProducer(address);
-      
+
       ClientConsumer consumer = session.createConsumer(queue);
 
       for (int i = 0; i < 10; i++)
@@ -118,18 +118,18 @@ public class MessagePriorityTest extends UnitTestCase
          m.setPriority((byte)i);
          producer.send(m);
       }
-      
+
       //Wait for msgs to reach client side
-      
+
       Thread.sleep(1000);
-      
+
       // expect to consume message with higher priority first
       for (int i = 9; i >= 0; i--)
       {
          ClientMessage m = consumer.receive(500);
-         
+
          log.info("received msg " + m.getPriority());
-         
+
          Assert.assertNotNull(m);
          Assert.assertEquals(i, m.getPriority());
       }
@@ -205,7 +205,7 @@ public class MessagePriorityTest extends UnitTestCase
       session.deleteQueue(queue);
 
    }
-   
+
    // https://jira.jboss.org/jira/browse/HORNETQ-275
    public void testOutOfOrderAcknowledgement() throws Exception
    {
@@ -226,7 +226,7 @@ public class MessagePriorityTest extends UnitTestCase
          m.setPriority((byte)i);
          producer.send(m);
       }
-      
+
       Thread.sleep(500);
 
       // Now we wait a little bit to make sure the messages are in the client side buffer
@@ -243,7 +243,7 @@ public class MessagePriorityTest extends UnitTestCase
       m.acknowledge();
 
       consumer.close();
-      
+
       //Close and try and receive the other ones
 
       consumer = session.createConsumer(queue);
@@ -261,13 +261,13 @@ public class MessagePriorityTest extends UnitTestCase
 
          m.acknowledge();
       }
-      
+
       consumer.close();
 
       session.deleteQueue(queue);
    }
-   
-   
+
+
    public void testManyMessages() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -276,7 +276,7 @@ public class MessagePriorityTest extends UnitTestCase
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
-      
+
       for (int i = 0 ; i < 777; i++)
       {
          ClientMessage msg = session.createMessage(true);
@@ -284,7 +284,7 @@ public class MessagePriorityTest extends UnitTestCase
          msg.putBooleanProperty("fast", false);
          producer.send(msg);
       }
-      
+
       for (int i = 0 ; i < 333; i++)
       {
          ClientMessage msg = session.createMessage(true);
@@ -296,8 +296,8 @@ public class MessagePriorityTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(queue);
 
       session.start();
-      
-      
+
+
       for (int i = 0 ; i < 333; i++)
       {
          ClientMessage msg = consumer.receive(5000);
@@ -305,7 +305,7 @@ public class MessagePriorityTest extends UnitTestCase
          msg.acknowledge();
          assertTrue(msg.getBooleanProperty("fast"));
       }
-      
+
       for (int i = 0 ; i < 777; i++)
       {
          ClientMessage msg = consumer.receive(5000);
@@ -317,11 +317,11 @@ public class MessagePriorityTest extends UnitTestCase
       consumer.close();
 
       session.deleteQueue(queue);
-      
+
       session.close();
    }
-   
-   
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -334,33 +334,15 @@ public class MessagePriorityTest extends UnitTestCase
       Configuration config = createDefaultConfig();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = HornetQServers.newHornetQServer(config, false);
+      server = addServer(HornetQServers.newHornetQServer(config, false));
       server.start();
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
-      sf = locator.createSessionFactory();
-      session = sf.createSession(false, true, true);
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      sf.close();
-
-      session.close();
-
-      locator.close();
-
-      server.stop();
-
-      sf = null;
-
-      session = null;
-
-      server = null;
-
-      super.tearDown();
+      sf = createSessionFactory(locator);
+      session = addClientSession(sf.createSession(false, true, true));
    }
 
    // Private -------------------------------------------------------

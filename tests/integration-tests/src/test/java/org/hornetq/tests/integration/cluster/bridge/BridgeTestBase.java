@@ -54,25 +54,7 @@ public abstract class BridgeTestBase extends UnitTestCase
    @Override
    public void tearDown() throws Exception
    {
-      for (HornetQServer server : servers)
-      {
-         try
-         {
-            if (server.isStarted())
-            {
-               server.stop();
-            }
-         }
-         catch (Throwable e)
-         {
-            // System.out -> junit report
-            System.out.println("Error while stopping server:");
-            e.printStackTrace(System.out);
-         }
-      }
-
       servers = null;
-
       InVMConnector.failOnCreateConnection = false;
 
       super.tearDown();
@@ -129,7 +111,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
-
+      addServer(service);
       servers.add(service);
 
       return service;
@@ -178,7 +160,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
-
+      addServer(service);
       servers.add(service);
 
       return service;

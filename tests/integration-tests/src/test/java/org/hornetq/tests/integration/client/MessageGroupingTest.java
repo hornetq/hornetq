@@ -536,38 +536,6 @@ public class MessageGroupingTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
-   {
-      if (clientSession != null)
-      {
-         try
-         {
-            clientSession.close();
-         }
-         catch (HornetQException e1)
-         {
-            //
-         }
-      }
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e1)
-         {
-            //
-         }
-      }
-      locator.close();
-      server = null;
-      clientSession = null;
-
-      super.tearDown();
-   }
-
-   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -576,14 +544,16 @@ public class MessageGroupingTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = HornetQServers.newHornetQServer(configuration, false);
+      server = addServer(HornetQServers.newHornetQServer(configuration, false));
       // start the server
       server.start();
 
       // then we create a client as normal
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      UnitTestCase.INVM_CONNECTOR_FACTORY)));
       ClientSessionFactory sessionFactory = locator.createSessionFactory();
-      clientSession = sessionFactory.createSession(false, true, true);
+      clientSession = addClientSession(sessionFactory.createSession(false, true, true));
       clientSession.createQueue(qName, qName, null, false);
    }
 

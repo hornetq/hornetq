@@ -15,7 +15,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -34,12 +39,10 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
    public void testConsumersRoundRobinCorrectly() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+      server.start();
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession(false, true, true);
+      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSession session = addClientSession(cf.createSession(false, true, true));
          session.createQueue(addressA, queueA, false);
 
          ClientConsumer[] consumers = new ClientConsumer[5];
@@ -74,16 +77,6 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
                cm.acknowledge();
             }
          }
-         log.info("closing session");
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
 }

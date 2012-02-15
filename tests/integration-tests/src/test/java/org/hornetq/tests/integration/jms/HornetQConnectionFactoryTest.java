@@ -686,21 +686,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       startServer();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (liveService.isStarted())
-      {
-         liveService.stop();
-      }
-
-      liveService = null;
-
-      liveTC = null;
-
-      super.tearDown();
-   }
-
    private void startServer() throws Exception
    {
       Configuration liveConf = createBasicConfig();
@@ -735,7 +720,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
 
-      liveService = HornetQServers.newHornetQServer(liveConf, false);
+      liveService = addServer(HornetQServers.newHornetQServer(liveConf, false));
       liveService.start();
    }
 
