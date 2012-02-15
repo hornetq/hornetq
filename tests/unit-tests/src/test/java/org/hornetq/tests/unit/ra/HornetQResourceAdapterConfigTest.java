@@ -296,6 +296,12 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
          "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
+         "      </config-property>"+ 
+         "      <config-property>\n" +
+         "         <description>Add a new managed connection factory</description>\n" +
+         "         <config-property-name>ManagedConnectionFactory</config-property-name>\n" +
+         "         <config-property-type>org.hornetq.ra.HornetQRAManagedConnectionFactory</config-property-type>\n" +
+         "         <config-property-value></config-property-value>\n" +
          "      </config-property>";
 
 
