@@ -12,6 +12,11 @@
  */
 package org.hornetq.core.server.impl;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.logging.Logger;
@@ -22,14 +27,13 @@ import org.hornetq.core.server.ConnectorServiceFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.ConfigurationHelper;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         Created Jun 29, 2010
+ * ConnectorsService will pool some resource for updates, e.g. Twitter, then the changes are picked
+ * and converted into a ServerMessage for a given destination (queue).
+ * <p>
+ * It may also listen to a queue, and forward them (e.g. messages arriving at the queue are picked
+ * and tweeted to some Twitter account).
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> Created Jun 29, 2010
  */
 public class ConnectorsService implements HornetQComponent
 {
