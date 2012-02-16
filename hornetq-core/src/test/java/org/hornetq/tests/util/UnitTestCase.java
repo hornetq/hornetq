@@ -943,9 +943,13 @@ public abstract class UnitTestCase extends TestCase
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
 
+      try
+      {
       assertAllClientConsumersAreClosed();
       assertAllClientSessionsAreClosed();
-
+      }
+      finally
+      {
       synchronized (servers)
       {
          for (HornetQServer server : servers)
@@ -1079,6 +1083,7 @@ public abstract class UnitTestCase extends TestCase
 
       clearData();
       super.tearDown();
+   }
    }
 
    /**
