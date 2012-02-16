@@ -162,55 +162,23 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       log.info("#test tearDown");
-      // closeAllConsumers();
-      for (ConsumerHolder ch : consumers)
-      {
-         addClientConsumer(ch.consumer);
-         addClientSession(ch.session);
-      }
-      closeAllClientConsumers();
-      closeAllClientSessions();
 
-      closeAllSessionFactories();
-      closeAllServerLocatorsFactories();
       for (int i = 0; i < MAX_SERVERS; i++)
       {
-         if (servers[i] == null)
-            continue;
-         try
-         {
-            final ClusterManager clusterManager = servers[i].getClusterManager();
-            if (clusterManager != null)
-            {
-               for (ClusterConnection cc : clusterManager.getClusterConnections())
-               {
-                  cc.stop();
-               }
-            }
-         }
-         catch (Exception e)
-         {
-            // no-op
-         }
-         stopServers(i);
+         addHornetQComponent(nodeManagers[i]);
       }
-      for (int i = 0; i < MAX_SERVERS; i++)
-      {
-         stopComponent(nodeManagers[i]);
-      }
-      UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
-
       servers = null;
 
       sfs = null;
-
-      consumers = null;
 
       consumers = new ConsumerHolder[ClusterTestBase.MAX_CONSUMERS];
 
       nodeManagers = null;
 
       super.tearDown();
+
+      UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
+
    }
 
    // Private -------------------------------------------------------------------------------------------------------

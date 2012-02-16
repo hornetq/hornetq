@@ -40,11 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
@@ -66,9 +61,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -87,7 +80,6 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
-import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -99,6 +91,8 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.UUIDGenerator;
@@ -141,7 +135,7 @@ public abstract class UnitTestCase extends TestCase
    private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
    private final Collection<ClientSession> clientSessions = new HashSet<ClientSession>();
    private final Collection<ClientConsumer> clientConsumers = new HashSet<ClientConsumer>();
-   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+   private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
 
    private boolean checkThread = true;
 
@@ -946,22 +940,42 @@ public abstract class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      closeAllClientSessions();
-
       closeAllSessionFactories();
-
       closeAllServerLocatorsFactories();
+
+      assertAllClientConsumersAreClosed();
+      assertAllClientSessionsAreClosed();
 
       synchronized (servers)
       {
          for (HornetQServer server : servers)
          {
+            if (server == null)
+               continue;
+            try
+            {
+               final ClusterManager clusterManager = server.getClusterManager();
+               if (clusterManager != null)
+               {
+                  for (ClusterConnection cc : clusterManager.getClusterConnections())
+                  {
+                     stopComponent(cc);
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               // no-op
+            }
             stopComponent(server);
          }
          servers.clear();
       }
 
-      List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables = new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
+      closeAllOtherComponents();
+
+      List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables =
+               new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
       ArrayList<Exception> exceptions = new ArrayList<Exception>();
       try
       {
@@ -1065,6 +1079,21 @@ public abstract class UnitTestCase extends TestCase
 
       clearData();
       super.tearDown();
+   }
+
+   /**
+    *
+    */
+   private void closeAllOtherComponents()
+   {
+      synchronized (otherComponents)
+      {
+         for (HornetQComponent c : otherComponents)
+         {
+            stopComponent(c);
+         }
+         otherComponents.clear();
+      }
    }
 
    /**
@@ -1486,140 +1515,99 @@ public abstract class UnitTestCase extends TestCase
       return sf;
    }
 
-   protected HornetQServer addServer(HornetQServer server)
+   protected final HornetQServer addServer(HornetQServer server)
    {
-      synchronized (servers)
+      if (server != null)
       {
-         servers.add(server);
+         synchronized (servers)
+         {
+            servers.add(server);
+         }
       }
       return server;
    }
 
    protected final ServerLocator addServerLocator(ServerLocator locator)
    {
-      synchronized (locators)
+      if (locator != null)
       {
-         locators.add(locator);
+         synchronized (locators)
+         {
+            locators.add(locator);
+         }
       }
       return locator;
    }
 
-   protected ClientSession addClientSession(ClientSession session)
+   protected final ClientSession addClientSession(ClientSession session)
    {
-      synchronized (clientSessions)
+      if (session != null)
       {
-         clientSessions.add(session);
+         synchronized (clientSessions)
+         {
+            clientSessions.add(session);
+         }
       }
       return session;
    }
 
-   protected ClientConsumer addClientConsumer(ClientConsumer consumer)
+   protected final ClientConsumer addClientConsumer(ClientConsumer consumer)
    {
-      synchronized (clientConsumers)
+      if (consumer != null)
       {
-         clientConsumers.add(consumer);
+         synchronized (clientConsumers)
+         {
+            clientConsumers.add(consumer);
+         }
       }
       return consumer;
    }
 
-   protected void addSessionFactory(ClientSessionFactory sf)
+   protected final void addHornetQComponent(HornetQComponent component)
    {
-      synchronized (sessionFactories)
+      if (component != null)
       {
-         sessionFactories.add(sf);
-      }
-   }
-
-   private class TerminateBlockedClientSession implements Runnable
-   {
-      private final Channel channel;
-      private final CountDownLatch latch;
-
-      public TerminateBlockedClientSession(Channel c, CountDownLatch latch)
-      {
-         this.channel = c;
-         this.latch = latch;
-      }
-      @Override
-      public void run()
-      {
-         try
+         synchronized (otherComponents)
          {
-            if (latch.await(3, TimeUnit.SECONDS))
-               return;
-            channel.unlock();
-            channel.returnBlocking();
-         }
-         catch (InterruptedException e)
-         {
-            // interruption is ok, and gets ignored.
+            otherComponents.add(component);
          }
       }
    }
 
-   protected final void closeAllClientConsumers()
+   protected final void addSessionFactory(ClientSessionFactory sf)
+   {
+      if (sf != null)
+      {
+         synchronized (sessionFactories)
+         {
+            sessionFactories.add(sf);
+         }
+      }
+   }
+
+   private void assertAllClientConsumersAreClosed()
    {
       synchronized (clientConsumers)
       {
          for (ClientConsumer cc : clientConsumers)
          {
-            if (cc == null || cc.isClosed())
+            if (cc == null )
                continue;
-            try
-            {
-               if (cc instanceof ClientConsumerInternal)
-               {
-                  ClientConsumerInternal cci = (ClientConsumerInternal)cc;
-                  Channel channel = cci.getSession().getChannel();
-                  final CountDownLatch latch = new CountDownLatch(1);
-                  final Future<?> future = executorService.submit(new TerminateBlockedClientSession(channel, latch));
-                  cci.close();
-                  latch.countDown();
-                  future.cancel(false);
-               }
-               else
-               {
-                  cc.close();
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace(); // no-op
-            }
+            assertTrue(cc.isClosed());
          }
          clientConsumers.clear();
       }
    }
 
-   protected void closeAllClientSessions()
+   private void assertAllClientSessionsAreClosed()
    {
       synchronized (clientSessions)
       {
          for (final ClientSession cs : clientSessions)
          {
-            if (cs == null || cs.isClosed())
+            if (cs == null)
                continue;
-            try
-            {
-               if (cs instanceof ClientSessionInternal)
-               {
-                  ClientSessionInternal csi = ((ClientSessionInternal)cs);
-                  Channel channel = csi.getChannel();
-                  final CountDownLatch latch = new CountDownLatch(1);
-                  final Future<?> future = executorService.submit(new TerminateBlockedClientSession(channel, latch));
-                  csi.close();
-                  latch.countDown();
-                  future.cancel(false);
-               }
-               else
-               {
-                  cs.close();
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace(); // no-op
-            }
+            assertTrue(cs.isClosed());
          }
          clientSessions.clear();
       }
