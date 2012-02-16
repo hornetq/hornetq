@@ -125,7 +125,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       session = sf.createSession(false, false, false);
 
@@ -203,15 +203,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
-         session = sf.createSession(false, false, false);
+      session = addClientSession(sf.createSession(false, false, false));
 
          session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
@@ -245,17 +243,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testLargeBufferTransacted() throws Exception
@@ -276,8 +263,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
          Configuration config = createDefaultConfig(isNetty());
          config.setJournalFileSize(journalsize);
 
@@ -288,9 +273,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
-         session = sf.createSession(!transacted, !transacted, 0);
+      session = addClientSession(sf.createSession(!transacted, !transacted, 0));
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
@@ -336,18 +321,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
          }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
 
    public void testDLALargeMessage() throws Exception
    {
@@ -355,15 +329,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
-         session = sf.createSession(false, false, false);
+      session = addClientSession(sf.createSession(false, false, false));
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-2"), true);
@@ -455,18 +427,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
          }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
 
    public void testDeliveryCount() throws Exception
    {
@@ -474,13 +435,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(false, false, false);
 
@@ -530,17 +489,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.commit();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
+
    }
 
    public void testDLAOnExpiryNonDurableMessage() throws Exception
@@ -549,13 +498,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
@@ -658,17 +605,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
+
    }
 
    public void testDLAOnExpiry() throws Exception
@@ -677,13 +614,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
@@ -786,17 +721,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          validateNoFilesOnLargeDir();
       }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
 
    public void testExpiryLargeMessage() throws Exception
    {
@@ -818,7 +742,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(false, false, false);
 
@@ -919,7 +843,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(true, true, 0);
 
@@ -944,28 +868,28 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(clientFile);
          }
-         
+
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
+
          session.start();
-         
+
          ClientMessage msg = consumer.receive(10000);
-         
+
          for (int i = 0 ; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
-         
+
          assertNotNull(msg);
-         
+
          msg.acknowledge();
-         
+
          assertNull(consumer.receiveImmediate());
-         
+
          session.commit();
-         
+
          validateNoFilesOnLargeDir();
-         
+
       }
       finally
       {
@@ -1000,7 +924,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(false, false, false);
 
@@ -1084,7 +1008,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setCacheLargeMessagesClient(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(false, false, false);
 
@@ -2005,7 +1929,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2073,7 +1997,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2141,7 +2065,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       session = sf.createSession(isXA, false, false);
 
@@ -2204,7 +2128,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(isXA, false, false);
 
@@ -2329,7 +2253,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          locator.setMinLargeMessageSize(1024);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
@@ -2432,7 +2356,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          locator.setMinLargeMessageSize(1024);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
@@ -2543,7 +2467,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2682,7 +2606,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       locator.setBlockOnAcknowledge(true);
       locator.setCompressLargeMessage(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -2792,7 +2716,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setMinLargeMessageSize(100 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2857,8 +2781,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final int SIZE = 10 * 1024;
       final int NUMBER_OF_MESSAGES = 1;
-      try
-      {
 
          server = createServer(true, isNetty());
 
@@ -2866,7 +2788,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setMinLargeMessageSize(1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2914,25 +2836,6 @@ public class LargeMessageTest extends LargeMessageTestBase
                              ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
          log.debug("Thread done");
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
@@ -2942,13 +2845,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       ClientSession session = sf.createSession(false, false);
 
-      try
-      {
-         LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
+      LargeServerMessageImpl fileMessage =
+               new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
 
          fileMessage.setMessageID(1005);
 
@@ -2990,13 +2892,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          msg.acknowledge();
 
          session.commit();
-
-      }
-      finally
-      {
-         sf.close();
-         server.stop();
-      }
    }
 
    // Package protected ---------------------------------------------
@@ -3009,13 +2904,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       super.setUp();
       clearData();
       locator = createFactory(isNetty());
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      super.tearDown();
    }
 
    protected void testPageOnLargeMessage(final boolean realFiles, final boolean sendBlocking) throws Exception
@@ -3037,7 +2925,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final int numberOfBytesBigMessage = 400000;
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
       if (sendBlocking)
       {

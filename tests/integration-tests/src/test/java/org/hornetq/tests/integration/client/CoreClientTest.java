@@ -26,7 +26,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -49,14 +48,12 @@ public class CoreClientTest extends ServiceTestBase
 
    public void testCoreClientNetty() throws Exception
    {
-      testCoreClient("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
-                     "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
+      testCoreClient(NETTY_ACCEPTOR_FACTORY, NETTY_CONNECTOR_FACTORY);
    }
 
    public void testCoreClientInVM() throws Exception
    {
-      testCoreClient("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                     "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+      testCoreClient(INVM_ACCEPTOR_FACTORY, INVM_CONNECTOR_FACTORY);
    }
 
    private void testCoreClient(final String acceptorFactoryClassName, final String connectorFactoryClassName) throws Exception
@@ -69,12 +66,14 @@ public class CoreClientTest extends ServiceTestBase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
 
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(conf, false));
 
       server.start();
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorFactoryClassName));
+      ServerLocator locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      connectorFactoryClassName)));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -121,19 +120,5 @@ public class CoreClientTest extends ServiceTestBase
 
          message2.acknowledge();
       }
-
-      session.close();
-
-      locator.close();
-
-      server.stop();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

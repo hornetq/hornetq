@@ -15,7 +15,12 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -46,8 +51,6 @@ public class BlockingSendTest extends ServiceTestBase
       ClientSessionFactory factory = null;
 
       ServerLocator locator = null;
-      try
-      {
 
          server.getConfiguration().setJournalSyncNonTransactional(false);
          server.getConfiguration().setJournalBufferTimeout_AIO(15000);
@@ -78,38 +81,5 @@ public class BlockingSendTest extends ServiceTestBase
          Assert.assertNotNull(msg);
 
          msg.acknowledge();
-
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         if (factory != null)
-         {
-            factory.close();
-         }
-
-         if (session != null)
-         {
-            session.close();
-         }
-
-         if (server != null)
-         {
-            server.stop();
-         }
-      }
-
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

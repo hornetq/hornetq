@@ -86,9 +86,6 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
       server.start();
 
-      try
-      {
-
          server.createQueue(EXPIRY, EXPIRY, null, true, false);
 
          server.createQueue(DLQ, DLQ, null, true, false);
@@ -97,7 +94,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          ClientSession session = sf.createSession(true, true, 0);
 
@@ -133,17 +130,17 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
             producer.send(message);
          }
-         
+
          session.close();
 
          server.stop();
          server.start();
-         
+
          Queue queueExpiry = server.locateQueue(EXPIRY);
          Queue myQueue = server.locateQueue(MY_QUEUE);
 
          sf = locator.createSessionFactory();
-         
+
          Thread.sleep(1500);
 
          long timeout = System.currentTimeMillis() + 5000;
@@ -153,7 +150,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
             myQueue.expireReferences();
             Thread.sleep(50);
          }
-         
+
          assertEquals(50, queueExpiry.getMessageCount());
 
          session = sf.createSession(false, false);
@@ -191,7 +188,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
                for (int location = 0; location < messageSize; location++)
                {
-                  assertEquals(getSamplebyte((long)location), message.getBodyBuffer().readByte());
+                  assertEquals(getSamplebyte(location), message.getBodyBuffer().readByte());
                }
                message.acknowledge();
             }
@@ -246,7 +243,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
                for (int location = 0; location < messageSize; location++)
                {
-                  assertEquals(getSamplebyte((long)location), message.getBodyBuffer().readByte());
+                  assertEquals(getSamplebyte(location), message.getBodyBuffer().readByte());
                }
                message.acknowledge();
             }
@@ -269,14 +266,9 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
          locator.close();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
-   /** 
+   /**
     * Tests if the system would still couple with old data where the LargeMessage was linked to its previous copy
     * @throws Exception
     */
@@ -304,10 +296,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
       server.start();
 
-      try
-      {
-
-         server.createQueue(EXPIRY, EXPIRY, null, true, false);
+      server.createQueue(EXPIRY, EXPIRY, null, true, false);
 
          server.createQueue(DLQ, DLQ, null, true, false);
 
@@ -315,7 +304,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
          ClientSession session = sf.createSession(true, true, 0);
 
@@ -401,7 +390,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
             for (int location = 0; location < messageSize; location++)
             {
-               assertEquals(getSamplebyte((long)location), message.getBodyBuffer().readByte());
+               assertEquals(getSamplebyte(location), message.getBodyBuffer().readByte());
             }
             message.acknowledge();
          }
@@ -409,13 +398,6 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
          session.commit();
 
          session.close();
-         sf.close();
-         locator.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    // Package protected ---------------------------------------------

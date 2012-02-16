@@ -13,100 +13,70 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import junit.framework.Assert;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class CreateQueueIdempotentTest extends ServiceTestBase
 {
-    private static final Logger log = Logger.getLogger(CreateQueueIdempotentTest.class);
 
-    // Constants -----------------------------------------------------
+   private HornetQServer server;
 
-    // Attributes ----------------------------------------------------
+   @Override
+   public void setUp() throws Exception
+   {
+      super.setUp();
 
-    // Static --------------------------------------------------------
+      Configuration conf = createDefaultConfig();
+      conf.setSecurityEnabled(false);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
 
-    // Constructors --------------------------------------------------
+      server = addServer(HornetQServers.newHornetQServer(conf, true));
+      server.start();
+   }
 
-    // Public --------------------------------------------------------
+   public void testSequentialCreateQueueIdempotency() throws Exception
+   {
+      final SimpleString QUEUE = new SimpleString("SequentialCreateQueueIdempotency");
 
-    public void testSequentialCreateQueueIdempotency() throws Exception
-    {
-        boolean success = false;
-        final SimpleString QUEUE = new SimpleString("SequentialCreateQueueIdempotency");
+      ServerLocator locator = createInVMNonHALocator();
 
-        Configuration conf = createDefaultConfig();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
 
-        conf.setSecurityEnabled(false);
+      ClientSession session = sf.createSession(false, true, true);
 
-        conf.getAcceptorConfigurations().add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+      session.createQueue(QUEUE, QUEUE, null, true);
 
-        HornetQServer server = HornetQServers.newHornetQServer(conf, true);
-
-        server.start();
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-
-        ClientSessionFactory sf = locator.createSessionFactory();
-
-        ClientSession session = sf.createSession(false, true, true);
-
-        session.createQueue(QUEUE, QUEUE, null, true);
-
-        try
-        {
-            session.createQueue(QUEUE, QUEUE, null, true);
-        }
-        catch (Exception e)
-        {
-            if (e instanceof HornetQException)
-            {
-                if (((HornetQException) e).getCode() == 101)
-                {
-                    success = true;
-                }
-            }
-        }
-
-        session.close();
-
-        locator.close();
-
-        server.stop();
-        
-        Assert.assertTrue(success);
-    }
+      try
+      {
+         session.createQueue(QUEUE, QUEUE, null, true);
+         fail("Expected exception, queue already exists");
+      }
+      catch (HornetQException e)
+      {
+         assertEquals("Queue should exist!", HornetQException.QUEUE_EXISTS, e.getCode());
+      }
+   }
 
     public void testConcurrentCreateQueueIdempotency() throws Exception
     {
-        boolean success = true;
         final String QUEUE = "ConcurrentCreateQueueIdempotency";
         AtomicInteger queuesCreated = new AtomicInteger(0);
         AtomicInteger failedAttempts = new AtomicInteger(0);
 
-        Configuration conf = createDefaultConfig();
-
-        conf.setSecurityEnabled(false);
-
-        conf.getAcceptorConfigurations().add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-
-        HornetQServer server = HornetQServers.newHornetQServer(conf, true);
-
-        server.start();
         final int NUM_THREADS = 5;
-        
+
         QueueCreator[] queueCreators = new QueueCreator[NUM_THREADS];
 
 
@@ -129,20 +99,9 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
         server.stop();
 
         // re-starting the server appears to be an unreliable guide
-        try
-        {
-            server.start();
-        } catch (Exception e)
-        {
-            System.out.println("THIS BLEW UP!!");
-            e.printStackTrace();
-            success = false;
-        }
-        
-        server.stop();
+      server.start();
 
-        Assert.assertTrue(success);
-        Assert.assertEquals(1, queuesCreated.intValue());
+      Assert.assertEquals(1, queuesCreated.intValue());
         Assert.assertEquals(NUM_THREADS - 1, failedAttempts.intValue());
     }
 
@@ -175,8 +134,8 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
 
             try
             {
-                locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-                ClientSessionFactory sf = locator.createSessionFactory();
+            locator = createInVMNonHALocator();
+            ClientSessionFactory sf = locator.createSessionFactory();
                 session = sf.createSession(false, true, true);
                 final SimpleString QUEUE = new SimpleString(queueName);
                 session.createQueue(QUEUE, QUEUE, null, true);

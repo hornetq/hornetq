@@ -606,24 +606,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected ServerLocator createInVMNonHALocator()
-   {
-      return createNonHALocator(false);
-   }
-
-   protected ServerLocator createNettyNonHALocator()
-   {
-      return createNonHALocator(true);
-   }
-
-   protected ServerLocator createNonHALocator(final boolean isNetty)
-   {
-      ServerLocator locatorWithoutHA = isNetty ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
-                                              : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      return addServerLocator(locatorWithoutHA);
-
-   }
-
    protected ServerLocator createInVMLocator(final int serverID)
    {
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());

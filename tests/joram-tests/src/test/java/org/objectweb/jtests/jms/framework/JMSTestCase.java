@@ -36,14 +36,14 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
 public abstract class JMSTestCase extends TestCase
 {
    public static final String PROP_FILE_NAME = "provider.properties";
-   
+
    public static boolean startServer = true;
 
    protected Admin admin;
 
    /**
     * Fails a test with an exception which will be used for a message.
-    * 
+    *
     * If the exception is an instance of <code>javax.jms.JMSException</code>, the
     * message of the failure will contained both the JMSException and its linked exception
     * (provided there's one).
@@ -73,7 +73,7 @@ public abstract class JMSTestCase extends TestCase
    }
 
    /**
-    * Should be overriden 
+    * Should be overriden
     * @return
     */
    protected Properties getProviderProperties() throws IOException
@@ -103,13 +103,19 @@ public abstract class JMSTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      admin.stop();
-
-      if (startServer)
+      try
       {
-          admin.stopServer();
+         admin.stop();
+
+         if (startServer)
+         {
+            admin.stopServer();
+         }
       }
-      super.tearDown();
+      finally
+      {
+         super.tearDown();
+      }
    }
 
 }

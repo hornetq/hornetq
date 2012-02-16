@@ -59,6 +59,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -1498,6 +1499,25 @@ public abstract class UnitTestCase extends TestCase
 
    }
 
+   protected ServerLocator createInVMNonHALocator()
+   {
+      return createNonHALocator(false);
+   }
+
+   protected ServerLocator createNettyNonHALocator()
+   {
+      return createNonHALocator(true);
+   }
+
+   protected ServerLocator createNonHALocator(final boolean isNetty)
+   {
+      ServerLocator locatorWithoutHA =
+               isNetty
+                      ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
+                      : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      return addServerLocator(locatorWithoutHA);
+   }
+
    protected static final void stopComponent(HornetQComponent component)
    {
       if (component == null)
@@ -1579,7 +1599,7 @@ public abstract class UnitTestCase extends TestCase
       }
    }
 
-   protected final void addSessionFactory(ClientSessionFactory sf)
+   protected final ClientSessionFactory addSessionFactory(ClientSessionFactory sf)
    {
       if (sf != null)
       {
@@ -1588,6 +1608,7 @@ public abstract class UnitTestCase extends TestCase
             sessionFactories.add(sf);
          }
       }
+      return sf;
    }
 
    private void assertAllClientConsumersAreClosed()

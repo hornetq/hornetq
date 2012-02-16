@@ -60,22 +60,22 @@ public class ConcurrentStompTest extends UnitTestCase
       sendFrame(stompSocket, connect);
       String connected = receiveFrame(stompSocket, inputBuffer, 10000);
       Assert.assertTrue(connected.startsWith("CONNECTED"));
-      
+
       sendFrame(stompSocket_2, connect);
       connected = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
       Assert.assertTrue(connected.startsWith("CONNECTED"));
-      
+
       final int count = 1000;
       final CountDownLatch latch = new CountDownLatch(count);
-      
-      String subscribe = 
+
+      String subscribe =
          "SUBSCRIBE\n" +
          "destination:" + getQueueName() + "\n" +
          "ack:auto\n\n" +
          Stomp.NULL;
       sendFrame(stompSocket_2, subscribe);
       Thread.sleep(2000);
-      
+
       new Thread()
       {
          @Override
@@ -142,7 +142,7 @@ public class ConcurrentStompTest extends UnitTestCase
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       config.getQueueConfigurations().add(new CoreQueueConfiguration(getQueueName(), getQueueName(), null, false));
-      return HornetQServers.newHornetQServer(config);
+      return addServer(HornetQServers.newHornetQServer(config));
    }
 
    @Override
@@ -157,7 +157,6 @@ public class ConcurrentStompTest extends UnitTestCase
       {
          stompSocket_2.close();
       }
-      server.stop();
 
       super.tearDown();
    }

@@ -17,25 +17,26 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * There is a bug in JDK1.3, 1.4 whereby writeUTF fails if more than 64K bytes are written
  * we need to work with all size of strings
- * 
+ *
  * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4806007
  * http://jira.jboss.com/jira/browse/JBAS-2641
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 6016 $
  *
@@ -204,29 +205,11 @@ public class String64KLimitTest extends UnitTestCase
 
       Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(config, false);
+      config.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      server = addServer(HornetQServers.newHornetQServer(config, false));
       server.start();
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      sf = locator.createSessionFactory();
+      locator = createInVMNonHALocator();
+      sf = createSessionFactory(locator);
       session = sf.createSession();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      server.stop();
-
-      server = null;
-      sf = null;
-      session = null;
-
-      super.tearDown();
    }
 }
