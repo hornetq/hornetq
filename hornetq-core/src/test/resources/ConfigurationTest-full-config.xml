@@ -35,6 +35,7 @@
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>
+      <page-max-concurrent-io>17</page-max-concurrent-io>
       <create-journal-dir>false</create-journal-dir>
       <journal-type>NIO</journal-type>
       <journal-compact-min-files>123</journal-compact-min-files>
@@ -147,6 +148,7 @@
              <forwarding-address>bridge-forwarding-address1</forwarding-address>
              <filter string="sku > 1"/>
              <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
+             <min-large-message-size>4</min-large-message-size>
              <retry-interval>3</retry-interval>
              <retry-interval-multiplier>0.2</retry-interval-multiplier>
              <reconnect-attempts>2</reconnect-attempts>
@@ -166,6 +168,7 @@
          <cluster-connection name="cluster-connection1">
              <address>queues1</address>
              <connector-ref>connector1</connector-ref>
+             <min-large-message-size>321</min-large-message-size>
              <retry-interval>3</retry-interval>
              <use-duplicate-detection>true</use-duplicate-detection>
              <forward-when-no-consumers>false</forward-when-no-consumers>

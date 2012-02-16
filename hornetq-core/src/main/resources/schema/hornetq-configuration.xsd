@@ -7,8 +7,8 @@
 				<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="clustered"/>
-				<xsd:element maxOccurs="1" minOccurs="0" ref="file-deployment-enabled"/>	
-				<xsd:element maxOccurs="1" minOccurs="0" ref="persistence-enabled"/>	
+				<xsd:element maxOccurs="1" minOccurs="0" ref="file-deployment-enabled"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="persistence-enabled"/>
 				<xsd:element maxOccurs="1" minOccurs="0" name="scheduled-thread-pool-max-size" type="xsd:int">
 					<xsd:annotation>
 						<xsd:documentation>
@@ -34,9 +34,9 @@
 				<xsd:element maxOccurs="1" minOccurs="0" name="management-notification-address" type="xsd:string">
 				</xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xsd:string">
-                </xsd:element>				
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string">
-                </xsd:element>				
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xsd:string">
                 </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xsd:boolean">
@@ -52,7 +52,7 @@
 				<xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl-override" type="xsd:long">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="async-connection-execution-enabled" type="xsd:boolean">
-				</xsd:element>				
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="transaction-timeout" type="xsd:long">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="transaction-timeout-scan-period" type="xsd:long">
@@ -76,11 +76,11 @@
             <xsd:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
-				</xsd:element>			
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType">
-				</xsd:element>				
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="connectors">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -146,16 +146,18 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xsd:boolean">
 				</xsd:element>
+        <xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int">
+        </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-directory" type="xsd:string">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xsd:boolean">
-				</xsd:element>
+        </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xsd:long">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xsd:long">
-				</xsd:element>				
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-transactional" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional" type="xsd:boolean">
@@ -181,7 +183,7 @@
 				<xsd:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xsd:int">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xsd:long">
-				</xsd:element>				
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="xsd:string">
 				</xsd:element>
              <xsd:element maxOccurs="1" minOccurs="0" name="security-settings">
@@ -200,9 +202,9 @@
 	</xsd:element>
 
 	<xsd:element name="clustered" type="xsd:boolean"/>
-	
+
 	<xsd:element name="file-deployment-enabled" type="xsd:boolean"/>
-	
+
 	<xsd:element name="persistence-enabled" type="xsd:boolean"/>
 
 	<xsd:element name="local-bind-address" type="xsd:string"/>
@@ -298,7 +300,7 @@
 		<xsd:attribute name="name" type="xsd:string" use="optional"/>
 	</xsd:complexType>
 
-	<xsd:complexType name="bridgeType">	   
+	<xsd:complexType name="bridgeType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="queue-name" type="xsd:IDREF">
 			</xsd:element>
@@ -313,6 +315,8 @@
             </xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="transformer-class-name" type="xsd:string">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int">
+      </xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xsd:long">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xsd:double">
@@ -329,14 +333,14 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="password" type="xsd:string">
 			</xsd:element>
-			<xsd:choice>				
+			<xsd:choice>
 				<xsd:element maxOccurs="1" minOccurs="1" name="static-connectors">
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element maxOccurs="unbounded" minOccurs="1" name="connector-ref" type="xsd:string"/>
                         </xsd:sequence>
                     </xsd:complexType>
-                </xsd:element>				
+                </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
@@ -344,18 +348,19 @@
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:choice>
-		</xsd:sequence>	
-		<xsd:attribute name="name" type="xsd:string" use="required"/>	
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
 	</xsd:complexType>
-	
-   <xsd:complexType name="clusterConnectionType">      
+
+   <xsd:complexType name="clusterConnectionType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="address" type="xsd:string">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="1" name="connector-ref" type="xsd:string">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int"/>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xsd:long">
-			</xsd:element>			
+			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xsd:boolean">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="forward-when-no-consumers" type="xsd:boolean">
@@ -373,7 +378,7 @@
                         </xsd:sequence>
                         <xsd:attribute name="allow-direct-connections-only" type="xsd:boolean" use="optional"/>
                     </xsd:complexType>
-                </xsd:element>	
+                </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
@@ -385,7 +390,7 @@
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
 	</xsd:complexType>
 
-	<xsd:complexType name="divertType">	   
+	<xsd:complexType name="divertType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="routing-name" type="xsd:string">
 			</xsd:element>
@@ -402,8 +407,8 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="exclusive" type="xsd:boolean">
 			</xsd:element>
-		</xsd:sequence>	
-		<xsd:attribute name="name" type="xsd:string" use="required"/>	
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
 	</xsd:complexType>
 
 	<xsd:simpleType name="journalType">
@@ -460,7 +465,7 @@
           </xsd:sequence>
        </xsd:complexType>
     </xsd:element>
-    
+
    <xsd:element name="address-setting">
     <xsd:complexType>
       <xsd:all>
@@ -479,7 +484,7 @@
         <xsd:element maxOccurs="1" minOccurs="0" name="page-max-cache-size" type="xsd:int">
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="address-full-policy" type="addressFullMessagePolicyType">
-		</xsd:element>                
+		</xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-history-day-limit" type="xsd:int">
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="last-value-queue" type="xsd:boolean">
@@ -490,9 +495,9 @@
         </xsd:element>
       </xsd:all>
     <xsd:attribute name="match" type="xsd:string" use="required"/>
-   </xsd:complexType> 
+   </xsd:complexType>
    </xsd:element>
-     
+
    <xsd:element name="queues">
       <xsd:complexType>
          <xsd:sequence>
@@ -501,7 +506,7 @@
          </xsd:sequence>
       </xsd:complexType>
    </xsd:element>
-   
+
    <xsd:element name="queue">
       <xsd:complexType>
         <xsd:all>
@@ -518,12 +523,12 @@
         <xsd:attribute name="name" type="xsd:ID" use="required"/>
        </xsd:complexType>
     </xsd:element>
-    
+
 	<xsd:complexType name="live-connectorType">
 		<xsd:attribute name="connector-name" type="xsd:IDREF" use="required">
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="addressFullMessagePolicyType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="DROP"/>
@@ -531,7 +536,7 @@
 			<xsd:enumeration value="BLOCK"/>
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:complexType name="connectorServiceType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="factory-class" type="xsd:string">
