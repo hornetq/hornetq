@@ -114,11 +114,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Object exitLock = new Object();
 
-   private final Object createSessionLock = new Object();
 
    private boolean inCreateSession;
 
+   private final Object createSessionLock = new Object();
    private final Object failoverLock = new Object();
+   private final Object connectionLock = new Object();
 
    private final ExecutorFactory orderedExecutorFactory;
 
@@ -1114,6 +1115,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public CoreRemotingConnection getConnection()
    {
+      if (closed)
+         throw new IllegalStateException("ClientSessionFactory is closed!");
+      synchronized (connectionLock)
+      {
       if (connection == null)
       {
          Connection tc = null;
@@ -1329,6 +1334,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       return connection;
+      }
    }
 
    public void sendNodeAnnounce(final long currentEventID,
@@ -1680,9 +1686,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
