@@ -34,6 +34,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -91,14 +92,19 @@ public abstract class ServiceTestBase extends UnitTestCase
 
 
 
-   protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
+   protected Topology waitForTopology(final HornetQServer server, final int nodes) throws Exception
    {
-      waitForTopology(server, nodes, WAIT_TIMEOUT);
+      return waitForTopology(server, nodes, -1, WAIT_TIMEOUT);
    }
 
-   protected void waitForTopology(final HornetQServer server, final int nodes, final long timeout) throws Exception
+   protected Topology waitForTopology(final HornetQServer server, final int nodes, final int backups) throws Exception
    {
-      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+      return waitForTopology(server, nodes, backups, WAIT_TIMEOUT);
+   }
+
+   protected Topology waitForTopology(final HornetQServer server, final int liveNodes, final int backupNodes, final long timeout) throws Exception
+   {
+      log.debug("waiting for " + liveNodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
 
@@ -109,24 +115,44 @@ public abstract class ServiceTestBase extends UnitTestCase
          throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
       }
 
-      Topology topology = ccs.iterator().next().getTopology();
+      Topology topology = server.getClusterManager().getDefaultConnection().getTopology();
+
+      int liveNodesCount = 0;
+	 
+      int backupNodesCount = 0;
+	 
 
       do
       {
-         if (nodes == topology.getMembers().size())
+    	  
+    	 liveNodesCount = 0;
+    	 backupNodesCount = 0;
+    	 
+    	 for (TopologyMember member : topology.getMembers())
+    	 {
+    		 if (member.getA() != null)
+    		 {
+    			 liveNodesCount ++;
+    		 }
+    		 if (member.getB() != null)
+    		 {
+    			 backupNodesCount ++;
+    		 }
+    	 }
+    	 
+    	 if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
          {
-            return;
+            return topology;
          }
 
          Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < timeout);
 
-      String msg = "Timed out waiting for cluster topology of " + nodes +
-                   " (received " +
-                   topology.getMembers().size() +
+      String msg = "Timed out waiting for cluster topology of live=" + liveNodes + ",backup=" + backupNodes +
+                   " (received live="+ liveNodesCount + ", backup=" + backupNodesCount +
                    ") topology = " +
-                   topology +
+                   topology.describe() +
                    ")";
 
       log.error(msg);
