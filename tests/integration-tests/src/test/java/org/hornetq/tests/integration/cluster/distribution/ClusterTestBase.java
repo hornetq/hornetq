@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +41,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -57,6 +60,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
@@ -236,6 +240,64 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected ClientConsumer getConsumer(final int node)
    {
       return consumers[node].consumer;
+   }
+
+
+   protected void waitForFailoverTopology(final int bNode, final int... nodes) throws Exception
+   {
+      HornetQServer server = servers[bNode];
+
+      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+
+      long start = System.currentTimeMillis();
+
+      Set<ClusterConnection> ccs = server.getClusterManager().getClusterConnections();
+
+      if (ccs.size() != 1)
+      {
+         throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
+      }
+
+      boolean exists = false;
+
+      for (int node : nodes)
+      {
+         ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
+         Topology topology = clusterConnection.getTopology();
+         TransportConfiguration nodeConnector=
+               servers[node].getClusterManager().getClusterConnections().iterator().next().getConnector();
+         do
+         {
+            Collection<TopologyMember> members = topology.getMembers();
+            for (TopologyMember member : members)
+            {
+               if(member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
+               {
+                  exists = true;
+                  break;
+               }
+            }
+            if(exists)
+            {
+               break;
+            }
+            Thread.sleep(10);
+         }
+         while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
+         if(!exists)
+         {
+            String msg = "Timed out waiting for cluster topology of " + nodes +
+                   " (received " +
+                   topology.getMembers().size() +
+                   ") topology = " +
+                   topology +
+                   ")";
+
+            log.error(msg);
+
+            throw new Exception(msg);
+         }
+      }
    }
 
    protected void waitForMessages(final int node, final String address, final int count) throws Exception

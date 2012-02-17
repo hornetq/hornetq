@@ -67,6 +67,10 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          startServers(3, 4, 5, 0, 1, 2);
 
+         waitForFailoverTopology(3, 0, 1, 2);
+         waitForFailoverTopology(4, 0, 1, 2);
+         waitForFailoverTopology(5, 0, 1, 2);
+
          setupSessionFactory(0, 3, isNetty(), false);
          setupSessionFactory(1, 4, isNetty(), false);
          setupSessionFactory(2, 5, isNetty(), false);
@@ -89,8 +93,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-
+         Thread.sleep(1000);
          failNode(0);
+
+         waitForFailoverTopology(4, 3, 1, 2);
+         waitForFailoverTopology(5, 3, 1, 2);
 
          // live nodes
          waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
@@ -117,6 +124,9 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          failNode(1);
 
+         waitForFailoverTopology(5, 3, 4, 2);
+
+         Thread.sleep(1000);
          // live nodes
          waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
          // activated backup nodes
@@ -140,6 +150,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          failNode(2);
 
+         Thread.sleep(1000);
          // activated backup nodes
          waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
          waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
@@ -293,6 +304,10 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupSessionFactory(1, 4, isNetty(), false);
       setupSessionFactory(2, 5, isNetty(), false);
 
+      waitForFailoverTopology(3, 0, 1, 2);
+      waitForFailoverTopology(4, 0, 1, 2);
+      waitForFailoverTopology(5, 0, 1, 2);
+
       createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
       createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
       createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
@@ -314,6 +329,8 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       failNode(0);
 
+      waitForFailoverTopology(4, 3, 1, 2);
+      waitForFailoverTopology(5, 3, 1, 2);
       // live nodes
       waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
@@ -356,6 +373,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       failNode(1);
 
+      waitForFailoverTopology(5, 2, 4);
       // live nodes
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // activated backup nodes
