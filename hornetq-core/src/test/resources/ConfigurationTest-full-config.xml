@@ -35,8 +35,8 @@
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>
-      <page-max-concurrent-io>17</page-max-concurrent-io>
       <create-journal-dir>false</create-journal-dir>
+      <page-max-concurrent-io>17</page-max-concurrent-io>
       <journal-type>NIO</journal-type>
       <journal-compact-min-files>123</journal-compact-min-files>
       <journal-compact-percentage>33</journal-compact-percentage>
@@ -149,8 +149,11 @@
              <filter string="sku > 1"/>
              <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
              <min-large-message-size>4</min-large-message-size>
+             <check-period>31</check-period>
+             <connection-ttl>370</connection-ttl>
              <retry-interval>3</retry-interval>
              <retry-interval-multiplier>0.2</retry-interval-multiplier>
+             <max-retry-interval>10002</max-retry-interval>
              <reconnect-attempts>2</reconnect-attempts>
              <failover-on-server-shutdown>false</failover-on-server-shutdown>
              <use-duplicate-detection>true</use-duplicate-detection>
@@ -166,10 +169,16 @@
       </bridges>
       <cluster-connections>
          <cluster-connection name="cluster-connection1">
-             <address>queues1</address>
-             <connector-ref>connector1</connector-ref>
-             <min-large-message-size>321</min-large-message-size>
-             <retry-interval>3</retry-interval>
+         <address>queues1</address>
+         <connector-ref>connector1</connector-ref>
+         <check-period>331</check-period>
+         <connection-ttl>3370</connection-ttl>
+         <min-large-message-size>321</min-large-message-size>
+             <call-timeout>123</call-timeout>
+         <retry-interval>3</retry-interval>
+         <retry-interval-multiplier>0.25</retry-interval-multiplier>
+         <max-retry-interval>10000</max-retry-interval>
+         <reconnect-attempts>72</reconnect-attempts>
              <use-duplicate-detection>true</use-duplicate-detection>
              <forward-when-no-consumers>false</forward-when-no-consumers>
              <max-hops>1</max-hops>
@@ -183,6 +192,7 @@
          <cluster-connection name="cluster-connection2">
              <address>queues2</address>
              <connector-ref>connector2</connector-ref>
+             <call-timeout>456</call-timeout>
              <retry-interval>4</retry-interval>
              <use-duplicate-detection>false</use-duplicate-detection>
              <forward-when-no-consumers>true</forward-when-no-consumers>

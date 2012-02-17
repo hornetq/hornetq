@@ -146,12 +146,10 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xsd:boolean">
 				</xsd:element>
-        <xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int">
-        </xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int"/>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-directory" type="xsd:string">
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xsd:boolean">
-        </xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xsd:boolean"/>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xsd:long">
@@ -316,12 +314,18 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="transformer-class-name" type="xsd:string">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int">
-      </xsd:element>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="check-period" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xsd:long">
+			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xsd:long">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xsd:double">
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xsd:int">
+			<xsd:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xsd:long">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="failover-on-server-shutdown" type="xsd:boolean">
 			</xsd:element>
@@ -358,8 +362,21 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="1" name="connector-ref" type="xsd:string">
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int"/>
+			<xsd:element maxOccurs="1" minOccurs="0" name="check-period" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xsd:long">
+			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xsd:double">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xsd:long">
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xsd:long">
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xsd:boolean">
 			</xsd:element>
@@ -369,7 +386,6 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int">
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xsd:long"/>
 			<xsd:element maxOccurs="1" minOccurs="0" name="call-failover-timeout" type="xsd:long"/>
 			<xsd:choice>
 				<xsd:element maxOccurs="1" minOccurs="0" name="static-connectors">

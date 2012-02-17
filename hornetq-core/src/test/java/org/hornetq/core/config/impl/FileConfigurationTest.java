@@ -201,11 +201,14 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("bridge1", bc.getName());
             Assert.assertEquals("queue1", bc.getQueueName());
             Assert.assertEquals("minLargeMessageSize", 4, bc.getMinLargeMessageSize());
+            assertEquals("check-period", 31, bc.getClientFailureCheckPeriod());
+            assertEquals("connection time-to-live", 370, bc.getConnectionTTL());
             Assert.assertEquals("bridge-forwarding-address1", bc.getForwardingAddress());
             Assert.assertEquals("sku > 1", bc.getFilterString());
             Assert.assertEquals("org.foo.BridgeTransformer", bc.getTransformerClassName());
             Assert.assertEquals(3, bc.getRetryInterval());
-            Assert.assertEquals(0.2, bc.getRetryIntervalMultiplier());
+            Assert.assertEquals(0.2, bc.getRetryIntervalMultiplier(), 0.0001);
+            assertEquals("max retry interval", 10002, bc.getMaxRetryInterval());
             Assert.assertEquals(2, bc.getReconnectAttempts());
             Assert.assertEquals(true, bc.isUseDuplicateDetection());
             Assert.assertEquals("connector1", bc.getStaticConnectors().get(0));
@@ -230,6 +233,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
          {
             Assert.assertEquals("cluster-connection1", ccc.getName());
             Assert.assertEquals("clusterConnectionConf minLargeMessageSize", 321, ccc.getMinLargeMessageSize());
+            assertEquals("check-period", 331, ccc.getClientFailureCheckPeriod());
+            assertEquals("connection time-to-live", 3370, ccc.getConnectionTTL());
             Assert.assertEquals("queues1", ccc.getAddress());
             Assert.assertEquals(3, ccc.getRetryInterval());
             Assert.assertEquals(true, ccc.isDuplicateDetection());
@@ -237,6 +242,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(1, ccc.getMaxHops());
             Assert.assertEquals(123, ccc.getCallTimeout());
             Assert.assertEquals(123, ccc.getCallFailoverTimeout());
+            assertEquals("multiplier", 0.25, ccc.getRetryIntervalMultiplier(), 0.00001);
+            assertEquals("max retry interval", 10000, ccc.getMaxRetryInterval());
+            assertEquals(72, ccc.getReconnectAttempts());
             Assert.assertEquals("connector1", ccc.getStaticConnectors().get(0));
             Assert.assertEquals("connector2", ccc.getStaticConnectors().get(1));
             Assert.assertEquals(null, ccc.getDiscoveryGroupName());
