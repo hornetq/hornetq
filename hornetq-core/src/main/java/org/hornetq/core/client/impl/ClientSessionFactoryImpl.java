@@ -83,8 +83,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final long serialVersionUID = 2512460695662741413L;
-
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
    private static final boolean isTrace = ClientSessionFactoryImpl.log.isTraceEnabled();
@@ -145,7 +143,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private Connector connector;
 
    private Future<?> pingerFuture;
-
    private PingRunnable pingRunnable;
 
    private volatile boolean exitLoop;
@@ -984,7 +981,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                             " multiplier = " +
                                             retryIntervalMultiplier, new Exception("trace"));
       }
-      
+
       long interval = retryInterval;
 
       int count = 0;
@@ -1070,16 +1067,18 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void cancelScheduledTasks()
    {
-      if (pingerFuture != null)
+      Future<?> pingerFutureLocal = pingerFuture;
+      if (pingerFutureLocal != null)
       {
-         pingRunnable.cancel();
-
-         pingerFuture.cancel(false);
-
-         pingRunnable = null;
-
-         pingerFuture = null;
+         pingerFutureLocal.cancel(false);
       }
+      PingRunnable pingRunnableLocal = pingRunnable;
+      if (pingRunnableLocal != null)
+      {
+         pingRunnableLocal.cancel();
+      }
+      pingerFuture = null;
+      pingRunnable = null;
    }
 
    private void checkCloseConnection()
@@ -1527,7 +1526,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
       }
    }
-   
+
    public class CloseRunnable implements Runnable
    {
       private final CoreRemotingConnection conn;
@@ -1660,7 +1659,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       /**
-       * 
+       *
        */
       public void send()
       {

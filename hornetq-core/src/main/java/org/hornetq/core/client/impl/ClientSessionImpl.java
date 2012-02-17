@@ -84,7 +84,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
-import org.hornetq.spi.core.remoting.ConnectorFactory;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
