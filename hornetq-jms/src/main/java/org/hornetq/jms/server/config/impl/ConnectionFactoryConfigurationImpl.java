@@ -61,6 +61,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
 
+   private long callFailoverTimeout = HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT;
+
    private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
@@ -237,6 +239,16 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setCallTimeout(final long callTimeout)
    {
       this.callTimeout = callTimeout;
+   }
+
+   public long getCallFailoverTimeout()
+   {
+      return callFailoverTimeout;
+   }
+
+   public void setCallFailoverTimeout(long callFailoverTimeout)
+   {
+      this.callFailoverTimeout = callFailoverTimeout;
    }
 
    public boolean isCacheLargeMessagesClient()

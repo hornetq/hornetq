@@ -260,6 +260,10 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                       "call-timeout",
                                                       HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                       Validators.GE_ZERO);
+      long callFailoverTimeout = XMLConfigurationUtil.getLong(e,
+                                                      "call-failover-timeout",
+                                                      HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
+                                                      Validators.MINUS_ONE_OR_GT_ZERO);
       String clientID = XMLConfigurationUtil.getString(e, "client-id", null, Validators.NO_CHECK);
       int dupsOKBatchSize = XMLConfigurationUtil.getInteger(e,
                                                             "dups-ok-batch-size",
@@ -423,6 +427,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       cfConfig.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cfConfig.setConnectionTTL(connectionTTL);
       cfConfig.setCallTimeout(callTimeout);
+      cfConfig.setCallFailoverTimeout(callFailoverTimeout);
       cfConfig.setCacheLargeMessagesClient(cacheLargeMessagesClient);
       cfConfig.setMinLargeMessageSize(minLargeMessageSize);
       cfConfig.setCompressLargeMessages(compressLargeMessages);

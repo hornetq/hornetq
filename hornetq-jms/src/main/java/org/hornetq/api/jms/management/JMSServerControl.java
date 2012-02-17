@@ -138,8 +138,7 @@ public interface JMSServerControl
     * {@code liveConnectorsTransportClassNames}  are the class names 
     * of the {@link ConnectorFactory} to connect to the live servers
     * and {@code liveConnectorTransportParams}  are Map&lt;String, Object&gt; for the corresponding {@link TransportConfiguration}'s parameters.
-    * 
-    * @see ClientSessionFactory#setStaticConnectors(java.util.List)
+    *
     */
    void createConnectionFactory(String name,
                                 boolean ha,
@@ -173,6 +172,7 @@ public interface JMSServerControl
                                 @Parameter(name = "clientFailureCheckPeriod", desc = "clientFailureCheckPeriod") long clientFailureCheckPeriod,
                                 @Parameter(name = "connectionTTL", desc = "connectionTTL") long connectionTTL,
                                 @Parameter(name = "callTimeout", desc = "callTimeout") long callTimeout,
+                                @Parameter(name = "callFailoverTimeout", desc = "callFailoverTimeout") long callFailoverTimeout,
                                 @Parameter(name = "minLargeMessageSize", desc = "minLargeMessageSize") int minLargeMessageSize,
                                 @Parameter(name = "compressLargeMessages", desc = "compressLargeMessages") boolean compressLargeMessages,
                                 @Parameter(name = "consumerWindowSize", desc = "consumerWindowSize") int consumerWindowSize,
@@ -210,6 +210,7 @@ public interface JMSServerControl
                                 @Parameter(name = "clientFailureCheckPeriod", desc = "clientFailureCheckPeriod") long clientFailureCheckPeriod,
                                 @Parameter(name = "connectionTTL", desc = "connectionTTL") long connectionTTL,
                                 @Parameter(name = "callTimeout", desc = "callTimeout") long callTimeout,
+                                @Parameter(name = "callFailoverTimeout", desc = "callFailoverTimeout") long callFailoverTimeout,
                                 @Parameter(name = "minLargeMessageSize", desc = "minLargeMessageSize") int minLargeMessageSize,
                                 @Parameter(name = "compressLargeMessages", desc = "compressLargeMessages") boolean compressLargeMessages,
                                 @Parameter(name = "consumerWindowSize", desc = "consumerWindowSize") int consumerWindowSize,

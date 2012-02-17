@@ -219,7 +219,7 @@ public class ChannelImpl implements Channel
 
          try
          {
-            while (failingOver)
+            if (failingOver)
             {
                // TODO - don't hardcode this timeout
                try
@@ -283,12 +283,18 @@ public class ChannelImpl implements Channel
 
          try
          {
-            while (failingOver)
+            if (failingOver)
             {
-               // TODO - don't hardcode this timeout
                try
                {
-                  failoverCondition.await(10000, TimeUnit.MILLISECONDS);
+                  if(connection.getBlockingCallFailoverTimeout() < 0)
+                  {
+                     failoverCondition.await();
+                  }
+                  else
+                  {
+                     failoverCondition.await(connection.getBlockingCallFailoverTimeout(), TimeUnit.MILLISECONDS);
+                  }
                }
                catch (InterruptedException e)
                {

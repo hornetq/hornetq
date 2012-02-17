@@ -88,6 +88,15 @@ public interface ConnectionFactoryControl
    void setCallTimeout(long callTimeout);
 
    /**
+    * @see ServerLocator#getCallFailoverTimeout()
+    */
+   long getCallFailoverTimeout();
+   /**
+    * @see ServerLocator#setCallFailoverTimeout(long)
+    */
+
+   void setCallFailoverTimeout(long callTimeout);
+   /**
     * Returns the batch size (in bytes) between acknowledgements when using DUPS_OK_ACKNOWLEDGE
     * mode.
     * @see ServerLocator#getAckBatchSize()

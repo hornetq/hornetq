@@ -272,6 +272,17 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       serverLocator.setCallTimeout(callTimeout);
    }
 
+   public synchronized long getCallFailoverTimeout()
+   {
+      return serverLocator.getCallFailoverTimeout();
+   }
+
+   public synchronized void setCallFailoverTimeout(final long callTimeout)
+   {
+      checkWrite();
+      serverLocator.setCallFailoverTimeout(callTimeout);
+   }
+
    public synchronized int getConsumerWindowSize()
    {
       return serverLocator.getConsumerWindowSize();

@@ -64,6 +64,10 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
 
    void setCallTimeout(long callTimeout);
 
+   long getCallFailoverTimeout();
+
+   void setCallFailoverTimeout(long callFailoverTimeout);
+
    boolean isCacheLargeMessagesClient();
 
    void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient);

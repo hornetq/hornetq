@@ -62,6 +62,8 @@ public class HornetQClient
 
    public static final long DEFAULT_CALL_TIMEOUT = 30000;
 
+   public static final long DEFAULT_CALL_FAILOVER_TIMEOUT = -1;
+
    public static final int DEFAULT_ACK_BATCH_SIZE = 1024 * 1024;
 
    public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;

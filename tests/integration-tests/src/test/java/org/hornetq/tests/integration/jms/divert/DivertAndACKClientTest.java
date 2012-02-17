@@ -152,6 +152,7 @@ public class DivertAndACKClientTest extends JMSTestBase
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,
                                         callTimeout,
+                                        HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                                         HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                         HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,

@@ -70,8 +70,8 @@ public interface JMSServerManager extends HornetQComponent
     * 
     * @param topicName
     *           the name of the topic
-    * @param binding
-    *           the name of the binding for JNDI or BindingRegistry
+    * @param bindings
+    *           the names of the binding for JNDI or BindingRegistry
     * @return true if the topic was created or if it existed and was added to
     *         JNDI
     * @throws Exception
@@ -179,6 +179,7 @@ public interface JMSServerManager extends HornetQComponent
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
                                 long callTimeout,
+                                long callFailoverTimeout,
                                 boolean cacheLargeMessagesClient,
                                 int minLargeMessageSize,
                                 boolean compressLargeMessage,
@@ -214,6 +215,7 @@ public interface JMSServerManager extends HornetQComponent
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
                                 long callTimeout,
+                                long callFailoverTimeout,
                                 boolean cacheLargeMessagesClient,
                                 int minLargeMessageSize,
                                 boolean compressLargeMessages,

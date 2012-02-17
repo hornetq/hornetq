@@ -73,6 +73,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                       1, // clientFailureCheckPeriod
                                       1,  // connectionTTL
                                       1, // callTimeout
+                                      1, // callFailoverTimeout
                                       1, // minLargeMessageSize
                                       true, // compressLargeMessages
                                       1, // consumerWindowSize
@@ -106,6 +107,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       assertEquals(1, cf.getClientFailureCheckPeriod());
       assertEquals(1, cf.getConnectionTTL());
       assertEquals(1, cf.getCallTimeout());
+      assertEquals(1, cf.getCallFailoverTimeout());
       assertEquals(1, cf.getMinLargeMessageSize());
       assertEquals(true, cf.isCompressLargeMessage());
       assertEquals(1, cf.getConsumerWindowSize());
@@ -360,6 +362,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
                                              long callTimeout,
+                                             long callFailoverTimeout,
                                              int minLargeMessageSize,
                                              boolean compressLargeMessages,
                                              int consumerWindowSize,
@@ -396,6 +399,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientFailureCheckPeriod,
                                   connectionTTL,
                                   callTimeout,
+                                  callFailoverTimeout,
                                   minLargeMessageSize,
                                   compressLargeMessages,
                                   consumerWindowSize,
@@ -432,6 +436,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
                                              long callTimeout,
+                                             long callFailoverTimeout,
                                              int minLargeMessageSize,
                                              boolean compressLargeMessages,
                                              int consumerWindowSize,
@@ -468,6 +473,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientFailureCheckPeriod,
                                   connectionTTL,
                                   callTimeout,
+                                  callFailoverTimeout,
                                   minLargeMessageSize,
                                   compressLargeMessages,
                                   consumerWindowSize,

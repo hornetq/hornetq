@@ -142,6 +142,25 @@ public interface ServerLocator
     */
    void setCallTimeout(long callTimeout);
 
+
+   /**
+    * Returns the blocking calls failover timeout when the client is awaiting failover,
+    * this is over and above the normal call timeout.
+    * <p>
+    * If client is in the process of failing over when a blocking call is called then the client will wait this long before
+    * actually trying the send.
+    * @return the blocking calls failover timeout
+    */
+   long getCallFailoverTimeout();
+
+   /**
+    * Sets the blocking call failover timeout. when the client is awaiting failover,
+    * this is over and above the normal call timeout.
+    * <p>
+    * Value must be greater or equals to -1, -1 means forever
+    * @param callTimeout blocking call timeout in milliseconds
+    */
+   void setCallFailoverTimeout(long callFailoverTimeout);
    /**
     * Returns the large message size threshold.
     * <p>

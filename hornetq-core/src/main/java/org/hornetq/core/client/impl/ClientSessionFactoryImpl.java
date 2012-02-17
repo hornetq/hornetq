@@ -106,6 +106,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final long callTimeout;
 
+   private final long callFailoverTimeout;
+
    private final long clientFailureCheckPeriod;
 
    private final long connectionTTL;
@@ -169,6 +171,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
+                                   final long callFailoverTimeout,
                                    final long clientFailureCheckPeriod,
                                    final long connectionTTL,
                                    final long retryInterval,
@@ -191,6 +194,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       checkTransportKeys(connectorFactory, connectorConfig.getParams());
 
       this.callTimeout = callTimeout;
+
+      this.callFailoverTimeout = callFailoverTimeout;
 
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
 
@@ -1271,7 +1276,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             return connection;
          }
 
-         connection = new RemotingConnectionImpl(tc, callTimeout, interceptors);
+         connection = new RemotingConnectionImpl(tc, callTimeout, callFailoverTimeout, interceptors);
 
          connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
 

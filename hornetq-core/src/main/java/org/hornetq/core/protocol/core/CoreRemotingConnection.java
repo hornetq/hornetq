@@ -91,6 +91,13 @@ public interface CoreRemotingConnection extends RemotingConnection
    long getBlockingCallTimeout();
 
    /**
+    * Return the current timeout for blocking calls
+    *
+    * @return the timeout in milliseconds
+    */
+   long getBlockingCallFailoverTimeout();
+
+   /**
     * return the transfer lock used when transferring connections.
     *
     * @return the lock

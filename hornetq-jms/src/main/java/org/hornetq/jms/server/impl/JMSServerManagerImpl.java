@@ -839,6 +839,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long clientFailureCheckPeriod,
                                                     final long connectionTTL,
                                                     final long callTimeout,
+                                                    final long callFailoverTimeout,
                                                     final boolean cacheLargeMessagesClient,
                                                     final int minLargeMessageSize,
                                                     final boolean compressLargeMessage,
@@ -876,6 +877,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setConnectionTTL(connectionTTL);
          configuration.setFactoryType(cfType);
          configuration.setCallTimeout(callTimeout);
+         configuration.setCallFailoverTimeout(callFailoverTimeout);
          configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
          configuration.setCompressLargeMessages(compressLargeMessage);
@@ -913,6 +915,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long clientFailureCheckPeriod,
                                                     final long connectionTTL,
                                                     final long callTimeout,
+                                                    final long callFailoverTimeout,
                                                     final boolean cacheLargeMessagesClient,
                                                     final int minLargeMessageSize,
                                                     final boolean compressLargeMessages,
@@ -951,6 +954,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          configuration.setConnectionTTL(connectionTTL);
          configuration.setCallTimeout(callTimeout);
+         configuration.setCallFailoverTimeout(callFailoverTimeout);
          configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
          configuration.setCompressLargeMessages(compressLargeMessages);
@@ -1248,6 +1252,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       cf.setClientFailureCheckPeriod(cfConfig.getClientFailureCheckPeriod());
       cf.setConnectionTTL(cfConfig.getConnectionTTL());
       cf.setCallTimeout(cfConfig.getCallTimeout());
+      cf.setCallFailoverTimeout(cfConfig.getCallFailoverTimeout());
       cf.setCacheLargeMessagesClient(cfConfig.isCacheLargeMessagesClient());
       cf.setMinLargeMessageSize(cfConfig.getMinLargeMessageSize());
       cf.setConsumerWindowSize(cfConfig.getConsumerWindowSize());

@@ -138,6 +138,12 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       recreateCF();
    }
 
+   public void setCallFailoverTimeout(long callTimeout)
+   {
+      cfConfig.setCallFailoverTimeout(callTimeout);
+      recreateCF();
+   }
+
    public void setConsumerWindowSize(int consumerWindowSize)
    {
       cfConfig.setConsumerWindowSize(consumerWindowSize);
@@ -333,6 +339,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public long getCallTimeout()
    {
       return cfConfig.getCallTimeout();
+   }
+
+   public long getCallFailoverTimeout()
+   {
+      return cfConfig.getCallFailoverTimeout();
    }
 
    public int getConsumerMaxRate()

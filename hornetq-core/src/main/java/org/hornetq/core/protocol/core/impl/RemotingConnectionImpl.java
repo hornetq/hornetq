@@ -68,6 +68,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final long blockingCallTimeout;
 
+   private final long blockingCallFailoverTimeout;
+
    private final List<Interceptor> interceptors;
 
    private volatile boolean destroyed;
@@ -108,9 +110,10 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final long blockingCallTimeout,
+                                 final long blockingCallFailoverTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, interceptors, true, null, null);
+      this(transportConnection, blockingCallTimeout, blockingCallFailoverTimeout, interceptors, true, null, null);
    }
 
    /*
@@ -122,11 +125,12 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                                  final SimpleString nodeID)
 
    {
-      this(transportConnection, -1, interceptors, false, executor, nodeID);
+      this(transportConnection, -1, -1, interceptors, false, executor, nodeID);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
+                                  final long blockingCallFailoverTimeout,
                                   final List<Interceptor> interceptors,
                                   final boolean client,
                                   final Executor executor,
@@ -136,6 +140,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.transportConnection = transportConnection;
 
       this.blockingCallTimeout = blockingCallTimeout;
+
+      this.blockingCallFailoverTimeout = blockingCallFailoverTimeout;
 
       this.interceptors = interceptors;
 
@@ -433,6 +439,12 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    public long getBlockingCallTimeout()
    {
       return blockingCallTimeout;
+   }
+
+   @Override
+   public long getBlockingCallFailoverTimeout()
+   {
+      return blockingCallFailoverTimeout;
    }
 
    public boolean checkDataReceived()

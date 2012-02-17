@@ -121,6 +121,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private long callTimeout;
 
+   private long callFailoverTimeout;
+
    private int minLargeMessageSize;
 
    private int consumerWindowSize;
@@ -645,6 +647,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
                                                                           callTimeout,
+                                                                          callFailoverTimeout,
                                                                           clientFailureCheckPeriod,
                                                                           connectionTTL,
                                                                           retryInterval,
@@ -732,6 +735,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                factory = new ClientSessionFactoryImpl(this,
                                                       tc,
                                                       callTimeout,
+                                                      callFailoverTimeout,
                                                       clientFailureCheckPeriod,
                                                       connectionTTL,
                                                       retryInterval,
@@ -857,6 +861,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       checkWrite();
       this.callTimeout = callTimeout;
+   }
+
+   public long getCallFailoverTimeout()
+   {
+      return callFailoverTimeout;
+   }
+
+   public void setCallFailoverTimeout(long callFailoverTimeout)
+   {
+      checkWrite();
+      this.callFailoverTimeout = callFailoverTimeout;
    }
 
    public int getMinLargeMessageSize()
@@ -1702,6 +1717,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(ServerLocatorImpl.this,
                                                                                 initialConnector,
                                                                                 callTimeout,
+                                                                                callFailoverTimeout,
                                                                                 clientFailureCheckPeriod,
                                                                                 connectionTTL,
                                                                                 retryInterval,

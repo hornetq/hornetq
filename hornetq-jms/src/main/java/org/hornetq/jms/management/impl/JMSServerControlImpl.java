@@ -224,6 +224,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                                        long clientFailureCheckPeriod,
                                        long connectionTTL,
                                        long callTimeout,
+                                       long callFailoverTimeout,
                                        int minLargeMessageSize,
                                        boolean compressLargeMessages,
                                        int consumerWindowSize,
@@ -259,6 +260,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                               clientFailureCheckPeriod,
                               connectionTTL,
                               callTimeout,
+                              callFailoverTimeout,
                               minLargeMessageSize,
                               compressLargeMessages,
                               consumerWindowSize,
@@ -298,6 +300,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                                        long clientFailureCheckPeriod,
                                        long connectionTTL,
                                        long callTimeout,
+                                       long callFailoverTimeout,
                                        int minLargeMessageSize,
                                        boolean compressLargeMessages,
                                        int consumerWindowSize,
@@ -350,6 +353,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          configuration.setConnectionTTL(connectionTTL);
          configuration.setCallTimeout(callTimeout);
+         configuration.setCallFailoverTimeout(callFailoverTimeout);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
          configuration.setCompressLargeMessages(compressLargeMessages);
          configuration.setConsumerWindowSize(consumerWindowSize);
