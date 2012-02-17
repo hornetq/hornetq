@@ -1025,7 +1025,7 @@ public class PagingStoreImpl implements PagingStore
 
       public void afterRollback(final Transaction tx)
       {
-         if (tx.getState() == State.PREPARED && pageTransaction != null)
+         if (pageTransaction != null)
          {
             pageTransaction.rollback();
          }
