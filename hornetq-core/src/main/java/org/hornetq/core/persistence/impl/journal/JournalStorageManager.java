@@ -3360,6 +3360,11 @@ public class JournalStorageManager implements StorageManager
 
    }
 
+   /** This is only used when loading a transaction
+    it might be possible to merge the functionality of this class with {@link PagingStoreImpl.FinishPageMessageOperation}
+    
+   */
+   // TODO: merge this class with the one on the PagingStoreImpl
    private static class FinishPageMessageOperation implements TransactionOperation
    {
 
