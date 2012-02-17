@@ -404,6 +404,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
 
+      callFailoverTimeout = HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT;
+
       minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
       consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
