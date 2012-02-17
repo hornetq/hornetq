@@ -83,10 +83,6 @@ public class FailBackManualTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      listener = new CountDownSessionFailureListener(1);
-
-      session.addFailureListener(listener);
-
       liveConfig.setAllowAutoFailBack(false);
 
       Thread t = new Thread(new ServerStarter(liveServer));
@@ -97,17 +93,11 @@ public class FailBackManualTest extends FailoverTestBase
 
       assertTrue(backupServer.isStarted());
 
-      backupServer.stop();
+      backupServer.crash();
 
-      assertTrue(listener.getLatch().await(15, TimeUnit.SECONDS));
+      waitForServer(liveServer.getServer());
 
-      message = session.createMessage(true);
-
-      setBody(1, message);
-
-      producer.send(message);
-
-      session.close();
+      assertTrue(liveServer.isStarted());
 
       sf.close();
 
@@ -116,6 +106,31 @@ public class FailBackManualTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
+   protected void waitForBackup(ClientSessionFactoryInternal sf, int toWait)
+            throws Exception
+   {
+      long time = System.currentTimeMillis();
+      while (sf.getBackupConnector() == null)
+      {
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+         if (sf.getBackupConnector() != null)
+         {
+            break;
+         }
+         else if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup server never started");
+         }
+      }
+      System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
+   }
 
    @Override
    protected void createConfigs() throws Exception
