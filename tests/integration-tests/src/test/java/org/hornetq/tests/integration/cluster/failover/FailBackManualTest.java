@@ -89,7 +89,7 @@ public class FailBackManualTest extends FailoverTestBase
 
       t.start();
 
-      waitForBackup(sf, 10);
+      waitForRemoteBackup(sf, 10, true, backupServer.getServer());
 
       assertTrue(backupServer.isStarted());
 
@@ -106,31 +106,6 @@ public class FailBackManualTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
-   protected void waitForBackup(ClientSessionFactoryInternal sf, int toWait)
-            throws Exception
-   {
-      long time = System.currentTimeMillis();
-      while (sf.getBackupConnector() == null)
-      {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            //ignore
-         }
-         if (sf.getBackupConnector() != null)
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started");
-         }
-      }
-      System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
-   }
 
    @Override
    protected void createConfigs() throws Exception
