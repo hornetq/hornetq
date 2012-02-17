@@ -1024,6 +1024,8 @@ public class FileConfigurationParser
                                                         Validators.GT_ZERO);
       
       long callTimeout = XMLConfigurationUtil.getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
+
+      long callFailoverTimeout = XMLConfigurationUtil.getLong(e, "call-failover-timeout", HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
                                                         
       double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier", 
                                                                       ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER, Validators.GT_ZERO);
@@ -1082,6 +1084,7 @@ public class FileConfigurationParser
                                                      maxRetryInterval,
                                                      reconnectAttempts,
                                                      callTimeout,
+                                                     callFailoverTimeout,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
@@ -1102,6 +1105,7 @@ public class FileConfigurationParser
                                                      maxRetryInterval,
                                                      reconnectAttempts,
                                                      callTimeout,
+                                                     callFailoverTimeout,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,

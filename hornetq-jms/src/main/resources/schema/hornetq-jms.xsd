@@ -58,6 +58,9 @@
    			 <xsd:element name="call-timeout" type="xsd:long"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
+   			 <xsd:element name="call-failover-timeout" type="xsd:long"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
             <xsd:element name="consumer-window-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>

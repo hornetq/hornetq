@@ -104,6 +104,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
    private final long callTimeout;
 
+   private final long callFailoverTimeout;
+
    private final double retryIntervalMultiplier;
 
    private final long maxRetryInterval;
@@ -168,6 +170,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final long maxRetryInterval,
                                 final int reconnectAttempts,
                                 final long callTimeout,
+                                final long callFailoverTimeout,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
@@ -242,6 +245,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.manager = manager;
 
       this.callTimeout = callTimeout;
+
+      this.callFailoverTimeout = callFailoverTimeout;
       
       this.minLargeMessageSize = minLargeMessageSize;
 
@@ -280,6 +285,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final long maxRetryInterval,
                                 final int reconnectAttempts,
                                 final long callTimeout,
+                                final long callFailoverTimeout,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
@@ -324,6 +330,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.reconnectAttempts = reconnectAttempts;
 
       this.callTimeout = callTimeout;
+
+      this.callFailoverTimeout = callFailoverTimeout;
 
       this.useDuplicateDetection = useDuplicateDetection;
 

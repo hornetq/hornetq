@@ -68,6 +68,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
+                          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
@@ -123,6 +124,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
+                          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
@@ -164,6 +166,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
+                          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
@@ -203,6 +206,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
+                          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
@@ -243,6 +247,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
+                          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                           HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
@@ -618,6 +623,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                                     final long clientFailureCheckPeriod,
                                     final long connectionTTL,
                                     final long callTimeout,
+                                    final long callFailoverTimeout,
                                     final int minLargeMessageSize,
                                     final int consumerWindowSize,
                                     final int consumerMaxRate,
@@ -657,6 +663,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
       Assert.assertEquals(cf.getConnectionTTL(), connectionTTL);
       Assert.assertEquals(cf.getCallTimeout(), callTimeout);
+      Assert.assertEquals(cf.getCallFailoverTimeout(), callFailoverTimeout);
       Assert.assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
       Assert.assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
       Assert.assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);

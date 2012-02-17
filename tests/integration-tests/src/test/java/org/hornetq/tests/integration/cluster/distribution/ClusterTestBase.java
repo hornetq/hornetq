@@ -1906,7 +1906,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 				retryInterval,
 				ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
 				ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-				reconnectAttempts, 1000, true, forwardWhenNoConsumers, maxHops,
+				reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
 				1024, pairs, false);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
