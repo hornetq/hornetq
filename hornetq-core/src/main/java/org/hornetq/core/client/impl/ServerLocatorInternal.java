@@ -74,6 +74,4 @@ public interface ServerLocatorInternal extends ServerLocator
    boolean isBackup();
    
    void setBackup(boolean backup);
-
-   Topology getTopology();
 }

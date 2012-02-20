@@ -378,46 +378,45 @@ public class HornetQServerImpl implements HornetQServer
             test.run();
          }
 
-         if (!configuration.isBackup())
-         {
-            if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
-            {
-               activation = new SharedStoreLiveActivation();
-            }
-            else
-            {
-               activation = new NoSharedStoreLiveActivation();
-            }
-
-            activation.run();
-
-            started = true;
-
-            HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
-                                       " [" +
-                                       nodeManager.getNodeId() +
-                                       "]" +
-                                       (this.identity != null ? " (" + identity : ")") +
-                                       " started");
-         }
-
-         // The activation on fail-back may change the value of isBackup, for that reason we are not using else here
          if (configuration.isBackup())
          {
-            if (configuration.isSharedStore())
-            {
-               activation = new SharedStoreBackupActivation();
-            }
-            else
-            {
-               assert replicationEndpoint == null;
-               backupUpToDate = false;
-               replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO);
-               activation = new SharedNothingBackupActivation();
-            }
+             if (configuration.isSharedStore())
+             {
+                activation = new SharedStoreBackupActivation();
+             }
+             else
+             {
+                assert replicationEndpoint == null;
+                backupUpToDate = false;
+                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO);
+                activation = new SharedNothingBackupActivation();
+             }
 
-            backupActivationThread = new Thread(activation, "Activation for server " + this);
-            backupActivationThread.start();
+             backupActivationThread = new Thread(activation, "Activation for server " + this);
+             backupActivationThread.start();
+         }
+         // The activation on fail-back may change the value of isBackup, for that reason we are not using else here
+         else
+         {
+             if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
+             {
+                activation = new SharedStoreLiveActivation();
+             }
+             else
+             {
+                activation = new NoSharedStoreLiveActivation();
+             }
+
+             activation.run();
+
+             started = true;
+
+             HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
+                                        " [" +
+                                        nodeManager.getNodeId() +
+                                        "]" +
+                                        (this.identity != null ? " (" + identity : ")") +
+                                        " started");
          }
 
          // start connector service

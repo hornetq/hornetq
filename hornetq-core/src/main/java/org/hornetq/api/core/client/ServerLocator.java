@@ -18,6 +18,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.client.impl.Topology;
 
 /**
  * A ServerLocator
@@ -623,6 +624,14 @@ public interface ServerLocator
     * Closes this factory and release all its resources
     */
    void close();
+   
+
+   /**
+    * Exposes the Topology used by this ServerLocator.
+    * @return
+    */
+   Topology getTopology();
+
 
    boolean isHA();
    
