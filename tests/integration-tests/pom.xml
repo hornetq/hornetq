@@ -116,10 +116,10 @@
                   <exclude>**/cluster/failover/Remote*.java</exclude>
                   <exclude>**/failover/remote/**.java</exclude>
                   <exclude>**/Replicated*.java</exclude>
-                  <excluse>**/replication/**.java</excluse>
+                  <exclude>**/replication/**.java</exclude>
                   <exclude>**/*Replicated**.java</exclude>
                </excludes>
-               <argLine>-Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
+               <argLine>-Djava.library.path=${user.dir}/../distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${user.dir}/../distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>
