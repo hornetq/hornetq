@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
@@ -189,53 +190,75 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_CONSUMERS = 100;
 
-   private static class ConsumerHolder
-   {
-      final ClientConsumer consumer;
+	protected static class ConsumerHolder
+	{
+		final ClientConsumer consumer;
 
-      final ClientSession session;
+		final ClientSession session;
 
-      final int id;
+		final int id;
 
-      ConsumerHolder(final int id, final ClientConsumer consumer, final ClientSession session)
-      {
-         this.id = id;
+		final int node;
 
-         this.consumer = consumer;
-         this.session = session;
-      }
+		public ClientConsumer getConsumer()
+		{
+			return consumer;
+		}
 
-      void close()
-      {
-         if (consumer != null)
-         {
-            try
-            {
-               consumer.close();
-            }
-            catch (HornetQException e)
-            {
-               // ignore
-            }
-         }
-         if (session != null) {
-            try
-            {
-               session.close();
-            }
-            catch (HornetQException e)
-            {
-               // ignore
-            }
-      }
-      }
+		public ClientSession getSession()
+		{
+			return session;
+		}
 
-      @Override
-      public String toString()
-      {
-         return "id=" + id + ", consumer=" + consumer + ", session=" + session;
-      }
-   }
+		public int getId()
+		{
+			return id;
+		}
+
+		public int getNode()
+		{
+			return node;
+		}
+
+		ConsumerHolder(final int id, final ClientConsumer consumer, final ClientSession session, int node)
+		{
+			this.id = id;
+			this.node = node;
+
+			this.consumer = consumer;
+			this.session = session;
+		}
+
+		void close()
+		{
+			if (consumer != null)
+			{
+				try
+				{
+					consumer.close();
+				} catch (HornetQException e)
+				{
+					// ignore
+				}
+			}
+			if (session != null)
+			{
+				try
+				{
+					session.close();
+				} catch (HornetQException e)
+				{
+					// ignore
+				}
+			}
+		}
+
+		@Override
+		public String toString()
+		{
+			return "id=" + id + ", consumer=" + consumer + ", session=" + session;
+		}
+	}
 
    protected ClientConsumer getConsumer(final int node)
    {
@@ -576,7 +599,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          session.start();
 
-         consumers[consumerID] = new ConsumerHolder(consumerID, consumer, session);
+         consumers[consumerID] = new ConsumerHolder(consumerID, consumer, session, node);
       }
       catch (Exception e)
       {
@@ -1494,23 +1517,25 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-      TransportConfiguration serverTotc;
+      TransportConfiguration serverToTC;
 
       if (netty)
       {
-         serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
+    	  serverToTC = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
+    	  serverToTC = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
-      locators[node] = HornetQClient.createServerLocatorWithHA(serverTotc);
+      locators[node] = HornetQClient.createServerLocatorWithHA(serverToTC);
       locators[node].setRetryInterval(100);
       locators[node].setRetryIntervalMultiplier(1d);
       locators[node].setReconnectAttempts(-1);
       locators[node].setBlockOnNonDurableSend(blocking);
       locators[node].setBlockOnDurableSend(blocking);
+   	  ((ServerLocatorInternal)locators[node]).setIdentity("TestClientConnector,live=" + node + ",backup=" + backupNode);
+
       addServerLocator(locators[node]);
       ClientSessionFactory sf = createSessionFactory(locators[node]);
       sfs[node] = sf;
@@ -2028,12 +2053,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          servers[node].start();
 
          log.info("started server " + servers[node]);
-      }
-
-      for (int node : nodes)
-      {
          waitForServer(servers[node]);
+
       }
+      
 
    }
 

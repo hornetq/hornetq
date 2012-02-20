@@ -22,14 +22,14 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.Set;
+import java.util.HashSet;
 
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.BroadcastGroup;
-import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  *
@@ -61,11 +61,17 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       return false;
    }
 
-   public void testFailLiveNodes() throws Exception
+   public void testFailLiveNodes() throws Throwable
    {
          setupCluster();
 
          startServers(3, 4, 5, 0, 1, 2);
+         //startServers(0, 1, 2, 3, 4, 5);
+         
+         for (int i = 0 ; i < 3; i++)
+         {
+             waitForTopology(servers[i], 3, 3);
+         }
 
          waitForFailoverTopology(3, 0, 1, 2);
          waitForFailoverTopology(4, 0, 1, 2);
@@ -80,8 +86,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
          createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
 
          addConsumer(0, 0, QUEUE_NAME, null);
+         waitForBindings(0, QUEUES_TESTADDRESS, 1, 1, true);
          addConsumer(1, 1, QUEUE_NAME, null);
+         waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
          addConsumer(2, 2, QUEUE_NAME, null);
+         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
 
          waitForBindings();
 
@@ -94,6 +103,8 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
          send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
          Thread.sleep(1000);
+         log.info("######### Topology on client = " + locators[0].getTopology().describe() + " locator = " + locators[0]);
+         log.info("######### Crashing it........., sfs[0] = " +  sfs[0]);
          failNode(0);
 
          waitForFailoverTopology(4, 3, 1, 2);
@@ -191,6 +202,12 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupCluster();
 
       startServers(3, 4, 5, 0, 1, 2);
+      
+      for (int i = 0 ; i < 3; i++)
+      {
+          waitForTopology(servers[i], 3, 3);
+      }
+      
 
       setupSessionFactory(0, 3, isNetty(), false);
       setupSessionFactory(1, 4, isNetty(), false);
@@ -263,42 +280,56 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    {
       setupCluster(false);
    }
+   
 
    protected void failNode(final int node) throws Exception
+   {
+	   failNode(node, node);
+   }
+
+
+   /**
+    * 
+    * @param node The node which we should fail
+    * @param originalLiveNode The number of the original node, to locate session to fail
+    * @throws Exception
+    */
+   protected void failNode(final int node, final int originalLiveNode) throws Exception
    {
       ClusterWithBackupFailoverTestBase.log.info("*** failing node " + node);
 
       HornetQServer server = getServer(node);
-
-      // Prevent remoting service taking any more connections
-      server.getRemotingService().freeze();
-
-      if (server.getClusterManager() != null)
-      {
-         // Stop it broadcasting
-         for (BroadcastGroup group : server.getClusterManager().getBroadcastGroups())
-         {
-            group.stop();
-         }
-      }
-      Set<RemotingConnection> connections = server.getRemotingService().getConnections();
-      for (RemotingConnection remotingConnection : connections)
-      {
-         remotingConnection.destroy();
-         server.getRemotingService().removeConnection(remotingConnection.getID());
-      }
-
-      ClusterManagerImpl clusterManager = (ClusterManagerImpl) server.getClusterManager();
-      clusterManager.clear();
-
-      server.stop(true);
+      
+      TestableServer tstServer = new SameProcessHornetQServer(server);
+      
+      ClientSession[] sessionsArray = exploreSessions(originalLiveNode);
+      
+      tstServer.crash(sessionsArray);
    }
+
+	private ClientSession[] exploreSessions(final int node)
+	{
+		HashSet<ClientSession> sessions = new HashSet<ClientSession>();
+
+		for (ConsumerHolder holder : consumers)
+		{
+			if (holder != null && holder.getNode() == node && holder.getSession() != null)
+			{
+				sessions.add(holder.getSession());
+			}
+		}
+
+		ClientSession[] sessionsArray = sessions.toArray(new ClientSession[sessions.size()]);
+		return sessionsArray;
+	}
 
    public void testFailAllNodes() throws Exception
    {
       setupCluster();
 
       startServers(3, 4, 5, 0, 1, 2);
+      
+      
 
       setupSessionFactory(0, 3, isNetty(), false);
       setupSessionFactory(1, 4, isNetty(), false);
@@ -391,12 +422,13 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
 
       removeConsumer(1);
-      failNode(4);
 
       // live nodes
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // live nodes
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 0, false);
+
+      failNode(4, 1);
 
       send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
