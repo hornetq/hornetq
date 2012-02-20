@@ -119,6 +119,9 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
    private boolean started;
 
    private QuorumManager quorumManager;
+   
+   //https://community.jboss.org/thread/195519
+   private Object stopLock = new Object();
 
    // Constructors --------------------------------------------------
    public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
@@ -156,66 +159,75 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
       try
       {
-         if (type == PacketImpl.REPLICATION_APPEND)
+         synchronized (stopLock)
          {
-            handleAppendAddRecord((ReplicationAddMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_APPEND_TX)
-         {
-            handleAppendAddTXRecord((ReplicationAddTXMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_DELETE)
-         {
-            handleAppendDelete((ReplicationDeleteMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_DELETE_TX)
-         {
-            handleAppendDeleteTX((ReplicationDeleteTXMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_PREPARE)
-         {
-            handlePrepare((ReplicationPrepareMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
-         {
-            handleCommitRollback((ReplicationCommitMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
-         {
-            handlePageWrite((ReplicationPageWriteMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
-         {
-            handlePageEvent((ReplicationPageEventMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
-         {
-            handleLargeMessageBegin((ReplicationLargeMessageBeingMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
-         {
-            handleLargeMessageWrite((ReplicationLargeMessageWriteMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
-         {
-            handleLargeMessageEnd((ReplicationLargeMessageEndMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_COMPARE_DATA)
-         {
-            handleCompareDataMessage((ReplicationCompareDataMessage)packet);
-            response = new NullResponseMessage();
-         }
-         else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
-         {
-            handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
-         }
-         else if (type == PacketImpl.REPLICATION_SYNC_FILE)
-         {
-            handleReplicationSynchronization((ReplicationSyncFileMessage)packet);
-         }
-         else
-         {
-            log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
+            if (!started)
+            {
+               return;
+            }
+            
+            if (type == PacketImpl.REPLICATION_APPEND)
+            {
+               handleAppendAddRecord((ReplicationAddMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_APPEND_TX)
+            {
+               handleAppendAddTXRecord((ReplicationAddTXMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_DELETE)
+            {
+               handleAppendDelete((ReplicationDeleteMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_DELETE_TX)
+            {
+               handleAppendDeleteTX((ReplicationDeleteTXMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_PREPARE)
+            {
+               handlePrepare((ReplicationPrepareMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
+            {
+               handleCommitRollback((ReplicationCommitMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
+            {
+               handlePageWrite((ReplicationPageWriteMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
+            {
+               handlePageEvent((ReplicationPageEventMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
+            {
+               handleLargeMessageBegin((ReplicationLargeMessageBeingMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
+            {
+               handleLargeMessageWrite((ReplicationLargeMessageWriteMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
+            {
+               handleLargeMessageEnd((ReplicationLargeMessageEndMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_COMPARE_DATA)
+            {
+               handleCompareDataMessage((ReplicationCompareDataMessage) packet);
+               response = new NullResponseMessage();
+            }
+            else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
+            {
+               handleStartReplicationSynchronization((ReplicationStartSyncMessage) packet);
+            }
+            else if (type == PacketImpl.REPLICATION_SYNC_FILE)
+            {
+               handleReplicationSynchronization((ReplicationSyncFileMessage) packet);
+            }
+            else
+            {
+               log.warn("Packet " + packet
+                     + " can't be processed by the ReplicationEndpoint");
+            }
          }
       }
       catch (HornetQException e)
@@ -280,64 +292,68 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
    public synchronized void stop() throws Exception
    {
-      if (!started)
+      synchronized (stopLock)
       {
-          return;
-      }
-
-      // Channel may be null if there isn't a connection to a live server
-      if (channel != null)
-      {
-         channel.close();
-      }
-
-      for (ConcurrentMap<Integer, Page> map : pageIndex.values())
-      {
-         for (Page page : map.values())
+         if (!started)
          {
-            try
+            return;
+         }
+
+         // Channel may be null if there isn't a connection to a live server
+         if (channel != null)
+         {
+            channel.close();
+         }
+
+         for (ConcurrentMap<Integer, Page> map : pageIndex.values())
+         {
+            for (Page page : map.values())
             {
-               page.close();
+               try
+               {
+                  page.close();
+               }
+               catch (Exception e)
+               {
+                  log.warn("Error while closing the page on backup", e);
+               }
             }
-            catch (Exception e)
+         }
+
+         pageIndex.clear();
+
+         for (ReplicatedLargeMessage largeMessage : largeMessages.values())
+         {
+            largeMessage.releaseResources();
+         }
+         largeMessages.clear();
+
+         for (Entry<JournalContent, Map<Long, JournalSyncFile>> entry : filesReservedForSync
+               .entrySet())
+         {
+            for (JournalSyncFile filesReserved : entry.getValue().values())
             {
-               log.warn("Error while closing the page on backup", e);
+               filesReserved.close();
             }
          }
-      }
 
-      pageIndex.clear();
-
-      for (ReplicatedLargeMessage largeMessage : largeMessages.values())
-      {
-         largeMessage.releaseResources();
-      }
-      largeMessages.clear();
-
-      for (Entry<JournalContent, Map<Long, JournalSyncFile>> entry : filesReservedForSync.entrySet())
-      {
-         for (JournalSyncFile filesReserved : entry.getValue().values())
+         filesReservedForSync.clear();
+         if (journals != null)
          {
-            filesReserved.close();
+            for (Journal j : journals)
+            {
+               if (j instanceof FileWrapperJournal)
+                  j.stop();
+            }
          }
+
+         pageManager.stop();
+
+         // Storage needs to be the last to stop
+         storage.stop();
+
+         started = false;
       }
-
-      filesReservedForSync.clear();
-      if (journals != null)
-      {
-         for (Journal j : journals)
-         {
-            if (j instanceof FileWrapperJournal)
-               j.stop();
-         }
-      }
-
-      pageManager.stop();
-
-      // Storage needs to be the last to stop
-      storage.stop();
-
-      started = false;
    }
 
 
