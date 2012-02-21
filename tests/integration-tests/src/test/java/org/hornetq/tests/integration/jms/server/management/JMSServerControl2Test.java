@@ -476,6 +476,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    public void testStartActivationListConnections() throws Exception
    {
+      HornetQActivation activation = null;
+      HornetQResourceAdapter ra = null;
+
       try
       {
          startHornetQServer(InVMAcceptorFactory.class.getName());
@@ -484,7 +487,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+         ra = new HornetQResourceAdapter();
 
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
@@ -504,13 +507,13 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          spec.setPassword("password");
 
-         spec.setDestinationType("Topic");
+         spec.setDestinationType("Queue");
          spec.setDestination("test");
 
          spec.setMinSession(1);
          spec.setMaxSession(1);
 
-         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+         activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
          activation.start();
 
@@ -523,14 +526,15 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals("user", jmsConnectionInfos[0].getUsername());
 
          assertEquals("my-client-id", jmsConnectionInfos[0].getClientID());
-
-         activation.stop();
-
-         ra.stop();
-
       }
       finally
       {
+         if (activation != null)
+            activation.stop();
+
+         if(ra != null)
+            ra.stop();
+
          try
          {
             /*if (connection != null)
@@ -558,6 +562,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    public void testStartActivationOverrideListConnections() throws Exception
    {
+      HornetQActivation activation = null;
+      HornetQResourceAdapter ra = null;
+
       try
       {
          startHornetQServer(InVMAcceptorFactory.class.getName());
@@ -566,7 +573,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          JMSServerControl control = createManagementControl();
 
-         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+         ra = new HornetQResourceAdapter();
 
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
@@ -588,13 +595,13 @@ public class JMSServerControl2Test extends ManagementTestBase
          spec.setUser("user");
          spec.setPassword("password");
 
-         spec.setDestinationType("Topic");
+         spec.setDestinationType("Queue");
          spec.setDestination("test");
 
          spec.setMinSession(1);
          spec.setMaxSession(1);
 
-         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+         activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
          activation.start();
 
@@ -607,14 +614,15 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals("user", jmsConnectionInfos[0].getUsername());
 
          assertEquals("my-client-id", jmsConnectionInfos[0].getClientID());
-
-         activation.stop();
-
-         ra.stop();
-
       }
       finally
       {
+         if (activation != null)
+            activation.stop();
+
+         if(ra != null)
+            ra.stop();
+
          try
          {
             /*if (connection != null)
