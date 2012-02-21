@@ -251,6 +251,4 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       return TransportConfigurationUtils.getInVMConnector(live);
    }
-
-
 }

@@ -260,7 +260,7 @@ public class HornetQServerImpl implements HornetQServer
    private Thread backupActivationThread;
 
    private Activation activation;
-   
+
    private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
    // Constructors
@@ -487,7 +487,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       stop(failoverOnServerShutdown, false);
    }
-   
+
    private void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
    {
       synchronized (this)
@@ -495,6 +495,10 @@ public class HornetQServerImpl implements HornetQServer
          if (!started)
          {
             return;
+         }
+
+         if (replicationManager!=null) {
+            replicationManager.sendLiveIsStopping();
          }
 
          connectorsService.stop();
@@ -539,7 +543,7 @@ public class HornetQServerImpl implements HornetQServer
             log.warn(e.getMessage(), e);
          }
       }
-      
+
       storageManager.clearContext();
 
       synchronized (this)
@@ -651,9 +655,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             // Ignore
          }
-         
+
          securityStore.stop();
- 
+
          threadPool = null;
 
          scheduledPool = null;
@@ -679,7 +683,7 @@ public class HornetQServerImpl implements HornetQServer
                   initialised = new CountDownLatch(1);
             }
          }
-         
+
          // to display in the log message
          SimpleString tempNodeID = getNodeID();
 
@@ -804,7 +808,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       return started;
    }
-   
+
    public boolean isStopped()
    {
       return stopped;
@@ -1048,15 +1052,15 @@ public class HornetQServerImpl implements HornetQServer
       {
          storageManager.deleteQueueBinding(queue.getID());
       }
-      
+
 
       if (queue.getPageSubscription() != null)
       {
          queue.getPageSubscription().close();
       }
-      
+
       PageSubscription subs = queue.getPageSubscription();
-      
+
       if (subs != null)
       {
          subs.cleanupEntries(true);
@@ -1241,8 +1245,8 @@ public class HornetQServerImpl implements HornetQServer
                                    addressSettingsRepository);
    }
 
-   /** 
-    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
+   /**
+    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance)
     */
    private StorageManager createStorageManager()
    {
@@ -1742,7 +1746,7 @@ public class HornetQServerImpl implements HornetQServer
          pageSubscription.close();
          throw e;
       }
-      
+
 
       managementService.registerAddress(address);
       managementService.registerQueue(queue, address, storageManager);
@@ -2051,19 +2055,19 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
    }
-   
+
    private final class ShutdownOnCriticalErrorListener implements IOCriticalErrorListener
    {
       boolean failedAlready = false;
-      
+
       public synchronized void onIOException(int code, String message, SequentialFile file)
       {
          if (!failedAlready)
          {
             failedAlready = true;
-            
+
             log.warn("Critical IO Error, shutting down the server. code=" + code + ", message=" + message);
-            
+
             new Thread()
             {
                @Override
@@ -2092,6 +2096,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       private ServerLocatorInternal serverLocator0;
       private volatile boolean failedConnection;
+      private volatile boolean failOver;
 
       public void run()
       {
@@ -2161,7 +2166,7 @@ public class HornetQServerImpl implements HornetQServer
                      "] started, waiting live to fail before it gets active");
             started = true;
 
-            // Server node (i.e. Life node) is not running, now the backup takes over.
+            // Server node (i.e. Live node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
             synchronized (quorumManager)
             {
@@ -2170,11 +2175,10 @@ public class HornetQServerImpl implements HornetQServer
                while (true)
                {
                   quorumManager.wait();
-                  break;
-//               if (!started || quorumManager.isNodeDown())
-//               {
-//                  break;
-//               }
+                  if (failOver || !started || quorumManager.isNodeDown())
+                  {
+                     break;
+                  }
                }
             }
 
@@ -2245,6 +2249,14 @@ public class HornetQServerImpl implements HornetQServer
             nodeManager.stopBackup();
          }
       }
+
+      /**
+       * Live has notified this server that it is going to stop.
+       */
+      public void failOver()
+      {
+         failOver = true;
+      }
    }
 
 
@@ -2285,7 +2297,7 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
    }
-   
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.
@@ -2359,10 +2371,8 @@ public class HornetQServerImpl implements HornetQServer
             {
                throw (HornetQException)e;
             }
-            else
-            {
-               throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
-            }
+
+            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
          }
       }
    }
@@ -2406,6 +2416,23 @@ public class HornetQServerImpl implements HornetQServer
             }
          });
       }
+   }
+
+   /**
+    * @throws HornetQException
+    */
+   public void remoteFailOver() throws HornetQException
+   {
+      if (!configuration.isBackup() || configuration.isSharedStore())
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR);
+      }
+      if (!backupUpToDate) return;
+      if (activation instanceof SharedNothingBackupActivation)
+      {
+         ((SharedNothingBackupActivation)activation).failOver();
+      }
+
    }
 
 }

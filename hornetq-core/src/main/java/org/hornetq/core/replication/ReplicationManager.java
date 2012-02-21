@@ -135,4 +135,12 @@ public interface ReplicationManager extends HornetQComponent
     * @param largeMessageIDs
     */
    void sendLargeMessageIdListMessage(List<Long> largeMessageIDs);
+
+   /**
+    * Notifies the backup that the live server is stopping.
+    * <p>
+    * This notification allows the backup to skip quorum voting (or any other measure to avoid
+    * 'split-brain') and do a faster fail-over.
+    */
+   void sendLiveIsStopping();
 }

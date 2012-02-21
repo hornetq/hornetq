@@ -41,6 +41,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
@@ -314,7 +315,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       synchronized (replicationLock)
       {
-      enabled = false;
+         enabled = false;
 
       // Complete any pending operations...
       // Case the backup crashed, this should clean up any pending requests
@@ -600,5 +601,14 @@ public class ReplicationManagerImpl implements ReplicationManager
       if (enabled)
          sendReplicatePacket(new ReplicationStartSyncMessage(largeMessageIDs));
 
+   }
+
+   /**
+    * Notifies the backup that the live is about to stop.
+    */
+   public void sendLiveIsStopping()
+   {
+      if (enabled)
+      sendReplicatePacket(new LiveIsStoppingMessage());
    }
 }

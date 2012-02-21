@@ -97,6 +97,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
@@ -561,6 +562,11 @@ public final class PacketDecoder
          case PacketImpl.REPLICATION_SYNC_FILE:
          {
             packet = new ReplicationSyncFileMessage();
+            break;
+         }
+         case PacketImpl.REPLICATION_SCHEDULED_FAILOVER:
+         {
+            packet = new LiveIsStoppingMessage();
             break;
          }
          default:

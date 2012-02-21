@@ -204,6 +204,7 @@ public class PacketImpl implements Packet
    public static final byte BACKUP_REGISTRATION_FAILED = 116;
 
    public static final byte REPLICATION_START_FINISH_SYNC = 120;
+   public static final byte REPLICATION_SCHEDULED_FAILOVER = 121;
 
    // Static --------------------------------------------------------
 

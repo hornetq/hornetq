@@ -119,9 +119,9 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
    private boolean started;
 
    private QuorumManager quorumManager;
-   
+
    //https://community.jboss.org/thread/195519
-   private Object stopLock = new Object();
+   private final Object stopLock = new Object();
 
    // Constructors --------------------------------------------------
    public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
@@ -165,7 +165,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
             {
                return;
             }
-            
+
             if (type == PacketImpl.REPLICATION_APPEND)
             {
                handleAppendAddRecord((ReplicationAddMessage) packet);
@@ -223,10 +223,13 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
             {
                handleReplicationSynchronization((ReplicationSyncFileMessage) packet);
             }
-            else
-            {
-               log.warn("Packet " + packet
-                     + " can't be processed by the ReplicationEndpoint");
+         else if (type == PacketImpl.REPLICATION_SCHEDULED_FAILOVER)
+         {
+            handleLiveStopping();
+         }
+         else
+         {
+            log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
             }
          }
       }
@@ -244,6 +247,14 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       }
 
       channel.send(response);
+   }
+
+   /**
+    * @throws HornetQException
+    */
+   private void handleLiveStopping() throws HornetQException
+   {
+      server.remoteFailOver();
    }
 
    public boolean isStarted()

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Pair;
@@ -28,14 +29,15 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 public final class QuorumManager implements ClusterTopologyListener
 {
 
-   // private static final Logger LOG = Logger.getLogger(QuorumManager.class);
-
    // volatile boolean started;
    private final ServerLocator locator;
    private String targetServerID = "";
    private final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
             new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
-   private static final long DISCOVERY_TIMEOUT = 3;
+
+   /** safety parameter to make _sure_ we get out of await() */
+   private static final int LATCH_TIMEOUT = 60;
+   private static final long DISCOVERY_TIMEOUT = 5;
 
    public QuorumManager(ServerLocator serverLocator)
    {
@@ -75,12 +77,11 @@ public final class QuorumManager implements ClusterTopologyListener
 
    public boolean isNodeDown()
    {
-      boolean liveShutdownCleanly = !nodes.containsKey(targetServerID);
-      boolean noOtherServersAround = nodes.size() == 0;
-      if (liveShutdownCleanly || noOtherServersAround)
+      if (nodes.size() == 0)
+      {
          return true;
+      }
       // go for the vote...
-      // Set<ServerLocator> currentNodes = new HashSet(nodes.entrySet());
       final int size = nodes.size();
       Set<ServerLocator> locatorsList = new HashSet<ServerLocator>(size);
       AtomicInteger pingCount = new AtomicInteger(0);
@@ -104,7 +105,7 @@ public final class QuorumManager implements ClusterTopologyListener
          }
          try
          {
-            latch.await();
+            latch.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
          }
          catch (InterruptedException interruption)
          {
@@ -163,8 +164,8 @@ public final class QuorumManager implements ClusterTopologyListener
          finally
          {
             latch.countDown();
+            locator.close();
          }
       }
-
    }
 }
