@@ -143,7 +143,7 @@ public class ClientCrashTest extends ClientTestBase
       Assert.assertNotNull("no message received", messageFromClient);
       Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
-      assertEquals(1, messageFromClient.getDeliveryCount());
+      assertEquals(2, messageFromClient.getDeliveryCount());
       
       session.close();
 
