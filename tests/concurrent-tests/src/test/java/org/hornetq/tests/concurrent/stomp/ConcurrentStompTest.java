@@ -34,33 +34,31 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.tests.integration.stomp.StompTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
-public class ConcurrentStompTest extends UnitTestCase
+public class ConcurrentStompTest extends StompTestBase
 {
-   private final int port = 61613;
-
-   private Socket stompSocket;
-
-   private ByteArrayOutputStream inputBuffer;
-
    private Socket stompSocket_2;
 
    private ByteArrayOutputStream inputBuffer_2;
-
-   private HornetQServer server;
 
    /**
     * Send messages on 1 socket and receives them concurrently on another socket.
     */
    public void testSendManyMessages() throws Exception
    {
+      try
+      {
       String connect = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
 
-      sendFrame(stompSocket, connect);
-      String connected = receiveFrame(stompSocket, inputBuffer, 10000);
+      sendFrame(connect);
+      String connected = receiveFrame(10000);
       Assert.assertTrue(connected.startsWith("CONNECTED"));
 
+      stompSocket_2 = createSocket();
+      inputBuffer_2 = new ByteArrayOutputStream();
+      
       sendFrame(stompSocket_2, connect);
       connected = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
       Assert.assertTrue(connected.startsWith("CONNECTED"));
@@ -70,7 +68,7 @@ public class ConcurrentStompTest extends UnitTestCase
 
       String subscribe =
          "SUBSCRIBE\n" +
-         "destination:" + getQueueName() + "\n" +
+         "destination:" + getQueuePrefix() + getQueueName() + "\n" +
          "ack:auto\n\n" +
          Stomp.NULL;
       sendFrame(stompSocket_2, subscribe);
@@ -100,89 +98,41 @@ public class ConcurrentStompTest extends UnitTestCase
          };
       }.start();
 
-      String send = "SEND\n" + "destination:" + getQueueName() + "\n";
+      String send = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n";
       for (int i = 1; i <= count; i++)
       {
          // Thread.sleep(1);
          System.out.println(">>> " + i);
-         sendFrame(stompSocket, send + "count:" + i + "\n\n" + Stomp.NULL);
+         sendFrame(send + "count:" + i + "\n\n" + Stomp.NULL);
       }
 
       assertTrue(latch.await(60, TimeUnit.SECONDS));
+      
+      }
+      finally
+      {
+         stompSocket_2.close();
+         inputBuffer_2.close();
+      }
+      
+      
 
    }
 
    // Implementation methods
    // -------------------------------------------------------------------------
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      server = createServer();
-      server.start();
-
-      stompSocket = createSocket();
-      inputBuffer = new ByteArrayOutputStream();
-      stompSocket_2 = createSocket();
-      inputBuffer_2 = new ByteArrayOutputStream();
-
-   }
-
-   private HornetQServer createServer() throws Exception
-   {
-      Configuration config = createBasicConfig();
-      config.setSecurityEnabled(false);
-      config.setPersistenceEnabled(false);
-
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
-      params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
-      TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
-      config.getAcceptorConfigurations().add(stompTransport);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      config.getQueueConfigurations().add(new CoreQueueConfiguration(getQueueName(), getQueueName(), null, false));
-      return addServer(HornetQServers.newHornetQServer(config));
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (stompSocket != null)
-      {
-         stompSocket.close();
-      }
-
-      if (stompSocket_2 != null)
-      {
-         stompSocket_2.close();
-      }
-
-      super.tearDown();
-   }
-
-   protected Socket createSocket() throws IOException
-   {
-      return new Socket("127.0.0.1", port);
-   }
-
-   protected String getQueueName()
-   {
-      return "test";
-   }
-
    public void sendFrame(Socket socket, String data) throws Exception
    {
       byte[] bytes = data.getBytes("UTF-8");
       OutputStream outputStream = socket.getOutputStream();
-      for (byte b : bytes)
+      for (int i = 0; i < bytes.length; i++)
       {
-         outputStream.write(b);
+         outputStream.write(bytes[i]);
       }
       outputStream.flush();
    }
-
-   public String receiveFrame(Socket socket, ByteArrayOutputStream inputBuffer, long timeOut) throws Exception
+   
+   public String receiveFrame(Socket socket, ByteArrayOutputStream input, long timeOut) throws Exception
    {
       socket.setSoTimeout((int)timeOut);
       InputStream is = socket.getInputStream();
@@ -199,18 +149,19 @@ public class ConcurrentStompTest extends UnitTestCase
             c = is.read();
             if (c != '\n')
             {
-               byte[] ba = inputBuffer.toByteArray();
+               byte[] ba = input.toByteArray();
                System.out.println(new String(ba, "UTF-8"));
             }
             Assert.assertEquals("Expecting stomp frame to terminate with \0\n", c, '\n');
-            byte[] ba = inputBuffer.toByteArray();
-            inputBuffer.reset();
+            byte[] ba = input.toByteArray();
+            input.reset();
             return new String(ba, "UTF-8");
          }
          else
          {
-            inputBuffer.write(c);
+            input.write(c);
          }
       }
    }
+
 }
