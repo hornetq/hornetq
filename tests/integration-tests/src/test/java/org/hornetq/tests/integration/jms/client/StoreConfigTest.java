@@ -79,7 +79,7 @@ public class StoreConfigTest extends JMSTestBase
          jmsServer.addConnectionFactoryToJNDI("np", "/someCF");
          fail("Failure expected and the API let duplicates");
       }
-      catch (HornetQException expected)
+      catch (NamingException expected)
       {
          // expected
       }
@@ -107,7 +107,7 @@ public class StoreConfigTest extends JMSTestBase
          jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
          fail("Failure expected and the API let duplicates");
       }
-      catch (HornetQException expected)
+      catch (NamingException expected)
       {
         // expected
       }
