@@ -291,7 +291,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          try
          {
-            rollback(false);
+            rollback(failed, false);
          }
          catch (Exception e)
          {
@@ -633,7 +633,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public synchronized void rollback(final boolean considerLastMessageAsDelivered) throws Exception
+   public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
+   {
+	   rollback(false, considerLastMessageAsDelivered);
+   }
+
+   /**
+    * 
+    * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
+    * @param considerLastMessageAsDelivered
+    * @throws Exception
+    */
+   private synchronized void rollback(final boolean clientFailed, final boolean considerLastMessageAsDelivered) throws Exception
    {
       if (tx == null)
       {
@@ -642,7 +653,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
 
-      doRollback(considerLastMessageAsDelivered, tx);
+      doRollback(clientFailed, considerLastMessageAsDelivered, tx);
 
       if (xa)
       {
@@ -871,7 +882,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else
             {
-               doRollback(false, theTx);
+               doRollback(false, false, theTx);
             }
          }
       }
@@ -1367,7 +1378,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
+   private void doRollback(final boolean clientFailed, final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
    {
       boolean wasStarted = started;
 
@@ -1380,7 +1391,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             consumer.setStarted(false);
          }
 
-         toCancel.addAll(consumer.cancelRefs(false, lastMessageAsDelived, theTx));
+         toCancel.addAll(consumer.cancelRefs(clientFailed, lastMessageAsDelived, theTx));
       }
 
       for (MessageReference ref : toCancel)
