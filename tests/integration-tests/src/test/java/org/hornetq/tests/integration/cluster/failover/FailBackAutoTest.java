@@ -159,17 +159,14 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      CountDownLatch latch = new CountDownLatch(1);
-
+      
       ClientSession session = sendAndConsume(sf, true);
 
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
-      liveServer.crash();
-
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      liveServer.crash(session);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -279,7 +276,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       if (createQueue)
       {
-          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
+          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
