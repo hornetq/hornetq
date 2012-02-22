@@ -209,7 +209,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       session.stop();
 
       // if strictUpdate == true, this will simulate a crash, where the server is stopped without closing/rolling back
-      // the session
+      // the session, but the delivery count still persisted, so the final delivery count is 2 too.
       if (!strictUpdate)
       {
          // If non Strict, at least rollback/cancel should still update the delivery-counts
@@ -233,7 +233,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(1000);
       Assert.assertNotNull(msg);
-      Assert.assertEquals(strictUpdate ? 1 : 2, msg.getDeliveryCount());
+      Assert.assertEquals(strictUpdate ? 2 : 2, msg.getDeliveryCount());
       session.close();
    }
 
