@@ -111,10 +111,6 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 	LockClass lock(&pollerMutex);
 	pollerRunning=1;
 
-	struct timespec oneSecond;
-	oneSecond.tv_sec = 1;
-	oneSecond.tv_nsec = 0;
-
 
 	while (pollerRunning)
 	{
