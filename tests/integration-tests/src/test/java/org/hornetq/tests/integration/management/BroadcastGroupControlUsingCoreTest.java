@@ -13,15 +13,11 @@
 
 package org.hornetq.tests.integration.management;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
 /**
  * A BroadcastGroupControlUsingCoreTest
@@ -33,24 +29,12 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   private ClientSession session;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // BroadcastGroupControlTest overrides --------------------------------
-
    @Override
    protected BroadcastGroupControl createManagementControl(final String name) throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      ClientSessionFactory sf = locator.createSessionFactory();
-      session = sf.createSession(false, true, true);
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      final ClientSession session = addClientSession(sf.createSession(false, true, true));
       session.start();
 
       return new BroadcastGroupControl()
@@ -109,28 +93,4 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
          }
       };
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (session != null)
-      {
-         session.close();
-      }
-
-      session = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

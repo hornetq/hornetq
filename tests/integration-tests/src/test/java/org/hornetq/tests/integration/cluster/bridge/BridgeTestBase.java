@@ -21,7 +21,6 @@ import javax.management.MBeanServer;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
@@ -81,15 +80,13 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                     org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + id);
-         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                                                                                params));
+         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       }
       else
       {
          params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, id);
-         serviceConf.getAcceptorConfigurations()
-                    .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
+         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params));
       }
       HornetQServer service;
       if(nodeManager == null)
@@ -129,15 +126,13 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                     org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + id);
-         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                                                                                params));
+         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       }
       else
       {
          params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, id);
-         serviceConf.getAcceptorConfigurations()
-                    .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
+         serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params));
       }
       HornetQServer service;
       if(nodeManager == null)
