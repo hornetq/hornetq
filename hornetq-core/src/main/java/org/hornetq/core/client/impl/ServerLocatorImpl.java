@@ -729,6 +729,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             retry = false;
 
             TransportConfiguration tc = selectConnector();
+            if (tc == null)
+            {
+               throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                          "Couldn't select a TransportConfiguration to create SessionFactory");
+            }
 
             // try each factory in the list until we find one which works
 
