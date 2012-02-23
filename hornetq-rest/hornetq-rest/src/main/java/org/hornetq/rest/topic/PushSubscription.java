@@ -46,7 +46,8 @@ public class PushSubscription extends PushConsumer
       {
          try
          {
-            session.close();
+            if (session != null)
+               session.close();
          }
          catch (HornetQException e)
          {
