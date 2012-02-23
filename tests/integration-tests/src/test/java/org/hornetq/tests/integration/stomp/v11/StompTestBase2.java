@@ -55,7 +55,7 @@ public abstract class StompTestBase2 extends UnitTestCase
    private static final transient Logger log = Logger.getLogger(StompTestBase2.class);
 
    protected String hostname = "127.0.0.1";
-   
+
    protected int port = 61613;
 
    private ConnectionFactory connectionFactory;
@@ -69,15 +69,16 @@ public abstract class StompTestBase2 extends UnitTestCase
    protected Topic topic;
 
    protected JMSServerManager server;
-   
+
    protected String defUser = "brianm";
-   
+
    protected String defPass = "wombats";
-   
+
    protected boolean persistenceEnabled = false;
 
    // Implementation methods
    // -------------------------------------------------------------------------
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -95,14 +96,14 @@ public abstract class StompTestBase2 extends UnitTestCase
 
    /**
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
    protected JMSServerManager createServer() throws Exception
    {
       Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
       config.setPersistenceEnabled(persistenceEnabled);
-      
+
       System.out.println("-----------------server persist: " + persistenceEnabled);
 
       Map<String, Object> params = new HashMap<String, Object>();
@@ -111,7 +112,7 @@ public abstract class StompTestBase2 extends UnitTestCase
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer hornetQServer = HornetQServers.newHornetQServer(config, defUser, defPass);
+      HornetQServer hornetQServer = addServer(HornetQServers.newHornetQServer(config, defUser, defPass));
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
@@ -122,13 +123,20 @@ public abstract class StompTestBase2 extends UnitTestCase
       return server;
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
-      connection.close();
-
-      server.stop();
-
-      super.tearDown();
+      try
+      {
+         if (connection != null)
+            connection.close();
+         if (server != null)
+            server.stop();
+      }
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    protected ConnectionFactory createConnectionFactory()

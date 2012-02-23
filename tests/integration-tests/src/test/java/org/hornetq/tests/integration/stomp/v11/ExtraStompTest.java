@@ -10,15 +10,11 @@ import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
 public class ExtraStompTest extends StompTestBase2
 {
    
+   @Override
    protected void setUp() throws Exception
    {
       persistenceEnabled = true;
       super.setUp();
-   }
-   
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
    }
 
    public void testSendAndReceive10() throws Exception
