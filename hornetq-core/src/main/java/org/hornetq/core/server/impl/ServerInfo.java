@@ -62,14 +62,14 @@ public class ServerInfo
       ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
       StringBuilder info = new StringBuilder("\n**** Server Dump ****\n");
-      info.append(String.format("date:            %s\n", new Date()));
-      info.append(String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory)));
-      info.append(String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory)));
-      info.append(String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory)));
-      info.append(String.format("available memory: %.2f%%\n", availableMemoryPercent));
+      info.append(String.format("date:            %s%n", new Date()));
+      info.append(String.format("free memory:      %s%n", SizeFormatterUtil.sizeof(freeMemory)));
+      info.append(String.format("max memory:       %s%n", SizeFormatterUtil.sizeof(maxMemory)));
+      info.append(String.format("total memory:     %s%n", SizeFormatterUtil.sizeof(totalMemory)));
+      info.append(String.format("available memory: %.2f%%%n", availableMemoryPercent));
       info.append(appendPagingInfos());
-      info.append(String.format("# of thread:     %d\n", threadMXBean.getThreadCount()));
-      info.append(String.format("# of conns:      %d\n", server.getConnectionCount()));
+      info.append(String.format("# of thread:     %d%n", threadMXBean.getThreadCount()));
+      info.append(String.format("# of conns:      %d%n", server.getConnectionCount()));
       info.append("********************\n");
       return info.toString();
    }
@@ -84,14 +84,14 @@ public class ServerInfo
          try
          {
             pageStore = pagingManager.getPageStore(storeName);
-            info.append(String.format("\t%s: %s\n",
+            info.append(String.format("\t%s: %s%n",
                                   storeName,
                                       SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() *
                                                pageStore.getNumberOfPages())));
          }
          catch (Exception e)
          {
-            info.append(String.format("\t%s: %s\n", storeName, e.getMessage()));
+            info.append(String.format("\t%s: %s%n", storeName, e.getMessage()));
          }
       }
       return info.toString();
