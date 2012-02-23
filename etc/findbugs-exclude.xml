@@ -14,6 +14,7 @@
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
 
+  <!-- Comparison is correct within its context -->
   <Match>
     <Class name="org.hornetq.ra.Util"/>
     <Or>
@@ -41,6 +42,9 @@
     <Or>
       <Method name="getFloatProperty"/>
       <Method name="getDoubleProperty"/>
+      <Method name="getByteProperty"/>
+      <Method name="getIntProperty"/>
+      <Method name="getShortProperty"/>
     </Or>
     <Bug pattern="NP_NULL_PARAM_DEREF_NONVIRTUAL"/>
   </Match>
