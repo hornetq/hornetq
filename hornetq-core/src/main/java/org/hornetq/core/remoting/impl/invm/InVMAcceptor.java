@@ -20,7 +20,6 @@ import java.util.concurrent.Executor;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
@@ -37,18 +36,16 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * A InVMAcceptor
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InVMAcceptor implements Acceptor
+public final class InVMAcceptor implements Acceptor
 {
-   private static final Logger log = Logger.getLogger(InVMAcceptor.class);
-
    private final int id;
 
    private final BufferHandler handler;
-   
+
    private final ConnectionLifeCycleListener listener;
 
    private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
@@ -56,36 +53,36 @@ public class InVMAcceptor implements Acceptor
    private volatile boolean started;
 
    private final ExecutorFactory executorFactory;
-   
+
    private final ClusterConnection clusterConnection;
 
    private boolean paused;
 
    private NotificationService notificationService;
-   
+
    private final Map<String, Object> configuration;
 
    private HornetQPrincipal defaultHornetQPrincipal;
 
    public InVMAcceptor(final ClusterConnection clusterConnection,
                        final Map<String, Object> configuration,
-                       final BufferHandler handler,                       
+                       final BufferHandler handler,
                        final ConnectionLifeCycleListener listener,
                        final Executor threadPool)
    {
       this.clusterConnection = clusterConnection;
-      
+
       this.configuration = configuration;
-      
+
       this.handler = handler;
-      
+
       this.listener = listener;
 
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       executorFactory = new OrderedExecutorFactory(threadPool);
    }
-   
+
    public Map<String, Object> getConfiguration()
    {
       return configuration;
@@ -95,7 +92,7 @@ public class InVMAcceptor implements Acceptor
    {
       return clusterConnection;
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -248,7 +245,7 @@ public class InVMAcceptor implements Acceptor
    private class Listener implements ConnectionLifeCycleListener
    {
       //private static Listener instance = new Listener();
-      
+
       private final InVMConnector connector;
 
       Listener(final InVMConnector connector)
@@ -269,10 +266,10 @@ public class InVMAcceptor implements Acceptor
       public void connectionDestroyed(final Object connectionID)
       {
          InVMConnection connection = (InVMConnection)connections.remove(connectionID);
-         
+
          if (connection != null)
          {
- 
+
             listener.connectionDestroyed(connectionID);
 
               // Execute on different thread after all the packets are sent, to avoid deadlocks

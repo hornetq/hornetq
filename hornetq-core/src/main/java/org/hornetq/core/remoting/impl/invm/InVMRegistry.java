@@ -15,18 +15,14 @@ package org.hornetq.core.remoting.impl.invm;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * A InVMRegistry
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InVMRegistry
+public final class InVMRegistry
 {
-   private static final Logger log = Logger.getLogger(InVMRegistry.class);
-
    public static final InVMRegistry instance = new InVMRegistry();
 
    private final ConcurrentMap<Integer, InVMAcceptor> acceptors = new ConcurrentHashMap<Integer, InVMAcceptor>();
