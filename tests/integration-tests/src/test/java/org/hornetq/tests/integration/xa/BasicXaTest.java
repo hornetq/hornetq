@@ -94,12 +94,7 @@ public class BasicXaTest extends ServiceTestBase
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory factory = createSessionFactory(locator);
 
-      ClientSession session = null;
-
-      try
-      {
-
-         session = factory.createSession(true, false, false);
+      ClientSession session = addClientSession(factory.createSession(true, false, false));
 
          session.createQueue("Test", "Test");
 
@@ -112,13 +107,6 @@ public class BasicXaTest extends ServiceTestBase
          ClientConsumer cons = session.createConsumer("Test");
 
          assertNotNull("Send went through an invalid XA Session", cons.receiveImmediate());
-      }
-      finally
-      {
-         factory.close();
-
-         session.close();
-      }
    }
 
 
@@ -129,12 +117,7 @@ public class BasicXaTest extends ServiceTestBase
 
       ClientSessionFactory factory = createSessionFactory(locator);
 
-      ClientSession session = null;
-
-      try
-      {
-
-         session = factory.createSession(false, true, true);
+      ClientSession session = addClientSession(factory.createSession(false, true, true));
 
          session.createQueue("Test", "Test");
 
@@ -144,7 +127,7 @@ public class BasicXaTest extends ServiceTestBase
 
          session.close();
 
-         session = factory.createSession(true, false, false);
+      session = addClientSession(factory.createSession(true, false, false));
 
          session.start();
 
@@ -159,7 +142,7 @@ public class BasicXaTest extends ServiceTestBase
          session.close();
 
 
-         session = factory.createSession(false, false, false);
+      session = addClientSession(factory.createSession(false, false, false));
 
          session.start();
 
@@ -168,14 +151,6 @@ public class BasicXaTest extends ServiceTestBase
          msg = cons.receiveImmediate();
 
          assertNull("Acknowledge went through invalid XA Session", msg);
-
-
-
-      }
-      finally
-      {
-         session.close();
-      }
    }
 
 

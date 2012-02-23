@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -42,19 +41,9 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class BridgeTestBase extends UnitTestCase
 {
 
-   private ArrayList<HornetQServer> servers;
-
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      servers = new ArrayList<HornetQServer>();
-   }
-
    @Override
    public void tearDown() throws Exception
    {
-      servers = null;
       InVMConnector.failOnCreateConnection = false;
 
       super.tearDown();
@@ -112,7 +101,6 @@ public abstract class BridgeTestBase extends UnitTestCase
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
       addServer(service);
-      servers.add(service);
 
       return service;
    }
@@ -161,7 +149,6 @@ public abstract class BridgeTestBase extends UnitTestCase
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
       addServer(service);
-      servers.add(service);
 
       return service;
    }
