@@ -711,6 +711,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    // Inner classes ---------------------------------------------------------------------
 
+   /**
+    * Explicitly adding a compare to clause that returns 0 for at least the same object.
+    * <p>
+    * If {@link Comparable#compareTo(Object)} does not return 0 -for at least the same object- some
+    * Collection classes methods will fail (example {@link PriorityQueue#remove(Object)}. If it
+    * returns 0, then {@link #equals(Object)} must return {@code true} for the exact same cases,
+    * otherwise we will get compatibility problems between Java5 and Java6.
+    */
    private static class CallbackHolder implements Comparable<CallbackHolder>
    {
       final long sequence;
@@ -731,6 +739,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
       public int compareTo(final CallbackHolder o)
       {
          // It shouldn't be equals in any case
+         if (this == o)
+            return 0;
          if (sequence <= o.sequence)
          {
             return -1;
@@ -740,9 +750,27 @@ public class AsynchronousFileImpl implements AsynchronousFile
             return 1;
          }
       }
+
+      /**
+       * See {@link CallbackHolder}.
+       */
+      @Override
+      public int hashCode()
+      {
+         return super.hashCode();
+      }
+
+      /**
+       * See {@link CallbackHolder}.
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         return super.equals(obj);
+      }
    }
 
-   private static class ErrorCallback extends CallbackHolder
+   private static final class ErrorCallback extends CallbackHolder
    {
       final int errorCode;
 
