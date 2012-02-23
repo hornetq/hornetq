@@ -36,7 +36,7 @@ import org.hornetq.api.core.SimpleString;
 * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 * @version $Revision: 2681 $
 */
-public class Operator
+public final class Operator
 {
    int operation;
 
@@ -1293,9 +1293,9 @@ public class Operator
             return in();
          case NOT_IN:
             return not_in();
+         default:
+            throw new IllegalArgumentException("No operation mapped to int " + operation);
       }
-
-      throw new Exception("Unknown operation: " + toString());
    }
 
    public void throwBadObjectException(final Class class1) throws Exception

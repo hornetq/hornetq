@@ -19,19 +19,24 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A UTF8Util
- * 
+ *
  * This class will write UTFs directly to the ByteOutput (through the MessageBuffer interface)
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 20, 2009 1:37:18 PM
  *
  *
  */
-public class UTF8Util
+public final class UTF8Util
 {
+   private UTF8Util()
+   {
+      // utility class
+   }
+
    static boolean optimizeStrings = true;
 
    private static final Logger log = Logger.getLogger(UTF8Util.class);
@@ -100,7 +105,6 @@ public class UTF8Util
             {
                buffer.byteBuffer[charCount++] = (byte)(0xC0 | charAtPos >> 6 & 0x1F);
                buffer.byteBuffer[charCount++] = (byte)(0x80 | charAtPos >> 0 & 0x3F);
-
             }
          }
          out.writeBytes(buffer.byteBuffer, 0, len);
@@ -158,6 +162,8 @@ public class UTF8Util
                   byte3 = buffer.byteBuffer[count++];
                   buffer.charBuffer[charCount++] = (char)((c & 0x0F) << 12 | (byte2 & 0x3F) << 6 | (byte3 & 0x3F) << 0);
                   break;
+               default:
+                  throw new InternalError("unhandled utf8 byte " + c);
             }
          }
       }
