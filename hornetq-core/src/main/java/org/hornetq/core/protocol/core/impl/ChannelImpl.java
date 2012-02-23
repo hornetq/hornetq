@@ -36,7 +36,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ChannelImpl implements Channel
+public final class ChannelImpl implements Channel
 {
    public enum CHANNEL_ID {
 
@@ -293,7 +293,10 @@ public class ChannelImpl implements Channel
                   }
                   else
                   {
-                     failoverCondition.await(connection.getBlockingCallFailoverTimeout(), TimeUnit.MILLISECONDS);
+                     if (!failoverCondition.await(connection.getBlockingCallFailoverTimeout(), TimeUnit.MILLISECONDS))
+                     {
+                        log.debug("timed-out waiting for failover condition");
+                     }
                   }
                }
                catch (InterruptedException e)
