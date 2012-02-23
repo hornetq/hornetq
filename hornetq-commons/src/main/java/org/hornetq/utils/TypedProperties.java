@@ -180,7 +180,7 @@ public final class TypedProperties
       }
       else if (value instanceof SimpleString)
       {
-         return Boolean.valueOf(((SimpleString)value).toString()).booleanValue();
+         return Boolean.valueOf(((SimpleString)value).toString());
       }
       else
       {
@@ -219,7 +219,7 @@ public final class TypedProperties
 
       if (value instanceof Character)
       {
-         return ((Character)value).charValue();
+         return ((Character)value);
       }
       else
       {
@@ -363,7 +363,7 @@ public final class TypedProperties
          return Float.valueOf(null);
       if (value instanceof Float)
       {
-         return ((Float)value).floatValue();
+         return ((Float)value);
       }
       if (value instanceof SimpleString)
       {
