@@ -52,7 +52,12 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       createProducerSendSomeMessages();
       startBackupFinishSyncing();
       receiveMsgsInRange(0, n_msgs / 2);
-      backupServer.stop();
+      int j = 0;
+      while (getAllMessageFileIds(dir).size() != n_msgs / 2 && j < 20)
+      {
+         Thread.sleep(50);
+         j++;
+      }
       assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
    }
 

@@ -57,6 +57,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -136,6 +137,7 @@ public abstract class UnitTestCase extends TestCase
    private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
    private final Collection<ClientSession> clientSessions = new HashSet<ClientSession>();
    private final Collection<ClientConsumer> clientConsumers = new HashSet<ClientConsumer>();
+   private final Collection<ClientProducer> clientProducers = new HashSet<ClientProducer>();
    private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
 
    private boolean checkThread = true;
@@ -947,6 +949,7 @@ public abstract class UnitTestCase extends TestCase
       try
       {
       assertAllClientConsumersAreClosed();
+         assertAllClientProducersAreClosed();
       assertAllClientSessionsAreClosed();
       }
       finally
@@ -1087,6 +1090,18 @@ public abstract class UnitTestCase extends TestCase
    }
    }
 
+   private void assertAllClientProducersAreClosed()
+   {
+      synchronized (clientProducers)
+      {
+         for (ClientProducer p : clientProducers)
+         {
+               assertTrue(p + " should be closed", p.isClosed());
+         }
+         clientProducers.clear();
+      }
+   }
+
    /**
     *
     */
@@ -1140,10 +1155,7 @@ public abstract class UnitTestCase extends TestCase
       return failedThread;
    }
 
-   /**
-    *
-    */
-   protected void cleanupPools()
+   private void cleanupPools()
    {
       OperationContextImpl.clearContext();
 
@@ -1584,6 +1596,18 @@ public abstract class UnitTestCase extends TestCase
          synchronized (clientConsumers)
          {
             clientConsumers.add(consumer);
+         }
+      }
+      return consumer;
+   }
+
+   protected final ClientProducer addClientProducer(ClientProducer consumer)
+   {
+      if (consumer != null)
+      {
+         synchronized (clientProducers)
+         {
+            clientProducers.add(consumer);
          }
       }
       return consumer;

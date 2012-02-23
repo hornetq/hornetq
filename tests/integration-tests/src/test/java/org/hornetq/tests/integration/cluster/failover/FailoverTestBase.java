@@ -268,13 +268,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
 	protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
 	        throws Exception
 	{
-		ClientSessionFactoryInternal sf;
 		CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
 		locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
-		sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 		addSessionFactory(sf);
+
 		assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
 		return sf;
 	}

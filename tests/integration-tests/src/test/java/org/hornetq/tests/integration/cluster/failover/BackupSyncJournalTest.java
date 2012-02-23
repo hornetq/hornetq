@@ -25,7 +25,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    private static final int BACKUP_WAIT_TIME = 20;
    private ServerLocatorInternal locator;
    protected ClientSessionFactoryInternal sessionFactory;
-   private ClientSession session;
+   protected ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;
    protected int n_msgs = 20;
@@ -171,9 +171,11 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    protected void createProducerSendSomeMessages() throws HornetQException, Exception
    {
-      session = sessionFactory.createSession(true, true);
+      session = addClientSession(sessionFactory.createSession(true, true));
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
-      producer = session.createProducer(FailoverTestBase.ADDRESS);
+      if (producer != null)
+         producer.close();
+      producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
       sendMessages(session, producer, n_msgs);
       session.commit();
    }
@@ -181,7 +183,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    protected void receiveMsgsInRange(int start, int end) throws HornetQException
    {
       session.start();
-      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
       receiveMessages(consumer, start, end, true);
       consumer.close();
       session.commit();
@@ -222,16 +224,6 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       JournalStorageManager sm = (JournalStorageManager)server.getServer().getStorageManager();
       return (JournalImpl)sm.getMessageJournal();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (session != null)
-         session.close();
-      if (producer != null)
-         producer.close();
-      super.tearDown();
    }
 
    @Override
