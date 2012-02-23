@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal.impl;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -2953,8 +2954,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    }
 
-   private static class JournalFileComparator implements Comparator<JournalFile>
+   private static class JournalFileComparator implements Comparator<JournalFile>, Serializable
    {
+      private static final long serialVersionUID = -6264728973604070321L;
+
       public int compare(final JournalFile f1, final JournalFile f2)
       {
          long id1 = f1.getFileID();
