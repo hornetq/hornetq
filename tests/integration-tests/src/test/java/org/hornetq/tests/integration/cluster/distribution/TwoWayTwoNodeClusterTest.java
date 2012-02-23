@@ -49,6 +49,22 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       setupClusterConnection("cluster1", 1, 0, "queues", false, 1, isNetty(), false);
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      log.info("#test tearDown");
+      closeAllConsumers();
+
+      closeAllSessionFactories();
+
+      closeAllServerLocatorsFactories();
+
+      stopServers(0, 1);
+
+      super.tearDown();
+   }
+
+
    protected boolean isNetty()
    {
       return false;
@@ -130,11 +146,11 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
             log.info("#stop #test #" + i);
             stopServers(1);
 
-            waitForTopology(servers[0], 1, 2000);
+            waitForTopology(servers[0], 1, -1, 2000);
             log.info("#start #test #" + i);
             startServers(1);
-            waitForTopology(servers[0], 2, 2000);
-            waitForTopology(servers[1], 2, 2000);
+            waitForTopology(servers[0], 2, -1, 2000);
+            waitForTopology(servers[1], 2, -1, 2000);
          }
       }
       finally
