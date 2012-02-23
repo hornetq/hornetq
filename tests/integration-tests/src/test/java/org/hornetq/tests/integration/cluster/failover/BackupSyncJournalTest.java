@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -62,11 +63,13 @@ public class BackupSyncJournalTest extends FailoverTestBase
          messageJournal.forceMoveNextFile();
          sendMessages(session, producer, n_msgs);
       }
+      Set<Pair<Long, Integer>> preSyncFileIDs = getFileIds(messageJournal);
 
       backupServer.start();
 
       // Deliver messages with Backup in-sync
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
+      final JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       sendMessages(session, producer, n_msgs);
 
       // Deliver messages with Backup up-to-date
@@ -75,7 +78,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, n_msgs);
 
-      Set<Long> liveIds = getFileIds(messageJournal);
+      Set<Pair<Long, Integer>> liveIds = getFileIds(messageJournal);
       int size = messageJournal.getFileSize();
       PagingStore ps = liveServer.getServer().getPagingManager().getPageStore(ADDRESS);
       if (ps.getPageSizeBytes() == PAGE_SIZE)
@@ -85,11 +88,25 @@ public class BackupSyncJournalTest extends FailoverTestBase
       }
       finishSyncAndFailover();
 
-      JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
-
       assertEquals("file sizes must be the same", size, backupMsgJournal.getFileSize());
-      Set<Long> backupIds = getFileIds(backupMsgJournal);
-      assertEquals("File IDs must match!", liveIds, backupIds);
+      Set<Pair<Long, Integer>> backupIds = getFileIds(backupMsgJournal);
+
+      for (Pair<Long, Integer> pair : preSyncFileIDs)
+      {
+         assertTrue("sanity check", liveIds.remove(pair));
+         assertTrue("backup must have the same file " + pair, backupIds.remove(pair));
+      }
+      int total = 0;
+      for (Pair<Long, Integer> pair : liveIds)
+      {
+         total += pair.getB();
+      }
+      int totalBackup = 0;
+      for (Pair<Long, Integer> pair : backupIds)
+      {
+         totalBackup += pair.getB();
+      }
+      assertEquals("number of records must match ", total, totalBackup);
 
       // "+ 2": there two other calls that send N_MSGS.
       for (int i = 0; i < totalRounds + 3; i++)
@@ -210,14 +227,24 @@ public class BackupSyncJournalTest extends FailoverTestBase
       }
    }
 
-   private Set<Long> getFileIds(JournalImpl journal)
+   private Set<Pair<Long, Integer>> getFileIds(JournalImpl journal)
    {
-      Set<Long> results = new HashSet<Long>();
+      Set<Pair<Long, Integer>> results = new HashSet<Pair<Long, Integer>>();
       for (JournalFile jf : journal.getDataFiles())
       {
-         results.add(Long.valueOf(jf.getFileID()));
+         results.add(getPair(jf));
       }
+      results.add(getPair(journal.getCurrentFile()));
       return results;
+   }
+
+   /**
+    * @param jf
+    * @return
+    */
+   private Pair<Long, Integer> getPair(JournalFile jf)
+   {
+      return new Pair<Long, Integer>(jf.getFileID(), jf.getPosCount());
    }
 
    static JournalImpl getMessageJournalFromServer(TestableServer server)

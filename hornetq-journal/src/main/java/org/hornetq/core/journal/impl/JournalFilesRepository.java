@@ -83,7 +83,7 @@ public class JournalFilesRepository
 
    private Executor openFilesExecutor;
    
-   private Runnable pushOpenRunnable = new Runnable()
+   private final Runnable pushOpenRunnable = new Runnable()
    {
       public void run()
       {
