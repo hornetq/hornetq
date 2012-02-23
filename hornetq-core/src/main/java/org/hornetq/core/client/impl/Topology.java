@@ -485,18 +485,17 @@ public class Topology implements Serializable
 
    public synchronized String describe(final String text)
    {
-
-      String desc = text + "topology on " + this + ":\n";
+      StringBuilder desc = new StringBuilder(text + "topology on " + this + ":\n");
       for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(topology).entrySet())
       {
-         desc += "\t" + entry.getKey() + " => " + entry.getValue() + "\n";
+         desc.append("\t" + entry.getKey() + " => " + entry.getValue() + "\n");
       }
-      desc += "\t" + "nodes=" + nodes() + "\t" + "members=" + members();
+      desc.append("\t" + "nodes=" + nodes() + "\t" + "members=" + members());
       if (topology.isEmpty())
       {
-         desc += "\tEmpty";
+         desc.append("\tEmpty");
       }
-      return desc;
+      return desc.toString();
    }
 
    public int members()
