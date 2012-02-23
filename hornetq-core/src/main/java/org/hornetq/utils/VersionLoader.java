@@ -15,6 +15,8 @@ package org.hornetq.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
@@ -89,7 +91,18 @@ public class VersionLoader
 
       return VersionLoader.version;
    }
-
+   
+   public static String getClasspathString() {
+      StringBuffer classpath = new StringBuffer();
+      ClassLoader applicationClassLoader = VersionImpl.class.getClassLoader();
+      URL[] urls = ((URLClassLoader)applicationClassLoader).getURLs();
+       for(int i=0; i < urls.length; i++) {
+           classpath.append(urls[i].getFile()).append("\r\n");
+       }    
+      
+       return classpath.toString();
+   }
+   
    private static Version load()
    {
       Properties versionProps = new Properties();
@@ -98,6 +111,7 @@ public class VersionLoader
       {
          if (in == null)
          {
+            log.warn("Classpath: " + getClasspathString());
             throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
          }
          try
