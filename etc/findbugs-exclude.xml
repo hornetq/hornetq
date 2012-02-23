@@ -15,6 +15,18 @@
   </Match>
 
   <Match>
+    <Class name="org.hornetq.ra.Util"/>
+    <Or>
+      <Method name="compare" params="java.lang.Integer,java.lang.Integer" returns="boolean"/>
+      <Method name="compare" params="java.lang.Long,java.lang.Long" returns="boolean"/>
+      <Method name="compare" params="java.lang.String,java.lang.String" returns="boolean"/>
+      <Method name="compare" params="java.lang.Boolean,java.lang.Boolean" returns="boolean"/>
+      <Method name="compare" params="java.lang.Double,java.lang.Double" returns="boolean"/>
+    </Or>
+    <Bug pattern="RC_REF_COMPARISON"/>
+  </Match>
+
+  <Match>
     <!-- As per Java Messaging Specification 3.5.4:
 
          "
