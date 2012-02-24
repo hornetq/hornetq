@@ -259,6 +259,8 @@ public class PagingTest extends ServiceTestBase
             Thread.sleep(100);
         }
         assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
+        
+        server.stop();
     }
 
    public void testPreparePersistent() throws Exception
