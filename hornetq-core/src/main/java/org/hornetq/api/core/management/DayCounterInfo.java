@@ -15,7 +15,6 @@ package org.hornetq.api.core.management;
 
 import java.util.Arrays;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONException;
 import org.hornetq.utils.json.JSONObject;
@@ -23,16 +22,11 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * Helper class to create Java Objects from the
  * JSON serialization returned by {@link QueueControl#listMessageCounterHistory()}.
- * 
+ *
  *  @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class DayCounterInfo
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(DayCounterInfo.class);
-
-   // Attributes ----------------------------------------------------
 
    private final String date;
 
