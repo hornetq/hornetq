@@ -1298,7 +1298,7 @@ public final class Operator
       }
    }
 
-   public void throwBadObjectException(final Class class1) throws Exception
+   public void throwBadObjectException(final Class<?> class1) throws Exception
    {
       throw new Exception("Bad Object: '" + class1.getName() + "' for operation: " + toString());
    }
@@ -1319,103 +1319,75 @@ public final class Operator
 
    static String getClassName(final int class1)
    {
-      String str = "Unknown";
       switch (class1)
       {
          case SIMPLE_STRING:
-            str = "SimpleString";
-            break;
+            return "SimpleString";
          case LONG:
-            str = "Long";
-            break;
+            return "Long";
          case DOUBLE:
-            str = "Double";
-            break;
+            return "Double";
          case BOOLEAN:
-            str = "Boolean";
-            break;
+            return "Boolean";
+         default:
+            return "Unknown";
       }
-      return str;
    }
 
    static String operationString(final int operation)
    {
-      String str = "Unknown";
       switch (operation)
       {
          case EQUAL:
-            str = "EQUAL";
-            break;
+            return "EQUAL";
          case NOT:
-            str = "NOT";
-            break;
+            return "NOT";
          case AND:
-            str = "AND";
-            break;
+            return "AND";
          case OR:
-            str = "OR";
-            break;
+            return "OR";
          case GT:
-            str = "GT";
-            break;
+            return "GT";
          case GE:
-            str = "GE";
-            break;
+            return "GE";
          case LT:
-            str = "LT";
-            break;
+            return "LT";
          case LE:
-            str = "LE";
-            break;
+            return "LE";
          case DIFFERENT:
-            str = "DIFFERENT";
-            break;
+            return "DIFFERENT";
          case ADD:
-            str = "ADD";
-            break;
+            return "ADD";
          case SUB:
-            str = "SUB";
-            break;
+            return "SUB";
          case NEG:
-            str = "NEG";
-            break;
+            return "NEG";
          case MUL:
-            str = "MUL";
-            break;
+            return "MUL";
          case DIV:
-            str = "DIV";
-            break;
+            return "DIV";
          case BETWEEN:
-            str = "BETWEEN";
-            break;
+            return "BETWEEN";
          case NOT_BETWEEN:
-            str = "NOT_BETWEEN";
-            break;
+            return "NOT_BETWEEN";
          case LIKE:
-            str = "LIKE";
-            break;
+            return "LIKE";
          case NOT_LIKE:
-            str = "NOT_LIKE";
-            break;
+            return "NOT_LIKE";
          case LIKE_ESCAPE:
-            str = "LIKE_ESCAPE";
-            break;
+            return "LIKE_ESCAPE";
          case NOT_LIKE_ESCAPE:
-            str = "NOT_LIKE_ESCAPE";
-            break;
+            return "NOT_LIKE_ESCAPE";
          case IS_NULL:
-            str = "IS_NULL";
-            break;
+            return "IS_NULL";
          case IS_NOT_NULL:
-            str = "IS_NOT_NULL";
-            break;
+            return "IS_NOT_NULL";
          case IN:
-            str = "IN";
-            break;
+            return "IN";
          case NOT_IN:
-            str = "NOT_IN";
-            break;
+            return "NOT_IN";
+         default:
+            return "Unknown";
       }
-      return str;
    }
 }
