@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
@@ -33,27 +33,27 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    protected static final String CONNECT_COMMAND = "CONNECT";
    protected static final String CONNECTED_COMMAND = "CONNECTED";
    protected static final String DISCONNECT_COMMAND = "DISCONNECT";
-   
+
    protected static final String LOGIN_HEADER = "login";
    protected static final String PASSCODE_HEADER = "passcode";
-   
+
    //ext
    protected static final String CLIENT_ID_HEADER = "client-id";
-   
-   
+
+
    protected String version;
    protected String host;
    protected int port;
    protected String username;
    protected String passcode;
    protected StompFrameFactory factory;
-   protected SocketChannel socketChannel;
+   protected final SocketChannel socketChannel;
    protected ByteBuffer readBuffer;
-   
+
    protected List<Byte> receiveList;
-   
+
    protected BlockingQueue<ClientStompFrame> frameQueue = new LinkedBlockingQueue<ClientStompFrame>();
-   
+
    protected boolean connected = false;
 
    public AbstractStompClientConnection(String version, String host, int port) throws IOException
@@ -62,28 +62,27 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       this.host = host;
       this.port = port;
       this.factory = StompFrameFactoryFactory.getFactory(version);
-      
+      socketChannel = SocketChannel.open();
       initSocket();
    }
 
    private void initSocket() throws IOException
    {
-      socketChannel = SocketChannel.open();
       socketChannel.configureBlocking(true);
       InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
       socketChannel.connect(remoteAddr);
-      
+
       startReaderThread();
    }
-   
+
    private void startReaderThread()
    {
       readBuffer = ByteBuffer.allocateDirect(10240);
       receiveList = new ArrayList<Byte>(10240);
-      
+
       new ReaderThread().start();
    }
-   
+
    public ClientStompFrame sendFrame(ClientStompFrame frame) throws IOException, InterruptedException
    {
       ClientStompFrame response = null;
@@ -92,12 +91,12 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       {
          socketChannel.write(buffer);
       }
-      
+
       //now response
       if (frame.needsReply())
       {
          response = receiveFrame();
-         
+
          //filter out server ping
          while (response != null)
          {
@@ -118,17 +117,17 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    {
       ClientStompFrame response = null;
       ByteBuffer buffer = frame.toByteBufferWithExtra("\n");
-      
+
       while (buffer.remaining() > 0)
       {
          socketChannel.write(buffer);
       }
-      
+
       //now response
       if (frame.needsReply())
       {
          response = receiveFrame();
-         
+
          //filter out server ping
          while (response != null)
          {
@@ -154,7 +153,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    {
       return frameQueue.poll(timeout, TimeUnit.MILLISECONDS);
    }
-   
+
    //put bytes to byte array.
    private void receiveBytes(int n) throws UnsupportedEncodingException
    {
@@ -174,7 +173,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
                   frameBytes[j] = receiveList.get(j);
                }
                ClientStompFrame frame = factory.createFrame(new String(frameBytes, "UTF-8"));
-               
+
                if (validateFrame(frame))
                {
                   frameQueue.offer(frame);
@@ -202,7 +201,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       //clear readbuffer
       readBuffer.rewind();
    }
-   
+
    protected void incrementServerPing()
    {
    }
@@ -220,20 +219,21 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       }
       return true;
    }
-   
+
    protected void close() throws IOException
    {
       socketChannel.close();
    }
-   
+
    private class ReaderThread extends Thread
    {
+      @Override
       public void run()
       {
          try
          {
             int n = socketChannel.read(readBuffer);
-            
+
             while (n >= 0)
             {
                if (n > 0)
@@ -244,14 +244,14 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
             }
             //peer closed
             close();
-         
-         } 
+
+         }
          catch (IOException e)
          {
             try
             {
                close();
-            } 
+            }
             catch (IOException e1)
             {
                //ignore
@@ -264,7 +264,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    {
       connect(null, null);
    }
-   
+
    public void destroy()
    {
       try
@@ -279,22 +279,22 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
          this.connected = false;
       }
    }
-   
+
    public void connect(String username, String password) throws Exception
    {
       throw new RuntimeException("connect method not implemented!");
    }
-   
+
    public boolean isConnected()
    {
       return connected;
    }
-   
+
    public String getVersion()
    {
       return version;
    }
-   
+
    public int getFrameQueueSize()
    {
       return this.frameQueue.size();

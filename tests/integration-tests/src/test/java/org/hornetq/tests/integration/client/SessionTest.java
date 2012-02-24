@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -62,7 +63,7 @@ public class SessionTest extends ServiceTestBase
    {
 
       cf = createSessionFactory(locator);
-         ClientSession clientSession = cf.createSession(false, true, true);
+      ClientSession clientSession = addClientSession(cf.createSession(false, true, true));
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new SessionFailureListener()
          {
@@ -79,15 +80,13 @@ public class SessionTest extends ServiceTestBase
          // Make sure failure listener is called if server is stopped without session being closed first
          server.stop();
          Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-
-         // not really part of the test,
-         // we still clean up resources left in the VM
-         clientSession.close();
-         }
+   }
 
    public void testFailureListenerRemoved() throws Exception
    {
       cf = createSessionFactory(locator);
+      try
+      {
          ClientSession clientSession = cf.createSession(false, true, true);
          class MyFailureListener implements SessionFailureListener
          {
@@ -110,6 +109,11 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          server.stop();
          Assert.assertFalse(listener.called);
+      }
+      finally
+      {
+         ((ClientSessionFactoryInternal)cf).causeExit();
+      }
    }
 
    // Closing a session if the underlying remoting connection is deaad should cleanly

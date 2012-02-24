@@ -948,9 +948,9 @@ public abstract class UnitTestCase extends TestCase
 
       try
       {
-      assertAllClientConsumersAreClosed();
+         assertAllClientConsumersAreClosed();
          assertAllClientProducersAreClosed();
-      assertAllClientSessionsAreClosed();
+         assertAllClientSessionsAreClosed();
       }
       finally
       {
@@ -1534,15 +1534,14 @@ public abstract class UnitTestCase extends TestCase
    {
       if (component == null)
          return;
-      if (component.isStarted())
-         try
-         {
-            component.stop();
-         }
-         catch (Exception e)
-         {
-            // no-op
-         }
+      try
+      {
+         component.stop();
+      }
+      catch (Exception e)
+      {
+         // no-op
+      }
    }
 
    protected final ClientSessionFactory createSessionFactory(ServerLocator locator) throws Exception
