@@ -436,9 +436,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void causeExit()
    {
+      exitLoop = true;
       synchronized (waitLock)
       {
-         exitLoop = true;
          waitLock.notifyAll();
       }
    }
@@ -450,6 +450,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return;
       }
 
+      exitLoop = true;
       synchronized (exitLock)
       {
          exitLock.notifyAll();
@@ -635,7 +636,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                synchronized (exitLock)
                {
-                  while (inCreateSession)
+                  while (inCreateSession && !exitLoop)
                   {
                      try
                      {
@@ -657,12 +658,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             connection = null;
 
-            try
+            Connector localConnector = connector;
+            if (localConnector != null)
             {
-               connector.close();
-            }
-            catch (Exception ignore)
-            {
+               try
+               {
+                  localConnector.close();
+               }
+               catch (Exception ignore)
+               {
+               }
             }
 
             cancelScheduledTasks();
@@ -792,6 +797,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      connection.destroy();
                   }
 
+                  if (exitLoop)
+                     throw e;
+
                   if (e.getCode() == HornetQException.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
@@ -894,7 +902,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       // Should never get here
-      throw new IllegalStateException("Internal Error! ClientSessionFactoryImpl::createSessionInternal " + "just reached a condition that was not supposed to happen. "
+      throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                 "Internal Error! ClientSessionFactoryImpl::createSessionInternal "
+                                          + "just reached a condition that was not supposed to happen. "
                                       + "Please inform this condition to the HornetQ team");
    }
 
@@ -974,6 +984,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void getConnectionWithRetry(final int reconnectAttempts)
    {
+      if (exitLoop)
+         return;
       if (ClientSessionFactoryImpl.log.isTraceEnabled())
       {
          ClientSessionFactoryImpl.log.trace("getConnectionWithRetry::" + reconnectAttempts +
@@ -1117,6 +1129,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       if (closed)
          throw new IllegalStateException("ClientSessionFactory is closed!");
+      if (exitLoop)
+         return null;
       synchronized (connectionLock)
       {
       if (connection == null)
