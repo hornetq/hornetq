@@ -20,11 +20,23 @@
     <Or>
       <Method name="compare" params="java.lang.Integer,java.lang.Integer" returns="boolean"/>
       <Method name="compare" params="java.lang.Long,java.lang.Long" returns="boolean"/>
-      <Method name="compare" params="java.lang.String,java.lang.String" returns="boolean"/>
-      <Method name="compare" params="java.lang.Boolean,java.lang.Boolean" returns="boolean"/>
       <Method name="compare" params="java.lang.Double,java.lang.Double" returns="boolean"/>
     </Or>
     <Bug pattern="RC_REF_COMPARISON"/>
+  </Match>
+
+  <!-- Comparison is correct within its context -->
+  <Match>
+    <Class name="org.hornetq.ra.Util"/>
+    <Method name="compare" params="java.lang.Boolean,java.lang.Boolean" returns="boolean"/>
+    <Bug pattern="RC_REF_COMPARISON_BAD_PRACTICE_BOOLEAN"/>
+  </Match>
+
+  <!-- Comparison is correct within its context -->
+  <Match>
+    <Class name="org.hornetq.ra.Util"/>
+    <Method name="compare" params="java.lang.String,java.lang.String" returns="boolean"/>
+    <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ"/>
   </Match>
 
   <Match>
