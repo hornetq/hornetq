@@ -1909,7 +1909,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void doCleanup(boolean failingOver)
    {
-      if (remotingConnection == null)
+      if (remotingConnection != null)
       {
          remotingConnection.removeFailureListener(this);
       }
