@@ -110,7 +110,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
@@ -481,7 +481,7 @@ public final class PacketDecoder
          }
          case REPLICATION_LARGE_MESSAGE_BEGIN:
          {
-            packet = new ReplicationLargeMessageBeingMessage();
+            packet = new ReplicationLargeMessageBeginMessage();
             break;
          }
          case REPLICATION_LARGE_MESSAGE_END:

@@ -23,7 +23,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  *
  *
  */
-public class ReplicationLargeMessageBeingMessage extends PacketImpl
+public class ReplicationLargeMessageBeginMessage extends PacketImpl
 {
 
    // Constants -----------------------------------------------------
@@ -36,13 +36,13 @@ public class ReplicationLargeMessageBeingMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ReplicationLargeMessageBeingMessage(final long messageId)
+   public ReplicationLargeMessageBeginMessage(final long messageId)
    {
       this();
       this.messageId = messageId;
    }
 
-   public ReplicationLargeMessageBeingMessage()
+   public ReplicationLargeMessageBeginMessage()
    {
       super(PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN);
    }

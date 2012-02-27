@@ -57,7 +57,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
@@ -200,7 +200,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
             }
             else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
             {
-               handleLargeMessageBegin((ReplicationLargeMessageBeingMessage) packet);
+               handleLargeMessageBegin((ReplicationLargeMessageBeginMessage) packet);
             }
             else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
             {
@@ -660,7 +660,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
    /**
     * @param packet
     */
-   private void handleLargeMessageBegin(final ReplicationLargeMessageBeingMessage packet)
+   private void handleLargeMessageBegin(final ReplicationLargeMessageBeginMessage packet)
    {
       final long id = packet.getMessageId();
       createLargeMessage(id, false);
