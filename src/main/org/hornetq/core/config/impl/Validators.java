@@ -69,7 +69,7 @@ public final class Validators
       public void validate(final String name, final Object value)
       {
          Number val = (Number)value;
-         if (val != null && val.intValue() < 0 || val.intValue() > 100)
+         if (val != null && (val.intValue() < 0 || val.intValue() > 100))
          {
             throw new IllegalArgumentException(String.format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)",
                                                              name,
