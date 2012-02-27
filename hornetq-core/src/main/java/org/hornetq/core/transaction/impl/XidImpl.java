@@ -14,19 +14,20 @@
 package org.hornetq.core.transaction.impl;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import javax.transaction.xa.Xid;
 
 import org.hornetq.utils.Base64;
 
 /**
- * 
+ *
  * Xid implementation
- * 
+ *
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
- * 
+ *
  * @version $Revision 1.1 $
  */
 public class XidImpl implements Xid, Serializable
@@ -201,8 +202,7 @@ public class XidImpl implements Xid, Serializable
    private void calcHash()
    {
       byte[] hashBytes = XidImpl.toByteArray(this);
-      String s = new String(hashBytes);
-      hash = s.hashCode();
+      hash = Arrays.hashCode(hashBytes);
       hashCalculated = true;
    }
 
