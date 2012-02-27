@@ -39,7 +39,10 @@ public class TransactionCallback implements IOAsyncTask
 
    public void countUp()
    {
-      up++;
+      synchronized (this)
+      {
+         up++;
+      }
       countLatch.countUp();
    }
 
