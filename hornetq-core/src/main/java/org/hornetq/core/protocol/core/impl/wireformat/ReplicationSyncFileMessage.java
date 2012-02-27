@@ -1,6 +1,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -181,5 +182,81 @@ public final class ReplicationSyncFileMessage extends PacketImpl
    public SimpleString getPageStore()
    {
       return pageStoreName;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + Arrays.hashCode(byteArray);
+      result = prime * result + ((byteBuffer == null) ? 0 : byteBuffer.hashCode());
+      result = prime * result + dataSize;
+      result = prime * result + (int)(fileId ^ (fileId >>> 32));
+      result = prime * result + ((fileType == null) ? 0 : fileType.hashCode());
+      result = prime * result + ((journalType == null) ? 0 : journalType.hashCode());
+      result = prime * result + ((pageStoreName == null) ? 0 : pageStoreName.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof ReplicationSyncFileMessage))
+      {
+         return false;
+      }
+      ReplicationSyncFileMessage other = (ReplicationSyncFileMessage)obj;
+      if (!Arrays.equals(byteArray, other.byteArray))
+      {
+         return false;
+      }
+      if (byteBuffer == null)
+      {
+         if (other.byteBuffer != null)
+         {
+            return false;
+         }
+      }
+      else if (!byteBuffer.equals(other.byteBuffer))
+      {
+         return false;
+      }
+      if (dataSize != other.dataSize)
+      {
+         return false;
+      }
+      if (fileId != other.fileId)
+      {
+         return false;
+      }
+      if (fileType != other.fileType)
+      {
+         return false;
+      }
+      if (journalType != other.journalType)
+      {
+         return false;
+      }
+      if (pageStoreName == null)
+      {
+         if (other.pageStoreName != null)
+         {
+            return false;
+         }
+      }
+      else if (!pageStoreName.equals(other.pageStoreName))
+      {
+         return false;
+      }
+      return true;
    }
 }

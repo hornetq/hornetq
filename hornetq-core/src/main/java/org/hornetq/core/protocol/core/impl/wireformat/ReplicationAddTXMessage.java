@@ -13,6 +13,8 @@
 
 package org.hornetq.core.protocol.core.impl.wireformat;
 
+import java.util.Arrays;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -140,12 +142,72 @@ public class ReplicationAddTXMessage extends PacketImpl
       return recordData;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((encodingData == null) ? 0 : encodingData.hashCode());
+      result = prime * result + (int)(id ^ (id >>> 32));
+      result = prime * result + (isUpdate ? 1231 : 1237);
+      result = prime * result + journalID;
+      result = prime * result + Arrays.hashCode(recordData);
+      result = prime * result + recordType;
+      result = prime * result + (int)(txId ^ (txId >>> 32));
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof ReplicationAddTXMessage))
+      {
+         return false;
+      }
+      ReplicationAddTXMessage other = (ReplicationAddTXMessage)obj;
+      if (encodingData == null)
+      {
+         if (other.encodingData != null)
+         {
+            return false;
+         }
+      }
+      else if (!encodingData.equals(other.encodingData))
+      {
+         return false;
+      }
+      if (id != other.id)
+      {
+         return false;
+      }
+      if (isUpdate != other.isUpdate)
+      {
+         return false;
+      }
+      if (journalID != other.journalID)
+      {
+         return false;
+      }
+      if (!Arrays.equals(recordData, other.recordData))
+      {
+         return false;
+      }
+      if (recordType != other.recordType)
+      {
+         return false;
+      }
+      if (txId != other.txId)
+      {
+         return false;
+      }
+      return true;
+   }
 }
