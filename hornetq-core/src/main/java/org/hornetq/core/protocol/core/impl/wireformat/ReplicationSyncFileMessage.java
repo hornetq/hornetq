@@ -110,6 +110,9 @@ public final class ReplicationSyncFileMessage extends PacketImpl
             buffer.writeSimpleString(pageStoreName);
             break;
          }
+         case LARGE_MESSAGE:
+         default:
+            // no-op
       }
 
       buffer.writeInt(dataSize);
