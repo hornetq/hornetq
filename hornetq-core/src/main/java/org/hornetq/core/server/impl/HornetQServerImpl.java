@@ -612,20 +612,17 @@ public class HornetQServerImpl implements HornetQServer
             postOffice.stop();
          }
 
+
             if (scheduledPool != null)
             {
-               List<Runnable> tasks = scheduledPool.shutdownNow();
-               for (Runnable task : tasks)
+               // we just interrupt all running tasks, these are supposed to be pings and the like.
+               scheduledPool.shutdownNow();
+            }
+
+            if (memoryManager != null)
             {
-                  HornetQServerImpl.log.info(this + "::Waiting for " + task);
+               memoryManager.stop();
             }
-            }
-
-         if (memoryManager != null)
-         {
-            memoryManager.stop();
-         }
-
 
             if (threadPool != null)
             {
@@ -634,29 +631,24 @@ public class HornetQServerImpl implements HornetQServer
                {
                   if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
                   {
-                     HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
+                     HornetQServerImpl.log.warn("Timed out waiting for pool to terminate " + threadPool +
+                              ". Interrupting all its threads!");
+                     for (Runnable r : threadPool.shutdownNow())
+                     {
+                        log.debug("Cancelled the execution of " + r);
+                     }
                   }
                }
                catch (InterruptedException e)
                {
                   // Ignore
                }
-               threadPool = null;
             }
 
-          try
-         {
-            if (!scheduledPool.awaitTermination(10, TimeUnit.SECONDS))
-            {
-               HornetQServerImpl.log.warn("Timed out waiting for scheduled pool to terminate");
-            }
-         }
-         catch (InterruptedException e)
-         {
-            // Ignore
-         }
+            scheduledPool = null;
+            threadPool = null;
 
-         securityStore.stop();
+            securityStore.stop();
 
          threadPool = null;
 
