@@ -103,7 +103,7 @@ abstract class AbstractSequentialFile implements SequentialFile
          close();
       }
 
-      if (!file.delete())
+      if (file.exists() && !file.delete())
       {
          log.error("Failed to delete file " + this);
       }
