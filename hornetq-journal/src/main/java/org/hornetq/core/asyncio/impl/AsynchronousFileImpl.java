@@ -790,6 +790,24 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          this.message = message;
       }
+
+      /**
+       * See {@link CallbackHolder}.
+       */
+      @Override
+      public int hashCode()
+      {
+         return super.hashCode();
+      }
+
+      /**
+       * See {@link CallbackHolder}.
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         return super.equals(obj);
+      }
    }
 
    private class PollerRunnable implements Runnable
