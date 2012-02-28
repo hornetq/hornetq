@@ -1,18 +1,19 @@
 package org.hornetq.rest;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.hornetq.rest.util.HttpMessageHelper;
-import org.jboss.resteasy.util.GenericType;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.MessageBodyReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.MessageBodyReader;
+
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.rest.util.HttpMessageHelper;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.jboss.resteasy.util.GenericType;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -44,7 +45,7 @@ public class Hornetq
    public static void setEntity(ClientMessage message, Serializable object, String contentType)
    {
       if (contentType != null) message.putStringProperty(HttpHeaderProperty.CONTENT_TYPE, contentType);
-      byte[] data = new byte[0];
+      byte[] data;
       try
       {
          ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
@@ -90,7 +91,6 @@ public class Hornetq
     *
     * @param message
     * @param type
-    * @param <T>
     * @return
     */
    public static <T> T getEntity(ClientMessage message, Class<T> type)
@@ -104,7 +104,6 @@ public class Hornetq
     * @param message
     * @param type
     * @param factory
-    * @param <T>
     * @return
     */
    public static <T> T getEntity(ClientMessage message, Class<T> type, ResteasyProviderFactory factory)
@@ -118,7 +117,6 @@ public class Hornetq
     * @param message
     * @param type
     * @param factory
-    * @param <T>
     * @return
     * @throws UnknownMediaType
     * @throws UnmarshalException
