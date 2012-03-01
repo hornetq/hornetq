@@ -252,17 +252,20 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
             return HandleStatus.BUSY;
          }
-
-         if (log.isTraceEnabled())
-         {
-            log.trace("Handling reference " + ref);
-         }
-
          final ServerMessage message = ref.getMessage();
 
          if (filter != null && !filter.match(message))
          {
+            if (log.isTraceEnabled())
+            {
+               log.trace("Reference " + ref + " is a noMatch on consumer " + this);
+            }
             return HandleStatus.NO_MATCH;
+         }
+
+         if (log.isTraceEnabled())
+         {
+            log.trace("Handling reference " + ref);
          }
 
          if (!browseOnly)
