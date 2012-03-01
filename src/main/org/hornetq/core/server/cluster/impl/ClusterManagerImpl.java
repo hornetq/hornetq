@@ -531,7 +531,10 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          }
       }
 
-      bridge.flushExecutor();
+      if (bridge!= null)
+      {
+         bridge.flushExecutor();
+      }
    }
 
    // for testing
