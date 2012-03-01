@@ -110,6 +110,76 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   public void testAddHeadAndRemove()
+   {
+      final AtomicInteger count = new AtomicInteger(0);
+      class MyObject
+      {
+
+         public int payload;
+
+         MyObject(int payloadcount)
+         {
+            count.incrementAndGet();
+            this.payload = payloadcount;
+         }
+
+         protected void finalize() throws Exception
+         {
+            count.decrementAndGet();
+         }
+         
+         public String toString()
+         {
+            return "" + payload;
+         }
+      };
+
+      LinkedListImpl<MyObject> objs = new LinkedListImpl<MyObject>();
+
+      // Initial add
+      for (int i = 1000; i >= 0; i--)
+      {
+         objs.addHead(new MyObject(i));
+      }
+      assertCount(1001, count);
+
+      LinkedListIterator<MyObject> iter = objs.iterator();
+
+      int countLoop = 0;
+      for (countLoop = 0 ; countLoop <= 1000; countLoop++)
+      {
+         MyObject obj = iter.next();
+         assertEquals(countLoop, obj.payload);
+         if (countLoop == 500 || countLoop == 1000)
+         {
+            iter.remove();
+         }
+      }
+      
+      iter.close();
+      
+      iter = objs.iterator();
+      
+      countLoop = 0;
+      while (iter.hasNext())
+      {
+         if (countLoop == 500 || countLoop == 1000)
+         {
+            System.out.println("Jumping " + countLoop);
+            countLoop++;
+         }
+         MyObject obj = iter.next();
+         assertEquals(countLoop, obj.payload);
+         countLoop++;
+      }
+      
+      
+      
+      assertCount(999, count);
+
+   }
+
    /**
     * @param count
     */
