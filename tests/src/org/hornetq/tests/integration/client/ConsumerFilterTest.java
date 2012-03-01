@@ -249,4 +249,86 @@ public class ConsumerFilterTest extends ServiceTestBase
       
       locator.close();
    }
+   
+   public void testLinkedListOrder() throws Exception
+   {
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession();
+
+      session.start();
+
+      session.createQueue("foo", "foo", true);
+      
+      ClientProducer producer = session.createProducer("foo");
+
+      ClientConsumer redConsumer = session.createConsumer("foo", "color='red'");
+      
+      ClientConsumer anyConsumer = session.createConsumer("foo");
+      
+      sendMessage(session, producer, "any", "msg1");
+      
+      sendMessage(session, producer, "any", "msg2");
+      
+      sendMessage(session, producer, "any", "msg3");
+      
+      sendMessage(session, producer, "red", "msgRed4");
+      
+      sendMessage(session, producer, "red", "msgRed5");
+
+      readConsumer("anyConsumer", anyConsumer);
+
+      readConsumer("anyConsumer", anyConsumer);
+      
+      log.info("### closing consumer ###");
+
+      anyConsumer.close();
+      
+      readConsumer("redConsumer", redConsumer);
+
+      readConsumer("redConsumer", redConsumer);
+      
+      log.info("### recreating consumer ###");
+      
+      anyConsumer = session.createConsumer("foo");
+      
+      session.start();
+      
+      readConsumer("anyConsumer", anyConsumer);
+      
+      session.close();
+      
+      sf.close();
+      
+      locator.close();
+   }
+
+   /**
+    * @param consumer
+    * @throws HornetQException
+    */
+   private void readConsumer(String consumerName, ClientConsumer consumer) throws Exception
+   {
+      ClientMessage message = consumer.receive(5000);
+      assertNotNull(message);
+      System.out.println("consumer = " + consumerName + " message, color=" + message.getStringProperty("color") + ", msg = " + message.getStringProperty("value"));
+      message.acknowledge();
+   }
+
+   /**
+    * @param session
+    * @param producer
+    * @return
+    * @throws HornetQException
+    */
+   private void sendMessage(ClientSession session, ClientProducer producer, String color, String msg) throws Exception
+   {
+      ClientMessage anyMessage = session.createMessage(true);
+      anyMessage.putStringProperty("color", color);
+      anyMessage.putStringProperty("value", msg);
+      producer.send(anyMessage);
+      session.commit();
+   }
 }
