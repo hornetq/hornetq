@@ -65,6 +65,10 @@ public class LinkedListImpl<E> implements LinkedList<E>
       if (size == 0)
       {
          tail = node;
+      } 
+      else 
+      {
+         tail.prev = node;
       }
 
       size++;
