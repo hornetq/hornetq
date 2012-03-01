@@ -255,7 +255,10 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          if (filter != null && !filter.match(message))
          {
-            log.trace("Reference " + ref + " is a noMatch on consumer " + this);
+            if (log.isTraceEnabled())
+            {
+               log.trace("Reference " + ref + " is a noMatch on consumer " + this);
+            }
             return HandleStatus.NO_MATCH;
          }
 
@@ -263,7 +266,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             log.trace("Handling reference " + ref);
          }
-
 
          if (!browseOnly)
          {
