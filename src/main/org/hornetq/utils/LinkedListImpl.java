@@ -34,7 +34,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
 
    private static final int INITIAL_ITERATOR_ARRAY_SIZE = 10;
 
-   private Node<E> head = new Node<E>(null);
+   private final Node<E> head = new Node<E>(null);
 
    private Node<E> tail = null;
 
@@ -55,7 +55,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
    public void addHead(E e)
    {
       Node<E> node = new Node<E>(e);
-
+      
       node.next = head.next;
 
       node.prev = head;
@@ -65,10 +65,11 @@ public class LinkedListImpl<E> implements LinkedList<E>
       if (size == 0)
       {
          tail = node;
-      } 
-      else 
+      }
+      else
       {
-         tail.prev = node;
+         // Need to set the previous element on the former head
+         node.next.prev = node;
       }
 
       size++;
