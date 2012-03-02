@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.2.3-SNAPSHOT</version>
+   <version>2.3.0-SNAPSHOT</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -138,6 +138,7 @@
       <module>hornetq-service-sar</module>
       <module>hornetq-spring-integration</module>
       <module>hornetq-twitter-integration</module>
+      <module>tests</module>
    </modules>
 
    <dependencyManagement>
