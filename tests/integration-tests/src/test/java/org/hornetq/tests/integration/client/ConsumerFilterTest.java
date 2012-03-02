@@ -212,8 +212,6 @@ public class ConsumerFilterTest extends ServiceTestBase
       ClientSession session = sf.createSession();
 
       session.start();
-
-      session.createQueue("foo", "foo", true);
       
       ClientProducer producer = session.createProducer("foo");
 
