@@ -1779,10 +1779,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          private volatile ClientSessionFactoryInternal factory;
 
-         private boolean interrupted = false;
-
-         private Exception e;
-
          public Connector(TransportConfiguration initialConnector, ClientSessionFactoryInternal factory)
          {
             this.initialConnector = initialConnector;
@@ -1822,8 +1818,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          public void disconnect()
          {
-            interrupted = true;
-
             if (factory != null)
             {
                factory.causeExit();
