@@ -12,10 +12,7 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 
 import javax.jms.Session;
 import javax.resource.ResourceException;

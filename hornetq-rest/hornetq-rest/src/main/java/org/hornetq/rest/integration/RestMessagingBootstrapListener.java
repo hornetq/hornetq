@@ -1,16 +1,14 @@
 package org.hornetq.rest.integration;
 
-import org.jboss.resteasy.spi.Registry;
-import org.hornetq.rest.MessageServiceManager;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.net.URL;
+
+import org.hornetq.rest.MessageServiceManager;
+import org.jboss.resteasy.spi.Registry;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class RestMessagingBootstrapListener implements ServletContextListener
 {
