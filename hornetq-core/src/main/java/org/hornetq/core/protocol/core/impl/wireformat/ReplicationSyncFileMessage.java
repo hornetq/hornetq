@@ -46,7 +46,7 @@ public final class ReplicationSyncFileMessage extends PacketImpl
 
       /**
        * @param readByte
-       * @return
+       * @return {@link FileType} corresponding to the byte code.
        */
       public static FileType getFileType(byte readByte)
       {

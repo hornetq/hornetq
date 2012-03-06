@@ -463,9 +463,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    /**
     * Create a ServerLocatorImpl using UDP discovery to lookup cluster
-    *
-    * @param discoveryAddress
-    * @param discoveryPort
     */
    public ServerLocatorImpl(final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
    {
@@ -496,9 +493,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    /**
     * Create a ServerLocatorImpl using UDP discovery to lookup cluster
-    *
-    * @param discoveryAddress
-    * @param discoveryPort
     */
    public ServerLocatorImpl(final Topology topology,
                             final boolean useHA,
