@@ -75,7 +75,7 @@ import org.hornetq.core.server.impl.QuorumManager;
 /**
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
+public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
 
    // Constants -----------------------------------------------------
@@ -120,9 +120,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
    private QuorumManager quorumManager;
 
-   //https://community.jboss.org/thread/195519
-   private final Object stopLock = new Object();
-
    // Constructors --------------------------------------------------
    public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
    {
@@ -159,8 +156,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
       try
       {
-         synchronized (stopLock)
-         {
             if (!started)
             {
                return;
@@ -230,7 +225,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
-            }
          }
       }
       catch (HornetQException e)
@@ -303,8 +297,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
    public synchronized void stop() throws Exception
    {
-      synchronized (stopLock)
-      {
          if (!started)
          {
             return;
@@ -364,7 +356,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
          storage.stop();
 
          started = false;
-      }
    }
 
 
@@ -482,6 +473,11 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       return;
    }
 
+   /**
+    * Receives 'raw' journal/page/large-message data from live server for synchronization of logs.
+    * @param msg
+    * @throws Exception
+    */
    private synchronized void handleReplicationSynchronization(ReplicationSyncFileMessage msg) throws Exception
    {
       Long id = Long.valueOf(msg.getId());
@@ -549,17 +545,18 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
       }
 
-      if (packet.isSynchronizationFinished())
-      {
-         finishSynchronization(packet.getNodeID());
-         return;
-      }
-
 
       synchronized (this)
       {
          if (!started)
             return;
+
+         if (packet.isSynchronizationFinished())
+         {
+            finishSynchronization(packet.getNodeID());
+            return;
+         }
+
          switch (packet.getDataType())
          {
             case LargeMessages:
