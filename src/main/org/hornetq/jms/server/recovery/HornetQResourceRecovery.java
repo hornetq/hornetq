@@ -32,15 +32,17 @@ import javax.transaction.xa.XAResource;
 public class HornetQResourceRecovery implements XAResourceRecovery
 {
    private final XARecoveryConfig config;
+   private XAResource[] xaResources;
 
    public HornetQResourceRecovery(XARecoveryConfig config)
    {
       this.config = config;
+      xaResources = new XAResource[]{new HornetQXAResourceWrapper(config)};
    }
 
    public XAResource[] getXAResources()
    {
-      return new XAResource[]{new HornetQXAResourceWrapper(config)};
+      return xaResources;
    }
 
    @Override
