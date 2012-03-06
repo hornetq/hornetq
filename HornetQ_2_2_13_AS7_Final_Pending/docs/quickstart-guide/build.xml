@@ -1,0 +1,27 @@
+<project name="HornetQ QuickStart Guide" default="all" basedir=".">
+
+
+  <target name="maven-init">
+    <property name="maven.home" location="${basedir}/../../tools/maven"/>
+    <echo message="Maven Home set to ${maven.home}"/>
+  </target>
+
+   <target name="clean" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="clean"/>
+      </exec>
+   </target>
+
+   <target name="all" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="install"/>
+      </exec>
+   </target>
+
+</project>

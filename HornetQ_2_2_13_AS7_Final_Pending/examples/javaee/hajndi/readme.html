@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <title>HornetQ Java EE HA-JNDI Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Java EE HA-JNDI Example</h1>
+
+     <p>This example demonstrates the use of High Availability JNDI (HA-JNDI) to lookup HornetQ
+     JMS Connection Factories, Queues and Topics.</p>
+     <p>With normal JNDI you need to configure the client with the specific connection parameters
+     (i.e. host and port) of the JNDI server from which you want to perform look-ups.</p>
+     <p>This means if that server crashes, or is not available you won't be able to perform lookups.</p>
+     <p>One solution would be for the client to maintain the connection params of all JNDI servers
+     in the cluster, but this is not practical.</p>
+     <p>With HA-JNDI the client can be simplify configured with UDP address parameters and can transparently
+     perform JNDI lookups without having to worry about a particular server being unavailable.</p>
+     <p>HA-JNDI is a service of JBoss Application Server and is not available by default when running against
+     a stand-alone HornetQ instance.</p>
+     <p>An alternative approach is to avoid JNDI together and directly instantiate JMS Connection Factory,
+     Queue and Topic instances on the client side. HornetQ Connection Factory instances can
+     also be configured to use UDP discovery so the specific details of the available servers are 
+     not required on the client side.</p>
+     <p>For more information on instantiating Connection Factory objects directly please see the user
+     manual and the <i>Instantiate Connection Factory</i> example.</p>
+     <p>For more information on HA-JNDI, please consult the <a href="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html">JBoss Application Server Clustering Documentation</a>.</p>
+     <p>This example demonstrates a simple symmetric clustering configuration, and failover on JNDI (HAJNDI).</p>
+     
+     <h2>Example configuration</h2>
+
+     <p>To run the example, you need to download JBoss AS 5.x and create a clustered configuration for HornetQ.</p>
+
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+     
+     <p>To run this example, we will need two clustered profiles, one for each server instance:</li>
+     <li>Copy the directory <code>$JBOSS_HOME/server/all-with-hornetq</code> to <code>$JBOSS_HOME/server/all-with-hornetq_2</code></li>
+     <li>Start the first server with <code>./run.sh -c all-with-hornetq</code></li>
+     <li>Start the second server with <code>./run.sh -c all-with-hornetq_2 -Djboss.service.binding.set=ports-01</code></li>
+     </ol>
+     <h2>Example step by step</h2>
+     <ol>
+        <li>Create a JNDI Context using HAJNDI Properties.
+            <p>This JNDI is performing auto-discovery of the servers, by using the default UDP properties.</p>
+            <p>You will find more information about these properties at the </p>
+        </li>
+        <pre class="prettyprint">
+           Hashtable jndiParameters = new Hashtable();
+           jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+           jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
+         
+           initialContext = new InitialContext(jndiParameters);
+        </pre>
+        
+        
+        <li>Perform lookups in a loop. As long as you have at least one server alive, these lookups will still work fine
+         <pre class="prettyprint">
+            for (int i = 0; i &lt; 100; i++)
+            {
+               ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         </pre>
+        </li>
+
+        <li>Create and close a JMS Connection, just to show the downloaded Connection Factory is working
+        <pre class="prettyprint">
+           connection = cf.createConnection();
+           connection.close();
+        </pre>
+        </li>
+        
+        
+        <li>As the example sleeps here, use this time to kill one of the servers. You will realise that lookups will still work as long as you have a live server
+        
+        <pre class="prettyprint">
+           System.out.println("Connection " + i + " was created and closed. If you kill any of the servers now, the lookup operation on Step 2 will still work fine");
+           Thread.sleep(5000);
+        </pre>
+        </li>
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre class="prettyprint">
+           finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }
+        </pre>
+     </ol>
+  </body>
+</html>

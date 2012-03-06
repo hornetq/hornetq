@@ -1,0 +1,24 @@
+<configuration xmlns="urn:hornetq" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+            xsi:schemaLocation="urn:hornetq ../../../../src/schemas/hornetq-configuration.xsd ">
+
+   <security-settings>
+      <security-setting match="jms.queue.testQueue">
+         <permission type="consume" roles="guest,publisher"/>
+         <permission type="send" roles="guest,publisher"/>
+      </security-setting>
+   </security-settings>
+
+   <address-settings>
+      <!--default for catch all-->
+      <address-setting match="#">
+         <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+         <redelivery-delay>0</redelivery-delay>
+         <max-size-bytes>-1</max-size-bytes>
+         <page-size-bytes>10485760</page-size-bytes>         
+         <message-counter-history-day-limit>10</message-counter-history-day-limit>
+      </address-setting>
+   </address-settings>
+   
+</configuration>

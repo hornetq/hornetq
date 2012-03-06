@@ -1,0 +1,3 @@
+#validates the performance in your disk
+dd if=/dev/zero of=/tmp/foo.dat bs=1M count=100 oflag=direct
+rm /tmp/foo.dat

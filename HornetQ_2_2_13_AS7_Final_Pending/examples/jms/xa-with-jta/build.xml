@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<project default="run" name="HornetQ JMS XA with JTA Example">
+
+   <import file="../../common/build.xml"/>
+
+   <path id="extra.classpath">
+      <fileset dir="build/jta">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+   
+   <target name="download-jta">
+      <mkdir dir="build/jta"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossjta.jar" dest="build/jta/jbossjta.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossts-common.jar" dest="build/jta/jbossts-common.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jboss-javaee/5.0.1.GA/lib/jboss-javaee.jar" dest="build/jta/jboss-javaee.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-log4j/1.2.14/lib/log4j.jar" dest="build/jta/log4j.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-logging/1.1/lib/commons-logging.jar" dest="build/jta/commons-logging.jar"/>
+   </target>
+
+   <target name="run" depends="download-jta">
+      <antcall target="runExample">
+         <param name="example.classname" value="org.hornetq.jms.example.XAwithJTAExample"/>
+      </antcall>
+   </target>
+
+   <target name="runRemote">
+      <antcall target="runExample">
+         <param name="example.classname" value="org.hornetq.jms.example.XAwithJTAExample"/>
+         <param name="hornetq.example.runServer" value="false"/>
+      </antcall>
+   </target>
+
+</project>

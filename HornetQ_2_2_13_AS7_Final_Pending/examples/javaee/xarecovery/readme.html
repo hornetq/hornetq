@@ -1,0 +1,233 @@
+<html>
+  <head>
+    <title>HornetQ XA Recovery Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>XA Recovery Example</h1>
+     
+     <p>This example will show how to configure HornetQ XA recovery in JBoss AS (Application Server).</p>
+
+     <p>The example application will invoke an EJB which  will send a JMS message in a transaction.
+        The server will crash while the transaction has not been committed (it is in the prepared state).<br />
+        On server restart, the transaction will be recovered and the JMS message will finally be sent.<br />
+        The example application will then receive the message.<br />
+
+     <h2>Example configuration</h2>
+
+     <p>To run the example, you need to download JBoss AS 5.x and create a configuration for HornetQ.</p>
+     <p>You also need to configure JBoss Transactions to enable XA Recovery of HornetQ resources</p>     
+
+     <h3>JBoss AS configuration</h3>
+     
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+     
+     <h3>XA Recovery configuration</h3>
+     
+     <p>You need to enable XA Recovery of HornetQ resources.</p>
+     <p>In the <code>jta</code> section of the <code>$JBOSS_HOME/server/xarecovery-example-profile//conf/jbossts-properties.xml</code> configuration file, the following property
+        is added:</p>
+     <pre class="prettyprint">
+         <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
+                      value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
+     </pre>
+
+     <p>This informs the Recovery Manager that it can recovers HornetQ XA Resources by connecting to the server using an <code>InVMConnectorFactory</code>.
+        Since the Recovery Manager is in the same server than HornetQ, the examples uses intra-vm communication to recover the messaging resources.
+        HornetQ must have configured an invm acceptor to accept this connection (see the "in-vm"<code>&lt;acceptor></code> in <code>hornetq-configuration.xml</code>).</p>
+      
+     <p>The example copies a <code>jbossts-properties.xml</code> already configured for HornetQ XA Recovery, so you
+        do not need to manually edit the profile's file.</p>
+        
+     <h2>Example step-by-step</h2>
+
+     <p><em>You need to deploy the example <em>before starting the server</em>, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from this directory<br />
+    Once the example is deployed in JBoss AS 5, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) to start the example. <br />
+    This will crash the server: when informed, simply type <code>./build.sh restart</code> (or <code>build.bat restart</code> on windows) in the terminal where you deployed the example
+    to restart the server.<br />
+    Type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) to undeploy the example from JBoss AS 5.</em></p>
+     
+     The example code is composed of 2 main classes:
+     <dl>
+         <dt><code>XARecoveryExample</code></dt>
+         <dd>the client application to invoke the EJB and receive the message</dd>
+         <dt><code>XARecoveryExampleBean</code></dt>
+         <dd>a Stateless EJB</dd>
+     </dl>
+     
+     <h3>Example Application</h3>
+     
+     <p>Let's take a look at XARecoveryExample first.</p>
+         
+     <ol>
+         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <a href="config/jndi.properties">jndi.properties</a></li>
+         </li>
+         <pre class="prettyprint">
+             <code>InitialContext initialContext = new InitialContext();</code>
+         </pre>
+
+         <li>We look up the EJB</li>
+         <pre class="prettyprint">
+             <code>XARecoveryExampleService service = (XARecoveryExampleService)initialContext.lookup("mdb-example/XARecoveryExampleBean/remote");</code>
+         </pre>
+
+         <li>We invoke the EJB's <code>send</code> method. This method will send a JMS text message (with the text passed in parameter)
+             and crash the server when committing the transaction</li>
+         <pre class="prettyprint">
+             <code>String message = "This is a text message sent at " + new Date();
+             System.out.println("invoking the EJB service with text: " + message);
+             try
+             {
+                service.send(message);
+             }
+             catch (Exception e)
+             {
+                System.out.println("#########################");
+                System.out.println("The server crashed: " + e.getMessage());
+                System.out.println("#########################");
+             }</code>
+         </pre>
+         
+         <p><em>At that time, the server is crashed and must be restarted by typing <code>./build.sh restart</code> (or <code>build.bat restart</code> on windows)
+            in the terminal where you typed <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows)</em></p>
+            
+         <li>We will try to receive a message. Once the server is restarted, the message will be recovered and the consumer will receive it
+         <pre class="prettyprint">
+            <code>boolean received = false;
+            while (!received)
+            {
+               try
+               {
+                  Thread.sleep(15000);
+                  receiveMessage();
+                  received = true;
+               }
+               catch (Exception e)
+               {
+                  System.out.println(".");
+               }
+            }</code>
+         </pre>
+         <p>The <code>receiveMessage()</code> method contains code to receive a text message from the
+            JMS Queue and display it.</p>
+
+         <li>And finally, <b>always</b> remember to close your resources after use, in a <code>finally</code> block.</li>
+         
+         <pre class="prettyprint">
+             <code>finally
+             {
+                if (initialContext != null)
+                {
+                  initialContext.close();
+                }
+             }</code>
+          </pre>
+     </ol>
+     
+     <h3>EJB Example</h3>
+          
+     <p>Let's now take a look at the EJB example</p>
+     
+     <p>In order to crash the server while a transaction is prepared, we will use a <em>failing</em> <code>XAResource</code>
+         which will crash the server (calling <code>Runtime.halt()</code>) in its commit phase.</p>
+     <p>We will manage ourselves the transaction and its resources enlistment/delistment to be sure that the failing XAResource
+         will crash the server <em>after</em> the JMS XA resources is prepared but <em>before</em> it is committed.</p>
+
+     <ol>
+         <li>First, we create a new initial context</li>
+         <pre class="prettyprint">
+             <code>ic = new InitialContext();</code>
+        </pre>
+
+         <li>We look up the Transaction Manager</li>
+         <pre class="prettyprint">
+             <code>TransactionManager tm = (TransactionManager)ic.lookup("java:/TransactionManager");</code>
+        </pre>
+
+         <li>We look up the JMS <em>XA</em> Connection Factory (which is bound to <code>java:/JmsXA</code>)</li>
+         <pre class="prettyprint">
+             <code>XAConnectionFactory cf = (XAConnectionFactory)ic.lookup("java:/XAConnectionFactory");</code>
+        </pre>
+             
+         <li>We look up the JMS Queue</li>
+         <pre class="prettyprint">
+             <code>Queue queue = (Queue)ic.lookup("queue/testQueue");</code>
+        </pre>
+             
+         <li>We create a JMS XA connection, a XA session and a message producer for the queue</li>
+         <pre class="prettyprint">
+             <code>xaConnection = xacf.createXAConnection();
+             XASession session = xaConnection.createXASession();
+             MessageProducer messageProducer = session.createProducer(queue);</code>
+        </pre>
+             
+         <li>We create a text message with the text passed in parameter of the EJB method</li>
+         <pre class="prettyprint">
+             <code>TextMessage message = session.createTextMessage(text);</code>
+        </pre>
+             
+         <li>We create a <code>FailingXAResource</code>. For this example purpose, this XAResource implementation will
+             call <code>Runtime.halt()</code> from its <code>commit()</code> method</li>
+         <pre class="prettyprint">
+             <code>XAResource failingXAResource = new FailingXAResource();</code>
+         </pre>
+
+         <li>We begin the transaction and retrieve it from the transaction manager</li>
+         <pre class="prettyprint">
+             <code>tm.begin();
+             Transaction tx = tm.getTransaction();</code>
+         </pre>
+
+         <li>We enlist the failing XAResource</li>
+         <pre class="prettyprint">
+             <code>tx.enlistResource(failingXAResource);</code>
+         </pre>
+
+         <li>We enlist the <em>JMS</em> XA Resource</li>
+         <pre class="prettyprint">
+             <code>tx.enlistResource(session.getXAResource());</code>
+         </pre>
+
+         <li>We create a text message with the text passed in parameter of the EJB method and send it</li>
+         <pre class="prettyprint">
+             <code>TextMessage message = session.createTextMessage(text);
+             messageProducer.send(message);
+             System.out.format("Sent message: %s (%s)\n", message.getText(), message.getJMSMessageID());</code>
+         </pre>
+
+         <li>We delist the failing XAResource</li>
+         <pre class="prettyprint">
+             <code>tx.delistResource(failingXAResource);</code>
+         </pre>
+
+         <li>We delist the <em>JMS</em> XA Resource</li>
+         <pre class="prettyprint">
+             <code>tx.delistResource(session.getXAResource());</code>
+         </pre>
+         
+         <li>We commit the transaction</li>
+         <pre class="prettyprint">
+             <code>System.out.println("committing the tx");
+             tx.commit();</code>
+         </pre>
+         
+         <p>When the transaction is committed, it will prepare both XAResources and then commit them.<br />
+         <p>The failing resources will crash the server leaving the JMS XA Resource <em>prepared</em> but not <em>committed</em></p>
+         
+         <p>You now need to restart the JBoss AS instance.<br />
+         When it is restarted, it will automatically trigger a recovery phase. During that phase, HornetQ resources will be
+         scanned and the <em>prepared</em> transaction will be recovered and committed. It is then possible to consume this message</p>
+         
+     <h2>More information</h2>
+     
+     <ul>
+         <li><a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">HornetQ installation in JBoss AS 5</a></li>
+         <li><a href="../../../docs/user-manual/en/html_single/index.html#xa-recovery">HornetQ XA Recovery configuration in JBoss AS 5</span></li>
+         <li><a href="http://www.jboss.org/jbosstm/">JBoss Transactions</a></li>
+         
+     </ul>
+
+  </body>
+</html>

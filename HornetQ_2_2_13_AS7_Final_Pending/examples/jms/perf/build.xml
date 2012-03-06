@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<project name="HornetQ JMS Perf Example">
+
+   <import file="../../common/build.xml"/>
+
+   <path id="extra.classpath">
+       <path location="server0"/>
+       <fileset dir="extra-libs">
+          <include name="*.jar"/>
+       </fileset>
+   </path>
+   
+   <property name="perf.properties.file.name" value="perf.properties" />
+
+   <path id="the.classpath">         
+      <path refid="client.classpath"/>
+      <path location="."/>
+   </path>
+   
+   <target name="runSender" depends="compile">
+      <java classname="org.hornetq.jms.example.PerfSender" fork="true" resultproperty="example-result">
+		   <jvmarg value="-Xms512M"/>
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
+         <arg line="${perf.properties.file.name}"/>
+         <classpath refid="the.classpath"/>
+      </java>
+   </target>
+
+   <target name="runListener" depends="compile">
+      <java classname="org.hornetq.jms.example.PerfListener" fork="true" resultproperty="example-result">         
+         <jvmarg value="-Xms512M"/>
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>  
+         <arg line="${perf.properties.file.name}"/>
+         <classpath refid="the.classpath"/>
+      </java>
+   </target>
+
+   <target name="runServer" depends="compile">
+      <java classname="org.hornetq.common.example.SpawnedHornetQServer" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms2048M"/>
+		   <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+UseParallelGC"/> 
+      	<sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
+         <arg line="hornetq-beans.xml"/>
+         <classpath refid="server.classpath"/>
+      </java>
+   </target>
+
+</project>

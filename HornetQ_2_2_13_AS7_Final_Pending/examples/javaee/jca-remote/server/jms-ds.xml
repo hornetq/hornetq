@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+
+
+<!-- This file will be deployed by the target deploy on build.xml -->
+<connection-factories>
+
+
+   <!--
+    JMS XA Resource adapter, use this for outbound JMS connections.
+    Inbound connections are defined at the @MDB activaction or at the resource-adapter properties.
+   -->
+   <tx-connection-factory>
+      <jndi-name>RemoteJmsXA</jndi-name>
+      <xa-transaction/>
+      <rar-name>hornetq-ra.rar</rar-name>
+      <connection-definition>org.hornetq.ra.HornetQRAConnectionFactory</connection-definition>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <!--if we over ride the connector class we must over ride the params too-->
+      <config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property>
+      <config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446</config-property>
+      <max-pool-size>20</max-pool-size>
+   </tx-connection-factory>
+  
+  
+</connection-factories>

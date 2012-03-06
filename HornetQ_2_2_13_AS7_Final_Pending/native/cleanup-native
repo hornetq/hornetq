@@ -1,0 +1,20 @@
+rm -r *log
+rm -r autom4te.cache
+rm -r aclocal.m4
+rm -r config.h
+rm -r config.in
+rm -r config.status
+rm -r configure
+rm -r libtool
+rm -r Makefile
+rm -r Makefile.in
+rm -r stamp-h1
+rm -r ./src/Makefile
+rm -r ./src/Makefile.in
+rm -r ./src/*.o
+rm -r ./src/.deps
+rm -r ./src/.libs
+rm -r ./src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h
+rm -r ./src/disktest
+rm -r build-aux
+

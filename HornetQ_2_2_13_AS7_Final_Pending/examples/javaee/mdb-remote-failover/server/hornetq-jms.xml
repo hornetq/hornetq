@@ -1,0 +1,33 @@
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+
+<configuration xmlns="urn:hornetq"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
+   <connection-factory name="ConnectionFactory">
+      <connectors>
+         <connector-ref connector-name="netty"/>
+      </connectors>
+      <entries>
+         <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
+      </entries>
+   </connection-factory>
+
+   <queue name="A">
+      <entry name="/queue/A"/>
+   </queue>
+   <queue name="B">
+      <entry name="/queue/B"/>
+   </queue>
+</configuration>

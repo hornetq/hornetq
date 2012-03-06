@@ -1,0 +1,115 @@
+<html>
+  <head>
+    <title>HornetQ Java EE SSL Servlet Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Java EE SSL Servlet Example</h1>
+
+     <p>This example shows you how to configure and use servlet transport over SSL with HornetQ.</p>
+     
+     <h2>JBoss AS configuration</h2>
+
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+    
+     <h2>Example Configuration</h2>
+
+     <p>In the configuration, the hornetq.example.keystore is the key store file holding client certificate. The hornetq.example.truststore 
+       is the file for server to hold trusted client certificates. They are pre-generated for illustration purpose<a id="fnr1" href="#fn1"><sup>1</sup></a>.</p>
+  
+
+     <h2>Example step-by-step</h2>
+     <p><em>To deploy and start the server, type simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows)from the example directory</br >
+     Once the server has started type simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) to run the example.<br />
+     To remove the new profile type simply type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows).</em></p>
+     
+
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+        <pre class="prettyprint">
+           <code>initialContext = new InitialContext();</code>
+        </pre>
+
+        <li>We look up the JMS queue object from JNDI</li>
+        <pre class="prettyprint">
+           <code>Queue queue = (Queue) initialContext.lookup("/queue/testQueue");</code>
+        </pre>
+
+        <li>We look up the JMS connection factory object from JNDI</li>
+        <pre class="prettyprint">
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestServletConnectionFactory");</code>
+        </pre>
+
+        <li>We create a JMS connection</li>
+        <pre class="prettyprint">
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <pre class="prettyprint">
+           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+
+        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
+        <pre class="prettyprint">
+          <code>MessageProducer messageProducer = session.createProducer(queue);</code>
+       </pre>
+
+        <li>We create a JMS text messages that we are going to send.</li>
+        <pre class="prettyprint">
+           <code> TextMessage message = session.createTextMessage("This is a text message");</code>
+        </pre>
+
+        <li>We send messages to the queue</li>
+        <pre class="prettyprint">
+           <code>messageProducer.send(message);</code>
+        </pre>
+        
+        <li>We create a JMS Message Consumer</li>
+        <pre class="prettyprint">
+           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
+        </pre>
+            
+        <li>We start the connection</li>
+        <pre class="prettyprint">
+            <code>connection.start();</code>
+        </pre>
+            
+        <li>We receive the message</li>
+        <pre class="prettyprint">
+            <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre class="prettyprint">
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+     </ol>
+     
+      <hr>
+
+      <ol>
+          <li><a id="fn1">The stores were generating using the following commands&nbsp;<a href="#fnr1">&#8617;</a>:
+              <ul>
+                  <li>create the keystore: <code>keytool -genkey -keystore hornetq.example.keystore -storepass hornetqexample</code>
+                  <li>export the certificate: <code>keytool -export -keystore hornetq.example.keystore -file hornetq.cer</code>
+                  <li>create the truststore: <code>keytool -import -file hornetq.cer -keystore hornetq.example.truststore -storepass hornetqexample</code>
+             </ul>
+         </li>
+     </ol>
+     
+  </body>
+</html>

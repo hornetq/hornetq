@@ -1,0 +1,228 @@
+<html>
+  <head>
+    <title>HornetQ Java EE JCA Configuration Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Java EE Resource Adapter Configuration Example</h1>
+     <p>This example demonstrates how to configure several properties on the HornetQ Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
+     <p>This example is composed of two message-driven beans (MDB), MDBQueueA and MDBQueueB, and a stateless session
+         bean StatelessSender and a main class MDBRemoteClientExample.<p>
+     <p>MDBRemoteClientExample will invoke the StatelessSender bean which will in tirun send a message to 2 queues which
+         will then be consumed by each MDB.</p>
+     <p>MDBQueueA is on the same server as the StatelessSender bean and consumes the message locally.</p>
+     <p>MDBQueueB is on the second server who's JCA Adapter is configured to consume remotely from the first server</p> 
+     <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the
+         Java Connectors Architecture specification.</p>
+     <p>HornetQ provides its own adapter and this example will provide you a quick tutorial on how to configure some of
+         the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
+     <p>This ResourceAdapter is what provides integration for Message-Driven Beans or DataSource integration on the
+         application server.</p>
+     <h2>MDB Properties</h2>
+     <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
+        <pre class="prettyprint">
+           @MessageDriven(name = "MessageMDBExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"),
+                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "hornetq.remoting.netty.port=5545")
+                     })
+            public class MDBRemoteExample implements MessageListener
+        </pre>
+     <p>MDB Properties can also be defined on XML Files. The <a href="http://www.jboss.org/file-access/default/members/jbossejb3/freezone/docs/tutorial/1.0.6/html/Message_Driven_Beans_with_deployment_descriptor.html"> JBoss EJB3 Documentation</a> will have more information.</p>
+
+     <h2>Specifying a different resource adapter</h2>
+     
+     <p>Optionally you could also define the resource adapter you are using. On JBoss EJB3 there is a JBoss specific tag where you can define the Resource-adapter file name:</p>
+     
+<pre class="prettyprint">
+
+...
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
+@MessageDriven(name = "MessageMDBExample",
+               activationConfig =
+                     {
+                                ...
+                     })
+                     @ResourceAdapter("example-hornetq-ra.rar")
+public class MDBRemoteExample implements MessageListener
+...
+</pre>
+
+     <p>In this example however we will configure the default adapter.</p>
+
+     <p>Other application servers will provide different ways of binding the resource-adapter.</p>
+     
+     <h2>Connection Factory Properties</h2>
+     <p>You can configure ConnectionFactories that you use outside of the MDB context, such as in your SessionBeans. On JBoss Application Server, that could be defined on a datasource deployment file (-ds.xml), using Configuration-properties on the connection factory.</p>
+
+     <p>For example, jms-remote-ds.xml</p>        
+<pre class="prettyprint">
+&lt;connection-factories&gt;
+
+
+   &lt;tx-connection-factory&gt;
+      &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
+      &lt;xa-transaction/&gt;
+      &lt;rar-name&gt;jms-ra.rar&lt;/rar-name&gt;
+      &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
+      &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
+      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
+      &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;hornetq.remoting.netty.port=5545&lt;/config-property&gt;
+      &lt;max-pool-size>20&lt;/max-pool-size&gt;
+   &lt;/tx-connection-factory&gt;
+
+
+&lt;/connection-factories&gt;
+</pre>     
+
+     <h2>Resource Adapter Global Properties</h2>
+     <p>It is possible to also change global configuration at the HornetQ resource adapter. The default installation script will install the HornetQ resource adapter at $JBOSS_HOME/server/<i>YOUR-SERVER</i>/deploy/hornetq-ra.rar.</p>
+     <p>To change these properties, open the ra.xml under jms-ra.rar/META-INF</p>
+     <p>Example for ra.xml:</p>
+<pre class="prettyprint">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5"&gt;
+
+...
+
+
+   &lt;resourceadapter&gt;
+      &lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
+      &lt;config-property&gt;
+         &lt;description&gt;The transport type&lt;/description&gt;
+         &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
+         &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+         &lt;config-property-value&gt;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+      &lt;config-property&gt;
+         &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
+         &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
+         &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+         &lt;config-property-value&gt;server-id=0&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+       &lt;config-property&gt;
+        &lt;description&gt;Use XA methods to obtain connections?&lt;/description&gt;
+        &lt;config-property-name&gt;UseXA&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;java.lang.Boolean&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;true&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+      &lt;config-property&gt;
+        &lt;description&gt;The user name used to login to the JMS server&lt;/description&gt;
+        &lt;config-property-name&gt;UserName&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+
+
+...
+</pre>
+     
+     <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>HornetQ Documentation</i> for more information about configuring the ra.xml properties.
+            
+     <p>You may choose to deploy multiple HornetQ resource adapters on the same application server, for example if you are connecting to different HornetQ servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
+
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+
+     
+     <h2>Example step-by-step</h2>
+     <p><i>To deploy and start the first server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from the example directory</i></p>
+     <p><i>After the first server has started start the second server, simply type <code>./build.sh deploy2</code> (or <code>build.bat deploy2</code> on windows) from the example directory</i></p>
+     <p><i>To run the example, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) from the example directory</i></p>
+     <p><i>To undeploy the example, simply type <code>./build.sh undeploy undeploy2</code> (or <code>build.bat undeploy undeploy2</code> on windows) from the example directory</i></p>
+     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
+
+     <ol>
+         <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+         <pre class="prettyprint">
+            initialContext = new InitialContext();
+         </pre>
+
+         <li>Getting a reference to the Stateless Bean</li>
+         <pre class="prettyprint">
+            StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("mdb-example/StatelessSender/remote");
+         </pre>
+         
+         <li>Calling the Stateless Bean</li>
+         <pre class="prettyprint">
+            sender.sendHello("Hello there MDB!");
+         </pre>
+
+         <li>On the second server we invoke the EJB StatelessSender: This will send 2 messages to server 1 using the configured outbound adapter</li>
+         <pre class="prettyprint">
+            HornetQQueue destQueueA = new HornetQQueue("A");
+            HornetQQueue destQueueB = new HornetQQueue("B");
+         </pre>
+      
+         <li>Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml). JCA will actually manage this thorugh a <i>Connection Pool</i></li>
+         <pre class="prettyprint">
+            Connection conn = connectionFactory.createConnection("guest", "guest");
+         </pre>
+      
+         <li>Send a message to a QueueA on server1, which will be received by MDBQueueA on server1</li>
+         <pre class="prettyprint">
+            Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer prodA = sess.createProducer(destQueueA);
+            prod.send(sess.createTextMessage(message));
+         </pre>
+
+         <li>Send a message to a QueueB on the remote server1, which will be received by MDBQueueA on server2</li>
+         <pre class="prettyprint">
+            MessageProducer prodB = sess.createProducer(destQueueB);
+            prodB.send(sess.createTextMessage(message));
+         </pre>
+
+         <li>Close the connection. (Since this is a JCA connection, this close will save the connection to a connection pool)</li>
+         <pre class="prettyprint">
+            conn.close();
+         </pre>
+         
+         <li>The message is received on the MDBQueueA on server1 which consumed from a local queue</li>
+
+         <pre class="prettyprint">
+@MessageDriven(name = "MDB_QueueA",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"))
+                     })
+public class MDBQueueA implements MessageListener
+{
+   public void onMessage(Message message).....
+         </pre>         
+          
+
+         <li>Another message is received on MDBQueueB on server2 which consumed from a remote queue on server1.
+
+         <pre class="prettyprint">
+@MessageDriven(name = "MDB_QueueB",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/B"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
+                    })
+              @ResourceAdapter("example-hornetq-ra.rar")
+
+public class MDBQueueB implements MessageListener
+{
+   public void onMessage(Message message).....
+         </pre>         
+          
+
+
+     </ol>
+  </body>
+</html>

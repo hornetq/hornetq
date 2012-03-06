@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file will be installed by the example mdb-remote/build.xml, deploy target.
+     This is an example of how you could change the default configuration of a resource adapter
+ -->
+
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+   <description>HornetQ 2.0 Resource Adapter Alternate Configuration</description>
+   <display-name>HornetQ 2.0 Resource Adapter Alternate Configuration</display-name>
+
+   <vendor-name>Red Hat Middleware LLC</vendor-name>
+   <eis-type>JMS 1.1 Server</eis-type>
+   <resourceadapter-version>1.0</resourceadapter-version>
+
+   <license>
+      <description>
+Copyright 2009 Red Hat, Inc.
+ Red Hat licenses this file to you under the Apache License, version
+ 2.0 (the "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+   http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied.  See the License for the specific language governing
+ permissions and limitations under the License.  
+      </description>
+      <license-required>true</license-required>
+   </license>
+
+   <resourceadapter>
+      <resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter</resourceadapter-class>
+      <config-property>
+         <description>
+            The transport type. Multiple connectors can be configured by using a comma separated list,
+            i.e. org.hornetq.core.remoting.impl.invm.InVMConnectorFactory,org.hornetq.core.remoting.impl.invm.InVMConnectorFactory.
+         </description>
+         <config-property-name>ConnectorClassName</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property-value>
+      </config-property>
+      <config-property>
+         <description>The transport configuration. These values must be in the form of key=val;key=val;,
+            if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
+            Each set of params maps to the connector classname specified.
+         </description>
+         <config-property-name>ConnectionParameters</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>host=127.0.0.1;port=5445</config-property-value>
+      </config-property>
+      
+      <outbound-resourceadapter>
+         <connection-definition>
+            <managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnectionFactory</managedconnectionfactory-class>
+
+            <config-property>
+               <description>The default session type</description>
+               <config-property-name>SessionDefaultType</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+               <config-property-value>javax.jms.Queue</config-property-value>
+            </config-property>
+            <config-property>
+               <description>Try to obtain a lock within specified number of seconds; less than or equal to 0 disable this functionality</description>
+               <config-property-name>UseTryLock</config-property-name>
+               <config-property-type>java.lang.Integer</config-property-type>
+               <config-property-value>0</config-property-value>
+            </config-property>
+
+            <connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.hornetq.ra.HornetQRAConnectionFactoryImpl</connectionfactory-impl-class>
+            <connection-interface>javax.jms.Session</connection-interface>
+            <connection-impl-class>org.hornetq.ra.HornetQRASession</connection-impl-class>
+         </connection-definition>
+         <transaction-support>XATransaction</transaction-support>
+         <authentication-mechanism>
+            <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+            <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+         </authentication-mechanism>
+         <reauthentication-support>false</reauthentication-support>
+      </outbound-resourceadapter>
+
+      <inbound-resourceadapter>
+         <messageadapter>
+            <messagelistener>
+               <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+               <activationspec>
+                  <activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec</activationspec-class>
+                  <required-config-property>
+                      <config-property-name>destination</config-property-name>
+                  </required-config-property>
+               </activationspec>
+            </messagelistener>
+         </messageadapter>
+      </inbound-resourceadapter>
+
+   </resourceadapter>
+</connector>

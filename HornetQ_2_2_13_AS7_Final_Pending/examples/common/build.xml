@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+<project default="compile" name="example" basedir=".">
+
+   <property name="hornetq.run_script" value="false" />
+
+   <fail message="*** Please build by using the build.sh script (or build.bat on Windows) *** ">
+      <condition>
+         <not>
+            <equals arg1="${hornetq.run_script}" arg2="true"/>
+         </not>
+      </condition>
+   </fail>
+
+   <dirname property="imported.basedir" file="${ant.file.example}"/>
+   <property file="${imported.basedir}/config/ant.properties"/>
+
+   <!--
+       This module is based on Java 1.5
+   -->
+
+   <property name="javac.target" value="1.5"/>
+   <property name="javac.source" value="1.5"/>
+
+   <property name="javac.debug" value="true"/>
+   <property name="javac.optimize" value="false"/>
+   <property name="javac.depend" value="false"/>
+   <property name="javac.verbose" value="false"/>
+   <property name="javac.deprecation" value="true"/>
+   <property name="javac.include.ant.runtime" value="false"/>
+   <property name="javac.include.java.runtime" value="true"/>
+   <property name="javac.fail.onerror" value="true"/>
+
+   <property name="src.dir" value="${imported.basedir}/src"/>
+   <property name="src.example.dir" location="src"/>
+   <property name="example.classname" value="this.shouldn't.be.run.directly"/>
+   <property name="hornetq.example.runServer" value="true"/>
+   <property name="hornetq.example.beans.file" value="server0"/>
+
+   <property name="build.dir" value="build"/>
+   <property name="classes.dir" value="${build.dir}/classes"/>
+   <property name="config.dir" value="${imported.basedir}/config"/>
+   <property name="example.config.dir" value="config"/>
+   <property name="client.args" value=""/>
+   <path id="extra.classpath">
+   </path>
+
+   <path id="compilation.classpath">
+      <fileset dir="${hornetq.jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+       <fileset dir="${jars.dir}">
+         <include  name="**/jboss-jms-api.jar"/>
+      </fileset>
+      <path refid="extra.classpath"/>
+   </path>
+
+   <path id="client.compilation.classpath">
+      <fileset dir="${hornetq.jars.dir}">
+         <include name="**/*client*.jar"/>
+         <include  name="**/jboss-jms-api.jar"/>
+      </fileset>
+       <fileset dir="${jars.dir}">
+         <include name="**/jboss-jms-api.jar"/>
+         <include name="**/netty.jar"/>
+      </fileset>
+      <path refid="extra.classpath"/>
+   </path>
+
+   <path id="client.classpath">
+      <path refid="client.compilation.classpath"/>
+      <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
+      <pathelement location="${classes.dir}"/>
+      <fileset dir="${hornetq.jars.dir}">
+       	 <include name="**/*client*.jar"/>
+      </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="**/netty*.jar"/>
+      </fileset>
+   </path>
+
+   <path id="server.classpath">
+      <path refid="compilation.classpath"/>
+      <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
+      <pathelement location="${classes.dir}"/>
+      <fileset dir="${jars.dir}">
+         <include name="org/jboss/naming/lib/jnpserver.jar"/>
+         <include name="org/jboss/netty/lib/netty*.jar"/>
+         <include name="org/twitter4j/lib/twitter4j*.jar"/>
+      </fileset>
+   </path>
+
+
+   <target name="init">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${classes.dir}"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <echo message="src.example.dir=${src.example.dir}"/>
+      <javac destdir="${classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.dir}"/>
+            <pathelement path="${src.example.dir}"/>
+         </src>
+         <classpath refid="compilation.classpath"/>
+      </javac>
+   </target>
+
+
+   <target name="runExample" depends="compile">
+
+      <property name="serverclasspath" refid="server.classpath"/>
+      <property name="clientClasspath" refid="client.classpath"/>
+      <!--<echo>client classpath = ${clientClasspath}</echo>-->
+      <property file="${imported.basedir}/config/server.properties"/>
+      <java classname="${example.classname}" fork="true" resultproperty="example-result">
+         <jvmarg line="${client.args}"/>
+         <jvmarg value="-Dhornetq.example.server.classpath=${serverclasspath}"/>
+         <jvmarg value="-Dhornetq.example.server.args=${server.args}"/>
+         <jvmarg value="-Dhornetq.example.logserveroutput=${hornetq.example.logserveroutput}"/>
+         <jvmarg value="-Dhornetq.example.runServer=${hornetq.example.runServer}"/>
+         <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-Dserver1=true"/>-->
+         <arg line="${hornetq.example.beans.file}"/>
+         <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <classpath refid="client.classpath"/>
+      </java>
+      <!-- if the example exited with a result value != 0, we fail the build -->
+      <fail message="Example ${example.classname} failed">
+         <condition>
+            <not>
+               <equals arg1="${example-result}" arg2="0"/>
+            </not>
+         </condition>
+      </fail>
+   </target>
+
+   <target name="clean-all">
+      <subant target="clean" failonerror="true">
+         <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
+      </subant>
+   </target>
+
+   <target name="clean">
+      <delete dir="./build" quiet="true"/>
+      <delete dir="./logs" quiet="true"/>
+      <delete dir="./server0/logs" quiet="true"/>
+      <delete dir="./server0/data" quiet="true"/>
+      <delete dir="./server0/build" quiet="true"/>
+      <delete dir="./server1/logs" quiet="true"/>
+      <delete dir="./server1/data" quiet="true"/>
+      <delete dir="./server2/logs" quiet="true"/>
+      <delete dir="./server2/data" quiet="true"/>
+      <delete dir="./server3/logs" quiet="true"/>
+      <delete dir="./server3/data" quiet="true"/>
+      <delete dir="./server4/logs" quiet="true"/>
+      <delete dir="./server4/data" quiet="true"/>
+      <delete dir="./server5/logs" quiet="true"/>
+      <delete dir="./server5/data" quiet="true"/>
+      <delete dir="./ObjectStore" quiet="true"/>
+      <delete dir="./data" quiet="true"/>
+      <!-- large-message creates huge .dat files -->
+      <delete>
+         <fileset dir=".">
+            <include name="*.dat"/>
+         </fileset>
+      </delete>
+   </target>
+
+   <target name="all" description="Run all the examples">
+      <subant target="run" failonerror="true">
+         <fileset dir="..">
+            <include name="core/*/build.xml"/>
+            <include name="jms/*/build.xml"/>
+            <exclude name="common/build.xml"/>
+            <exclude name="core/perf/build.xml"/>
+            <exclude name="core/twitter-connector/build.xml"/>
+            <exclude name="jms/applet/build.xml"/>
+            <exclude name="jms/clustered-standalone/build.xml"/>
+            <exclude name="jms/jms-bridge/build.xml"/>
+            <exclude name="jms/large-message/build.xml"/>
+            <exclude name="jms/perf/build.xml"/>
+            <exclude name="jms/stomp-websockets/build.xml"/>
+            <exclude name="jms/spring-integration/build.xml"/>
+            <exclude name="jms/stop-server-failover/build.xml"/>
+         </fileset>
+      </subant>
+   	
+   	<echo message="Do not forget to run the following examples manually!" />
+      <echo message="twitter-connector"/>
+      <echo message="applet"/>
+      <echo message="jms-bridge"/>
+      <echo message="large-message"/>
+      <echo message="stomp-websockets"/>
+      <echo message="spring-integration"/>
+      <echo message="stop-server-failover"/>
+   </target>
+
+</project>

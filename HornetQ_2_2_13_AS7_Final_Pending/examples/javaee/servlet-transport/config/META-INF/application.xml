@@ -1,0 +1,11 @@
+<application>
+  <display-name>My Application</display-name>
+
+  <module>
+    <web>
+      <web-uri>servlet-transport-example.war</web-uri>
+      <context-root>/messaging</context-root>
+    </web>
+  </module>
+   
+</application>
