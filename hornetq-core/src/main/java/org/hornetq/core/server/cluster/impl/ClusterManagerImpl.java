@@ -60,7 +60,7 @@ import org.hornetq.utils.UUID;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 18 Nov 2008 09:23:49
  *
  *
@@ -80,7 +80,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    private final PostOffice postOffice;
 
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private ClusterConnection defaultClusterConnection;
 
    private final ManagementService managementService;
@@ -155,7 +155,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       return str.toString();
    }
-   
+
    public ClusterConnection getDefaultConnection()
    {
       return defaultClusterConnection;
@@ -166,7 +166,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       return "ClusterManagerImpl[server=" + server + "]@" + System.identityHashCode(this);
    }
-   
+
    public String getNodeId()
    {
       return nodeUUID.toString();
@@ -202,7 +202,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             group.start();
          }
       }
-      
+
       for (ClusterConnection conn : clusterConnections.values())
       {
          conn.start();
@@ -357,7 +357,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
    }
 
-   public void announceBackup() throws Exception
+   @Override
+   public void announceBackup()
    {
       for (ClusterConnection conn : this.clusterConnections.values())
       {
@@ -399,7 +400,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       this.clusterLocators.remove(serverLocator);
    }
-   
+
    public synchronized void deployBridge(final BridgeConfiguration config, final boolean start) throws Exception
    {
       if (config.getName() == null)
@@ -503,7 +504,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       serverLocator.setProducerWindowSize(-1);
 
       // This will be set to 30s unless it's changed from embedded / testing
-      // there is no reason to exception the config for this timeout 
+      // there is no reason to exception the config for this timeout
       // since the Bridge is supposed to be non-blocking and fast
       // We may expose this if we find a good use case
       serverLocator.setCallTimeout(config.getCallTimeout());
@@ -537,7 +538,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       bridges.put(config.getName(), bridge);
 
       managementService.registerBridge(bridge, config);
-      
+
       if (start)
       {
          bridge.start();
@@ -594,14 +595,14 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    }
 
    // Private methods ----------------------------------------------------------------------------------------------------
-   
-   
+
+
    private void clearClusterConnections()
    {
       clusterConnections.clear();
       this.defaultClusterConnection = null;
    }
-   
+
    private void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
@@ -729,7 +730,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       {
          defaultClusterConnection = clusterConnection;
       }
-      
+
       managementService.registerCluster(clusterConnection, config);
 
       clusterConnections.put(config.getName(), clusterConnection);
@@ -739,7 +740,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          log.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
       }
    }
-   
+
    private Transformer instantiateTransformer(final String transformerClassName)
    {
       Transformer transformer = null;

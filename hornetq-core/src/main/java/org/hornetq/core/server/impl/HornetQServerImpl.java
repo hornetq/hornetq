@@ -2385,6 +2385,7 @@ public class HornetQServerImpl implements HornetQServer
    public void setRemoteBackupUpToDate(String nodeID)
    {
       nodeManager.setNodeID(nodeID);
+      clusterManager.announceBackup();
       backupUpToDate = true;
    }
 
