@@ -33,7 +33,7 @@ public final class ReplicatedBackupUtils
          conn.add(iConn);
       }
       ClusterConnectionConfiguration clusterConfig =
-               new ClusterConnectionConfiguration("cluster1", "jms", name, -1, false, false, 1, 1, conn, false);
+               new ClusterConnectionConfiguration("cluster1", "jms", name, 250, false, false, 1, 1, conn, false);
       configuration.getClusterConfigurations().add(clusterConfig);
    }
 

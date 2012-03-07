@@ -122,6 +122,8 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.connectorName = connectorName;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectionTTL = connectionTTL;
+      if (retryInterval <= 0)
+         throw new IllegalArgumentException("retry interval must be positive, was " + retryInterval);
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;
