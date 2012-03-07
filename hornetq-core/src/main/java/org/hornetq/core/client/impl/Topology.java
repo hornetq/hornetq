@@ -148,7 +148,7 @@ public final class Topology implements Serializable
    }
 
    /**
-    * @param uniqueEventID an unique identifier for when the change was made We will use current
+    * @param uniqueEventID an unique identifier for when the change was made. We will use current
     *           time millis for starts, and a ++ of that number for shutdown.
     * @param nodeId
     * @param memberInput
@@ -372,7 +372,6 @@ public final class Topology implements Serializable
    /**
     * it will send the member to its listeners
     * @param nodeID
-    * @param member
     */
    public void sendMember(final String nodeID)
    {
@@ -523,9 +522,6 @@ public final class Topology implements Serializable
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {

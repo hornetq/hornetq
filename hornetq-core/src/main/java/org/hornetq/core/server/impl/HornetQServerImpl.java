@@ -2374,7 +2374,8 @@ public class HornetQServerImpl implements HornetQServer
     * not take over the live's functions.
     * <p>
     * A local backup server or a live server should always return {@code true}
-    * @return
+    * @return whether the backup is up-to-date, if the server is not a backup it always returns
+    *         {@code true}.
     */
    public boolean isRemoteBackupUpToDate()
    {
