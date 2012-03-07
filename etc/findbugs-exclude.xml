@@ -14,6 +14,27 @@
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
 
+  <!-- Ok to return mutable Object -->
+  <Match>
+    <Or>
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage" />
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage" />
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  <!-- Ok to return mutable Object, here restricted to method getRecordData -->
+  <Match>
+    <Or>
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage" />
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage" />
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage" />
+      <Class name="org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage" />
+    </Or>
+    <Method name="getRecordData" />
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
   <!-- Comparison is correct within its context -->
   <Match>
     <Class name="org.hornetq.ra.Util"/>
