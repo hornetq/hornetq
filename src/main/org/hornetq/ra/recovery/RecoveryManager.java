@@ -21,17 +21,15 @@
 */
 package org.hornetq.ra.recovery;
 
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.TransportConfiguration;
+import java.util.Set;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.Util;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -44,8 +42,8 @@ public class RecoveryManager
    private RecoveryRegistry registry;
 
    private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
-
-   private Map<XARecoveryConfig, HornetQResourceRecovery> configMap = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
+   
+   private final Set<HornetQResourceRecovery> resources = new ConcurrentHashSet<HornetQResourceRecovery>(); 
 
    public void start()
    {
@@ -56,15 +54,19 @@ public class RecoveryManager
    {
       log.debug("registering recovery for factory : " + factory);
       
-      if(!isRegistered(factory) && registry != null)
+      XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);
+      HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
+      
+      if (registry != null)
       {
-         XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);
-         HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
-         registry.register(resourceRecovery);
-         configMap.put(xaRecoveryConfig, resourceRecovery);
-         return resourceRecovery;
+         resourceRecovery = registry.register(resourceRecovery);
+         if (resourceRecovery != null)
+         {
+            resources.add(resourceRecovery);
+         }
       }
-      return null;
+      
+      return resourceRecovery;
    }
 
    public void unRegister(HornetQResourceRecovery resourceRecovery)
@@ -74,11 +76,11 @@ public class RecoveryManager
 
    public void stop()
    {
-      for (HornetQResourceRecovery hornetQResourceRecovery : configMap.values())
+      for (HornetQResourceRecovery hornetQResourceRecovery : resources)
       {
          registry.unRegister(hornetQResourceRecovery);
       }
-      configMap.clear();
+      resources.clear();
    }
 
    private void locateRecoveryRegistry()
@@ -105,9 +107,9 @@ public class RecoveryManager
       {
          registry = new RecoveryRegistry()
          {
-            public void register(HornetQResourceRecovery resourceRecovery)
+            public HornetQResourceRecovery register(HornetQResourceRecovery resourceRecovery)
             {
-               //no op
+               return null;
             }
 
             public void unRegister(HornetQResourceRecovery xaRecoveryConfig)
@@ -122,50 +124,5 @@ public class RecoveryManager
       }
    }
 
-
-   public boolean isRegistered(HornetQConnectionFactory factory)
-   {
-      for (XARecoveryConfig xaRecoveryConfig : configMap.keySet())
-      {
-         TransportConfiguration[] transportConfigurations = factory.getServerLocator().getStaticTransportConfigurations();
-
-         if (transportConfigurations != null)
-         {
-            TransportConfiguration[] xaConfigurations = xaRecoveryConfig.getHornetQConnectionFactory().getServerLocator().getStaticTransportConfigurations();
-            if(xaConfigurations == null)
-            {
-               break;
-            }
-            if(transportConfigurations.length != xaConfigurations.length)
-            {
-               break;
-            }
-            boolean theSame=true;
-            for(int i = 0; i < transportConfigurations.length; i++)
-            {
-              TransportConfiguration tc = transportConfigurations[i];
-              TransportConfiguration xaTc = xaConfigurations[i];
-              if(!tc.equals(xaTc))
-              {
-                 theSame = false;
-                 break;
-              }
-            }
-            if(theSame)
-            {
-               return theSame;
-            }
-         }
-         else
-         {
-            DiscoveryGroupConfiguration discoveryGroupConfiguration = xaRecoveryConfig.getHornetQConnectionFactory().getServerLocator().getDiscoveryGroupConfiguration();
-            if(discoveryGroupConfiguration != null && discoveryGroupConfiguration.equals(factory.getDiscoveryGroupConfiguration()))
-            {
-               return true;
-            }
-         }
-      }
-      return false;
-   }
 
 }

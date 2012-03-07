@@ -32,15 +32,38 @@ import javax.transaction.xa.XAResource;
 public class HornetQResourceRecovery implements XAResourceRecovery
 {
    private final XARecoveryConfig config;
+   
+   private final XAResource[] xaResources;
+   
+   private int usage;
 
    public HornetQResourceRecovery(XARecoveryConfig config)
    {
       this.config = config;
+      this.xaResources =  new XAResource[]{new HornetQXAResourceWrapper(config)};
    }
 
    public XAResource[] getXAResources()
    {
-      return new XAResource[]{new HornetQXAResourceWrapper(config)};
+      return xaResources;
+   }
+   
+   public XARecoveryConfig getConfig()
+   {
+      return config;
+   }
+   
+   /** we may have several connection factories referencing the same connection recovery entry.
+    *  Because of that we need to make a count of the number of the instances that are referencing it,
+    *  so we will remove it as soon as we are done */
+   public synchronized int incrementUsage()
+   {
+      return ++usage;
+   }
+   
+   public synchronized int decrementUsage()
+   {
+      return --usage;
    }
 
    @Override

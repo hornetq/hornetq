@@ -16,6 +16,9 @@ package org.hornetq.jms.server.recovery;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
+ * 
+ * This represents the configuration of a single connection factory.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  *
  * A wrapper around info needed for the xa recovery resource
@@ -48,6 +51,11 @@ public class XARecoveryConfig
    public String getPassword()
    {
       return password;
+   }
+   
+   public HornetQConnectionFactory getFactory()
+   {
+      return hornetQConnectionFactory;
    }
 
    @Override

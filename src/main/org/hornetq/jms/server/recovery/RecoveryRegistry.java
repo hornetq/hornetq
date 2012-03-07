@@ -28,7 +28,7 @@ package org.hornetq.jms.server.recovery;
  */
 public interface RecoveryRegistry
 {
-   void register(HornetQResourceRecovery resourceRecovery);
+   HornetQResourceRecovery register(HornetQResourceRecovery resourceRecovery);
 
    void unRegister(HornetQResourceRecovery xaRecoveryConfig);
 }
