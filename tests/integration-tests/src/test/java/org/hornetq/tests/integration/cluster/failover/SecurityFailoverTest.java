@@ -124,10 +124,8 @@ public class SecurityFailoverTest extends FailoverTest
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1",
-                                                                                  "jms",
-                                                                                  backupConnector.getName(),
-                                                                                  -1,
+      ClusterConnectionConfiguration cccLive =
+               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10,
                                                                                   false,
                                                                                   false,
                                                                                   1,

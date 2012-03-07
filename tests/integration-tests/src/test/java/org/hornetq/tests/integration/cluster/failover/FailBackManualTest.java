@@ -125,7 +125,9 @@ public class FailBackManualTest extends FailoverTestBase
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
+      ClusterConnectionConfiguration cccLive =
+               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10, false, false, 1,
+                                                  1,
             staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupConfig.setAllowAutoFailBack(false);
@@ -139,7 +141,8 @@ public class FailBackManualTest extends FailoverTestBase
       liveConfig.setClustered(true);
       List<String> pairs = new ArrayList<String>();
       pairs.add(backupConnector.getName());
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
+      ClusterConnectionConfiguration ccc0 =
+               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 10, false, false, 1, 1,
             pairs, false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);

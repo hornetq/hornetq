@@ -61,25 +61,25 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
-      ((ServerLocatorInternal)locator).setIdentity("testAutoFailback");
-       
+      locator.setIdentity("testAutoFailback");
+
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
-      
+
       System.out.println(locator.getTopology().describe());
 
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
 
       session.addFailureListener(listener);
-      
+
       liveServer.crash();
-      
+
       assertTrue(latch.await(5, TimeUnit.SECONDS));
-      
+
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection().getTopology().describe());
-      
+
       log.info("Server Crash!!!");
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -93,7 +93,7 @@ public class FailBackAutoTest extends FailoverTestBase
       verifyMessageOnServer(1, 1);
 
       System.out.println(locator.getTopology().describe());
-      
+
 
       session.removeFailureListener(listener);
 
@@ -105,9 +105,9 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("******* starting live server back");
       liveServer.start();
-      
+
       Thread.sleep(1000);
-      
+
       System.out.println("After failback: " + locator.getTopology().describe());
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
@@ -159,7 +159,7 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      
+
       ClientSession session = sendAndConsume(sf, true);
 
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
@@ -184,7 +184,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("restarting live node now");
       liveServer.start();
-      
+
       assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
@@ -235,7 +235,9 @@ public class FailBackAutoTest extends FailoverTestBase
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
+      ClusterConnectionConfiguration cccLive =
+               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10, false, false, 1,
+                                                  1,
             staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupServer = createTestableServer(backupConfig);
@@ -249,7 +251,8 @@ public class FailBackAutoTest extends FailoverTestBase
       liveConfig.setClustered(true);
       List<String> pairs = new ArrayList<String>();
       pairs.add(backupConnector.getName());
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
+      ClusterConnectionConfiguration ccc0 =
+               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 10, false, false, 1, 1,
             pairs, false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -311,7 +314,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
 
       ClientMessage message3 = consumer.receiveImmediate();
-      
+
       consumer.close();
 
       Assert.assertNull(message3);
