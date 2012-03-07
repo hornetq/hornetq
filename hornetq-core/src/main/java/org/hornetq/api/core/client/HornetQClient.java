@@ -26,7 +26,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class HornetQClient
+public final class HornetQClient
 {
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = RoundRobinConnectionLoadBalancingPolicy.class.getCanonicalName();
 

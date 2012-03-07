@@ -32,7 +32,7 @@ import org.hornetq.core.logging.Logger;
  * @author Clebert Suconic
  *         Created Aug 16, 2010
  */
-public class Topology implements Serializable
+public final class Topology implements Serializable
 {
 
    private static final long serialVersionUID = -9037171688692471371L;

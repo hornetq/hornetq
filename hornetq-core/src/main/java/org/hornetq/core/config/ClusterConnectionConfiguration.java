@@ -24,28 +24,28 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ClusterConnectionConfiguration implements Serializable
+public final class ClusterConnectionConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8948303813427795935L;
 
    private final String name;
 
    private final String address;
-   
+
    private final String connectorName;
 
    private final long clientFailureCheckPeriod;
-   
+
    private final long connectionTTL;
-   
+
    private final long retryInterval;
-   
+
    private final double retryIntervalMultiplier;
-   
+
    private final long maxRetryInterval;
-   
+
    private final int reconnectAttempts;
-   
+
    private final long callTimeout;
 
    private final long callFailoverTimeout;
@@ -63,9 +63,9 @@ public class ClusterConnectionConfiguration implements Serializable
    private final int confirmationWindowSize;
 
    private final boolean allowDirectConnectionsOnly;
-   
+
    private final int minLargeMessageSize;
-   
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -138,7 +138,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.minLargeMessageSize = minLargeMessageSize;
    }
 
-   
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -217,7 +217,7 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return address;
    }
-   
+
    /**
     * @return the clientFailureCheckPeriod
     */
@@ -257,7 +257,7 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return reconnectAttempts;
    }
-   
+
    public long getCallTimeout()
    {
       return callTimeout;
@@ -321,6 +321,6 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return minLargeMessageSize;
    }
-   
-   
+
+
 }
