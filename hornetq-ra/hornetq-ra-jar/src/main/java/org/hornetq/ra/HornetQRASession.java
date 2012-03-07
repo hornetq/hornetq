@@ -50,13 +50,14 @@ import javax.jms.XATopicSession;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ManagedConnection;
+import javax.transaction.RollbackException;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.logging.Logger;
 
 /**
  * A joint interface for JMS sessions
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -79,10 +80,10 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    private HornetQRASessionFactory sf;
 
    /** The message consumers */
-   private final Set consumers;
+   private final Set<MessageConsumer> consumers;
 
    /** The message producers */
-   private final Set producers;
+   private final Set<MessageProducer> producers;
 
    /**
     * Constructor
@@ -99,8 +100,8 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       this.mc = mc;
       this.cri = cri;
       sf = null;
-      consumers = new HashSet();
-      producers = new HashSet();
+      consumers = new HashSet<MessageConsumer>();
+      producers = new HashSet<MessageProducer>();
    }
 
    /**
@@ -543,7 +544,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * Create a topic subscriber
     * @param topic The topic
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
@@ -630,7 +631,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * @param topic The topic
     * @param name The name
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
@@ -1100,7 +1101,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * Create a message consumer
     * @param destination The destination
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The message consumer
     * @exception JMSException Thrown if an error occurs
     */
@@ -1339,7 +1340,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       return mc;
    }
-   
+
    /**
     * Destroy
     */
@@ -1425,7 +1426,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          synchronized (consumers)
          {
-            for (Iterator i = consumers.iterator(); i.hasNext();)
+            for (Iterator<MessageConsumer> i = consumers.iterator(); i.hasNext();)
             {
                HornetQRAMessageConsumer consumer = (HornetQRAMessageConsumer)i.next();
                try
@@ -1442,7 +1443,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          synchronized (producers)
          {
-            for (Iterator i = producers.iterator(); i.hasNext();)
+            for (Iterator<MessageProducer> i = producers.iterator(); i.hasNext();)
             {
                HornetQRAMessageProducer producer = (HornetQRAMessageProducer)i.next();
                try
@@ -1621,9 +1622,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    }
 
    /**
-    * @throws SystemException 
-    * @throws RollbackException 
-    * 
+    * @throws SystemException
+    * @throws RollbackException
+    *
     */
    public void checkState() throws JMSException
    {
