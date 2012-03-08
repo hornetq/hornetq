@@ -37,20 +37,6 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 public class SecurityFailoverTest extends FailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    protected ClientSession createSession(ClientSessionFactory sf,
                                          boolean isXA,
                                          boolean autoCommitSends,
@@ -146,16 +132,9 @@ public class SecurityFailoverTest extends FailoverTest
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
       List<String> pairs = null;
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1",
-                                                                               "jms",
-                                                                               liveConnector.getName(),
-                                                                               -1,
-                                                                               false,
-                                                                               false,
-                                                                               1,
-                                                                               1,
-                                                                               pairs,
-                                                                               false);
+      ClusterConnectionConfiguration ccc0 =
+               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 100, false, false, 1, 1,
+                                                  pairs, false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
