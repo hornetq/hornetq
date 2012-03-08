@@ -152,7 +152,7 @@ public final class Topology implements Serializable
     *           time millis for starts, and a ++ of that number for shutdown.
     * @param nodeId
     * @param memberInput
-    * @return
+    * @return {@code true} if an update did take place. Note that backups are *always* updated.
     */
    public boolean updateMember(final long uniqueEventID, final String nodeId, final TopologyMember memberInput)
    {

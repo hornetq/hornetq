@@ -76,10 +76,10 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /*
- * Session implementation 
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
+ * Session implementation
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
@@ -421,7 +421,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    /**
     * For test cases only
-    * @return
+    * @return RemotingConnection
     */
    public RemotingConnection getRemotingConnection()
    {
@@ -587,7 +587,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
+
       if (consumer == null)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server");
@@ -640,7 +640,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    /**
-    * 
+    *
     * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
     * @param considerLastMessageAsDelivered
     * @throws Exception
@@ -1090,7 +1090,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          return;
       }
-      
+
       consumer.receiveCredits(credits);
    }
 
@@ -1105,7 +1105,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.trace("sendLarge::" + largeMsg);
       }
-      
+
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
@@ -1117,7 +1117,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
-      
+
       SimpleString address = message.getAddress();
 
       message.setMessageID(id);
@@ -1326,7 +1326,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Public
    // ----------------------------------------------------------------------------
-   
+
    public void clearLargeMessage()
    {
       currentLargeMessage = null;

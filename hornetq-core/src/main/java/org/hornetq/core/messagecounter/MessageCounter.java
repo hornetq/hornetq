@@ -83,14 +83,13 @@ public class MessageCounter
    // Constructors --------------------------------------------------
 
    /**
-    *    Constructor
-    *
-    * @param name             destination name
-    * @param subscription     subscription name
-    * @param queue            internal queue object
-    * @param topic            topic destination flag
-    * @param durable          durable subsciption flag
-    * @param daycountmax      max message history day count
+    * Constructor
+    * @param name destination name
+    * @param subscription subscription name
+    * @param serverQueue internal queue object
+    * @param topic topic destination flag
+    * @param durable durable subscription flag
+    * @param daycountmax max message history day count
     */
    public MessageCounter(final String name,
                          final String subscription,
