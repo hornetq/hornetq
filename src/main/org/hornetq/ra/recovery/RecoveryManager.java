@@ -54,8 +54,7 @@ public class RecoveryManager
    {
       log.debug("registering recovery for factory : " + factory);
       
-      XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);
-      HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
+      HornetQResourceRecovery resourceRecovery = newResourceRecovery(factory, userName, password);
       
       if (registry != null)
       {
@@ -66,6 +65,31 @@ public class RecoveryManager
          }
       }
       
+      return resourceRecovery;
+   }
+
+   /**
+    * @param factory
+    * @param userName
+    * @param password
+    * @return
+    */
+   private HornetQResourceRecovery newResourceRecovery(HornetQConnectionFactory factory,
+                                                       String userName,
+                                                       String password)
+   {
+      XARecoveryConfig xaRecoveryConfig;
+
+      if (factory.getServerLocator().getDiscoveryGroupConfiguration() != null)
+      {
+         xaRecoveryConfig = new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getDiscoveryGroupConfiguration(), userName, password);
+      }
+      else
+      {
+         xaRecoveryConfig = new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getStaticTransportConfigurations(), userName, password);
+      }
+      
+      HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
       return resourceRecovery;
    }
 

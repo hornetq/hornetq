@@ -13,14 +13,9 @@
 
 package org.hornetq.jms.server.recovery;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
@@ -28,7 +23,6 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * we verify if a given connection factory already have a recovery registered
  *
  * @author Clebert
- * @author Andy Taylor
  *
  *
  */
@@ -40,7 +34,7 @@ public abstract class HornetQRegistryBase implements RecoveryRegistry
 
    // Attributes ----------------------------------------------------
 
-   private static Set<HornetQResourceRecovery> configSet = new HashSet<HornetQResourceRecovery>();
+   private static HashMap<XARecoveryConfig, HornetQResourceRecovery> configSet = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
 
    // Static --------------------------------------------------------
 
@@ -54,32 +48,46 @@ public abstract class HornetQRegistryBase implements RecoveryRegistry
    {
       synchronized (configSet)
       {
-         HornetQResourceRecovery usedInstance = locateSimilarResource(resourceRecovery);
-         if (usedInstance == null)
+         HornetQResourceRecovery recovery = configSet.get(resourceRecovery.getConfig());
+         
+         if (recovery == null)
+         {
+            recovery = resourceRecovery;
+            if (log.isDebugEnabled())
+            {
+               log.debug("Registering a new recovery for " + recovery.getConfig() + ", recovery = " + resourceRecovery);
+            }
+            configSet.put(resourceRecovery.getConfig(), resourceRecovery);
+            getTMRegistry().addXAResourceRecovery(recovery);
+         }
+         else
          {
             if (log.isDebugEnabled())
             {
-               log.debug("Adding " + resourceRecovery.getConfig() + " resource = " + resourceRecovery);
+               log.info("Return pre-existent recovery=" + recovery + " for configuration = " + resourceRecovery.getConfig());
             }
-            usedInstance = resourceRecovery;
-            configSet.add(usedInstance);
-            getTMRegistry().addXAResourceRecovery(usedInstance);
          }
-         usedInstance.incrementUsage();
-         return usedInstance;
+         recovery.incrementUsage();
+         return recovery;
       }
    }
 
 
 
-   public synchronized void unRegister(final HornetQResourceRecovery resourceRecovery)
+   public void unRegister(final HornetQResourceRecovery resourceRecovery)
    {
       synchronized (configSet)
       {
-         // The same resource could have been reused by more than one resource manager or factory
-         if (resourceRecovery.decrementUsage() == 0)
+         HornetQResourceRecovery recFound = configSet.get(resourceRecovery.getConfig());
+         
+         if (recFound != null && recFound.decrementUsage() == 0)
          {
-            getTMRegistry().removeXAResourceRecovery(resourceRecovery);
+            if (log.isDebugEnabled())
+            {
+               log.debug("Removing recovery information for " + recFound + " as all the deployments were already removed");
+            }
+            getTMRegistry().removeXAResourceRecovery(recFound);
+            configSet.remove(resourceRecovery);
          }
       }
    }
@@ -89,77 +97,6 @@ public abstract class HornetQRegistryBase implements RecoveryRegistry
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
-   private static HornetQResourceRecovery locateSimilarResource(HornetQResourceRecovery resourceInput)
-   {
-      HornetQConnectionFactory factory = resourceInput.getConfig().getFactory();
-      
-      TransportConfiguration[] transportConfigurations = resourceInput.getConfig().getFactory().getServerLocator()
-               .getStaticTransportConfigurations();
-
-      
-      if (log.isTraceEnabled())
-      {
-         log.trace("############################################## looking for a place on " + Arrays.toString(transportConfigurations));
-      }
-      
-      for (HornetQResourceRecovery resourceScan : configSet)
-      {
-         XARecoveryConfig xaRecoveryConfig = resourceScan.getConfig();
-
-         if (transportConfigurations != null)
-         {
-            TransportConfiguration[] xaConfigurations = xaRecoveryConfig.getHornetQConnectionFactory().getServerLocator()
-                  .getStaticTransportConfigurations();
-            
-            if (log.isTraceEnabled())
-            {
-               log.trace("Checking " + Arrays.toString(transportConfigurations) + " against " + Arrays.toString(xaConfigurations));
-            }
-
-            if (xaConfigurations == null)
-            {
-               continue;
-            }
-            if (transportConfigurations.length != xaConfigurations.length)
-            {
-               if (log.isTraceEnabled())
-               {
-                  log.trace(Arrays.toString(transportConfigurations) + " != " + Arrays.toString(xaConfigurations) + " because of size");
-               }
-               continue;
-            }
-            boolean theSame = true;
-            for (int i = 0; i < transportConfigurations.length; i++)
-            {
-               TransportConfiguration tc = transportConfigurations[i];
-               TransportConfiguration xaTc = xaConfigurations[i];
-               if (!tc.equals(xaTc))
-               {
-                  log.info(Arrays.toString(transportConfigurations) + " != " + Arrays.toString(xaConfigurations) + " because of " + tc + " != " + xaTc);
-                  theSame = false;
-                  break;
-               }
-            }
-            if (theSame)
-            {
-               return resourceScan;
-            }
-         } else
-         {
-            DiscoveryGroupConfiguration discoveryGroupConfiguration = xaRecoveryConfig.getHornetQConnectionFactory()
-                  .getServerLocator().getDiscoveryGroupConfiguration();
-            if (discoveryGroupConfiguration != null && discoveryGroupConfiguration.equals(factory.getDiscoveryGroupConfiguration()))
-            {
-               return resourceScan;
-            }
-         }
-      }
-
-      return null;
-
-   }
-
-   // Inner classes -------------------------------------------------
+    // Inner classes -------------------------------------------------
 
 }
