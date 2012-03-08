@@ -2108,7 +2108,7 @@ public class HornetQServerImpl implements HornetQServer
 
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
-            final QuorumManager quorumManager = new QuorumManager(serverLocator0);
+            final QuorumManager quorumManager = new QuorumManager(serverLocator0, threadPool);
             replicationEndpoint.setQuorumManager(quorumManager);
 
             serverLocator0.setReconnectAttempts(-1);

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,12 +34,15 @@ public final class QuorumManager implements ClusterTopologyListener
    private final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
             new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
 
+   private final ExecutorService executor;
+
    /** safety parameter to make _sure_ we get out of await() */
    private static final int LATCH_TIMEOUT = 60;
    private static final long DISCOVERY_TIMEOUT = 5;
 
-   public QuorumManager(ServerLocator serverLocator)
+   public QuorumManager(ServerLocator serverLocator, ExecutorService executor)
    {
+      this.executor = executor;
       this.locator = serverLocator;
       locator.addClusterTopologyListener(this);
    }
@@ -81,11 +83,10 @@ public final class QuorumManager implements ClusterTopologyListener
       {
          return true;
       }
-      // go for the vote...
+
       final int size = nodes.size();
       Set<ServerLocator> locatorsList = new HashSet<ServerLocator>(size);
       AtomicInteger pingCount = new AtomicInteger(0);
-      ExecutorService pool = Executors.newFixedThreadPool(size);
       final CountDownLatch latch = new CountDownLatch(size);
       try
       {
@@ -96,7 +97,7 @@ public final class QuorumManager implements ClusterTopologyListener
             TransportConfiguration serverTC = pair.getValue().getA();
             ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);
             locatorsList.add(locator);
-            pool.submit(new ServerConnect(latch, pingCount, locator));
+            executor.submit(new ServerConnect(latch, pingCount, locator));
          }
          // Some servers may have disappeared between the latch creation
          for (int i = 0; i < size - locatorsList.size(); i++)
@@ -125,7 +126,6 @@ public final class QuorumManager implements ClusterTopologyListener
                // no-op
             }
          }
-         pool.shutdownNow();
       }
    }
 
@@ -145,7 +145,7 @@ public final class QuorumManager implements ClusterTopologyListener
       @Override
       public void run()
       {
-         locator.setReconnectAttempts(-1);
+         locator.setReconnectAttempts(0);
          locator.getDiscoveryGroupConfiguration().setDiscoveryInitialWaitTimeout(DISCOVERY_TIMEOUT);
 
          final ClientSessionFactory liveServerSessionFactory;

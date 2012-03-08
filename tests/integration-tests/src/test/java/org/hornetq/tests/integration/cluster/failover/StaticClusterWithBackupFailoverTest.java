@@ -23,15 +23,6 @@ package org.hornetq.tests.integration.cluster.failover;
 public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailoverTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
    @Override
    protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
