@@ -543,8 +543,8 @@ public class FailoverTest extends FailoverTestBase
       }
       System.out.println("received.size() = " + received.size());
       session.close();
-
-      Assert.assertTrue(retry <= 5);
+      final int retryLimit = 5;
+      Assert.assertTrue("Number of retries (" + retry + ")should be <= " + retryLimit, retry <= retryLimit);
    }
 
    private void createClientSessionFactory() throws Exception

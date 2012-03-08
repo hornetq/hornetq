@@ -110,13 +110,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
-      
-      
-      
+
+
+
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
-      
+
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
@@ -376,7 +376,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 	   }
 
 
-	   protected void crash(final ClientSession... sessions) throws Exception
+   protected void crash(final ClientSession... sessions) throws Exception
    {
       liveServer.crash(sessions);
    }

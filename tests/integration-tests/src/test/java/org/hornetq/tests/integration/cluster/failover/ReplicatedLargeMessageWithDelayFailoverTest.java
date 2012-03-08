@@ -26,6 +26,14 @@ public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLarge
    }
 
    @Override
+   protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   {
+      syncDelay.deliverUpToDateMsg();
+      waitForBackup(null, 5);
+      super.crash(waitFailure, sessions);
+   }
+
+   @Override
    protected void tearDown() throws Exception
    {
       syncDelay.deliverUpToDateMsg();
