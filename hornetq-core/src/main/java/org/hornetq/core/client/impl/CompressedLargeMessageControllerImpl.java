@@ -40,7 +40,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  *
  */
-public class CompressedLargeMessageControllerImpl implements LargeMessageController
+class CompressedLargeMessageControllerImpl implements LargeMessageController
 {
 
    // Constants -----------------------------------------------------
@@ -49,7 +49,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
 
    // Attributes ----------------------------------------------------
 
-   final LargeMessageController bufferDelegate;
+   private final LargeMessageController bufferDelegate;
 
    // Static --------------------------------------------------------
 
@@ -115,7 +115,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    {
       return -1;
    }
-   
+
    DataInputStream dataInput = null;
 
    private DataInputStream getStream()
@@ -1002,14 +1002,6 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#compareTo(org.hornetq.api.core.buffers.ChannelBuffer)
-    */
-   public int compareTo(final HornetQBuffer buffer)
-   {
-      return -1;
-   }
-
    public HornetQBuffer copy()
    {
       throw new UnsupportedOperationException();
@@ -1020,15 +1012,6 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
       throw new UnsupportedOperationException();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   /**
-    * @param body
-    */
    // Inner classes -------------------------------------------------
 
    public ChannelBuffer channelBuffer()

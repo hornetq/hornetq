@@ -80,7 +80,7 @@ public class FileConfigurationParser
 
    private static final String ROLES_ATTR_NAME = "roles";
 
-   private static final String CREATEDURABLEQUEUE_NAME = "createDurableQueue";
+   static final String CREATEDURABLEQUEUE_NAME = "createDurableQueue";
 
    private static final String DELETEDURABLEQUEUE_NAME = "deleteDurableQueue";
 
@@ -431,8 +431,8 @@ public class FileConfigurationParser
                                                                 "journal-directory",
                                                                 config.getJournalDirectory(),
                                                                 Validators.NOT_NULL_OR_EMPTY));
-      
-      
+
+
       config.setPageMaxConcurrentIO(XMLConfigurationUtil.getInteger(e,
                                                                     "page-max-concurrent-io",
                                                                     5,
@@ -1016,7 +1016,7 @@ public class FileConfigurationParser
                                                     "max-hops",
                                                     ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS,
                                                     Validators.GE_ZERO);
-      
+
       long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e, "check-period",
                                                                    ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
 
@@ -1028,18 +1028,18 @@ public class FileConfigurationParser
                                                         "retry-interval",
                                                         ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
-      
+
       long callTimeout = XMLConfigurationUtil.getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
 
       long callFailoverTimeout = XMLConfigurationUtil.getLong(e, "call-failover-timeout", HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
-                                                        
-      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier", 
+
+      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier",
                                                                       ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER, Validators.GT_ZERO);
-      
+
       int minLargeMessageSize = XMLConfigurationUtil.getInteger(e, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, Validators.GT_ZERO);
-      
+
       long maxRetryInterval = XMLConfigurationUtil.getLong(e, "max-retry-interval", ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
-      
+
       int reconnectAttempts = XMLConfigurationUtil.getInteger(e, "reconnect-attempts", ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
 
 
@@ -1167,14 +1167,14 @@ public class FileConfigurationParser
 
       long connectionTTL = XMLConfigurationUtil.getLong(brNode, "connection-ttl",
                                                         HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO) ;
-      
+
       int minLargeMessageSize = XMLConfigurationUtil.getInteger(brNode,
                                                                 "min-large-message-size",
                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                 Validators.GT_ZERO);
-      
+
       long maxRetryInterval = XMLConfigurationUtil.getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
-      
+
 
       double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(brNode,
                                                                       "retry-interval-multiplier",

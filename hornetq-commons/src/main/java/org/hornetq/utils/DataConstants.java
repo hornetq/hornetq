@@ -14,13 +14,13 @@
 package org.hornetq.utils;
 
 /**
- * 
+ *
  * A DataConstants
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class DataConstants
+public final class DataConstants
 {
    public static final int SIZE_INT = 4;
 
@@ -36,7 +36,7 @@ public class DataConstants
 
    public static final int SIZE_FLOAT = 4;
 
-   public static final int SIZE_CHAR = 2;
+   static final int SIZE_CHAR = 2;
 
    public static final byte TRUE = 1;
 

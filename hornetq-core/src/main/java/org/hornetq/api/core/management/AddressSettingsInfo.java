@@ -29,27 +29,27 @@ public class AddressSettingsInfo
 
    // Attributes ----------------------------------------------------
 
-   private String addressFullMessagePolicy;
+   private final String addressFullMessagePolicy;
 
-   private long maxSizeBytes;
+   private final long maxSizeBytes;
 
-   private int pageSizeBytes;
-   
+   private final int pageSizeBytes;
+
    private int pageCacheMaxSize;
 
-   private int maxDeliveryAttempts;
+   private final int maxDeliveryAttempts;
 
-   private long redeliveryDelay;
+   private final long redeliveryDelay;
 
-   private String deadLetterAddress;
+   private final String deadLetterAddress;
 
-   private String expiryAddress;
+   private final String expiryAddress;
 
-   private boolean lastValueQueue;
+   private final boolean lastValueQueue;
 
-   private long redistributionDelay;
+   private final long redistributionDelay;
 
-   private boolean sendToDLAOnNoRoute;
+   private final boolean sendToDLAOnNoRoute;
 
    // Static --------------------------------------------------------
 

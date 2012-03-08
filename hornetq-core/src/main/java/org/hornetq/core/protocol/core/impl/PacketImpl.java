@@ -333,7 +333,7 @@ public class PacketImpl implements Packet
 
    // Protected -----------------------------------------------------
 
-   protected int stringEncodeSize(final String str)
+   private int stringEncodeSize(final String str)
    {
       return DataConstants.SIZE_INT + str.length() * 2;
    }

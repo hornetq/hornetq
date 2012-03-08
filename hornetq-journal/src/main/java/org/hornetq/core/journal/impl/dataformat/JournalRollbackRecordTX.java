@@ -25,7 +25,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
  */
 public class JournalRollbackRecordTX extends JournalInternalRecord
 {
-   public final long txID;
+   private final long txID;
 
    public JournalRollbackRecordTX(final long txID)
    {

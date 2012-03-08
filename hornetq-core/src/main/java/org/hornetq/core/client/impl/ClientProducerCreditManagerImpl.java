@@ -41,7 +41,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
    private final int windowSize;
 
-   public ClientProducerCreditManagerImpl(final ClientSessionInternal session, final int windowSize)
+   ClientProducerCreditManagerImpl(final ClientSessionInternal session, final int windowSize)
    {
       this.session = session;
 
@@ -58,24 +58,24 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       {
          boolean needInit = false;
          ClientProducerCredits credits;
-         
+
          synchronized(this)
          {
             credits = producerCredits.get(address);
-      
+
             if (credits == null)
             {
                // Doesn't need to be fair since session is single threaded
                credits = new ClientProducerCreditsImpl(session, address, windowSize);
                needInit = true;
-      
+
                producerCredits.put(address, credits);
             }
-      
+
             if (!anon)
             {
                credits.incrementRefCount();
-      
+
                // Remove from anon credits (if there)
                unReferencedCredits.remove(address);
             }
@@ -84,7 +84,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
                addToUnReferencedCache(address, credits);
             }
          }
-         
+
          // The init is done outside of the lock
          // otherwise packages may arrive with flow control
          // while this is still sending requests causing a dead lock
@@ -92,7 +92,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
          {
             credits.init();
          }
-   
+
          return credits;
       }
    }
@@ -133,15 +133,15 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       }
 
       producerCredits.clear();
-      
+
       unReferencedCredits.clear();
    }
-   
+
    public synchronized int creditsMapSize()
    {
       return producerCredits.size();
    }
-   
+
    public synchronized int unReferencedCreditsSize()
    {
       return unReferencedCredits.size();
@@ -161,7 +161,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
          iter.remove();
 
-         removeEntry(oldest.getKey(), oldest.getValue());                 
+         removeEntry(oldest.getKey(), oldest.getValue());
       }
    }
 
@@ -173,8 +173,8 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
       credits.close();
    }
-   
-   
+
+
    static class ClientProducerCreditsNoFlowControl implements ClientProducerCredits
    {
       static ClientProducerCreditsNoFlowControl instance = new ClientProducerCreditsNoFlowControl();
@@ -216,7 +216,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       public void releaseOutstanding()
       {
       }
-      
+
    }
 
 }

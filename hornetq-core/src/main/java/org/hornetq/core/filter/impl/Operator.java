@@ -46,7 +46,7 @@ public final class Operator
 
    Object oper3;
 
-   Object arg1;
+   private Object arg1;
 
    Object arg2;
 
@@ -81,7 +81,7 @@ public final class Operator
 
    public final static int DIFFERENT = 8;
 
-   public final static int ADD = 9;
+   final static int ADD = 9;
 
    public final static int SUB = 10;
 

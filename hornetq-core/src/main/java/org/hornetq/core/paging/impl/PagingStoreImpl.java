@@ -97,7 +97,7 @@ public class PagingStoreImpl implements PagingStore
 
    private long pageSize;
 
-   private AddressFullMessagePolicy addressFullMessagePolicy;
+   private volatile AddressFullMessagePolicy addressFullMessagePolicy;
 
    private boolean printedDropMessagesWarning;
 
@@ -217,6 +217,7 @@ public class PagingStoreImpl implements PagingStore
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "PagingStoreImpl(" + this.address + ")";
@@ -389,18 +390,17 @@ public class PagingStoreImpl implements PagingStore
       return pagingManager;
    }
 
-   // HornetQComponent implementation
-
+   @Override
    public boolean isStarted()
    {
       return running;
    }
 
+   @Override
    public synchronized void stop() throws Exception
    {
       if (running)
       {
-
          cursorProvider.stop();
 
          running = false;
@@ -429,6 +429,7 @@ public class PagingStoreImpl implements PagingStore
       }
    }
 
+   @Override
    public void start() throws Exception
    {
       lock.writeLock().lock();
@@ -727,13 +728,13 @@ public class PagingStoreImpl implements PagingStore
 
    private final Runnable memoryFreedRunnablesExecutor = new MemoryFreedRunnablesExecutor();
 
-   static final class OurRunnable implements Runnable
+   private static final class OurRunnable implements Runnable
    {
-      boolean ran;
+      private boolean ran;
 
-      final Runnable runnable;
+      private final Runnable runnable;
 
-      OurRunnable(final Runnable runnable)
+      private OurRunnable(final Runnable runnable)
       {
          this.runnable = runnable;
       }
@@ -826,7 +827,10 @@ public class PagingStoreImpl implements PagingStore
 
    }
 
-   protected boolean page(ServerMessage message, final RoutingContext ctx, RouteContextList listCtx, final boolean sync) throws Exception
+   private
+            boolean
+            page(ServerMessage message, final RoutingContext ctx, RouteContextList listCtx, final boolean sync)
+                                                                                                               throws Exception
    {
       if (!running)
       {

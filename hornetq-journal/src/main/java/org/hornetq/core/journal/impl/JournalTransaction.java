@@ -425,9 +425,9 @@ public class JournalTransaction
       }
    }
 
-   static class JournalUpdate
+   private static class JournalUpdate
    {
-      JournalFile file;
+      private final JournalFile file;
 
       long id;
 
@@ -438,7 +438,7 @@ public class JournalTransaction
        * @param id
        * @param size
        */
-      public JournalUpdate(final JournalFile file, final long id, final int size)
+      private JournalUpdate(final JournalFile file, final long id, final int size)
       {
          super();
          this.file = file;

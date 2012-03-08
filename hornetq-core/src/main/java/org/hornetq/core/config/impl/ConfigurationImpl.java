@@ -49,21 +49,21 @@ public class ConfigurationImpl implements Configuration
 
    private static final long serialVersionUID = 4077088945050267843L;
 
-   public static final boolean DEFAULT_CLUSTERED = false;
+   static final boolean DEFAULT_CLUSTERED = false;
 
-   public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
+   static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
-   public static final boolean DEFAULT_BACKUP = false;
+   static final boolean DEFAULT_BACKUP = false;
 
-   public static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
+   private static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
 
-   public static final boolean DEFAULT_SHARED_STORE = true;
+   static final boolean DEFAULT_SHARED_STORE = true;
 
-   public static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
+   static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
-   public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
+   static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
-   public static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
+   static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
@@ -79,7 +79,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
-   public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
+   static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 
@@ -90,7 +90,7 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
-   
+
    public static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
@@ -161,7 +161,7 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_ID_CACHE_SIZE = 2000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-   
+
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
 
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
@@ -171,13 +171,13 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
 
    public static final int DEFAULT_CLUSTER_RECONNECT_ATTEMPTS = -1;
-   
+
    public static final long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-   
+
    public static final long DEFAULT_CLUSTER_CONNECTION_TTL = HornetQClient.DEFAULT_CONNECTION_TTL;
-   
+
    public static final double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-   
+
    public static final long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
@@ -199,32 +199,33 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
-   
-   protected String name = "ConfigurationImpl::" + System.identityHashCode(this);
+
+   private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
 
    protected boolean backup = ConfigurationImpl.DEFAULT_BACKUP;
 
-   protected boolean allowAutoFailBack = ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK;
+   private boolean allowAutoFailBack = ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK;
 
-   protected boolean sharedStore = ConfigurationImpl.DEFAULT_SHARED_STORE;
+   private boolean sharedStore = ConfigurationImpl.DEFAULT_SHARED_STORE;
 
    protected boolean fileDeploymentEnabled = ConfigurationImpl.DEFAULT_FILE_DEPLOYMENT_ENABLED;
 
-   protected boolean persistenceEnabled = ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED;
+   private boolean persistenceEnabled = ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED;
 
    protected long fileDeploymentScanPeriod = ConfigurationImpl.DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
 
-   protected boolean persistDeliveryCountBeforeDelivery = ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
+   private boolean persistDeliveryCountBeforeDelivery =
+            ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 
-   protected int scheduledThreadPoolMaxSize = ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+   private int scheduledThreadPoolMaxSize = ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
-   protected int threadPoolMaxSize = ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+   private int threadPoolMaxSize = ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 
-   protected long securityInvalidationInterval = ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL;
+   private long securityInvalidationInterval = ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL;
 
-   protected boolean securityEnabled = ConfigurationImpl.DEFAULT_SECURITY_ENABLED;
+   private boolean securityEnabled = ConfigurationImpl.DEFAULT_SECURITY_ENABLED;
 
    protected boolean jmxManagementEnabled = ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED;
 
@@ -234,21 +235,21 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean asyncConnectionExecutionEnabled = ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED;
 
-   protected long messageExpiryScanPeriod = ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
+   private long messageExpiryScanPeriod = ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
 
-   protected int messageExpiryThreadPriority = ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
+   private int messageExpiryThreadPriority = ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
 
    protected int idCacheSize = ConfigurationImpl.DEFAULT_ID_CACHE_SIZE;
 
-   protected boolean persistIDCache = ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE;
+   private boolean persistIDCache = ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE;
 
    protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
-   protected List<String> interceptorClassNames = new ArrayList<String>();
-   
+   private List<String> interceptorClassNames = new ArrayList<String>();
+
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
-   protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
+   private Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
    protected String liveConnectorName;
 
@@ -258,7 +259,7 @@ public class ConfigurationImpl implements Configuration
 
    protected List<ClusterConnectionConfiguration> clusterConfigurations = new ArrayList<ClusterConnectionConfiguration>();
 
-   protected List<CoreQueueConfiguration> queueConfigurations = new ArrayList<CoreQueueConfiguration>();
+   private List<CoreQueueConfiguration> queueConfigurations = new ArrayList<CoreQueueConfiguration>();
 
    protected List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<BroadcastGroupConfiguration>();
 
@@ -266,11 +267,11 @@ public class ConfigurationImpl implements Configuration
 
    // Paging related attributes ------------------------------------------------------------
 
-   protected String pagingDirectory = ConfigurationImpl.DEFAULT_PAGING_DIR;
+   private String pagingDirectory = ConfigurationImpl.DEFAULT_PAGING_DIR;
 
    // File related attributes -----------------------------------------------------------
-   
-   protected int maxConcurrentPageIO = ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO;
+
+   private int maxConcurrentPageIO = ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO;
 
    protected String largeMessagesDirectory = ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR;
 
@@ -316,34 +317,34 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean runSyncSpeedTest = ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST;
 
-   protected boolean wildcardRoutingEnabled = ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED;
+   private boolean wildcardRoutingEnabled = ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED;
 
-   protected boolean messageCounterEnabled = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED;
+   private boolean messageCounterEnabled = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED;
 
-   protected long messageCounterSamplePeriod = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
+   private long messageCounterSamplePeriod = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
 
-   protected int messageCounterMaxDayHistory = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
+   private int messageCounterMaxDayHistory = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
 
-   protected long transactionTimeout = ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT;
+   private long transactionTimeout = ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT;
 
-   protected long transactionTimeoutScanPeriod = ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
+   private long transactionTimeoutScanPeriod = ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
 
-   protected SimpleString managementAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+   private SimpleString managementAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 
-   protected SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+   private SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
    protected String clusterUser = ConfigurationImpl.DEFAULT_CLUSTER_USER;
 
    protected String clusterPassword = ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD;
 
-   protected long serverDumpInterval = ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL;
+   private long serverDumpInterval = ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL;
 
    protected boolean failoverOnServerShutdown = ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
    // percentage of free memory which triggers warning from the memory manager
-   protected int memoryWarningThreshold = ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
+   private int memoryWarningThreshold = ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
 
-   protected long memoryMeasureInterval = ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL;
+   private long memoryMeasureInterval = ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL;
 
    protected GroupingHandlerConfiguration groupingHandlerConfiguration;
 
@@ -529,7 +530,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.liveConnectorName = liveConnectorName;
    }
-   
+
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
@@ -629,7 +630,7 @@ public class ConfigurationImpl implements Configuration
    {
       bindingsDirectory = dir;
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.config.Configuration#getPageMaxConcurrentIO()

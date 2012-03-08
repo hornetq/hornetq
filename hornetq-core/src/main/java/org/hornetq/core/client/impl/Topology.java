@@ -294,7 +294,7 @@ public final class Topology implements Serializable
       return listenersCopy;
    }
 
-   public boolean removeMember(final long uniqueEventID, final String nodeId)
+   boolean removeMember(final long uniqueEventID, final String nodeId)
    {
       TopologyMember member;
 
@@ -460,7 +460,7 @@ public final class Topology implements Serializable
       return members;
    }
 
-   public synchronized int nodes()
+   synchronized int nodes()
    {
       int count = 0;
       for (TopologyMember member : topology.values())
@@ -482,7 +482,7 @@ public final class Topology implements Serializable
       return describe("");
    }
 
-   public synchronized String describe(final String text)
+   private synchronized String describe(final String text)
    {
       StringBuilder desc = new StringBuilder(text + "topology on " + this + ":\n");
       for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(topology).entrySet())
@@ -497,7 +497,7 @@ public final class Topology implements Serializable
       return desc.toString();
    }
 
-   public int members()
+   private int members()
    {
       return topology.size();
    }
@@ -510,7 +510,7 @@ public final class Topology implements Serializable
       this.owner = owner;
    }
 
-   public TransportConfiguration getBackupForConnector(final TransportConfiguration connectorConfiguration)
+   TransportConfiguration getBackupForConnector(final TransportConfiguration connectorConfiguration)
    {
       for (TopologyMember member : topology.values())
       {

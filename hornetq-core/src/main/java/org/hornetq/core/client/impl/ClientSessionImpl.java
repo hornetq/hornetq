@@ -104,7 +104,7 @@ import org.hornetq.utils.TokenBucketLimiterImpl;
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  *
  */
-public class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
+class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
    // Constants ----------------------------------------------------------------------------
 
@@ -687,7 +687,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       stop(true);
    }
 
-   public void stop(final boolean waitForOnMessage) throws HornetQException
+   private void stop(final boolean waitForOnMessage) throws HornetQException
    {
       checkClosed();
 

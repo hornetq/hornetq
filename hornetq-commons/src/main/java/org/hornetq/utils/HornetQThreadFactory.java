@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A HornetQThreadFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -37,22 +37,17 @@ public class HornetQThreadFactory implements ThreadFactory
    private final int threadPriority;
 
    private final boolean daemon;
-   
+
    private final ClassLoader tccl;
 
    public HornetQThreadFactory(final String groupName, final boolean daemon, final ClassLoader tccl)
    {
-      this(groupName, Thread.NORM_PRIORITY, daemon, tccl);
-   }
-
-   public HornetQThreadFactory(final String groupName, final int threadPriority, final boolean daemon, final ClassLoader tccl)
-   {
       group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
-
-      this.threadPriority = threadPriority;
+      
+      this.threadPriority = Thread.NORM_PRIORITY;
       
       this.tccl = tccl;
-
+      
       this.daemon = daemon;
    }
 
@@ -69,7 +64,7 @@ public class HornetQThreadFactory implements ThreadFactory
       {
          t = new Thread(command, "Thread-" + threadCount.getAndIncrement());
       }
-      
+
       AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
          public Object run()
@@ -79,7 +74,7 @@ public class HornetQThreadFactory implements ThreadFactory
             return null;
          }
       });
-        
+
       try
       {
          AccessController.doPrivileged(new PrivilegedAction<Object>()

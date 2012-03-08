@@ -540,7 +540,7 @@ public class MessageCounter
       /**
        * Finalize day counter hour array elements
        */
-      void finalizeDayCounter()
+      private void finalizeDayCounter()
       {
          // a new day has began, so fill all array elements from index to end with
          // '0' values
@@ -571,7 +571,7 @@ public class MessageCounter
        * "Date, hour counter 0, hour counter 1, ..., hour counter 23".
        * @return String day counter data
        */
-      String getDayCounterAsString()
+      private String getDayCounterAsString()
       {
          // first element day counter date
          DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);

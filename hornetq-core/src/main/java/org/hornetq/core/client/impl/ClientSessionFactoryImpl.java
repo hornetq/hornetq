@@ -166,7 +166,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+   ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
                                    final long callFailoverTimeout,

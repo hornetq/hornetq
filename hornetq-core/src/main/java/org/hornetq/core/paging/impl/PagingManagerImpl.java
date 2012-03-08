@@ -32,7 +32,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -63,7 +63,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final StorageManager storageManager;
 
-   private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = 
+   private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions =
             new ConcurrentHashMap<Long, PageTransactionInfo>();
 
    // Static
@@ -88,9 +88,9 @@ public class PagingManagerImpl implements PagingManager
    // Public
    // ---------------------------------------------------------------------------------------------------------------------------
 
-   
+
    // Hierarchical changes listener
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
     */
@@ -100,11 +100,11 @@ public class PagingManagerImpl implements PagingManager
    }
 
 
-   
+
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
-   public void reaplySettings()
+   private void reaplySettings()
    {
       for (PagingStore store : stores.values())
       {
@@ -112,7 +112,7 @@ public class PagingManagerImpl implements PagingManager
          store.applySetting(settings);
       }
    }
-   
+
    public SimpleString[] getStoreNames()
    {
       Set<SimpleString> names = stores.keySet();
@@ -202,7 +202,7 @@ public class PagingManagerImpl implements PagingManager
       }
       return transactions.get(id);
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.PagingManager#getTransactions()
     */
@@ -302,12 +302,12 @@ public class PagingManagerImpl implements PagingManager
          syncLock.readLock().unlock();
       }
    }
-   
+
    protected PagingStoreFactory getStoreFactory()
    {
       return pagingStoreFactory;
    }
-   
+
    public void unlock()
    {
       syncLock.writeLock().unlock();

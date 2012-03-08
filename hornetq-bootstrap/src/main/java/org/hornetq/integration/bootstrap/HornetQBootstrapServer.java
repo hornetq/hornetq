@@ -53,7 +53,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
    /**
     * The arguments
     */
-   protected String[] args;
+   private final String[] args;
 
    private Properties properties;
 
@@ -77,7 +77,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
    /**
     * Add a simple shutdown hook to stop the server.
     */
-   public void addShutdownHook()
+   private void addShutdownHook()
    {
       String dirName = System.getProperty("hornetq.config.dir", ".");
       final File file = new File(dirName + "/STOP_ME");
@@ -232,7 +232,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
     * @param url the deployment url
     * @throws Throwable for any error
     */
-   protected KernelDeployment deploy(final URL url) throws Throwable
+   private KernelDeployment deploy(final URL url) throws Throwable
    {
       HornetQBootstrapServer.log.debug("Deploying " + url);
       KernelDeployment deployment = deployer.deploy(url);
@@ -271,7 +271,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       properties = props;
    }
 
-   protected class Shutdown extends Thread
+   private final class Shutdown extends Thread
    {
       public Shutdown()
       {

@@ -62,7 +62,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private volatile SessionReceiveContinuationMessage currentPacket = null;
 
    private final long totalSize;
-   
+
    private final int bufferSize;
 
    private boolean streamEnded = false;
@@ -132,7 +132,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    }
 
    /**
-    * 
+    *
     */
    public void discardUnusedPackets()
    {
@@ -207,7 +207,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                }
             }
 
-            
+
             packets.offer(packet);
          }
       }
@@ -228,7 +228,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public synchronized void cancel()
    {
-      
+
       int totalSize = 0;
       Packet polledPacket = null;
       while ((polledPacket = packets.poll()) != null)
@@ -245,7 +245,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          // what else can we do here?
          log.warn(ignored.getMessage(), ignored);
       }
-       
+
       packets.offer(new SessionReceiveContinuationMessage());
       streamEnded = true;
       streamClosed = true;
@@ -308,7 +308,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    }
 
    /**
-    * 
+    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
@@ -453,9 +453,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
       dst.put(bytesToGet);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.io.OutputStream, int)
-    */
    public void getBytes(final int index, final OutputStream out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
@@ -463,26 +460,21 @@ public class LargeMessageControllerImpl implements LargeMessageController
       out.write(bytesToGet);
    }
 
-   public void getBytes(final long index, final OutputStream out, final int length) throws IOException
+   private void getBytes(final long index, final OutputStream out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.channels.GatheringByteChannel, int)
-    */
-   public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
+   private int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
       getBytes(index, bytesToGet);
       return out.write(ByteBuffer.wrap(bytesToGet));
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getInt(int)
-    */
+   @Override
    public int getInt(final int index)
    {
       return (getByte(index) & 0xff) << 24 | (getByte(index + 1) & 0xff) << 16 |
@@ -1060,7 +1052,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    {
       return (char)readShort();
    }
-   
+
    public char getChar(final int index)
    {
       return (char)getShort(index);
@@ -1344,7 +1336,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       {
          throw new IllegalAccessError("Can't read the messageBody after setting outputStream");
       }
-      
+
       if (index >= totalSize)
       {
          throw new IndexOutOfBoundsException();
@@ -1410,7 +1402,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                }
 
                readCachePositionStart = position / bufferSize * bufferSize;
-               
+
                cachedChannel.position(readCachePositionStart);
 
                if (readCache == null)

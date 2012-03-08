@@ -30,15 +30,10 @@ public class TopologyMember implements Serializable
    /** transient to avoid serialization changes */
    private transient long uniqueEventID = System.currentTimeMillis();
 
-   public TopologyMember(final Pair<TransportConfiguration, TransportConfiguration> connector)
-   {
-      this.connector = connector;
-      uniqueEventID = System.currentTimeMillis();
-   }
-
    public TopologyMember(final TransportConfiguration a, final TransportConfiguration b)
    {
-      this(new Pair<TransportConfiguration, TransportConfiguration>(a, b));
+      this.connector = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
+      uniqueEventID = System.currentTimeMillis();
    }
 
    public TransportConfiguration getA()

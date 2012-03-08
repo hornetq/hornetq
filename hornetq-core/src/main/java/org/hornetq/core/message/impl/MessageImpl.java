@@ -24,7 +24,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.utils.DataConstants;
@@ -47,17 +46,13 @@ import org.hornetq.utils.UUID;
  */
 public abstract class MessageImpl implements MessageInternal
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(MessageImpl.class);
-
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
-   
-   // used by the bridges to set duplicates 
+
+   // used by the bridges to set duplicates
    public static final SimpleString HDR_BRIDGE_DUPLICATE_ID = new SimpleString("_HQ_BRIDGE_DUP");
 
    public static final int BUFFER_HEADER_SPACE = PacketImpl.PACKET_HEADERS_SIZE;
-   
+
    public static final int BODY_OFFSET = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
 
 
@@ -70,7 +65,7 @@ public abstract class MessageImpl implements MessageInternal
    protected boolean durable;
 
    /** GMT milliseconds at which this message expires. 0 means never expires * */
-   protected long expiration;
+   private long expiration;
 
    protected long timestamp;
 
@@ -91,7 +86,7 @@ public abstract class MessageImpl implements MessageInternal
    private boolean copied = true;
 
    private boolean bufferUsed;
-   
+
    private UUID userID;
 
    // Constructors --------------------------------------------------
@@ -201,7 +196,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return DataConstants.SIZE_LONG + // Message ID
              DataConstants.SIZE_BYTE + // user id null?
-             (userID == null ? 0 : 16) + 
+             (userID == null ? 0 : 16) +
              /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +
@@ -210,7 +205,7 @@ public abstract class MessageImpl implements MessageInternal
              DataConstants./* Priority */SIZE_BYTE +
              /* PropertySize and Properties */properties.getEncodeSize();
    }
-   
+
 
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
@@ -254,7 +249,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = buffer.readByte();
       properties.decode(buffer);
    }
-   
+
    public void copyHeadersAndProperties(final MessageInternal msg)
    {
       messageID = msg.getMessageID();
@@ -267,7 +262,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = msg.getPriority();
       properties = msg.getTypedProperties();
    }
-   
+
    public HornetQBuffer getBodyBuffer()
    {
       if (bodyBuffer == null)
@@ -282,18 +277,18 @@ public abstract class MessageImpl implements MessageInternal
    {
       return messageID;
    }
-   
+
    public UUID getUserID()
    {
       return userID;
    }
-   
+
    public void setUserID(final UUID userID)
    {
       this.userID = userID;
    }
 
-   /** this doesn't need to be synchronized as setAddress is protecting the buffer, 
+   /** this doesn't need to be synchronized as setAddress is protecting the buffer,
     *  not the address*/
    public SimpleString getAddress()
    {
@@ -313,7 +308,7 @@ public abstract class MessageImpl implements MessageInternal
 	      if (this.address != address)
 	      {
 	         this.address = address;
-	
+
 	         bufferValid = false;
 	      }
 	  }
@@ -513,7 +508,7 @@ public abstract class MessageImpl implements MessageInternal
          return buffer;
       }
    }
-   
+
    public void setAddressTransient(final SimpleString address)
    {
       this.address = address;
@@ -585,7 +580,7 @@ public abstract class MessageImpl implements MessageInternal
 
       bufferValid = false;
    }
-   
+
    public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
    {
       if (value == null)
@@ -826,7 +821,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }
-   
+
    public Object getObjectProperty(final String key)
    {
       return properties.getProperty(new SimpleString(key));
@@ -870,7 +865,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return new DecodingContext();
    }
-   
+
    public TypedProperties getTypedProperties()
    {
       return this.properties;

@@ -17,5 +17,4 @@ public final class LiveIsStoppingMessage extends PacketImpl
    {
       super(PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
    }
-
 }
