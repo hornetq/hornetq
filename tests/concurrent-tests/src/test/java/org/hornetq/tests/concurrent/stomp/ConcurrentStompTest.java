@@ -17,25 +17,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.protocol.stomp.Stomp;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.integration.stomp.StompTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 public class ConcurrentStompTest extends StompTestBase
 {
@@ -125,9 +113,9 @@ public class ConcurrentStompTest extends StompTestBase
    {
       byte[] bytes = data.getBytes("UTF-8");
       OutputStream outputStream = socket.getOutputStream();
-      for (int i = 0; i < bytes.length; i++)
+      for (byte b : bytes)
       {
-         outputStream.write(bytes[i]);
+         outputStream.write(b);
       }
       outputStream.flush();
    }
