@@ -20,12 +20,6 @@ public class ReplicatedPagedFailoverTest extends ReplicatedFailoverTest
    @Override
    public void testFailWithBrowser() throws Exception
    {
-      int i = 0;
-      while(true)
-      {
-         testCreateNewFactoryAfterFailover();
-         tearDown();
-         setUp();
-      }
+      // paged messages are not available for browsing
    }
 }
