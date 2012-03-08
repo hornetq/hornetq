@@ -140,7 +140,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
    {
       ArrayList<ClientMessage> list = new ArrayList<ClientMessage>();
 
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
 
       private final boolean acknowledge;
 
@@ -165,12 +165,6 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
             }
          }
          latch.countDown();
-      }
-
-      public void reset(final CountDownLatch latch)
-      {
-         list.clear();
-         this.latch = latch;
       }
    }
 }
