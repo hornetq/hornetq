@@ -204,7 +204,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       Assert.assertTrue("connection close listeners not fired", latch.await(2 * TemporaryQueueTest.CONNECTION_TTL,
                                                                             TimeUnit.MILLISECONDS));
 
-      sf = locator.createSessionFactory();
+      sf = addSessionFactory(locator.createSessionFactory());
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -343,7 +343,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       serverWithReattach.setReconnectAttempts(-1);
       serverWithReattach.setRetryInterval(1000);
       serverWithReattach.setConfirmationWindowSize(-1);
-      ClientSessionFactory reattachSF = serverWithReattach.createSessionFactory();
+      ClientSessionFactory reattachSF = createSessionFactory(serverWithReattach);
 
       ClientSession session = reattachSF.createSession(false, false);
       session.createTemporaryQueue("tmpAd", "tmpQ");
@@ -428,7 +428,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       // Will be using a single Session as this is how an issue was raised
       for (int i = 0 ; i < iterations; i++)
       {
-         ClientSessionFactory clientsConnecton = locator.createSessionFactory();
+         ClientSessionFactory clientsConnecton = addSessionFactory(locator.createSessionFactory());
          ClientSession localSession = clientsConnecton.createSession();
 
          ClientProducer prod = localSession.createProducer(address);
@@ -481,8 +481,6 @@ public class TemporaryQueueTest extends ServiceTestBase
          }
          finally
          {
-//            sessConsumerRed.close();
-//            sessConsumerBlue.close();
             localSession.close();
             clientsConnecton.close();
          }
@@ -514,9 +512,9 @@ public class TemporaryQueueTest extends ServiceTestBase
          }
       });
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       locator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
-      sf = locator.createSessionFactory();
+      sf = addSessionFactory(locator.createSessionFactory());
       session = sf.createSession(false, true, true);
 
       session.createTemporaryQueue(address, queue);
@@ -548,8 +546,9 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
 
       sf.close();
-      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      sf = locator2.createSessionFactory();
+      ServerLocator locator2 = createInVMNonHALocator();
+
+      sf = addSessionFactory(locator2.createSessionFactory());
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -695,9 +694,4 @@ public class TemporaryQueueTest extends ServiceTestBase
       retlocator.setClientFailureCheckPeriod(TemporaryQueueTest.CONNECTION_TTL / 3);
       return retlocator;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
