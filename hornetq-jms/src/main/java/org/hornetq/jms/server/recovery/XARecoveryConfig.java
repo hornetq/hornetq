@@ -13,10 +13,17 @@
 
 package org.hornetq.jms.server.recovery;
 
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import java.util.Arrays;
+
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 
 /**
+ * 
+ * This represents the configuration of a single connection factory.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ * @author Clebert Suconic
  *
  * A wrapper around info needed for the xa recovery resource
  *         Date: 3/23/11
@@ -24,20 +31,44 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
  */
 public class XARecoveryConfig
 {
-   private final HornetQConnectionFactory hornetQConnectionFactory;
+   
+   private final boolean ha;
+   private final TransportConfiguration[] transportConfiguration;
+   private final DiscoveryGroupConfiguration discoveryConfiguration;
    private final String username;
    private final String password;
 
-   public XARecoveryConfig(HornetQConnectionFactory hornetQConnectionFactory, String username, String password)
+   public XARecoveryConfig(final boolean ha, final TransportConfiguration[] transportConfiguration, final String username, final String password)
    {
-      this.hornetQConnectionFactory = hornetQConnectionFactory;
+      this.transportConfiguration = transportConfiguration;
+      this.discoveryConfiguration = null;
       this.username = username;
       this.password = password;
+      this.ha = ha;
    }
 
-   public HornetQConnectionFactory getHornetQConnectionFactory()
+   public XARecoveryConfig(final boolean ha, final DiscoveryGroupConfiguration discoveryConfiguration, final String username, final String password)
    {
-      return hornetQConnectionFactory;
+      this.discoveryConfiguration = discoveryConfiguration;
+      this.transportConfiguration = null;
+      this.username = username;
+      this.password = password;
+      this.ha = ha;
+   }
+   
+   public boolean isHA()
+   {
+      return ha;
+   }
+
+   public DiscoveryGroupConfiguration getDiscoveryConfiguration()
+   {
+      return discoveryConfiguration;
+   }
+   
+   public TransportConfiguration[] getTransportConfig()
+   {
+      return transportConfiguration;
    }
 
    public String getUsername()
@@ -49,24 +80,44 @@ public class XARecoveryConfig
    {
       return password;
    }
-
+   
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
    @Override
-   public boolean equals(Object o)
+   public int hashCode()
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((discoveryConfiguration == null) ? 0 : discoveryConfiguration.hashCode());
+      result = prime * result + Arrays.hashCode(transportConfiguration);
+      return result;
+   }
 
-      XARecoveryConfig that = (XARecoveryConfig) o;
-
-      if (hornetQConnectionFactory != null ? !hornetQConnectionFactory.equals(that.hornetQConnectionFactory) : that.hornetQConnectionFactory != null)
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
          return false;
-      if (password != null ? !password.equals(that.password) : that.password != null) return false;
-      if (username != null ? !username.equals(that.username) : that.username != null) return false;
-
+      if (getClass() != obj.getClass())
+         return false;
+      XARecoveryConfig other = (XARecoveryConfig)obj;
+      if (discoveryConfiguration == null)
+      {
+         if (other.discoveryConfiguration != null)
+            return false;
+      }
+      else if (!discoveryConfiguration.equals(other.discoveryConfiguration))
+         return false;
+      if (!Arrays.equals(transportConfiguration, other.transportConfiguration))
+         return false;
       return true;
    }
-   
-   
 
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
@@ -74,20 +125,12 @@ public class XARecoveryConfig
    @Override
    public String toString()
    {
-      return "XARecoveryConfig [hornetQConnectionFactory=" + hornetQConnectionFactory +
+      return "XARecoveryConfig [transportConfiguration = " + Arrays.toString(transportConfiguration) +
+             ", discoveryConfiguration = " + discoveryConfiguration +
              ", username=" +
              username +
              ", password=" +
              password +
              "]";
-   }
-
-   @Override
-   public int hashCode()
-   {
-      int result = hornetQConnectionFactory != null ? hornetQConnectionFactory.hashCode() : 0;
-      result = 31 * result + (username != null ? username.hashCode() : 0);
-      result = 31 * result + (password != null ? password.hashCode() : 0);
-      return result;
    }
 }
