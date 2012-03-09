@@ -22,6 +22,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
@@ -242,7 +243,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
     * @return the connectionFactory
     * @throws XAException for any problem
     */
-   public XAResource getDelegate(boolean retry) throws XAException
+   private XAResource getDelegate(boolean retry) throws XAException
    {
       XAResource result = null;
       Exception error = null;
@@ -316,7 +317,14 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
          try
          {
-            serverLocator = xaRecoveryConfig.getHornetQConnectionFactory().getServerLocator();
+            if (xaRecoveryConfig.getDiscoveryConfiguration() != null)
+            {
+               serverLocator = HornetQClient.createServerLocator(xaRecoveryConfig.isHA(), xaRecoveryConfig.getDiscoveryConfiguration());
+            }
+            else
+            {
+               serverLocator = HornetQClient.createServerLocator(xaRecoveryConfig.isHA(), xaRecoveryConfig.getTransportConfig());
+            }
             serverLocator.disableFinalizeCheck();
             csf = serverLocator.createSessionFactory();
             if (xaRecoveryConfig.getUsername() == null)
@@ -334,10 +342,29 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
                                       1);
             }
          }
-         catch (HornetQException e)
+         catch (Throwable e)
          {
+            log.warn("Can't connect to " + xaRecoveryConfig + " on auto-generated resource recovery", e);
+            if (log.isDebugEnabled())
+            {
+               log.debug(e.getMessage(), e);
+            }
+            
+            try
+            {
+               if (cs != null) cs.close();
+               if (serverLocator != null) serverLocator.close();
+            }
+            catch (Throwable ignored)
+            {
+               if (log.isTraceEnabled())
+               {
+                  log.trace(e.getMessage(), ignored);
+               }
+            }
             continue;
          }
+         
          cs.addFailureListener(this);
 
          synchronized (HornetQXAResourceWrapper.lock)
@@ -392,9 +419,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             oldServerLocator.close();
          }
       }
-      catch (Exception ignored)
+      catch (Throwable ignored)
       {
-         HornetQXAResourceWrapper.log.trace("Ignored error during close", ignored);
+         HornetQXAResourceWrapper.log.debug("Ignored error during close", ignored);
       }
    }
 
@@ -410,10 +437,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    {
       log.warn(e.getMessage(), e);
 
-      if (e.errorCode == XAException.XA_RETRY)
-      {
-         close();
-      }
+
+      // If any exception happened, we close the connection so we may start fresh
+      close();
       throw e;
    }
 

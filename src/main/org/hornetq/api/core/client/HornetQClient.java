@@ -113,6 +113,18 @@ public class HornetQClient
    }
    
    /**
+    * Create a ServerLocator which creates session factories using a static list of transportConfigurations, the ServerLocator is not updated automatically
+    * as the cluster topology changes, and no HA backup information is propagated to the client
+    * 
+    * @param transportConfigurations
+    * @return the ServerLocator
+    */
+   public static ServerLocator createServerLocator(final boolean ha, TransportConfiguration... transportConfigurations)
+   {
+      return new ServerLocatorImpl(ha, transportConfigurations);
+   }
+   
+   /**
     * Create a ServerLocator which creates session factories from a set of live servers, no HA backup information is propagated to the client
     * 
     * The UDP address and port are used to listen for live servers in the cluster
@@ -124,6 +136,20 @@ public class HornetQClient
    public static ServerLocator createServerLocatorWithoutHA(final DiscoveryGroupConfiguration groupConfiguration)
    {
       return new ServerLocatorImpl(false, groupConfiguration);
+   }
+   
+   /**
+    * Create a ServerLocator which creates session factories from a set of live servers, no HA backup information is propagated to the client
+    * 
+    * The UDP address and port are used to listen for live servers in the cluster
+    * 
+    * @param discoveryAddress The UDP group address to listen for updates
+    * @param discoveryPort the UDP port to listen for updates
+    * @return the ServerLocator
+    */
+   public static ServerLocator createServerLocator(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
+   {
+      return new ServerLocatorImpl(ha, groupConfiguration);
    }
    
    /**
