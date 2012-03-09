@@ -757,19 +757,19 @@
       </schemavalidate>
 
     <!-- AS 4 configuration validation -->
-      <antcall target="-validate-configuration">
+      <!-- <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas4.non-clustered.dir}"/>
       </antcall>
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas4.clustered.dir}"/>
-      </antcall>
+      </antcall> -->
       <!-- AS 5 configuration validation -->
-      <antcall target="-validate-configuration">
+      <!-- <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas5.non-clustered.dir}"/>
       </antcall>
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.jbossas5.clustered.dir}"/>
-      </antcall>
+      </antcall> -->
    </target>
 
    <target name="-validate-configuration">
