@@ -64,7 +64,7 @@ public abstract class HornetQRegistryBase implements RecoveryRegistry
          {
             if (log.isDebugEnabled())
             {
-               log.info("Return pre-existent recovery=" + recovery + " for configuration = " + resourceRecovery.getConfig());
+               log.debug("Return pre-existent recovery=" + recovery + " for configuration = " + resourceRecovery.getConfig());
             }
          }
          recovery.incrementUsage();
