@@ -17,13 +17,13 @@ import java.util.Arrays;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * 
  * This represents the configuration of a single connection factory.
  * 
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ * @author Clebert Suconic
  *
  * A wrapper around info needed for the xa recovery resource
  *         Date: 3/23/11
