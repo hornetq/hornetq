@@ -32,27 +32,27 @@ import javax.transaction.xa.XAResource;
 public class HornetQResourceRecovery implements XAResourceRecovery
 {
    private final XARecoveryConfig config;
-   
+
    private final XAResource[] xaResources;
-   
+
    private int usage;
 
    public HornetQResourceRecovery(XARecoveryConfig config)
    {
       this.config = config;
-      this.xaResources =  new XAResource[]{new HornetQXAResourceWrapper(config)};
+      this.xaResources = new XAResource[] { new HornetQXAResourceWrapper(config) };
    }
 
    public XAResource[] getXAResources()
    {
       return xaResources;
    }
-   
+
    public XARecoveryConfig getConfig()
    {
       return config;
    }
-   
+
    /** we may have several connection factories referencing the same connection recovery entry.
     *  Because of that we need to make a count of the number of the instances that are referencing it,
     *  so we will remove it as soon as we are done */
@@ -60,7 +60,7 @@ public class HornetQResourceRecovery implements XAResourceRecovery
    {
       return ++usage;
    }
-   
+
    public synchronized int decrementUsage()
    {
       return --usage;
@@ -69,12 +69,15 @@ public class HornetQResourceRecovery implements XAResourceRecovery
    @Override
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+         return true;
+      if (o == null || getClass() != o.getClass())
+         return false;
 
-      HornetQResourceRecovery that = (HornetQResourceRecovery) o;
+      HornetQResourceRecovery that = (HornetQResourceRecovery)o;
 
-      if (config != null ? !config.equals(that.config) : that.config != null) return false;
+      if (config != null ? !config.equals(that.config) : that.config != null)
+         return false;
 
       return true;
    }
