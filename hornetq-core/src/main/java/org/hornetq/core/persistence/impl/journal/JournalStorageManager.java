@@ -132,7 +132,7 @@ public class JournalStorageManager implements StorageManager
 
    // Bindings journal record type
 
-   private static final byte QUEUE_BINDING_RECORD = 21;
+   public static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte ID_COUNTER_RECORD = 24;
 
@@ -146,13 +146,13 @@ public class JournalStorageManager implements StorageManager
    // We use this to avoid temporary files missing
    public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
-   private static final byte ADD_LARGE_MESSAGE = 30;
+   public static final byte ADD_LARGE_MESSAGE = 30;
 
-   private static final byte ADD_MESSAGE = 31;
+   public static final byte ADD_MESSAGE = 31;
 
    public static final byte ADD_REF = 32;
 
-   private static final byte ACKNOWLEDGE_REF = 33;
+   public static final byte ACKNOWLEDGE_REF = 33;
 
    public static final byte UPDATE_DELIVERY_COUNT = 34;
 
@@ -3637,6 +3637,11 @@ public class JournalStorageManager implements StorageManager
 
    public static Object newObjectEncoding(RecordInfo info)
    {
+      return newObjectEncoding(info, null);
+   }
+
+   public static Object newObjectEncoding(RecordInfo info, JournalStorageManager storageManager)
+   {
       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
       long id = info.id;
       int rec = info.getUserRecordType();
@@ -3653,7 +3658,7 @@ public class JournalStorageManager implements StorageManager
          case ADD_LARGE_MESSAGE:
          {
 
-            LargeServerMessage largeMessage = new LargeServerMessageImpl(null);
+            LargeServerMessage largeMessage = new LargeServerMessageImpl(storageManager);
 
             LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 
@@ -3820,7 +3825,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class MessageDescribe
+   public static class MessageDescribe
    {
       public MessageDescribe(Message msg)
       {
