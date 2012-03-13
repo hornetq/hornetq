@@ -967,7 +967,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       for (FailureListener listener : oldListeners)
       {
          // Add all apart from the first one which is the old DelegatingFailureListener
-
          if (listener instanceof DelegatingFailureListener == false)
          {
             newListeners.add(listener);
@@ -1594,7 +1593,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
-   private class DelegatingFailureListener implements FailureListener
+   private final class DelegatingFailureListener implements FailureListener
    {
       private final Object connectionID;
 
@@ -1606,6 +1605,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       public void connectionFailed(final HornetQException me, final boolean failedOver)
       {
          handleConnectionFailure(connectionID, me);
+      }
+
+      @Override
+      public String toString()
+      {
+         return DelegatingFailureListener.class.getSimpleName() + "('reconnectsOrFailover', hash=" +
+                  super.hashCode() + ")";
       }
    }
 

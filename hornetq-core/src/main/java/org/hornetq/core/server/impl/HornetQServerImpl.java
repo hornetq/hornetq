@@ -119,6 +119,7 @@ import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.group.impl.LocalGroupingHandler;
 import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
+import org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.impl.ManagementServiceImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -500,7 +501,6 @@ public class HornetQServerImpl implements HornetQServer
          if (replicationManager!=null) {
             replicationManager.sendLiveIsStopping();
          }
-
          connectorsService.stop();
 
          // we stop the groupingHandler before we stop the cluster manager so binding mappings
@@ -1903,9 +1903,10 @@ public class HornetQServerImpl implements HornetQServer
 
             if (nodeManager.isBackupLive())
             {
-               // looks like we've failed over at some point need to inform that we are the backup so when the current
-               // live
-               // goes down they failover to us
+               /*
+                * looks like we've failed over at some point need to inform that we are the backup
+                * so when the current live goes down they failover to us
+                */
                if (log.isDebugEnabled())
                {
                   log.debug("announcing backup to the former live" + this);
@@ -2087,8 +2088,8 @@ public class HornetQServerImpl implements HornetQServer
    private final class SharedNothingBackupActivation implements Activation
    {
       private ServerLocatorInternal serverLocator0;
-      private volatile boolean failedConnection;
-      private volatile boolean failOver;
+      private volatile boolean failedToConnect;
+      private QuorumManager quorumManager;
 
       public void run()
       {
@@ -2108,7 +2109,7 @@ public class HornetQServerImpl implements HornetQServer
 
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
-            final QuorumManager quorumManager = new QuorumManager(serverLocator0, threadPool);
+            quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
 
             serverLocator0.setReconnectAttempts(-1);
@@ -2123,10 +2124,10 @@ public class HornetQServerImpl implements HornetQServer
                      final ClientSessionFactory liveServerSessionFactory = serverLocator0.connect();
                      if (liveServerSessionFactory == null)
                      {
-                        // XXX HORNETQ-768
-                        throw new RuntimeException("Need to retry?");
+                        throw new RuntimeException("Could not estabilish the connection");
                      }
                      CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
+                     liveConnection.addFailureListener(quorumManager);
                      Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
                      connectToReplicationEndpoint(replicationChannel);
@@ -2136,14 +2137,13 @@ public class HornetQServerImpl implements HornetQServer
                   catch (Exception e)
                   {
                      log.warn("Unable to announce backup for replication. Trying to stop the server.", e);
-                     failedConnection = true;
+                     failedToConnect = true;
+
+                     quorumManager.causeExit();
                      try
                      {
-                        synchronized (quorumManager)
-                        {
-                           quorumManager.notify();
-                        }
-                        HornetQServerImpl.this.stop();
+                        if (!stopped)
+                           HornetQServerImpl.this.stop();
                         return;
                      }
                      catch (Exception e1)
@@ -2160,31 +2160,18 @@ public class HornetQServerImpl implements HornetQServer
 
             // Server node (i.e. Live node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
-            synchronized (quorumManager)
-            {
-               if (failedConnection)
+            if (failedToConnect)
                   return;
-               while (true)
-               {
-                  quorumManager.wait();
-                  if (failOver || !started || quorumManager.isNodeDown())
-                  {
-                     break;
-                  }
-               }
-            }
+            QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
 
             serverLocator0.close();
             replicationEndpoint.stop();
 
-            if (failedConnection)
+            if (failedToConnect || !started || signal == BACKUP_ACTIVATION.STOP)
                return;
+
             if (!isRemoteBackupUpToDate())
             {
-               /*
-                * XXX HORNETQ-768 Live is down, and this server was not in sync. Perhaps we should
-                * first try to wait a little longer to see if the 'live' comes back?
-                */
                throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup Server was not yet in sync with live");
             }
 
@@ -2211,15 +2198,16 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(final boolean permanently) throws Exception
       {
+         if (quorumManager != null)
+            quorumManager.causeExit();
+
          if (serverLocator0 != null)
          {
             serverLocator0.close();
-            serverLocator0 = null;
          }
 
          if (configuration.isBackup())
          {
-
             long timeout = 30000;
 
             long start = System.currentTimeMillis();
@@ -2247,7 +2235,7 @@ public class HornetQServerImpl implements HornetQServer
        */
       public void failOver()
       {
-         failOver = true;
+         quorumManager.failOver();
       }
    }
 

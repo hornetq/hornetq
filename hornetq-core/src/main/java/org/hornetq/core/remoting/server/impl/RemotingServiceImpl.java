@@ -36,7 +36,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptor;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.HornetQPrincipal;
@@ -102,7 +101,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final ClusterManager clusterManager;
 
-   private Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
+   private final Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
 
    // Static --------------------------------------------------------
 
@@ -464,7 +463,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             conn.connection.destroy();
          }
-
       }
    }
 

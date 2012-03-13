@@ -1630,6 +1630,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                               }
                            }
                         }
+
+                        @Override
+                        public String toString()
+                        {
+                           return "FailureListener('restarts cluster connections')";
+                        }
                      });
 
                      if (log.isDebugEnabled())
