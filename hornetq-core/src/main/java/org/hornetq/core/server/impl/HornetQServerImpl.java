@@ -322,7 +322,7 @@ public class HornetQServerImpl implements HornetQServer
 
    }
 
-   // lifecycle methods
+   // life-cycle methods
    // ----------------------------------------------------------------
 
    /*
@@ -2107,8 +2107,8 @@ public class HornetQServerImpl implements HornetQServer
             }
             clusterManager.start();
 
-            final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
-            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
+            final TransportConfiguration tp = configuration.getConnectorConfigurations().get(liveConnectorName);
+            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
 
@@ -2165,7 +2165,8 @@ public class HornetQServerImpl implements HornetQServer
             QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
 
             serverLocator0.close();
-            replicationEndpoint.stop();
+            if (replicationEndpoint != null)
+               replicationEndpoint.stop();
 
             if (failedToConnect || !started || signal == BACKUP_ACTIVATION.STOP)
                return;

@@ -13,10 +13,13 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 
    public void testQuorumVoting() throws Exception
    {
-      int[] liveServerIDs = new int[] { 1, 2, 3 };
+      int[] liveServerIDs = new int[] { 0, 1, 2 };
       setupCluster();
 
-      startServers(0, 1, 2, 3, 4, 5);
+      startServers(0, 1, 2);
+      // BackupSyncDelay delay = new BackupSyncDelay(servers[4], servers[1],
+      // PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
+      startServers(3, 4, 5);
 
       for (int i : liveServerIDs)
       {
@@ -36,6 +39,9 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 
       waitForBindings(0, QUEUES_TESTADDRESS, 1, 1, true);
 
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+
       final TopologyListener liveTopologyListener = new TopologyListener("LIVE-1");
 
       locators[0].addClusterTopologyListener(liveTopologyListener);
@@ -52,6 +58,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 
       assertTrue(servers[3].waitForInitialization(2, TimeUnit.SECONDS));
       assertFalse("3 should have failed over ", servers[3].getConfiguration().isBackup());
+
       failNode(1);
       assertFalse("4 should have failed over ", servers[4].getConfiguration().isBackup());
    }

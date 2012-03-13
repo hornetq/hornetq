@@ -16,6 +16,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -35,24 +36,39 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 public class BackupSyncDelay implements Interceptor
 {
 
-   private final ReplicationChannelHandler handler = new ReplicationChannelHandler();
-   private final TestableServer backup;
-   private final TestableServer live;
+   private final ReplicationChannelHandler handler;
+   private final HornetQServer backup;
+   private final HornetQServer live;
 
    public void deliverUpToDateMsg()
    {
-      live.removeInterceptor(this);
+      live.getRemotingService().removeInterceptor(this);
       if (backup.isStarted())
          handler.deliver();
    }
 
-   public BackupSyncDelay(TestableServer backup, TestableServer live)
+   /**
+    * @param backup
+    * @param live
+    * @param packetCode which packet is going to be intercepted.
+    */
+   public BackupSyncDelay(HornetQServer backup, HornetQServer live, byte packetCode)
    {
-      assert backup.getServer().getConfiguration().isBackup();
-      assert !live.getServer().getConfiguration().isBackup();
+      assert backup.getConfiguration().isBackup();
+      assert !live.getConfiguration().isBackup();
       this.backup = backup;
       this.live = live;
-      live.addInterceptor(this);
+      live.getRemotingService().addInterceptor(this);
+      handler = new ReplicationChannelHandler(packetCode);
+   }
+
+   /**
+    * @param backupServer
+    * @param liveServer
+    */
+   public BackupSyncDelay(TestableServer backupServer, TestableServer liveServer)
+   {
+      this(backupServer.getServer(), liveServer.getServer(), PacketImpl.REPLICATION_START_FINISH_SYNC);
    }
 
    @Override
@@ -62,12 +78,12 @@ public class BackupSyncDelay implements Interceptor
       {
          try
          {
-            ReplicationEndpoint repEnd = backup.getServer().getReplicationEndpoint();
+            ReplicationEndpoint repEnd = backup.getReplicationEndpoint();
             handler.addSubHandler(repEnd);
             Channel repChannel = repEnd.getChannel();
             repChannel.setHandler(handler);
             handler.setChannel(repChannel);
-            live.removeInterceptor(this);
+            live.getRemotingService().removeInterceptor(this);
          }
          catch (Exception e)
          {
@@ -80,6 +96,10 @@ public class BackupSyncDelay implements Interceptor
    public static class ReplicationChannelHandler implements ChannelHandler
    {
 
+      public ReplicationChannelHandler(byte type)
+      {
+         this.typeToIntercept = type;
+      }
       private ReplicationEndpoint handler;
       private Packet onHold;
       private Channel channel;
@@ -87,6 +107,7 @@ public class BackupSyncDelay implements Interceptor
       private volatile boolean delivered;
       private boolean receivedUpToDate;
       private boolean mustHold = true;
+      private final byte typeToIntercept;
 
       public void addSubHandler(ReplicationEndpoint handler)
       {
@@ -134,24 +155,31 @@ public class BackupSyncDelay implements Interceptor
       @Override
       public synchronized void handlePacket(Packet packet)
       {
-
          if (onHold != null && deliver)
          {
             deliver();
          }
 
-         if (packet.getType() == PacketImpl.REPLICATION_START_FINISH_SYNC && mustHold)
+         if (typeToIntercept == PacketImpl.REPLICATION_START_FINISH_SYNC)
          {
-            ReplicationStartSyncMessage syncMsg = (ReplicationStartSyncMessage)packet;
-            if (syncMsg.isSynchronizationFinished() && !deliver)
+            if (packet.getType() == PacketImpl.REPLICATION_START_FINISH_SYNC && mustHold)
             {
-               receivedUpToDate = true;
-               assert onHold == null;
-               onHold = packet;
-               PacketImpl response = new ReplicationResponseMessage();
-               channel.send(response);
-               return;
+               ReplicationStartSyncMessage syncMsg = (ReplicationStartSyncMessage)packet;
+               if (syncMsg.isSynchronizationFinished() && !deliver)
+               {
+                  receivedUpToDate = true;
+                  assert onHold == null;
+                  onHold = packet;
+                  PacketImpl response = new ReplicationResponseMessage();
+                  channel.send(response);
+                  return;
+               }
             }
+         }
+         else if (typeToIntercept == packet.getType())
+         {
+            channel.send(new ReplicationResponseMessage());
+            return;
          }
 
          handler.handlePacket(packet);
@@ -164,11 +192,6 @@ public class BackupSyncDelay implements Interceptor
 
       private final Channel channel;
 
-      /**
-       * @param connection
-       * @param id
-       * @param confWindowSize
-       */
       public ChannelWrapper(Channel channel)
       {
          this.channel = channel;
