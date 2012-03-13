@@ -30,26 +30,22 @@ import org.hornetq.api.core.client.ServerLocator;
 public interface ServerLocatorInternal extends ServerLocator
 {
    void start(Executor executor) throws Exception;
-   
-   Executor getExecutor();
-   
+
    void factoryClosed(final ClientSessionFactory factory);
-   
+
    AfterConnectInternalListener getAfterConnectInternalListener();
-   
+
    void setAfterConnectionInternalListener(AfterConnectInternalListener listener);
-   
+
    /** Used to better identify Cluster Connection Locators on logs. To facilitate eventual debugging.
-    * 
+    *
     *  This method used to be on tests interface, but I'm now making it part of the public interface since*/
    void setIdentity(String identity);
-   
-   String getIdentity();
 
    void setNodeID(String nodeID);
 
    String getNodeID();
-   
+
    void cleanup();
 
    ClientSessionFactoryInternal connect() throws  Exception;
@@ -57,7 +53,7 @@ public interface ServerLocatorInternal extends ServerLocator
    void notifyNodeUp(long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
    /**
-    * 
+    *
     * @param uniqueEventID 0 means get the previous ID +1
     * @param nodeID
     */
@@ -70,8 +66,4 @@ public interface ServerLocatorInternal extends ServerLocator
    TransportConfiguration getClusterTransportConfiguration();
 
    void setClusterTransportConfiguration(TransportConfiguration tc);
-
-   boolean isBackup();
-   
-   void setBackup(boolean backup);
 }

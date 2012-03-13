@@ -690,7 +690,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          serverLocator.setReconnectAttempts(0);
          serverLocator.setClusterConnection(true);
          serverLocator.setClusterTransportConfiguration(connector);
-         serverLocator.setBackup(server.getConfiguration().isBackup());
          serverLocator.setInitialConnectAttempts(-1);
          serverLocator.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          serverLocator.setConnectionTTL(connectionTTL);

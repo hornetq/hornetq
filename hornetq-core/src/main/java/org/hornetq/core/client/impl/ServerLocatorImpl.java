@@ -187,8 +187,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private TransportConfiguration clusterTransportConfiguration;
 
-   private boolean backup;
-
    private final Exception e = new Exception();
 
    // To be called when there are ServerLocator being finalized.
@@ -557,19 +555,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       });
    }
 
-   public Executor getExecutor()
-   {
-      return startExecutor;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ServerLocator#disableFinalizeCheck()
-    */
+   @Override
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
    }
 
+   @Override
    public ClientSessionFactoryInternal connect() throws Exception
    {
       synchronized (this)
@@ -586,9 +578,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return (ClientSessionFactoryInternal)createSessionFactory();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ServerLocatorInternal#setAfterConnectionInternalListener(org.hornetq.core.client.impl.AfterConnectInternalListener)
-    */
+   @Override
    public void setAfterConnectionInternalListener(AfterConnectInternalListener listener)
    {
       this.afterConnectListener = listener;
@@ -1183,11 +1173,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   public String getIdentity()
-   {
-      return identity;
-   }
-
    public void setIdentity(String identity)
    {
       this.identity = identity;
@@ -1221,16 +1206,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public void setClusterTransportConfiguration(TransportConfiguration tc)
    {
       this.clusterTransportConfiguration = tc;
-   }
-
-   public boolean isBackup()
-   {
-      return backup;
-   }
-
-   public void setBackup(boolean backup)
-   {
-      this.backup = backup;
    }
 
    @Override
