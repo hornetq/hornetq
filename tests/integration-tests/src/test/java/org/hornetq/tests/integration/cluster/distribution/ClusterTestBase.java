@@ -538,7 +538,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No sf at " + node);
       }
 
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = addClientSession(sf.createSession(false, true, true));
 
       String filterString = null;
 
@@ -603,7 +603,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       catch (Exception e)
       {
-         // Proxy the failure and print a dump into System.out, so it is captured by Hudson reports
+         // Proxy the failure and print a dump into System.out, so it is captured by Jenkins reports
          e.printStackTrace();
          System.out.println(UnitTestCase.threadDump(" - fired by ClusterTestBase::addConsumer"));
 
@@ -1528,15 +1528,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
     	  serverToTC = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
-      locators[node] = HornetQClient.createServerLocatorWithHA(serverToTC);
+      locators[node] = addServerLocator(HornetQClient.createServerLocatorWithHA(serverToTC));
       locators[node].setRetryInterval(100);
       locators[node].setRetryIntervalMultiplier(1d);
       locators[node].setReconnectAttempts(-1);
       locators[node].setBlockOnNonDurableSend(blocking);
       locators[node].setBlockOnDurableSend(blocking);
-   	  ((ServerLocatorInternal)locators[node]).setIdentity("TestClientConnector,live=" + node + ",backup=" + backupNode);
+      final String identity = "TestClientConnector,live=" + node + ",backup=" + backupNode;
+      ((ServerLocatorInternal)locators[node]).setIdentity(identity);
 
-      addServerLocator(locators[node]);
       ClientSessionFactory sf = createSessionFactory(locators[node]);
       sfs[node] = sf;
    }
@@ -2056,7 +2056,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          waitForServer(servers[node]);
 
       }
-      
+
 
    }
 
