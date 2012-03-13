@@ -206,6 +206,11 @@ public class HornetQException extends Exception
       this.code = code;
    }
 
+   public HornetQException(final String msg)
+   {
+      super(msg);
+   }
+
    public HornetQException(final int code, final String msg)
    {
       super(msg);
@@ -223,6 +228,11 @@ public class HornetQException extends Exception
    public int getCode()
    {
       return code;
+   }
+
+   public void setCode(int code)
+   {
+      this.code = code;
    }
 
    @Override

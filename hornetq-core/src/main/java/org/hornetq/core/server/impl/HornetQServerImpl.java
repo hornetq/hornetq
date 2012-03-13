@@ -102,6 +102,8 @@ import org.hornetq.core.security.impl.SecurityStoreImpl;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle; 
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
@@ -152,7 +154,6 @@ public class HornetQServerImpl implements HornetQServer
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
 
    /*
     * JMS Topics (which are outside of the scope of the core API) will require a dumb subscription
@@ -355,12 +356,12 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (state != SERVER_STATE.STOPPED)
       {
-         log.debug("Server already started!");
+         HornetQLogger.LOGGER.serverAlreadyStarted();
          return;
       }
       state = SERVER_STATE.INITIALIZING;
 
-      log.debug("Starting server " + this);
+      HornetQLogger.LOGGER.startingServer(this);
       OperationContextImpl.clearContext();
 
       try
@@ -374,8 +375,13 @@ public class HornetQServerImpl implements HornetQServer
 
          nodeManager.start();
 
-         HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting with configuration " +
-                                    configuration);
+         if (started)
+         {
+            HornetQLogger.LOGGER.serverAlreadyStarted(configuration.isBackup() ? "backup" : "live");
+            return;
+         }
+
+         HornetQLogger.LOGGER.serverStarting((configuration.isBackup() ? "backup" : "live"),  configuration);
 
          if (configuration.isRunSyncSpeedTest())
          {
@@ -414,13 +420,10 @@ public class HornetQServerImpl implements HornetQServer
              }
 
              activation.run();
-            state = SERVER_STATE.STARTED;
-             HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
-                                        " [" +
-                                        nodeManager.getNodeId() +
-                                        "]" +
-                                        (this.identity != null ? " (" + identity : ")") +
-                                        " started");
+
+             started = true;
+
+             HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(), identity != null ? identity : "");
          }
 
          // start connector service
@@ -439,7 +442,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (state != SERVER_STATE.STOPPED)
       {
-         HornetQServerImpl.log.warn("HornetQServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
+         HornetQLogger.LOGGER.serverFinalisedWIthoutBeingSTopped();
 
          stop();
       }
@@ -459,19 +462,13 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
 
-      out.println("Generating thread dump because - " + reason);
+      out.println(HornetQMessageBundle.MESSAGES.generatingThreadDump(reason));
       out.println("*******************************************************************************");
 
       for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
       {
          out.println("===============================================================================");
-         out.println("Thread " + el.getKey() +
-                     " name = " +
-                     el.getKey().getName() +
-                     " id = " +
-                     el.getKey().getId() +
-                     " group = " +
-                     el.getKey().getThreadGroup());
+         out.println(HornetQMessageBundle.MESSAGES.threadInfo(el.getKey(), el.getKey().getName(), el.getKey().getId(), el.getKey().getThreadGroup()));
          out.println();
          for (StackTraceElement traceEl : el.getValue())
          {
@@ -480,10 +477,10 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       out.println("===============================================================================");
-      out.println("End Thread dump");
+      out.println(HornetQMessageBundle.MESSAGES.endThreadDump());
       out.println("*******************************************************************************");
 
-      log.warn(str.toString());
+      HornetQLogger.LOGGER.warn(str.toString());
    }
 
    public void stop(boolean failoverOnServerShutdown) throws Exception
@@ -559,7 +556,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             // If anything went wrong with closing sessions.. we should ignore it
             // such as transactions.. etc.
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
          }
       }
 
@@ -611,11 +608,10 @@ public class HornetQServerImpl implements HornetQServer
                {
                   if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
                   {
-                     HornetQServerImpl.log.warn("Timed out waiting for pool to terminate " + threadPool +
-                              ". Interrupting all its threads!");
+                     HornetQLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
                      for (Runnable r : threadPool.shutdownNow())
                      {
-                        log.debug("Cancelled the execution of " + r);
+                        HornetQLogger.LOGGER.cancelExecution(r);
                      }
                   }
                }
@@ -683,10 +679,7 @@ public class HornetQServerImpl implements HornetQServer
 
          addressSettingsRepository.clearCache();
 
-         HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
-                                    " [" +
-                                    tempNodeID +
-                                    "] stopped");
+         HornetQLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
 
          Logger.reset();
       }
@@ -846,7 +839,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (!configuration.isBackup())
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
+         throw HornetQMessageBundle.MESSAGES.notABackupServer(HornetQException.ILLEGAL_STATE);
       }
 
       channel.setHandler(replicationEndpoint);
@@ -854,7 +847,7 @@ public class HornetQServerImpl implements HornetQServer
       if (replicationEndpoint.getChannel() != null)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Backup replication server is already connected to another server");
+                                    HornetQMessageBundle.MESSAGES.backupServerAlreadyConnectingToLive());
       }
 
       replicationEndpoint.setChannel(channel);
@@ -983,7 +976,7 @@ public class HornetQServerImpl implements HornetQServer
                             final boolean durable,
                             final boolean temporary) throws Exception
    {
-      log.info("trying to deploy queue " + queueName);
+      HornetQLogger.LOGGER.deployQueue(queueName);
 
       return createQueue(address, queueName, filterString, durable, temporary, true);
    }
@@ -1090,21 +1083,21 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (config.getName() == null)
       {
-         HornetQServerImpl.log.warn("Must specify a name for each divert. This one will not be deployed.");
+         HornetQLogger.LOGGER.divertWithNoName();
 
          return;
       }
 
       if (config.getAddress() == null)
       {
-         HornetQServerImpl.log.warn("Must specify an address for each divert. This one will not be deployed.");
+         HornetQLogger.LOGGER.divertWithNoAddress();
 
          return;
       }
 
       if (config.getForwardingAddress() == null)
       {
-         HornetQServerImpl.log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
+         HornetQLogger.LOGGER.divertWithNoForwardingAddress();
 
          return;
       }
@@ -1113,7 +1106,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (postOffice.getBinding(sName) != null)
       {
-         HornetQServerImpl.log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
+         HornetQLogger.LOGGER.divertBindingNotExists(sName);
 
          return;
       }
@@ -1319,8 +1312,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
       {
-         log.warn("Security risk! HornetQ is running with the default cluster admin user and default password. "
-                  + "Please see the HornetQ user guide, cluster chapter, for instructions on how to change this.");
+         HornetQLogger.LOGGER.clusterSecurityRisk();
       }
 
       securityStore = new SecurityStoreImpl(securityRepository,
@@ -1452,7 +1444,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             public void run()
             {
-               HornetQServerImpl.log.info(dumper.dump());
+               HornetQLogger.LOGGER.dumpServerInfo(dumper.dump());
             }
          }, 0, dumpInfoInterval, TimeUnit.MILLISECONDS);
       }
@@ -1617,7 +1609,7 @@ public class HornetQServerImpl implements HornetQServer
 
       for (Pair<Long, Long> msgToDelete : pendingLargeMessages)
       {
-         log.info("Deleting pending large message as it wasn't completed:" + msgToDelete);
+         HornetQLogger.LOGGER.deletingPendingMessage(msgToDelete);
          LargeServerMessage msg = storageManager.createLargeMessage();
          msg.setMessageID(msgToDelete.getB());
          msg.setPendingRecordID(msgToDelete.getA());
@@ -1840,7 +1832,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (!restarting && nodeManager.isAwaitingFailback())
             {
-               log.info("live server wants to restart, restarting server in backup");
+               HornetQLogger.LOGGER.awaitFailBack();
                restarting = true;
                Thread t = new Thread(new Runnable()
                {
@@ -1848,18 +1840,18 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      try
                      {
-                        log.debug(HornetQServerImpl.this + "::Stopping live node in favor of failback");
+                        HornetQLogger.LOGGER.stoppingLiveNodeInFavourOfFailback(HornetQServerImpl.this);
                         stop(true);
                         // We need to wait some time before we start the backup again
                         // otherwise we may eventually start before the live had a chance to get it
                         Thread.sleep(configuration.getFailbackDelay());
                         configuration.setBackup(true);
-                        log.debug(HornetQServerImpl.this + "::Starting backup node now after failback");
+                        HornetQLogger.LOGGER.startingBackupAfterFailure(HornetQServerImpl.this);
                         start();
                      }
                      catch (Exception e)
                      {
-                        log.warn("unable to restart server, please kill and restart manually", e);
+                        HornetQLogger.LOGGER.serverRestartWarning();
                      }
                   }
                });
@@ -1868,7 +1860,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.serverRestartWarning(e);
          }
       }
    }
@@ -1879,26 +1871,25 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            log.info("Waiting to obtain live lock");
+            HornetQLogger.LOGGER.awaitingLiveLock();
 
             checkJournalDirectory();
 
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("First part initialization on " + this);
+               HornetQLogger.LOGGER.initializeFirstPart(this);
             }
 
             initialisePart1();
 
             if (nodeManager.isBackupLive())
             {
-               /*
-                * looks like we've failed over at some point need to inform that we are the backup
-                * so when the current live goes down they failover to us
-                */
-               if (log.isDebugEnabled())
+               // looks like we've failed over at some point need to inform that we are the backup so when the current
+               // live
+               // goes down they failover to us
+               if (HornetQLogger.LOGGER.isDebugEnabled())
                {
-                  log.debug("announcing backup to the former live" + this);
+                  HornetQLogger.LOGGER.announceBackupToFormerLive(this);
                }
 
                clusterManager.announceBackup();
@@ -1914,11 +1905,11 @@ public class HornetQServerImpl implements HornetQServer
 
             initialisePart2();
 
-            log.info("Server is now live");
+            HornetQLogger.LOGGER.serverIsLive();
          }
          catch (Exception e)
          {
-            log.error("Failure in initialisation", e);
+            HornetQLogger.LOGGER.initializationError(e);
          }
       }
 
@@ -1949,10 +1940,7 @@ public class HornetQServerImpl implements HornetQServer
 
             state = SERVER_STATE.STARTED;
 
-            log.info("HornetQ Backup Server version " + getVersion().getFullVersion() +
-                     " [" +
-                     nodeManager.getNodeId() +
-                     "] started, waiting live to fail before it gets active");
+            HornetQLogger.LOGGER.backupServerStarted(version.getFullVersion(), nodeManager.getNodeId());
 
             nodeManager.awaitLiveNode();
 
@@ -1967,7 +1955,7 @@ public class HornetQServerImpl implements HornetQServer
 
             clusterManager.activate();
 
-            log.info("Backup Server is now live");
+            HornetQLogger.LOGGER.backupServerIsLive();
 
             nodeManager.releaseBackup();
             if (configuration.isAllowAutoFailBack())
@@ -1987,12 +1975,12 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (!(e.getCause() instanceof InterruptedException))
             {
-               log.error("Failure in initialisation", e);
+               HornetQLogger.LOGGER.initializationError(e);
             }
          }
          catch (Throwable e)
          {
-            log.error("Failure in initialisation", e);
+            HornetQLogger.LOGGER.initializationError(e);
          }
       }
 
@@ -2048,7 +2036,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             failedAlready = true;
 
-            log.warn("Critical IO Error, shutting down the server. code=" + code + ", message=" + message);
+            HornetQLogger.LOGGER.ioErrorShutdownServer(code, message);
 
             new Thread()
             {
@@ -2061,7 +2049,7 @@ public class HornetQServerImpl implements HornetQServer
                   }
                   catch (Exception e)
                   {
-                     log.warn(e.getMessage(), e);
+                     HornetQLogger.LOGGER.errorStoppingServer(e);
                   }
                }
             }.start();
@@ -2128,7 +2116,7 @@ public class HornetQServerImpl implements HornetQServer
                   }
                   catch (Exception e)
                   {
-                     log.warn("Unable to announce backup for replication. Trying to stop the server.", e);
+                     HornetQLogger.LOGGER.replicationStartProblem(e);
                      failedToConnect = true;
                      quorumManager.causeExit();
                      try
@@ -2145,9 +2133,8 @@ public class HornetQServerImpl implements HornetQServer
                }
             });
 
-            log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
-                     "] started, waiting live to fail before it gets active");
-            state = SERVER_STATE.STARTED;
+            HornetQLogger.LOGGER.backupServerStarted(version.getFullVersion(), nodeManager.getNodeId());
+            started = true;
 
             // Server node (i.e. Live node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
@@ -2187,7 +2174,7 @@ public class HornetQServerImpl implements HornetQServer
             if ((e instanceof InterruptedException || e instanceof IllegalStateException) && !isStarted())
                // do not log these errors if the server is being stopped.
                return;
-            log.error("Failure in initialisation", e);
+            HornetQLogger.LOGGER.initializationError(e);
             e.printStackTrace();
          }
       }
@@ -2219,7 +2206,7 @@ public class HornetQServerImpl implements HornetQServer
 
             if (System.currentTimeMillis() - start >= timeout)
             {
-               log.warn("Timed out waiting for backup activation to exit");
+               HornetQLogger.LOGGER.backupActivationProblem();
             }
 
             nodeManager.stopBackup();
@@ -2248,16 +2235,16 @@ public class HornetQServerImpl implements HornetQServer
 
             if (identity != null)
             {
-               log.info("Server " + identity + " is now live");
+               HornetQLogger.LOGGER.serverIsLive(identity);
             }
             else
             {
-               log.info("Server is now live");
+               HornetQLogger.LOGGER.serverIsLive();
             }
          }
          catch (Exception e)
          {
-            log.error("Failure in initialisation", e);
+            HornetQLogger.LOGGER.initializationError(e);
          }
       }
 
@@ -2328,7 +2315,7 @@ public class HornetQServerImpl implements HornetQServer
              * with) the backup, or (2) by an IO Error at the storage. If (1), we can swallow the
              * exception and ignore the replication request. If (2) the live will crash shortly.
              */
-            log.warn("Exception when trying to start replication", e);
+            HornetQLogger.LOGGER.errorStartingReplication(e);
 
             try
             {
@@ -2337,7 +2324,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             catch (Exception hqe)
             {
-               log.warn("Exception while trying to close replicationManager", hqe);
+               HornetQLogger.LOGGER.errorStoppingReplication(hqe);
             }
             finally
             {
