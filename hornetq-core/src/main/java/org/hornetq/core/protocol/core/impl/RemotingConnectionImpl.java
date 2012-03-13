@@ -30,6 +30,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
@@ -78,11 +79,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private int clientVersion;
 
-   // Channels 0-9 are reserved for the system
-   // 0 is for pinging
-   // 1 is for session creation and attachment
-   // 2 is for replication
-   private volatile SimpleIDGenerator idGenerator = new SimpleIDGenerator(10);
+   private volatile SimpleIDGenerator idGenerator = new SimpleIDGenerator(CHANNEL_ID.USER.id);
 
    private boolean idGeneratorSynced = false;
 
@@ -247,9 +244,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalStateException("FailureListener cannot be null");
+         throw new IllegalArgumentException("FailureListener cannot be null");
       }
-
       failureListeners.add(listener);
    }
 
@@ -257,7 +253,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalStateException("FailureListener cannot be null");
+         throw new IllegalArgumentException("FailureListener cannot be null");
       }
 
       return failureListeners.remove(listener);
@@ -267,7 +263,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalStateException("CloseListener cannot be null");
+         throw new IllegalArgumentException("CloseListener cannot be null");
       }
 
       closeListeners.add(listener);
@@ -277,7 +273,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalStateException("CloseListener cannot be null");
+         throw new IllegalArgumentException("CloseListener cannot be null");
       }
 
       return closeListeners.remove(listener);
