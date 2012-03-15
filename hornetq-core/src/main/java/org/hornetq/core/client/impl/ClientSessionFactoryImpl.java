@@ -585,7 +585,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
 
          // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
-         callFailureListeners(me, false, false);
+         callSessionFailureListeners(me, false, false);
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
          // There are either no threads executing in createSession, or one is blocking on a createSession
@@ -667,6 +667,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                catch (Exception ignore)
                {
+                  // no-op
                }
             }
 
@@ -698,14 +699,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
             }
-            callFailureListeners(me, true, false);
+            callSessionFailureListeners(me, true, false);
          }
       }
 
       // This needs to be outside the failover lock to prevent deadlock
       if (connection != null)
       {
-         callFailureListeners(me, true, true);
+         callSessionFailureListeners(me, true, true);
       }
       if (sessionsToClose != null)
       {
@@ -908,7 +909,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                       + "Please inform this condition to the HornetQ team");
    }
 
-   private void callFailureListeners(final HornetQException me, final boolean afterReconnect, final boolean failedOver)
+   private void callSessionFailureListeners(final HornetQException me, final boolean afterReconnect,
+                                            final boolean failedOver)
    {
       final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
 
@@ -966,7 +968,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       for (FailureListener listener : oldListeners)
       {
-         // Add all apart from the first one which is the old DelegatingFailureListener
+         // Add all apart from the old DelegatingFailureListener
          if (listener instanceof DelegatingFailureListener == false)
          {
             newListeners.add(listener);
@@ -1717,9 +1719,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
              "]";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ClientSessionFactoryInternal#setReconnectAttempts(int)
-    */
+   @Override
    public void setReconnectAttempts(final int attempts)
    {
       reconnectAttempts = attempts;

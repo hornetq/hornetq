@@ -42,10 +42,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -2109,7 +2109,7 @@ public class HornetQServerImpl implements HornetQServer
 
             final TransportConfiguration tp = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
-            quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
+            quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
 
             serverLocator0.setReconnectAttempts(-1);
@@ -2121,11 +2121,14 @@ public class HornetQServerImpl implements HornetQServer
                {
                   try
                   {
-                     final ClientSessionFactory liveServerSessionFactory = serverLocator0.connect();
+                     final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
                      if (liveServerSessionFactory == null)
                      {
                         throw new RuntimeException("Could not estabilish the connection");
                      }
+
+                     liveServerSessionFactory.setReconnectAttempts(1);
+                     quorumManager.setSessionFactory(liveServerSessionFactory);
                      CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
                      liveConnection.addFailureListener(quorumManager);
                      Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
@@ -2162,6 +2165,10 @@ public class HornetQServerImpl implements HornetQServer
             // we must remember to close stuff we don't need any more
             if (failedToConnect)
                   return;
+            /**
+             * Wait for a shutdown order or for the live to fail. All the action happens inside
+             * {@link QuorumManager}
+             */
             QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
 
             serverLocator0.close();

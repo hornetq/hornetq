@@ -1,10 +1,7 @@
 package org.hornetq.core.server.impl;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,9 +13,13 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * Manages a quorum of servers used to determine whether a given server is running or not.
@@ -31,24 +32,26 @@ public final class QuorumManager implements FailureListener
 {
    private static final Logger log = Logger.getLogger(QuorumManager.class);
    private String targetServerID = "";
-   private final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
-            new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
-
    private final ExecutorService executor;
    private final String serverIdentity;
    private final CountDownLatch latch;
    private volatile BACKUP_ACTIVATION signal;
+   private ClientSessionFactoryInternal sessionFactory;
+   private final Topology topology;
+   private final HornetQServer backupServer;
 
    /** safety parameter to make _sure_ we get out of await() */
-   private static final int LATCH_TIMEOUT = 60;
+   private static final int LATCH_TIMEOUT = 30;
    private static final long DISCOVERY_TIMEOUT = 5;
+   private static final int RECONNECT_ATTEMPTS = 5;
 
-   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, String identity)
+   public QuorumManager(HornetQServer backup, ServerLocator serverLocator, ExecutorService executor, String identity)
    {
       this.serverIdentity = identity;
       this.executor = executor;
       this.latch = new CountDownLatch(1);
-      // locator.addClusterTopologyListener(this);
+      this.backupServer = backup;
+      topology = serverLocator.getTopology();
    }
 
    public void setLiveID(String liveID)
@@ -56,46 +59,54 @@ public final class QuorumManager implements FailureListener
       targetServerID = liveID;
    }
 
-   public boolean isNodeDown()
+   public boolean isLiveDown()
    {
-      if (nodes.size() == 0)
+      Collection<TopologyMember> nodes = topology.getMembers();
+
+      if (nodes.size() < 2) // the life server is also in the list
       {
          return true;
       }
 
       final int size = nodes.size();
-      Set<ServerLocator> locatorsList = new HashSet<ServerLocator>(size);
+      Collection<ServerLocator> locatorsList = new LinkedList<ServerLocator>();
       AtomicInteger pingCount = new AtomicInteger(0);
       final CountDownLatch latch = new CountDownLatch(size);
+      int total = 0;
       try
       {
-         for (Entry<String, Pair<TransportConfiguration, TransportConfiguration>> pair : nodes.entrySet())
+         for (TopologyMember tm : nodes)
          {
-            if (targetServerID.equals(pair.getKey()))
+            Pair<TransportConfiguration, TransportConfiguration> pair = tm.getConnector();
+//            if (targetServerID.equals(pair.getKey()))
+//               continue;
+            TransportConfiguration serverTC = pair.getA();
+            if (serverTC == null)
+            {
+               latch.countDown();
                continue;
-            TransportConfiguration serverTC = pair.getValue().getA();
+            }
+            total++;
             ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);
             locatorsList.add(locator);
             executor.submit(new ServerConnect(latch, pingCount, locator));
          }
-         // Some servers may have disappeared between the latch creation
-         for (int i = 0; i < size - locatorsList.size(); i++)
-         {
-            latch.countDown();
-         }
+
          try
          {
             latch.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
          }
          catch (InterruptedException interruption)
          {
-            // No-op. As the best the quorum can do now is to return the latest number it has
+            // No-op. The best the quorum can do now is to return the latest number it has
          }
-         return pingCount.get() * 2 >= locatorsList.size();
+         // -1: because the live server is not being filtered out.
+         return pingCount.get() * 2 >= locatorsList.size() - 1;
       }
       finally
       {
-         for (ServerLocator locator: locatorsList){
+         for (ServerLocator locator : locatorsList)
+         {
             try
             {
                locator.close();
@@ -160,25 +171,65 @@ public final class QuorumManager implements FailureListener
    @Override
    public void connectionFailed(HornetQException exception, boolean failedOver)
    {
-      // connection failed,
-      if (exception.getCode() == HornetQException.DISCONNECTED)
+      // Check if connection was reestablished by the sessionFactory:
+      if (sessionFactory.numConnections() > 0)
       {
-         log.info("Connection failed: " + exception);
-         signal = BACKUP_ACTIVATION.FAIL_OVER;
-         latch.countDown();
+         resetReplication();
          return;
       }
-      throw new RuntimeException(exception);
+      if (!isLiveDown())
+      {
+         try
+         {
+            // no point in repeating all the reconnection logic
+            sessionFactory.connect(RECONNECT_ATTEMPTS, false);
+            resetReplication();
+            return;
+         }
+         catch (HornetQException e)
+         {
+            if (e.getCode() != HornetQException.NOT_CONNECTED)
+               log.warn("Unexpected exception while trying to reconnect", e);
+         }
+      }
 
-      // by the time it got here, the connection might have been re-established
-      // check for it...
-      // if connectionIsOk:
-      // replicationEndPoint must see how up-to-date it is
-      // If not:
-      // 1. take a vote
-      // if vote result is weird... retry connecting
+      // live is assumed to be down, backup fails-over
+      signal = BACKUP_ACTIVATION.FAIL_OVER;
+      latch.countDown();
    }
 
+   /**
+    *
+    */
+   private void resetReplication()
+   {
+      new Thread(new ServerRestart(backupServer)).run();
+   }
+
+   private static final class ServerRestart implements Runnable
+   {
+      final HornetQServer backup;
+
+      public ServerRestart(HornetQServer backup)
+      {
+         this.backup = backup;
+      }
+
+      @Override
+      public void run()
+      {
+         try
+         {
+            backup.stop();
+            backup.start();
+         }
+         catch (Exception e)
+         {
+            log.error("Error while restarting the backup server: " + backup, e);
+         }
+      }
+
+   }
    enum BACKUP_ACTIVATION
    {
       FAIL_OVER, STOP;
@@ -212,11 +263,19 @@ public final class QuorumManager implements FailureListener
    }
 
    /**
-    * Releases the semaphore, causing the Activation thread to fail-over.
+    * Releases the latch, causing the backup activation thread to fail-over.
     */
    public synchronized void failOver()
    {
       signal = BACKUP_ACTIVATION.FAIL_OVER;
       latch.countDown();
+   }
+
+   /**
+    * @param sessionFactory the session factory used to connect to the live server
+    */
+   public void setSessionFactory(ClientSessionFactoryInternal sessionFactory)
+   {
+      this.sessionFactory = sessionFactory;
    }
 }

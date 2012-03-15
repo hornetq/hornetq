@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 
 public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 {
@@ -17,8 +19,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       setupCluster();
 
       startServers(0, 1, 2);
-      // BackupSyncDelay delay = new BackupSyncDelay(servers[4], servers[1],
-      // PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
+      BackupSyncDelay delay = new BackupSyncDelay(servers[4], servers[1], PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
       startServers(3, 4, 5);
 
       for (int i : liveServerIDs)
