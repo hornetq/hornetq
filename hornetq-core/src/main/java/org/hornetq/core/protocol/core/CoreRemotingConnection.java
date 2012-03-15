@@ -105,11 +105,6 @@ public interface CoreRemotingConnection extends RemotingConnection
    Object getTransferLock();
    
    /**
-    * Called periodically to flush any data in the batch buffer
-    */
-   void checkFlushBatchBuffer();
-
-   /**
     * get the default security principal
     *
     * @return the principal

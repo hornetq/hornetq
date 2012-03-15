@@ -462,11 +462,6 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       }
    }
 
-   public void checkFlushBatchBuffer()
-   {
-      transportConnection.checkFlushBatchBuffer();
-   }
-
    public HornetQPrincipal getDefaultHornetQPrincipal()
    {
       return transportConnection.getDefaultHornetQPrincipal();
