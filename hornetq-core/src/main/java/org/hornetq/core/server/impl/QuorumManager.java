@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
@@ -18,6 +19,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServer;
 
@@ -39,10 +41,10 @@ public final class QuorumManager implements FailureListener
    private ClientSessionFactoryInternal sessionFactory;
    private final Topology topology;
    private final HornetQServer backupServer;
+   private CoreRemotingConnection connection;
 
    /** safety parameter to make _sure_ we get out of await() */
    private static final int LATCH_TIMEOUT = 30;
-   private static final long DISCOVERY_TIMEOUT = 5;
    private static final int RECONNECT_ATTEMPTS = 5;
 
    public QuorumManager(HornetQServer backup, ServerLocator serverLocator, ExecutorService executor, String identity)
@@ -63,33 +65,31 @@ public final class QuorumManager implements FailureListener
    {
       Collection<TopologyMember> nodes = topology.getMembers();
 
-      if (nodes.size() < 2) // the life server is also in the list
-      {
-         return true;
-      }
 
-      final int size = nodes.size();
       Collection<ServerLocator> locatorsList = new LinkedList<ServerLocator>();
       AtomicInteger pingCount = new AtomicInteger(0);
-      final CountDownLatch latch = new CountDownLatch(size);
       int total = 0;
+      for (TopologyMember tm : nodes)
+         if (useIt(tm))
+            total++;
+
+      if (total < 1)
+         return true;
+
+      final CountDownLatch latch = new CountDownLatch(total);
       try
       {
          for (TopologyMember tm : nodes)
          {
             Pair<TransportConfiguration, TransportConfiguration> pair = tm.getConnector();
-//            if (targetServerID.equals(pair.getKey()))
-//               continue;
+
             TransportConfiguration serverTC = pair.getA();
-            if (serverTC == null)
+            if (useIt(tm))
             {
-               latch.countDown();
-               continue;
+               ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);
+               locatorsList.add(locator);
+               executor.submit(new ServerConnect(latch, total, pingCount, locator, serverTC));
             }
-            total++;
-            ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);
-            locatorsList.add(locator);
-            executor.submit(new ServerConnect(latch, pingCount, locator));
          }
 
          try
@@ -101,7 +101,9 @@ public final class QuorumManager implements FailureListener
             // No-op. The best the quorum can do now is to return the latest number it has
          }
          // -1: because the live server is not being filtered out.
-         return pingCount.get() * 2 >= locatorsList.size() - 1;
+         boolean vote = nodeIsDown(total, pingCount.get());
+         log.trace("quorum vote is liveIsDown=" + vote + ", count=" + pingCount);
+         return vote;
       }
       finally
       {
@@ -119,10 +121,42 @@ public final class QuorumManager implements FailureListener
       }
    }
 
+   /**
+    * @param tm
+    * @return
+    */
+   private boolean useIt(TopologyMember tm)
+   {
+      return tm.getA() != null && !targetServerID.equals(tm.getA().getName());
+   }
+
    @Override
    public String toString()
    {
       return QuorumManager.class.getSimpleName() + "(server=" + serverIdentity + ")";
+   }
+
+   /**
+    * Returns {@link true} when a sufficient number of votes has been cast to take a decision.
+    * @param total the total number of votes
+    * @param pingCount the total number of servers that were reached
+    * @param votesLeft the total number of servers for which we don't have a decision yet.
+    * @return
+    */
+   private static final boolean isSufficient(int total, int pingCount, long votesLeft)
+   {
+      boolean notEnoughVotesLeft = total - 2 * (pingCount + votesLeft) > 0;
+      return nodeIsDown(total, pingCount) || notEnoughVotesLeft;
+   }
+
+   /**
+    * @param total
+    * @param pingCount
+    * @return
+    */
+   private static boolean nodeIsDown(int total, int pingCount)
+   {
+      return pingCount * 2 >= total - 1;
    }
 
    /**
@@ -133,27 +167,44 @@ public final class QuorumManager implements FailureListener
       private final ServerLocatorImpl locator;
       private final CountDownLatch latch;
       private final AtomicInteger count;
+      private final TransportConfiguration tc;
+      private final int total;
 
-      public ServerConnect(CountDownLatch latch, AtomicInteger count, ServerLocatorImpl serverLocator)
+      public ServerConnect(CountDownLatch latch, int total, AtomicInteger count,
+                           ServerLocatorImpl serverLocator,
+                           TransportConfiguration serverTC)
       {
-         locator = serverLocator;
-         this.latch = latch;
+         this.total = total;
+         this.locator = serverLocator;
+         this.latch=latch;
          this.count = count;
+         this.tc = serverTC;
       }
+
 
       @Override
       public void run()
       {
          locator.setReconnectAttempts(0);
-         locator.getDiscoveryGroupConfiguration().setDiscoveryInitialWaitTimeout(DISCOVERY_TIMEOUT);
 
-         final ClientSessionFactory liveServerSessionFactory;
+         final ClientSessionFactory sessionFactory;
+         ClientSession session;
          try
          {
-            liveServerSessionFactory = locator.connect();
-            if (liveServerSessionFactory != null)
+            sessionFactory = locator.createSessionFactory(tc);
+            if (sessionFactory != null)
             {
-               count.incrementAndGet();
+               session = sessionFactory.createSession();
+               if (session != null)
+               {
+                  if (isSufficient(total, count.incrementAndGet(), latch.getCount() - 1))
+                  {
+                     while (latch.getCount() > 0)
+                        latch.countDown();
+                  }
+                  session.close();
+                  sessionFactory.close();
+               }
             }
          }
          catch (Exception e)
@@ -171,6 +222,9 @@ public final class QuorumManager implements FailureListener
    @Override
    public void connectionFailed(HornetQException exception, boolean failedOver)
    {
+      if (signal != null)
+         return;
+
       // Check if connection was reestablished by the sessionFactory:
       if (sessionFactory.numConnections() > 0)
       {
@@ -258,8 +312,18 @@ public final class QuorumManager implements FailureListener
     */
    public synchronized void causeExit()
    {
+      removeAsFailureListener();
       signal = BACKUP_ACTIVATION.STOP;
       latch.countDown();
+   }
+
+   /**
+    *
+    */
+   private void removeAsFailureListener()
+   {
+      if (connection != null)
+         connection.removeFailureListener(this);
    }
 
    /**
@@ -267,6 +331,7 @@ public final class QuorumManager implements FailureListener
     */
    public synchronized void failOver()
    {
+      removeAsFailureListener();
       signal = BACKUP_ACTIVATION.FAIL_OVER;
       latch.countDown();
    }
@@ -277,5 +342,14 @@ public final class QuorumManager implements FailureListener
    public void setSessionFactory(ClientSessionFactoryInternal sessionFactory)
    {
       this.sessionFactory = sessionFactory;
+   }
+
+   /**
+    * @param liveConnection
+    */
+   public void addAsFailureListenerOf(CoreRemotingConnection liveConnection)
+   {
+      this.connection = liveConnection;
+      connection.addFailureListener(this);
    }
 }

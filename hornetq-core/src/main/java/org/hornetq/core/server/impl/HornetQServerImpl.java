@@ -2130,7 +2130,7 @@ public class HornetQServerImpl implements HornetQServer
                      liveServerSessionFactory.setReconnectAttempts(1);
                      quorumManager.setSessionFactory(liveServerSessionFactory);
                      CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
-                     liveConnection.addFailureListener(quorumManager);
+                     quorumManager.addAsFailureListenerOf(liveConnection);
                      Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
                      connectToReplicationEndpoint(replicationChannel);

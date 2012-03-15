@@ -247,7 +247,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return globalThreadPool;
    }
 
-   public static synchronized ScheduledExecutorService getGlobalScheduledThreadPool()
+   private static synchronized ScheduledExecutorService getGlobalScheduledThreadPool()
    {
       if (globalScheduledThreadPool == null)
       {
@@ -975,6 +975,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       this.autoGroup = autoGroup;
    }
 
+   @Override
    public boolean isPreAcknowledge()
    {
       return preAcknowledge;
@@ -1149,17 +1150,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return groupID;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ServerLocator#isCompressLargeMessage()
-    */
+   @Override
    public boolean isCompressLargeMessage()
    {
       return compressLargeMessage;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ServerLocator#setCompressLargeMessage(boolean)
-    */
+   @Override
    public void setCompressLargeMessage(boolean compress)
    {
       this.compressLargeMessage = compress;
@@ -1173,6 +1170,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
+   @Override
    public void setIdentity(String identity)
    {
       this.identity = identity;

@@ -95,8 +95,7 @@ public class PingTest extends ServiceTestBase
     */
    public void testNoFailureWithPinging() throws Exception
    {
-      TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
-      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
+      ServerLocator locator = createNettyNonHALocator();
 
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
