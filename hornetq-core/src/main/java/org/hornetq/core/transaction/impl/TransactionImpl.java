@@ -31,7 +31,7 @@ import org.hornetq.core.transaction.TransactionOperation;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- * 
+ *
  */
 public class TransactionImpl implements Transaction
 {
@@ -48,7 +48,7 @@ public class TransactionImpl implements Transaction
    private final Xid xid;
 
    private final long id;
-   
+
    /**
     * if the appendCommit has to be done only after the current operations are completed
     */
@@ -135,7 +135,7 @@ public class TransactionImpl implements Transaction
    {
       containsPersistent = true;
    }
-   
+
    public boolean isContainsPersistent()
    {
       return containsPersistent;
@@ -155,7 +155,7 @@ public class TransactionImpl implements Transaction
    {
       return createTime;
    }
-   
+
    public boolean hasTimedOut(final long currentTime,final int defaultTimeout)
    {
       if(timeoutSeconds == - 1)
@@ -232,7 +232,7 @@ public class TransactionImpl implements Transaction
          if (state == State.ROLLBACK_ONLY)
          {
             rollback();
-            
+
             if (exception != null)
             {
                throw exception;
@@ -258,7 +258,7 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-         
+
          beforeCommit();
 
          if (containsPersistent || xid != null && state == State.PREPARED)
@@ -302,17 +302,18 @@ public class TransactionImpl implements Transaction
    }
 
    /**
-    * 
+    *
     */
    protected void asyncAppendCommit()
    {
-      final OperationContext ctx = storageManager.getContext(); 
+      final OperationContext ctx = storageManager.getContext();
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
          public void onError(int errorCode, String errorMessage)
          {
+            log.error("Error=" + errorCode + ", message=" + errorMessage);
          }
-         
+
          public void done()
          {
             OperationContext originalCtx = storageManager.getContext();
@@ -329,6 +330,12 @@ public class TransactionImpl implements Transaction
             {
                storageManager.setContext(originalCtx);
             }
+         }
+
+         @Override
+         public String toString()
+         {
+            return IOAsyncTask.class.getName() + "(" + TransactionImpl.class.getName() + "-AsyncAppendCommit)";
          }
       });
       storageManager.lineUpContext();
@@ -406,7 +413,7 @@ public class TransactionImpl implements Transaction
    {
       this.state = state;
    }
-   
+
    public boolean isWaitBeforeCommit()
    {
       return waitBeforeCommit;
@@ -445,11 +452,11 @@ public class TransactionImpl implements Transaction
       return operations.size();
    }
 
-   public synchronized List<TransactionOperation> getAllOperations() 
+   public synchronized List<TransactionOperation> getAllOperations()
    {
       return new ArrayList<TransactionOperation>(operations);
    }
-   
+
    public void putProperty(final int index, final Object property)
    {
       if (index >= properties.length)

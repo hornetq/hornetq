@@ -462,14 +462,25 @@ class PageSubscriptionImpl implements PageSubscription
 
       store.afterCompleteOperations(new IOAsyncTask()
       {
+         volatile String error = "";
 
+         @Override
          public void onError(final int errorCode, final String errorMessage)
          {
+            error = " errorCode=" + errorCode + ", msg=" + errorMessage;
+            log.error(this + error);
          }
 
+         @Override
          public void done()
          {
             processACK(position);
+         }
+
+         @Override
+         public String toString()
+         {
+            return IOAsyncTask.class.getSimpleName() + "(" + PageSubscriptionImpl.class.getSimpleName() + ") " + error;
          }
       });
    }
