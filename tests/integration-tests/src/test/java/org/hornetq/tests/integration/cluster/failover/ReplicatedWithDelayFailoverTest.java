@@ -23,4 +23,12 @@ public class ReplicatedWithDelayFailoverTest extends ReplicatedFailoverTest
       syncDelay.deliverUpToDateMsg();
       super.crash(sessions);
    }
+
+   @Override
+   protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   {
+      syncDelay.deliverUpToDateMsg();
+      waitForBackup(null, 5);
+      super.crash(waitFailure, sessions);
+   }
 }
