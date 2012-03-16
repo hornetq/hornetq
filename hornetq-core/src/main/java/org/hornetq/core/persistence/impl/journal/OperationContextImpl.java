@@ -253,16 +253,15 @@ public class OperationContextImpl implements OperationContext
       }
    }
 
-   /* (non-Javadoc)
+   /*
+    * (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationToken#complete()
     */
    public void complete()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
-    */
+   @Override
    public synchronized void onError(final int errorCode, final String errorMessage)
    {
       this.errorCode = errorCode;
@@ -311,17 +310,13 @@ public class OperationContextImpl implements OperationContext
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
-    */
+   @Override
    public void waitCompletion() throws Exception
    {
       waitCompletion(0);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
-    */
+   @Override
    public boolean waitCompletion(final long timeout) throws Exception
    {
       SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
@@ -338,9 +333,6 @@ public class OperationContextImpl implements OperationContext
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -379,7 +371,4 @@ public class OperationContextImpl implements OperationContext
              ", executor=" + this.executor +
              "]" + buffer.toString();
    }
-
-
-
 }

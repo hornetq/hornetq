@@ -4218,9 +4218,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
-       */
+      @Override
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;

@@ -265,6 +265,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       while (!future.await(10000))
       {
          log.warn("Waiting cursor provider " + this + " to finish executors" + executor);
+
       }
 
    }

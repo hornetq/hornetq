@@ -421,8 +421,8 @@ public class TimedBuffer
       {
          while (!closed)
          {
-            // We flush on the timer if there are pending syncs there and we've waited waited at least one
-            // timeout since the time of the last flush
+            // We flush on the timer if there are pending syncs there and we've waited at least one
+            // timeout since the time of the last flush.
             // Effectively flushing "resets" the timer
 
             if (pendingSync && bufferObserver != null && System.nanoTime() > lastFlushTime.get() + timeout)

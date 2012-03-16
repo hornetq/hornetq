@@ -39,7 +39,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    @Override
    public String toString()
    {
-      return "simpleWaitIOCallback";
+      return SimpleWaitIOCallback.class.getName();
    }
 
    public void done()

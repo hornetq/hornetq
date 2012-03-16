@@ -51,9 +51,9 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * 
+ *
  * A StorageManager
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -64,19 +64,19 @@ public interface StorageManager extends HornetQComponent
 
    /** Get the context associated with the thread for later reuse */
    OperationContext getContext();
-   
+
    void lineUpContext();
 
    /** It just creates an OperationContext without associating it */
    OperationContext newContext(Executor executor);
-   
+
    OperationContext newSingleThreadContext();
 
    /** Set the context back to the thread */
    void setContext(OperationContext context);
-   
+
    /**
-    * 
+    *
     * @param ioCriticalError is the server being stopped due to an IO critical error
     */
    void stop(boolean ioCriticalError) throws Exception;
@@ -91,48 +91,48 @@ public interface StorageManager extends HornetQComponent
 
    void afterCompleteOperations(IOAsyncTask run);
 
-   /** Block until the operations are done. 
+   /** Block until the operations are done.
     *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
     *           in case of the pools are full
     * @throws Exception */
    boolean waitOnOperations(long timeout) throws Exception;
 
-   /** Block until the operations are done. 
+   /** Block until the operations are done.
     *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
     *           in case of the pools are full
     * @throws Exception */
    void waitOnOperations() throws Exception;
-   
+
    /**
-    * We need a safeguard in place to avoid too much concurrent IO happening on Paging,
-    * otherwise the system may become irrensponsive if too many destinations are reading all the same time.
+    * We need a safeguard in place to avoid too much concurrent IO happening on Paging, otherwise
+    * the system may become unresponsive if too many destinations are reading all the same time.
     * This is called before we read, so we can limit concurrent reads
     * @throws Exception
     */
    void beforePageRead() throws Exception;
-   
+
    /**
-    * We need a safeguard in place to avoid too much concurrent IO happening on Paging,
-    * otherwise the system may become irrensponsive if too many destinations are reading all the same time.
+    * We need a safeguard in place to avoid too much concurrent IO happening on Paging, otherwise
+    * the system may become unresponsive if too many destinations are reading all the same time.
     * This is called after we read, so we can limit concurrent reads
     * @throws Exception
     */
    void afterPageRead() throws Exception;
-   
-   
+
+
    /** AIO has an optimized buffer which has a method to release it
        instead of the way NIO will release data based on GC.
        These methods will use that buffer if the inner method supports it */
    ByteBuffer allocateDirectBuffer(int size);
-   
+
    /** AIO has an optimized buffer which has a method to release it
        instead of the way NIO will release data based on GC.
        These methods will use that buffer if the inner method supports it */
    void freeDirectBuffer(ByteBuffer buffer);
-   
+
 
    void clearContext();
-   
+
    long generateUniqueID();
 
    long getCurrentUniqueID();
@@ -150,7 +150,7 @@ public interface StorageManager extends HornetQComponent
    void deleteMessage(long messageID) throws Exception;
 
    void storeAcknowledge(long queueID, long messageID) throws Exception;
-   
+
    void storeCursorAcknowledge(long queueID, PagePosition position) throws Exception;
 
    void updateDeliveryCount(MessageReference ref) throws Exception;
@@ -168,7 +168,7 @@ public interface StorageManager extends HornetQComponent
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception;
-   
+
    void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception;
 
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
@@ -182,12 +182,12 @@ public interface StorageManager extends HornetQComponent
    LargeServerMessage createLargeMessage();
 
    /**
-    * 
+    *
     * @param id
-    * @param message This is a temporary message that holds the parsed properties. 
+    * @param message This is a temporary message that holds the parsed properties.
     *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
 
@@ -200,15 +200,15 @@ public interface StorageManager extends HornetQComponent
    void commit(long txID, boolean lineUpContext) throws Exception;
 
    void rollback(long txID) throws Exception;
-   
+
    void rollbackBindings(long txID) throws Exception;
-   
+
    void commitBindings(long txID) throws Exception;
 
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
-   
+
    void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
-   
+
    /** FIXME Unused */
    void updatePageTransaction(PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
@@ -238,40 +238,40 @@ public interface StorageManager extends HornetQComponent
    void addGrouping(GroupBinding groupBinding) throws Exception;
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
-   
+
    void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception;
-   
+
    void deleteAddressSetting(SimpleString addressMatch) throws Exception;
-   
+
    List<PersistedAddressSetting> recoverAddressSettings() throws Exception;
-   
+
    void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception;
-   
+
    void deleteSecurityRoles(SimpleString addressMatch) throws Exception;
 
    List<PersistedRoles> recoverPersistedRoles() throws Exception;
-   
-   /** 
+
+   /**
     * @return The ID with the stored counter
     */
    long storePageCounter(long txID, long queueID, long value) throws Exception;
-   
+
    void deleteIncrementRecord(long txID, long recordID) throws Exception;
-   
+
    void deletePageCounter(long txID, long recordID) throws Exception;
 
    /**
     * @return the ID with the increment record
-    * @throws Exception 
+    * @throws Exception
     */
    long storePageCounterInc(long txID, long queueID, int add) throws Exception;
-   
+
    /**
     * @return the ID with the increment record
-    * @throws Exception 
+    * @throws Exception
     */
    long storePageCounterInc(long queueID, int add) throws Exception;
-   
+
    /**
     * @return the bindings journal
     */
@@ -284,7 +284,7 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * TODO: Find a way to not depend on ClusterConnection and TransportConfiguration here
-    * 
+    *
     * @param replicationManager
     * @param pagingManager
     * @param nodeID
@@ -297,9 +297,9 @@ public interface StorageManager extends HornetQComponent
       throws Exception;
 
    /**
-    * 
+    *
     * TODO: RoutingContext should only be used on PostOffice
-    * 	
+    *
     * Adds message to page if we are paging.
     * @return whether we added the message to a page or not.
     */

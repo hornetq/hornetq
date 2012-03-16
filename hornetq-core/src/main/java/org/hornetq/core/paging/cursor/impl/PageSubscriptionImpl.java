@@ -305,24 +305,18 @@ class PageSubscriptionImpl implements PageSubscription
 
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
       return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + ", filter = " + filter + "]";
    }
 
-
    private PagedReference getReference(PagePosition pos) throws Exception
    {
       return cursorProvider.newReference(pos, cursorProvider.getMessage(pos), this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#iterator()
-    */
+   @Override
    public LinkedListIterator<PagedReference> iterator()
    {
       return new CursorIterator();
@@ -773,7 +767,7 @@ class PageSubscriptionImpl implements PageSubscription
 
    // Private -------------------------------------------------------
 
-   // To be called only after the ACK has been processed and guaranteed to be on storae
+   // To be called only after the ACK has been processed and guaranteed to be on storage
    // The only exception is on non storage events such as not matching messages
    private PageCursorInfo processACK(final PagePosition pos)
    {
