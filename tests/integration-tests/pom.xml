@@ -112,12 +112,6 @@
                <excludes>
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
-                  <!-- exclude some replication tests for now -->
-                  <exclude>**/cluster/failover/Remote*.java</exclude>
-                  <exclude>**/failover/remote/**.java</exclude>
-                  <exclude>**/Replicated*.java</exclude>
-                  <exclude>**/replication/**.java</exclude>
-                  <exclude>**/*Replicated**.java</exclude>
                </excludes>
                <argLine>-Djava.library.path=${project.build.directory}/../../../distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${project.build.directory}/../../../distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
