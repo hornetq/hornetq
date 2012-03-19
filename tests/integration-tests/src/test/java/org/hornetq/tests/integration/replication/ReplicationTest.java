@@ -40,7 +40,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.EncodingSupport;
@@ -69,8 +68,8 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
 import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -95,20 +94,15 @@ public class ReplicationTest extends ServiceTestBase
    private ExecutorFactory factory;
    private ScheduledExecutorService scheduledExecutor;
 
-   private HornetQServerImpl backupServer;
+   private HornetQServer backupServer;
    /** This field is not always used. */
-   private HornetQServerImpl liveServer;
+   private HornetQServer liveServer;
 
    private ServerLocator locator;
 
    private ReplicationManager manager;
    private static final SimpleString ADDRESS = new SimpleString("foobar123");
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    private void setupServer(boolean backup, boolean netty, String... interceptors) throws Exception
    {
@@ -131,13 +125,13 @@ public class ReplicationTest extends ServiceTestBase
                                                      liveConnector);
       if (backup)
       {
-         liveServer = new HornetQServerImpl(liveConfig);
+         liveServer = createServer(liveConfig);
          liveServer.start();
          waitForComponent(liveServer);
       }
 
-      backupServer = new HornetQServerImpl(backupConfig);
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      backupServer = createServer(backupConfig);
+      locator = createInVMNonHALocator();
       backupServer.start();
       if (backup)
       {
@@ -173,16 +167,17 @@ public class ReplicationTest extends ServiceTestBase
    public void testConnectIntoNonBackup() throws Exception
    {
       setupServer(false, false);
-
       try
       {
-         manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
+         ClientSessionFactory sf = createSessionFactory(locator);
+         manager = new ReplicationManagerImpl(sf.getConnection(), factory);
+         addHornetQComponent(manager);
          manager.start();
          Assert.fail("Exception was expected");
       }
       catch (HornetQException expected)
       {
-         // expected
+         assertEquals(HornetQException.NOT_CONNECTED, expected.getCode());
       }
    }
 

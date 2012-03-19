@@ -28,19 +28,6 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 public class NIOBufferedJournalCompactTest extends NIOJournalCompactTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
@@ -52,9 +39,5 @@ public class NIOBufferedJournalCompactTest extends NIOJournalCompactTest
 
       return new NIOSequentialFileFactory(getTestDir(), true);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

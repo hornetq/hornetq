@@ -111,12 +111,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       clearData();
       createConfigs();
 
-
-
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
-
       liveServer.start();
-
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
@@ -298,12 +294,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-	   /**
-	    * @param sessionFactory
-	    * @param seconds
-	    * @param waitForSync
-	    * @param actualServer
-	    */
+	      /**
+    * @param sessionFactory
+    * @param seconds
+    * @param waitForSync
+    * @param backup
+    */
 	   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory,
 	                                    int seconds,
 	                                    boolean waitForSync,
@@ -321,8 +317,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
 	         }
 	         if (System.currentTimeMillis() > (time + toWait))
 	         {
-	            fail("backup server never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
-	                     actualServer.isRemoteBackupUpToDate() + ")");
+            fail("backup never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
+                     actualServer.isRemoteBackupUpToDate() + "), or sessionFactory!=null ? " +
+                     (sessionFactory != null) + " || sessionFactory.getBackupConnector()==" +
+                     (sessionFactory != null ? sessionFactory.getBackupConnector() : "not-applicable"));
 	         }
 	         try
 	         {

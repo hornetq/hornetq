@@ -153,42 +153,18 @@ public class RemoteProcessHornetQServer implements TestableServer
       }
    }
 
-
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
    public void setStarted(boolean init)
    {
       started = true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.util.TestableServer#getServer()
-    */
+   @Override
    public HornetQServer getServer()
    {
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.util.TestableServer#setIdentity(java.lang.String)
-    */
+   @Override
    public void setIdentity(String identity)
    {
    }
