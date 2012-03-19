@@ -186,6 +186,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       locator.addClusterTopologyListener(topListener);
 
       sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      addSessionFactory(sf);
 
       boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
       locator.removeClusterTopologyListener(topListener);
@@ -207,7 +208,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       {
          configs[i] = createTransportConfiguration(isNetty(), false, generateParams(nodes[i], isNetty()));
       }
-      return new ServerLocatorImpl(true, configs);
+      return addServerLocator(new ServerLocatorImpl(true, configs));
    }
 
    // Private -------------------------------------------------------

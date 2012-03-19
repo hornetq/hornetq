@@ -44,7 +44,6 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class PagingFailoverTest extends FailoverTestBase
 {
-
    // Constants -----------------------------------------------------
 
    private static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
@@ -71,15 +70,8 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      try
-      {
-         if (session != null)
-            session.close();
-      }
-      finally
-      {
-         super.tearDown();
-      }
+      addClientSession(session);
+      super.tearDown();
    }
 
    public void testPageFailBeforeConsume() throws Exception
@@ -134,11 +126,8 @@ public class PagingFailoverTest extends FailoverTestBase
          if (failBeforeConsume)
          {
             crash(session);
-            waitForBackup(sf, 60);
+         waitForBackup(null, 30);
          }
-
-
-
 
          session.close();
 
@@ -192,7 +181,7 @@ public class PagingFailoverTest extends FailoverTestBase
             Assert.assertEquals(i, result);
          }
    }
-   
+
    public void testExpireMessage() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -200,12 +189,9 @@ public class PagingFailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      ClientSession session = sf.createSession(true, true, 0);
+      session = sf.createSession(true, true, 0);
 
-      try
-      {
-
-         session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
+      session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
 
          ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
 
@@ -222,41 +208,20 @@ public class PagingFailoverTest extends FailoverTestBase
          crash(session);
 
          session.close();
-         
+
          Queue queue = backupServer.getServer().locateQueue(ADDRESS);
-         
+
          long timeout = System.currentTimeMillis() + 60000;
-         System.out.println("Starting now");
+
          while (timeout > System.currentTimeMillis() && queue.getPageSubscription().isPaging())
          {
             Thread.sleep(100);
             // Simulating what would happen on expire
             queue.expireReferences();
          }
-         
-         try
-         {
-            assertFalse(queue.getPageSubscription().isPaging());
-         }
-         catch (Throwable e)
-         {
-            e.printStackTrace();
-            System.exit(-1);
-         }
 
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Exception ignored)
-         {
-         }
-         
-         locator.close();
-      }
+      assertFalse(queue.getPageSubscription().isPaging());
+
    }
 
 
@@ -288,9 +253,4 @@ public class PagingFailoverTest extends FailoverTestBase
    {
       return new SameProcessHornetQServer(createServer(true, config));
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

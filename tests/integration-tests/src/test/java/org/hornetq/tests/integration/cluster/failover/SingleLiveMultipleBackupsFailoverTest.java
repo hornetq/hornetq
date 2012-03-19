@@ -192,6 +192,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    @Override
    protected void tearDown() throws Exception
    {
+      closeServerLocator(locator);
       for (TestableServer server : servers.values())
       {
          try
@@ -204,7 +205,6 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
          }
       }
       servers.clear();
-      closeServerLocator(locator);
       super.tearDown();
    }
 

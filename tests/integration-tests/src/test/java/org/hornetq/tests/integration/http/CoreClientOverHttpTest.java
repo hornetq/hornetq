@@ -27,8 +27,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -40,26 +38,32 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class CoreClientOverHttpTest extends UnitTestCase
 {
-   public void testCoreHttpClient() throws Exception
-   {
-      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+   private static final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+   private Configuration conf;
+   private HornetQServer server;
+   private ServerLocator locator;
 
-      Configuration conf = createDefaultConfig();
+   @Override
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
-
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      server = addServer(HornetQServers.newHornetQServer(conf, false));
 
       server.start();
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+      addServerLocator(locator);
+   }
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
-                                                                                                    params));
+   public void testCoreHttpClient() throws Exception
+   {
       ClientSessionFactory sf = locator.createSessionFactory();
-
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -93,32 +97,12 @@ public class CoreClientOverHttpTest extends UnitTestCase
       }
 
       session.close();
-
-      locator.close();
-
-      server.stop();
    }
 
    public void testCoreHttpClientIdle() throws Exception
    {
-      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
-
-      Configuration conf = createDefaultConfig();
-
-      conf.setSecurityEnabled(false);
-
-      HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
-
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
-
-      server.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
-                                                                                                    params));
       locator.setConnectionTTL(500);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -129,33 +113,12 @@ public class CoreClientOverHttpTest extends UnitTestCase
       Thread.sleep(500 * 5);
 
       session.close();
-
-      locator.close();
-
-      server.stop();
    }
 
    // https://issues.jboss.org/browse/JBPAPP-5542
    public void testCoreHttpClient8kPlus() throws Exception
    {
-      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
-
-      Configuration conf = createDefaultConfig();
-
-      conf.setSecurityEnabled(false);
-
-      HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
-
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
-
-      server.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
-                                                                                                    params));
-      ClientSessionFactory sf = locator.createSessionFactory();
-
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -192,10 +155,6 @@ public class CoreClientOverHttpTest extends UnitTestCase
       }
 
       session.close();
-
-      locator.close();
-
-      server.stop();
    }
 
    private String getFixedSizeString(int size)

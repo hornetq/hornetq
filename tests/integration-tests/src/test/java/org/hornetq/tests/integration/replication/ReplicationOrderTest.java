@@ -26,8 +26,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.RandomUtil;
@@ -69,9 +67,10 @@ public class ReplicationOrderTest extends FailoverTestBase
       String address = RandomUtil.randomString();
       String queue = RandomUtil.randomString();
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(getConnectorTransportConfiguration(true));
+      addServerLocator(locator);
       locator.setBlockOnNonDurableSend(false);
       locator.setBlockOnDurableSend(false);
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = null;
       if (transactional)
       {
@@ -81,6 +80,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       {
          session = csf.createSession(true, true);
       }
+      addClientSession(session);
       session.createQueue(address, queue, true);
       ClientProducer producer = session.createProducer(address);
       boolean durable = false;
@@ -108,8 +108,8 @@ public class ReplicationOrderTest extends FailoverTestBase
       }
       session.close();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(getConnectorTransportConfiguration(true));
-      csf = locator.createSessionFactory();
+      locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(getConnectorTransportConfiguration(true)));
+      csf = createSessionFactory(locator);
       session = csf.createSession(true, true);
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
@@ -135,13 +135,13 @@ public class ReplicationOrderTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return createTransportConfiguration(InVMConnectorFactory.class.getName(), live);
+      return createTransportConfiguration(INVM_CONNECTOR_FACTORY, live);
    }
 
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return createTransportConfiguration(InVMAcceptorFactory.class.getName(), live);
+      return createTransportConfiguration(INVM_ACCEPTOR_FACTORY, live);
    }
 
    private static TransportConfiguration createTransportConfiguration(String name, final boolean live)

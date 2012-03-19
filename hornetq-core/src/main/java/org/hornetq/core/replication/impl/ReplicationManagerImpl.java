@@ -279,17 +279,13 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#isStarted()
-    */
+   @Override
    public synchronized boolean isStarted()
    {
       return started;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#start()
-    */
+   @Override
    public synchronized void start() throws Exception
    {
       if (started)

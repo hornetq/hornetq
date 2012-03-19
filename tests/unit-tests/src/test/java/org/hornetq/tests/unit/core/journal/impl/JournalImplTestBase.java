@@ -33,21 +33,18 @@ import org.hornetq.core.journal.TestableJournal;
 import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.ImportJournal;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
 
 /**
- * 
+ *
  * A JournalImplTestBase
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public abstract class JournalImplTestBase extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(JournalImplTestBase.class);
-
    protected List<RecordInfo> records = new LinkedList<RecordInfo>();
 
    protected TestableJournal journal;
@@ -70,9 +67,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected SequentialFileFactory fileFactory;
 
-   private ReusableLatch latchDone = new ReusableLatch(0);
+   private final ReusableLatch latchDone = new ReusableLatch(0);
 
-   private ReusableLatch latchWait = new ReusableLatch(0);
+   private final ReusableLatch latchWait = new ReusableLatch(0);
 
    private Thread compactThread;
 
@@ -93,16 +90,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      if (journal != null)
-      {
-         try
-         {
-            journal.stop();
-         }
-         catch (Exception ignore)
-         {
-         }
-      }
+      stopComponent(journal);
 
       if (fileFactory != null)
       {
@@ -181,6 +169,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       latchWait.setCount(1);
       this.compactThread = new Thread()
       {
+         @Override
          public void run()
          {
             try

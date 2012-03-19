@@ -116,7 +116,7 @@ public class SessionTest extends ServiceTestBase
       }
    }
 
-   // Closing a session if the underlying remoting connection is deaad should cleanly
+   // Closing a session if the underlying remoting connection is dead should cleanly
    // release all resources
    public void testCloseSessionOnDestroyedConnection() throws Exception
    {
