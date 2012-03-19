@@ -26,7 +26,7 @@
             url="http://hornetq.org/downloads.html/"
          >http://hornetq.org/downloads.html</ulink></para>
    </section>
-   <section id="download.svn">
+   <section id="download.git">
       <title>项目信息</title>
       <para>
          <itemizedlist>
@@ -55,14 +55,14 @@
                <para>还可以跟踪我们的<ulink url="http://twitter.com/hornetq">twitter</ulink></para>
             </listitem>
             <listitem>
-               <para>HornetQ的Subversion代码库地址 <ulink
-                     url="http://anonsvn.jboss.org/repos/hornetq/trunk"
-                     >http://anonsvn.jboss.org/repos/hornetq/trunk</ulink></para>
+               <para>HornetQ的Git代码库地址 <ulink
+                     url="https://github.com/hornetq/hornetq"
+                     >https://github.com/hornetq/hornetq</ulink></para>
             </listitem>
             <listitem>
                <para>每次发布的版本标签都在<ulink
-                     url="http://anonsvn.jboss.org/repos/hornetq/tags"
-                     >http://anonsvn.jboss.org/repos/hornetq/tags</ulink>下能找到。</para>
+                     url="https://github.com/hornetq/hornetq/tags"
+                     >https://github.com/hornetq/hornetq/tags</ulink>下能找到。</para>
             </listitem>
          </itemizedlist>
       </para>
