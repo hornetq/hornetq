@@ -63,26 +63,6 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class PagingOrderTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   public PagingOrderTest(final String name)
-   {
-      super(name);
-   }
-
-   public PagingOrderTest()
-   {
-      super();
-   }
-
    private static final int PAGE_MAX = 100 * 1024;
 
    private static final int PAGE_SIZE = 10 * 1024;
@@ -218,8 +198,6 @@ public class PagingOrderTest extends ServiceTestBase
 
       final int numberOfMessages = 500;
 
-      try
-      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
@@ -349,30 +327,13 @@ public class PagingOrderTest extends ServiceTestBase
 
          assertNotNull(q2);
 
-         assertEquals(numberOfMessages, q2.getMessageCount());
-         assertEquals(numberOfMessages, q2.getMessagesAdded());
-         assertEquals(0, q1.getMessageCount());
+         assertEquals("q2 msg count", numberOfMessages, q2.getMessageCount());
+         assertEquals("q2 msgs added", numberOfMessages, q2.getMessagesAdded());
+         assertEquals("q1 msg count", 0, q1.getMessageCount());
          // 0, since nothing was sent to the queue after the server was restarted
-         assertEquals(0, q1.getMessagesAdded());
+         assertEquals("q1 msgs added", 0, q1.getMessagesAdded());
 
       }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
 
    public void testPageCounter2() throws Throwable
    {
@@ -390,8 +351,6 @@ public class PagingOrderTest extends ServiceTestBase
 
       final int numberOfMessages = 500;
 
-      try
-      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
@@ -489,24 +448,6 @@ public class PagingOrderTest extends ServiceTestBase
          assertEquals(numberOfMessages, q2.getMessagesAdded());
          assertEquals(numberOfMessages - 100, q1.getMessageCount());
          assertEquals(numberOfMessages, q2.getMessagesAdded());
-
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
    public void testOrderOverRollback() throws Throwable
@@ -525,8 +466,6 @@ public class PagingOrderTest extends ServiceTestBase
 
       final int numberOfMessages = 3000;
 
-      try
-      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
@@ -609,24 +548,6 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          session.commit();
-
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
    public void testOrderOverRollback2() throws Throwable

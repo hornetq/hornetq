@@ -117,31 +117,21 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
    @Override
    protected void tearDown() throws Exception
    {
+      closeAllSessionFactories();
+      closeAllServerLocatorsFactories();
       for (TestableServer testableServer : servers.values())
       {
          try
          {
-            stopComponent(testableServer);
+            addServer(testableServer.getServer());
             testableServer.destroy();
          }
          catch (Exception e)
          {
-            e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
          }
       }
       servers.clear();
-
-      try
-      {
-         if (sf != null)
-         {
-            sf.close();
-         }
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
       super.tearDown();
    }
 

@@ -46,8 +46,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -93,16 +91,16 @@ public class JMSServerControlTest extends ManagementTestBase
 
    private static String toCSV(final Object[] objects)
    {
-      String str = "";
+      StringBuilder str = new StringBuilder();
       for (int i = 0; i < objects.length; i++)
       {
          if (i > 0)
          {
-            str += ", ";
+            str.append(", ");
          }
-         str += objects[i];
+         str.append(objects[i]);
       }
-      return str;
+      return str.toString();
    }
 
    // Constructors --------------------------------------------------
@@ -405,8 +403,8 @@ public class JMSServerControlTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
       Topic topic = (Topic)context.lookup(topicJNDIBinding);
       assertNotNull(topic);
-      HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
-                                                                 new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf =
+               new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       // create a consumer will create a Core queue bound to the topic address
@@ -722,12 +720,12 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.setPersistenceEnabled(true);
 
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
       conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
-      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
+      server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, true));
 
       serverManager = new JMSServerManagerImpl(server);
       context = new InVMContext();
@@ -743,9 +741,14 @@ public class JMSServerControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      stopServer();
-
-      super.tearDown();
+      try
+      {
+         stopServer();
+      }
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    /**
