@@ -141,8 +141,6 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    private volatile boolean closed;
 
-   private volatile boolean closing;
-
    private final boolean autoCommitAcks;
 
    private final boolean preAcknowledge;
@@ -460,14 +458,16 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       return createConsumer(SimpleString.toSimpleString(queueName), null, browseOnly);
    }
 
-   /*
-    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
-    * Direct consumers have issues with blocking and failover.
-    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
-    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
-    * during that period, so failover won't occur.
-    * If we want direct consumers we need to rethink how they work
-   */
+   /**
+    * Note, we DO NOT currently support direct consumers (i.e. consumers where delivery occurs on
+    * the remoting thread).
+    * <p>
+    * Direct consumers have issues with blocking and failover. E.g. if direct then inside
+    * MessageHandler call a blocking method like rollback or acknowledge (blocking) This can block
+    * until failover completes, which disallows the thread to be used to deliver any responses to
+    * the client during that period, so failover won't occur. If we want direct consumers we need to
+    * rethink how they work
+    */
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final int windowSize,
@@ -745,7 +745,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       return name;
    }
 
-   // This acknowledges all messages received by the consumer so far
+   /** Acknowledges all messages received by the consumer so far. */
    public void acknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       // if we're pre-acknowledging then we don't need to do anything
@@ -887,11 +887,6 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       if (log.isDebugEnabled())
       {
          log.debug("Calling close on session "  + this);
-      }
-
-      synchronized (this)
-      {
-         closing = true;
       }
 
       try
@@ -1041,7 +1036,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                         }
                      }
                   }
-                  while (retry);
+                  while (retry && !inClose);
 
                   channel.clearCommands();
 

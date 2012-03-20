@@ -150,7 +150,6 @@ public class FailoverTest extends FailoverTestBase
                message.putIntProperty("counter", i);
                try
                {
-                  System.out.println("sending message: " + i);
                   producer.send(message);
                   if (i < 10)
                   {
@@ -184,7 +183,6 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage m = consumer.receive(1000);
          assertNotNull(m);
-         System.out.println("received message " + i);
          // assertEquals(i, m.getIntProperty("counter").intValue());
       }
    }
