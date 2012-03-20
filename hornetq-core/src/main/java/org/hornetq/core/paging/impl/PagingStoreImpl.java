@@ -1109,15 +1109,16 @@ public class PagingStoreImpl implements PagingStore
    }
 
    /**
-    *
-    * Note: Decimalformat is not thread safe, Use synchronization before calling this method
-    *
     * @param pageID
     * @return
     */
    private String createFileName(final int pageID)
    {
-      return format.format(pageID) + ".page";
+      /** {@link DecimalFormat} is not thread safe. */
+      synchronized (format)
+      {
+         return format.format(pageID) + ".page";
+      }
    }
 
    private static int getPageIdFromFileName(final String fileName)
