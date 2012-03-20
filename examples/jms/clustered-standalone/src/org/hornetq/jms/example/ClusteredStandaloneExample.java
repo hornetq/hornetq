@@ -133,7 +133,7 @@ public class ClusteredStandaloneExample extends HornetQExample
                return false;
             }
 
-            System.out.println("Received message " + message0.getText());
+            // System.out.println("Received message " + message0.getText());
 
             TextMessage message1 = (TextMessage)messageConsumer1.receive(2000);
 
@@ -142,7 +142,7 @@ public class ClusteredStandaloneExample extends HornetQExample
                return false;
             }
 
-            System.out.println("Received message " + message1.getText());
+            // System.out.println("Received message " + message1.getText());
 
             TextMessage message2 = (TextMessage)messageConsumer2.receive(2000);
 
@@ -151,7 +151,7 @@ public class ClusteredStandaloneExample extends HornetQExample
                return false;
             }
 
-            System.out.println("Received message " + message2.getText());
+           // System.out.println("Received message " + message2.getText());
          }
 
          producer.close();
