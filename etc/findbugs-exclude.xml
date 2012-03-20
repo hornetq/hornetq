@@ -93,4 +93,12 @@
     <class name="org.hornetq.core.filter.impl.FilterParser"/>
     <bug pattern="NM_METHOD_NAMING_CONVENTION"/>
   </match>
+
+  <Match>
+    <!-- field changes are always guarded by PagingStoreImpl.lock.writeLock().lock() -->
+    <Class name="org.hornetq.core.paging.impl.PagingStoreImpl"/>
+    <Field name="numberOfPages" />
+    <Bug pattern="VO_VOLATILE_INCREMENT"/>
+  </Match>
+
 </FindBugsFilter>
