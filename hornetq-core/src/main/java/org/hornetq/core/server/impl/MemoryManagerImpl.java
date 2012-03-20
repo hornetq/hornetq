@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.server.impl;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.utils.SizeFormatterUtil;
 
@@ -27,8 +27,6 @@ import org.hornetq.utils.SizeFormatterUtil;
  */
 public class MemoryManagerImpl implements MemoryManager
 {
-   private static final Logger log = Logger.getLogger(MemoryManagerImpl.class);
-
    private final Runtime runtime;
 
    private final long measureInterval;
@@ -62,7 +60,7 @@ public class MemoryManagerImpl implements MemoryManager
 
    public synchronized void start()
    {
-      MemoryManagerImpl.log.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval +
+      HornetQLogger.LOGGER.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval +
                                   " FREE_MEMORY_PERCENT: " +
                                   memoryWarningThreshold);
 
@@ -141,18 +139,14 @@ public class MemoryManagerImpl implements MemoryManager
             info.append(String.format("total memory:     %s%n", SizeFormatterUtil.sizeof(totalMemory)));
             info.append(String.format("available memory: %.2f%%%n", availableMemoryPercent));
 
-            if (MemoryManagerImpl.log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               MemoryManagerImpl.log.debug(info);
+               HornetQLogger.LOGGER.debug(info);
             }
 
             if (availableMemoryPercent <= memoryWarningThreshold)
             {
-               MemoryManagerImpl.log.warn("Less than " + memoryWarningThreshold +
-                                          "%\n" +
-                                          info +
-                                          "\nYou are in danger of running out of RAM. Have you set paging parameters " +
-                                          "on your addresses? (See user manual \"Paging\" chapter)");
+               HornetQLogger.LOGGER.memoryError(memoryWarningThreshold, info.toString());
 
                low = true;
             }

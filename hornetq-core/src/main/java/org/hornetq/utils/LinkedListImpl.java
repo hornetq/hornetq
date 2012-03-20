@@ -16,7 +16,6 @@ package org.hornetq.utils;
 import java.lang.reflect.Array;
 import java.util.NoSuchElementException;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A linked list implementation which allows multiple iterators to exist at the same time on the queue, and which see any
@@ -30,8 +29,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class LinkedListImpl<E> implements LinkedList<E>
 {
-   private static final Logger log = Logger.getLogger(LinkedListImpl.class);
-
    private static final int INITIAL_ITERATOR_ARRAY_SIZE = 10;
 
    private final Node<E> head = new Node<E>(null);

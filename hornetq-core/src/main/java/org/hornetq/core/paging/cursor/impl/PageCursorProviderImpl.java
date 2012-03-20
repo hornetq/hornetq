@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PageCache;
@@ -30,6 +29,7 @@ import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
@@ -48,9 +48,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PageCursorProviderImpl.class);
-
-   boolean isTrace = log.isTraceEnabled();
+   boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -89,9 +87,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+         HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
       }
       PageSubscription activeCursor = activeCursors.get(cursorID);
       if (activeCursor != null)
@@ -168,7 +166,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                cache.lock();
                if (isTrace)
                {
-                  log.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
+                  HornetQLogger.LOGGER.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
                }
                softCache.put(pageId, cache);
             }
@@ -269,7 +267,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       while (!future.await(10000))
       {
-         log.warn("Waiting cursor provider " + this + " to finish " + future + ", running on executor " + executor);
+         HornetQLogger.LOGGER.timedOutStoppingPagingCursor(future, executor);
       }
    }
 
@@ -344,9 +342,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
                return;
             }
 
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
+               HornetQLogger.LOGGER.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
             }
 
             ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
@@ -362,9 +360,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   if (!cursor.isComplete(minPage))
                   {
-                     if (log.isDebugEnabled())
+                     if (HornetQLogger.LOGGER.isDebugEnabled())
                      {
-                        log.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
+                        HornetQLogger.LOGGER.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
                      }
 
                      complete = false;
@@ -372,9 +370,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   }
                   else
                   {
-                     if (log.isDebugEnabled())
+                     if (HornetQLogger.LOGGER.isDebugEnabled())
                      {
-                        log.debug("Cursor " + cursor + "was considered **complete** at page " + minPage);
+                        HornetQLogger.LOGGER.debug("Cursor " + cursor + "was considered **complete** at page " + minPage);
                      }
                   }
                }
@@ -387,9 +385,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
                if (complete)
                {
 
-                  if (log.isDebugEnabled())
+                  if (HornetQLogger.LOGGER.isDebugEnabled())
                   {
-                     log.debug("Address " + pagingStore.getAddress() +
+                     HornetQLogger.LOGGER.debug("Address " + pagingStore.getAddress() +
                            " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   }
 
@@ -427,9 +425,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
             }
             else
             {
-               if (log.isTraceEnabled())
+               if (HornetQLogger.LOGGER.isTraceEnabled())
                {
-                  log.trace("Couldn't cleanup page on address " + this.pagingStore.getAddress() +
+                  HornetQLogger.LOGGER.trace("Couldn't cleanup page on address " + this.pagingStore.getAddress() +
                             " as numberOfPages == " +
                             pagingStore.getNumberOfPages() +
                             " and currentPage.numberOfMessages = " +
@@ -439,7 +437,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          }
          catch (Exception ex)
          {
-            log.warn("Couldn't complete cleanup on paging", ex);
+            HornetQLogger.LOGGER.problemCleaningPageAddress(ex, pagingStore.getAddress());
             return;
          }
          finally
@@ -461,7 +459,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
             if (isTrace)
             {
-               log.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
+               HornetQLogger.LOGGER.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
             }
 
             if (cache == null)
@@ -507,7 +505,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
       catch (Exception ex)
       {
-         log.warn("Couldn't complete cleanup on paging", ex);
+         HornetQLogger.LOGGER.problemCleaningPageAddress(ex, pagingStore.getAddress());
          return;
       }
 
@@ -530,7 +528,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
          while (!storageManager.waitOnOperations(5000))
          {
-            log.warn("Couldn't complete operations on IO context " + storageManager.getContext());
+            HornetQLogger.LOGGER.problemCompletingOperations(storageManager.getContext());
          }
       }
       finally
@@ -573,9 +571,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
       for (PageSubscription cursor : cursorList)
       {
          long firstPage = cursor.getFirstPage();
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
+            HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
          }
          if (firstPage < minPage)
          {
@@ -583,9 +581,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
          }
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug(this.pagingStore.getAddress() + " has minPage=" + minPage);
+         HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " has minPage=" + minPage);
       }
 
       return minPage;

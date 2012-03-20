@@ -22,7 +22,7 @@ import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.version.Version;
 import org.hornetq.core.version.impl.VersionImpl;
 
@@ -35,9 +35,6 @@ import org.hornetq.core.version.impl.VersionImpl;
  */
 public class VersionLoader
 {
-
-   private static final Logger log = Logger.getLogger(VersionLoader.class);
-
    public static final String VERSION_PROP_FILE_KEY = "hornetq.version.property.filename";
 
    public static final String DEFAULT_PROP_FILE_NAME = "hornetq-version.properties";
@@ -63,7 +60,7 @@ public class VersionLoader
          }
          catch (Throwable e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.warn(e.getMessage(), e);
             PROP_FILE_NAME = null;
          }
 
@@ -77,7 +74,7 @@ public class VersionLoader
       catch (Throwable e)
       {
          VersionLoader.version = null;
-         VersionLoader.log.error(e.getMessage(), e);
+         HornetQLogger.LOGGER.error(e.getMessage(), e);
       }
 
    }
@@ -111,7 +108,7 @@ public class VersionLoader
       {
          if (in == null)
          {
-            log.warn("Classpath: " + getClasspathString());
+            HornetQLogger.LOGGER.noVersionOnClasspath(getClasspathString());
             throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
          }
          try

@@ -30,7 +30,6 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
@@ -57,6 +56,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
@@ -68,8 +68,6 @@ public class ReplicationManager implements HornetQComponent
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(ReplicationManager.class);
-
    // Attributes ----------------------------------------------------
 
    private final ResponseHandler responseHandler = new ResponseHandler();
@@ -317,7 +315,7 @@ public class ReplicationManager implements HornetQComponent
             }
             catch (Throwable e)
             {
-               ReplicationManager.log.warn("Error completing callback on replication manager", e);
+               HornetQLogger.LOGGER.errorCompletingCAllbackOnRepicationManager(e);
             }
          }
       }
@@ -417,11 +415,11 @@ public class ReplicationManager implements HornetQComponent
          if (me.getCode() == HornetQException.DISCONNECTED)
          {
             // Backup has shut down - no need to log a stack trace
-            ReplicationManager.log.warn("The backup node has been shut-down, replication will now stop");
+            HornetQLogger.LOGGER.replicationStopOnBackupShutdown();
          }
          else
          {
-            ReplicationManager.log.warn("Connection to the backup node failed, removing replication now", me);
+            HornetQLogger.LOGGER.replicationStopOnBackupFail(me);
          }
 
          try
@@ -430,7 +428,7 @@ public class ReplicationManager implements HornetQComponent
          }
          catch (Exception e)
          {
-            ReplicationManager.log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorStoppingReplication(e);
          }
       }
 
@@ -483,7 +481,7 @@ public class ReplicationManager implements HornetQComponent
       SequentialFile file = jf.getFile().cloneFile();
       try
       {
-         log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
+         HornetQLogger.LOGGER.journalSynch(jf, file.size(), file);
          sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
       }
       finally

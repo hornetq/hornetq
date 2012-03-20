@@ -36,7 +36,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.FileWrapperJournal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.Page;
@@ -68,6 +67,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage.SyncDataType;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
@@ -79,12 +79,9 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 {
 
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ReplicationEndpoint.class);
-
    // Attributes ----------------------------------------------------
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final IOCriticalErrorListener criticalErrorListener;
 
@@ -224,17 +221,17 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          }
          else
          {
-            log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
+            HornetQLogger.LOGGER.invalidPacketForReplication(packet);
          }
       }
       catch (HornetQException e)
       {
-         log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorHandlingReplciationPacket(e, packet);
          response = new HornetQExceptionMessage(e);
       }
       catch (Exception e)
       {
-         ReplicationEndpoint.log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorHandlingReplciationPacket(e, packet);
          response =
                   new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR,
                                                                    "unhandled error during replication", e));
@@ -318,7 +315,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                }
                catch (Exception e)
                {
-                  log.warn("Error while closing the page on backup", e);
+                  HornetQLogger.LOGGER.errorClosingPageOnReplication(e);
                }
             }
          }
@@ -386,7 +383,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          if (!journalInformation[i].equals(journalLoadInformation[i]))
          {
-            log.warn("Journal comparison mismatch:\n" + journalParametersToString(journalInformation));
+            HornetQLogger.LOGGER.journalcomparisonMismatch(journalParametersToString(journalInformation));
             throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                        "Backup node can't connect to the live node as the data differs");
          }
@@ -469,7 +466,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       journalsHolder = null;
       quorumManager.setLiveID(liveID);
       server.setRemoteBackupUpToDate(liveID);
-      log.info("Backup server " + server + " is synchronized with live-server.");
+      HornetQLogger.LOGGER.backupServerSynched(server);
       return;
    }
 
@@ -490,7 +487,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             ReplicatedLargeMessage largeMessage = lookupLargeMessage(id, false);
             if (!(largeMessage instanceof LargeServerMessageInSync))
             {
-               log.error("large message sync: largeMessage instance is incompatible with it, ignoring data");
+               HornetQLogger.LOGGER.largeMessageIncomatible();
                return;
             }
             LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
@@ -578,8 +575,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                   quorumManager.setLiveID(packet.getNodeID());
                }
                Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(journalContent);
-               log.info("Journal " + journalContent + ". Reserving fileIDs for synchronization: " +
-                        Arrays.toString(packet.getFileIds()));
 
                for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
                {
@@ -606,7 +601,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          }
          catch (Exception e)
          {
-            log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
+            HornetQLogger.LOGGER.errorDeletingLargeMessage(e, packet.getMessageId());
          }
       }
    }
@@ -646,8 +641,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
       if (message == null)
       {
-         log.warn("Large MessageID " + messageId +
-                                          "  is not available on backup server. Ignoring replication message");
+         HornetQLogger.LOGGER.largeMessageNotAvailable(messageId);
       }
 
       return message;
@@ -661,7 +655,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       final long id = packet.getMessageId();
       createLargeMessage(id, false);
-      log.trace("Receiving Large Message " + id + " on backup");
+      HornetQLogger.LOGGER.trace("Receiving Large Message " + id + " on backup");
    }
 
    private void createLargeMessage(final long id, boolean sync)
@@ -759,7 +753,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          if (ReplicationEndpoint.trace)
          {
-            log.trace("Endpoint appendUpdate id = " + packet.getId());
+            HornetQLogger.LOGGER.trace("Endpoint appendUpdate id = " + packet.getId());
          }
          journalToUse.appendUpdateRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }
@@ -767,7 +761,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          if (ReplicationEndpoint.trace)
          {
-            log.trace("Endpoint append id = " + packet.getId());
+            HornetQLogger.LOGGER.trace("Endpoint append id = " + packet.getId());
          }
          journalToUse.appendAddRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }

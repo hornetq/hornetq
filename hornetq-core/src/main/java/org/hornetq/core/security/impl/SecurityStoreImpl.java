@@ -23,10 +23,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -51,13 +51,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SecurityStoreImpl.class);
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final boolean trace = SecurityStoreImpl.log.isTraceEnabled();
+   private final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -116,7 +114,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          {
             if (trace)
             {
-               SecurityStoreImpl.log.trace("Authenticating cluster admin user");
+               HornetQLogger.LOGGER.trace("Authenticating cluster admin user");
             }
 
             // The special user cluster user is used for creating sessions that replicate management operation between
@@ -155,7 +153,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       {
          if (trace)
          {
-            SecurityStoreImpl.log.trace("checking access permissions to " + address);
+            HornetQLogger.LOGGER.trace("checking access permissions to " + address);
          }
 
          String user = session.getUsername();

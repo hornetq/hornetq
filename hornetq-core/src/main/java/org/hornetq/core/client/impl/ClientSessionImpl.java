@@ -36,7 +36,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CommandConfirmationHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -82,6 +81,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutMessage
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.IDGenerator;
@@ -108,9 +108,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 {
    // Constants ----------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
-
-   private final boolean trace = ClientSessionImpl.log.isTraceEnabled();
+   private final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------------------------------
 
@@ -532,9 +530,9 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       checkClosed();
 
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Sending commit");
+         HornetQLogger.LOGGER.trace("Sending commit");
       }
 
       if (rollbackOnly)
@@ -660,7 +658,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       if (rollbackOnly)
       {
-         log.warn("resetting session after failure");
+         HornetQLogger.LOGGER.resettingSessionAfterFailure();
          rollback(false);
       }
    }
@@ -755,9 +753,9 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
 
       checkClosed();
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("client ack messageID = " + messageID);
+         HornetQLogger.LOGGER.debug("client ack messageID = " + messageID);
       }
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
 
@@ -880,13 +878,13 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       if (closed)
       {
-         log.debug("Session was already closed, giving up now, this=" + this);
+         HornetQLogger.LOGGER.debug("Session was already closed, giving up now, this=" + this);
          return;
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Calling close on session "  + this);
+         HornetQLogger.LOGGER.debug("Calling close on session "  + this);
       }
 
       try
@@ -904,7 +902,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          // Session close should always return without exception
 
          // Note - we only log at trace
-         ClientSessionImpl.log.trace("Failed to close session", e);
+         HornetQLogger.LOGGER.trace("Failed to close session", e);
       }
 
       doCleanup(false);
@@ -970,9 +968,9 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
             if (response.isReattached())
             {
-               if (log.isDebugEnabled())
+               if (HornetQLogger.LOGGER.isDebugEnabled())
                {
-                  log.debug("ClientSession reattached fine, replaying commands");
+                  HornetQLogger.LOGGER.debug("ClientSession reattached fine, replaying commands");
                }
                // The session was found on the server - we reattached transparently ok
 
@@ -981,9 +979,9 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
             else
             {
 
-               if (log.isDebugEnabled())
+               if (HornetQLogger.LOGGER.isDebugEnabled())
                {
-                  log.debug("ClientSession couldn't be reattached, creating a new session");
+                  HornetQLogger.LOGGER.debug("ClientSession couldn't be reattached, creating a new session");
                }
 
                // The session wasn't found on the server - probably we're failing over onto a backup server where the
@@ -1025,7 +1023,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                         // the session was created while its server was starting, retry it:
                         if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
                         {
-                           ClientSessionImpl.log.warn("Server is starting, retry to create the session " + name);
+                           HornetQLogger.LOGGER.retryCreateSessionSeverStarting(name);
                            retry = true;
                            // sleep a little bit to avoid spinning too much
                            Thread.sleep(10);
@@ -1123,7 +1121,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          }
          catch (Throwable t)
          {
-            ClientSessionImpl.log.error("Failed to handle failover", t);
+            HornetQLogger.LOGGER.failedToHandleFailover(t);
          }
          finally
          {
@@ -1288,7 +1286,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       // we should never throw rollback if we have already prepared
       if (rollbackOnly)
       {
-         log.warn("committing transaction after failover occurred, any non persistent messages may be lost");
+         HornetQLogger.LOGGER.commitAfterFailover();
       }
 
       // Note - don't need to flush acks since the previous end would have
@@ -1314,7 +1312,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.warn("failover occured during commit throwing XAException.XA_RETRY");
+         HornetQLogger.LOGGER.failoverDuringCommit();
 
          // Unblocked on failover
          xaRetry = true;
@@ -1365,7 +1363,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.error("Caught Exception ", e);
+         HornetQLogger.LOGGER.errorCallingEnd(e);
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1461,7 +1459,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
             // Unblocked on failover
             try
             {
-               log.warn("failover occurred during prepare re-trying");
+               HornetQLogger.LOGGER.failoverDuringPrepare();
                SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
                if (response.isError())
@@ -1478,7 +1476,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
             {
                // ignore and rollback
             }
-            log.warn("failover occurred during prepare rolling back");
+            HornetQLogger.LOGGER.failoverDuringPrepareRollingBack();
             try
             {
                rollback(false);
@@ -1488,12 +1486,12 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                throw new XAException(XAException.XAER_RMERR);
             }
 
-            ClientSessionImpl.log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorDuringPrepare(e);
 
             throw new XAException(XAException.XA_RBOTHER);
          }
 
-         ClientSessionImpl.log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorDuringPrepare(e);
 
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1630,9 +1628,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
          if (response.isError())
          {
-            ClientSessionImpl.log.error("XA operation failed " + response.getMessage() +
-                                        " code:" +
-                                        response.getResponseCode());
+            HornetQLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
             throw new XAException(response.getResponseCode());
          }
       }
@@ -1647,9 +1643,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
                if (response.isError())
                {
-                  ClientSessionImpl.log.error("XA operation failed " + response.getMessage() +
-                                              " code:" +
-                                              response.getResponseCode());
+                  HornetQLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
                   throw new XAException(response.getResponseCode());
                }
             }
@@ -1674,7 +1668,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (Exception e)
       {
-         ClientSessionImpl.log.error("Failed to cleanup session");
+         HornetQLogger.LOGGER.failedToCleanupSession(e);
       }
    }
 
@@ -1863,7 +1857,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       if (!xa)
       {
-         ClientSessionImpl.log.error("Session is not XA");
+         HornetQLogger.LOGGER.sessionNotXA();
          throw new XAException(XAException.XAER_RMERR);
       }
    }
@@ -1908,9 +1902,9 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          remotingConnection.removeFailureListener(this);
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("calling cleanup on " + this);
+         HornetQLogger.LOGGER.debug("calling cleanup on " + this);
       }
 
       synchronized (this)

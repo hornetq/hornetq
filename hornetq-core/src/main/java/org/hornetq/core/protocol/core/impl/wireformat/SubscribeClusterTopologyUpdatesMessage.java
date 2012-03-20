@@ -22,6 +22,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
 {
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private boolean clusterConnection;
 
    public SubscribeClusterTopologyUpdatesMessage(final boolean clusterConnection)

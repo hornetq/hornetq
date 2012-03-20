@@ -27,6 +27,10 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class MessageCounterInfo
 {
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private final String name;
 
    private final String subscription;

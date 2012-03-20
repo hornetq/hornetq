@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -37,10 +37,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class InVMConnection implements Connection
 {
-
-   private static final Logger log = Logger.getLogger(InVMConnection.class);
-   
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final BufferHandler handler;
 
@@ -161,7 +158,7 @@ public class InVMConnection implements Connection
                      copied.readInt(); // read and discard
                      if (isTrace)
                      {
-                        log.trace(InVMConnection.this + "::Sending inVM packet");
+                        HornetQLogger.LOGGER.trace(InVMConnection.this + "::Sending inVM packet");
                      }
                      handler.bufferReceived(id, copied);
                   }
@@ -169,14 +166,14 @@ public class InVMConnection implements Connection
                catch (Exception e)
                {
                   final String msg = "Failed to write to handler on connector " + this;
-                  InVMConnection.log.error(msg, e);
+                  HornetQLogger.LOGGER.errorWritingToInvmConnector(e, this);
                   throw new IllegalStateException(msg, e);
                }
                finally
                {
                   if (isTrace)
                   {
-                     log.trace(InVMConnection.this + "::packet sent done");
+                     HornetQLogger.LOGGER.trace(InVMConnection.this + "::packet sent done");
                   }
                }
             }
@@ -196,12 +193,12 @@ public class InVMConnection implements Connection
             {
                if (!latch.await(10, TimeUnit.SECONDS))
                {
-                  log.warn("Timed out flushing channel on InVMConnection");
+                  HornetQLogger.LOGGER.timedOutFlushingInvmChannel();
                }
             }
             catch (InterruptedException e)
             {
-               log.debug(e.getMessage(), e);
+               HornetQLogger.LOGGER.errorflushingInvmChannel(e);
             }
          }
       }

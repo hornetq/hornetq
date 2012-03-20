@@ -22,7 +22,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 
@@ -46,8 +45,6 @@ public class MessageCounterManagerImpl implements MessageCounterManager
    public static final long MIN_SAMPLE_PERIOD = 1000;
 
    public static final int DEFAULT_MAX_DAY_COUNT = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
-
-   private static final Logger log = Logger.getLogger(MessageCounterManagerImpl.class);
 
    private final Map<String, MessageCounter> messageCounters;
 

@@ -12,11 +12,12 @@
  */
 package org.hornetq.utils;
 
+import org.hornetq.core.server.HornetQLogger;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A ConfigurationHelper
@@ -26,8 +27,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class ConfigurationHelper
 {
-   public static final Logger log = Logger.getLogger(ConfigurationHelper.class);
-
    public static String getStringProperty(final String propName, final String def, final Map<String, Object> props)
    {
       if (props == null)
@@ -75,9 +74,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Number == false)
          {
-            ConfigurationHelper.log.warn("Property " + propName +
-                                         " must be an Integer, it is " +
-                                         prop.getClass().getName());
+            HornetQLogger.LOGGER.propertyNotInteger(propName, prop.getClass().getName());
 
             return def;
          }
@@ -110,9 +107,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Number == false)
          {
-            ConfigurationHelper.log.warn("Property " + propName +
-                                         " must be an Long, it is " +
-                                         prop.getClass().getName());
+            HornetQLogger.LOGGER.propertyNotLong(propName, prop.getClass().getName());
 
             return def;
          }
@@ -145,9 +140,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Boolean == false)
          {
-            ConfigurationHelper.log.warn("Property " + propName +
-                                         " must be a Boolean, it is " +
-                                         prop.getClass().getName());
+            HornetQLogger.LOGGER.propertyNotBoolean(propName, prop.getClass().getName());
 
             return def;
          }
@@ -186,10 +179,9 @@ public class ConfigurationHelper
       return invalid;
    }
 
-   public static String stringSetToCommaListString(final String msg, final Set<String> invalid)
+   public static String stringSetToCommaListString(final Set<String> invalid)
    {
       StringBuilder sb = new StringBuilder();
-      sb.append(msg);
       int count = 0;
       for (String key : invalid)
       {

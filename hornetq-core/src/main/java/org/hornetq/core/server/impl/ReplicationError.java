@@ -6,9 +6,9 @@ package org.hornetq.core.server.impl;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -22,7 +22,6 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 final class ReplicationError implements Interceptor
 {
    private final HornetQServer server;
-   private static final Logger log = Logger.getLogger(ReplicationError.class);
 
    public ReplicationError(HornetQServer server)
    {
@@ -34,7 +33,7 @@ final class ReplicationError implements Interceptor
    {
       if (packet.getType() != PacketImpl.BACKUP_REGISTRATION_FAILED)
          return true;
-      log.warn("Failed to register as backup. Stopping the server.");
+      HornetQLogger.LOGGER.errorRegisteringBackup();
       try
       {
          server.stop();

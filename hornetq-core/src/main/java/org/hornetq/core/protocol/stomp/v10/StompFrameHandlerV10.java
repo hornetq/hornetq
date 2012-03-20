@@ -24,6 +24,7 @@ import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
 *
@@ -31,8 +32,6 @@ import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
 */
 public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements FrameEventListener
 {
-   private static final Logger log = Logger.getLogger(StompFrameHandlerV10.class);
-   
    public StompFrameHandlerV10(StompConnection connection)
    {
       this.connection = connection;
@@ -79,7 +78,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          }
          catch (UnsupportedEncodingException e)
          {
-            log.error("Encoding problem", e);
+            HornetQLogger.LOGGER.errorEncodingStompPacket(e);
          }
       }
       return response;
@@ -135,7 +134,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
 
       if (txID != null)
       {
-         log.warn("Transactional acknowledgement is not supported");
+         HornetQLogger.LOGGER.stompTXAckNorSupported();
       }
       
       try

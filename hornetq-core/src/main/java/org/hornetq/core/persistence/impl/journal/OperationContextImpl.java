@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.SimpleWaitIOCallback;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
@@ -41,8 +41,6 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public class OperationContextImpl implements OperationContext
 {
-   private static final Logger log = Logger.getLogger(OperationContextImpl.class);
-
    private static final ThreadLocal<OperationContext> threadLocalContext = new ThreadLocal<OperationContext>();
 
    public static void clearContext()
@@ -246,7 +244,7 @@ public class OperationContextImpl implements OperationContext
       }
       catch (Throwable e)
       {
-         OperationContextImpl.log.warn("Error on executor's submit", e);
+         HornetQLogger.LOGGER.errorExecutingIOAsyncTask(e);
          executorsPending.decrementAndGet();
          task.onError(HornetQException.INTERNAL_ERROR,
                       "It wasn't possible to complete IO operation - " + e.getMessage());

@@ -33,7 +33,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -45,11 +44,7 @@ import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.*;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -68,8 +63,6 @@ import org.hornetq.utils.FutureLatch;
 public class PagingStoreImpl implements PagingStore
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(PagingStoreImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -127,15 +120,7 @@ public class PagingStoreImpl implements PagingStore
 
    // Static --------------------------------------------------------
 
-   private static final boolean isTrace = PagingStoreImpl.log.isTraceEnabled();
-
-   // This is just a debug tool method.
-   // During debugs you could make log.trace as log.info, and change the
-   // variable isTrace above
-   private static void trace(final String message)
-   {
-      PagingStoreImpl.log.trace(message);
-   }
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Constructors --------------------------------------------------
 
@@ -412,7 +397,7 @@ public class PagingStoreImpl implements PagingStore
 
       if (!future.await(60000))
       {
-         PagingStoreImpl.log.warn("Timed out on waiting PagingStore " + address + " to shutdown");
+         HornetQLogger.LOGGER.pageStoreTimeout(address);
       }
    }
 
@@ -563,7 +548,7 @@ public class PagingStoreImpl implements PagingStore
             {
                // If not possible to starting page due to an IO error, we will just consider it non paging.
                // This shouldn't happen anyway
-               PagingStoreImpl.log.warn("IO Error, impossible to start paging", e);
+               HornetQLogger.LOGGER.pageStoreStartIOError(e);
                return false;
             }
          }
@@ -796,11 +781,7 @@ public class PagingStoreImpl implements PagingStore
                {
                   if (PagingStoreImpl.isTrace)
                   {
-                     PagingStoreImpl.trace("Starting paging on " + getStoreName() +
-                                           ", size = " +
-                                           addressSize +
-                                           ", maxSize=" +
-                                           maxSize);
+                     HornetQLogger.LOGGER.pageStoreStart(storeName, addressSize, maxSize);
                   }
                }
             }
@@ -833,12 +814,12 @@ public class PagingStoreImpl implements PagingStore
             {
                printedDropMessagesWarning = true;
 
-               PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
+               HornetQLogger.LOGGER.pageStoreDropMessages(storeName);
             }
 
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
+               HornetQLogger.LOGGER.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
             }
 
             // Address is full, we just pretend we are paging, and drop the data
@@ -906,7 +887,7 @@ public class PagingStoreImpl implements PagingStore
 
          if (isTrace)
          {
-            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
+            HornetQLogger.LOGGER.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
                       " pageId=" + currentPage.getPageId());
          }
 

@@ -20,10 +20,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
@@ -36,8 +36,6 @@ import org.hornetq.utils.TypedProperties;
  */
 public class LocalGroupingHandler implements GroupingHandler
 {
-   private static Logger log = Logger.getLogger(LocalGroupingHandler.class);
-
    private final ConcurrentHashMap<SimpleString, GroupBinding> map = new ConcurrentHashMap<SimpleString, GroupBinding>();
 
    private final ConcurrentHashMap<SimpleString, List<GroupBinding>> groupMap = new ConcurrentHashMap<SimpleString, List<GroupBinding>>();
@@ -133,7 +131,7 @@ public class LocalGroupingHandler implements GroupingHandler
 
    public Response receive(final Proposal proposal, final int distance) throws Exception
    {
-      LocalGroupingHandler.log.trace("received proposal " + proposal);
+      HornetQLogger.LOGGER.trace("received proposal " + proposal);
       return propose(proposal);
    }
 
@@ -176,7 +174,7 @@ public class LocalGroupingHandler implements GroupingHandler
                   }
                   catch (Exception e)
                   {
-                     LocalGroupingHandler.log.warn("Unable to delete group binding info " + val.getGroupId(), e);
+                     HornetQLogger.LOGGER.unableToDeleteGroupBindings(e, val.getGroupId());
                   }
                }
             }

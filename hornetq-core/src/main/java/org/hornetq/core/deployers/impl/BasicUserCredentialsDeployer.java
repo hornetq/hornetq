@@ -13,7 +13,6 @@
 package org.hornetq.core.deployers.impl;
 
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -25,8 +24,6 @@ import org.w3c.dom.NodeList;
  */
 public class BasicUserCredentialsDeployer extends XmlDeployer
 {
-   private static final Logger log = Logger.getLogger(BasicUserCredentialsDeployer.class);
-
    private final HornetQSecurityManager hornetQSecurityManager;
 
    private static final String PASSWORD_ATTRIBUTE = "password";

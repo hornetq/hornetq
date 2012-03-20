@@ -39,7 +39,6 @@ import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.OperationContext;
@@ -54,6 +53,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.BindingQueryResult;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -87,9 +87,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 {
    // Constants -----------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Static -------------------------------------------------------------------------------
 
@@ -295,7 +293,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.warn(e.getMessage(), e);
          }
       }
 
@@ -318,7 +316,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          catch (Throwable error)
          {
-            ServerSessionImpl.log.error("Failed to delete large message file", error);
+            HornetQLogger.LOGGER.errorDeletingLargeMessageFile(error);
          }
       }
 
@@ -449,9 +447,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          try
          {
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("deleting temporary queue " + bindingName);
+               HornetQLogger.LOGGER.debug("deleting temporary queue " + bindingName);
             }
             if (postOffice.getBinding(bindingName) != null)
             {
@@ -462,7 +460,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
          catch (Exception e)
          {
-            ServerSessionImpl.log.error("Failed to remove temporary queue " + bindingName);
+            HornetQLogger.LOGGER.errorRemovingTempQueue(e, bindingName);
          }
       }
 
@@ -622,7 +620,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (isTrace)
       {
-         log.trace("Calling commit");
+         HornetQLogger.LOGGER.trace("Calling commit");
       }
       try
       {
@@ -964,7 +962,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else if (theTx.getState() == Transaction.State.PREPARED)
             {
-               log.info("ignoring prepare on xid as already called :" + xid);
+               HornetQLogger.LOGGER.ignoringPrepare(xid);
             }
             else
             {
@@ -1019,12 +1017,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             if (!storageManager.waitOnOperations(10000))
             {
-               log.warn("Couldn't finish context execution in 10 seconds", new Exception("warning"));
+               HornetQLogger.LOGGER.errorCompletingContext(new Exception("warning"));
             }
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.warn(e.getMessage(), e);
          }
       }
       finally
@@ -1055,7 +1053,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                }
                catch (Exception e)
                {
-                  log.error("Failed to close session", e);
+                  HornetQLogger.LOGGER.errorClosingSession(e);
                }
             }
          });
@@ -1076,7 +1074,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         ServerSessionImpl.log.error("Cannot find consumer with id " + consumerID);
+         HornetQLogger.LOGGER.cannotFindConsumer(consumerID);
       }
    }
 
@@ -1086,7 +1084,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (consumer == null)
       {
-         ServerSessionImpl.log.debug("There is no consumer with id " + consumerID);
+         HornetQLogger.LOGGER.debug("There is no consumer with id " + consumerID);
 
          return;
       }
@@ -1101,14 +1099,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       LargeServerMessage largeMsg = storageManager.createLargeMessage(id, message);
 
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("sendLarge::" + largeMsg);
+         HornetQLogger.LOGGER.trace("sendLarge::" + largeMsg);
       }
 
       if (currentLargeMessage != null)
       {
-         ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
+         HornetQLogger.LOGGER.replacingIncompleteLargeMessage(currentLargeMessage.getMessageID());
       }
 
       currentLargeMessage = largeMsg;
@@ -1145,7 +1143,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (isTrace)
       {
-         log.trace("send(message=" + message + ", direct=" + direct + ") being called");
+         HornetQLogger.LOGGER.trace("send(message=" + message + ", direct=" + direct + ") being called");
       }
 
       if (message.getAddress() == null)
@@ -1312,15 +1310,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
-         ServerSessionImpl.log.warn("Client connection failed, clearing up resources for session " + name);
+         HornetQLogger.LOGGER.clientConnectionFailed(name);
 
          close(true);
 
-         ServerSessionImpl.log.warn("Cleared up resources for session " + name);
+         HornetQLogger.LOGGER.clientConnectionFailedClearingSession(name);
       }
       catch (Throwable t)
       {
-         ServerSessionImpl.log.error("Failed to close connection " + this);
+         HornetQLogger.LOGGER.errorClosingConnection(this);
       }
    }
 

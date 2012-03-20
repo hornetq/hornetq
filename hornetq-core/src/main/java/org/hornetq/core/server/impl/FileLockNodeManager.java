@@ -21,7 +21,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
@@ -33,8 +33,6 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class FileLockNodeManager extends NodeManager
 {
-   private final Logger log = Logger.getLogger(this.getClass());
-
    private static final String SERVER_LOCK_NAME = "server.lock";
 
    private static final String ACCESS_MODE = "rw";
@@ -89,7 +87,7 @@ public class FileLockNodeManager extends NodeManager
          }
          catch (Exception e)
          {
-            log.warn("can't open file " + file, e);
+            HornetQLogger.LOGGER.nodeManagerCantOpenFile(e, file);
             throw e;
          }
          if (!fileCreated)
@@ -176,7 +174,7 @@ public class FileLockNodeManager extends NodeManager
          byte state = getState();
          while (state == FileLockNodeManager.NOT_STARTED || state == FileLockNodeManager.FIRST_TIME_START)
          {
-            log.debug("awaiting live node startup state='" + state + "'");
+            HornetQLogger.LOGGER.debug("awaiting live node startup state='" + state + "'");
             Thread.sleep(2000);
             state = getState();
          }
@@ -186,18 +184,18 @@ public class FileLockNodeManager extends NodeManager
          if (state == FileLockNodeManager.PAUSED)
          {
             liveLock.release();
-            log.debug("awaiting live node restarting");
+            HornetQLogger.LOGGER.debug("awaiting live node restarting");
             Thread.sleep(2000);
          }
          else if (state == FileLockNodeManager.FAILINGBACK)
          {
             liveLock.release();
-            log.debug("awaiting live node failing back");
+            HornetQLogger.LOGGER.debug("awaiting live node failing back");
             Thread.sleep(2000);
          }
          else if (state == FileLockNodeManager.LIVE)
          {
-            log.debug("acquired live node lock state = " + (char)state);
+            HornetQLogger.LOGGER.debug("acquired live node lock state = " + (char)state);
             break;
          }
       }
@@ -208,10 +206,10 @@ public class FileLockNodeManager extends NodeManager
    public void startBackup() throws Exception
    {
 
-      log.info("Waiting to become backup node");
+      HornetQLogger.LOGGER.waitingToBecomeBackup();
 
       backupLock = lock(FileLockNodeManager.BACKUP_LOCK_POS);
-      log.info("** got backup lock");
+      HornetQLogger.LOGGER.gotBackupLock();
 
       readNodeId();
    }
@@ -221,11 +219,11 @@ public class FileLockNodeManager extends NodeManager
    {
       setFailingBack();
 
-      log.info("Waiting to obtain live lock");
+      HornetQLogger.LOGGER.waitingToObtainLiveLock();
 
       liveLock = lock(FileLockNodeManager.LIVE_LOCK_POS);
 
-      log.info("Live Server Obtained live lock");
+      HornetQLogger.LOGGER.obtainedLiveLock();
 
       setLive();
    }

@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.core.logging.Logger;
 
 /**
  * Represents all the data in a STOMP frame.
@@ -36,8 +35,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class StompFrame
 {
-   protected static final Logger log = Logger.getLogger(StompFrame.class);
-
    protected static final byte[] NO_DATA = new byte[] {};
 
    protected static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };

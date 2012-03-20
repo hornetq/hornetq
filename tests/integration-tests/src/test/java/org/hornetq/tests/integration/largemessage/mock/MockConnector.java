@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.remoting.impl.invm.InVMConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -96,7 +97,7 @@ public class MockConnector extends InVMConnector
       @Override
       public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
       {
-         InVMConnector.log.info("calling mock connection write");
+         HornetQLogger.LOGGER.info("calling mock connection write");
          if (callback != null)
          {
             callback.onWrite(buffer);

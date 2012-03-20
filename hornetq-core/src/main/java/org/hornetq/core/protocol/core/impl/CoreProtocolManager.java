@@ -26,7 +26,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -42,6 +41,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -59,10 +59,8 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 class CoreProtocolManager implements ProtocolManager
 {
-   private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
-   
-   private static final boolean isTrace = log.isTraceEnabled();
-   
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
+
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -211,7 +209,7 @@ class CoreProtocolManager implements ProtocolManager
                }
                if (isTrace)
                {
-                  log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
+                  HornetQLogger.LOGGER.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
                
                if (acceptorUsed != null)
@@ -223,12 +221,12 @@ class CoreProtocolManager implements ProtocolManager
                   }
                   else
                   {
-                     log.debug("Cluster connection is null on acceptor = " + acceptorUsed);
+                     HornetQLogger.LOGGER.debug("Cluster connection is null on acceptor = " + acceptorUsed);
                   }
                }
                else
                {
-                  log.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
+                  HornetQLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
                }
             } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
