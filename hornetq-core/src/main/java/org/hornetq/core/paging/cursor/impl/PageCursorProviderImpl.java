@@ -293,9 +293,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       scheduleCleanup();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursorProvider#scheduleCleanup()
-    */
+   @Override
    public void scheduleCleanup()
    {
 

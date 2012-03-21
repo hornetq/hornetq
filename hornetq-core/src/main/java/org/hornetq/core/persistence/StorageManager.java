@@ -130,7 +130,6 @@ public interface StorageManager extends HornetQComponent
        These methods will use that buffer if the inner method supports it */
    void freeDirectBuffer(ByteBuffer buffer);
 
-
    void clearContext();
 
    long generateUniqueID();

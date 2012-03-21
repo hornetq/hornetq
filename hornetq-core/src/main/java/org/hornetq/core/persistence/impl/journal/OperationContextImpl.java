@@ -50,7 +50,7 @@ public class OperationContextImpl implements OperationContext
       OperationContextImpl.threadLocalContext.set(null);
    }
 
-   public static OperationContext getContext()
+   public static final OperationContext getContext()
    {
       return getContext(null);
    }
@@ -345,7 +345,7 @@ public class OperationContextImpl implements OperationContext
          }
       }
 
-      return "OperationContextImpl [minimalStore=" + minimalStore +
+      return "OperationContextImpl [" + hashCode() + "] [minimalStore=" + minimalStore +
              ", storeLineUp=" +
              storeLineUp +
              ", stored=" +
