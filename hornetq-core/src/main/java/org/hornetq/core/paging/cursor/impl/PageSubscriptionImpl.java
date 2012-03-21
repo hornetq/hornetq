@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -103,7 +102,7 @@ class PageSubscriptionImpl implements PageSubscription
    private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
-   private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
+   private final java.util.Queue<PagePosition> redeliveries = new LinkedList<PagePosition>();
 
    // Static --------------------------------------------------------
 
@@ -210,7 +209,7 @@ class PageSubscriptionImpl implements PageSubscription
 
    /**
     * It will cleanup all the records for completed pages
-    * */
+    */
    public void cleanupEntries(final boolean completeDelete) throws Exception
    {
       if (completeDelete)
@@ -523,9 +522,7 @@ class PageSubscriptionImpl implements PageSubscription
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscription#queryMessage(org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public PagedMessage queryMessage(PagePosition pos)
    {
       try
