@@ -1667,16 +1667,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
          }
 
-         if (csf == null && !isClosed())
+         if (!isClosed())
          {
-            log.warn("Failed to connecto to any static connector, throwing exception now");
+            log.warn("Failed to connect to any static connector, throwing exception now");
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
          }
-         if (log.isDebugEnabled())
-         {
-            log.debug("Returning " + csf + " on " + ServerLocatorImpl.this);
-         }
-         return csf;
+         return null;
       }
 
       private synchronized void createConnectors()
