@@ -50,7 +50,7 @@ import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 
 /**
@@ -695,7 +695,7 @@ class PageSubscriptionImpl implements PageSubscription
 
    public void flushExecutors()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
       executor.execute(future);
       while (!future.await(1000))
       {

@@ -26,7 +26,7 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 
 /**
  * A Redistributor
@@ -91,7 +91,7 @@ public class Redistributor implements Consumer
    {
       active = false;
 
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 
@@ -105,7 +105,7 @@ public class Redistributor implements Consumer
 
    public synchronized void close()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 

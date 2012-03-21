@@ -32,7 +32,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -890,7 +890,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      org.hornetq.utils.Future future = new Future();
+      org.hornetq.utils.FutureLatch future = new FutureLatch();
 
       sessionExecutor.execute(future);
 

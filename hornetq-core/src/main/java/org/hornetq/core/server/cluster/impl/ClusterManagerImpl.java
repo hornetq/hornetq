@@ -52,7 +52,7 @@ import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.UUID;
 
 /**
@@ -277,7 +277,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    public void flushExecutor()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
       executor.execute(future);
       if (!future.await(10000))
       {

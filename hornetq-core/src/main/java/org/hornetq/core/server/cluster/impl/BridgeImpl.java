@@ -46,7 +46,7 @@ import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 
@@ -274,7 +274,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    public void flushExecutor()
    {
       // Wait for any create objects runnable to complete
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 

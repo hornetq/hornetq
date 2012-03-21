@@ -30,7 +30,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 
@@ -258,7 +258,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          cursor.stop();
       }
 
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 
@@ -275,7 +275,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          cursor.flushExecutors();
       }
 
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 
