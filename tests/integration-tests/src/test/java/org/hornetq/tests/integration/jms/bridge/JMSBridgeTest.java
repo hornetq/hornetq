@@ -329,8 +329,6 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
-      try
-      {
          QualityOfServiceMode qosMode = QualityOfServiceMode.AT_MOST_ONCE;
 
          int batchSize = 10;
@@ -357,7 +355,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          try
          {
-            bridge = new JMSBridgeImpl(null,
+         bridge =
+                  new JMSBridgeImpl(null,
                                        cff1,
                                        sourceQueueFactory,
                                        targetQueueFactory,
@@ -374,11 +373,16 @@ public class JMSBridgeTest extends BridgeTestBase
                                        subName,
                                        clientID,
                                        false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -398,12 +402,17 @@ public class JMSBridgeTest extends BridgeTestBase
                                        maxBatchTime,
                                        subName,
                                        clientID,
-                                       false);
+ false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -423,12 +432,17 @@ public class JMSBridgeTest extends BridgeTestBase
                                        maxBatchTime,
                                        subName,
                                        clientID,
-                                       false);
+ false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -449,11 +463,16 @@ public class JMSBridgeTest extends BridgeTestBase
                                        subName,
                                        clientID,
                                        false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -474,11 +493,16 @@ public class JMSBridgeTest extends BridgeTestBase
                                        subName,
                                        clientID,
                                        false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -498,12 +522,17 @@ public class JMSBridgeTest extends BridgeTestBase
                                        maxBatchTime,
                                        subName,
                                        clientID,
-                                       false);
+ false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -523,12 +552,17 @@ public class JMSBridgeTest extends BridgeTestBase
                                        maxBatchTime,
                                        subName,
                                        clientID,
-                                       false);
+ false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
+      }
+      finally
+      {
+         stopComponent(bridge);
+      }
 
          try
          {
@@ -548,21 +582,18 @@ public class JMSBridgeTest extends BridgeTestBase
                                        -2,
                                        subName,
                                        clientID,
-                                       false);
+ false);
+            fail("expected exception");
          }
          catch (IllegalArgumentException e)
          {
             // Ok
-         }
       }
       finally
       {
-         if (bridge != null)
-         {
-            bridge.stop();
-         }
+         stopComponent(bridge);
       }
-   }
+         }
 
    public void testStartStopStart() throws Exception
    {
@@ -598,9 +629,9 @@ public class JMSBridgeTest extends BridgeTestBase
          bridge.start();
 
          bridge.stop();
-         
+
          bridge.start();
-         
+
          connSource = cf0.createConnection();
 
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -649,7 +680,7 @@ public class JMSBridgeTest extends BridgeTestBase
          removeAllMessages(sourceQueue.getQueueName(), 0);
       }
    }
-   
+
    public void testSelector() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -997,7 +1028,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          JMSBridgeTest.log.trace("Sending " + NUM_MESSAGES + " messages");
 
-         List ids1 = new ArrayList();
+         List<String> ids1 = new ArrayList<String>();
 
          Session sessSource = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1016,9 +1047,9 @@ public class JMSBridgeTest extends BridgeTestBase
             tm.setFloatProperty("orange", 1212.1212f);
             tm.setLongProperty("blurg", 817217827l);
             tm.setShortProperty("stst", (short)26363);
-            
+
             //Set some JMS headers too
-            
+
             //And also set a core props
             ((HornetQMessage)tm).getCoreMessage().putBytesProperty("bytes", new byte[] { 1, 2, 3});
 
@@ -1039,7 +1070,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          connTarget.start();
 
-         List msgs = new ArrayList();
+         List<TextMessage> msgs = new ArrayList<TextMessage>();
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -1057,7 +1088,7 @@ public class JMSBridgeTest extends BridgeTestBase
             assertEquals(1212.1212f, tm.getFloatProperty("orange"));
             assertEquals(817217827l, tm.getLongProperty("blurg"));
             assertEquals((short)26363, tm.getShortProperty("stst"));
-            
+
             assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
 
             Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
@@ -1078,13 +1109,13 @@ public class JMSBridgeTest extends BridgeTestBase
          {
             // Now we send them again back to the source
 
-            Iterator iter = msgs.iterator();
+            Iterator<TextMessage> iter = msgs.iterator();
 
-            List ids2 = new ArrayList();
+            List<String> ids2 = new ArrayList<String>();
 
             while (iter.hasNext())
             {
-               Message msg = (Message)iter.next();
+               Message msg = iter.next();
 
                prod.send(msg);
 
@@ -1109,7 +1140,7 @@ public class JMSBridgeTest extends BridgeTestBase
                assertEquals(1212.1212f, tm.getFloatProperty("orange"));
                assertEquals(817217827l, tm.getLongProperty("blurg"));
                assertEquals((short)26363, tm.getShortProperty("stst"));
-               
+
                assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
 
                Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
@@ -2069,8 +2100,8 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       return newTransactionManager();
    }
-   
-   
+
+
 
    // Inner classes -------------------------------------------------------------------
 
