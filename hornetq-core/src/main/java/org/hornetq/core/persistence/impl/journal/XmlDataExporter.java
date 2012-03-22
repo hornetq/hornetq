@@ -694,15 +694,15 @@ public class XmlDataExporter
    /**
     * Proxy to handle indenting the XML since <code>javax.xml.stream.XMLStreamWriter</code> doesn't support that.
     */
-   class PrettyPrintHandler implements InvocationHandler
+   static class PrettyPrintHandler implements InvocationHandler
    {
-      private XMLStreamWriter target;
+      private final XMLStreamWriter target;
 
       private int depth = 0;
 
-      private final char INDENT_CHAR = ' ';
+      private static final char INDENT_CHAR = ' ';
 
-      private final String LINE_SEPARATOR = System.getProperty("line.separator");
+      private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 
       public PrettyPrintHandler(XMLStreamWriter target)

@@ -43,7 +43,6 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalFileImpl;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -62,8 +61,6 @@ import org.hornetq.utils.SimpleIDGenerator;
  */
 public class NIOJournalCompactTest extends JournalImplTestBase
 {
-   private final Logger log = Logger.getLogger(this.getClass());
-
    private static final int NUMBER_OF_RECORDS = 1000;
 
    IDGenerator idGenerator = new SimpleIDGenerator(100000);
@@ -779,7 +776,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
             }
          }
       }
-      
+
       long lastId = idGenerator.generateID();
 
       add(lastId);
@@ -793,15 +790,15 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       createJournal();
       startJournal();
       loadAndCheck();
-  
+
       journal.forceMoveNextFile();
       update(lastId);
-      
+
       stopJournal();
       createJournal();
       startJournal();
       loadAndCheck();
-      
+
 
    }
 
