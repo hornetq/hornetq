@@ -20,6 +20,7 @@ import javax.jms.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -32,7 +33,9 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
-   
+
+   private static final String JMS_TOPIC_MDB_TOPIC = "jms.topic.mdbTopic";
+
    @Override
    public boolean isSecure()
    {
@@ -55,8 +58,9 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSession session = sf.createSession();
+      ClientProducer clientProducer = addClientProducer(session.createProducer(MDBQUEUEPREFIXED));
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
       clientProducer.send(message);
@@ -107,7 +111,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       ExceptionDummyMessageEndpoint endpoint = new ExceptionDummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -144,7 +148,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("blue");
@@ -227,8 +231,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
+      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("test");
       clientProducer.send(message);
@@ -261,8 +265,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
+      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       clientProducer.send(message);
@@ -315,8 +319,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
+      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       clientProducer.send(message);
@@ -367,8 +371,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
+      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       message.putStringProperty("foo", "bar");
@@ -424,8 +428,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
-      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientSession session = addSessionFactory(locator.createSessionFactory()).createSession();
+      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       message.putStringProperty("foo", "bar");
