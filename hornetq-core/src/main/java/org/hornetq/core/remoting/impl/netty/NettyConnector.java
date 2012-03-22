@@ -41,7 +41,7 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ConfigurationHelper;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -546,7 +546,7 @@ public class NettyConnector implements Connector
 
       private final String url;
 
-      private final Future handShakeFuture = new Future();
+      private final FutureLatch handShakeFuture = new FutureLatch();
 
       private boolean active = false;
 

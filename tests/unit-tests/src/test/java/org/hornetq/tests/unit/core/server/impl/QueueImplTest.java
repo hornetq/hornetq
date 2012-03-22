@@ -36,7 +36,7 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 
 /**
  * A QueueTest
@@ -840,7 +840,7 @@ public class QueueImplTest extends UnitTestCase
    
    private void awaitExecution()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
       
       executor.execute(future);
       

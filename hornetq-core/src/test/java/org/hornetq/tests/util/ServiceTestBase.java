@@ -118,16 +118,16 @@ public abstract class ServiceTestBase extends UnitTestCase
       Topology topology = server.getClusterManager().getDefaultConnection().getTopology();
 
       int liveNodesCount = 0;
-	 
+
       int backupNodesCount = 0;
-	 
+
 
       do
       {
-    	  
+
     	 liveNodesCount = 0;
     	 backupNodesCount = 0;
-    	 
+
     	 for (TopologyMember member : topology.getMembers())
     	 {
     		 if (member.getA() != null)
@@ -139,7 +139,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     			 backupNodesCount ++;
     		 }
     	 }
-    	 
+
     	 if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
          {
             return topology;
@@ -362,18 +362,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                         final AddressFullMessagePolicy fullPolicy,
                                         final Map<String, AddressSettings> settings)
    {
-      HornetQServer server;
-
-      if (realFiles)
-      {
-         server = HornetQServers.newHornetQServer(configuration);
-      }
-      else
-      {
-         server = HornetQServers.newHornetQServer(configuration, false);
-      }
-      try
-      {
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(configuration, realFiles));
       if (settings != null)
       {
          for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -390,13 +379,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return server;
-      }
-      finally
-      {
-         addServer(server);
-      }
    }
-
 
 
    protected HornetQServer createServer(final boolean realFiles,
@@ -718,8 +701,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          ClientMessage message = consumer.receive(1000);
          Assert.assertNotNull("Expecting a message " + i, message);
+         Assert.assertEquals("property['counter']=" + i, i, message.getIntProperty("counter").intValue());
          assertMessageBody(i, message);
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
          if (ack)
             message.acknowledge();
       }

@@ -159,6 +159,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       };
 
       journal.setAutoReclaim(false);
+      addHornetQComponent(journal);
    }
 
    // It will start compacting, but it will let the thread in wait mode at onCompactDone, so we can validate command

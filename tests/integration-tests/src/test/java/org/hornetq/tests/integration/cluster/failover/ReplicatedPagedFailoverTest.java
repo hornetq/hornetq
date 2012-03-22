@@ -2,7 +2,6 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 
-import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
@@ -22,12 +21,5 @@ public class ReplicatedPagedFailoverTest extends ReplicatedFailoverTest
    public void testFailWithBrowser() throws Exception
    {
       // paged messages are not available for browsing
-   }
-
-   @Override
-   protected void crash(ClientSession... sessions) throws Exception
-   {
-      Thread.sleep(100);
-      super.crash(sessions);
    }
 }

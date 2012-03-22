@@ -74,6 +74,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
+import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
@@ -169,11 +170,11 @@ public class JournalStorageManager implements StorageManager
    private static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
    private static final byte PAGE_CURSOR_COUNTER_INC = 41;
-   
+
    private final Semaphore pageMaxConcurrentIO;
 
    private final BatchingIDGenerator idGenerator;
-   
+
    private final ReentrantReadWriteLock storageManagerLock = new ReentrantReadWriteLock(true);
 
    private ReplicationManager replicator;
@@ -197,9 +198,9 @@ public class JournalStorageManager implements StorageManager
          throw new InvalidParameterException("invalid byte: " + type);
         }
     }
-   
+
    private final SequentialFileFactory journalFF;
-   
+
    private Journal messageJournal;
 
    private Journal bindingsJournal;
@@ -209,7 +210,7 @@ public class JournalStorageManager implements StorageManager
    private final Journal originalBindingsJournal;
 
    private final SequentialFileFactory largeMessagesFactory;
-   
+
    private volatile boolean started;
 
    /** Used to create Operation Contexts */
@@ -337,7 +338,7 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
 
       perfBlastPages = config.getJournalPerfBlastPages();
-      
+
       if (config.getPageMaxConcurrentIO() != 1)
       {
          pageMaxConcurrentIO = new Semaphore(config.getPageMaxConcurrentIO());
@@ -455,8 +456,18 @@ public class JournalStorageManager implements StorageManager
       storageManagerLock.writeLock().lock();
       try
       {
+         if (replicator == null)
+            return;
          bindingsJournal = originalBindingsJournal;
          messageJournal = originalMessageJournal;
+         try
+         {
+            replicator.stop();
+         }
+         catch (Exception e)
+         {
+            log.error("exception while stopping the replicationManager", e);
+         }
          replicator = null;
       }
       finally
@@ -567,21 +578,16 @@ public class JournalStorageManager implements StorageManager
       replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
       return datafiles;
     }
-    
+
 
    @Override
-   public void waitOnOperations() throws Exception
+   public final void waitOnOperations() throws Exception
    {
-      if (!started)
-      {
-         JournalStorageManager.log.warn("Server is stopped");
-         throw new IllegalStateException("Server is stopped");
-      }
       waitOnOperations(0);
    }
 
    @Override
-   public boolean waitOnOperations(final long timeout) throws Exception
+   public final boolean waitOnOperations(final long timeout) throws Exception
    {
       if (!started)
       {
@@ -691,7 +697,7 @@ public class JournalStorageManager implements StorageManager
       return new LargeServerMessageImpl(this);
    }
 
-   public final void addBytesToLargeMessage(final SequentialFile file, 
+   public final void addBytesToLargeMessage(final SequentialFile file,
                     final long messageId, final byte[] bytes) throws Exception
    {
       readLock();
@@ -1186,7 +1192,7 @@ public class JournalStorageManager implements StorageManager
    {
       bindingsJournal.appendCommitRecord(txID, true);
    }
-   
+
    public void rollbackBindings(final long txID) throws Exception
    {
       // no need to sync, it's going away anyways
@@ -1665,7 +1671,7 @@ public class JournalStorageManager implements StorageManager
                {
                   log.info("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR, deleting record now");
                   messageJournal.appendDeleteRecord(record.id, false);
-                  
+
                }
 
                break;
@@ -2332,8 +2338,8 @@ public class JournalStorageManager implements StorageManager
      	 return createFileForLargeMessage(messageID, ".tmp");
       }
    }
-   
-   
+
+
    public SequentialFile createFileForLargeMessage(final long messageID, String extension)
    {
 	   return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
@@ -2380,9 +2386,9 @@ public class JournalStorageManager implements StorageManager
       {
          // for compatibility: couple with old behaviour, copying the old file to avoid message loss
          long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
-         
+
          SequentialFile currentFile = createFileForLargeMessage(largeMessage.getMessageID(), true);
-         
+
          if (!currentFile.exists())
          {
             SequentialFile linkedFile = createFileForLargeMessage(originalMessageID, true);
@@ -2392,7 +2398,7 @@ public class JournalStorageManager implements StorageManager
                linkedFile.close();
             }
          }
-         
+
          currentFile.close();
       }
 
@@ -2702,9 +2708,6 @@ public class JournalStorageManager implements StorageManager
          return DummyOperationContext.instance;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#executeOnCompletion(org.hornetq.core.journal.IOAsyncTask)
-       */
       public void executeOnCompletion(final IOAsyncTask runnable)
       {
          // There are no executeOnCompletion calls while using the DummyOperationContext
@@ -2712,70 +2715,42 @@ public class JournalStorageManager implements StorageManager
          runnable.done();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#replicationDone()
-       */
       public void replicationDone()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#replicationLineUp()
-       */
       public void replicationLineUp()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.IOCompletion#lineUp()
-       */
       public void storeLineUp()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.asyncio.AIOCallback#done()
-       */
       public void done()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.asyncio.AIOCallback#onError(int, java.lang.String)
-       */
       public void onError(final int errorCode, final String errorMessage)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#waitCompletion()
-       */
       public void waitCompletion()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#waitCompletion(long)
-       */
       public boolean waitCompletion(final long timeout)
       {
          return true;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#pageLineUp()
-       */
       public void pageSyncLineUp()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#pageDone()
-       */
       public void pageSyncDone()
       {
       }
-
    }
 
    /** It's public as other classes may want to unparse data on tools*/
@@ -3362,7 +3337,7 @@ public class JournalStorageManager implements StorageManager
 
    /** This is only used when loading a transaction
     it might be possible to merge the functionality of this class with {@link PagingStoreImpl.FinishPageMessageOperation}
-    
+
    */
    // TODO: merge this class with the one on the PagingStoreImpl
    private static class FinishPageMessageOperation implements TransactionOperation
