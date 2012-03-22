@@ -11,3 +11,4 @@
 tests/build
 hornetq-rest/hornetq-rest/target
 tests/*/build/classes
+native/src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h

@@ -1320,7 +1320,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.warn("failover occured during commit throwing XAException.XA_RETRY");
+         ClientSessionImpl.log.warn("Exception occurred during commit, throwing XAException.XA_RETRY", e);
 
          // Unblocked on failover
          xaRetry = true;
