@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class Future implements Runnable
+public class FutureLatch implements Runnable
 {
    private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -44,6 +44,6 @@ public class Future implements Runnable
    @Override
    public String toString()
    {
-      return "Future(latch=" + latch + ")";
+      return FutureLatch.class.getSimpleName() + "(latch=" + latch + ")";
    }
 }

@@ -501,6 +501,7 @@ public class HornetQServerImpl implements HornetQServer
          if (replicationManager!=null) {
             replicationManager.sendLiveIsStopping();
          }
+
          connectorsService.stop();
 
          // we stop the groupingHandler before we stop the cluster manager so binding mappings
@@ -575,6 +576,12 @@ public class HornetQServerImpl implements HornetQServer
 
          managementService.stop();
 
+            if (replicationManager != null)
+            {
+               replicationManager.stop();
+               replicationManager = null;
+            }
+
          if (pagingManager != null)
          {
             pagingManager.stop();
@@ -589,12 +596,6 @@ public class HornetQServerImpl implements HornetQServer
          if (!criticalIOError && storageManager != null)
          {
             storageManager.stop();
-         }
-
-         if (replicationManager != null)
-         {
-            replicationManager.stop();
-            replicationManager = null;
          }
 
          if (securityManager != null)
@@ -2396,13 +2397,13 @@ public class HornetQServerImpl implements HornetQServer
             public void run()
             {
                synchronized (replicationLock)
-
                {
                   if (replicationManager != null)
                   {
                      storageManager.stopReplication();
-                  }
+                  replicationManager = null;
                }
+            }
             }
          });
       }
@@ -2422,7 +2423,5 @@ public class HornetQServerImpl implements HornetQServer
       {
          ((SharedNothingBackupActivation)activation).failOver();
       }
-
    }
-
 }

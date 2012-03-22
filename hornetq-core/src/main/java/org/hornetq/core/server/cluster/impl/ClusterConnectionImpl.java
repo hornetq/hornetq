@@ -61,7 +61,7 @@ import org.hornetq.core.server.group.impl.Response;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 
@@ -398,7 +398,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public void flushExecutor()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
       executor.execute(future);
       if (!future.await(10000))
       {

@@ -58,7 +58,7 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
@@ -538,7 +538,7 @@ public class QueueImpl implements Queue
 
    public boolean flushExecutor()
    {
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       getExecutor().execute(future);
 

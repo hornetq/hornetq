@@ -285,8 +285,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    // 2*serverAcceptPing, disconnect!
    private class HeartBeater extends Thread
    {
-      final int MIN_SERVER_PING = 500;
-      final int MIN_CLIENT_PING = 500;
+      private static final int MIN_SERVER_PING = 500;
+      private static final int MIN_CLIENT_PING = 500;
 
       long serverPing = 0;
       long serverAcceptPing = 0;

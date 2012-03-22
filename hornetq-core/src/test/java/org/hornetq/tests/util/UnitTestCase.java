@@ -1572,7 +1572,6 @@ public abstract class UnitTestCase extends TestCase
             locators.add(locator);
          }
       }
-     // locator.setCallFailoverTimeout(5000);
       return locator;
    }
 

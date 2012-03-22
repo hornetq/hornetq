@@ -44,7 +44,7 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.TypedProperties;
 
@@ -523,7 +523,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          // executor and
          // wait for it to complete
 
-         Future future = new Future();
+         FutureLatch future = new FutureLatch();
 
          messageQueue.getExecutor().execute(future);
 

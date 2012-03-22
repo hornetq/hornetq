@@ -56,7 +56,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 
 /**
  *
@@ -410,7 +410,7 @@ public class PagingStoreImpl implements PagingStore
    {
       cursorProvider.flushExecutors();
 
-      Future future = new Future();
+      FutureLatch future = new FutureLatch();
 
       executor.execute(future);
 

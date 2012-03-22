@@ -3289,56 +3289,7 @@ public class PagingTest extends ServiceTestBase
          final CountDownLatch pageUp = new CountDownLatch(0);
          final CountDownLatch pageDone = new CountDownLatch(1);
 
-         OperationContext ctx = new OperationContext()
-         {
-
-            public void onError(int errorCode, String errorMessage)
-            {
-            }
-
-            public void done()
-            {
-            }
-
-            public void storeLineUp()
-            {
-            }
-
-            public boolean waitCompletion(long timeout) throws Exception
-            {
-               return false;
-            }
-
-            public void waitCompletion() throws Exception
-            {
-
-            }
-
-            public void replicationLineUp()
-            {
-
-            }
-
-            public void replicationDone()
-            {
-
-            }
-
-            public void pageSyncLineUp()
-            {
-               pageUp.countDown();
-            }
-
-            public void pageSyncDone()
-            {
-               pageDone.countDown();
-            }
-
-            public void executeOnCompletion(IOAsyncTask runnable)
-            {
-
-            }
-         };
+         OperationContext ctx = new DummyOperationContext(pageUp, pageDone);
 
          OperationContextImpl.setContext(ctx);
 
@@ -3388,57 +3339,7 @@ public class PagingTest extends ServiceTestBase
          final CountDownLatch pageUp = new CountDownLatch(0);
          final CountDownLatch pageDone = new CountDownLatch(1);
 
-         OperationContext ctx = new OperationContext()
-         {
-
-            public void onError(int errorCode, String errorMessage)
-            {
-            }
-
-            public void done()
-            {
-            }
-
-            public void storeLineUp()
-            {
-            }
-
-            public boolean waitCompletion(long timeout) throws Exception
-            {
-               return false;
-            }
-
-            public void waitCompletion() throws Exception
-            {
-
-            }
-
-            public void replicationLineUp()
-            {
-
-            }
-
-            public void replicationDone()
-            {
-
-            }
-
-            public void pageSyncLineUp()
-            {
-               pageUp.countDown();
-            }
-
-            public void pageSyncDone()
-            {
-               pageDone.countDown();
-            }
-
-            public void executeOnCompletion(IOAsyncTask runnable)
-            {
-
-            }
-         };
-
+      OperationContext ctx = new DummyOperationContext(pageUp, pageDone);
          OperationContextImpl.setContext(ctx);
 
          PagingManager paging = server.getPagingManager();
@@ -4492,5 +4393,62 @@ public class PagingTest extends ServiceTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   private static final class DummyOperationContext implements OperationContext
+   {
+      private final CountDownLatch pageUp;
+      private final CountDownLatch pageDone;
 
+      public DummyOperationContext(CountDownLatch pageUp, CountDownLatch pageDone)
+      {
+         this.pageDone = pageDone;
+         this.pageUp = pageUp;
+      }
+
+      public void onError(int errorCode, String errorMessage)
+      {
+      }
+
+      public void done()
+      {
+      }
+
+      public void storeLineUp()
+      {
+      }
+
+      public boolean waitCompletion(long timeout) throws Exception
+      {
+         return false;
+      }
+
+      public void waitCompletion() throws Exception
+      {
+
+      }
+
+      public void replicationLineUp()
+      {
+
+      }
+
+      public void replicationDone()
+      {
+
+      }
+
+      public void pageSyncLineUp()
+      {
+         pageUp.countDown();
+      }
+
+      public void pageSyncDone()
+      {
+         pageDone.countDown();
+      }
+
+      public void executeOnCompletion(IOAsyncTask runnable)
+      {
+
+      }
+   };
 }
