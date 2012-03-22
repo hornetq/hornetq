@@ -13,7 +13,12 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import junit.framework.Assert;
+
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -33,9 +38,6 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
 /**
  * A test of the XML export/import functionality
  *
@@ -44,34 +46,14 @@ import java.io.ByteArrayOutputStream;
 public class XmlImportExportTest extends ServiceTestBase
 {
    public static final int CONSUMER_TIMEOUT = 5000;
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   protected void tearDown() throws Exception
-   {
-   }
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
+   private static final String QUEUE_NAME = "A1";
+   private ServerLocator locator;
+   private HornetQServer server;
+   private ClientSessionFactory factory;
 
    public void testMessageProperties() throws Exception
    {
-      final String QUEUE_NAME = "A1";
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+      ClientSession session = basicSetUp();
 
       session.createQueue(QUEUE_NAME, QUEUE_NAME);
 
@@ -148,20 +130,26 @@ public class XmlImportExportTest extends ServiceTestBase
          Assert.assertEquals(international.toString(), msg.getStringProperty("myNonAsciiStringProperty"));
          Assert.assertEquals(special, msg.getStringProperty("mySpecialCharacters"));
       }
+   }
 
-      session.close();
-      locator.close();
-      server.stop();
+   /**
+    * @return
+    * @throws Exception
+    * @throws HornetQException
+    */
+   private ClientSession basicSetUp() throws Exception, HornetQException
+   {
+      server = createServer(true);
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = createSessionFactory(locator);
+      return addClientSession(factory.createSession(false, true, true));
    }
 
    public void testMessageTypes() throws Exception
    {
-      final String QUEUE_NAME = "A1";
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+
+      ClientSession session = basicSetUp();
 
       session.createQueue(QUEUE_NAME, QUEUE_NAME);
 
@@ -195,7 +183,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -218,20 +206,12 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals(Message.TEXT_TYPE, msg.getType());
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertEquals(Message.DEFAULT_TYPE, msg.getType());
-
-      session.close();
-      locator.close();
-      server.stop();
    }
 
    public void testMessageAttributes() throws Exception
    {
-      final String QUEUE_NAME = "A1";
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+
+      ClientSession session = basicSetUp();
 
       session.createQueue(QUEUE_NAME, QUEUE_NAME);
 
@@ -270,19 +250,11 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals((byte) 0, msg.getPriority());
       Assert.assertEquals(Long.MAX_VALUE - 1, msg.getTimestamp());
       Assert.assertNotNull(msg.getUserID());
-
-      session.close();
-      locator.close();
-      server.stop();
    }
 
    public void testBindingAttributes() throws Exception
    {
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+      ClientSession session = basicSetUp();
 
       session.createQueue("addressName1", "queueName1");
       session.createQueue("addressName1", "queueName2", "bob", true);
@@ -299,7 +271,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -316,18 +288,14 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals("addressName1", queueQuery.getAddress().toString());
       Assert.assertEquals("bob", queueQuery.getFilterString().toString());
       Assert.assertEquals(Boolean.TRUE.booleanValue(), queueQuery.isDurable());
-
-      session.close();
-      locator.close();
-      server.stop();
    }
 
    public void testLargeMessage() throws Exception
    {
-      HornetQServer server = createServer(true);
+      server = createServer(true);
       server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
+      locator = createInVMNonHALocator();
+      factory = createSessionFactory(locator);
       ClientSession session = factory.createSession(false, false);
 
       LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager) server.getStorageManager());
@@ -366,7 +334,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createFactory(false);
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -391,20 +359,11 @@ public class XmlImportExportTest extends ServiceTestBase
 
       msg.acknowledge();
       session.commit();
-
-      session.close();
-      factory.close();
-      locator.close();
-      server.stop();
    }
 
    public void testPartialQueue() throws Exception
    {
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+      ClientSession session = basicSetUp();
 
       session.createQueue("myAddress", "myQueue1");
       session.createQueue("myAddress", "myQueue2");
@@ -433,7 +392,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -448,10 +407,6 @@ public class XmlImportExportTest extends ServiceTestBase
       consumer = session.createConsumer("myQueue2");
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertNotNull(msg);
-
-      session.close();
-      locator.close();
-      server.stop();
    }
 
    public void testPaging() throws Exception
@@ -459,7 +414,7 @@ public class XmlImportExportTest extends ServiceTestBase
       final String MY_ADDRESS = "myAddress";
       final String MY_QUEUE = "myQueue";
 
-      HornetQServer server = createServer(true);
+      server = createServer(true);
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(10 * 1024);
@@ -467,14 +422,14 @@ public class XmlImportExportTest extends ServiceTestBase
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
       server.start();
 
-      ServerLocator locator = createInVMNonHALocator();
+      locator = createInVMNonHALocator();
       // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
       // page mode and we could only guarantee that by setting it to synchronous
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       ClientSession session = factory.createSession(false, true, true);
 
       session.createQueue(MY_ADDRESS, MY_QUEUE, true);
@@ -501,7 +456,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -518,20 +473,12 @@ public class XmlImportExportTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
       }
-
-      session.close();
-      locator.close();
-      server.stop();
    }
 
    public void testTransactional() throws Exception
    {
-      final String QUEUE_NAME = "A1";
-      HornetQServer server = createServer(true);
-      server.start();
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+
+      ClientSession session = basicSetUp();
 
       session.createQueue(QUEUE_NAME, QUEUE_NAME);
 
@@ -553,7 +500,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, false, true);
       ClientSession managementSession = factory.createSession(false, true, true);
 
@@ -565,18 +512,5 @@ public class XmlImportExportTest extends ServiceTestBase
 
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertNotNull(msg);
-
-      session.close();
-      locator.close();
-      server.stop();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
