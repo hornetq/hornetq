@@ -474,7 +474,10 @@ public class FailoverTest extends FailoverTestBase
 
    }
 
-   // https://jira.jboss.org/browse/HORNETQ-522
+   /**
+    * @see https://jira.jboss.org/browse/HORNETQ-522
+    * @throws Exception
+    */
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -518,7 +521,6 @@ public class FailoverTest extends FailoverTestBase
             }
             catch (InterruptedException e)
             {
-               // TODO Auto-generated catch block
                e.printStackTrace();
             }
          }
@@ -530,7 +532,7 @@ public class FailoverTest extends FailoverTestBase
       crash(session);
 
       int retry = 0;
-      while (received.size() >= NUM_MESSAGES)
+      while (received.size() < NUM_MESSAGES)
       {
          Thread.sleep(1000);
          retry++;
@@ -542,7 +544,7 @@ public class FailoverTest extends FailoverTestBase
       System.out.println("received.size() = " + received.size());
       session.close();
       final int retryLimit = 5;
-      Assert.assertTrue("Number of retries (" + retry + ")should be <= " + retryLimit, retry <= retryLimit);
+      Assert.assertTrue("Number of retries (" + retry + ") should be <= " + retryLimit, retry <= retryLimit);
    }
 
    private void createClientSessionFactory() throws Exception
