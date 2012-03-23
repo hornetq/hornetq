@@ -16,7 +16,6 @@ package org.hornetq.api.core.management;
 import java.text.DateFormat;
 import java.util.Date;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.utils.json.JSONObject;
 
@@ -28,12 +27,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class MessageCounterInfo
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(MessageCounterInfo.class);
-
-   // Attributes ----------------------------------------------------
-
    private final String name;
 
    private final String subscription;

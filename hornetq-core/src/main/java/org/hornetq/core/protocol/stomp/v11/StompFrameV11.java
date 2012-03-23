@@ -22,25 +22,24 @@ import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompFrame;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class StompFrameV11 extends StompFrame
 {
    //stomp 1.1 talks about repetitive headers.
    private final List<Header> allHeaders = new ArrayList<Header>();
-   private String contentType;
 
    public StompFrameV11(String command, Map<String, String> headers, byte[] content)
    {
       super(command, headers, content);
    }
-   
+
    public StompFrameV11(String command)
    {
       super(command);
    }
-   
+
    @Override
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
@@ -81,7 +80,7 @@ public class StompFrameV11 extends StompFrame
       }
       return buffer;
    }
-   
+
    @Override
    public void addHeader(String key, String val)
    {
