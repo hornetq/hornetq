@@ -64,9 +64,8 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.replication.ReplicatedJournal;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.replication.impl.ReplicatedJournal;
-import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
@@ -170,7 +169,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ClientSessionFactory sf = createSessionFactory(locator);
-         manager = new ReplicationManagerImpl(sf.getConnection(), factory);
+         manager = new ReplicationManager(sf.getConnection(), factory);
          addHornetQComponent(manager);
          manager.start();
          Assert.fail("Exception was expected");

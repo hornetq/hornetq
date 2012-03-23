@@ -13,80 +13,539 @@
 
 package org.hornetq.core.replication;
 
+import java.io.FileInputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.utils.ExecutorFactory;
 
 /**
- * Used by the {@link JournalStorageManager} to update the replicated journal.
+ * A ReplicationManagerImpl
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface ReplicationManager extends HornetQComponent
+public class ReplicationManager implements HornetQComponent
 {
-   void appendAddRecord(byte journalID, long id, byte recordType, EncodingSupport record) throws Exception;
 
-   void appendUpdateRecord(byte journalID, long id, byte recordType, EncodingSupport record) throws Exception;
+   // Constants -----------------------------------------------------
+   private static final Logger log = Logger.getLogger(ReplicationManager.class);
 
-   void appendDeleteRecord(byte journalID, long id) throws Exception;
+   // Attributes ----------------------------------------------------
 
-   void appendAddRecordTransactional(byte journalID, long txID, long id, byte recordType, EncodingSupport record) throws Exception;
+   private final ResponseHandler responseHandler = new ResponseHandler();
 
-   void appendUpdateRecordTransactional(byte journalID, long txID, long id, byte recordType, EncodingSupport record) throws Exception;
+   private final Channel replicatingChannel;
 
-   void appendDeleteRecordTransactional(byte journalID, long txID, long id, EncodingSupport record) throws Exception;
+   private boolean started;
 
-   void appendDeleteRecordTransactional(byte journalID, long txID, long id) throws Exception;
+   private volatile boolean enabled;
 
-   void appendCommitRecord(byte journalID, long txID, boolean sync, boolean lineUp) throws Exception;
+   private final Object replicationLock = new Object();
 
-   void appendPrepareRecord(byte journalID, long txID, EncodingSupport transactionData) throws Exception;
+   private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
 
-   void appendRollbackRecord(byte journalID, long txID, boolean sync) throws Exception;
+   private final ExecutorFactory executorFactory;
+
+   private SessionFailureListener failureListener;
+
+   private CoreRemotingConnection remotingConnection;
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   /**
+    * @param remotingConnection
+    */
+   public ReplicationManager(CoreRemotingConnection remotingConnection, final ExecutorFactory executorFactory)
+   {
+      this.executorFactory = executorFactory;
+      this.replicatingChannel = remotingConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+      this.remotingConnection = remotingConnection;
+   }
+
+   public void appendAddRecord(final byte journalID, final long id, final byte recordType, final EncodingSupport record)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationAddMessage(journalID, false, id, recordType, record));
+      }
+   }
+
+   public void appendUpdateRecord(final byte journalID,
+                                  final long id,
+                                  final byte recordType,
+                                  final EncodingSupport record) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationAddMessage(journalID, true, id, recordType, record));
+      }
+   }
+
+   public void appendDeleteRecord(final byte journalID, final long id) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationDeleteMessage(journalID, id));
+      }
+   }
+
+   public void appendAddRecordTransactional(final byte journalID,
+                                            final long txID,
+                                            final long id,
+                                            final byte recordType,
+                                            final EncodingSupport record) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationAddTXMessage(journalID, false, txID, id, recordType, record));
+      }
+   }
+
+   public void appendUpdateRecordTransactional(final byte journalID,
+                                               final long txID,
+                                               final long id,
+                                               final byte recordType,
+                                               final EncodingSupport record) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationAddTXMessage(journalID, true, txID, id, recordType, record));
+      }
+   }
+
+   public void appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp)
+      throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID, sync), lineUp);
+      }
+   }
+
+   public void appendDeleteRecordTransactional(final byte journalID,
+                                               final long txID,
+                                               final long id,
+                                               final EncodingSupport record) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationDeleteTXMessage(journalID, txID, id, record));
+      }
+   }
+
+   public void appendDeleteRecordTransactional(final byte journalID, final long txID, final long id) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationDeleteTXMessage(journalID, txID, id, NullEncoding.instance));
+      }
+   }
+
+   public void appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
+      throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationPrepareMessage(journalID, txID, transactionData));
+      }
+   }
+
+   public void appendRollbackRecord(final byte journalID, final long txID, boolean sync) throws Exception
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, true, txID, sync));
+      }
+   }
+
+   /**
+    * @param storeName
+    * @param pageNumber
+    */
+   public void pageClosed(final SimpleString storeName, final int pageNumber)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationPageEventMessage(storeName, pageNumber, false));
+      }
+   }
+
+   public void pageDeleted(final SimpleString storeName, final int pageNumber)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationPageEventMessage(storeName, pageNumber, true));
+      }
+   }
+
+   public void pageWrite(final PagedMessage message, final int pageNumber)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationPageWriteMessage(message, pageNumber));
+      }
+   }
+
+   public void largeMessageBegin(final long messageId)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationLargeMessageBeginMessage(messageId));
+      }
+   }
+
+   public void largeMessageDelete(final long messageId)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationLargeMessageEndMessage(messageId));
+      }
+   }
+
+   public void largeMessageWrite(final long messageId, final byte[] body)
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationLargeMessageWriteMessage(messageId, body));
+      }
+   }
+
+   @Override
+   public synchronized boolean isStarted()
+   {
+      return started;
+   }
+
+   @Override
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         throw new IllegalStateException("ReplicationManager is already started");
+      }
+
+      replicatingChannel.setHandler(responseHandler);
+      failureListener = new ReplicatedSessionFailureListener();
+      remotingConnection.addFailureListener(failureListener);
+
+      started = true;
+
+      enabled = true;
+   }
+
+   public void stop() throws Exception
+   {
+      if (!started)
+      {
+         return;
+      }
+
+      synchronized (replicationLock)
+      {
+         enabled = false;
+
+      // Complete any pending operations...
+      // Case the backup crashed, this should clean up any pending requests
+      while (!pendingTokens.isEmpty())
+      {
+         OperationContext ctx = pendingTokens.poll();
+         try
+         {
+            ctx.replicationDone();
+         }
+         catch (Throwable e)
+         {
+            ReplicationManager.log.warn("Error completing callback on replication manager", e);
+         }
+      }
+      }
+      if (replicatingChannel != null)
+      {
+         replicatingChannel.close();
+      }
+
+      remotingConnection.removeFailureListener(failureListener);
+      remotingConnection = null;
+      started = false;
+   }
 
    /** A list of tokens that are still waiting for replications to be completed */
-   Set<OperationContext> getActiveTokens();
+   public Set<OperationContext> getActiveTokens()
+   {
+
+      LinkedHashSet<OperationContext> activeContexts = new LinkedHashSet<OperationContext>();
+
+      // The same context will be replicated on the pending tokens...
+      // as the multiple operations will be replicated on the same context
+
+      for (OperationContext ctx : pendingTokens)
+      {
+         activeContexts.add(ctx);
+      }
+
+      return activeContexts;
+
+   }
+
+   public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
+   {
+      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   private void sendReplicatePacket(final Packet packet)
+   {
+      sendReplicatePacket(packet, true);
+   }
+
+   private void sendReplicatePacket(final Packet packet, boolean lineUp)
+   {
+      if (!enabled)
+         return;
+      boolean runItNow = false;
+
+      OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
+      if (lineUp)
+      {
+         repliToken.replicationLineUp();
+      }
+
+      synchronized (replicationLock)
+      {
+         if (enabled)
+         {
+            pendingTokens.add(repliToken);
+            replicatingChannel.send(packet);
+         }
+         else
+         {
+            // Already replicating channel failed, so just play the action now
+            runItNow = true;
+         }
+      }
+
+      // Execute outside lock
+
+      if (runItNow)
+      {
+         repliToken.replicationDone();
+      }
+   }
 
    /**
-    * @param storeName
-    * @param pageNumber
+    * @throws IllegalStateException By default, all replicated packets generate a replicated
+    *            response. If your packets are triggering this exception, it may be because the
+    *            packets were not sent with {@link #sendReplicatePacket(Packet)}.
     */
-   void pageClosed(SimpleString storeName, int pageNumber);
+   private void replicated()
+   {
+      OperationContext ctx = pendingTokens.poll();
+
+      if (ctx == null)
+      {
+         throw new IllegalStateException("Missing replication token on the queue.");
+      }
+
+      ctx.replicationDone();
+   }
+
+   // Inner classes -------------------------------------------------
+
+   private final class ReplicatedSessionFailureListener implements SessionFailureListener
+   {
+      public void connectionFailed(final HornetQException me, boolean failedOver)
+      {
+         if (me.getCode() == HornetQException.DISCONNECTED)
+         {
+            // Backup has shut down - no need to log a stack trace
+            ReplicationManager.log.warn("The backup node has been shut-down, replication will now stop");
+         }
+         else
+         {
+            ReplicationManager.log.warn("Connection to the backup node failed, removing replication now", me);
+         }
+
+         try
+         {
+            stop();
+         }
+         catch (Exception e)
+         {
+            ReplicationManager.log.warn(e.getMessage(), e);
+         }
+      }
+
+      public void beforeReconnect(final HornetQException me)
+      {
+      }
+   }
+
+   private class ResponseHandler implements ChannelHandler
+   {
+     public void handlePacket(final Packet packet)
+      {
+         if (packet.getType() == PacketImpl.REPLICATION_RESPONSE)
+         {
+            replicated();
+         }
+      }
+
+   }
+
+   private static class NullEncoding implements EncodingSupport
+   {
+      static NullEncoding instance = new NullEncoding();
+
+      public void decode(final HornetQBuffer buffer)
+      {
+      }
+
+      public void encode(final HornetQBuffer buffer)
+      {
+      }
+
+      public int getEncodeSize()
+      {
+         return 0;
+      }
+   }
 
    /**
-    * @param storeName
-    * @param pageNumber
-    */
-   void pageDeleted(SimpleString storeName, int pageNumber);
-
-   /**
-    * @param message
-    * @param pageNumber
-    */
-   void pageWrite(PagedMessage message, int pageNumber);
-
-   void largeMessageBegin(long messageId);
-
-   void largeMessageWrite(long messageId, byte[] body);
-
-   void largeMessageDelete(long messageId);
-
-   /**
-    * @param journalInfo
+    * Sends the whole content of the file to be duplicated.
     * @throws HornetQException
+    * @throws Exception
     */
-   void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
+   public void syncJournalFile(JournalFile jf, JournalContent content) throws Exception
+   {
+      if (!enabled)
+      {
+         return;
+      }
+      SequentialFile file = jf.getFile().cloneFile();
+      try
+      {
+         log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
+         sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
+      }
+      finally
+      {
+         if (file.isOpen())
+            file.close();
+      }
+   }
+
+   public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
+   {
+      if (enabled)
+         sendLargeFile(null, null, id, file, size);
+   }
+
+   public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
+   {
+      if (enabled)
+         sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
+   }
+
+   /**
+    * Sends large files in reasonably sized chunks to the backup during replication synchronization.
+    * @param content journal type or {@code null} for large-messages and pages
+    * @param pageStore page store name for pages, or {@code null} otherwise
+    * @param id journal file id or (large) message id
+    * @param file
+    * @param maxBytesToSend maximum number of bytes to read and send from the file
+    * @throws Exception
+    */
+   private void sendLargeFile(JournalContent content, SimpleString pageStore, final long id, SequentialFile file,
+      long maxBytesToSend) throws Exception
+   {
+      if (!enabled)
+         return;
+      if (!file.isOpen())
+      {
+         file.open();
+      }
+      final FileChannel channel = (new FileInputStream(file.getJavaFile())).getChannel();
+      try
+      {
+         final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
+         while (true)
+         {
+            buffer.clear();
+            final int bytesRead = channel.read(buffer);
+            int toSend = bytesRead;
+            if (bytesRead > 0)
+            {
+               if (bytesRead >= maxBytesToSend)
+               {
+                  toSend = (int)maxBytesToSend;
+                  maxBytesToSend = 0;
+               }
+               else
+               {
+                  maxBytesToSend = maxBytesToSend - bytesRead;
+               }
+               buffer.limit(toSend);
+            }
+            buffer.rewind();
+
+            // sending -1 or 0 bytes will close the file at the backup
+            sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, toSend, buffer));
+            if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
+               break;
+         }
+      }
+      finally
+      {
+         channel.close();
+      }
+   }
 
    /**
     * Reserve the following fileIDs in the backup server.
@@ -94,8 +553,14 @@ public interface ReplicationManager extends HornetQComponent
     * @param contentType
     * @throws HornetQException
     */
-   void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID)
-                                                                                                throws HornetQException;
+   public
+            void
+            sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID)
+                                                                                                    throws HornetQException
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(datafiles, contentType, nodeID));
+   }
 
    /**
     * Informs backup that data synchronization is done.
@@ -104,28 +569,11 @@ public interface ReplicationManager extends HornetQComponent
     * know which is the live's {@code nodeID}.
     * @param nodeID
     */
-   void sendSynchronizationDone(String nodeID);
-
-   /**
-    * Sends the whole content of the file to be duplicated.
-    * @throws HornetQException
-    * @throws Exception
-    */
-   void syncJournalFile(JournalFile jf, JournalContent type) throws Exception;
-
-   /**
-    * @param seqFile
-    * @throws Exception
-    */
-   void syncLargeMessageFile(SequentialFile seqFile, long size, long id) throws Exception;
-
-   /**
-    * @param file
-    * @param id
-    * @param pageStore
-    * @throws Exception
-    */
-   void syncPages(SequentialFile file, long id, SimpleString pageStore) throws Exception;
+   public void sendSynchronizationDone(String nodeID)
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(nodeID));
+   }
 
    /**
     * Reserves several LargeMessage IDs in the backup.
@@ -134,7 +582,12 @@ public interface ReplicationManager extends HornetQComponent
     * largeMessageSyncList.
     * @param largeMessageIDs
     */
-   void sendLargeMessageIdListMessage(List<Long> largeMessageIDs);
+   public void sendLargeMessageIdListMessage(List<Long> largeMessageIDs)
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(largeMessageIDs));
+
+   }
 
    /**
     * Notifies the backup that the live server is stopping.
@@ -142,5 +595,9 @@ public interface ReplicationManager extends HornetQComponent
     * This notification allows the backup to skip quorum voting (or any other measure to avoid
     * 'split-brain') and do a faster fail-over.
     */
-   void sendLiveIsStopping();
+   public void sendLiveIsStopping()
+   {
+      if (enabled)
+      sendReplicatePacket(new LiveIsStoppingMessage());
+   }
 }
