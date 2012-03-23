@@ -16,6 +16,7 @@ package org.hornetq.core.protocol.core.impl;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -84,7 +85,7 @@ public final class ChannelImpl implements Channel
 
    private volatile int firstStoredCommandID;
 
-   private volatile int lastConfirmedCommandID = -1;
+   private final AtomicInteger lastConfirmedCommandID = new AtomicInteger(-1);
 
    private volatile CoreRemotingConnection connection;
 
@@ -148,7 +149,7 @@ public final class ChannelImpl implements Channel
 
    public int getLastConfirmedCommandID()
    {
-      return lastConfirmedCommandID;
+      return lastConfirmedCommandID.get();
    }
 
    public Lock getLock()
@@ -470,7 +471,7 @@ public final class ChannelImpl implements Channel
       {
          receivedBytes = 0;
 
-         final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID);
+         final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID.get());
 
          confirmed.setChannelID(id);
 
@@ -482,7 +483,7 @@ public final class ChannelImpl implements Channel
    {
       if (resendCache != null && packet.isRequiresConfirmations())
       {
-         lastConfirmedCommandID++;
+         lastConfirmedCommandID.incrementAndGet();
 
          receivedBytes += packet.getPacketSize();
 
@@ -490,7 +491,7 @@ public final class ChannelImpl implements Channel
          {
             receivedBytes = 0;
 
-            final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID);
+            final Packet confirmed = new PacketsConfirmedMessage(lastConfirmedCommandID.get());
 
             confirmed.setChannelID(id);
 
@@ -503,7 +504,7 @@ public final class ChannelImpl implements Channel
    {
       if (resendCache != null)
       {
-         lastConfirmedCommandID = -1;
+         lastConfirmedCommandID.set(-1);
 
          firstStoredCommandID = 0;
 
