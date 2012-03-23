@@ -24,13 +24,11 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
@@ -284,7 +282,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    {
       SimpleString subName = new SimpleString("sub" + threadNum);
 
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = addClientSession(sf.createSession(false, true, true));
 
       session.createQueue(MultiThreadRandomReattachTestBase.ADDRESS, subName, null, false);
 
@@ -1294,7 +1292,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    @Override
    protected ServerLocator createLocator() throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator = createInVMNonHALocator();
       locator.setReconnectAttempts(-1);
       locator.setConfirmationWindowSize(1024 * 1024);
       return locator;

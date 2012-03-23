@@ -1511,17 +1511,17 @@ public abstract class UnitTestCase extends TestCase
 
    }
 
-   protected ServerLocator createInVMNonHALocator()
+   protected final ServerLocator createInVMNonHALocator()
    {
       return createNonHALocator(false);
    }
 
-   protected ServerLocator createNettyNonHALocator()
+   protected final ServerLocator createNettyNonHALocator()
    {
       return createNonHALocator(true);
    }
 
-   protected ServerLocator createNonHALocator(final boolean isNetty)
+   protected final ServerLocator createNonHALocator(final boolean isNetty)
    {
       ServerLocator locatorWithoutHA =
                isNetty

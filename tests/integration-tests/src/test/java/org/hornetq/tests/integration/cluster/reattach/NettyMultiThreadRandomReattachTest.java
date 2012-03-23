@@ -14,16 +14,14 @@
 package org.hornetq.tests.integration.cluster.reattach;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQServers;
 
 /**
  * A NettyMultiThreadRandomReattachTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Feb 2009 08:01:20
  *
  *
@@ -37,16 +35,16 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       liveConf.setJMXManagementEnabled(false);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();
-      liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
-      liveServer = HornetQServers.newHornetQServer(liveConf, false);
+      liveConf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
+      liveServer = createServer(false, liveConf);
       liveServer.start();
+      waitForServer(liveServer);
    }
 
    @Override
    protected ServerLocator createLocator() throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory")) ;
+      ServerLocator locator = createNettyNonHALocator();
       locator.setReconnectAttempts(-1);
       locator.setConfirmationWindowSize(1024 * 1024);
       locator.setAckBatchSize(0);
