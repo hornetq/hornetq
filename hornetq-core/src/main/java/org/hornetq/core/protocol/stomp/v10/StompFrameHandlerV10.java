@@ -16,22 +16,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
-import org.hornetq.core.protocol.stomp.StompSubscription;
-import org.hornetq.core.protocol.stomp.StompUtils;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
-import org.hornetq.core.protocol.stomp.Stomp.Headers;
-import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.DataConstants;
 
 /**
 *
@@ -52,10 +44,10 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    {
       StompFrame response = null;
       Map<String, String> headers = frame.getHeadersMap();
-      String login = (String)headers.get(Stomp.Headers.Connect.LOGIN);
-      String passcode = (String)headers.get(Stomp.Headers.Connect.PASSCODE);
-      String clientID = (String)headers.get(Stomp.Headers.Connect.CLIENT_ID);
-      String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
+      String login = headers.get(Stomp.Headers.Connect.LOGIN);
+      String passcode = headers.get(Stomp.Headers.Connect.PASSCODE);
+      String clientID = headers.get(Stomp.Headers.Connect.CLIENT_ID);
+      String requestID = headers.get(Stomp.Headers.Connect.REQUEST_ID);
 
       if (connection.validateUser(login, passcode))
       {
@@ -176,6 +168,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       return new StompFrameV10(command);
    }
 
+   @Override
    public StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException
    {
       return decoder.defaultDecode(buffer);

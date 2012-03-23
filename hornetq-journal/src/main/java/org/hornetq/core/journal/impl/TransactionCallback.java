@@ -13,6 +13,8 @@
 
 package org.hornetq.core.journal.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.utils.ReusableLatch;
 
@@ -31,7 +33,7 @@ public class TransactionCallback implements IOAsyncTask
 
    private volatile int errorCode = 0;
 
-   private volatile int up = 0;
+   private final AtomicInteger up = new AtomicInteger();
 
    private volatile int done = 0;
 
@@ -39,17 +41,14 @@ public class TransactionCallback implements IOAsyncTask
 
    public void countUp()
    {
-      synchronized (this)
-      {
-         up++;
-      }
+      up.incrementAndGet();
       countLatch.countUp();
    }
 
    public void done()
    {
       countLatch.countDown();
-      if (++done == up && delegateCompletion != null)
+      if (++done == up.get() && delegateCompletion != null)
       {
          final IOAsyncTask delegateToCall = delegateCompletion;
          // We need to set the delegateCompletion to null first or blocking commits could miss a callback

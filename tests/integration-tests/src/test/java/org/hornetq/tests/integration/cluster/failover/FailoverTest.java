@@ -1464,7 +1464,6 @@ public class FailoverTest extends FailoverTestBase
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
-
       receiveMessages(consumer);
 
       crash(session);
@@ -1482,7 +1481,6 @@ public class FailoverTest extends FailoverTestBase
          producer.send(message);
       }
 
-      // Should get the same ones after failover since we didn't ack
       receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
    }
 

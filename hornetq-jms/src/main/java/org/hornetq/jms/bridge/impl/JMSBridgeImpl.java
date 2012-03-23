@@ -567,7 +567,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       targetDestinationFactory = dest;
    }
 
-   public String getSourceUsername()
+   public synchronized String getSourceUsername()
    {
       return sourceUsername;
    }
@@ -2008,7 +2008,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
       }
    }
-   
+
 
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.

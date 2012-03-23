@@ -1517,16 +1517,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-      TransportConfiguration serverToTC;
-
-      if (netty)
-      {
-    	  serverToTC = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
-      }
-      else
-      {
-    	  serverToTC = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
-      }
+      TransportConfiguration serverToTC = createTransportConfiguration(netty, false, params);
 
       locators[node] = addServerLocator(HornetQClient.createServerLocatorWithHA(serverToTC));
       locators[node].setRetryInterval(100);
@@ -1592,7 +1583,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = addServer(HornetQServers.newHornetQServer(configuration));
+            server = createServer(configuration);
          }
       }
       else
@@ -1603,7 +1594,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = addServer(HornetQServers.newHornetQServer(configuration, false));
+            server = createServer(false, configuration);
          }
       }
 

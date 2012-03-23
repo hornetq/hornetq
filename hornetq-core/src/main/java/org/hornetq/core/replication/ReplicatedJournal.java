@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.replication.impl;
+package org.hornetq.core.replication;
 
 import java.util.List;
 import java.util.Map;

@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -35,8 +34,6 @@ import org.hornetq.utils.json.JSONObject;
 public class ManagementHelper
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ManagementHelper.class);
 
    public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_HQ_ResourceName");
 

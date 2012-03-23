@@ -64,9 +64,9 @@ public class JNDIUtil
 
    public static void tearDownRecursively(final Context c) throws Exception
    {
-      for (NamingEnumeration ne = c.listBindings(""); ne.hasMore();)
+      for (NamingEnumeration<Binding> ne = c.listBindings(""); ne.hasMore();)
       {
-         Binding b = (Binding)ne.next();
+         Binding b = ne.next();
          String name = b.getName();
          Object object = b.getObject();
          if (object instanceof Context)
