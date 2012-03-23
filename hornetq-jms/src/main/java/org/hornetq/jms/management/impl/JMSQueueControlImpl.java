@@ -24,7 +24,6 @@ import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
@@ -43,12 +42,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class JMSQueueControlImpl extends StandardMBean implements JMSQueueControl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JMSQueueControlImpl.class);
-
-   // Attributes ----------------------------------------------------
-
    private final HornetQDestination managedQueue;
 
    private final JMSServerManager jmsServerManager;
