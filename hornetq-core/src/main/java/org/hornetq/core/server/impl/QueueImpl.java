@@ -1627,8 +1627,10 @@ public class QueueImpl implements Queue
       }
    }
 
-   // This method will deliver as many messages as possible until all consumers are busy or there are no more matching
-   // or available messages
+   /**
+    * This method will deliver as many messages as possible until all consumers are busy or there
+    * are no more matching or available messages.
+    */
    private void deliver()
    {
       synchronized (this)
