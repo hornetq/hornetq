@@ -57,6 +57,7 @@ public class SessionTest extends ServiceTestBase
       locator = createInVMNonHALocator();
       server = createServer(false);
       server.start();
+      waitForServer(server);
    }
 
    public void testFailureListener() throws Exception
