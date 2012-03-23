@@ -22,34 +22,21 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A NettySecurityClientTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class NettySecurityClientTest extends UnitTestCase
+public class NettySecurityClientTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(NettySecurityClientTest.class);
 
-   // Attributes ----------------------------------------------------
-
    private HornetQServer messagingService;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testProducerConsumerClientWithoutSecurityManager() throws Exception
    {
@@ -61,12 +48,6 @@ public class NettySecurityClientTest extends UnitTestCase
       doTestProducerConsumerClient(true);
    }
 
-   // SecurityManagerClientTestBase overrides -----------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
@@ -74,22 +55,11 @@ public class NettySecurityClientTest extends UnitTestCase
 
       ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = HornetQServers.newHornetQServer(config, false);
+      config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
+      messagingService = createServer(false, config);
       messagingService.start();
+      waitForServer(messagingService);
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      messagingService.stop();
-
-      messagingService = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
 
    private void doTestProducerConsumerClient(final boolean withSecurityManager) throws Exception
    {
@@ -108,10 +78,10 @@ public class NettySecurityClientTest extends UnitTestCase
                                            vmargs,
                                            false,
                                            true,
-                                           new String[] { NettyConnectorFactory.class.getName() });
+                                        new String[] { NETTY_CONNECTOR_FACTORY });
 
       InputStreamReader isr = new InputStreamReader(p.getInputStream());
-      
+
       BufferedReader br = new BufferedReader(isr);
       String line = null;
       while ((line = br.readLine()) != null)

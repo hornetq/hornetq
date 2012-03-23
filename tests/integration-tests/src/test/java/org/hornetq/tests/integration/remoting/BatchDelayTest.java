@@ -25,7 +25,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -65,7 +64,7 @@ public class BatchDelayTest extends ServiceTestBase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.BATCH_DELAY, DELAY);
 
-      TransportConfiguration tc = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
+      TransportConfiguration tc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
 
       Configuration config = createBasicConfig();
       config.getAcceptorConfigurations().add(tc);
@@ -79,11 +78,11 @@ public class BatchDelayTest extends ServiceTestBase
    {
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.BATCH_DELAY, DELAY);
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params));
-
+      ServerLocator locator =
+               HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(true, true, params));
+      addServerLocator(locator);
       ClientSessionFactory sf = locator.createSessionFactory();
-      addSessionFactory(sf);
-      return sf;
+      return addSessionFactory(sf);
    }
 
    public void testSendReceiveMany() throws Exception

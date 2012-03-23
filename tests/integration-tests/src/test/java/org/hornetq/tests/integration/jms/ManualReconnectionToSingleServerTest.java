@@ -36,10 +36,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -48,12 +45,12 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ManualReconnectionToSingleServerTest extends UnitTestCase
+public class ManualReconnectionToSingleServerTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -63,19 +60,17 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private MessageConsumer consumer;
 
-   private CountDownLatch exceptionLatch = new CountDownLatch(1);
-
-   private CountDownLatch reconnectionLatch = new CountDownLatch(1);
-
-   private CountDownLatch allMessagesReceived = new CountDownLatch(1);
+   private CountDownLatch exceptionLatch;
+   private CountDownLatch reconnectionLatch;
+   private CountDownLatch allMessagesReceived;
 
    private JMSServerManager serverManager;
 
    private InVMContext context;
 
-   private final String queueName = "ManualReconnectionToSingleServerTest.queue";
+   private static final String QUEUE_NAME = ManualReconnectionToSingleServerTest.class.getSimpleName() + ".queue";
 
-   private final int num = 20;
+   private static final int NUM = 20;
 
    private final ExceptionListener exceptionListener = new ExceptionListener()
    {
@@ -107,25 +102,25 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       connect();
 
       ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
-      Destination dest = (Destination)context.lookup(queueName);
+      Destination dest = (Destination)context.lookup(QUEUE_NAME);
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess.createProducer(dest);
 
-      for (int i = 0; i < num; i++)
+      for (int i = 0; i < NUM; i++)
       {
          Message message = sess.createTextMessage(new Date().toString());
          message.setIntProperty("counter", i + 1);
          prod.send(message);
 
-         if (i == num / 2)
+         if (i == NUM / 2)
          {
             conn.close();
             serverManager.stop();
             Thread.sleep(5000);
             serverManager.start();
             cf = (ConnectionFactory)context.lookup("/cf");
-            dest = (Destination)context.lookup(queueName);
+            dest = (Destination)context.lookup(QUEUE_NAME);
             conn = cf.createConnection();
             sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             prod = sess.createProducer(dest);
@@ -160,16 +155,16 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, false);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
+      server = createServer(false, conf);
 
       JMSConfiguration configuration = new JMSConfigurationImpl();
       context = new InVMContext();
       configuration.setContext(context);
-      configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(queueName, null, true, queueName));
+      configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(QUEUE_NAME, null, true, QUEUE_NAME));
 
       ArrayList<TransportConfiguration> configs = new ArrayList<TransportConfiguration>();
-      configs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      configs.add(new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
       ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf",
             false,
             registerConnectors(server, configs), "/cf");
@@ -190,18 +185,20 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      serverManager.stop();
-      stopComponent(server);
-      serverManager = null;
-      if (connection != null)
+      try
       {
-         connection.close();
+         serverManager.stop();
+         serverManager = null;
+         if (connection != null)
+         {
+            connection.close();
+         }
+         connection = null;
       }
-      connection = null;
-
-      super.tearDown();
-
-      System.gc();
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    // Private -------------------------------------------------------
@@ -247,7 +244,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          {
             try
             {
-               queue = (Queue)initialContext.lookup(queueName);
+               queue = (Queue)initialContext.lookup(QUEUE_NAME);
                cf = (ConnectionFactory)initialContext.lookup("/cf");
                break;
             }
@@ -296,7 +293,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          {
             e.printStackTrace();
          }
-         if (count == num)
+         if (count == NUM)
          {
             allMessagesReceived.countDown();
          }

@@ -16,8 +16,6 @@ package org.hornetq.tests.integration.cluster.reattach;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.HornetQServers;
 
 /**
  *
@@ -29,17 +27,15 @@ import org.hornetq.core.server.HornetQServers;
  */
 public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTestBase
 {
-   private static final Logger log = Logger.getLogger(MultiThreadRandomReattachTest.class);
-
    @Override
    protected void start() throws Exception
    {
       Configuration liveConf = createDefaultConfig();
       liveConf.setSecurityEnabled(false);
-      liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveServer = HornetQServers.newHornetQServer(liveConf, false);
+      liveConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      liveServer = createServer(false, liveConf);
       liveServer.start();
+      waitForServer(liveServer);
    }
 
    @Override

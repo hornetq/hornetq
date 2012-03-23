@@ -37,7 +37,7 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  * @author <a href="mailto:time.fox@jboss.org">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Mar 17, 2009 11:15:02 AM
  *
  *
@@ -45,23 +45,9 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class MultiThreadReattachSupport extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
    private final Logger log = Logger.getLogger(this.getClass());
 
-   // Attributes ----------------------------------------------------
-
    private Timer timer;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    protected abstract void start() throws Exception;
 
@@ -103,9 +89,9 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 
          final ServerLocator locator = createLocator();
 
-         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
-         final ClientSession session = sf.createSession(false, true, true);
+         final ClientSession session = addClientSession(sf.createSession(false, true, true));
 
          Failer failer = startFailer(failDelay, session, failOnCreateConnection);
 
