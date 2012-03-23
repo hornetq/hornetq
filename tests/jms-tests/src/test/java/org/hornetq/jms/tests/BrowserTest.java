@@ -19,18 +19,14 @@ import javax.jms.Connection;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
@@ -181,7 +177,7 @@ public class BrowserTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(browser.getMessageSelector());
 
-         Enumeration<Message> en = (Enumeration<Message>)browser.getEnumeration();
+         Enumeration<Message> en = browser.getEnumeration();
 
          conn.start();
 

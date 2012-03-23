@@ -33,15 +33,13 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
  * This class will encapsulate the persistent counters for the PagingSubscription
  *
  * @author clebertsuconic
- *
- *
  */
 public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
 
    // Constants -----------------------------------------------------
    static final Logger log = Logger.getLogger(PageSubscriptionCounterImpl.class);
-   
+
    static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -54,11 +52,11 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    private long recordID = -1;
 
    private boolean persistent;
-   
+
    private final PageSubscription subscription;
 
    private final StorageManager storage;
-   
+
    private final Executor executor;
 
    private final AtomicLong value = new AtomicLong(0);
@@ -75,12 +73,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    };
 
-   // protected LinkedList
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public PageSubscriptionCounterImpl(final StorageManager storage,
                                       final PageSubscription subscription,
                                       final Executor executor,
@@ -94,17 +86,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       this.subscription = subscription;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#getValue()
-    */
+   @Override
    public long getValue()
    {
       return value.get();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#increment(org.hornetq.core.transaction.Transaction, int)
-    */
+   @Override
    public void increment(Transaction tx, int add) throws Exception
    {
       if (tx == null)
@@ -175,26 +163,26 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
 
    }
-   
+
    public void delete() throws Exception
    {
       synchronized (this)
       {
          long tx = storage.generateUniqueID();
-         
+
          boolean txUsed = false;
          for (Long record : incrementRecords)
          {
             txUsed = true;
             storage.deleteIncrementRecord(tx, record.longValue());
          }
-         
+
          if (recordID >= 0)
          {
             txUsed = true;
             storage.deletePageCounter(tx, this.recordID);
          }
-         
+
          if (txUsed)
          {
             storage.commit(tx);
@@ -286,7 +274,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          }
 
          newRecordID = storage.storePageCounter(txCleanup, subscriptionID, valueReplace);
-         
+
          if (isTrace)
          {
             log.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());

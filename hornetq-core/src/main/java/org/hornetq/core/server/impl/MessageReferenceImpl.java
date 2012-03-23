@@ -13,7 +13,8 @@
 
 package org.hornetq.core.server.impl;
 
-import org.hornetq.core.logging.Logger;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -24,17 +25,10 @@ import org.hornetq.utils.MemorySize;
  * Implementation of a MessageReference
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
- * @version <tt>1.3</tt>
- *
- * MessageReferenceImpl.java,v 1.3 2006/02/23 17:45:57 timfox Exp
  */
 public class MessageReferenceImpl implements MessageReference
 {
-   private static final Logger log = Logger.getLogger(MessageReferenceImpl.class);
-
-   // Attributes ----------------------------------------------------
-
-   private volatile int deliveryCount;
+   private final AtomicInteger deliveryCount = new AtomicInteger();
 
    private volatile int persistedCount;
 
@@ -76,7 +70,7 @@ public class MessageReferenceImpl implements MessageReference
 
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
-      deliveryCount = other.deliveryCount;
+      deliveryCount.set(other.deliveryCount.get());
 
       scheduledDeliveryTime = other.scheduledDeliveryTime;
 
@@ -122,23 +116,23 @@ public class MessageReferenceImpl implements MessageReference
 
    public int getDeliveryCount()
    {
-      return deliveryCount;
+      return deliveryCount.get();
    }
 
    public void setDeliveryCount(final int deliveryCount)
    {
-      this.deliveryCount = deliveryCount;
-      this.persistedCount = deliveryCount;
+      this.deliveryCount.set(deliveryCount);
+      this.persistedCount = this.deliveryCount.get();
    }
 
    public void incrementDeliveryCount()
    {
-      deliveryCount++;
+      deliveryCount.incrementAndGet();
    }
 
    public void decrementDeliveryCount()
    {
-      deliveryCount--;
+      deliveryCount.decrementAndGet();
    }
 
    public long getScheduledDeliveryTime()
@@ -171,33 +165,20 @@ public class MessageReferenceImpl implements MessageReference
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.server.MessageReference)
-    */
    public void acknowledge() throws Exception
    {
       queue.acknowledge(this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-    */
    public void acknowledge(Transaction tx) throws Exception
    {
       queue.acknowledge(tx, this);
    }
-   
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
-    */
    public int getMessageMemoryEstimate()
    {
       return message.getMemoryEstimate();
    }
-
-
-   // Public --------------------------------------------------------
 
    @Override
    public String toString()
@@ -208,11 +189,4 @@ public class MessageReferenceImpl implements MessageReference
              ":" +
              getMessage();
    }
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

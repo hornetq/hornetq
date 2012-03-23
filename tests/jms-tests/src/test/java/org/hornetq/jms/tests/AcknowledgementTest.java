@@ -15,7 +15,6 @@ package org.hornetq.jms.tests;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
@@ -52,6 +51,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -1437,6 +1437,7 @@ public class AcknowledgementTest extends JMSTestCase
          super(sess);
       }
 
+      @Override
       public void onMessage(final Message m)
       {
          try

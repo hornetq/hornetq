@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -32,8 +31,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
  */
 public class ChannelBufferWrapper implements HornetQBuffer
 {
-   private static final Logger log = Logger.getLogger(ChannelBufferWrapper.class);
-
    protected ChannelBuffer buffer;
 
    public ChannelBufferWrapper(final ChannelBuffer buffer)

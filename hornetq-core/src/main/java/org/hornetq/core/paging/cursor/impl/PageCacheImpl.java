@@ -51,17 +51,13 @@ class PageCacheImpl implements PageCache
 
    // Public --------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getPage()
-    */
+   @Override
    public Page getPage()
    {
       return page;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getMessage(int)
-    */
+   @Override
    public PagedMessage getMessage(final int messageNumber)
    {
       lock.readLock().lock();
@@ -119,9 +115,7 @@ class PageCacheImpl implements PageCache
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#isLive()
-    */
+   @Override
    public boolean isLive()
    {
       return false;
@@ -133,20 +127,9 @@ class PageCacheImpl implements PageCache
       return "PageCacheImpl::page=" + page.getPageId() + " numberOfMessages = " + messages.length;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getMessages()
-    */
+   @Override
    public PagedMessage[] getMessages()
    {
       return messages;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

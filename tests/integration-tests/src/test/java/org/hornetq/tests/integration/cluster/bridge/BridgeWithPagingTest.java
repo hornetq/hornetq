@@ -21,14 +21,18 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -46,8 +50,6 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  */
 public class BridgeWithPagingTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeWithPagingTest.class);
-
    protected boolean isNetty()
    {
       return false;
@@ -67,9 +69,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
 
    public void testFoo() throws Exception
    {
-      
+
    }
-   
+
    // https://jira.jboss.org/browse/HORNETQ-382
    public void _testReconnectWithPaging() throws Exception
    {
@@ -77,7 +79,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       for (int i=0; i < content.length; ++i) {
           content[i] = (byte) i;
       }
-      
+
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
@@ -135,20 +137,20 @@ public class BridgeWithPagingTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
-      
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setRedeliveryDelay(0);
       addressSettings.setMaxSizeBytes(10485760); // 1 MiB
       addressSettings.setPageSizeBytes(1048576); // 100 kiB
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      
+
       server0.getConfiguration().getAddressesSettings().put("#", addressSettings);
 
       CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-      
+
       server1.getConfiguration().getAddressesSettings().put("#", addressSettings);
 
       server1.start();
@@ -172,7 +174,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       final RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = Integer.MAX_VALUE;
-      
+
       Thread t = new Thread()
       {
          @Override
@@ -184,7 +186,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
          }
       };
       t.start();
-      
+
       final int numMessages = 5000;
 
       SimpleString propKey = new SimpleString("propkey");
@@ -198,9 +200,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
          prod0.send(message);
          System.out.println(">>>> " + i);
       }
-      
+
       InVMConnector.failOnCreateConnection = false;
-      
+
       Thread.sleep(200);
 
       for (int i = 0; i < numMessages; i++)

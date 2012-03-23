@@ -291,9 +291,10 @@ public interface StorageManager extends HornetQComponent
     * @param pair
     * @throws Exception
     */
-   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
-      throws Exception;
+   void
+            startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+                             ClusterConnection clusterConnection,
+                             Pair<TransportConfiguration, TransportConfiguration> pair) throws Exception;
 
    /**
     *

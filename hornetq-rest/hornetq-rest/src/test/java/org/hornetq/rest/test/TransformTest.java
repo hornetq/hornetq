@@ -1,5 +1,14 @@
 package org.hornetq.rest.test;
 
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
+
+import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -12,13 +21,6 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.resteasy.test.TestPortProvider.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -40,6 +42,7 @@ public class TransformTest extends MessageTestBase
    @XmlRootElement
    public static class Order implements Serializable
    {
+      private static final long serialVersionUID = 2510412973800601968L;
       private String name;
       private String amount;
 
@@ -92,7 +95,7 @@ public class TransformTest extends MessageTestBase
       try
       {
          ClientProducer producer = session.createProducer(destination);
-         ClientMessage message = session.createMessage(ClientMessage.OBJECT_TYPE, false);
+         ClientMessage message = session.createMessage(Message.OBJECT_TYPE, false);
          if (contentType == null)
          {
             Hornetq.setEntity(message, object);

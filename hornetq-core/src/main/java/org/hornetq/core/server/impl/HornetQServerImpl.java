@@ -94,7 +94,6 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
@@ -242,8 +241,6 @@ public class HornetQServerImpl implements HornetQServer
     * 'live'.
     */
    private volatile boolean backupUpToDate = true;
-
-   // private FailoverManager replicationFailoverManager;
 
    private ReplicationManager replicationManager;
 
@@ -2325,7 +2322,7 @@ public class HornetQServerImpl implements HornetQServer
          }
 
          rc.addFailureListener(new ReplicationFailureListener());
-         replicationManager = new ReplicationManagerImpl(rc, executorFactory);
+         replicationManager = new ReplicationManager(rc, executorFactory);
 
          try
          {

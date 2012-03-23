@@ -22,24 +22,27 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision: 3716 $</tt>
- * 
+ *
  */
-public class CoreClientOverSSLTest extends UnitTestCase
+public class CoreClientOverSSLTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -49,13 +52,9 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
    public static final int SSL_PORT = 5402;
 
-   // Static --------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(CoreClientOverSSLTest.class);
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
+
+   private TransportConfiguration tc;
 
    // Constructors --------------------------------------------------
 
@@ -65,13 +64,12 @@ public class CoreClientOverSSLTest extends UnitTestCase
    {
       String text = RandomUtil.randomString();
 
-      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
@@ -85,41 +83,35 @@ public class CoreClientOverSSLTest extends UnitTestCase
       Message m = consumer.receive(1000);
       Assert.assertNotNull(m);
       Assert.assertEquals(text, m.getBodyBuffer().readString());
-      locator.close();
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
    {
-      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "invalid password");
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       try
       {
          ClientSessionFactory sf = locator.createSessionFactory();
+         addSessionFactory(sf);
          Assert.fail();
       }
       catch (HornetQException e)
       {
          Assert.assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
       }
-      finally
-      {
-         locator.close();
-      }
    }
 
    // see https://jira.jboss.org/jira/browse/HORNETQ-234
    public void testPlainConnectionToSSLEndpoint() throws Exception
    {
-      TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       locator.setCallTimeout(2000);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
       try
       {
          sf.createSession(false, true, true);
@@ -128,10 +120,6 @@ public class CoreClientOverSSLTest extends UnitTestCase
       catch (HornetQException e)
       {
          Assert.assertEquals(HornetQException.CONNECTION_TIMEDOUT, e.getCode());
-      }
-      finally
-      {
-         locator.close();
       }
    }
 
@@ -146,22 +134,9 @@ public class CoreClientOverSSLTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
-      server = HornetQServers.newHornetQServer(config, false);
+      server = createServer(false, config);
       server.start();
+      waitForServer(server);
+      tc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-
-      super.tearDown();
-   }
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
