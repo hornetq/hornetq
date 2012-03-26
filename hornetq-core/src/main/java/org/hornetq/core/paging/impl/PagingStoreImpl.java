@@ -34,7 +34,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -606,7 +605,7 @@ public class PagingStoreImpl implements PagingStore
 
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1000);
 
-      Page page = new PageImpl(storeName, storageManager, fileFactory, file, pageNumber);
+      Page page = new Page(storeName, storageManager, fileFactory, file, pageNumber);
 
       // To create the file
       file.open();
@@ -889,14 +888,15 @@ public class PagingStoreImpl implements PagingStore
          }
 
 
-         PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
+         final long transactionID = tx == null ? -1 : tx.getID();
+         PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), transactionID);
 
          if (message.isLargeMessage())
          {
             ((LargeServerMessage)message).setPaged();
          }
 
-         int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
+         int bytesToWrite = pagedMessage.getEncodeSize() + Page.SIZE_RECORD;
 
          if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
          {

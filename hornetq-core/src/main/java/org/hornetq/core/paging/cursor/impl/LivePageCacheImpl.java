@@ -16,9 +16,9 @@ package org.hornetq.core.paging.cursor.impl;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.server.LargeServerMessage;
 
 /**
@@ -33,13 +33,14 @@ public class LivePageCacheImpl implements LivePageCache
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private final List<PagedMessage> messages = new LinkedList<PagedMessage>();
-   
+
    private final Page page;
-   
+
    private boolean isLive = true;
-   
+
+   @Override
    public String toString()
    {
       return "LivePacheCacheImpl::page=" + page.getPageId() + " number of messages=" + messages.size() + " isLive = " + isLive;
@@ -48,7 +49,7 @@ public class LivePageCacheImpl implements LivePageCache
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public LivePageCacheImpl(final Page page)
    {
       this.page = page;
@@ -56,14 +57,11 @@ public class LivePageCacheImpl implements LivePageCache
 
    // Public --------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getPage()
-    */
    public Page getPage()
    {
       return page;
    }
-   
+
    public long getPageId()
    {
       return page.getPageId();

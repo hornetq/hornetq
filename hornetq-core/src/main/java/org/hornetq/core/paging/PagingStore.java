@@ -16,7 +16,9 @@ package org.hornetq.core.paging;
 import java.util.Collection;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.RouteContextList;
@@ -41,33 +43,33 @@ public interface PagingStore extends HornetQComponent
    SimpleString getAddress();
 
    int getNumberOfPages();
-   
+
    // The current page in which the system is writing files
    int getCurrentWritingPage();
 
    SimpleString getStoreName();
-   
+
    String getFolder();
 
    AddressFullMessagePolicy getAddressFullMessagePolicy();
-   
+
    long getFirstPage();
-   
+
    long getTopPage();
 
    long getPageSizeBytes();
 
    long getAddressSize();
-   
+
    long getMaxSize();
-   
+
    void applySetting(AddressSettings addressSettings);
 
    boolean isPaging();
 
    // It will schedule sync to the file storage
    void sync() throws Exception;
-   
+
    // It will perform a real sync on the current IO file
    void ioSync() throws Exception;
 
@@ -81,23 +83,23 @@ public interface PagingStore extends HornetQComponent
    boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
 
    Page createPage(final int page) throws Exception;
-   
+
    boolean checkPageFileExists(final int page) throws Exception;
-   
+
    PagingManager getPagingManager();
-   
+
    PageCursorProvider getCursorProvider();
-   
+
    void processReload() throws Exception;
-   
-   /** 
+
+   /**
     * Remove the first page from the Writing Queue.
-    * The file will still exist until Page.delete is called, 
+    * The file will still exist until Page.delete is called,
     * So, case the system is reloaded the same Page will be loaded back if delete is not called.
     *
     * @throws Exception
-    * 
-    * Note: This should still be part of the interface, even though HornetQ only uses through the 
+    *
+    * Note: This should still be part of the interface, even though HornetQ only uses through the
     */
    Page depage() throws Exception;
 
@@ -113,9 +115,9 @@ public interface PagingStore extends HornetQComponent
    void stopPaging() throws Exception;
 
    void addSize(int size);
-   
+
    void executeRunnableWhenMemoryAvailable(Runnable runnable);
-   
+
    /**
     * Write lock the PagingStore.
     * @param timeout milliseconds to wait for the lock. If value is {@literal -1} then wait
@@ -123,7 +125,7 @@ public interface PagingStore extends HornetQComponent
     * @return {@code true} if the lock was obtained, {@code false} otherwise
     */
    boolean lock(long timeout);
-   
+
    /**
     * Call this method using the same thread used by the last call of {@link PagingStore#lock(long)}
     * .
@@ -133,7 +135,7 @@ public interface PagingStore extends HornetQComponent
     /** This is used mostly by tests.
      *  We will wait any pending runnable to finish its execution */
     void flushExecutors();
-    
+
    /**
     * Files to synchronize with backup.
     * @return
@@ -150,5 +152,5 @@ public interface PagingStore extends HornetQComponent
     * @throws Exception
     */
    void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception;
-    
+
 }

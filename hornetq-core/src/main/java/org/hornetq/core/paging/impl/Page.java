@@ -24,7 +24,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
@@ -36,11 +35,11 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PageImpl implements Page, Comparable<Page>
+public class Page implements Comparable<Page>
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PageImpl.class);
+   private static final Logger log = Logger.getLogger(Page.class);
 
    private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isDebug = log.isDebugEnabled();
@@ -78,7 +77,7 @@ public class PageImpl implements Page, Comparable<Page>
 
    // Constructors --------------------------------------------------
 
-   public PageImpl(final SimpleString storeName,
+   public Page(final SimpleString storeName,
                    final StorageManager storageManager,
                    final SequentialFileFactory factory,
                    final SequentialFile file,
@@ -135,18 +134,19 @@ public class PageImpl implements Page, Comparable<Page>
 
             byte byteRead = fileBuffer.readByte();
 
-            if (byteRead == PageImpl.START_BYTE)
+            if (byteRead == Page.START_BYTE)
             {
                if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
                {
                   int messageSize = fileBuffer.readInt();
                   int oldPos = fileBuffer.readerIndex();
-                  if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
+                  if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() &&
+                           fileBuffer.getByte(oldPos + messageSize) == Page.END_BYTE)
                   {
                      PagedMessage msg = new PagedMessageImpl();
                      msg.decode(fileBuffer);
                      byte b = fileBuffer.readByte();
-                     if (b != PageImpl.END_BYTE)
+                     if (b != Page.END_BYTE)
                      {
                         // Sanity Check: This would only happen if there is a bug on decode or any internal code, as
                         // this
@@ -186,18 +186,18 @@ public class PageImpl implements Page, Comparable<Page>
 
    public void write(final PagedMessage message) throws Exception
    {
-      ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + PageImpl.SIZE_RECORD);
+      ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + Page.SIZE_RECORD);
 
       HornetQBuffer wrap = HornetQBuffers.wrappedBuffer(buffer);
       wrap.clear();
 
-      wrap.writeByte(PageImpl.START_BYTE);
+      wrap.writeByte(Page.START_BYTE);
       wrap.writeInt(0);
       int startIndex = wrap.writerIndex();
       message.encode(wrap);
       int endIndex = wrap.writerIndex();
       wrap.setInt(1, endIndex - startIndex); // The encoded length
-      wrap.writeByte(PageImpl.END_BYTE);
+      wrap.writeByte(Page.END_BYTE);
 
       buffer.rewind();
 
@@ -276,7 +276,7 @@ public class PageImpl implements Page, Comparable<Page>
       {
          if (suspiciousRecords)
          {
-            PageImpl.log.warn("File " + file.getFileName() +
+            Page.log.warn("File " + file.getFileName() +
                               " being renamed to " +
                               file.getFileName() +
                               ".invalidPage as it was loaded partially. Please verify your data.");
@@ -309,7 +309,7 @@ public class PageImpl implements Page, Comparable<Page>
    @Override
    public String toString()
    {
-      return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
+      return "Page::pageID=" + this.pageId + ", file=" + this.file;
    }
 
 
@@ -352,7 +352,7 @@ public class PageImpl implements Page, Comparable<Page>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      PageImpl other = (PageImpl)obj;
+      Page other = (Page)obj;
       if (pageId != other.pageId)
          return false;
       return true;
@@ -364,15 +364,12 @@ public class PageImpl implements Page, Comparable<Page>
     */
    private void markFileAsSuspect(final int position, final int msgNumber)
    {
-      PageImpl.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
+      Page.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
       suspiciousRecords = true;
    }
 
-   @Override
    public SequentialFile getFile()
    {
       return file;
    }
-
-   // Inner classes -------------------------------------------------
 }

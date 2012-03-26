@@ -36,6 +36,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
@@ -80,7 +81,7 @@ public class PrintPages
       {
 
          Pair<Map<Long, Set<PagePosition>>, Set<Long>> cursorACKs = PrintPages.loadCursorACKs(arg[1]);
-         
+
          Set<Long> pgTXs = cursorACKs.getB();
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
@@ -107,7 +108,7 @@ public class PrintPages
          {
             PagingStore pgStore = manager.getPageStore(store);
             String folder = null;
-            
+
             if (pgStore != null)
             {
                folder = pgStore.getFolder();
@@ -204,7 +205,7 @@ public class PrintPages
       messagesJournal.load(records, txs, null, false);
 
       Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
-      
+
       Set<Long> pgTXs = new HashSet<Long>();
 
       for (RecordInfo record : records)
@@ -248,7 +249,7 @@ public class PrintPages
             }
          }
       }
-      
+
       return new Pair<Map<Long, Set<PagePosition>>, Set<Long>>(cursorRecords, pgTXs);
    }
 
