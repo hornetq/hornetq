@@ -99,12 +99,10 @@ public class ReplicationPageEventMessage extends PacketImpl
       return isDelete;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public String toString()
+   {
+      return ReplicationPageEventMessage.class.getSimpleName() + "(channel=" + channelID + ", isDelete=" + isDelete +
+               ", storeName=" + storeName + ", pageNumber=" + pageNumber + ")";
+   }
 }

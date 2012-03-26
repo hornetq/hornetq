@@ -302,9 +302,7 @@ public class ReplicatedJournal implements Journal
       localJournal.appendPrepareRecord(txID, transactionData, sync);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
-    */
+   @Override
    public void appendPrepareRecord(final long txID,
                                    final EncodingSupport transactionData,
                                    final boolean sync,

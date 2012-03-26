@@ -1454,33 +1454,21 @@ public class PagingStoreImplTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
-       */
       public void pageDeleted(final SimpleString storeName, final int pageNumber)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
-       */
       public void pageWrite(final PagedMessage message, final int pageNumber)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
-       */
       public boolean waitOnOperations(final long timeout) throws Exception
       {
          return true;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
-       */
       public void setReplicator(final ReplicationManager replicator)
       {
       }

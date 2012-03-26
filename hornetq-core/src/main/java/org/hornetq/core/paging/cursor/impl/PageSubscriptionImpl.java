@@ -572,9 +572,7 @@ class PageSubscriptionImpl implements PageSubscription
       cursorInfo.decrementPendingTX();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#isComplete(long)
-    */
+   @Override
    public boolean isComplete(long page)
    {
       PageCursorInfo info = consumedPages.get(page);
@@ -661,7 +659,7 @@ class PageSubscriptionImpl implements PageSubscription
 
             if (pageInfo == null)
             {
-               log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal");
+               log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal. ");
                if (txDeleteCursorOnReload == -1)
                {
                   txDeleteCursorOnReload = store.generateUniqueID();
@@ -1278,9 +1276,7 @@ class PageSubscriptionImpl implements PageSubscription
          return cachedNext != null;
       }
 
-      /* (non-Javadoc)
-       * @see java.util.Iterator#remove()
-       */
+      @Override
       public void remove()
       {
          deliveredCount.incrementAndGet();

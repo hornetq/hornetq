@@ -120,9 +120,7 @@ public class LivePageCacheImpl implements LivePageCache
       return isLive;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.LivePageCache#addLiveMessage(org.hornetq.core.server.ServerMessage)
-    */
+   @Override
    public synchronized void addLiveMessage(PagedMessage message)
    {
       if (message.getMessage().isLargeMessage())
@@ -147,14 +145,5 @@ public class LivePageCacheImpl implements LivePageCache
    {
       return messages.toArray(new PagedMessage[messages.size()]);
    }
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }
