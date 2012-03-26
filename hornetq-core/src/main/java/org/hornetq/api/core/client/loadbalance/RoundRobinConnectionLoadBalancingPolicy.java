@@ -15,6 +15,8 @@ package org.hornetq.api.core.client.loadbalance;
 
 import org.hornetq.utils.Random;
 
+import java.io.Serializable;
+
 /**
  * RoundRobinConnectionLoadBalancingPolicy corresponds to a round-robin load-balancing policy.
  * 
@@ -28,8 +30,10 @@ import org.hornetq.utils.Random;
  *
  *
  */
-public class RoundRobinConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
+public class RoundRobinConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy, Serializable
 {
+   private static final long serialVersionUID = 7511196010141439559L;
+
    private final Random random = new Random();
 
    private boolean first = true;

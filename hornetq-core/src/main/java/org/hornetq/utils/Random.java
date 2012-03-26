@@ -13,6 +13,8 @@
 
 package org.hornetq.utils;
 
+import java.io.Serializable;
+
 /**
  * A Random
  *
@@ -22,9 +24,11 @@ package org.hornetq.utils;
  *
  *
  */
-public class Random
+public class Random implements Serializable
 {
    private static int extraSeed;
+
+   private static final long serialVersionUID = 40335522290950498L;
 
    private static synchronized long getSeed()
    {
