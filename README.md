@@ -23,7 +23,7 @@ unsolved [1]. This is specially true for the 'site' plugin [2].
 
 To run the unit tests:
 
-> mvn -Phudson-tests tests
+> mvn -Phudson-tests test
 
 Generating reports from unit tests:
 
