@@ -20,6 +20,7 @@ import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX.TX_RECORD_TYPE;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
@@ -159,7 +160,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext)
             throws Exception
    {
-      JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, txID, null);
+      JournalInternalRecord commitRecord = new JournalCompleteRecordTX(TX_RECORD_TYPE.COMMIT, txID, null);
       AtomicInteger value = transactions.remove(Long.valueOf(txID));
       if (value != null)
       {
@@ -173,7 +174,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback)
             throws Exception
    {
-      JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
+      JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, txID, transactionData);
       AtomicInteger value = transactions.get(Long.valueOf(txID));
       if (value != null)
       {
