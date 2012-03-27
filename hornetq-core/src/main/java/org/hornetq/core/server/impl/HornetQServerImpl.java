@@ -495,8 +495,12 @@ public class HornetQServerImpl implements HornetQServer
          {
             return;
          }
+
          if (replicationManager!=null) {
+            remotingService.freeze(replicationManager.getBackupTransportConnection());
+            stopComponent(pagingManager);
             replicationManager.sendLiveIsStopping();
+            stopComponent(replicationManager);
          }
 
          stopComponent(connectorsService);
@@ -510,6 +514,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          stopComponent(clusterManager);
       }
+
 
       // We stop remotingService before otherwise we may lock the system in case of a critical IO
       // error shutdown

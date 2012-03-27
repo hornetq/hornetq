@@ -15,9 +15,11 @@ package org.hornetq.core.remoting.server.impl;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,6 +35,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
@@ -206,9 +209,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
 
             ProtocolManager manager = protocolMap.get(protocol);
-            
+
             ClusterConnection clusterConnection = lookupClusterConnection(info);
-            
+
             Acceptor acceptor = factory.createAcceptor(clusterConnection,
                                                        info.getParams(),
                                                        new DelegatingBufferHandler(),
@@ -256,10 +259,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   public synchronized void freeze()
+   public synchronized void freeze(final CoreRemotingConnection backupRemotingConnection)
    {
-      // Used in testing - prevents service taking any more connections
-
       for (Acceptor acceptor : acceptors)
       {
          try
@@ -271,6 +272,26 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             RemotingServiceImpl.log.error("Failed to stop acceptor", e);
          }
       }
+      HashMap<Object, ConnectionEntry> connectionEntries = new HashMap<Object, ConnectionEntry>(connections);
+
+      // Now we ensure that no connections will process any more packets after this method is
+      // complete then send a disconnect packet
+      for (Entry<Object, ConnectionEntry> entry : connectionEntries.entrySet())
+      {
+         RemotingConnection conn = entry.getValue().connection;
+
+         if (log.isTraceEnabled())
+         {
+            log.trace("Sending connection.disconnection packet to " + conn);
+         }
+
+         if (!conn.equals(backupRemotingConnection) && !conn.isClient())
+         {
+            conn.disconnect(false);
+            connections.remove(entry.getKey());
+         }
+      }
+
    }
 
    public void stop(final boolean criticalError) throws Exception
@@ -302,10 +323,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          log.debug("Sending disconnect on live connections");
       }
 
-      HashSet<ConnectionEntry> connectionEntries = new HashSet<ConnectionEntry>();
-      
-      connectionEntries.addAll(connections.values());
-      
+      HashSet<ConnectionEntry> connectionEntries = new HashSet<ConnectionEntry>(connections.values());
+
       // Now we ensure that no connections will process any more packets after this method is complete
       // then send a disconnect packet
       for (ConnectionEntry entry : connectionEntries)
@@ -335,11 +354,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       threadPool.shutdown();
-      
+
       if (!criticalError)
       {
          boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-   
+
          if (!ok)
          {
             log.warn("Timed out waiting for remoting thread pool to terminate");
@@ -487,22 +506,22 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private ClusterConnection lookupClusterConnection(TransportConfiguration config)
    {
       String clusterConnectionName = (String)config.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
-      
+
       ClusterConnection clusterConnection = null;
       if (clusterConnectionName != null)
       {
          clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
       }
-      
+
       if (clusterConnection == null)
       {
          clusterConnection = clusterManager.getDefaultConnection();
       }
-      
+
       return clusterConnection;
    }
 
@@ -649,7 +668,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-   
+
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()
