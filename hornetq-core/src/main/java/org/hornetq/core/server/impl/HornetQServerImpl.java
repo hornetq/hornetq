@@ -101,6 +101,7 @@ import org.hornetq.core.security.impl.SecurityStoreImpl;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
@@ -494,12 +495,11 @@ public class HornetQServerImpl implements HornetQServer
          {
             return;
          }
-
          if (replicationManager!=null) {
             replicationManager.sendLiveIsStopping();
          }
 
-         connectorsService.stop();
+         stopComponent(connectorsService);
 
          // we stop the groupingHandler before we stop the cluster manager so binding mappings
          // aren't removed in case of failover
@@ -508,15 +508,11 @@ public class HornetQServerImpl implements HornetQServer
             managementService.removeNotificationListener(groupingHandler);
             groupingHandler = null;
          }
-
-         if (clusterManager != null)
-         {
-            clusterManager.stop();
-         }
-
+         stopComponent(clusterManager);
       }
 
-      // We stop remoting Service before otherwise we may lock the system in case of a critical IO error shutdown
+      // We stop remotingService before otherwise we may lock the system in case of a critical IO
+      // error shutdown
       remotingService.stop(criticalIOError);
 
       // We close all the exception in an attempt to let any pending IO to finish
@@ -552,64 +548,28 @@ public class HornetQServerImpl implements HornetQServer
          // Stop the deployers
          if (configuration.isFileDeploymentEnabled())
          {
-            basicUserCredentialsDeployer.stop();
+               stopComponent(basicUserCredentialsDeployer);
+               stopComponent(addressSettingsDeployer);
+               stopComponent(queueDeployer);
+               stopComponent(securityDeployer);
+               stopComponent(deploymentManager);
+         }
 
-            addressSettingsDeployer.stop();
+            managementService.unregisterServer();
 
-            if (queueDeployer != null)
+            stopComponent(managementService);
+            stopComponent(replicationManager);
+            stopComponent(pagingManager);
+            stopComponent(replicationEndpoint);
+
+            if (!criticalIOError)
             {
-               queueDeployer.stop();
+               stopComponent(storageManager);
             }
+            stopComponent(securityManager);
+            stopComponent(resourceManager);
 
-            if (securityDeployer != null)
-            {
-               securityDeployer.stop();
-            }
-
-            deploymentManager.stop();
-         }
-
-         managementService.unregisterServer();
-
-         managementService.stop();
-
-            if (replicationManager != null)
-            {
-               replicationManager.stop();
-               replicationManager = null;
-            }
-
-         if (pagingManager != null)
-         {
-            pagingManager.stop();
-         }
-
-            if (replicationEndpoint != null)
-            {
-               replicationEndpoint.stop();
-               replicationEndpoint = null;
-            }
-
-         if (!criticalIOError && storageManager != null)
-         {
-            storageManager.stop();
-         }
-
-         if (securityManager != null)
-         {
-            securityManager.stop();
-         }
-
-         if (resourceManager != null)
-         {
-            resourceManager.stop();
-         }
-
-         if (postOffice != null)
-         {
-            postOffice.stop();
-         }
-
+            stopComponent(postOffice);
 
             if (scheduledPool != null)
             {
@@ -617,10 +577,7 @@ public class HornetQServerImpl implements HornetQServer
                scheduledPool.shutdownNow();
             }
 
-            if (memoryManager != null)
-            {
-               memoryManager.stop();
-            }
+            stopComponent(memoryManager);
 
             if (threadPool != null)
             {
@@ -646,7 +603,7 @@ public class HornetQServerImpl implements HornetQServer
             scheduledPool = null;
             threadPool = null;
 
-            securityStore.stop();
+           securityStore.stop();
 
          threadPool = null;
 
@@ -655,6 +612,8 @@ public class HornetQServerImpl implements HornetQServer
          pagingManager = null;
          securityStore = null;
          resourceManager = null;
+            replicationManager = null;
+            replicationEndpoint = null;
          postOffice = null;
          securityStore = null;
          queueFactory = null;
@@ -687,7 +646,7 @@ public class HornetQServerImpl implements HornetQServer
             backupActivationThread.join();
          }
 
-         nodeManager.stop();
+         stopComponent(nodeManager);
 
          nodeManager = null;
 
@@ -703,6 +662,12 @@ public class HornetQServerImpl implements HornetQServer
          Logger.reset();
       }
 
+   }
+
+   private static void stopComponent(HornetQComponent component) throws Exception
+   {
+      if (component != null)
+         component.stop();
    }
 
    // HornetQServer implementation
