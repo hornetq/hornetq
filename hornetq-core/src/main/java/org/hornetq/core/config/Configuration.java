@@ -416,9 +416,9 @@ public interface Configuration extends Serializable
     */
    boolean isFailoverOnServerShutdown();
 
-   /*
-   * set to allow clients to failover on server shutdown
-   * */
+   /**
+    * Sets whether to allow clients to failover on server shutdown.
+    */
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
 
    /**
