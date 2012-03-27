@@ -41,9 +41,9 @@ public interface RemotingService
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);
-   
+
    void stop(boolean criticalError) throws Exception;
-   
+
    void start() throws Exception;
 
    boolean isStarted();
@@ -51,10 +51,8 @@ public interface RemotingService
    void freeze();
 
    /**
-    * allow acceptors to use this as their default security Priincipal if applicable
+    * allow acceptors to use this as their default security Principal if applicable
     * @param principal
     */
    void allowInvmSecurityOverride(HornetQPrincipal principal);
-
-   RemotingConnection getServerSideReplicatingConnection();
 }

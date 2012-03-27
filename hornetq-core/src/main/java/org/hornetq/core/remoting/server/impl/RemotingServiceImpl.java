@@ -91,8 +91,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final ManagementService managementService;
 
-   private volatile RemotingConnection serverSideReplicatingConnection;
-
    private ExecutorService threadPool;
 
    private final ScheduledExecutorService scheduledThreadPool;
@@ -385,11 +383,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return conns;
    }
 
-   public RemotingConnection getServerSideReplicatingConnection()
-   {
-      return serverSideReplicatingConnection;
-   }
-
    // ConnectionLifeCycleListener implementation -----------------------------------
 
    private ProtocolManager getProtocolManager(ProtocolType protocol)
@@ -419,11 +412,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       connections.put(connection.getID(), entry);
-
-      if (config.isBackup())
-      {
-         serverSideReplicatingConnection = entry.connection;
-      }
    }
 
    public void connectionDestroyed(final Object connectionID)
