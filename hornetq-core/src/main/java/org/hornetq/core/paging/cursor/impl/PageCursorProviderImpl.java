@@ -20,7 +20,6 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PageCache;
@@ -29,6 +28,7 @@ import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;

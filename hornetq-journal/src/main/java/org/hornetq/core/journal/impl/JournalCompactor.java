@@ -31,6 +31,7 @@ import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX.TX_RECORD_TYPE;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
@@ -350,7 +351,8 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
          JournalTransaction newTransaction = newTransactions.remove(transactionID);
          if (newTransaction != null)
          {
-            JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, transactionID, null);
+            JournalInternalRecord commitRecord =
+                     new JournalCompleteRecordTX(TX_RECORD_TYPE.COMMIT, transactionID, null);
 
             checkSize(commitRecord.getEncodeSize());
 
@@ -403,9 +405,8 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
-         JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false,
-                                                                           transactionID,
-                                                                           new ByteArrayEncoding(extraData));
+         JournalInternalRecord prepareRecord =
+                  new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, transactionID, new ByteArrayEncoding(extraData));
 
          checkSize(prepareRecord.getEncodeSize());
 

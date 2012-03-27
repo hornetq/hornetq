@@ -35,7 +35,11 @@ import org.hornetq.core.journal.impl.JournalImpl;
  */
 public class JournalCompleteRecordTX extends JournalInternalRecord
 {
-   private final boolean isCommit;
+   public enum TX_RECORD_TYPE
+   {
+      COMMIT, PREPARE;
+   }
+   private final TX_RECORD_TYPE txRecordType;
 
    private final long txID;
 
@@ -43,21 +47,19 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
 
    private int numberOfRecords;
 
-   public JournalCompleteRecordTX(final boolean isCommit, final long txID, final EncodingSupport transactionData)
+   public JournalCompleteRecordTX(final TX_RECORD_TYPE isCommit, final long txID, final EncodingSupport transactionData)
    {
-      this.isCommit = isCommit;
+      this.txRecordType = isCommit;
 
       this.txID = txID;
 
       this.transactionData = transactionData;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.buffers.HornetQBuffer)
-    */
+   @Override
    public void encode(final HornetQBuffer buffer)
    {
-      if (isCommit)
+      if (txRecordType == TX_RECORD_TYPE.COMMIT)
       {
          buffer.writeByte(JournalImpl.COMMIT_RECORD);
       }
@@ -102,7 +104,7 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
    @Override
    public int getEncodeSize()
    {
-      if (isCommit)
+      if (txRecordType == TX_RECORD_TYPE.COMMIT)
       {
          return JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + 1;
       }

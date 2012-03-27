@@ -15,8 +15,11 @@ package org.hornetq.tests.unit.core.paging.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -26,6 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.transaction.xa.Xid;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -34,48 +39,49 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.journal.Journal;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.paging.*;
+import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.paging.cursor.PagePosition;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
+import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.persistence.GroupingInfo;
-import org.hornetq.core.persistence.OperationContext;
-import org.hornetq.core.persistence.QueueBindingInfo;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
-import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
-import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
-
-import javax.transaction.xa.Xid;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 
@@ -1448,33 +1454,21 @@ public class PagingStoreImplTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
-       */
       public void pageDeleted(final SimpleString storeName, final int pageNumber)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
-       */
       public void pageWrite(final PagedMessage message, final int pageNumber)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
-       */
       public boolean waitOnOperations(final long timeout) throws Exception
       {
          return true;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
-       */
       public void setReplicator(final ReplicationManager replicator)
       {
       }

@@ -82,5 +82,4 @@ public class ReplicationDeleteMessage extends PacketImpl
    {
       return journalID;
    }
-
 }

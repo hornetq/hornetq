@@ -601,7 +601,7 @@ public class NettyAcceptor implements Acceptor
       return channelFactory != null;
    }
 
-   public void pause()
+   public synchronized void pause()
    {
       if (paused)
       {
@@ -649,8 +649,7 @@ public class NettyAcceptor implements Acceptor
    }
 
    /**
-    * we dont allow this
-    *
+    * not allowed
     * @param defaultHornetQPrincipal
     */
    public void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal)

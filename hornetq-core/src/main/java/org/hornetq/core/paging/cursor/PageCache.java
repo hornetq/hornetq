@@ -13,8 +13,8 @@
 
 package org.hornetq.core.paging.cursor;
 
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.utils.SoftValueHashMap;
 
 /**

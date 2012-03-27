@@ -28,17 +28,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationPageWriteMessage extends PacketImpl
 {
 
-   int pageNumber;
+   private int pageNumber;
 
-   PagedMessage pagedMessage;
+   private PagedMessage pagedMessage;
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationPageWriteMessage()
    {
@@ -84,13 +77,5 @@ public class ReplicationPageWriteMessage extends PacketImpl
    {
       return pagedMessage;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }
