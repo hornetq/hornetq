@@ -3,10 +3,11 @@ package org.hornetq.core.journal.impl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 
-abstract class JournalBase
+abstract class JournalBase implements Journal
 {
 
    protected final int fileSize;

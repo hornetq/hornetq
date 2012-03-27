@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.LargeServerMessage;
@@ -35,18 +34,6 @@ import org.hornetq.utils.DataConstants;
  */
 public class PagedMessageImpl implements PagedMessage
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(PagedMessageImpl.class);
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /**
     * Large messages will need to be instantiated lazily during getMessage when the StorageManager
     * is available
@@ -173,15 +160,4 @@ public class PagedMessageImpl implements PagedMessage
              message +
              "]";
    }
-
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

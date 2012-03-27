@@ -16,6 +16,7 @@ package org.hornetq.core.remoting.server;
 import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -41,20 +42,22 @@ public interface RemotingService
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);
-   
+
    void stop(boolean criticalError) throws Exception;
-   
+
    void start() throws Exception;
 
    boolean isStarted();
 
-   void freeze();
-
    /**
-    * allow acceptors to use this as their default security Priincipal if applicable
+    * allow acceptors to use this as their default security Principal if applicable
     * @param principal
     */
    void allowInvmSecurityOverride(HornetQPrincipal principal);
 
-   RemotingConnection getServerSideReplicatingConnection();
+   /**
+    * Freezes and then disconnects all connections except the given one.
+    * @param backupTransportConnection
+    */
+   void freeze(CoreRemotingConnection rc);
 }

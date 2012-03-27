@@ -178,7 +178,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       queueFactory.setPostOffice(this);
 
       // The flag started needs to be set before starting the Reaper Thread
-      // This is to avoid thread leakages where the Reaper would run beyong the life cycle of the PostOffice
+      // This is to avoid thread leakages where the Reaper would run beyond the life cycle of the
+      // PostOffice
       started = true;
 
       startExpiryScanner();

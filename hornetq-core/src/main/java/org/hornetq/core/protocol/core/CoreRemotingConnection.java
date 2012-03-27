@@ -25,22 +25,23 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  *
  */
 public interface CoreRemotingConnection extends RemotingConnection
-{  
+{
 
    /** The client protocol used  on the communication.
     *  This will determine if the client has support for certain packet types */
    int getClientVersion();
-   
-   /** The client protocol used  on the communication.
-    *  This will determine if the client has support for certain packet types */
-   void setClientVersion(int clientVersion);
-   
+
    /**
-    * return the channel with the channel id specified.
-    * <p/>
+    * Sets the client protocol used on the communication. This will determine if the client has
+    * support for certain packet types
+    */
+   void setClientVersion(int clientVersion);
+
+   /**
+    * Returns the channel with the channel id specified.
+    * <p>
     * If it does not exist create it with the confirmation window size.
-    *
-    * @param channelID      the channel id
+    * @param channelID the channel id
     * @param confWindowSize the confirmation window size
     * @return the channel
     */
@@ -70,43 +71,37 @@ public interface CoreRemotingConnection extends RemotingConnection
    long generateChannelID();
 
    /**
-    * resets the id generator used to when generating id's
-    *
+    * Resets the id generator used to generate id's.
     * @param id the first id to set it to
     */
    void syncIDGeneratorSequence(long id);
 
    /**
-    * return the next id that will be chosen.
-    *
+    * Returns the next id to be chosen.
     * @return the id
     */
    long getIDGeneratorSequence();
 
    /**
-    * Return the current timeout for blocking calls
-    *
+    * Returns the current timeout for blocking calls
     * @return the timeout in milliseconds
     */
    long getBlockingCallTimeout();
 
    /**
-    * Return the current timeout for blocking calls
-    *
+    * Returns the current timeout for blocking calls
     * @return the timeout in milliseconds
     */
    long getBlockingCallFailoverTimeout();
 
    /**
-    * return the transfer lock used when transferring connections.
-    *
+    * Returns the transfer lock used when transferring connections.
     * @return the lock
     */
    Object getTransferLock();
-   
+
    /**
-    * get the default security principal
-    *
+    * Returns the default security principal
     * @return the principal
     */
    HornetQPrincipal getDefaultHornetQPrincipal();

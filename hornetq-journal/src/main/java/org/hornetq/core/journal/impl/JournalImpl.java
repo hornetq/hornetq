@@ -59,6 +59,7 @@ import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX.TX_RECORD_TYPE;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
@@ -1129,7 +1130,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
          JournalTransaction tx = getTransactionInfo(txID);
 
-         JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
+         JournalInternalRecord prepareRecord =
+                  new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, txID, transactionData);
 
          if (callback != null)
          {
@@ -1188,7 +1190,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
 
-         JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, txID, null);
+         JournalInternalRecord commitRecord = new JournalCompleteRecordTX(TX_RECORD_TYPE.COMMIT, txID, null);
 
          if (callback != null && lineUpContext)
          {

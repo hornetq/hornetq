@@ -600,4 +600,12 @@ public class ReplicationManager implements HornetQComponent
       if (enabled)
       sendReplicatePacket(new LiveIsStoppingMessage());
    }
+
+   /**
+    * @return
+    */
+   public CoreRemotingConnection getBackupTransportConnection()
+   {
+      return remotingConnection;
+   }
 }

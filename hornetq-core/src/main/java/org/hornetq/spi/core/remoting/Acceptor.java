@@ -21,9 +21,8 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.NotificationService;
 
 /**
- * An Acceptor is used by the Remoting Service to allow clients to connect. It should take care of dispatching client requests
- * to the Remoting Service's Dispatcher.
- *
+ * An Acceptor is used by the RemotingService to allow clients to connect. It should take care of
+ * dispatching client requests to the RemotingService's Dispatcher.
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
@@ -38,7 +37,7 @@ public interface Acceptor extends HornetQComponent
     * @return the cluster connection associated with this Acceptor
     */
    ClusterConnection getClusterConnection();
-   
+
    Map<String, Object> getConfiguration();
 
    /**
@@ -54,8 +53,8 @@ public interface Acceptor extends HornetQComponent
    void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal);
 
    /**
-    * does this acceptor allow unsecure connections,
-    * if false @setDefaultHornetQPrincipal should throw an @java.lang.IllegalStatException
+    * Whether this acceptor allows insecure connections.
+    * @throws java.lang.IllegalStatException if false @setDefaultHornetQPrincipal
     */
    boolean isUnsecurable();
 }

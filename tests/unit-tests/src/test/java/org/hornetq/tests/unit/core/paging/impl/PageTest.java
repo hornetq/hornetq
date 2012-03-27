@@ -25,7 +25,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.PagedMessage;
-import org.hornetq.core.paging.impl.PageImpl;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.ServerMessage;
@@ -34,11 +34,11 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PageImplTest extends UnitTestCase
+public class PageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -79,7 +79,7 @@ public class PageImplTest extends UnitTestCase
 
       SequentialFile file = factory.createSequentialFile("00010.page", 1);
 
-      PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
+      Page impl = new Page(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       Assert.assertEquals(10, impl.getPageId());
 
@@ -96,7 +96,7 @@ public class PageImplTest extends UnitTestCase
 
       file = factory.createSequentialFile("00010.page", 1);
       file.open();
-      impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
+      impl = new Page(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       List<PagedMessage> msgs = impl.read(new NullStorageManager());
 
@@ -126,7 +126,7 @@ public class PageImplTest extends UnitTestCase
 
       SequentialFile file = factory.createSequentialFile("00010.page", 1);
 
-      PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
+      Page impl = new Page(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       Assert.assertEquals(10, impl.getPageId());
 
@@ -168,7 +168,7 @@ public class PageImplTest extends UnitTestCase
 
       file = factory.createSequentialFile("00010.page", 1);
       file.open();
-      impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
+      impl = new Page(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       List<PagedMessage> msgs = impl.read(new NullStorageManager());
 
@@ -203,7 +203,7 @@ public class PageImplTest extends UnitTestCase
     * @throws Exception
     */
    protected ArrayList<HornetQBuffer> addPageElements(final SimpleString simpleDestination,
-                                                      final PageImpl page,
+ final Page page,
                                                       final int numberOfElements) throws Exception
    {
       ArrayList<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
