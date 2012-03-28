@@ -1847,7 +1847,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             try
             {
-               int i = 0;
                while (running.get())
                {
                   Thread.sleep(500);
