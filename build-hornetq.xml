@@ -1603,6 +1603,10 @@
 
    <target name="compile-unit-tests">
       <mkdir dir="${test.classes.dir}"/>
+
+      <!-- some tests will need this tmp directory -->
+      <mkdir dir="${test.dir}/tmpfiles"/>
+
       <javac target="${javac.target}"
              source="${javac.source}"
              optimize="${javac.optimize}"
