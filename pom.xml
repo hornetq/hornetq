@@ -446,7 +446,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-shade-plugin</artifactId>
-               <version>1.5</version>
+               <version>1.6</version>
             </plugin>
             <plugin>
                <groupId>org.mortbay.jetty</groupId>

@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQException;
@@ -79,7 +81,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
@@ -473,7 +475,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
@@ -603,7 +605,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
       }
 
-      
+
       if (message.hasInternalProperties())
       {
          // We need to perform some cleanup on internal properties,
@@ -626,7 +628,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     	    log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
     	 }
       }
-      
+
       if (log.isTraceEnabled())
       {
          log.trace("Message after routed=" + message);
@@ -645,7 +647,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             // Send to the DLA for the address
 
             SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-            
+
             if (log.isDebugEnabled())
             {
                log.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
@@ -724,7 +726,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
       ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
-      
+
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       boolean res = false;
@@ -786,7 +788,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
@@ -831,7 +833,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
 
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());   
+                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
@@ -1096,7 +1098,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
          else
          {
-  
+
             storageManager.confirmPendingLargeMessageTX(tx,
                                                         largeServerMessage.getMessageID(),
                                                         largeServerMessage.getPendingRecordID());
@@ -1176,12 +1178,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
             warnMessage.append(message.toString());
             PostOfficeImpl.log.warn(warnMessage.toString());
-            
+
             if (context.getTransaction() != null)
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
             }
-            
+
             message.decrementRefCount();
 
             return false;
@@ -1222,7 +1224,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
             }
-            
+
             message.decrementRefCount();
 
             return false;
@@ -1260,6 +1262,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       if (reaperPeriod > 0)
       {
+         reaperRunnable.resetLatch();
          reaperThread = new Thread(reaperRunnable, "hornetq-expiry-reaper-thread");
 
          reaperThread.setPriority(reaperPriority);
@@ -1286,53 +1289,35 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private class Reaper implements Runnable
    {
-      private volatile boolean closed = false;
+      private CountDownLatch latch = new CountDownLatch(1);
 
-      public synchronized void stop()
+      public void stop()
       {
-         closed = true;
-
-         notify();
+         latch.countDown();
       }
 
-      public synchronized void run()
+      public void resetLatch()
       {
-         if (closed)
-         {
-            // This shouldn't happen in a regular scenario
-            PostOfficeImpl.log.warn("Reaper thread being restarted");
-            closed = false;
-         }
+         latch.countDown();
+         latch = new CountDownLatch(1);
+      }
 
+      public void run()
+      {
          // The reaper thread should be finished case the PostOffice is gone
          // This is to avoid leaks on PostOffice between stops and starts
          while (isStarted())
          {
-            long toWait = reaperPeriod;
-
-            long start = System.currentTimeMillis();
-
-            while (!closed && toWait > 0)
+            try
             {
-               try
-               {
-                  wait(toWait);
-               }
-               catch (InterruptedException e)
-               {
-               }
-
-               long now = System.currentTimeMillis();
-
-               toWait -= now - start;
-
-               start = now;
+               if (latch.await(reaperPeriod, TimeUnit.MILLISECONDS))
+                  return;
             }
-
-            if (closed)
+            catch (InterruptedException e1)
             {
+            }
+            if (!isStarted())
                return;
-            }
 
             Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 

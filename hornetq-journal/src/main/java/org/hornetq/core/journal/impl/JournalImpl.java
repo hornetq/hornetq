@@ -2073,7 +2073,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
 
       // We can't start reclaim while compacting is working
-      journalLock.readLock().lock();
+      while (true)
+      {
+         if (state != JournalImpl.JournalState.LOADED)
+            return false;
+         if (journalLock.readLock().tryLock(250, TimeUnit.MILLISECONDS))
+            break;
+      }
       try
       {
          reclaimer.scan(getDataFiles());

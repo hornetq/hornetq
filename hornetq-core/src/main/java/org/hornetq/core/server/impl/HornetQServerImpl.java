@@ -168,6 +168,22 @@ public class HornetQServerImpl implements HornetQServer
 
    // Attributes
    // -----------------------------------------------------------------------------------
+   enum SERVER_STATE
+   {
+      /** start() has been called but components are not initialized */
+      INITIALIZING,
+      /**
+       * server is started. {@code server.isStarted()} returns {@code true}, and all assumptions
+       * about it hold.
+       */
+      STARTED,
+      /**
+       * Stopped. Either stop() has been called and has finished running, or start() has never been
+       * called.
+       */
+      STOPPED;
+   }
+   private volatile SERVER_STATE state = SERVER_STATE.STOPPED;
 
    private final Version version;
 
@@ -176,10 +192,6 @@ public class HornetQServerImpl implements HornetQServer
    private final Configuration configuration;
 
    private final MBeanServer mbeanServer;
-
-   private volatile boolean started;
-
-   private volatile boolean stopped;
 
    private volatile SecurityStore securityStore;
 
@@ -340,18 +352,18 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
-      if (started)
+      if (state != SERVER_STATE.STOPPED)
       {
          log.debug("Server already started!");
          return;
       }
+      state = SERVER_STATE.INITIALIZING;
 
       log.debug("Starting server " + this);
       OperationContextImpl.clearContext();
 
       try
       {
-         stopped = false;
 
          initialiseLogging();
 
@@ -360,12 +372,6 @@ public class HornetQServerImpl implements HornetQServer
          nodeManager = createNodeManager(configuration.getJournalDirectory());
 
          nodeManager.start();
-
-         if (started)
-         {
-            HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
-            return;
-         }
 
          HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting with configuration " +
                                     configuration);
@@ -407,9 +413,7 @@ public class HornetQServerImpl implements HornetQServer
              }
 
              activation.run();
-
-             started = true;
-
+            state = SERVER_STATE.STARTED;
              HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
                                         " [" +
                                         nodeManager.getNodeId() +
@@ -432,7 +436,7 @@ public class HornetQServerImpl implements HornetQServer
    @Override
    protected void finalize() throws Throwable
    {
-      if (started)
+      if (state != SERVER_STATE.STOPPED)
       {
          HornetQServerImpl.log.warn("HornetQServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
 
@@ -444,7 +448,6 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop() throws Exception
    {
-      stopped = true;
       stop(configuration.isFailoverOnServerShutdown());
    }
 
@@ -491,7 +494,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       synchronized (this)
       {
-         if (!started)
+         if (state == SERVER_STATE.STOPPED)
          {
             return;
          }
@@ -628,7 +631,7 @@ public class HornetQServerImpl implements HornetQServer
 
          sessions.clear();
 
-         started = false;
+            state = SERVER_STATE.STOPPED;
             synchronized (initialiseLock)
             {
                // replace the latch only if necessary. It could still be '1' in case of errors
@@ -640,12 +643,10 @@ public class HornetQServerImpl implements HornetQServer
 
          // to display in the log message
          SimpleString tempNodeID = getNodeID();
-
          if (activation != null)
          {
             activation.close(failoverOnServerShutdown);
          }
-
          if (backupActivationThread != null)
          {
             backupActivationThread.join();
@@ -766,12 +767,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public boolean isStarted()
    {
-      return started;
-   }
-
-   public boolean isStopped()
-   {
-      return stopped;
+      return state == SERVER_STATE.STARTED;
    }
 
    public ClusterManager getClusterManager()
@@ -1251,6 +1247,8 @@ public class HornetQServerImpl implements HornetQServer
     */
    private void initialisePart1() throws Exception
    {
+      if (state == SERVER_STATE.STOPPED)
+         return;
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
@@ -1410,7 +1408,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       // Load the journal and populate queues, transactions and caches in memory
 
-      if (stopped)
+      if (state == SERVER_STATE.STOPPED)
       {
          return;
       }
@@ -1886,7 +1884,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startLiveNode();
 
-            if (stopped)
+            if (state == SERVER_STATE.STOPPED)
             {
                return;
             }
@@ -1926,7 +1924,7 @@ public class HornetQServerImpl implements HornetQServer
 
             clusterManager.start();
 
-            started = true;
+            state = SERVER_STATE.STARTED;
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() +
                      " [" +
@@ -1937,7 +1935,7 @@ public class HornetQServerImpl implements HornetQServer
 
             configuration.setBackup(false);
 
-            if (stopped)
+            if (state != SERVER_STATE.STARTED)
             {
                return;
             }
@@ -2109,11 +2107,10 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      log.warn("Unable to announce backup for replication. Trying to stop the server.", e);
                      failedToConnect = true;
-
                      quorumManager.causeExit();
                      try
                      {
-                        if (!stopped)
+                        if (state != SERVER_STATE.STOPPED)
                            HornetQServerImpl.this.stop();
                         return;
                      }
@@ -2127,7 +2124,7 @@ public class HornetQServerImpl implements HornetQServer
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
-            started = true;
+            state = SERVER_STATE.STARTED;
 
             // Server node (i.e. Live node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
@@ -2140,10 +2137,9 @@ public class HornetQServerImpl implements HornetQServer
             QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
 
             serverLocator0.close();
-            if (replicationEndpoint != null)
-               replicationEndpoint.stop();
+            stopComponent(replicationEndpoint);
 
-            if (failedToConnect || !started || signal == BACKUP_ACTIVATION.STOP)
+            if (failedToConnect || !isStarted() || signal == BACKUP_ACTIVATION.STOP)
                return;
 
             if (!isRemoteBackupUpToDate())
@@ -2154,7 +2150,7 @@ public class HornetQServerImpl implements HornetQServer
             configuration.setBackup(false);
             synchronized (startUpLock)
             {
-               if (!started)
+               if (!isStarted())
                   return;
                storageManager.start();
                initialisePart2();
@@ -2164,7 +2160,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          catch (Exception e)
          {
-            if ((e instanceof InterruptedException || e instanceof IllegalStateException) && !started)
+            if ((e instanceof InterruptedException || e instanceof IllegalStateException) && !isStarted())
                // do not log these errors if the server is being stopped.
                return;
             log.error("Failure in initialisation", e);

@@ -56,7 +56,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * @author Tim Fox
  */
-public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
+public final class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
 {
    /*needed for backward compatibility*/
    @SuppressWarnings("unused")

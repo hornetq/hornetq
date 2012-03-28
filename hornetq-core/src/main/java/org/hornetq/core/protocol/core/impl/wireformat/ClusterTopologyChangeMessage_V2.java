@@ -22,21 +22,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * Clebert Suconic
  *
  */
-public class ClusterTopologyChangeMessage_V2 extends PacketImpl
+public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessage
 {
-   private boolean exit;
-
-   private String nodeID;
-
-   private Pair<TransportConfiguration, TransportConfiguration> pair;
-
    private long uniqueEventID;
-
-   private boolean last;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
    {
@@ -69,23 +57,6 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
    }
 
-   // Public --------------------------------------------------------
-
-   public String getNodeID()
-   {
-      return nodeID;
-   }
-
-   public Pair<TransportConfiguration, TransportConfiguration> getPair()
-   {
-      return pair;
-   }
-
-   public boolean isLast()
-   {
-      return last;
-   }
-
    /**
     * @return the uniqueEventID
     */
@@ -93,13 +64,6 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
    {
       return uniqueEventID;
    }
-
-   public boolean isExit()
-   {
-      return exit;
-   }
-
-
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)

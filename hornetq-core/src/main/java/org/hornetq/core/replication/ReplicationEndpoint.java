@@ -290,7 +290,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       }
       catch (Exception e)
       {
-         if (!server.isStopped())
+         if (server.isStarted())
             throw e;
       }
    }
