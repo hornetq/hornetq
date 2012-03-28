@@ -505,6 +505,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             }
             catch (Exception e)
             {
+               if (scheduledExecutor.isShutdown())
+                  return;
                log.warn("Unable to announce backup, retrying", e);
 
                scheduledExecutor.schedule(new Runnable(){
@@ -564,9 +566,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.AfterConnectInternalListener#onConnection(org.hornetq.core.client.impl.ClientSessionFactoryInternal)
-    */
+   @Override
    public void onConnection(ClientSessionFactoryInternal sf)
    {
       TopologyMember localMember = getLocalMember();
