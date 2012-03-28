@@ -38,7 +38,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -150,10 +150,11 @@ public class AlignedJournalImplTest extends UnitTestCase
       try
       {
          journalImpl = new JournalImpl(2000, 2, 0, 0, factory, "tt", "tt", 1000);
-         Assert.fail("Supposed to throw an exception");
+         Assert.fail("Expected IllegalArgumentException");
       }
-      catch (Exception ignored)
+      catch (IllegalArgumentException ignored)
       {
+         // expected
       }
 
    }
@@ -463,10 +464,10 @@ public class AlignedJournalImplTest extends UnitTestCase
       {
          AlignedJournalImplTest.log.debug("Expected exception " + e, e);
       }
-      
+
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
-      
+
       journalImpl.forceMoveNextFile();
       journalImpl.checkReclaimStatus();
 
@@ -1269,42 +1270,44 @@ public class AlignedJournalImplTest extends UnitTestCase
    public void testAlignmentOverReload() throws Exception
    {
 
-      SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
-      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, 0, 0, factory, "hq", "hq", 1000);
+      factory = new FakeSequentialFileFactory(512, false);
+      journalImpl = new JournalImpl(512 + 512 * 3, 20, 0, 0, factory, "hq", "hq", 1000);
 
-      impl.start();
+      journalImpl.start();
 
-      impl.load(AlignedJournalImplTest.dummyLoader);
+      journalImpl.load(AlignedJournalImplTest.dummyLoader);
 
-      impl.appendAddRecord(1l, (byte)0, new SimpleEncoding(100, (byte)'a'), false);
-      impl.appendAddRecord(2l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
-      impl.appendAddRecord(3l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
-      impl.appendAddRecord(4l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
+      journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(100, (byte)'a'), false);
+      journalImpl.appendAddRecord(2l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
+      journalImpl.appendAddRecord(3l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
+      journalImpl.appendAddRecord(4l, (byte)0, new SimpleEncoding(100, (byte)'b'), false);
 
-      impl.stop();
+      journalImpl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
-      impl.start();
-      impl.load(AlignedJournalImplTest.dummyLoader);
+      journalImpl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
+      addHornetQComponent(journalImpl);
+      journalImpl.start();
+      journalImpl.load(AlignedJournalImplTest.dummyLoader);
 
       // It looks silly, but this forceMoveNextFile is in place to replicate one
       // specific bug caught during development
-      impl.forceMoveNextFile();
+      journalImpl.forceMoveNextFile();
 
-      impl.appendDeleteRecord(1l, false);
-      impl.appendDeleteRecord(2l, false);
-      impl.appendDeleteRecord(3l, false);
-      impl.appendDeleteRecord(4l, false);
+      journalImpl.appendDeleteRecord(1l, false);
+      journalImpl.appendDeleteRecord(2l, false);
+      journalImpl.appendDeleteRecord(3l, false);
+      journalImpl.appendDeleteRecord(4l, false);
 
-      impl.stop();
+      journalImpl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
-      impl.start();
+      journalImpl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
+      addHornetQComponent(journalImpl);
+      journalImpl.start();
 
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
 
-      impl.load(info, trans, null);
+      journalImpl.load(info, trans, null);
 
       Assert.assertEquals(0, info.size());
       Assert.assertEquals(0, trans.size());
@@ -1335,17 +1338,9 @@ public class AlignedJournalImplTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      if (journalImpl != null)
-      {
-         try
-         {
-            journalImpl.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
+      stopComponent(journalImpl);
+      if (factory != null)
+         factory.stop();
       records = null;
 
       transactions = null;
@@ -1379,7 +1374,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
 
       journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, 0, 0, factory, "tt", "tt", 1000);
-
+      addHornetQComponent(journalImpl);
       journalImpl.start();
 
       records.clear();
