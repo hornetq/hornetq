@@ -43,6 +43,9 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class NettyAcceptorTest extends UnitTestCase
 {
+   private ExecutorService pool1;
+   private ScheduledExecutorService pool2;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -54,9 +57,18 @@ public class NettyAcceptorTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
-
-      super.tearDown();
+      try
+      {
+         UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
+      }
+      finally
+      {
+         if (pool1 != null)
+            pool1.shutdownNow();
+         if (pool2 != null)
+            pool2.shutdownNow();
+         super.tearDown();
+      }
    }
 
    public void testStartStop() throws Exception
@@ -84,13 +96,13 @@ public class NettyAcceptorTest extends UnitTestCase
          public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
          {
          }
-         
+
          public void connectionReadyForWrites(Object connectionID, boolean ready)
          {
          }
       };
-      ExecutorService pool1 = Executors.newCachedThreadPool();
-      ScheduledExecutorService pool2 = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      pool1 = Executors.newCachedThreadPool();
+      pool2 = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
       NettyAcceptor acceptor = new NettyAcceptor(params,
                                                  handler,
                                                  null,
@@ -98,6 +110,7 @@ public class NettyAcceptorTest extends UnitTestCase
                                                  pool1,
                                                  pool2);
 
+      addHornetQComponent(acceptor);
       acceptor.start();
       Assert.assertTrue(acceptor.isStarted());
       acceptor.stop();
@@ -109,10 +122,10 @@ public class NettyAcceptorTest extends UnitTestCase
       acceptor.stop();
       Assert.assertFalse(acceptor.isStarted());
       UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
-      
+
       pool1.shutdown();
       pool2.shutdown();
-      
+
       pool1.awaitTermination(1, TimeUnit.SECONDS);
       pool2.awaitTermination(1, TimeUnit.SECONDS);
    }

@@ -120,8 +120,6 @@ public interface HornetQServer extends HornetQComponent
 
    Set<ServerSession> getSessions();
 
-   boolean isStopped();
-
    HierarchicalRepository<Set<Role>> getSecurityRepository();
 
    HierarchicalRepository<AddressSettings> getAddressSettingsRepository();
