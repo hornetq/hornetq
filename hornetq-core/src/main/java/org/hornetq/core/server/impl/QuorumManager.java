@@ -252,12 +252,9 @@ public final class QuorumManager implements FailureListener
       latch.countDown();
    }
 
-   /**
-    *
-    */
    private void resetReplication()
    {
-      new Thread(new ServerRestart(backupServer)).run();
+      new Thread(new ServerRestart(backupServer)).start();
    }
 
    private static final class ServerRestart implements Runnable
