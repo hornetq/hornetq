@@ -75,12 +75,6 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /**
     * Connection Factory used if properties are set
     */
-   private HornetQConnectionFactory connectionFactory;
-
-
-   /**
-    * Connection Factory used if properties are set
-    */
    private HornetQConnectionFactory recoveryConnectionFactory;
 
    /*
@@ -144,9 +138,8 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
                                                      cm);
       }
 
-      if (connectionFactory == null)
+      if (recoveryConnectionFactory == null)
       {
-         connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
          recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
          resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
       }
@@ -179,7 +172,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this,
                                                                      cri,
-                                                                     ra.getTM(),
+                                                                     ra,
                                                                      credential.getUserName(),
                                                                      credential.getPassword());
 
@@ -304,6 +297,8 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
    /**
     * Set the resource adapter
+    *
+    * This should ensure that when the RA is stopped, this MCF will be stopped as well.
     *
     * @param ra The resource adapter
     * @throws ResourceException Thrown if incorrect resource adapter
@@ -756,23 +751,6 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    }
 
    /**
-    * Get the JBoss connection factory
-    *
-    * @return The factory
-    */
-   protected synchronized HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
-   {
-
-      if (connectionFactory == null)
-      {
-         connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
-         recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
-         resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
-      }
-      return connectionFactory;
-   }
-
-   /**
     * Get the managed connection factory properties
     *
     * @return The properties
@@ -813,17 +791,12 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       }
    }
 
+   // this should be called when HornetQResourceAdapter.stop() is called since this MCF is registered with it
    public void stop()
    {
       if(resourceRecovery != null)
       {
          ra.getRecoveryManager().unRegister(resourceRecovery);
-      }
-
-      if(connectionFactory != null)
-      {
-         connectionFactory.close();
-         connectionFactory = null;
       }
 
       if(recoveryConnectionFactory != null)
