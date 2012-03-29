@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -1623,7 +1621,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
    }
-   
+
    public void testGetTopic() throws Exception
    {
       Connection consumerConnection = null;
@@ -2188,6 +2186,7 @@ public class MessageConsumerTest extends JMSTestCase
          this.topicConsumer = topicConsumer;
       }
 
+      @Override
       public void run()
       {
          try
@@ -2233,6 +2232,7 @@ public class MessageConsumerTest extends JMSTestCase
          this.topicConsumer = topicConsumer;
       }
 
+      @Override
       public void run()
       {
          try
@@ -2394,7 +2394,7 @@ public class MessageConsumerTest extends JMSTestCase
          l.waitForMessages();
 
          int counter = 0;
-         for (Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+         for (Iterator<Message> i = l.getMessages().iterator(); i.hasNext(); counter++)
          {
             TextMessage m = (TextMessage)i.next();
             ProxyAssertSupport.assertEquals("body" + counter, m.getText());
@@ -2454,7 +2454,7 @@ public class MessageConsumerTest extends JMSTestCase
          l.waitForMessages();
 
          int counter = 0;
-         for (Iterator i = l.getMessages().iterator(); i.hasNext(); counter++)
+         for (Iterator<Message> i = l.getMessages().iterator(); i.hasNext(); counter++)
          {
             TextMessage m = (TextMessage)i.next();
             ProxyAssertSupport.assertEquals("body" + counter, m.getText());
@@ -4310,7 +4310,7 @@ public class MessageConsumerTest extends JMSTestCase
 
    private class MessageListenerImpl implements MessageListener
    {
-      private final List messages = Collections.synchronizedList(new ArrayList());
+      private final List<Message> messages = Collections.synchronizedList(new ArrayList<Message>());
 
       private CountDownLatch latch = new CountDownLatch(1);
 
@@ -4332,15 +4332,6 @@ public class MessageConsumerTest extends JMSTestCase
          latch.await();
       }
 
-      public void waitForMessages(final long timeout) throws InterruptedException
-      {
-         boolean acquired = latch.await(timeout, MILLISECONDS);
-         if (!acquired)
-         {
-            log.trace("unsucessful latch aquire attemnpt");
-         }
-      }
-
       public void onMessage(final Message m)
       {
          messages.add(m);
@@ -4351,17 +4342,17 @@ public class MessageConsumerTest extends JMSTestCase
 
       public Message getNextMessage()
       {
-         Iterator i = messages.iterator();
+         Iterator<Message> i = messages.iterator();
          if (!i.hasNext())
          {
             return null;
          }
-         Message m = (Message)i.next();
+         Message m = i.next();
          i.remove();
          return m;
       }
 
-      public List getMessages()
+      public List<Message> getMessages()
       {
          return messages;
       }
@@ -4369,11 +4360,6 @@ public class MessageConsumerTest extends JMSTestCase
       public int size()
       {
          return messages.size();
-      }
-
-      public void clear()
-      {
-         messages.clear();
       }
    }
 }

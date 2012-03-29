@@ -33,12 +33,12 @@ public class JMSTestCase extends HornetQServerTestCase
 {
 
    protected final static ArrayList<String> NETTY_CONNECTOR = new ArrayList<String>();
-   
+
    static
    {
       NETTY_CONNECTOR.add("netty");
    }
-   
+
    protected static HornetQJMSConnectionFactory cf;
 
    protected static HornetQQueueConnectionFactory queueCf;
@@ -187,6 +187,8 @@ public class JMSTestCase extends HornetQServerTestCase
       super.tearDown();
 
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
+      if (cf != null)
+         cf.close();
 
       JMSTestCase.cf = null;
 
