@@ -501,6 +501,22 @@ public class HornetQServerImpl implements HornetQServer
 
          if (replicationManager!=null) {
             remotingService.freeze(replicationManager.getBackupTransportConnection());
+            final ReplicationManager localReplicationManager = replicationManager;
+            threadPool.execute(new Runnable() {
+               @Override
+               public void run()
+               {
+                  try
+                  {
+                     Thread.sleep(10000);
+                     localReplicationManager.clearReplicationTokens();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     // no-op ignore and proceed.
+                  }
+               }
+            });
             stopComponent(pagingManager);
             replicationManager.sendLiveIsStopping();
             stopComponent(replicationManager);
