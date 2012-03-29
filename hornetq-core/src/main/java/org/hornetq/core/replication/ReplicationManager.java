@@ -286,20 +286,7 @@ public class ReplicationManager implements HornetQComponent
       {
          enabled = false;
 
-      // Complete any pending operations...
-      // Case the backup crashed, this should clean up any pending requests
-      while (!pendingTokens.isEmpty())
-      {
-         OperationContext ctx = pendingTokens.poll();
-         try
-         {
-            ctx.replicationDone();
-         }
-         catch (Throwable e)
-         {
-            ReplicationManager.log.warn("Error completing callback on replication manager", e);
-         }
-      }
+      clearReplicationTokens();
       }
       if (replicatingChannel != null)
       {
@@ -309,6 +296,31 @@ public class ReplicationManager implements HornetQComponent
       remotingConnection.removeFailureListener(failureListener);
       remotingConnection = null;
       started = false;
+   }
+
+   /**
+    * Completes any pending operations.
+    * <p>
+    * This can be necessary in case the live loses connection to the backup (network failure, or
+    * backup crashing).
+    */
+   public void clearReplicationTokens()
+   {
+      synchronized (replicationLock)
+      {
+         while (!pendingTokens.isEmpty())
+         {
+            OperationContext ctx = pendingTokens.poll();
+            try
+            {
+               ctx.replicationDone();
+            }
+            catch (Throwable e)
+            {
+               ReplicationManager.log.warn("Error completing callback on replication manager", e);
+            }
+         }
+      }
    }
 
    /** A list of tokens that are still waiting for replications to be completed */
@@ -598,7 +610,7 @@ public class ReplicationManager implements HornetQComponent
    public void sendLiveIsStopping()
    {
       if (enabled)
-      sendReplicatePacket(new LiveIsStoppingMessage());
+         sendReplicatePacket(new LiveIsStoppingMessage());
    }
 
    /**
