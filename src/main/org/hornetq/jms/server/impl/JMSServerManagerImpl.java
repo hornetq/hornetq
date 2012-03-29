@@ -140,6 +140,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private JMSStorageManager storage;
 
+   private Map<String, List<String>> unRecoveredJndi = new HashMap<String, List<String>>();
+
    public JMSServerManagerImpl(final HornetQServer server) throws Exception
    {
       this.server = server;
@@ -234,7 +236,57 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          JMSServerManagerImpl.log.error("Failed to start jms deployer", e);
       }
    }
+   
+   public void recoverJndiBindings(String name, PersistedType type) throws NamingException
+   {
+      List<String> bindings = unRecoveredJndi.get(name);
+      if ((bindings != null) && (bindings.size() > 0))
+      {
+         Map<String, List<String>> mapJNDI;
+         Map<String, ?> objects;
 
+         switch (type)
+         {
+            case Queue:
+               mapJNDI = queueJNDI;
+               objects = queues;
+               break;
+            case Topic:
+               mapJNDI = topicJNDI;
+               objects = topics;
+               break;
+            default:
+            case ConnectionFactory:
+               mapJNDI = connectionFactoryJNDI;
+               objects = connectionFactories;
+               break;
+         }
+
+         Object objectToBind = objects.get(name);
+
+         List<String> jndiList = mapJNDI.get(name);
+
+         if (objectToBind == null)
+         {
+            return;
+         }
+
+         if (jndiList == null)
+         {
+            jndiList = new ArrayList<String>();
+            mapJNDI.put(name, jndiList);
+         }
+
+         for (String jndi : bindings)
+         {
+            jndiList.add(jndi);
+            bindToJndi(jndi, objectToBind);
+         }
+         
+         unRecoveredJndi.remove(name);
+      }
+   }
+   
    private void recoverJndiBindings() throws Exception
    {
       // now its time to add journal recovered stuff
@@ -264,12 +316,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          Object objectToBind = objects.get(record.getName());
 
+         List<String> jndiList = mapJNDI.get(record.getName());
+
          if (objectToBind == null)
          {
+            unRecoveredJndi.put(record.getName(), record.getJndi());
             continue;
          }
 
-         List<String> jndiList = mapJNDI.get(record.getName());
          if (jndiList == null)
          {
             jndiList = new ArrayList<String>();
@@ -1045,6 +1099,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                storage.addJNDI(PersistedType.ConnectionFactory, cfConfig.getName(), usedJNDI);
             }
 
+            JMSServerManagerImpl.this.recoverJndiBindings(cfConfig.getName(), PersistedType.ConnectionFactory);
          }
       });
    }
@@ -1100,6 +1155,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                             false);
 
          queues.put(queueName, hqQueue);
+         
+         this.recoverJndiBindings(queueName, PersistedType.Queue);
 
          jmsManagementService.registerQueue(hqQueue, queue);
 
@@ -1136,6 +1193,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                             false);
 
          topics.put(topicName, hqTopic);
+         
+         this.recoverJndiBindings(topicName, PersistedType.Topic);
 
          jmsManagementService.registerTopic(hqTopic);
 
