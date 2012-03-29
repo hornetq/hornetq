@@ -152,8 +152,6 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          jmsJournal.appendDeleteRecord(oldCF.getId(), false);
       }
-      
-      this.deleteJNDI(PersistedType.ConnectionFactory, cfName);
    }
 
    /* (non-Javadoc)
