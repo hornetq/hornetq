@@ -6,12 +6,18 @@ http://community.jboss.org/wiki/HornetQ
 
 http://www.jboss.org/hornetq/
 
-This file describes 'stuff one needs to know' to get started coding in
-this project.
+This file describes some minimum 'stuff one needs to know' to get
+started coding in this project.
 
-## Maven:
+## Source
 
-You need Maven 3.X.
+The project's source code is hosted at:
+
+https://github.com/hornetq
+
+## Maven
+
+The minimum required Maven version is 3.0.0.
 
 Do note that there are some compatibility issues with Maven 3.X still
 unsolved [1]. This is specially true for the 'site' plugin [2].
@@ -19,28 +25,27 @@ unsolved [1]. This is specially true for the 'site' plugin [2].
 [1]: <https://cwiki.apache.org/MAVEN/maven-3x-compatibility-notes.html>
 [2]: <https://cwiki.apache.org/MAVEN/maven-3x-and-site-plugin.html>
 
-## Tests:
+## Tests
 
 To run the unit tests:
 
-> mvn -Phudson-tests test
+```% mvn -Phudson-tests test```
 
 Generating reports from unit tests:
 
-> mvn install
-> mvn site
+```% mvn install site```
 
 ## To build a release artifact
 
-> mvn install -Prelease
+```% mvn install -Prelease```
 
 ## Eclipse
 
-Maven support has been improved a lot in Eclipse 3.7 "Indigo", you
-really should use it. There are still some Maven plugins used by
-documentation sub-projects which are not supported even in Eclipse 3.7.
+We recommend you to use Eclipse 3.7 "Indigo". As it improved Maven and
+Git support considerably. Note that there are still some Maven plugins
+used by sub-projects (e.g. documentation) which are not supported even
+in Eclipse 3.7.
 
-The M2Eclipse plugin only works correctly with javacc Maven rules in
-Eclipse 3.7. So in Eclipse 3.6 you need install M2Eclipse yourself, and
-after importing the projects you should use "Maven / Update project
-configuration" to fix up the projects.
+Eclipse code formatting and (basic) project configuration files can be
+found at the ```etc/``` folder. You need to manually copy them or use
+a plugin.
