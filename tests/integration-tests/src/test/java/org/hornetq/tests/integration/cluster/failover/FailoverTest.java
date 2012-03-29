@@ -64,15 +64,6 @@ public class FailoverTest extends FailoverTestBase
 
 	   private ServerLocator locator;
 	   private ClientSessionFactoryInternal sf;
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * @param name
