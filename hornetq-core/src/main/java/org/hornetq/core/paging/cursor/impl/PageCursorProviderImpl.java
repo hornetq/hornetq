@@ -258,6 +258,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
          cursor.stop();
       }
 
+      waitForFuture();
+   }
+
+   private void waitForFuture()
+   {
       FutureLatch future = new FutureLatch();
 
       executor.execute(future);
@@ -274,16 +279,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          cursor.flushExecutors();
       }
-
-      FutureLatch future = new FutureLatch();
-
-      executor.execute(future);
-
-      while (!future.await(10000))
-      {
-         log.warn("Waiting cursor provider " + this + " to finish executors " + executor);
-      }
-
+      waitForFuture();
    }
 
    public void close(PageSubscription cursor)
