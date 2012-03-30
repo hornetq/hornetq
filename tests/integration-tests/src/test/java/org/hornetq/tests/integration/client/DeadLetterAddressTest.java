@@ -250,8 +250,8 @@ public class DeadLetterAddressTest extends ServiceTestBase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);
       Map<String, Long> origIds = new HashMap<String, Long>();

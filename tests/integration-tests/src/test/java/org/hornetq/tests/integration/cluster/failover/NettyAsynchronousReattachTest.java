@@ -28,22 +28,9 @@ import org.hornetq.core.logging.Logger;
 public class NettyAsynchronousReattachTest extends NettyAsynchronousFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    private final Logger log = Logger.getLogger(NettyAsynchronousReattachTest.class);
 
+   @Override
    protected void crash(final ClientSession... sessions) throws Exception
    {
       for (ClientSession session : sessions)
@@ -53,10 +40,4 @@ public class NettyAsynchronousReattachTest extends NettyAsynchronousFailoverTest
          internalSession.getConnection().fail(new HornetQException(HornetQException.NOT_CONNECTED, "oops"));
       }
    }
-
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

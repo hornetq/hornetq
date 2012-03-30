@@ -39,10 +39,10 @@ import org.hornetq.tests.util.JMSTestBase;
  *
  *
  */
-public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
+public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
 {
 
-   Logger log = Logger.getLogger(TestFlowControlOnIgnoreLargeMessageBodyTest.class);
+   Logger log = Logger.getLogger(FlowControlOnIgnoreLargeMessageBodyTest.class);
 
    private Topic topic;
 
@@ -132,8 +132,8 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                }
                sentMessages++;
                BytesMessage msg = session.createBytesMessage();
-               msg.setIntProperty(TestFlowControlOnIgnoreLargeMessageBodyTest.ATTR_MSG_COUNTER, i);
-               msg.writeBytes(new byte[TestFlowControlOnIgnoreLargeMessageBodyTest.MSG_SIZE]);
+               msg.setIntProperty(FlowControlOnIgnoreLargeMessageBodyTest.ATTR_MSG_COUNTER, i);
+               msg.writeBytes(new byte[FlowControlOnIgnoreLargeMessageBodyTest.MSG_SIZE]);
                prod.send(msg);
                if (i % 10 == 0)
                {
@@ -265,7 +265,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                else
                {
                   counter++;
-                  if (msg.getIntProperty(TestFlowControlOnIgnoreLargeMessageBodyTest.ATTR_MSG_COUNTER) != counter)
+                  if (msg.getIntProperty(FlowControlOnIgnoreLargeMessageBodyTest.ATTR_MSG_COUNTER) != counter)
                   {
                      error = true;
                   }
@@ -334,7 +334,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          LoadProducer producer = new LoadProducer("producer",
                                                   topic,
                                                   cf,
-                                                  TestFlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
+                                                  FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
 
          LoadConsumer consumers[] = new LoadConsumer[CONSUMERS_COUNT];
          
@@ -347,7 +347,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                                             topic,
                                             cf,
                                             receiveTimeout,
-                                            TestFlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
+                                            FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
          }
 
          for (LoadConsumer consumer : consumers)
@@ -365,7 +365,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          }
 
          String errorMessage = null;
-         if (producer.getSentMessages() != TestFlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT)
+         if (producer.getSentMessages() != FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT)
          {
             errorMessage = "Producer did not send defined count of messages";
          }
@@ -373,7 +373,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          {
             for (LoadConsumer consumer : consumers)
             {
-               if (consumer.getReceivedMessages() != TestFlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT)
+               if (consumer.getReceivedMessages() != FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT)
                {
                   errorMessage = "Consumer did not send defined count of messages";
                   break;

@@ -40,21 +40,9 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class BatchDelayTest extends ServiceTestBase
 {
 
+   private static final int N = 1000;
    private static final long DELAY = 500;
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
@@ -79,7 +67,7 @@ public class BatchDelayTest extends ServiceTestBase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.BATCH_DELAY, DELAY);
       ServerLocator locator =
-               HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(true, true, params));
+               HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(false, true, params));
       addServerLocator(locator);
       ClientSessionFactory sf = locator.createSessionFactory();
       return addSessionFactory(sf);
@@ -101,23 +89,8 @@ public class BatchDelayTest extends ServiceTestBase
 
       session.start();
 
-      final int numMessages = 1000;
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage msg = session.createMessage(false);
-
-         prod.send(msg);
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage msg = cons.receive(10000);
-
-         assertNotNull(msg);
-
-         msg.acknowledge();
-      }
+      sendMessages(session, prod, N);
+      receiveMessages(cons, 0, N, true);
    }
 
    public void testSendReceiveOne() throws Exception
@@ -146,9 +119,4 @@ public class BatchDelayTest extends ServiceTestBase
 
       msg.acknowledge();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

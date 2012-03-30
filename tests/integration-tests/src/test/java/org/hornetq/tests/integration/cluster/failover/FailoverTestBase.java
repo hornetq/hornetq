@@ -82,16 +82,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected boolean startBackupServer = true;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    /**
     * @param name
     */

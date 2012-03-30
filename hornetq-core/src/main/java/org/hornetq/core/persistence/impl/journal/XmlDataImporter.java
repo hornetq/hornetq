@@ -14,6 +14,25 @@
 package org.hornetq.core.persistence.impl.journal;
 
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -30,24 +49,6 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.utils.Base64;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Read XML output from <code>org.hornetq.core.persistence.impl.journal.XmlDataExporter</code>, create a core session, and
@@ -444,7 +445,9 @@ public class XmlDataImporter
          tempFileName = UUID.randomUUID().toString() + ".tmp";
          log.debug("Creating temp file " + tempFileName + " for large message.");
          OutputStream out = new FileOutputStream(tempFileName);
-         while (reader.hasNext())
+         try
+         {
+            while (reader.hasNext())
          {
             if (reader.getEventType() == XMLStreamConstants.END_ELEMENT)
             {
@@ -462,7 +465,11 @@ public class XmlDataImporter
             }
             reader.next();
          }
-         out.close();
+         }
+         finally
+         {
+            out.close();
+         }
          FileInputStream fileInputStream = new FileInputStream(tempFileName);
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
          ((ClientMessage) message).setBodyInputStream(bufferedInput);

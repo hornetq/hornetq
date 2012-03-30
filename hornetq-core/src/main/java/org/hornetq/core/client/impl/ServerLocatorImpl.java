@@ -562,7 +562,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    @Override
-   public ClientSessionFactoryInternal connect() throws Exception
+   public ClientSessionFactoryInternal connect() throws HornetQException
    {
       synchronized (this)
       {
@@ -683,7 +683,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
-   public ClientSessionFactory createSessionFactory() throws Exception
+   public ClientSessionFactory createSessionFactory() throws HornetQException
    {
       assertOpen();
 
@@ -1498,7 +1498,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                {
                   connect();
                }
-               catch (Exception e)
+               catch (HornetQException e)
                {
                   log.warn(e.getMessage(), e);
                }
