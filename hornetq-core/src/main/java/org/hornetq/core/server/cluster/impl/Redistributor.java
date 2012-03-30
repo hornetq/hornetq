@@ -91,11 +91,7 @@ public class Redistributor implements Consumer
    {
       active = false;
 
-      FutureLatch future = new FutureLatch();
-
-      executor.execute(future);
-
-      boolean ok = future.await(10000);
+      boolean ok = flushExecutor();
 
       if (!ok)
       {
@@ -105,11 +101,7 @@ public class Redistributor implements Consumer
 
    public synchronized void close()
    {
-      FutureLatch future = new FutureLatch();
-
-      executor.execute(future);
-
-      boolean ok = future.await(10000);
+      boolean ok = flushExecutor();
 
       if (!ok)
       {
@@ -117,6 +109,16 @@ public class Redistributor implements Consumer
       }
 
       active = false;
+   }
+
+   private boolean flushExecutor()
+   {
+      FutureLatch future = new FutureLatch();
+
+      executor.execute(future);
+
+      boolean ok = future.await(10000);
+      return ok;
    }
 
    public synchronized HandleStatus handle(final MessageReference reference) throws Exception
