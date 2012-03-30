@@ -68,8 +68,6 @@ public class FailBackAutoTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      System.out.println(locator.getTopology().describe());
-
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
 
       session.addFailureListener(listener);
@@ -91,9 +89,6 @@ public class FailBackAutoTest extends FailoverTestBase
       producer.send(message);
 
       verifyMessageOnServer(1, 1);
-
-      System.out.println(locator.getTopology().describe());
-
 
       session.removeFailureListener(listener);
 
@@ -136,7 +131,7 @@ public class FailBackAutoTest extends FailoverTestBase
    private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception, HornetQException
    {
       ServerLocator backupLocator = createInVMLocator(server);
-      ClientSessionFactory factorybkp = backupLocator.createSessionFactory();
+      ClientSessionFactory factorybkp = addSessionFactory(backupLocator.createSessionFactory());
       ClientSession sessionbkp = factorybkp.createSession(false, false);
       sessionbkp.start();
       ClientConsumer consumerbkp = sessionbkp.createConsumer(ADDRESS);
