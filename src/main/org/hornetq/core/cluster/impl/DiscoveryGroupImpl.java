@@ -16,7 +16,9 @@ package org.hornetq.core.cluster.impl;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -119,7 +121,28 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       try
       {
-         socket = new MulticastSocket(groupPort);
+
+         // HORNETQ-874
+         if (checkForLinux() || checkForSolaris() || checkForHp())
+         {
+            try {
+               socket = new MulticastSocket(new InetSocketAddress(groupAddress, groupPort));
+            } catch (IOException e) {
+               StringBuilder builder = new StringBuilder();
+               builder.append("Could not bind to ").append(groupAddress.getHostAddress()).append(" (");
+               builder.append((groupAddress instanceof Inet4Address) ? "IPv4" : "IPv6").append(" address)");
+               builder.append("; make sure your discovery group-address is of the same type as the IP stack (IPv4 or IPv6).");
+               builder.append("\nIgnoring discovery group-address, but this may lead to cross talking.");
+
+               log.warn(builder.toString(), e);
+
+               socket = new MulticastSocket(groupPort);
+            }
+         }
+         else
+         {
+            socket = new MulticastSocket(groupPort);
+         }
 
          if (localBindAddress != null)
          {
@@ -467,6 +490,28 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       
       return changed;
+   }
+
+   private static boolean checkForLinux() {
+      return checkForPresence("os.name", "linux");
+   }
+
+   private static boolean checkForHp() {
+      return checkForPresence("os.name", "hp");
+   }
+
+   private static boolean checkForSolaris() {
+      return checkForPresence("os.name", "sun");
+   }
+
+   private static boolean checkForPresence(String key, String value) {
+      try {
+         String tmp=System.getProperty(key);
+         return tmp != null && tmp.trim().toLowerCase().startsWith(value);
+      }
+      catch(Throwable t) {
+         return false;
+      }
    }
 
 }
