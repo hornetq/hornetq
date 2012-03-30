@@ -21,15 +21,12 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A SessionClosedOnRemotingConnectionFailureTest
@@ -37,7 +34,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author Tim Fox
 
  */
-public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
+public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBase
 {
    private HornetQServer server;
 
@@ -45,11 +42,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
 
    public void testSessionClosedOnRemotingConnectionFailure() throws Exception
    {
-      ClientSession session = null;
-
-      try
-      {
-         session = sf.createSession();
+      ClientSession session = addClientSession(sf.createSession());
 
          session.createQueue("fooaddress", "fooqueue");
 
@@ -100,15 +93,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
          }
 
          session.close();
-      }
-      finally
-      {
-         if (session != null)
-         {
-            session.close();
          }
-      }
-   }
 
    @Override
    protected void setUp() throws Exception
@@ -116,32 +101,12 @@ public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
       super.setUp();
 
       Configuration config = createDefaultConfig();
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
+      config.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       config.setSecurityEnabled(false);
-      server = HornetQServers.newHornetQServer(config, false);
+      server = createServer(false, config);
 
       server.start();
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      sf = locator.createSessionFactory();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (sf != null)
-      {
-         sf.close();
-      }
-
-      if (server != null)
-      {
-         server.stop();
-      }
-
-      sf = null;
-
-      server = null;
-
-      super.tearDown();
+      ServerLocator locator = createInVMNonHALocator();
+      sf = createSessionFactory(locator);
    }
 }

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.LinkedListImpl;
 import org.hornetq.utils.LinkedListIterator;
@@ -33,8 +32,6 @@ import org.hornetq.utils.LinkedListIterator;
  */
 public class LinkedListTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(LinkedListTest.class);
-
    private LinkedListImpl<Integer> list;
 
    @Override
@@ -50,8 +47,7 @@ public class LinkedListTest extends UnitTestCase
       final AtomicInteger count = new AtomicInteger(0);
       class MyObject
       {
-
-         public byte payload[];
+         private final byte payload[];
 
          MyObject()
          {
@@ -59,6 +55,7 @@ public class LinkedListTest extends UnitTestCase
             payload = new byte[10 * 1024];
          }
 
+         @Override
          protected void finalize() throws Exception
          {
             count.decrementAndGet();
@@ -91,21 +88,18 @@ public class LinkedListTest extends UnitTestCase
 
          if (i % 1000 == 0)
          {
-            System.out.println("Checking on " + i);
             assertCount(1000, count);
          }
       }
 
       assertCount(1000, count);
 
-      int removed = 0;
       while (iter.hasNext())
       {
-         System.out.println("removed " + (removed++));
          iter.next();
          iter.remove();
       }
-      
+
       assertCount(0, count);
 
    }
@@ -124,11 +118,13 @@ public class LinkedListTest extends UnitTestCase
             this.payload = payloadcount;
          }
 
+         @Override
          protected void finalize() throws Exception
          {
             count.decrementAndGet();
          }
-         
+
+         @Override
          public String toString()
          {
             return "" + payload;
@@ -156,11 +152,11 @@ public class LinkedListTest extends UnitTestCase
             iter.remove();
          }
       }
-      
+
       iter.close();
-      
+
       iter = objs.iterator();
-      
+
       countLoop = 0;
       while (iter.hasNext())
       {
@@ -173,9 +169,9 @@ public class LinkedListTest extends UnitTestCase
          assertEquals(countLoop, obj.payload);
          countLoop++;
       }
-      
-      
-      
+
+
+
       assertCount(999, count);
 
    }
@@ -186,7 +182,7 @@ public class LinkedListTest extends UnitTestCase
    private void assertCount(final int expected, final AtomicInteger count)
    {
       long timeout = System.currentTimeMillis() + 15000;
-      
+
       int seqCount = 0;
       while (timeout > System.currentTimeMillis() && count.get() != expected)
       {
@@ -206,7 +202,7 @@ public class LinkedListTest extends UnitTestCase
             catch (Throwable expectedThrowable)
             {
             }
-            
+
             toOME.clear();
          }
          forceGC();
@@ -347,16 +343,7 @@ public class LinkedListTest extends UnitTestCase
 
       assertNotNull(iter);
 
-      try
-      {
-         iter.next();
-
-         fail("Should throw NoSuchElementException");
-      }
-      catch (NoSuchElementException e)
-      {
-         // OK
-      }
+      assertNoSuchElementIsThrown(iter);
 
       try
       {
@@ -422,16 +409,7 @@ public class LinkedListTest extends UnitTestCase
       }
       assertFalse(iter.hasNext());
 
-      try
-      {
-         iter.next();
-
-         fail("Should throw NoSuchElementException");
-      }
-      catch (NoSuchElementException e)
-      {
-         // OK
-      }
+      assertNoSuchElementIsThrown(iter);
 
       // Add more
 
@@ -447,16 +425,7 @@ public class LinkedListTest extends UnitTestCase
       }
       assertFalse(iter.hasNext());
 
-      try
-      {
-         iter.next();
-
-         fail("Should throw NoSuchElementException");
-      }
-      catch (NoSuchElementException e)
-      {
-         // OK
-      }
+      assertNoSuchElementIsThrown(iter);
 
       // Add some more at head
 
@@ -489,6 +458,14 @@ public class LinkedListTest extends UnitTestCase
       }
       assertFalse(iter.hasNext());
 
+      assertNoSuchElementIsThrown(iter);
+   }
+
+   /**
+    * @param iter
+    */
+   private void assertNoSuchElementIsThrown(LinkedListIterator<Integer> iter)
+   {
       try
       {
          iter.next();

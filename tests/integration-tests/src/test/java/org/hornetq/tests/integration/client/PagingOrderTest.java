@@ -52,13 +52,9 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * A PagingOrderTest.
- *
- * PagingTest has a lot of tests already. I decided to create a newer one more specialized on Ordering and counters
- *
+ * A PagingOrderTest. PagingTest has a lot of tests already. I decided to create a newer one more
+ * specialized on Ordering and counters
  * @author clebertsuconic
- *
- *
  */
 public class PagingOrderTest extends ServiceTestBase
 {
@@ -72,6 +68,22 @@ public class PagingOrderTest extends ServiceTestBase
    // Static --------------------------------------------------------
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
+
+   private Connection conn;
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      try
+      {
+         if (conn != null)
+            conn.close();
+      }
+      finally
+      {
+         super.tearDown();
+      }
+   }
 
    public void testOrder1() throws Throwable
    {
@@ -801,7 +813,7 @@ public class PagingOrderTest extends ServiceTestBase
       HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
                                                                                                                       new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      Connection conn = cf.createConnection();
+      conn = cf.createConnection();
       conn.setClientID("tst");
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       javax.jms.Queue queue = (javax.jms.Queue)context.lookup("/queue/Q1");

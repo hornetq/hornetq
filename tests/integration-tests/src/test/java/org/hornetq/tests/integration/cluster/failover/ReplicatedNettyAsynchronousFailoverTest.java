@@ -23,29 +23,9 @@ package org.hornetq.tests.integration.cluster.failover;
 public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   
    @Override
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

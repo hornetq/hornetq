@@ -27,6 +27,7 @@ package org.hornetq.utils.json;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -398,14 +399,22 @@ public class JSONObject
                }
             }
          }
-         catch (Exception e)
+         catch (IllegalAccessException e)
+         {
+            throw new RuntimeException(e);
+         }
+         catch (JSONException e)
+         {
+            throw new RuntimeException(e);
+         }
+         catch (InvocationTargetException e)
          {
             throw new RuntimeException(e);
          }
       }
    }
 
-   static boolean isStandardProperty(final Class clazz)
+   static boolean isStandardProperty(final Class<? extends Object> clazz)
    {
       return clazz.isPrimitive() || clazz.isAssignableFrom(Byte.class) ||
              clazz.isAssignableFrom(Short.class) ||

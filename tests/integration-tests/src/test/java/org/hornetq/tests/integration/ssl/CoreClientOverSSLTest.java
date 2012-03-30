@@ -30,7 +30,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -46,7 +45,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
-   public static final String MESSAGE_TEXT_FROM_CLIENT = "CoreClientOverSSLTest from client";
+   public static final String MESSAGE_TEXT_FROM_CLIENT = CoreClientOverSSLTest.class.getSimpleName() + " from client";
 
    public static final SimpleString QUEUE = new SimpleString("QueueOverSSL");
 
@@ -55,10 +54,6 @@ public class CoreClientOverSSLTest extends ServiceTestBase
    private HornetQServer server;
 
    private TransportConfiguration tc;
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testSSL() throws Exception
    {
@@ -133,7 +128,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+      config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
       server = createServer(false, config);
       server.start();
       waitForServer(server);
