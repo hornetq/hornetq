@@ -5,7 +5,7 @@
   <bookinfo>
     <title>HornetQ REST Interface</title>
 
-    <releaseinfo>2.2.6.Final</releaseinfo>
+    <releaseinfo>2.2.14.Final</releaseinfo>
   </bookinfo>
 
   <toc></toc>
@@ -179,7 +179,7 @@ Content-Type: application/xml
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq.rest&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-rest&lt;/artifactId&gt;
-            &lt;version&gt;2.2.6.Final&lt;/version&gt;
+            &lt;version&gt;2.2.14.Final&lt;/version&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
 &lt;/project&gt;</programlisting>
@@ -298,7 +298,7 @@ Content-Type: application/xml
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq.rest&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-rest&lt;/artifactId&gt;
-            &lt;version&gt;2.2.6.Final&lt;/version&gt;
+            &lt;version&gt;2.2.14.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.resteasy&lt;/groupId&gt;
