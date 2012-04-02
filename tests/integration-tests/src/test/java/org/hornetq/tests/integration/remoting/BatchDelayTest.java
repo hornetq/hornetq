@@ -67,7 +67,7 @@ public class BatchDelayTest extends ServiceTestBase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.BATCH_DELAY, DELAY);
       ServerLocator locator =
-               HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(false, true, params));
+               HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(true, false, params));
       addServerLocator(locator);
       ClientSessionFactory sf = locator.createSessionFactory();
       return addSessionFactory(sf);
