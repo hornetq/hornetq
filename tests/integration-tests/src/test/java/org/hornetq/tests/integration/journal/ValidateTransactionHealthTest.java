@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -31,33 +30,20 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * This test spawns a remote VM, as we want to "crash" the VM right after the journal is filled with data
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class ValidateTransactionHealthTest extends UnitTestCase
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ValidateTransactionHealthTest.class);
-
-   // Attributes ----------------------------------------------------
-
    private static final int OK = 10;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testAIO() throws Exception
    {

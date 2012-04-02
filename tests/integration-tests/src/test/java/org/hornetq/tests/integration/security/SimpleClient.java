@@ -13,16 +13,16 @@
 
 package org.hornetq.tests.integration.security;
 
-import java.io.PrintStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * Code to be run in an external VM, via main().
@@ -30,13 +30,8 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class SimpleClient
+class SimpleClient
 {
-   // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SimpleClient.class);
-
-   // Static ---------------------------------------------------------------------------------------
 
    public static void main(final String[] args) throws Exception
    {

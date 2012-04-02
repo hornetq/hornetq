@@ -211,17 +211,9 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       return addServerLocator(new ServerLocatorImpl(true, configs));
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   class LatchClusterTopologyListener implements ClusterTopologyListener
+   private final class LatchClusterTopologyListener implements ClusterTopologyListener
    {
       final CountDownLatch latch;
-
-      int liveNodes = 0;
-
-      int backUpNodes = 0;
 
       List<String> liveNode = new ArrayList<String>();
 
