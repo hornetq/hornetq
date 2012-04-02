@@ -39,29 +39,30 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class PagingSendTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    public static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-   
+
    private ServerLocator locator;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   private HornetQServer server;
 
    protected boolean isNetty()
    {
       return false;
    }
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      server = newHornetQServer();
+      server.start();
+      waitForServer(server);
+      locator = createFactory(isNetty());
+   }
+
    private HornetQServer newHornetQServer()
    {
-      HornetQServer server = super.createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(10 * 1024);
@@ -84,23 +85,15 @@ public class PagingSendTest extends ServiceTestBase
 
    public void dotestSameMessageOverAndOver(final boolean blocking) throws Exception
    {
-      HornetQServer server = newHornetQServer();
-
-      server.start();
-
-      try
-      {
-         ServerLocator locator = createFactory(isNetty());
-         ClientSessionFactory sf;
-         
-         // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
+      // Making it synchronous, just because we want to stop sending messages as soon as the
+      // page-store becomes in
          // page mode
          // and we could only guarantee that by setting it to synchronous
          locator.setBlockOnNonDurableSend(blocking);
          locator.setBlockOnDurableSend(blocking);
          locator.setBlockOnAcknowledge(blocking);
 
-         sf = locator.createSessionFactory() ;
+      ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
          session.createQueue(PagingSendTest.ADDRESS, PagingSendTest.ADDRESS, null, true);
@@ -142,33 +135,11 @@ public class PagingSendTest extends ServiceTestBase
          consumer.close();
 
          session.close();
-
-         locator.close();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testOrderOverTX() throws Exception
    {
-      HornetQServer server = newHornetQServer();
-
-      server.start();
-
-      ServerLocator locator = null;
-      try
-      {
-         locator = createFactory(isNetty());
-         
-         ClientSessionFactory sf = locator.createSessionFactory();;
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession sessionConsumer = sf.createSession(true, true, 0);
 
@@ -180,12 +151,13 @@ public class PagingSendTest extends ServiceTestBase
          final AtomicInteger errors = new AtomicInteger(0);
 
          final int TOTAL_MESSAGES = 1000;
-         
+
          // Consumer will be ready after we have commits
          final CountDownLatch ready = new CountDownLatch(1);
 
          Thread tProducer = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -207,7 +179,7 @@ public class PagingSendTest extends ServiceTestBase
                         }
                      }
                   }
-                  
+
                   sessionProducer.commit();
 
                }
@@ -222,9 +194,9 @@ public class PagingSendTest extends ServiceTestBase
          ClientConsumer consumer = sessionConsumer.createConsumer(PagingSendTest.ADDRESS);
 
          sessionConsumer.start();
-         
+
          tProducer.start();
-         
+
          assertTrue(ready.await(10, TimeUnit.SECONDS));
 
          for (int i = 0; i < TOTAL_MESSAGES; i++)
@@ -232,39 +204,18 @@ public class PagingSendTest extends ServiceTestBase
             ClientMessage msg = consumer.receive(10000);
 
             Assert.assertNotNull(msg);
-            
+
             assertEquals(i, msg.getIntProperty("count").intValue());
-            
+
             msg.acknowledge();
          }
-         
+
          tProducer.join();
 
          sessionConsumer.close();
-         
+
          sessionProducer.close();
-         
+
          assertEquals(0, errors.get());
-      }
-      finally
-      {
-         try
-         {
-            locator.close();
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
