@@ -558,15 +558,6 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       }
    }
 
-   // Package protected
-   // ----------------------------------------------------------------------------
-
-   // Protected
-   // ------------------------------------------------------------------------------------
-
-   // Private
-   // --------------------------------------------------------------------------------------
-
    private void removeAllChannels()
    {
       // We get the transfer lock first - this ensures no packets are being processed AND
