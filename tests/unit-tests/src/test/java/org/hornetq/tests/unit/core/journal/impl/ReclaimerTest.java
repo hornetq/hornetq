@@ -717,22 +717,6 @@ public class ReclaimerTest extends UnitTestCase
       assertEquals(totalDep, file.getTotalNegativeToOthers());
    }
 
-   private void debugFiles()
-   {
-      for (int i = 0; i < files.length; i++)
-      {
-         System.out.println("[" + i +
-                            "]=" +
-                            files[i].getPosCount() +
-                            ", canDelete = " +
-                            files[i].isCanReclaim());
-         for (int j = 0; j <= i; j++)
-         {
-            System.out.println("..." + files[i].getNegCount(files[j]));
-         }
-      }
-   }
-
    private void assertCanDelete(final int... fileNumber)
    {
       for (int num : fileNumber)

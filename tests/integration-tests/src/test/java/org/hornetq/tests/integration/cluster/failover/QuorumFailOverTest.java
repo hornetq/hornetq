@@ -1,7 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.Pair;
@@ -73,7 +73,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
    private static class TopologyListener implements ClusterTopologyListener
    {
       final String prefix;
-      final ConcurrentMap<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
+      final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
                new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
       public TopologyListener(String string)
       {

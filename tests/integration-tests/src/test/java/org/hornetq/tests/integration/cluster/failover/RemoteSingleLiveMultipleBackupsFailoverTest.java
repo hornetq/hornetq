@@ -32,21 +32,12 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMultipleBackupsFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private static Map<Integer, String> backups = new HashMap<Integer, String>();
    private ClientSessionFactoryInternal sf;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /**
-    * Checks that if the live server is restarted, it will became live again after killin the current activated server.
+    * Checks that if the live server is restarted, it will became live again after killin the
+    * current activated server.
     */
    public void testMultipleFailoversAndRestartLiveServer() throws Exception
    {
@@ -54,11 +45,11 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       createBackupConfig(0, 1, false, 0, 2, 3);
       createBackupConfig(0, 2, false, 0, 1, 3);
       createBackupConfig(0, 3, false, 0, 1, 2);
-      servers.get(0).start();
-      servers.get(1).start();
-      servers.get(2).start();
-      servers.get(3).start();
-
+      for (int i = 0; i < 4; i++)
+      {
+         servers.get(i).start();
+      }
+      waitForComponent(servers.get(0), 15);
       locator = (ServerLocatorImpl)getServerLocator(0);
 
       locator.setBlockOnNonDurableSend(true);
@@ -96,10 +87,6 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       assertEquals(0, backupNode);
       session = sendAndConsume(sf, false);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception

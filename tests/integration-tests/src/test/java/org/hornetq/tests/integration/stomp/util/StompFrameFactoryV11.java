@@ -12,11 +12,7 @@
  */
 package org.hornetq.tests.integration.stomp.util;
 
-import java.io.UnsupportedEncodingException;
 import java.util.StringTokenizer;
-
-import org.hornetq.core.protocol.stomp.HornetQStompException;
-import org.hornetq.core.protocol.stomp.StompDecoder;
 
 /**
  * 

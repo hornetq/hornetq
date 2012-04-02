@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import javax.naming.NamingException;
 
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.JMSTestBase;
@@ -33,6 +32,7 @@ import org.hornetq.tests.util.JMSTestBase;
 public class JMSDynamicConfigTest extends JMSTestBase
 {
 
+   @Override
    protected boolean usePersistence()
    {
       return true;
