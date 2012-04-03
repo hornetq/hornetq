@@ -67,7 +67,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          startServers(3, 4, 5, 0, 1, 2);
          //startServers(0, 1, 2, 3, 4, 5);
-         
+
          for (int i = 0 ; i < 3; i++)
          {
              waitForTopology(servers[i], 3, 3);
@@ -202,12 +202,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupCluster();
 
       startServers(3, 4, 5, 0, 1, 2);
-      
+
       for (int i = 0 ; i < 3; i++)
       {
           waitForTopology(servers[i], 3, 3);
       }
-      
 
       setupSessionFactory(0, 3, isNetty(), false);
       setupSessionFactory(1, 4, isNetty(), false);
@@ -280,7 +279,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    {
       setupCluster(false);
    }
-   
+
 
    protected void failNode(final int node) throws Exception
    {
@@ -289,7 +288,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
 
    /**
-    * 
+    *
     * @param node The node which we should fail
     * @param originalLiveNode The number of the original node, to locate session to fail
     * @throws Exception
@@ -299,11 +298,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       ClusterWithBackupFailoverTestBase.log.info("*** failing node " + node);
 
       HornetQServer server = getServer(node);
-      
+
       TestableServer tstServer = new SameProcessHornetQServer(server);
-      
+
       ClientSession[] sessionsArray = exploreSessions(originalLiveNode);
-      
+
       tstServer.crash(sessionsArray);
    }
 
@@ -328,8 +327,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupCluster();
 
       startServers(3, 4, 5, 0, 1, 2);
-      
-      
 
       setupSessionFactory(0, 3, isNetty(), false);
       setupSessionFactory(1, 4, isNetty(), false);

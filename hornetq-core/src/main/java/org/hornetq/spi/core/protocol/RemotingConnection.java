@@ -31,14 +31,13 @@ import org.hornetq.spi.core.remoting.Connection;
 public interface RemotingConnection extends BufferHandler
 {
    /**
-    * returns the unique id of the Remoting Connection
-    *
+    * Returns the unique id of the {@link RemotingConnection}.
     * @return the id
     */
    Object getID();
 
    /**
-    * Returns the creation time of the Remoting connection
+    * Returns the creation time of the {@link RemotingConnection}.
     */
    long getCreationTime();
 
@@ -82,19 +81,19 @@ public interface RemotingConnection extends BufferHandler
     * @return true if removed
     */
    boolean removeCloseListener(CloseListener listener);
-   
+
    List<CloseListener> removeCloseListeners();
-   
+
    void setCloseListeners(List<CloseListener> listeners);
-   
-   
+
+
    /**
     * return all the failure listeners
     *
     * @return the listeners
     */
    List<FailureListener> getFailureListeners();
-   
+
    List<FailureListener> removeFailureListeners();
 
 
@@ -135,31 +134,29 @@ public interface RemotingConnection extends BufferHandler
    Connection getTransportConnection();
 
    /**
-    * returns whether or not the Remoting Connection is a client
-    *
+    * Returns whether or not the {@link RemotingConnection} is a client
     * @return true if client, false if a server
     */
    boolean isClient();
 
    /**
-    * returns true if this Remoting Connection has been destroyed.
-    *
+    * Returns true if this {@link RemotingConnection} has been destroyed.
     * @return true if destroyed, otherwise false
     */
-   boolean isDestroyed();    
-   
+   boolean isDestroyed();
+
    /**
     * Disconnect the connection, closing all channels
     */
    void disconnect(boolean criticalError);
-   
+
    /**
     * returns true if any data has been received since the last time this method was called.
     *
     * @return true if data has been received.
     */
    boolean checkDataReceived();
-   
+
    /**
     * flush all outstanding data from the connection.
     */

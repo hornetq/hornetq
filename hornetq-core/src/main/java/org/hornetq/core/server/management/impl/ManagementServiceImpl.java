@@ -660,12 +660,6 @@ public class ManagementServiceImpl implements ManagementService
       return started;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    public void sendNotification(final Notification notification) throws Exception
    {
       if (isTrace)

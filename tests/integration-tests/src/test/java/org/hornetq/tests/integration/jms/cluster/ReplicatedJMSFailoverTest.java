@@ -14,7 +14,6 @@
 package org.hornetq.tests.integration.jms.cluster;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -29,19 +28,6 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 public class ReplicatedJMSFailoverTest extends JMSFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    /**
     * @throws Exception
     */
@@ -52,8 +38,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       backupConf.setJournalType(getDefaultJournalType());
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations()
-                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
+      backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
       backupConf.setBackup(true);
       backupConf.setSharedStore(false);
       backupConf.setBindingsDirectory(getBindingsDir(0, true));
@@ -62,20 +47,20 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       backupConf.setPagingDirectory(getPageDir(0, true));
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir(0, true));
       backupService = HornetQServers.newHornetQServer(backupConf, true);
-      
+
       backupJMSService = new JMSServerManagerImpl(backupService);
-      
+
       backupJMSService.setContext(ctx2);
 
       backupJMSService.start();
-      
+
 
 
       liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.setJournalType(getDefaultJournalType());
-      
-      liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams)); 
+
+      liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams));
       //liveConf.setBackupConnectorName("toBackup");
 
       liveConf.getAcceptorConfigurations()
@@ -88,9 +73,9 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       liveConf.setLargeMessagesDirectory(getLargeMessagesDir(0, false));
 
       liveService = HornetQServers.newHornetQServer(liveConf, true);
-      
+
       liveJMSService = new JMSServerManagerImpl(liveService);
-      
+
       liveJMSService.setContext(ctx1);
 
       liveJMSService.start();

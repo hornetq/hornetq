@@ -1,5 +1,9 @@
 package org.hornetq.rest.test;
 
+import java.util.HashMap;
+import java.util.UUID;
+
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -9,7 +13,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -21,9 +24,6 @@ import org.hornetq.core.server.JournalType;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * * Play with HornetQ
@@ -121,7 +121,7 @@ public class RawRestartTest
          String uuid = UUID.randomUUID().toString();
          System.out.println("Sending: " + uuid);
 
-         message = session.createMessage(ClientMessage.OBJECT_TYPE, true);
+         message = session.createMessage(Message.OBJECT_TYPE, true);
          message.getBodyBuffer().writeInt(uuid.getBytes().length);
          message.getBodyBuffer().writeBytes(uuid.getBytes());
          producer.send(message);

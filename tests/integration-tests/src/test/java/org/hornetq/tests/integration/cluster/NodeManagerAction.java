@@ -16,8 +16,6 @@ package org.hornetq.tests.integration.cluster;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 
-import java.nio.channels.FileLock;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  *         Date: Oct 18, 2010
