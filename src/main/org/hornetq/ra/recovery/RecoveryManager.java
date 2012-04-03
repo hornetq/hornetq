@@ -43,11 +43,18 @@ public class RecoveryManager
 
    private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
    
-   private final Set<HornetQResourceRecovery> resources = new ConcurrentHashSet<HornetQResourceRecovery>(); 
+   private final Set<HornetQResourceRecovery> resources = new ConcurrentHashSet<HornetQResourceRecovery>();
 
-   public void start()
+   public void start(final boolean useAutoRecovery)
    {
-      locateRecoveryRegistry();
+      if (useAutoRecovery)
+      {
+         locateRecoveryRegistry();
+      }
+      else
+      {
+         registry = new EmptyRecoveryRegistry();
+      }
    }
 
    public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
@@ -129,18 +136,7 @@ public class RecoveryManager
 
       if (registry == null)
       {
-         registry = new RecoveryRegistry()
-         {
-            public HornetQResourceRecovery register(HornetQResourceRecovery resourceRecovery)
-            {
-               return null;
-            }
-
-            public void unRegister(HornetQResourceRecovery xaRecoveryConfig)
-            {
-               //no op
-            }
-         };
+         registry = new EmptyRecoveryRegistry();
       }
       else
       {
@@ -149,4 +145,16 @@ public class RecoveryManager
    }
 
 
+   private static class EmptyRecoveryRegistry implements RecoveryRegistry
+   {
+      public HornetQResourceRecovery register(HornetQResourceRecovery resourceRecovery)
+      {
+         return null;
+      }
+
+      public void unRegister(HornetQResourceRecovery xaRecoveryConfig)
+      {
+         //no op
+      }
+   }
 }

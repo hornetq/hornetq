@@ -112,6 +112,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private RecoveryManager recoveryManager;
 
+   private boolean useAutoRecovery = true;
+
    private final List<HornetQRAManagedConnectionFactory> managedConnectionFactories = new ArrayList<HornetQRAManagedConnectionFactory>();
 
    /**
@@ -218,7 +220,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       locateTM();
 
-      recoveryManager.start();
+      recoveryManager.start(useAutoRecovery);
 
       this.ctx = ctx;
 
@@ -281,6 +283,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       recoveryManager.stop();
 
       HornetQResourceAdapter.log.info("HornetQ resource adapter stopped");
+   }
+
+   public void setUseAutoRecovery(Boolean useAutoRecovery)
+   {
+      this.useAutoRecovery = useAutoRecovery;
    }
 
    public void setConnectorClassName(final String connectorClassName)
