@@ -44,7 +44,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -53,7 +52,6 @@ import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -63,9 +61,9 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSBridgeImplTest extends UnitTestCase
 {
@@ -176,6 +174,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
+                  private static final long serialVersionUID = 2834937512213001068L;
+
          @Override
          public Connection createConnection() throws JMSException
          {
@@ -210,7 +210,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       Thread.sleep(50);
       Assert.assertFalse(bridge.isStarted());
       Assert.assertTrue(bridge.isFailed());
-      
+
       bridge.stop();
 
    }
@@ -219,6 +219,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
+                  private static final long serialVersionUID = 4657153922210359725L;
          boolean firstTime = true;
 
          @Override
@@ -465,8 +466,10 @@ public class JMSBridgeImplTest extends UnitTestCase
    public void testExceptionOnSourceAndRetryFails() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
-      HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
+      HornetQJMSConnectionFactory failingSourceCF =
+               new HornetQJMSConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY))
       {
+                  private static final long serialVersionUID = 8216804886099984645L;
          boolean firstTime = true;
 
          @Override

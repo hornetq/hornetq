@@ -93,13 +93,4 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
       setupLiveServer(1, isFileStorage(), isSharedStorage(), isNetty());
       setupLiveServer(2, isFileStorage(), isSharedStorage(), isNetty());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
