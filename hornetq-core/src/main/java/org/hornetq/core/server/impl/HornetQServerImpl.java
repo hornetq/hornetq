@@ -89,6 +89,7 @@ import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
@@ -2302,8 +2303,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             throw new HornetQException(HornetQException.ALREADY_REPLICATING);
          }
-
-         rc.addFailureListener(new ReplicationFailureListener());
+         ReplicationFailureListener listener = new ReplicationFailureListener();
+         rc.addCloseListener(listener);
+         rc.addFailureListener(listener);
          replicationManager = new ReplicationManager(rc, executorFactory);
 
          try
@@ -2365,11 +2367,17 @@ public class HornetQServerImpl implements HornetQServer
       backupUpToDate = true;
    }
 
-   private final class ReplicationFailureListener implements FailureListener
+   private final class ReplicationFailureListener implements FailureListener, CloseListener
    {
 
       @Override
       public void connectionFailed(HornetQException exception, boolean failedOver)
+      {
+         connectionClosed();
+      }
+
+      @Override
+      public void connectionClosed()
       {
          Executors.newSingleThreadExecutor().execute(new Runnable()
          {
