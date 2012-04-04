@@ -214,16 +214,13 @@ public class PagingStoreImpl implements PagingStore
       }
    }
 
-   // Public --------------------------------------------------------
-
    @Override
    public String toString()
    {
       return "PagingStoreImpl(" + this.address + ")";
    }
 
-   // PagingStore implementation ------------------------------------
-
+   @Override
    public boolean lock(long timeout)
    {
       if (timeout == -1)

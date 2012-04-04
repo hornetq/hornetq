@@ -115,7 +115,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    private final ServerSession session;
 
-   // Storagemanager here is used to set the Context
    private final StorageManager storageManager;
 
    private final Channel channel;
@@ -526,7 +525,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             if (requiresResponse)
             {
                log.debug("Sending exception to client", e);
-               response = new HornetQExceptionMessage((HornetQException)e);
+               response = new HornetQExceptionMessage(e);
             }
             else
             {

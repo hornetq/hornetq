@@ -19,29 +19,18 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class SessionConsumerFlowCreditMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long consumerID;
-
    private int credits;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionConsumerFlowCreditMessage(final long consumerID, final int credits)
    {
       super(PacketImpl.SESS_FLOWTOKEN);
-
       this.consumerID = consumerID;
-
       this.credits = credits;
    }
 
@@ -83,22 +72,29 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionConsumerFlowCreditMessage == false)
-      {
-         return false;
-      }
-
-      SessionConsumerFlowCreditMessage r = (SessionConsumerFlowCreditMessage)other;
-
-      return super.equals(other) && credits == r.credits && consumerID == r.consumerID;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + credits;
+      return result;
    }
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionConsumerFlowCreditMessage))
+         return false;
+      SessionConsumerFlowCreditMessage other = (SessionConsumerFlowCreditMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (credits != other.credits)
+         return false;
+      return true;
+   }
 }
