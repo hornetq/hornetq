@@ -87,9 +87,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
    private final Map<Object, ConnectionEntry> connections = new ConcurrentHashMap<Object, ConnectionEntry>();
-
-   private final Configuration config;
-
    private final HornetQServer server;
 
    private final ManagementService managementService;
@@ -131,9 +128,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             RemotingServiceImpl.log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
          }
       }
-
-      this.config = config;
-
       this.managementService = managementService;
 
       this.scheduledThreadPool = scheduledThreadPool;

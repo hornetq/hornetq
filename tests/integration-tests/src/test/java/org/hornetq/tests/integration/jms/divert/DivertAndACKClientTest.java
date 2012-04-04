@@ -25,7 +25,6 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -35,7 +34,7 @@ import org.hornetq.tests.util.JMSTestBase;
 
 /**
  * A DivertAndACKClientTest
- * 
+ *
  * https://jira.jboss.org/jira/browse/HORNETQ-165
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -44,16 +43,6 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class DivertAndACKClientTest extends JMSTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testAutoACK() throws Exception
    {
@@ -101,10 +90,6 @@ public class DivertAndACKClientTest extends JMSTestBase
       connection.close();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected boolean usePersistence()
    {
@@ -132,9 +117,6 @@ public class DivertAndACKClientTest extends JMSTestBase
       return config;
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
    @Override
    protected void createCF(final List<TransportConfiguration> connectorConfigs,
                            final String ... jndiBindings) throws Exception

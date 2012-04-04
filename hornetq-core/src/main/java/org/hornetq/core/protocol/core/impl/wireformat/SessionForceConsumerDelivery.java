@@ -17,25 +17,16 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A SessionConsumerForceDelivery
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public class SessionForceConsumerDelivery extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long consumerID;
-
    private long sequence;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionForceConsumerDelivery(final long consumerID, final long sequence)
    {
@@ -49,8 +40,6 @@ public class SessionForceConsumerDelivery extends PacketImpl
    {
       super(PacketImpl.SESS_FORCE_CONSUMER_DELIVERY);
    }
-
-   // Public --------------------------------------------------------
 
    public long getConsumerID()
    {
@@ -98,12 +87,4 @@ public class SessionForceConsumerDelivery extends PacketImpl
 
       return super.equals(other) && consumerID == r.consumerID && sequence == r.sequence;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

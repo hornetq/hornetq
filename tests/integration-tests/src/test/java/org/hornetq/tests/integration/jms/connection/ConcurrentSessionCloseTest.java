@@ -12,7 +12,6 @@
  */
 package org.hornetq.tests.integration.jms.connection;
 
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Connection;
@@ -21,12 +20,11 @@ import javax.jms.Session;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A ConcurrentSessionCloseTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,8 +33,6 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class ConcurrentSessionCloseTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(ConcurrentSessionCloseTest.class);
-
    private HornetQConnectionFactory cf;
 
    @Override
@@ -44,13 +40,17 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      if (cf != null)
+         cf.close();
       cf = null;
 
       super.tearDown();
@@ -75,12 +75,13 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
          {
             threads[i] = new Thread(group, "thread " + i)
             {
+               @Override
                public void run()
                {
                   try
                   {
                      con.start();
-                     
+
                      Session session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
                      session.close();
