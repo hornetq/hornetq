@@ -37,13 +37,13 @@ import org.hornetq.utils.LinkedListIterator;
  */
 public class FakeQueue implements Queue
 {
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#isInternalQueue()
     */
    public boolean isInternalQueue()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -52,34 +52,34 @@ public class FakeQueue implements Queue
     */
    public void setInternalQueue(boolean internalQueue)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    PageSubscription subs;
-   
+
    public boolean isDirectDeliver()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
    public void close()
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public void forceCheckQueueSize()
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public void reload(MessageReference ref)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public boolean flushExecutor()
@@ -89,37 +89,37 @@ public class FakeQueue implements Queue
 
    public void addHead(MessageReference ref)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public void addTail(MessageReference ref, boolean direct)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public void addTail(MessageReference ref)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    public void resetAllIterators()
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    private final SimpleString name;
-   
+
    private final long id;
 
    public FakeQueue(final SimpleString name)
    {
       this(name, 0);
    }
-   
+
    public FakeQueue(final SimpleString name, final long id)
    {
       this.name = name;
@@ -131,7 +131,7 @@ public class FakeQueue implements Queue
     */
    public void acknowledge(final MessageReference ref) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -140,7 +140,7 @@ public class FakeQueue implements Queue
     */
    public void acknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -149,7 +149,7 @@ public class FakeQueue implements Queue
     */
    public void addConsumer(final Consumer consumer) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -158,7 +158,7 @@ public class FakeQueue implements Queue
     */
    public void addFirst(final MessageReference ref)
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -167,7 +167,7 @@ public class FakeQueue implements Queue
     */
    public void addLast(final MessageReference ref)
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -176,7 +176,7 @@ public class FakeQueue implements Queue
     */
    public void addRedistributor(final long delay)
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -185,7 +185,7 @@ public class FakeQueue implements Queue
     */
    public void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -194,7 +194,7 @@ public class FakeQueue implements Queue
     */
    public void cancel(final Transaction tx, final MessageReference ref) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -203,7 +203,7 @@ public class FakeQueue implements Queue
     */
    public void cancelRedistributor() throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -212,16 +212,16 @@ public class FakeQueue implements Queue
     */
    public boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
-   
+
 /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#changeReferencesPriority(org.hornetq.core.filter.Filter, byte)
     */
    public int changeReferencesPriority(Filter filter, byte newPriority) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -230,7 +230,7 @@ public class FakeQueue implements Queue
     */
    public boolean checkRedelivery(final MessageReference ref, final long timeBase) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -239,7 +239,7 @@ public class FakeQueue implements Queue
     */
    public int deleteAllReferences() throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -248,7 +248,7 @@ public class FakeQueue implements Queue
     */
    public int deleteMatchingReferences(final Filter filter) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -257,7 +257,7 @@ public class FakeQueue implements Queue
     */
    public boolean deleteReference(final long messageID) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -266,7 +266,7 @@ public class FakeQueue implements Queue
     */
    public void deliverAsync()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -275,7 +275,7 @@ public class FakeQueue implements Queue
     */
    public void deliverNow()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -284,7 +284,7 @@ public class FakeQueue implements Queue
     */
    public void expire(final MessageReference ref) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -293,7 +293,7 @@ public class FakeQueue implements Queue
     */
    public boolean expireReference(final long messageID) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -302,7 +302,7 @@ public class FakeQueue implements Queue
     */
    public void expireReferences() throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -311,7 +311,7 @@ public class FakeQueue implements Queue
     */
    public int expireReferences(final Filter filter) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -320,7 +320,7 @@ public class FakeQueue implements Queue
     */
    public int getConsumerCount()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -329,7 +329,7 @@ public class FakeQueue implements Queue
     */
    public Set<Consumer> getConsumers()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -338,7 +338,7 @@ public class FakeQueue implements Queue
     */
    public int getDeliveringCount()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -347,7 +347,7 @@ public class FakeQueue implements Queue
     */
    public Filter getFilter()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -356,7 +356,7 @@ public class FakeQueue implements Queue
     */
    public long getMessageCount()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -365,7 +365,7 @@ public class FakeQueue implements Queue
     */
    public long getMessagesAdded()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -379,10 +379,10 @@ public class FakeQueue implements Queue
 
    public SimpleString getAddress()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getID()
     */
@@ -396,7 +396,7 @@ public class FakeQueue implements Queue
     */
    public MessageReference getReference(final long id)
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -405,7 +405,7 @@ public class FakeQueue implements Queue
     */
    public int getScheduledCount()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -414,7 +414,7 @@ public class FakeQueue implements Queue
     */
    public List<MessageReference> getScheduledMessages()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -423,7 +423,7 @@ public class FakeQueue implements Queue
     */
    public boolean isDurable()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -432,7 +432,7 @@ public class FakeQueue implements Queue
     */
    public boolean isPaused()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -441,7 +441,7 @@ public class FakeQueue implements Queue
     */
    public boolean isTemporary()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -450,7 +450,7 @@ public class FakeQueue implements Queue
     */
    public LinkedListIterator<MessageReference> iterator()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -459,7 +459,7 @@ public class FakeQueue implements Queue
     */
    public List<MessageReference> list(final Filter filter)
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -468,7 +468,7 @@ public class FakeQueue implements Queue
     */
    public void lockDelivery()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -477,7 +477,7 @@ public class FakeQueue implements Queue
     */
    public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -486,7 +486,7 @@ public class FakeQueue implements Queue
     */
    public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -495,7 +495,7 @@ public class FakeQueue implements Queue
     */
    public void pause()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -504,7 +504,7 @@ public class FakeQueue implements Queue
     */
    public void reacknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -513,7 +513,7 @@ public class FakeQueue implements Queue
     */
    public void referenceHandled()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -529,7 +529,7 @@ public class FakeQueue implements Queue
     */
    public MessageReference removeFirstReference(final long id) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -538,7 +538,7 @@ public class FakeQueue implements Queue
     */
    public MessageReference removeReferenceWithID(final long id) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
@@ -547,7 +547,7 @@ public class FakeQueue implements Queue
     */
    public void resume()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -556,16 +556,16 @@ public class FakeQueue implements Queue
     */
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#sendMessagesToDeadLetterAddress(org.hornetq.core.filter.Filter)
     */
    public int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -574,18 +574,18 @@ public class FakeQueue implements Queue
     */
    public void setExpiryAddress(final SimpleString expiryAddress)
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
-   // TODO Auto-generated method stub
+   // no-op
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#unlockDelivery()
     */
    public void unlockDelivery()
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
@@ -594,13 +594,13 @@ public class FakeQueue implements Queue
     */
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
 
    }
 
    public boolean hasMatchingConsumer(final ServerMessage message)
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -609,20 +609,20 @@ public class FakeQueue implements Queue
     */
    public boolean checkDLQ(final MessageReference ref, final Executor ioExecutor) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
    public Executor getExecutor()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return null;
    }
 
    public void addLast(MessageReference ref, boolean direct)
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    /* (non-Javadoc)
@@ -632,7 +632,7 @@ public class FakeQueue implements Queue
    {
       return subs;
    }
-   
+
    public void setPageSubscription(PageSubscription sub)
    {
       this.subs = sub;
@@ -643,7 +643,7 @@ public class FakeQueue implements Queue
     */
    public boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return false;
    }
 
@@ -652,7 +652,7 @@ public class FakeQueue implements Queue
     */
    public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -661,8 +661,8 @@ public class FakeQueue implements Queue
     */
    public void forceDelivery()
    {
-      // TODO Auto-generated method stub
-      
+      // no-op
+
    }
 
    /* (non-Javadoc)
@@ -670,7 +670,7 @@ public class FakeQueue implements Queue
     */
    public long getInstantMessageCount()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
@@ -679,7 +679,7 @@ public class FakeQueue implements Queue
     */
    public long getInstantMessagesAdded()
    {
-      // TODO Auto-generated method stub
+      // no-op
       return 0;
    }
 
