@@ -95,15 +95,11 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
    public void testInterruptLargeMessageSend() throws Exception
    {
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = true;
-
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          server.getConfiguration()
                .getInterceptorClassNames()
@@ -114,7 +110,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(false);
          locator.setBlockOnDurableSend(false);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true);
 
@@ -122,7 +118,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
          clientFile.setExpiration(System.currentTimeMillis());
 
@@ -144,30 +140,16 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testSendNonPersistentQueue() throws Exception
    {
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
 
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = false;
-
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -178,7 +160,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true);
 
@@ -188,7 +170,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
             producer.send(clientFile);
          }
@@ -208,7 +190,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             {
                ClientMessage clientMessage = cons.receive(5000);
                assertNotNull(clientMessage);
-               for (int countByte = 0; countByte < messageSize; countByte++)
+            for (int countByte = 0; countByte < LARGE_MESSAGE_SIZE; countByte++)
                {
                   assertEquals(getSamplebyte(countByte), clientMessage.getBodyBuffer().readByte());
                }
@@ -223,30 +205,17 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testSendPaging() throws Exception
    {
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
 
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = false;
-
-      try
-      {
-         HornetQServer server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
+      HornetQServer server =
+               createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
 
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -257,7 +226,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true);
 
@@ -269,7 +238,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
             producer.send(clientFile);
          }
@@ -287,7 +256,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
             server.start();
 
-            sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
             session = sf.createSession(false, false);
 
@@ -299,7 +268,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             {
                ClientMessage clientMessage = cons.receive(5000);
                assertNotNull(clientMessage);
-               for (int countByte = 0; countByte < messageSize; countByte++)
+            for (int countByte = 0; countByte < LARGE_MESSAGE_SIZE; countByte++)
                {
                   assertEquals(getSamplebyte(countByte), clientMessage.getBodyBuffer().readByte());
                }
@@ -323,31 +292,18 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          validateNoFilesOnLargeDir();
 
-         server.stop();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testSendPreparedXA() throws Exception
    {
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
 
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = false;
 
-      try
-      {
-         HornetQServer server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
+      HornetQServer server =
+               createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
 
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -358,7 +314,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(true, false, false);
 
@@ -373,7 +329,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
             clientFile.putIntProperty("txid", 1);
             producer.send(clientFile);
          }
@@ -385,7 +341,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
             clientFile.putIntProperty("txid", 2);
             clientFile.putIntProperty("i", i);
             producer.send(clientFile);
@@ -404,7 +360,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          {
             System.out.println("Start " + start);
 
-            sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
             if (start == 0)
             {
@@ -446,7 +402,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(true, false, false);
          session.rollback(xid2);
@@ -458,17 +414,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testRestartBeforeDelete() throws Exception
@@ -579,15 +524,13 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          }
 
       }
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
 
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = false;
 
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+        HornetQServer server = createServer(true, isNetty());
          server.start();
 
          QueueFactory original = server.getQueueFactory();
@@ -601,7 +544,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true);
 
@@ -611,7 +554,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+            Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
             producer.send(clientFile);
          }
@@ -647,30 +590,14 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
+        }
 
    public void testConsumeAfterRestart() throws Exception
    {
-      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-
       ClientSession session = null;
 
       LargeMessageTestInterceptorIgnoreLastPacket.interruptMessages = false;
 
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
          server.start();
 
@@ -679,7 +606,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true);
 
@@ -689,7 +616,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
             producer.send(clientFile);
          }
@@ -701,7 +628,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
          server.start();
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false);
 
@@ -731,18 +658,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
    public static class LargeMessageTestInterceptorIgnoreLastPacket implements Interceptor
@@ -750,9 +665,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       public static boolean interruptMessages = false;
 
-      /* (non-Javadoc)
-       * @see org.hornetq.api.core.Interceptor#intercept(org.hornetq.core.protocol.core.Packet, org.hornetq.spi.core.protocol.RemotingConnection)
-       */
+      @Override
       public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
       {
          if (packet instanceof SessionSendContinuationMessage)
@@ -766,25 +679,5 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          }
          return true;
       }
-
-      // Constants -----------------------------------------------------
-
-      // Attributes ----------------------------------------------------
-
-      // Static --------------------------------------------------------
-
-      // Constructors --------------------------------------------------
-
-      // Public --------------------------------------------------------
-
-      // Package protected ---------------------------------------------
-
-      // Protected -----------------------------------------------------
-
-      // Private -------------------------------------------------------
-
-      // Inner classes -------------------------------------------------
-
    }
-
 }

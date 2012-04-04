@@ -30,38 +30,24 @@ import org.hornetq.core.server.LargeServerMessage;
  */
 public class LivePageCacheImpl implements LivePageCache
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final List<PagedMessage> messages = new LinkedList<PagedMessage>();
 
    private final Page page;
 
    private boolean isLive = true;
 
-   @Override
-   public String toString()
-   {
-      return "LivePacheCacheImpl::page=" + page.getPageId() + " number of messages=" + messages.size() + " isLive = " + isLive;
-   }
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public LivePageCacheImpl(final Page page)
    {
       this.page = page;
    }
 
-   // Public --------------------------------------------------------
-
+   @Override
    public Page getPage()
    {
       return page;
    }
 
+   @Override
    public long getPageId()
    {
       return page.getPageId();
@@ -96,25 +82,19 @@ public class LivePageCacheImpl implements LivePageCache
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#lock()
-    */
+   @Override
    public void lock()
    {
       // nothing to be done on live cache
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#unlock()
-    */
+   @Override
    public void unlock()
    {
       // nothing to be done on live cache
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#isLive()
-    */
+   @Override
    public synchronized boolean isLive()
    {
       return isLive;
@@ -130,9 +110,7 @@ public class LivePageCacheImpl implements LivePageCache
       this.messages.add(message);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.LivePageCache#close()
-    */
+   @Override
    public synchronized void close()
    {
       this.isLive = false;
@@ -144,4 +122,10 @@ public class LivePageCacheImpl implements LivePageCache
       return messages.toArray(new PagedMessage[messages.size()]);
    }
 
+   @Override
+   public String toString()
+   {
+      return "LivePacheCacheImpl::page=" + page.getPageId() + " number of messages=" + messages.size() + " isLive = " +
+               isLive;
+   }
 }

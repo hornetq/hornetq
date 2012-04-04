@@ -761,8 +761,7 @@ public class FailoverTest extends FailoverTestBase
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
-
-      message = consumer.receiveImmediate();
+      message = consumer.receive(1000);
 
       Assert.assertNotNull("expecting a message", message);
       Assert.assertEquals(counter, message.getIntProperty("counter").intValue());

@@ -2169,6 +2169,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (!isStarted())
                   return;
+               log.info(HornetQServerImpl.this + " to become 'live'");
                storageManager.start();
                initialisePart2();
                clusterManager.activate();

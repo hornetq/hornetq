@@ -85,24 +85,11 @@ public class PagingManagerImpl implements PagingManager
       this.storageManager = storageManager;
    }
 
-   // Public
-   // ---------------------------------------------------------------------------------------------------------------------------
-
-
-   // Hierarchical changes listener
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
-    */
+   @Override
    public void onChange()
    {
       reaplySettings();
    }
-
-
-
-   // PagingManager implementation
-   // -----------------------------------------------------------------------------------------------------
 
    private void reaplySettings()
    {
@@ -203,23 +190,20 @@ public class PagingManagerImpl implements PagingManager
       return transactions.get(id);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.PagingManager#getTransactions()
-    */
+   @Override
    public Map<Long, PageTransactionInfo> getTransactions()
    {
       return transactions;
    }
 
 
-   // HornetQComponent implementation
-   // ------------------------------------------------------------------------------------------------
-
+   @Override
    public boolean isStarted()
    {
       return started;
    }
 
+   @Override
    public void start() throws Exception
    {
       lock();

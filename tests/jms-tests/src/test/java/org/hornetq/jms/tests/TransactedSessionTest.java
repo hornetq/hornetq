@@ -13,14 +13,20 @@
 
 package org.hornetq.jms.tests;
 
-import javax.jms.*;
-
-import org.hornetq.jms.tests.util.ProxyAssertSupport;
-
-import java.text.MessageFormat;
-import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,16 +35,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class TransactedSessionTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testSimpleRollback() throws Exception
    {
       // send a message
@@ -756,11 +752,11 @@ public class TransactedSessionTest extends JMSTestCase
    {
       int count = 0;
       boolean started = false;
-      private CountDownLatch startLatch;
+      private final CountDownLatch startLatch;
       boolean failed = false;
       Exception e = null;
 
-      private Connection conn;
+      private final Connection conn;
 
       public myReceiver(CountDownLatch startLatch, Connection conn)
       {
