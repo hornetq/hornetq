@@ -489,6 +489,7 @@ public class QueueImpl implements Queue
       }
       catch (RejectedExecutionException ignored)
       {
+         // no-op
       }
    }
 
@@ -1588,9 +1589,6 @@ public class QueueImpl implements Queue
       return "QueueImpl[name=" + name.toString() + ", postOffice=" + this.postOffice + "]@" + Integer.toHexString(System.identityHashCode(this));
    }
 
-   // Private
-   // ------------------------------------------------------------------------------
-
    /**
     * @param ref
     */
@@ -2447,7 +2445,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class DeliverRunner implements Runnable
+   private final class DeliverRunner implements Runnable
    {
       public void run()
       {
@@ -2462,7 +2460,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class DepageRunner implements Runnable
+   private final class DepageRunner implements Runnable
    {
       public void run()
       {
@@ -2477,7 +2475,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class ConcurrentPoller implements Runnable
+   private final class ConcurrentPoller implements Runnable
    {
       public void run()
       {
