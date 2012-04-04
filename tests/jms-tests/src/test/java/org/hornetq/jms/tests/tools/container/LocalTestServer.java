@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -289,12 +288,12 @@ public class LocalTestServer implements Server, Runnable
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
       connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      
+
       ArrayList<String> connectors = new ArrayList<String>();
       connectors.add("netty");
 
       getJMSServerManager().createConnectionFactory(objectName,
-                                                    false, 
+                                                    false,
                                                     JMSFactoryType.CF,
                                                     connectors,
                                                     clientId,
@@ -430,7 +429,7 @@ public class LocalTestServer implements Server, Runnable
    public List<String> listAllSubscribersForTopic(final String s) throws Exception
    {
       ObjectName objectName = ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(s);
-      TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      TopicControl topic = MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                          objectName,
                                                                          TopicControl.class,
                                                                          false);
