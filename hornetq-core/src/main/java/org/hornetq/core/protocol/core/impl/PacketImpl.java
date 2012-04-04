@@ -331,8 +331,6 @@ public class PacketImpl implements Packet
       return "PACKET("  + this.getClass().getSimpleName() + ")[type=" + type + ", channelID=" + channelID + ", packetObject=" + this.getClass().getSimpleName();
    }
 
-   // Protected -----------------------------------------------------
-
    private int stringEncodeSize(final String str)
    {
       return DataConstants.SIZE_INT + str.length() * 2;
@@ -342,7 +340,4 @@ public class PacketImpl implements Packet
    {
       return DataConstants.SIZE_BOOLEAN + (str != null ? stringEncodeSize(str) : 0);
    }
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

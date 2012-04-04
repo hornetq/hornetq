@@ -15,7 +15,6 @@ package org.hornetq.tests.unit.core.paging.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +78,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
@@ -967,164 +967,6 @@ public class PagingStoreImplTest extends UnitTestCase
    {
       executor.shutdown();
       super.tearDown();
-   }
-
-   // Inner classes -------------------------------------------------
-
-   class FakePagingManager implements PagingManager
-   {
-
-      public void activate()
-      {
-      }
-
-      public long addSize(final long size)
-      {
-         return 0;
-      }
-
-      public void addTransaction(final PageTransactionInfo pageTransaction)
-      {
-      }
-
-      public PagingStore createPageStore(final SimpleString destination) throws Exception
-      {
-         return null;
-      }
-
-      public long getTotalMemory()
-      {
-         return 0;
-      }
-
-      public SimpleString[] getStoreNames()
-      {
-         return null;
-      }
-
-      public long getMaxMemory()
-      {
-         return 0;
-      }
-
-      public PagingStore getPageStore(final SimpleString address) throws Exception
-      {
-         return null;
-      }
-
-      public void deletePageStore(SimpleString storeName) throws Exception
-      {
-      }
-
-      public PageTransactionInfo getTransaction(final long transactionID)
-      {
-         return null;
-      }
-
-      public boolean isBackup()
-      {
-         return false;
-      }
-
-      public boolean isGlobalPageMode()
-      {
-         return false;
-      }
-
-      public boolean isPaging(final SimpleString destination) throws Exception
-      {
-         return false;
-      }
-
-      public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
-      {
-         return false;
-      }
-
-      public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
-      {
-         return false;
-      }
-
-      public void reloadStores() throws Exception
-      {
-      }
-
-      public void removeTransaction(final long transactionID)
-      {
-
-      }
-
-      public void setGlobalPageMode(final boolean globalMode)
-      {
-      }
-
-      public void setPostOffice(final PostOffice postOffice)
-      {
-      }
-
-      public void resumeDepages()
-      {
-      }
-
-      public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
-      {
-      }
-
-      public boolean isStarted()
-      {
-         return false;
-      }
-
-      public void start() throws Exception
-      {
-      }
-
-      public void stop() throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#isGlobalFull()
-       */
-      public boolean isGlobalFull()
-      {
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#getTransactions()
-       */
-      public Map<Long, PageTransactionInfo> getTransactions()
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#processReload()
-       */
-      public void processReload()
-      {
-         // TODO Auto-generated method stub
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
-       */
-      public void onChange()
-      {
-      }
-
-      public void lock()
-      {
-      }
-
-      public void unlock()
-      {
-      }
-
    }
 
    class FakeStorageManager implements StorageManager
