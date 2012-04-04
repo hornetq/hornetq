@@ -387,8 +387,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    /**
     * Prompt delivery and send a "forced delivery" message to the consumer.
-    * When the consumer receives such a "forced delivery" message, it discards it
-    * and knows that there are no other messages to be delivered.
+    * <p>
+    * When the consumer receives such a "forced delivery" message, it discards it and knows that
+    * there are no other messages to be delivered.
     */
    public synchronized void forceDelivery(final long sequence)
    {
