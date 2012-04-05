@@ -63,7 +63,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
    public void testCoreHttpClient() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);

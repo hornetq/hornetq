@@ -36,23 +36,10 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A ServerTest
- *
  * @author jmesnil
- *
- *
  */
 public class FailoverWithSharedStoreTest extends ClusterTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
@@ -119,30 +106,27 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
    protected TestableServer createLiveServer() {
       return new RemoteProcessHornetQServer(SharedLiveServerConfiguration.class.getName());
    }
-   
+
    protected TestableServer createBackupServer() {
       return new RemoteProcessHornetQServer(SharedBackupServerConfiguration.class.getName());
    }
-   
+
    public void testCrashLiveServer() throws Exception
    {
-      TestableServer liveServer = null;
-      TestableServer backupServer = null;
-      try
-      {
-         liveServer = createLiveServer();
-         backupServer = createBackupServer();
-         
+      TestableServer liveServer = createLiveServer();
+      TestableServer backupServer = createBackupServer();
+
          liveServer.start();
          backupServer.start();
-         
-         ServerLocator locator = HornetQClient.createServerLocatorWithHA(createTransportConfiguration(true,
-                                                                                                      false,
-                                                                                                      generateParams(0,
-                                                                                                                     true)));
+
+         ServerLocator locator =
+                  addServerLocator(HornetQClient.createServerLocatorWithHA(createTransportConfiguration(true,
+                                                                                                        false,
+                                                                                                        generateParams(0,
+                                                                                                                       true))));
          locator.setFailoverOnInitialConnection(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession prodSession = sf.createSession();
          prodSession.createQueue("foo", "bar", true);
          ClientProducer producer = prodSession.createProducer("foo");
@@ -156,7 +140,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
          liveServer = null;
          Thread.sleep(5000);
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
          ClientSession consSession = sf.createSession();
          consSession.start();
          ClientConsumer consumer = consSession.createConsumer("bar");
@@ -167,25 +151,6 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
 
          consumer.close();
          consSession.deleteQueue("bar");
-         locator.close();
-
-      }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-      }
-      finally
-      {
-         if (liveServer != null)
-         {
-            liveServer.stop();
-         }
-         if (backupServer != null)
-         {
-            backupServer.stop();
-         }
-      }
-
    }
 
    public void testNoConnection() throws Exception
@@ -201,13 +166,4 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
          assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

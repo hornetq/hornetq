@@ -16,9 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -163,7 +161,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig = super.createDefaultConfig();
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      backupConfig.setSecurityEnabled(false);
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
       backupConfig.setClustered(true);
@@ -178,7 +175,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
       ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
@@ -323,36 +319,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 	      }
 	   }
 
-	   protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
-	   {
-	      if (live)
-	      {
-	         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
-	      }
-
-	      Map<String, Object> server1Params = new HashMap<String, Object>();
-
-	      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-	                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
-
-	      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
-	   }
-
-	   protected TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
-	   {
-	      if (live)
-	      {
-	         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
-	      }
-
-	      Map<String, Object> server1Params = new HashMap<String, Object>();
-
-	      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-	                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
-	      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
-	   }
-
-	   protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
+   protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
 
 	   protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
 

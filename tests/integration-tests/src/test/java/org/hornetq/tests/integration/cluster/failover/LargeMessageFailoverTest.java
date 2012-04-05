@@ -27,16 +27,6 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 public class LargeMessageFailoverTest extends FailoverTest
 {
 
-   public LargeMessageFailoverTest(final String name)
-   {
-      super(name);
-   }
-
-   public LargeMessageFailoverTest()
-   {
-      super();
-   }
-
    @Override
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
