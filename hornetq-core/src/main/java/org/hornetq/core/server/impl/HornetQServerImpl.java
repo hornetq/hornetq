@@ -666,12 +666,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          if (backupActivationThread != null)
          {
-
-            backupActivationThread.join(30000);
-            if (backupActivationThread.isAlive())
-            {
-               backupActivationThread.interrupt();
-            }
+            backupActivationThread.join();
          }
 
          stopComponent(nodeManager);
@@ -1742,7 +1737,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private synchronized void deployGroupingHandlerConfiguration(final GroupingHandlerConfiguration config) throws Exception
+   private void deployGroupingHandlerConfiguration(final GroupingHandlerConfiguration config) throws Exception
    {
       if (config != null)
       {
