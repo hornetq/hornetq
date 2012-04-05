@@ -666,7 +666,12 @@ public class HornetQServerImpl implements HornetQServer
          }
          if (backupActivationThread != null)
          {
-            backupActivationThread.join();
+
+            backupActivationThread.join(30000);
+            if (backupActivationThread.isAlive())
+            {
+               backupActivationThread.interrupt();
+            }
          }
 
          stopComponent(nodeManager);
