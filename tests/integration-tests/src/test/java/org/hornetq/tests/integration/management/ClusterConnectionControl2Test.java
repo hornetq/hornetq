@@ -30,8 +30,6 @@ import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -52,9 +50,9 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private HornetQServer server_0;
+   private HornetQServer server0;
 
-   private HornetQServer server_1;
+   private HornetQServer server1;
 
    private MBeanServer mbeanServer_1;
 
@@ -75,21 +73,19 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       Map<String, String> nodes = clusterConnectionControl_0.getNodes();
       Assert.assertEquals(0, nodes.size());
 
-      server_1.start();
+      server1.start();
+      waitForServer(server1);
       long start = System.currentTimeMillis();
 
       while (true)
       {
          nodes = clusterConnectionControl_0.getNodes();
 
-         if (nodes.size() != 1 && System.currentTimeMillis() - start < 30000)
-         {
-            Thread.sleep(500);
-         }
-         else
+         if (nodes.size() == 1 || System.currentTimeMillis() - start > 30000)
          {
             break;
          }
+         Thread.sleep(50);
       }
 
       Assert.assertEquals(1, nodes.size());
@@ -97,10 +93,6 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       String remoteAddress = nodes.values().iterator().next();
       Assert.assertTrue(remoteAddress.endsWith(":" + port_1));
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
@@ -113,15 +105,12 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
       Map<String, Object> acceptorParams_1 = new HashMap<String, Object>();
       acceptorParams_1.put(TransportConstants.PORT_PROP_NAME, port_1);
-      TransportConfiguration acceptorConfig_0 = new TransportConfiguration(NettyAcceptorFactory.class.getName());
+      TransportConfiguration acceptorConfig_0 = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
 
-      TransportConfiguration acceptorConfig_1 = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                                                                           acceptorParams_1);
+      TransportConfiguration acceptorConfig_1 = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, acceptorParams_1);
 
-      TransportConfiguration connectorConfig_1 = new TransportConfiguration(NettyConnectorFactory.class.getName(),
-                                                                            acceptorParams_1);
-
-      TransportConfiguration connectorConfig_0 = new TransportConfiguration(NettyConnectorFactory.class.getName());
+      TransportConfiguration connectorConfig_1 = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, acceptorParams_1);
+      TransportConfiguration connectorConfig_0 = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
 
       CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                               RandomUtil.randomString(),
@@ -175,20 +164,18 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_0.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
 
       mbeanServer_1 = MBeanServerFactory.createMBeanServer();
-      server_1 = addServer(HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false));
+      server1 = addServer(HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false));
 
-      server_0 = addServer(HornetQServers.newHornetQServer(conf_0, mbeanServer, false));
-      server_0.start();
+      server0 = addServer(HornetQServers.newHornetQServer(conf_0, mbeanServer, false));
+      server0.start();
+      waitForServer(server0);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      server_0.stop();
-      server_1.stop();
-
-      server_0 = null;
-      server_1 = null;
+      server0 = null;
+      server1 = null;
 
       MBeanServerFactory.releaseMBeanServer(mbeanServer_1);
       mbeanServer_1 = null;
@@ -200,9 +187,4 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    {
       return ManagementControlHelper.createClusterConnectionControl(name, mbeanServer);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

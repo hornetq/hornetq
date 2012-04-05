@@ -233,9 +233,37 @@ public abstract class ServiceTestBase extends UnitTestCase
       return params;
    }
 
-   protected static final TransportConfiguration createTransportConfiguration(boolean netty,
-                                                                        boolean acceptor,
-                                                                        Map<String, Object> params)
+   protected static final TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
+   {
+      if (live)
+      {
+         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
+      }
+
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+
+      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+
+      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
+   }
+
+   protected static final TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
+   {
+      if (live)
+      {
+         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
+      }
+
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+
+      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
+   }
+
+   protected static final TransportConfiguration createTransportConfiguration(boolean netty, boolean acceptor,
+                                                                              Map<String, Object> params)
    {
       String className;
       if (netty)
