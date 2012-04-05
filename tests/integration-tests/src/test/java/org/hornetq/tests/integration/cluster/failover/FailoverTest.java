@@ -65,18 +65,6 @@ public class FailoverTest extends FailoverTestBase
 	   private ServerLocator locator;
 	   private ClientSessionFactoryInternal sf;
 
-   /**
-    * @param name
-    */
-   public FailoverTest(final String name)
-   {
-      super(name);
-   }
-
-   public FailoverTest()
-   {
-   }
-
    @Override
    protected void setUp() throws Exception
    {

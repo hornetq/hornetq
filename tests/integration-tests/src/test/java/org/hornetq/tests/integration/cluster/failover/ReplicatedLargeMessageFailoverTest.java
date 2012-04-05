@@ -16,23 +16,10 @@ package org.hornetq.tests.integration.cluster.failover;
 
 /**
  * A ReplicatedLargeMessageFailoverTest
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
 {
-
-   public ReplicatedLargeMessageFailoverTest()
-   {
-      super();
-   }
-
-   public ReplicatedLargeMessageFailoverTest(final String name)
-   {
-      super(name);
-   }
 
    @Override
    protected void createConfigs() throws Exception
