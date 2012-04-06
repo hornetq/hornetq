@@ -39,7 +39,6 @@ import org.hornetq.api.jms.management.JMSConsumerInfo;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.JMSSessionInfo;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -60,29 +59,17 @@ import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A QueueControlTest
- *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * Created 14 nov. 2008 13:35:10
- *
- * 
- *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a> Created 14 nov. 2008 13:35:10
  */
 public class JMSServerControl2Test extends ManagementTestBase
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JMSServerControl2Test.class);
-
-   private static final long CONNECTION_TTL = 1000;
+     private static final long CONNECTION_TTL = 1000;
 
    private static final long PING_PERIOD = JMSServerControl2Test.CONNECTION_TTL / 2;
 
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
 
-   JMSServerManagerImpl serverManager;
+   private JMSServerManagerImpl serverManager;
 
    private InVMContext context;
 
@@ -94,19 +81,16 @@ public class JMSServerControl2Test extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
+      server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, true));
       server.start();
 
       context = new InVMContext();
       serverManager = new JMSServerManagerImpl(server);
+      addHornetQComponent(serverManager);
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
    }
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testListClientConnectionsForInVM() throws Exception
    {
@@ -157,7 +141,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       doListConnectionIDs(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
-   
+
    public void testListConnectionsAsJSONForNetty() throws Exception
    {
       doListConnectionsAsJSON(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
@@ -167,21 +151,21 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       doListConnectionsAsJSON(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
-   
+
    public void testListConsumersAsJSON() throws Exception
    {
       String queueName = RandomUtil.randomString();
 
       try
       {
-         startHornetQServer(NettyAcceptorFactory.class.getName());
+         startHornetQServer(NETTY_ACCEPTOR_FACTORY);
          serverManager.createQueue(false, queueName, null, true, queueName);
          Queue queue = HornetQJMSClient.createQueue(queueName);
 
          JMSServerControl control = createManagementControl();
 
          long startTime = System.currentTimeMillis();
-         
+
          String jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
          JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
@@ -202,7 +186,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          infos = JMSConnectionInfo.from(jsonStr);
          assertEquals(1, infos.length);
          String connectionID = infos[0].getConnectionID();
-         
+
          String consJsonStr = control.listConsumersAsJSON(connectionID);
          assertNotNull(consJsonStr);
          JMSConsumerInfo[] consumerInfos = JMSConsumerInfo.from(consJsonStr);
@@ -218,7 +202,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
 
          consumer.close();
-         
+
          consJsonStr = control.listConsumersAsJSON(connectionID);
          assertNotNull(consJsonStr);
          consumerInfos = JMSConsumerInfo.from(consJsonStr);
@@ -228,7 +212,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          QueueBrowser browser = session.createBrowser(queue);
          // the server resources are created when the browser starts enumerating
          browser.getEnumeration();
-         
+
          consJsonStr = control.listConsumersAsJSON(connectionID);
          assertNotNull(consJsonStr);
          System.out.println(consJsonStr);
@@ -245,11 +229,11 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
 
          browser.close();
-         
+
          // create a regular consumer w/ filter on a temp topic
          String filter = "color = 'red'";
          consumer = session.createConsumer(temporaryTopic, filter);
-         
+
          consJsonStr = control.listConsumersAsJSON(connectionID);
          assertNotNull(consJsonStr);
          System.out.println(consJsonStr);
@@ -298,11 +282,11 @@ public class JMSServerControl2Test extends ManagementTestBase
          startHornetQServer(NettyAcceptorFactory.class.getName());
          serverManager.createTopic(false, topicName, topicName);
          Topic topic = HornetQJMSClient.createTopic(topicName);
-         
+
          JMSServerControl control = createManagementControl();
 
          long startTime = System.currentTimeMillis();
-         
+
          String jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
          JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
@@ -317,13 +301,13 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          // create a durable subscriber
          MessageConsumer consumer = session.createDurableSubscriber(topic, subName);
-         
+
          jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
          infos = JMSConnectionInfo.from(jsonStr);
          assertEquals(1, infos.length);
          String connectionID = infos[0].getConnectionID();
-         
+
          String consJsonStr = control.listConsumersAsJSON(connectionID);
          assertNotNull(consJsonStr);
          JMSConsumerInfo[] consumerInfos = JMSConsumerInfo.from(consJsonStr);
@@ -356,16 +340,16 @@ public class JMSServerControl2Test extends ManagementTestBase
          }
       }
    }
-   
+
    //https://jira.jboss.org/browse/HORNETQ-416
    public void testProducerInfo() throws Exception
    {
       String queueName = RandomUtil.randomString();
 
       System.out.println("queueName is: " + queueName);
-      
+
       Connection connection = null;
-      
+
       try
       {
          startHornetQServer(NettyAcceptorFactory.class.getName());
@@ -381,9 +365,9 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                        JMSServerControl2Test.PING_PERIOD);
          connection = cf1.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer producer = session.createProducer(queue);
-         
+
          TextMessage msgSent = null;
          for (int i = 0; i < 10; i++)
          {
@@ -391,11 +375,11 @@ public class JMSServerControl2Test extends ManagementTestBase
             producer.send(msgSent);
             System.out.println("sending msgID " + msgSent.getJMSMessageID());
          }
-         
-         
+
+
 
          connection.start();
-         
+
          // create a regular message consumer
          MessageConsumer consumer = session.createConsumer(queue);
 
@@ -406,20 +390,20 @@ public class JMSServerControl2Test extends ManagementTestBase
             assertNotNull(receivedMsg);
             System.out.println("receiveMsg: " + receivedMsg);
          }
-         
+
          assertEquals(msgSent.getJMSMessageID(), receivedMsg.getJMSMessageID());
-         
+
          HornetQMessage jmsMessage = (HornetQMessage)receivedMsg;
          String lastMsgID = jmsMessage.getCoreMessage().getUserID().toString();
-         
+
          String jsonStr = control.listConnectionsAsJSON();
          JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
-         
+
          JMSConnectionInfo connInfo = infos[0];
-         
+
          String sessionsStr = control.listSessionsAsJSON(connInfo.getConnectionID());
          JMSSessionInfo[] sessInfos = JMSSessionInfo.from(sessionsStr);
-         
+
          assertTrue(sessInfos.length > 0);
          boolean lastMsgFound = false;
          for (JMSSessionInfo sInfo : sessInfos)
@@ -454,7 +438,7 @@ public class JMSServerControl2Test extends ManagementTestBase
             {
                connection.close();
             }
-            
+
             if (serverManager != null)
             {
                serverManager.destroyQueue(queueName);
@@ -723,7 +707,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          JMSServerControl control = createManagementControl();
 
          long startTime = System.currentTimeMillis();
-         
+
          String jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
          JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
@@ -770,20 +754,20 @@ public class JMSServerControl2Test extends ManagementTestBase
          connection2.close();
 
          waitForConnectionIDs(0, control);
-         
+
          Connection connection3 = cf2.createConnection("guest", "guest");
          connection3.setClientID("MyClient");
-         
+
          jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
-         
+
          infos = JMSConnectionInfo.from(jsonStr);
          JMSConnectionInfo info = infos[0];
          assertEquals("MyClient", info.getClientID());
          assertEquals("guest", info.getUsername());
-         
+
          connection3.close();
-         
+
          jsonStr = control.listConnectionsAsJSON();
          assertNotNull(jsonStr);
          infos = JMSConnectionInfo.from(jsonStr);
@@ -802,7 +786,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          }
       }
    }
-   
+
    private void waitForConnectionIDs(final int num, final JMSServerControl control) throws Exception
    {
       final long timeout = 10000;
