@@ -60,7 +60,7 @@ public class StompV11Test extends StompTestBase2
       try
       {
          log.debug("Connection 11 : " + connV11.isConnected());
-         if (connV11.isConnected())
+         if (connV11 != null && connV11.isConnected())
          {
             connV11.disconnect();
          }
