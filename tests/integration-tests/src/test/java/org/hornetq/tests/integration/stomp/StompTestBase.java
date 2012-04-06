@@ -83,6 +83,8 @@ public abstract class StompTestBase extends UnitTestCase
    
    protected String defPass = "wombats";
    
+   protected boolean autoCreateServer = true;
+   
    
 
    // Implementation methods
@@ -93,8 +95,25 @@ public abstract class StompTestBase extends UnitTestCase
       
       forceGC();
 
-      server = createServer();
-      server.start();
+      if (autoCreateServer)
+      {
+         server = createServer();
+         server.start();
+         connectionFactory = createConnectionFactory();
+
+         stompSocket = createSocket();
+         inputBuffer = new ByteArrayOutputStream();
+
+         connection = connectionFactory.createConnection();
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         queue = session.createQueue(getQueueName());
+         topic = session.createTopic(getTopicName());
+         connection.start();
+      }
+   }
+   
+   protected void setUpAfterServer() throws Exception
+   {
       connectionFactory = createConnectionFactory();
 
       stompSocket = createSocket();
@@ -105,6 +124,7 @@ public abstract class StompTestBase extends UnitTestCase
       queue = session.createQueue(getQueueName());
       topic = session.createTopic(getTopicName());
       connection.start();
+
    }
 
    /**
@@ -137,14 +157,25 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected void tearDown() throws Exception
    {
+      if (autoCreateServer)
+      {
+         connection.close();
+         if (stompSocket != null)
+         {
+            stompSocket.close();
+         }
+         server.stop();
+      }
+      super.tearDown();
+   }
+   
+   protected void cleanUp() throws Exception
+   {
       connection.close();
       if (stompSocket != null)
       {
          stompSocket.close();
       }
-      server.stop();
-
-      super.tearDown();
    }
 
    protected void reconnect() throws Exception
