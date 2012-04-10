@@ -296,6 +296,12 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
          "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
+         "      </config-property>"+ 
+         "      <config-property>\n" +
+         "         <description>Flag to control transaction auto recovery</description>\n" +
+         "         <config-property-name>UseAutoRecovery</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value></config-property-value>\n" +
          "      </config-property>";
 
 
