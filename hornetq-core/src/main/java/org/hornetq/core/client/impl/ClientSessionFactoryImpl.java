@@ -113,8 +113,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
 
-   private boolean inCreateSession;
-
    private final Object createSessionLock = new Object();
    private final Object failoverLock = new Object();
    private final Object connectionLock = new Object();
@@ -144,8 +142,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private Future<?> pingerFuture;
    private PingRunnable pingRunnable;
 
+   /** Flag that signals that the factory is closing. Causes many processes to exit. */
    private volatile boolean exitLoop;
-   private final Object exitLock = new Object();
+   /** Guards assignments to {@link #inCreateSession} and {@link #inCreateSessionLatche} */
+   private final Object inCreateSessionGuard = new Object();
+   /** Flag that tells whether we are trying to create a session. */
+   private boolean inCreateSession;
+   /** Used to wait for the creation of a session. */
+   private CountDownLatch inCreateSessionLatch;
 
    private final List<Interceptor> interceptors;
 
@@ -447,9 +451,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       exitLoop = true;
-      synchronized (exitLock)
+      synchronized (inCreateSessionGuard)
       {
-         exitLock.notifyAll();
+         if (inCreateSessionLatch != null)
+            inCreateSessionLatch.countDown();
       }
 
       forceReturnChannel1();
@@ -614,9 +619,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             final boolean needToInterrupt;
 
-            synchronized (exitLock)
+            CountDownLatch exitLockLatch;
+            synchronized (inCreateSessionGuard)
             {
                needToInterrupt = inCreateSession;
+               exitLockLatch = inCreateSessionLatch;
             }
 
             unlockChannel1();
@@ -630,17 +637,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                // Now we need to make sure that the thread has actually exited and returned it's connections
                // before failover occurs
 
-               synchronized (exitLock)
+               while (inCreateSession && !exitLoop)
                {
-                  while (inCreateSession && !exitLoop)
+                  try
                   {
-                     try
-                     {
-                        exitLock.wait(5000);
-                     }
-                     catch (InterruptedException e)
-                     {
-                     }
+                     exitLockLatch.await(500, TimeUnit.MILLISECONDS);
+                  }
+                  catch (InterruptedException e)
+                  {
                   }
                }
             }
@@ -762,9 +766,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                } // We can now release the failoverLock
 
                // We now set a flag saying createSession is executing
-               synchronized (exitLock)
+               synchronized (inCreateSessionGuard)
                {
+                  if (exitLoop)
+                     throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                                "ClientSession closed while creating session");
                   inCreateSession = true;
+                  inCreateSessionLatch = new CountDownLatch(1);
                }
 
                long sessionChannelID = connection.generateChannelID();
@@ -862,7 +870,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                if (lock != null)
                {
                   lock.unlock();
-
                   lock = null;
                }
 
@@ -872,11 +879,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                else
                {
-                  HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                             "Failed to create session",
-                                                             t);
-
-                  throw me;
+                  throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to create session", t);
                }
             }
             finally
@@ -887,12 +890,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
 
                // Execution has finished so notify any failover thread that may be waiting for us to be done
-               synchronized (exitLock)
-               {
-                  inCreateSession = false;
-
-                  exitLock.notify();
-               }
+               inCreateSession = false;
+               inCreateSessionLatch.countDown();
             }
          }
          while (retry);
