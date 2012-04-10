@@ -25,6 +25,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.HornetQBufferInputStream;
@@ -34,34 +35,20 @@ import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * A DecompressedHornetQBuffer
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-class CompressedLargeMessageControllerImpl implements LargeMessageController
+final class CompressedLargeMessageControllerImpl implements LargeMessageController
 {
-
-   // Constants -----------------------------------------------------
+   private static final Logger log = Logger.getLogger(CompressedLargeMessageControllerImpl.class);
 
    private static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
 
-   // Attributes ----------------------------------------------------
-
    private final LargeMessageController bufferDelegate;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public CompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
    {
       this.bufferDelegate = bufferDelegate;
    }
-
-
-   // Public --------------------------------------------------------
 
    /**
     *
@@ -154,9 +141,7 @@ class CompressedLargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getByte(int)
-    */
+   @Override
    public byte getByte(final int index)
    {
       positioningNotSupported();
@@ -169,73 +154,25 @@ class CompressedLargeMessageControllerImpl implements LargeMessageController
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
+   @Override
    public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
       positioningNotSupported();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
-   public void getBytes(final long index, final HornetQBuffer dst, final int dstIndex, final int length)
+   @Override
+    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
       positioningNotSupported();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, byte[], int, int)
-    */
-   public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
-   {
-      positioningNotSupported();
-   }
-
-   public void getBytes(final long index, final byte[] dst, final int dstIndex, final int length)
-   {
-      positioningNotSupported();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.ByteBuffer)
-    */
+   @Override
    public void getBytes(final int index, final ByteBuffer dst)
    {
       positioningNotSupported();
    }
 
-   public void getBytes(final long index, final ByteBuffer dst)
-   {
-      positioningNotSupported();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.io.OutputStream, int)
-    */
-   public void getBytes(final int index, final OutputStream out, final int length) throws IOException
-   {
-      positioningNotSupported();
-   }
-
-   public void getBytes(final long index, final OutputStream out, final int length) throws IOException
-   {
-      positioningNotSupported();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.channels.GatheringByteChannel, int)
-    */
-   public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getInt(int)
-    */
+   @Override
    public int getInt(final int index)
    {
       positioningNotSupported();
@@ -248,24 +185,14 @@ class CompressedLargeMessageControllerImpl implements LargeMessageController
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getLong(int)
-    */
+   @Override
    public long getLong(final int index)
    {
       positioningNotSupported();
       return 0;
    }
 
-   public long getLong(final long index)
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getShort(int)
-    */
+   @Override
    public short getShort(final int index)
    {
       positioningNotSupported();
@@ -285,8 +212,6 @@ class CompressedLargeMessageControllerImpl implements LargeMessageController
       positioningNotSupported();
       return 0;
    }
-
-
 
    public int getUnsignedMedium(final long index)
    {
@@ -639,7 +564,11 @@ class CompressedLargeMessageControllerImpl implements LargeMessageController
    {
       try
       {
-         getStream().read(dst, dstIndex, length);
+         int nReadBytes = getStream().read(dst, dstIndex, length);
+         if (nReadBytes < length)
+         {
+            log.warn("tried to read " + length + " bytes from stream but only got " + nReadBytes);
+         }
       }
       catch (Exception e)
       {
