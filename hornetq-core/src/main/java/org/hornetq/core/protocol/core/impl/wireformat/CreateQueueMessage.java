@@ -127,27 +127,56 @@ public class CreateQueueMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof CreateQueueMessage == false)
-      {
-         return false;
-      }
-
-      CreateQueueMessage r = (CreateQueueMessage)other;
-
-      return super.equals(other) && r.address.equals(address) &&
-             r.queueName.equals(queueName) &&
-             (r.filterString == null ? filterString == null : r.filterString.equals(filterString)) &&
-             r.durable == durable &&
-             r.temporary == temporary;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + (durable ? 1231 : 1237);
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      result = prime * result + (requiresResponse ? 1231 : 1237);
+      result = prime * result + (temporary ? 1231 : 1237);
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof CreateQueueMessage))
+         return false;
+      CreateQueueMessage other = (CreateQueueMessage)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (durable != other.durable)
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (queueName == null)
+      {
+         if (other.queueName != null)
+            return false;
+      }
+      else if (!queueName.equals(other.queueName))
+         return false;
+      if (requiresResponse != other.requiresResponse)
+         return false;
+      if (temporary != other.temporary)
+         return false;
+      return true;
+   }
 }
