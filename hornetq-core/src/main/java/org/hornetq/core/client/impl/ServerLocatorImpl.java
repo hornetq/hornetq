@@ -28,6 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -1660,6 +1661,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                }
             }
 
+         }
+         catch (RejectedExecutionException e)
+         {
+            log.debug("Rejected execution", e);
+            throw e;
          }
          catch (Exception e)
          {

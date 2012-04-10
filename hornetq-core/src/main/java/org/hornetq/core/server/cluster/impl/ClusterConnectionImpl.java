@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -502,6 +503,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                     null));
                   log.info("backup announced");
                }
+            }
+            catch (RejectedExecutionException e)
+            {
+               // assumption is that the whole server is being stopped. So the exception is ignored.
             }
             catch (Exception e)
             {
@@ -1595,7 +1600,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       return str.toString();
    }
 
-   interface ClusterConnector
+   private interface ClusterConnector
    {
       ServerLocatorInternal createServerLocator();
    }
