@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -112,9 +113,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
 
-   private final Object exitLock = new Object();
-
-
    private boolean inCreateSession;
 
    private final Object createSessionLock = new Object();
@@ -147,6 +145,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private PingRunnable pingRunnable;
 
    private volatile boolean exitLoop;
+   private final Object exitLock = new Object();
 
    private final List<Interceptor> interceptors;
 
@@ -156,7 +155,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public final Exception e = new Exception();
 
-   private final Object waitLock = new Object();
+   private final CountDownLatch waitLatch = new CountDownLatch(1);
 
    public final static Set<CloseRunnable> CLOSE_RUNNABLES = Collections.synchronizedSet(new HashSet<CloseRunnable>());
 
@@ -437,10 +436,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public void causeExit()
    {
       exitLoop = true;
-      synchronized (waitLock)
-      {
-         waitLock.notifyAll();
-      }
+      waitLatch.countDown();
    }
 
    public void close()
@@ -1000,9 +996,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       int count = 0;
 
-      synchronized (waitLock)
-      {
-         while (!exitLoop)
+      while (!exitLoop)
          {
             if (ClientSessionFactoryImpl.isDebug)
             {
@@ -1045,7 +1039,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   try
                   {
-                     waitLock.wait(interval);
+                  waitLatch.await(interval, TimeUnit.MILLISECONDS);
                   }
                   catch (InterruptedException ignore)
                   {
@@ -1076,7 +1070,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return;
             }
          }
-      }
    }
 
    private void cancelScheduledTasks()
