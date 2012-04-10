@@ -89,16 +89,6 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
             return (Long)proxy.retrieveAttributeValue("retryInterval");
          }
 
-         public Object[] getStaticConnectorNamePairs()
-         {
-            return (Object[])proxy.retrieveAttributeValue("staticConnectorNamePairs");
-         }
-
-         public String getStaticConnectorNamePairsAsJSON()
-         {
-            return (String)proxy.retrieveAttributeValue("staticConnectorNamePairsAsJSON");
-         }
-
          public String getTopology()
          {
             return (String)proxy.retrieveAttributeValue("topology");

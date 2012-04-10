@@ -18,7 +18,6 @@ import java.io.Serializable;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.Mergeable;
 import org.hornetq.utils.BufferHelper;
 
@@ -31,8 +30,6 @@ import org.hornetq.utils.BufferHelper;
 public class AddressSettings implements Mergeable<AddressSettings>, Serializable, EncodingSupport
 {
    private static final long serialVersionUID = 1607502280582336366L;
-
-   private static Logger log = Logger.getLogger(AddressSettings.class);
 
    /**
     * defaults used if null, this allows merging

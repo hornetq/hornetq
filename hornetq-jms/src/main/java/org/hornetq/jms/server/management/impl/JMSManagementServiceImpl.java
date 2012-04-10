@@ -53,8 +53,6 @@ public class JMSManagementServiceImpl implements JMSManagementService
    private final ManagementService managementService;
    
    private final JMSServerManager jmsServerManager;
-   
-   private final HornetQServer server;
 
    // Static --------------------------------------------------------
 
@@ -62,7 +60,6 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       this.managementService = managementService;
       this.jmsServerManager = jmsServerManager;
-      this.server = server;
    }
 
    // Public --------------------------------------------------------

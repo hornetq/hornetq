@@ -418,6 +418,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
+                  private static final long serialVersionUID = -8866390811966688830L;
+
          @Override
          public Connection createConnection() throws JMSException
          {

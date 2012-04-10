@@ -16,17 +16,22 @@ package org.hornetq.tests.integration.clientcrash;
 import java.util.Arrays;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
 /**
  * Code to be run in an external VM, via main().
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class CrashClient2
@@ -56,20 +61,20 @@ public class CrashClient2
          message.getBodyBuffer().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
-         
+
          //Now consume the message, but don't let ack get to server
-         
+
          //Consume the message
          ClientConsumer cons = session.createConsumer(ClientCrashTest.QUEUE);
-         
+
          session.start();
-         
+
          ClientMessage msg = cons.receive(10000);
-         
+
          if (msg == null)
          {
             log.error("Didn't receive msg");
-            
+
             System.exit(1);
          }
 

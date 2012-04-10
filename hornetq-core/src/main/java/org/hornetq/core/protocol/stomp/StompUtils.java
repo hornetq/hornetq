@@ -14,14 +14,13 @@
 package org.hornetq.core.protocol.stomp;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
@@ -36,36 +35,29 @@ public class StompUtils
 {
    // Constants -----------------------------------------------------
    private static final String DEFAULT_MESSAGE_PRIORITY= "4";
-   
-   private static final Logger log = Logger.getLogger(StompUtils.class);
-
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
 
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
       Map<String, String> headers = new HashMap<String, String>(frame.getHeadersMap());
-      
-      String priority = (String)headers.remove(Stomp.Headers.Send.PRIORITY);
+
+      String priority = headers.remove(Stomp.Headers.Send.PRIORITY);
       if (priority != null)
       {
          msg.setPriority(Byte.parseByte(priority));
       } else {
          msg.setPriority(Byte.parseByte(DEFAULT_MESSAGE_PRIORITY));
       }
-      String persistent = (String)headers.remove(Stomp.Headers.Send.PERSISTENT);
+      String persistent = headers.remove(Stomp.Headers.Send.PERSISTENT);
       if (persistent != null)
       {
          msg.setDurable(Boolean.parseBoolean(persistent));
       }
-      
+
       // FIXME should use a proper constant
       msg.putObjectProperty("JMSCorrelationID", headers.remove(Stomp.Headers.Send.CORRELATION_ID));
       msg.putObjectProperty("JMSType", headers.remove(Stomp.Headers.Send.TYPE));
 
-      String groupID = (String)headers.remove("JMSXGroupID");
+      String groupID = headers.remove("JMSXGroupID");
       if (groupID != null)
       {
          msg.putStringProperty(Message.HDR_GROUP_ID, SimpleString.toSimpleString(groupID));
@@ -75,16 +67,15 @@ public class StompUtils
       {
          msg.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, SimpleString.toSimpleString((String)replyTo));
       }
-      String expiration = (String)headers.remove(Stomp.Headers.Send.EXPIRATION_TIME);
+      String expiration = headers.remove(Stomp.Headers.Send.EXPIRATION_TIME);
       if (expiration != null)
       {
          msg.setExpiration(Long.parseLong(expiration));
       }
-      
+
       // now the general headers
-      for (Iterator<Map.Entry<String, String>> iter = headers.entrySet().iterator(); iter.hasNext();)
+      for (Entry<String, String> entry : headers.entrySet())
       {
-         Map.Entry<String, String> entry = iter.next();
          String name = entry.getKey();
          Object value = entry.getValue();
          msg.putObjectProperty(name, value);
