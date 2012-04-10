@@ -23,8 +23,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -36,21 +34,9 @@ import org.hornetq.tests.util.UnitTestCase;
 public class QueueControlUsingCoreTest extends QueueControlTest
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(QueueControlUsingCoreTest.class);
-
-   // Attributes ----------------------------------------------------
-
    protected ClientSession session;
 
    private ServerLocator locator;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    @Override
    protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception

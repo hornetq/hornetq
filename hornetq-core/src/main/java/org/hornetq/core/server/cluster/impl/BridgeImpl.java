@@ -133,12 +133,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private boolean stopping = false;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public BridgeImpl(final ServerLocatorInternal serverLocator,
                      final int reconnectAttempts,
                      final long retryInterval,
@@ -326,9 +320,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return;
       }
-      
+
       stopping = true;
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("Bridge " + this.name + " being stopped");
@@ -577,7 +571,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
 
             refs.remove(ref);
-            
+
             executor.execute(new Runnable()
             {
                public void run()
@@ -637,15 +631,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // fail(false);
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -996,7 +981,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   private class ConnectRunnable implements Runnable
+   private final class ConnectRunnable implements Runnable
    {
       public synchronized void run()
       {

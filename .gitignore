@@ -670,3 +670,4 @@ tests/**/server.lock
 /docs/quickstart-guide/.project
 
 native/autom4te.cache
+.settings/org.eclipse.core.resources.prefs
