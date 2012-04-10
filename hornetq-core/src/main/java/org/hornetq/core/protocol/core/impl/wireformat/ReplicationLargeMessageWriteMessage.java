@@ -13,6 +13,8 @@
 
 package org.hornetq.core.protocol.core.impl.wireformat;
 
+import java.util.Arrays;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
@@ -26,17 +28,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationLargeMessageWriteMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long messageId;
 
    private byte body[];
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
    public ReplicationLargeMessageWriteMessage()
    {
       super(PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE);
@@ -53,8 +48,6 @@ public class ReplicationLargeMessageWriteMessage extends PacketImpl
       this.messageId = messageId;
       this.body = body;
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -89,12 +82,30 @@ public class ReplicationLargeMessageWriteMessage extends PacketImpl
       return body;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + Arrays.hashCode(body);
+      result = prime * result + (int)(messageId ^ (messageId >>> 32));
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof ReplicationLargeMessageWriteMessage))
+         return false;
+      ReplicationLargeMessageWriteMessage other = (ReplicationLargeMessageWriteMessage)obj;
+      if (!Arrays.equals(body, other.body))
+         return false;
+      if (messageId != other.messageId)
+         return false;
+      return true;
+   }
 }

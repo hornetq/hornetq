@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -23,14 +22,8 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SubscribeClusterTopologyUpdatesMessage.class);
-
-   // Attributes ----------------------------------------------------
-
    private boolean clusterConnection;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -65,11 +58,11 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
    {
       return clusterConnection;
    }
-   
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeBoolean(clusterConnection);      
+      buffer.writeBoolean(clusterConnection);
    }
 
    @Override
@@ -78,9 +71,6 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
       clusterConnection = buffer.readBoolean();
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -90,11 +80,27 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
              "]";
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (clusterConnection ? 1231 : 1237);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SubscribeClusterTopologyUpdatesMessage))
+         return false;
+      SubscribeClusterTopologyUpdatesMessage other = (SubscribeClusterTopologyUpdatesMessage)obj;
+      if (clusterConnection != other.clusterConnection)
+         return false;
+      return true;
+   }
 }

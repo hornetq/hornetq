@@ -22,17 +22,16 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalConstants;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A RealJournalImplTest
  * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
  * If you are running this test in eclipse you should do:
  *   I - Run->Open Run Dialog
- *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
+ *   II - Find the class on the list (you will find it if you already tried running this testcase before)
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -41,7 +40,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(AIOJournalImplTest.class);
 
    public static TestSuite suite()
    {

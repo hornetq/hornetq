@@ -19,15 +19,11 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class CreateSessionMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private String name;
 
    private long sessionChannelID;
@@ -49,12 +45,8 @@ public class CreateSessionMessage extends PacketImpl
    private boolean preAcknowledge;
 
    private int windowSize;
-   
+
    private String defaultAddress;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public CreateSessionMessage(final String name,
                                final long sessionChannelID,
@@ -92,7 +84,7 @@ public class CreateSessionMessage extends PacketImpl
       this.windowSize = windowSize;
 
       this.preAcknowledge = preAcknowledge;
-      
+
       this.defaultAddress = defaultAddress;
    }
 
@@ -152,7 +144,7 @@ public class CreateSessionMessage extends PacketImpl
    {
       return windowSize;
    }
-   
+
    public String getDefaultAddress()
    {
       return defaultAddress;
@@ -193,30 +185,6 @@ public class CreateSessionMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof CreateSessionMessage == false)
-      {
-         return false;
-      }
-
-      CreateSessionMessage r = (CreateSessionMessage)other;
-
-      boolean matches = super.equals(other) && name.equals(r.name) &&
-                        sessionChannelID == r.sessionChannelID &&
-                        version == r.version &&
-                        xa == r.xa &&
-                        autoCommitSends == r.autoCommitSends &&
-                        autoCommitAcks == r.autoCommitAcks &&
-                        (username == null ? r.username == null : username.equals(r.username)) &&
-                        (password == null ? r.password == null : password.equals(r.password)) &&
-                        (defaultAddress == null ? r.defaultAddress == null : defaultAddress.equals(r.defaultAddress));
-                        
-
-      return matches;
-   }
-
-   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
@@ -227,11 +195,80 @@ public class CreateSessionMessage extends PacketImpl
       return minLargeMessageSize;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (autoCommitAcks ? 1231 : 1237);
+      result = prime * result + (autoCommitSends ? 1231 : 1237);
+      result = prime * result + ((defaultAddress == null) ? 0 : defaultAddress.hashCode());
+      result = prime * result + minLargeMessageSize;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((password == null) ? 0 : password.hashCode());
+      result = prime * result + (preAcknowledge ? 1231 : 1237);
+      result = prime * result + (int)(sessionChannelID ^ (sessionChannelID >>> 32));
+      result = prime * result + ((username == null) ? 0 : username.hashCode());
+      result = prime * result + version;
+      result = prime * result + windowSize;
+      result = prime * result + (xa ? 1231 : 1237);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof CreateSessionMessage))
+         return false;
+      CreateSessionMessage other = (CreateSessionMessage)obj;
+      if (autoCommitAcks != other.autoCommitAcks)
+         return false;
+      if (autoCommitSends != other.autoCommitSends)
+         return false;
+      if (defaultAddress == null)
+      {
+         if (other.defaultAddress != null)
+            return false;
+      }
+      else if (!defaultAddress.equals(other.defaultAddress))
+         return false;
+      if (minLargeMessageSize != other.minLargeMessageSize)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (password == null)
+      {
+         if (other.password != null)
+            return false;
+      }
+      else if (!password.equals(other.password))
+         return false;
+      if (preAcknowledge != other.preAcknowledge)
+         return false;
+      if (sessionChannelID != other.sessionChannelID)
+         return false;
+      if (username == null)
+      {
+         if (other.username != null)
+            return false;
+      }
+      else if (!username.equals(other.username))
+         return false;
+      if (version != other.version)
+         return false;
+      if (windowSize != other.windowSize)
+         return false;
+      if (xa != other.xa)
+         return false;
+      return true;
+   }
 }
