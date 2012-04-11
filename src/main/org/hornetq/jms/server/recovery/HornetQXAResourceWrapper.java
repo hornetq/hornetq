@@ -324,6 +324,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
          try
          {
+            // setting ha=false because otherwise the connector would go towards any server, causing Heuristic exceptions
+            // we really need to control what server it's connected to
+
+            // Manual configuration may still use discovery, so we will keep this
             if (xaRecoveryConfig.getDiscoveryConfiguration() != null)
             {
                serverLocator = HornetQClient.createServerLocator(false, xaRecoveryConfig.getDiscoveryConfiguration());

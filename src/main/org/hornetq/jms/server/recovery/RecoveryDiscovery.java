@@ -52,6 +52,9 @@ public class RecoveryDiscovery
       {
          log.debug("Starting RecoveryDiscovery on " + config);
          started = true;
+         
+         // TODO: I'm not sure where to place this configuration?
+         // I would prefer to keep it hard coded so far
          locator = config.createServerLocator();
          locator.setReconnectAttempts(-1);
          locator.setRetryInterval(1000);
@@ -124,6 +127,8 @@ public class RecoveryDiscovery
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {
+         // There is a case where the backup announce itself,
+         // we need to ignore a case where getA is null
          if (connectorPair.getA() != null)
          {
             HornetQRecoveryRegistry.getInstance().nodeUp(nodeID, new Pair<TransportConfiguration, TransportConfiguration>(connectorPair.getA(), connectorPair.getB()), config.getUsername(), config.getPassword());
@@ -132,6 +137,7 @@ public class RecoveryDiscovery
 
       public void nodeDown(long eventUID, String nodeID)
       {
+         // I'm not putting any node down, since it may have previous transactions hanging
       }
       
    }
