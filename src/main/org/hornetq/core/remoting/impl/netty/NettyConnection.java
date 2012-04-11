@@ -13,11 +13,13 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
@@ -60,6 +62,8 @@ public class NettyConnection implements Connection
    private final boolean directDeliver;
 
    private volatile HornetQBuffer batchBuffer;
+   
+   private final Map<String, Object> configuration;
 
    private final Semaphore writeLock = new Semaphore(1);
 
@@ -68,21 +72,15 @@ public class NettyConnection implements Connection
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public NettyConnection(final Channel channel,
-                          final ConnectionLifeCycleListener listener,
-                          final boolean batchingEnabled,
-                          final boolean directDeliver)
-   {
-      this(null, channel, listener, batchingEnabled, directDeliver);
-   }
-
-   public NettyConnection(final Acceptor acceptor,
+    public NettyConnection(final Map<String, Object> configuration,
+                          final Acceptor acceptor,
                           final Channel channel,
                           final ConnectionLifeCycleListener listener,
                           final boolean batchingEnabled,
                           final boolean directDeliver)
    {
+      this.configuration = configuration;
+      
       this.channel = channel;
 
       this.listener = listener;
@@ -286,6 +284,25 @@ public class NettyConnection implements Connection
          listener.readyForWriting(ready);
       }
    }
+   
+   
+   /**
+    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * same target this is connect to
+    * @return
+    */
+   public TransportConfiguration getConnectorConfig()
+   {
+      if (configuration != null)
+      {
+         return new TransportConfiguration(NettyConnectorFactory.class.getName(), this.configuration);
+      }
+      else
+      {
+         return null;
+      }
+   }
+
 
    // Public --------------------------------------------------------
 

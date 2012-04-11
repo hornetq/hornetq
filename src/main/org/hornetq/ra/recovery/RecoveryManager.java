@@ -27,11 +27,11 @@ import java.util.Set;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
+import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -41,11 +41,11 @@ public class RecoveryManager
 {
    private static Logger log = Logger.getLogger(RecoveryManager.class);
 
-   private RecoveryRegistry registry;
+   private HornetQRegistryBase registry;
 
    private String resourceRecoveryClassNames = "org.jboss.as.messaging.jms.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
    
-   private final Set<HornetQResourceRecovery> resources = new ConcurrentHashSet<HornetQResourceRecovery>();
+   private final Set<XARecoveryConfig> resources = new ConcurrentHashSet<XARecoveryConfig>(); 
 
    public void start(final boolean useAutoRecovery)
    {
@@ -59,22 +59,16 @@ public class RecoveryManager
       }
    }
 
-   public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
+   public XARecoveryConfig register(HornetQConnectionFactory factory, String userName, String password)
    {
       log.debug("registering recovery for factory : " + factory);
-      
-      HornetQResourceRecovery resourceRecovery = newResourceRecovery(factory, userName, password);
-      
+      XARecoveryConfig config = newResourceConfig(factory, userName, password);
+      resources.add(config);
       if (registry != null)
       {
-         resourceRecovery = registry.register(resourceRecovery);
-         if (resourceRecovery != null)
-         {
-            resources.add(resourceRecovery);
-         }
+         registry.register(config);
       }
-      
-      return resourceRecovery;
+      return config;
    }
 
    /**
@@ -83,35 +77,30 @@ public class RecoveryManager
     * @param password
     * @return
     */
-   private HornetQResourceRecovery newResourceRecovery(HornetQConnectionFactory factory,
+   private XARecoveryConfig newResourceConfig(HornetQConnectionFactory factory,
                                                        String userName,
                                                        String password)
    {
-      XARecoveryConfig xaRecoveryConfig;
-
       if (factory.getServerLocator().getDiscoveryGroupConfiguration() != null)
       {
-         xaRecoveryConfig = new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getDiscoveryGroupConfiguration(), userName, password);
+        return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getDiscoveryGroupConfiguration(), userName, password);
       }
       else
       {
-         xaRecoveryConfig = new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getStaticTransportConfigurations(), userName, password);
+         return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getStaticTransportConfigurations(), userName, password);
       }
-      
-      HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
-      return resourceRecovery;
    }
 
-   public void unRegister(HornetQResourceRecovery resourceRecovery)
+   public void unRegister(XARecoveryConfig resourceRecovery)
    {
       registry.unRegister(resourceRecovery);
    }
 
    public void stop()
    {
-      for (HornetQResourceRecovery hornetQResourceRecovery : resources)
+      for (XARecoveryConfig recovery : resources)
       {
-         registry.unRegister(hornetQResourceRecovery);
+         registry.unRegister(recovery);
       }
       resources.clear();
    }
@@ -124,7 +113,7 @@ public class RecoveryManager
       {
          try
          {
-            registry = (RecoveryRegistry) safeInitNewInstance(locatorClasses[i]);
+            registry = (HornetQRegistryBase) safeInitNewInstance(locatorClasses[i]);
          }
          catch (Throwable e)
          {
@@ -161,16 +150,13 @@ public class RecoveryManager
       });
    }
 
-   private static class EmptyRecoveryRegistry implements RecoveryRegistry
+   private static class EmptyRecoveryRegistry extends HornetQRegistryBase
    {
-      public HornetQResourceRecovery register(HornetQResourceRecovery resourceRecovery)
+
+      @Override
+      public XAResourceRecoveryRegistry getTMRegistry()
       {
          return null;
-      }
-
-      public void unRegister(HornetQResourceRecovery xaRecoveryConfig)
-      {
-         //no op
       }
    }
 }

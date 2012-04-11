@@ -30,6 +30,7 @@ import java.util.concurrent.locks.Lock;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -976,7 +977,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                             " multiplier = " +
                                             retryIntervalMultiplier, new Exception("trace"));
       }
-      
+
       long interval = retryInterval;
 
       int count = 0;
@@ -1052,7 +1053,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                if (log.isDebugEnabled())
                {
-            	   log.debug("Reconnection successfull");
+                  log.debug("Reconnection successfull");
                }
                return;
             }
@@ -1363,7 +1364,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          public ConnectorFactory run()
          {
-            return (ConnectorFactory) ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
+            return (ConnectorFactory)ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
          }
       });
    }
@@ -1497,23 +1498,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                else
                   eventUID = System.currentTimeMillis();
 
-            if (topMessage.isExit())
-            {
-               if (ClientSessionFactoryImpl.isDebug)
+               if (topMessage.isExit())
                {
-                  ClientSessionFactoryImpl.log.debug("Notifying " + topMessage.getNodeID() + " going down");
-               }
+                  if (ClientSessionFactoryImpl.isDebug)
+                  {
+                     ClientSessionFactoryImpl.log.debug("Notifying " + topMessage.getNodeID() + " going down");
+                  }
                   serverLocator.notifyNodeDown(eventUID, topMessage.getNodeID());
                   return;
-            }
+               }
                if (ClientSessionFactoryImpl.isDebug)
                {
-                  ClientSessionFactoryImpl.log.debug("Node " + topMessage.getNodeID() + " going up, connector = " +
-                           topMessage.getPair() + ", isLast=" + topMessage.isLast() +
-                           " csf created at\nserverLocator=" + serverLocator, e);
-            }
+                  ClientSessionFactoryImpl.log.debug("Node " + topMessage.getNodeID() +
+                                                     " going up, connector = " +
+                                                     topMessage.getPair() +
+                                                     ", isLast=" +
+                                                     topMessage.isLast() +
+                                                     " csf created at\nserverLocator=" +
+                                                     serverLocator, e);
+               }
+
+               Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
+               if (transportConfig.getA() == null && transportConfig.getB() == null)
+               {
+                  transportConfig = new Pair<TransportConfiguration, TransportConfiguration>(conn.getTransportConnection()
+                                                                                                 .getConnectorConfig(),
+                                                                                             null);
+               }
+
                serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
-         }
+            }
          });
       }
    }

@@ -37,7 +37,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -107,9 +107,7 @@ public class HornetQActivation
 
    // Whether we are in the failure recovery loop
    private AtomicBoolean inFailure = new AtomicBoolean(false);
-
-   /** Used to unregister recovery once this endpoint has gone*/
-   private HornetQResourceRecovery resourceRecovery;
+   private XARecoveryConfig resourceRecovery;
 
    static
    {
