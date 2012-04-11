@@ -884,7 +884,8 @@ public abstract class MessageImpl implements MessageInternal
       return properties;
    }
 
-   // This must be synchronized as it can be called concurrently id the message is being delivered concurently to
+   // This must be synchronized as it can be called concurrently id the message is being delivered
+   // concurrently to
    // many queues - the first caller in this case will actually encode it
    private synchronized HornetQBuffer encodeToBuffer()
    {
@@ -907,7 +908,7 @@ public abstract class MessageImpl implements MessageInternal
          buffer.setInt(BUFFER_HEADER_SPACE, endOfBodyPosition);
 
          // Position at end of body and skip past the message end position int.
-         // check for enough room in the buffer even tho it is dynamic
+         // check for enough room in the buffer even though it is dynamic
          if ((endOfBodyPosition + 4) > buffer.capacity())
          {
             buffer.setIndex(0, endOfBodyPosition);

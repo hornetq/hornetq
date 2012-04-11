@@ -19,28 +19,20 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  */
 public class SessionProducerCreditsMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private int credits;
-   
+
    private SimpleString address;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionProducerCreditsMessage(final int credits, final SimpleString address)
    {
       super(PacketImpl.SESS_PRODUCER_CREDITS);
 
       this.credits = credits;
-      
+
       this.address = address;
    }
 
@@ -48,8 +40,6 @@ public class SessionProducerCreditsMessage extends PacketImpl
    {
       super(PacketImpl.SESS_PRODUCER_CREDITS);
    }
-
-   // Public --------------------------------------------------------
 
    public int getCredits()
    {
@@ -75,11 +65,35 @@ public class SessionProducerCreditsMessage extends PacketImpl
       address = buffer.readSimpleString();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + credits;
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionProducerCreditsMessage))
+         return false;
+      SessionProducerCreditsMessage other = (SessionProducerCreditsMessage)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (credits != other.credits)
+         return false;
+      return true;
+   }
 }

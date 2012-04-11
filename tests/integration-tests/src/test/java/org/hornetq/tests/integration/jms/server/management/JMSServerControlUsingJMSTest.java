@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import java.util.Set;
-
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
@@ -26,7 +24,6 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.security.Role;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
@@ -58,8 +55,9 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       }
       return names;
    }
-   
+
    // The JMS test won't support the server being restarted, hence we have to do a slight different test on that case
+   @Override
    public void testCreateConnectionFactory_CompleteList() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -98,10 +96,10 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                       1, // reconnectAttempts
                                       true, // failoverOnInitialConnection
                                       "tst"); // groupID
-      
-      
+
+
       HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -131,7 +129,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
    }
    // Constructors --------------------------------------------------
 
@@ -147,7 +145,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    {
       super.setUp();
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
                                                                                                                 new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -268,22 +266,6 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public String[] listSessions(final String connectionID) throws Exception
          {
             return (String[])proxy.invokeOperation("listSessions", connectionID);
-         }
-
-         public void removeSecuritySettings(String addressMatch) throws Exception
-         {
-            proxy.invokeOperation("removeSecuritySettings", addressMatch);
-         }
-
-         @SuppressWarnings("unchecked")
-         public Set<Role> getSecuritySettings(String addressMatch) throws Exception
-         {
-            return (Set<Role>)proxy.invokeOperation("getSecuritySettings", addressMatch);
-         }
-
-         public String getSecuritySettingsAsJSON(String addressMatch) throws Exception
-         {
-            return (String)proxy.invokeOperation("getSecuritySettingsAsJSON", addressMatch);
          }
 
          public boolean createQueue(String name, String jndiBinding) throws Exception
@@ -502,14 +484,4 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
       };
    }
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

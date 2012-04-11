@@ -15,21 +15,20 @@ package org.hornetq.jms.tests.tools;
 
 import java.net.UnknownHostException;
 
-import org.hornetq.core.logging.Logger;
 import org.jnp.server.Main;
 import org.jnp.server.NamingBean;
 
 /**
  * A WrappedJNDIServer
- * 
+ *
  * We wrap the JBoss AS JNDI server, since we want to introduce a pause of 500 milliseconds on stop()
- * 
+ *
  * This is because there is a bug in the JBoss AS class whereby the socket can remaining open some time after
  * stop() is called.
- * 
+ *
  * So if you call stop() then start() quickly after, you can hit an  exception:
- * 
- * java.rmi.server.ExportException: Port already in use: 1098; nested exception is: 
+ *
+ * java.rmi.server.ExportException: Port already in use: 1098; nested exception is:
  * java.net.BindException: Address already in use
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,8 +37,6 @@ import org.jnp.server.NamingBean;
  */
 public class WrappedJNDIServer
 {
-   private static final Logger log = Logger.getLogger(WrappedJNDIServer.class);
-
    private final Main main;
 
    public WrappedJNDIServer()

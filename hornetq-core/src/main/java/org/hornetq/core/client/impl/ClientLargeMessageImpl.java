@@ -29,21 +29,13 @@ import org.hornetq.utils.DataConstants;
  * until the buffer is filled up or the user set a streaming.
  * @author clebertsuconic
  */
-public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientLargeMessageInternal
+public final class ClientLargeMessageImpl extends ClientMessageImpl implements ClientLargeMessageInternal
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    // Used only when receiving large messages
    private LargeMessageController largeMessageController;
 
    private long largeMessageSize;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    /**
     * @return the largeMessageSize
@@ -115,9 +107,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       return largeMessageController;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
-    */
    @Override
    public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
@@ -132,9 +121,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
-    */
    @Override
    public void setOutputStream(final OutputStream out) throws HornetQException
    {
@@ -148,9 +134,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#waitOutputStreamCompletion()
-    */
    @Override
    public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
@@ -176,12 +159,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          largeMessageController.discardUnusedPackets();
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private void checkBuffer()
    {
@@ -219,15 +196,10 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          this.bufferOut = out;
       }
 
-      /* (non-Javadoc)
-       * @see java.io.OutputStream#write(int)
-       */
       @Override
       public void write(int b) throws IOException
       {
          bufferOut.writeByte((byte)(b & 0xff));
       }
-
    }
-
 }

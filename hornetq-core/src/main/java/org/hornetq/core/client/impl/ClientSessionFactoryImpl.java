@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -112,11 +113,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
 
-   private final Object exitLock = new Object();
-
-
-   private boolean inCreateSession;
-
    private final Object createSessionLock = new Object();
    private final Object failoverLock = new Object();
    private final Object connectionLock = new Object();
@@ -146,7 +142,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private Future<?> pingerFuture;
    private PingRunnable pingRunnable;
 
+   /** Flag that signals that the factory is closing. Causes many processes to exit. */
    private volatile boolean exitLoop;
+   /** Guards assignments to {@link #inCreateSession} and {@link #inCreateSessionLatche} */
+   private final Object inCreateSessionGuard = new Object();
+   /** Flag that tells whether we are trying to create a session. */
+   private boolean inCreateSession;
+   /** Used to wait for the creation of a session. */
+   private CountDownLatch inCreateSessionLatch;
 
    private final List<Interceptor> interceptors;
 
@@ -156,7 +159,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public final Exception e = new Exception();
 
-   private final Object waitLock = new Object();
+   private final CountDownLatch waitLatch = new CountDownLatch(1);
 
    public final static Set<CloseRunnable> CLOSE_RUNNABLES = Collections.synchronizedSet(new HashSet<CloseRunnable>());
 
@@ -437,10 +440,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public void causeExit()
    {
       exitLoop = true;
-      synchronized (waitLock)
-      {
-         waitLock.notifyAll();
-      }
+      waitLatch.countDown();
    }
 
    public void close()
@@ -451,9 +451,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       exitLoop = true;
-      synchronized (exitLock)
+      synchronized (inCreateSessionGuard)
       {
-         exitLock.notifyAll();
+         if (inCreateSessionLatch != null)
+            inCreateSessionLatch.countDown();
       }
 
       forceReturnChannel1();
@@ -618,9 +619,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             final boolean needToInterrupt;
 
-            synchronized (exitLock)
+            CountDownLatch exitLockLatch;
+            synchronized (inCreateSessionGuard)
             {
                needToInterrupt = inCreateSession;
+               exitLockLatch = inCreateSessionLatch;
             }
 
             unlockChannel1();
@@ -634,17 +637,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                // Now we need to make sure that the thread has actually exited and returned it's connections
                // before failover occurs
 
-               synchronized (exitLock)
+               while (inCreateSession && !exitLoop)
                {
-                  while (inCreateSession && !exitLoop)
+                  try
                   {
-                     try
-                     {
-                        exitLock.wait(5000);
-                     }
-                     catch (InterruptedException e)
-                     {
-                     }
+                     exitLockLatch.await(500, TimeUnit.MILLISECONDS);
+                  }
+                  catch (InterruptedException e)
+                  {
                   }
                }
             }
@@ -766,9 +766,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                } // We can now release the failoverLock
 
                // We now set a flag saying createSession is executing
-               synchronized (exitLock)
+               synchronized (inCreateSessionGuard)
                {
+                  if (exitLoop)
+                     throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                                "ClientSession closed while creating session");
                   inCreateSession = true;
+                  inCreateSessionLatch = new CountDownLatch(1);
                }
 
                long sessionChannelID = connection.generateChannelID();
@@ -866,7 +870,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                if (lock != null)
                {
                   lock.unlock();
-
                   lock = null;
                }
 
@@ -876,11 +879,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                else
                {
-                  HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                             "Failed to create session",
-                                                             t);
-
-                  throw me;
+                  throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to create session", t);
                }
             }
             finally
@@ -891,12 +890,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
 
                // Execution has finished so notify any failover thread that may be waiting for us to be done
-               synchronized (exitLock)
-               {
-                  inCreateSession = false;
-
-                  exitLock.notify();
-               }
+               inCreateSession = false;
+               inCreateSessionLatch.countDown();
             }
          }
          while (retry);
@@ -1000,9 +995,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       int count = 0;
 
-      synchronized (waitLock)
-      {
-         while (!exitLoop)
+      while (!exitLoop)
          {
             if (ClientSessionFactoryImpl.isDebug)
             {
@@ -1045,7 +1038,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   try
                   {
-                     waitLock.wait(interval);
+                  waitLatch.await(interval, TimeUnit.MILLISECONDS);
                   }
                   catch (InterruptedException ignore)
                   {
@@ -1076,7 +1069,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return;
             }
          }
-      }
    }
 
    private void cancelScheduledTasks()

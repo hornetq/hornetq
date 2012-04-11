@@ -36,7 +36,8 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
 /**
- * takes care of making sure that every request has a response and also that any uninitiated responses always wait for a response.
+ * Ensures that every request has a response and also that any uninitiated responses always wait for
+ * a response.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 class HttpAcceptorHandler extends SimpleChannelHandler
@@ -160,7 +161,9 @@ class HttpAcceptorHandler extends SimpleChannelHandler
             }
             catch (InterruptedException e)
             {
-               // ignore, we'll just try again
+               if (executor.isShutdown())
+                  return;
+               // otherwise ignore, we'll just try again
             }
          }
          while (responseHolder == null);
@@ -220,8 +223,13 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       {
          executor.awaitTermination(10, TimeUnit.SECONDS);
       }
-      catch (Exception e)
+      catch (InterruptedException e)
       {
+         // no-op
+      }
+      finally
+      {
+         executor.shutdownNow();
       }
    }
 
