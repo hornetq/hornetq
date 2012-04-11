@@ -60,7 +60,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
    private boolean hasMore;
 
-   private ManualHornetQXAResourceWrapper res;
+   private HornetQXAResourceWrapper res;
 
    public HornetQXAResourceRecovery()
    {
@@ -78,7 +78,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
       }
 
       String[] configs = config.split(";");
-      ManualXARecoveryConfig[] xaRecoveryConfigs = new ManualXARecoveryConfig[configs.length];
+      XARecoveryConfig[] xaRecoveryConfigs = new XARecoveryConfig[configs.length];
       for (int i = 0, configsLength = configs.length; i < configsLength; i++)
       {
          String s = configs[i];
@@ -88,12 +88,12 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
          String username = parser.getUsername();
          String password = parser.getPassword();
          TransportConfiguration transportConfiguration = new TransportConfiguration(connectorFactoryClassName, connectorParams);
-         xaRecoveryConfigs[i] = new ManualXARecoveryConfig(transportConfiguration, username, password);
+         xaRecoveryConfigs[i] = new XARecoveryConfig(false, new TransportConfiguration[]{transportConfiguration}, username, password);
       }
 
 
 
-      res = new ManualHornetQXAResourceWrapper(xaRecoveryConfigs);
+      res = new HornetQXAResourceWrapper(xaRecoveryConfigs);
 
       if (HornetQXAResourceRecovery.log.isTraceEnabled())
       {

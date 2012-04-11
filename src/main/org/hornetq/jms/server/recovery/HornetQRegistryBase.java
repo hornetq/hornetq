@@ -13,90 +13,51 @@
 
 package org.hornetq.jms.server.recovery;
 
-import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hornetq.core.logging.Logger;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * This class is a base class for the integration layer where
- * we verify if a given connection factory already have a recovery registered
+ * This class is used on integration points and this is just a bridge to the real registry at
+ * {@link HornetQRecoveryRegistry}
  *
  * @author Clebert
  *
  *
  */
-public abstract class HornetQRegistryBase implements RecoveryRegistry
+public abstract class HornetQRegistryBase
 {
-   // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(HornetQRegistryBase.class);
-
-   // Attributes ----------------------------------------------------
-
-   private static HashMap<XARecoveryConfig, HornetQResourceRecovery> configSet = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   private final AtomicBoolean started = new AtomicBoolean(false);
    
+   public HornetQRegistryBase()
+   {
+   }
+
+
    public abstract XAResourceRecoveryRegistry getTMRegistry();
 
-   public HornetQResourceRecovery register(final HornetQResourceRecovery resourceRecovery)
+   public void register(final XARecoveryConfig resourceConfig)
    {
-      synchronized (configSet)
-      {
-         HornetQResourceRecovery recovery = configSet.get(resourceRecovery.getConfig());
-         
-         if (recovery == null)
-         {
-            recovery = resourceRecovery;
-            if (log.isDebugEnabled())
-            {
-               log.debug("Registering a new recovery for " + recovery.getConfig() + ", recovery = " + resourceRecovery);
-            }
-            configSet.put(resourceRecovery.getConfig(), resourceRecovery);
-            getTMRegistry().addXAResourceRecovery(recovery);
-         }
-         else
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("Return pre-existent recovery=" + recovery + " for configuration = " + resourceRecovery.getConfig());
-            }
-         }
-         recovery.incrementUsage();
-         return recovery;
-      }
+      init();
+      HornetQRecoveryRegistry.getInstance().register(resourceConfig);
    }
 
 
 
-   public void unRegister(final HornetQResourceRecovery resourceRecovery)
+   public void unRegister(final XARecoveryConfig resourceConfig)
    {
-      synchronized (configSet)
-      {
-         HornetQResourceRecovery recFound = configSet.get(resourceRecovery.getConfig());
-         
-         if (recFound != null && recFound.decrementUsage() == 0)
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("Removing recovery information for " + recFound + " as all the deployments were already removed");
-            }
-            getTMRegistry().removeXAResourceRecovery(recFound);
-            configSet.remove(resourceRecovery);
-         }
-      }
+      init();
+      HornetQRecoveryRegistry.getInstance().unRegister(resourceConfig);
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-    // Inner classes -------------------------------------------------
+   private void init()
+   {
+      if (started.compareAndSet(false, true) && getTMRegistry() != null)
+      {
+         getTMRegistry().addXAResourceRecovery(HornetQRecoveryRegistry.getInstance());
+      }
+   }
 
 }

@@ -489,6 +489,17 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
        */
       public long getLargeBodySize()
       {
+         if (bodySize < 0)
+         {
+            try
+            {
+               bodySize = file.size();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+         }
          return bodySize;
       }
    }
