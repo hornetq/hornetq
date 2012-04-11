@@ -45,6 +45,8 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.setTransactionManagerLocatorMethod("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -74,6 +76,8 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
          roles.add(role);
        server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.setTransactionManagerLocatorMethod("");
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
