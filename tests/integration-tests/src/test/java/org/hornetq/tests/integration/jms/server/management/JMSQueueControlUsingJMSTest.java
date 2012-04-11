@@ -57,7 +57,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    {
       super.setUp();
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
@@ -149,11 +149,6 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          public long getScheduledCount()
          {
             return (Long)proxy.retrieveAttributeValue("scheduledCount");
-         }
-
-         public boolean isDurable()
-         {
-            return (Boolean)proxy.retrieveAttributeValue("durable");
          }
 
          public boolean isTemporary()
@@ -255,11 +250,6 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          public String getAddress()
          {
             return (String)proxy.retrieveAttributeValue("address");
-         }
-
-         public String getJNDIBinding()
-         {
-            return (String)proxy.retrieveAttributeValue("JNDIBinding");
          }
 
          public boolean isPaused() throws Exception

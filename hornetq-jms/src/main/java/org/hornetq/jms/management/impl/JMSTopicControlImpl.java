@@ -28,7 +28,6 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.client.HornetQDestination;
@@ -40,18 +39,12 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JMSTopicControlImpl.class);
-
-   // Attributes ----------------------------------------------------
-
    private final HornetQDestination managedTopic;
 
    private final AddressControl addressControl;
@@ -91,7 +84,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    {
       jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.api.jms.management.TopicControl#removeJNDI(java.lang.String)

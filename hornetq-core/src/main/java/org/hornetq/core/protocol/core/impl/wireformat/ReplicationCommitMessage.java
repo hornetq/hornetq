@@ -26,10 +26,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationCommitMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    /** 0 - Bindings, 1 - MessagesJournal */
    private byte journalID;
 
@@ -39,9 +35,6 @@ public class ReplicationCommitMessage extends PacketImpl
 
    private boolean sync;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationCommitMessage()
    {
@@ -56,8 +49,6 @@ public class ReplicationCommitMessage extends PacketImpl
       this.txId = txId;
       this.sync = sync;
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -98,5 +89,38 @@ public class ReplicationCommitMessage extends PacketImpl
    public byte getJournalID()
    {
       return journalID;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + journalID;
+      result = prime * result + (rollback ? 1231 : 1237);
+      result = prime * result + (sync ? 1231 : 1237);
+      result = prime * result + (int)(txId ^ (txId >>> 32));
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof ReplicationCommitMessage))
+         return false;
+      ReplicationCommitMessage other = (ReplicationCommitMessage)obj;
+      if (journalID != other.journalID)
+         return false;
+      if (rollback != other.rollback)
+         return false;
+      if (sync != other.sync)
+         return false;
+      if (txId != other.txId)
+         return false;
+      return true;
    }
 }

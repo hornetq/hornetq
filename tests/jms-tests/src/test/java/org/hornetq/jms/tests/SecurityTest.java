@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import java.util.ArrayList;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.IllegalStateException;
@@ -40,19 +38,8 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class SecurityTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes --------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /**
-    * Login with no user, no password
-    * Should allow login (equivalent to guest)
+    * Login with no user, no password Should allow login (equivalent to guest)
     */
    public void testLoginNoUserNoPassword() throws Exception
    {
@@ -275,9 +262,4 @@ public class SecurityTest extends JMSTestCase
          }
       }
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

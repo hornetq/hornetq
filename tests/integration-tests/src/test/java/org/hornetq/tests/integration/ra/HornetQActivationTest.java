@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.ra;
 
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.integration.ra.HornetQRATestBase.MyBootstrapContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -46,12 +45,12 @@ public class HornetQActivationTest extends ServiceTestBase
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
       spec.setJndiParams("a=b;c=d;url=a1,a2,a3");
-      
+
       assertEquals("b", spec.getParsedJndiParams().get("a"));
       assertEquals("d", spec.getParsedJndiParams().get("c"));
       assertEquals("a1,a2,a3", spec.getParsedJndiParams().get("url"));
-      
-      
+
+
    }
 
 

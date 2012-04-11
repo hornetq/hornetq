@@ -13,6 +13,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -28,7 +29,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * A SyncSpeedTest
- * 
+ *
  * This class just provides some diagnostics on how fast your disk can sync
  * Useful when determining performance issues
  *
@@ -174,7 +175,9 @@ public class SyncSpeedTest
             }
          }
 
-         file.createNewFile();
+         boolean created = file.createNewFile();
+         if (!created)
+            throw new IOException("could not create file " + file);
 
          RandomAccessFile rfile = new RandomAccessFile(file, "rw");
 
