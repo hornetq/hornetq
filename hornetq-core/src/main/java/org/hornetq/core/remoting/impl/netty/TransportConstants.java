@@ -135,6 +135,10 @@ public class TransportConstants
 
    public static final Set<String> ALLOWABLE_ACCEPTOR_KEYS;
 
+   public static final String CONNECTION_TTL = "connection-ttl";
+
+   public static final String STOMP_ENABLE_MESSAGE_ID = "stomp-enable-message-id";
+
    static
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
@@ -159,6 +163,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.DIRECT_DELIVER);
       allowableAcceptorKeys.add(TransportConstants.CLUSTER_CONNECTION);
       allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
+      allowableAcceptorKeys.add(TransportConstants.CONNECTION_TTL);
+      allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
