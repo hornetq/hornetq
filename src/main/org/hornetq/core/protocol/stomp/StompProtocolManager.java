@@ -125,7 +125,18 @@ class StompProtocolManager implements ProtocolManager
       // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
 
-      long ttl = server.getConfiguration().getConnectionTTLOverride();
+      Long ttl = (Long)acceptorUsed.getConfiguration().get("connection-ttl");
+
+      if (ttl != null)
+      {
+         if (ttl > 0)
+         {
+            return new ConnectionEntry(conn, null, System.currentTimeMillis(), ttl);
+         }
+         return new ConnectionEntry(conn, null, System.currentTimeMillis(), 1 * 60 * 1000);
+      }
+
+      ttl = server.getConfiguration().getConnectionTTLOverride();
 
       if (ttl != -1)
       {
@@ -580,7 +591,7 @@ class StompProtocolManager implements ProtocolManager
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
       }
-      stompSession.getSession().send(message, true);           
+      stompSession.sendInternal(message, true);       
       
       return null;
    }
