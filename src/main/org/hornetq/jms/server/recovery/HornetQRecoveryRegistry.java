@@ -41,8 +41,13 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
    private ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery> configSet = new ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery>();
 
+   /** The list by server id and resource adapter wrapper, what will actually be calling recovery.
+    * This will be returned by getXAResources*/
    private ConcurrentHashMap<String, HornetQXAResourceWrapper> recoveries = new ConcurrentHashMap<String, HornetQXAResourceWrapper>();
 
+   /**
+    * In case of failures, we retry on the next getXAResources
+    */
    private Set<RecoveryDiscovery> failedDiscoverySet = new HashSet<RecoveryDiscovery>();
 
    private HornetQRecoveryRegistry()
@@ -84,6 +89,10 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       return theInstance;
    }
 
+   /**
+    * This will be called by then resource adapters, to register a new discovery
+    * @param resourceConfig
+    */
    public void register(final XARecoveryConfig resourceConfig)
    {
       RecoveryDiscovery newInstance = new RecoveryDiscovery(resourceConfig);
@@ -93,9 +102,15 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
          discoveryRecord = newInstance;
          discoveryRecord.start();
       }
+      // you could have a configuration shared with multiple MDBs or RAs
       discoveryRecord.incrementUsage();
    }
 
+   /**
+    * Reference counts and deactivate a configuration
+    * Notice: this won't remove the servers since a server may have previous XIDs
+    * @param resourceConfig
+    */
    public void unRegister(final XARecoveryConfig resourceConfig)
    {
       RecoveryDiscovery discoveryRecord = configSet.get(resourceConfig);
@@ -109,41 +124,15 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       }
    }
 
+   /**
+    * in case of a failure the Discovery will register itslef to retry
+    * @param failedDiscovery
+    */
    public void failedDiscovery(RecoveryDiscovery failedDiscovery)
    {
       synchronized (failedDiscoverySet)
       {
          failedDiscoverySet.add(failedDiscovery);
-      }
-   }
-
-   public void checkFailures()
-   {
-      final HashSet<RecoveryDiscovery> failures = new HashSet<RecoveryDiscovery>();
-
-      // it will transfer all the discoveries to a new collection
-      synchronized (failedDiscoverySet)
-      {
-         failures.addAll(failedDiscoverySet);
-         failedDiscoverySet.clear();
-      }
-
-      if (failures.size() > 0)
-      {
-         // This shouldn't happen on a regular scenario, however when this retry happens this needs
-         // to be done on a new thread
-         Thread t = new Thread("HornetQ Recovery Discovery Reinitialization")
-         {
-            public void run()
-            {
-               for (RecoveryDiscovery discovery : failures)
-               {
-                  discovery.start();
-               }
-            }
-         };
-
-         t.start();
       }
    }
 
@@ -177,6 +166,39 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
    public void nodeDown(String nodeID)
    {
+   }
+
+   /**
+    * this will go through the list of retries
+    */
+   private void checkFailures()
+   {
+      final HashSet<RecoveryDiscovery> failures = new HashSet<RecoveryDiscovery>();
+
+      // it will transfer all the discoveries to a new collection
+      synchronized (failedDiscoverySet)
+      {
+         failures.addAll(failedDiscoverySet);
+         failedDiscoverySet.clear();
+      }
+
+      if (failures.size() > 0)
+      {
+         // This shouldn't happen on a regular scenario, however when this retry happens this needs
+         // to be done on a new thread
+         Thread t = new Thread("HornetQ Recovery Discovery Reinitialization")
+         {
+            public void run()
+            {
+               for (RecoveryDiscovery discovery : failures)
+               {
+                  discovery.start();
+               }
+            }
+         };
+
+         t.start();
+      }
    }
 
    /**
