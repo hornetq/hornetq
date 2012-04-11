@@ -19,7 +19,7 @@ import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
+import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 
 /**
  * Various utility functions
@@ -270,14 +270,14 @@ public class Util
       }
    }
 
-   public static RecoveryRegistry locateRecoveryRegistry(final String locatorClass)
+   public static HornetQRegistryBase locateRecoveryRegistry(final String locatorClass)
    {
       try
       {
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
          Class<?> aClass = loader.loadClass(locatorClass);
          Object o = aClass.newInstance();
-         return (RecoveryRegistry)o;
+         return (HornetQRegistryBase)o;
       }
       catch (Throwable e)
       {
