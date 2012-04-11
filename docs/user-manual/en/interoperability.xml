@@ -138,7 +138,7 @@ destination:jms.topic.stocks
            </section>
 
            <section>
-             <title>Send and consuming Stomp message from JMS or HornetQ Core API</title>
+             <title>Sending and consuming Stomp message from JMS or HornetQ Core API</title>
              <para>Stomp is mainly a text-orientated protocol. To make it simpler to interoperate with JMS and HornetQ Core API, 
                our Stomp implementation checks for presence of the <literal>content-length</literal> header to decide how to map a Stomp message
                to a JMS Message or a Core message.
@@ -150,6 +150,31 @@ destination:jms.topic.stocks
                or a Core message with a <emphasis>byte[] in the body buffer</emphasis>.</para>
              <para>The same logic applies when mapping a JMS message or a Core message to Stomp. A Stomp client can check the presence
                 of the <literal>content-length</literal> header to determine the type of the message body (String or bytes).</para>
+          </section>
+          <section>
+            <title>Message IDs for Stomp messages</title>
+            <para>When receiving Stomp messages via a JMS consumer or a QueueBrowser, the messages have
+            no properties like JMSMessageID by default. However this may bring some inconvenience to 
+            clients who wants an ID for their purpose. HornetQ Stomp provides a parameter to enable
+            message ID on each incoming Stomp message. If you want each Stomp message to have a unique ID,
+            just set the <literal>stomp-enable-message-id</literal> to true. For example:</para>
+<programlisting>
+&lt;acceptor name="stomp-acceptor">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol"  value="stomp"/>
+   &lt;param key="port"  value="61613"/>
+   &lt;param key="stomp-enable-message-id"  value="true"/>
+&lt;/acceptor>
+</programlisting>
+            <para>When the server starts with the above setting, each stomp message sent through this
+            acceptor will have an extra property added. The property key is <literal>
+            hq-message-id</literal> and the value is a String representation of a long type internal
+            message id prefixed with "<literal>STOMP</literal>", like:
+<programlisting>
+  hq-message-id : STOMP12345
+</programlisting>
+            If <literal>stomp-enable-message-id</literal> is not specified in the configuration, default
+            is <literal>false</literal>. </para>
           </section>
         </section>
         
