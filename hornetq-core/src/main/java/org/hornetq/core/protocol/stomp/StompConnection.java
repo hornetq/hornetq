@@ -27,11 +27,13 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.utils.ConfigurationHelper;
 
 /**
  * A StompConnection
@@ -75,6 +77,8 @@ public class StompConnection implements RemotingConnection
    
    private volatile boolean dataReceived;
    
+   private boolean enableMessageID;
+   
    private StompVersions version;
    
    private VersionedStompFrameHandler frameHandler;
@@ -102,6 +106,10 @@ public class StompConnection implements RemotingConnection
       this.creationTime = System.currentTimeMillis();
       
       this.acceptorUsed = acceptorUsed;
+
+      this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
+                                                                 false,
+                                                                 acceptorUsed.getConfiguration());
    }
 
    public void addFailureListener(final FailureListener listener)
@@ -542,7 +550,7 @@ public class StompConnection implements RemotingConnection
       }
       try
       {
-         stompSession.getSession().send(message, true);
+         stompSession.sendInternal(message, true);
       }
       catch (Exception e)
       {
@@ -729,4 +737,10 @@ public class StompConnection implements RemotingConnection
    {
       return this.frameHandler;
    }
+
+   public boolean enableMessageID()
+   {
+      return enableMessageID;
+   }
+
 }
