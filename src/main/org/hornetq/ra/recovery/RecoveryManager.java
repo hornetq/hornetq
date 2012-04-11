@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.recovery.HornetQRecoveryRegistry;
 import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.Util;
@@ -142,5 +143,17 @@ public class RecoveryManager
       {
          return null;
       }
+      
+
+      /** no need to register any discovery since we woulnd't do anything with it */
+      public void register(final XARecoveryConfig resourceConfig)
+      {
+      }
+
+      /** no need to register any discovery since we woulnd't do anything with it */
+      public void unRegister(final XARecoveryConfig resourceConfig)
+      {
+      }
+
    }
 }
