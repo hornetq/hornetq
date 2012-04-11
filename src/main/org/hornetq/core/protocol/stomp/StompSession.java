@@ -31,6 +31,7 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
@@ -316,5 +317,14 @@ class StompSession implements SessionCallback
    public void setNoLocal(boolean noLocal)
    {
       this.noLocal = noLocal;
+   }
+
+   public void sendInternal(ServerMessageImpl message, boolean direct) throws Exception
+   {
+      if (connection.enableMessageID())
+      {
+         message.putStringProperty("hq-message-id", "STOMP" + message.getMessageID());
+      }
+      session.send(message, direct);
    }
 }

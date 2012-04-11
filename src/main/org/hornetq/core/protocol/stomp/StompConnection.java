@@ -25,9 +25,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.utils.ConfigurationHelper;
 
 /**
  * A StompConnection
@@ -70,6 +72,8 @@ public class StompConnection implements RemotingConnection
    private final Executor executor;
    
    private volatile boolean dataReceived;
+   
+   private boolean enableMessageID;
 
    public StompDecoder getDecoder()
    {
@@ -87,6 +91,10 @@ public class StompConnection implements RemotingConnection
       this.acceptorUsed = acceptorUsed;
       
       this.executor = executor;
+      
+      this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
+                                                           false,
+                                                           acceptorUsed.getConfiguration());
    }
 
    public void addFailureListener(final FailureListener listener)
@@ -367,6 +375,11 @@ public class StompConnection implements RemotingConnection
             }
          }
       });
+   }
+
+   public boolean enableMessageID()
+   {
+      return enableMessageID;
    }
 
 }
