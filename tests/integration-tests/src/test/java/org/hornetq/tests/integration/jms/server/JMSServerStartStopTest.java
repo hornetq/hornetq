@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.jms.server;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -46,21 +49,12 @@ public class JMSServerStartStopTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(JMSServerStartStopTest.class);
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private JMSServerManager liveJMSServer;
 
    private Connection conn;
 
    private HornetQConnectionFactory jbcf;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   private final Set<HornetQConnectionFactory> connectionFactories = new HashSet<HornetQConnectionFactory>();
 
    public void testStopStart1() throws Exception
    {
@@ -155,8 +149,12 @@ public class JMSServerStartStopTest extends UnitTestCase
     */
    private HornetQConnectionFactory createConnectionFactory()
    {
-      return HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+      HornetQConnectionFactory cf =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
                                                         new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+
+      connectionFactories.add(cf);
+      return cf;
    }
 
    @Override
@@ -166,6 +164,16 @@ public class JMSServerStartStopTest extends UnitTestCase
          conn.close();
       if (jbcf != null)
          jbcf.close();
+      for (HornetQConnectionFactory cf:connectionFactories) {
+         try {
+            cf.close();
+         }
+         catch (Exception ignored)
+         {
+            // no-op
+         }
+      }
+      connectionFactories.clear();
       if (liveJMSServer != null)
          liveJMSServer.stop();
       liveJMSServer = null;
@@ -193,10 +201,10 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       HornetQSecurityManager sm = new HornetQSecurityManagerImpl();
 
-      HornetQServer liveServer = new HornetQServerImpl(fc, sm);
+      HornetQServer liveServer = addServer(new HornetQServerImpl(fc, sm));
 
       liveJMSServer = new JMSServerManagerImpl(liveServer, "server-start-stop-jms-config1.xml");
-
+      addHornetQComponent(liveJMSServer);
       liveJMSServer.setContext(null);
 
       liveJMSServer.start();
