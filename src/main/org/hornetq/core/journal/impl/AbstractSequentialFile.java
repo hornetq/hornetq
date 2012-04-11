@@ -121,7 +121,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
       {
          buffer.rewind();
          int size = this.read(buffer);
-         newFileName.writeInternal(buffer);
+         newFileName.writeDirect(buffer, false);
          if (size < 10 * 1024)
          {
             break;

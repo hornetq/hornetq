@@ -245,6 +245,8 @@ public class LargeMessageControllerImpl implements LargeMessageController
          // what else can we do here?
          log.warn(ignored.getMessage(), ignored);
       }
+      
+      this.handledException = new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Transmission interrupted on consumer shutdown");
        
       packets.offer(new SessionReceiveContinuationMessage());
       streamEnded = true;
@@ -341,9 +343,16 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
       if (handledException != null)
       {
-         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                    "Error on saving LargeMessageBufferImpl",
-                                    handledException);
+         if (handledException instanceof HornetQException)
+         {
+            throw (HornetQException)handledException;
+         }
+         else
+         {
+            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                                       "Error on saving LargeMessageBufferImpl",
+                                       handledException);
+         }
       }
 
       return streamEnded;

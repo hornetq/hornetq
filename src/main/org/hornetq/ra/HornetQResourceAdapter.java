@@ -290,6 +290,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       this.useAutoRecovery = useAutoRecovery;
    }
 
+   public Boolean isUseAutoRecovery()
+   {
+      return this.useAutoRecovery;
+   }
+
    public void setConnectorClassName(final String connectorClassName)
    {
       if (HornetQResourceAdapter.trace)

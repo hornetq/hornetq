@@ -669,7 +669,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         new NettyConnection(NettyAcceptor.this, e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0, directDeliver);
+         new NettyConnection(configuration, NettyAcceptor.this, e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0, directDeliver);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)

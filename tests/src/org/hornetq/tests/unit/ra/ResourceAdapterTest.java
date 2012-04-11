@@ -456,6 +456,8 @@ public class ResourceAdapterTest extends ServiceTestBase
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
+         ra.setTransactionManagerLocatorClass("");
+         ra.setTransactionManagerLocatorMethod("");
          ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
 
          Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
