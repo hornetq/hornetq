@@ -15,7 +15,6 @@ package org.hornetq.ra;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
@@ -30,7 +29,7 @@ import javax.security.auth.Subject;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 
 /**
  * HornetQ ManagedConectionFactory
@@ -80,7 +79,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /*
    * The resource recovery if there is one
    * */
-   private HornetQResourceRecovery resourceRecovery;
+   private XARecoveryConfig resourceRecovery;
 
    /**
     * Constructor

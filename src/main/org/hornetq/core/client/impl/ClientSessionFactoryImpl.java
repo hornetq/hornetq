@@ -30,6 +30,7 @@ import java.util.concurrent.locks.Lock;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -1534,9 +1535,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      " csf created at\nserverLocator=" +
                                                      serverLocator, e);
                }
+               
+               Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
+               
+               if (transportConfig.getA() == null && transportConfig.getB() == null)
+               {
+                  transportConfig = new Pair<TransportConfiguration, TransportConfiguration>(conn.getTransportConnection().getConnectorConfig(), null);
+               }
+               
                serverLocator.notifyNodeUp(topMessage.getUniqueEventID(),
                                           topMessage.getNodeID(),
-                                          topMessage.getPair(),
+                                          transportConfig,
                                           topMessage.isLast());
             }
          }

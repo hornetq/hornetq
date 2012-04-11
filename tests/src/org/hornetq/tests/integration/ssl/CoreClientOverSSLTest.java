@@ -119,9 +119,9 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
       locator.setCallTimeout(2000);
-      ClientSessionFactory sf = locator.createSessionFactory();
       try
       {
+         ClientSessionFactory sf = locator.createSessionFactory();
          sf.createSession(false, true, true);
          Assert.fail();
       }
