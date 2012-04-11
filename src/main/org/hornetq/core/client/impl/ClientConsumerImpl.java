@@ -679,11 +679,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          
          try
          {
-            if (currentLargeMessageController != null)
-            {
-               currentLargeMessageController.cancel();
-               currentLargeMessageController = null;
-            }
+            resetLargeMessageController();
          }
          catch (Throwable e)
          {
@@ -695,6 +691,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Need to send credits for the messages in the buffer
 
       waitForOnMessageToComplete(waitForOnMessage);
+   }
+
+   /**
+    * 
+    */
+   private void resetLargeMessageController()
+   {
+      
+      LargeMessageController controller = currentLargeMessageController;
+      if (controller != null)
+      {
+         controller.cancel();
+         currentLargeMessageController = null;
+      }
    }
 
    public int getClientWindowSize()
@@ -900,7 +910,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (!ok)
       {
-         ClientConsumerImpl.log.warn("Timed out waiting for handler to complete processing");
+         ClientConsumerImpl.log.warn("Executor couldn't finish its operation before timeout : " + sessionExecutor.toString());
+         ClientConsumerImpl.log.warn("Timed out waiting for handler to complete processing", new Exception ("trace"));
       }
    }
 
@@ -1046,14 +1057,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // might be acked and if the consumer is already closed, the ack will be ignored
          closing = true;
 
+         resetLargeMessageController();
+
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
-
-         if (currentLargeMessageController != null)
-         {
-            currentLargeMessageController.cancel();
-            currentLargeMessageController = null;
-         }
 
          closed = true;
 

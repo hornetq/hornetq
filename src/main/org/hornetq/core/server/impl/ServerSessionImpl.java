@@ -589,7 +589,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       
       if (consumer == null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server while acking messageID=" + messageID);
       }
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
@@ -1107,7 +1107,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       
       if (currentLargeMessage != null)
       {
-         ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
+         ServerSessionImpl.log.warn("Replacing incomplete LargeMessage before sending was finished, current = " + currentLargeMessage + " new Large message = " + largeMsg);
       }
 
       currentLargeMessage = largeMsg;
