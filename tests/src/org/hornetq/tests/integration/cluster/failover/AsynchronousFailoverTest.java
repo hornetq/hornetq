@@ -442,7 +442,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                      logAndSystemOut("#test duplicate id rejected on sending");
                      break;
                   }
-                  else if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.UNBLOCKED)
+                  else if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.UNBLOCKED || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
                   {
                      log.info("#test transaction rollback retrying on sending");
                      // OK
@@ -543,7 +543,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
                catch (HornetQException e)
                {
-                  if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
+                  if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
                   {
                      logAndSystemOut("Transaction rolled back with " + msgs.size(), e);
                      // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
