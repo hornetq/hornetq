@@ -133,7 +133,7 @@ class StompProtocolManager implements ProtocolManager
          {
             return new ConnectionEntry(conn, null, System.currentTimeMillis(), ttl);
          }
-         return new ConnectionEntry(conn, null, System.currentTimeMillis(), 1 * 60 * 1000);
+         throw new IllegalStateException("Stomp Connection TTL cannot be negative : " + ttl);
       }
 
       ttl = server.getConfiguration().getConnectionTTLOverride();
@@ -591,7 +591,7 @@ class StompProtocolManager implements ProtocolManager
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
       }
-      stompSession.getSession().send(message, true);           
+      stompSession.sendInternal(message, true);       
       
       return null;
    }
