@@ -300,6 +300,10 @@
 		<xsd:attribute name="name" type="xsd:string" use="optional"/>
 	</xsd:complexType>
 
+    <xsd:complexType name="discovery-group-refType">
+        <xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required"></xsd:attribute>
+    </xsd:complexType>
+
 	<xsd:complexType name="bridgeType">	   
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="queue-name" type="xsd:IDREF">
@@ -347,11 +351,7 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>				
-				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
-					<xsd:complexType>
-						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
-						</xsd:attribute>
-					</xsd:complexType>
+				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref" type="discovery-group-refType">
 				</xsd:element>
 			</xsd:choice>
 		</xsd:sequence>	
@@ -397,11 +397,7 @@
                         <xsd:attribute name="allow-direct-connections-only" type="xsd:boolean" use="optional"/>
                     </xsd:complexType>
                 </xsd:element>	
-				<xsd:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
-					<xsd:complexType>
-						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
-						</xsd:attribute>
-					</xsd:complexType>
+				<xsd:element maxOccurs="1" minOccurs="0" name="discovery-group-ref" type="discovery-group-refType">
 				</xsd:element>
 			</xsd:choice>
 		</xsd:sequence>
