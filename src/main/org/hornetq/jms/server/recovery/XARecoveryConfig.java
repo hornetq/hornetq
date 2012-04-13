@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 
 /**
  * 
@@ -81,6 +83,24 @@ public class XARecoveryConfig
       return password;
    }
    
+   
+   /**
+    * Create a serverLocator using the configuration
+    * @return
+    */
+   public ServerLocator createServerLocator()
+   {
+      if (getDiscoveryConfiguration() != null)
+      {
+         return HornetQClient.createServerLocator(isHA(), getDiscoveryConfiguration());
+      }
+      else
+      {
+         return HornetQClient.createServerLocator(isHA(), getTransportConfig());
+      }
+
+   }
+   
    /* (non-Javadoc)
     * @see java.lang.Object#hashCode()
     */
@@ -94,8 +114,9 @@ public class XARecoveryConfig
       return result;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
+   /* 
+    * We don't use username and password on purpose.
+    * Just having the connector is enough, as we don't want to duplicate resources just because of usernames
     */
    @Override
    public boolean equals(Object obj)

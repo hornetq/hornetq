@@ -12,14 +12,15 @@
  */
 package org.hornetq.ra;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
 
 /**
  * Various utility functions
