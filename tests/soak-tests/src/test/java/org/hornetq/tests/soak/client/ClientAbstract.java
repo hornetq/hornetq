@@ -13,42 +13,37 @@
 
 package org.hornetq.tests.soak.client;
 
-import java.util.logging.Logger;
-
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * WARNING: This is not a sample on how you should handle XA.
- *          You are supposed to use a TransactionManager.
- *          This class is doing the job of a TransactionManager that fits for the purpose of this test only,
- *          however there are many more pitfalls to deal with Transactions. 
- *          
- *          This is just to stress and soak test Transactions with HornetQ. 
- *          
- *          And this is dealing with XA directly for the purpose testing only.
- *
+ * WARNING: This is not a sample on how you should handle XA. You are supposed to use a
+ * TransactionManager. This class is doing the job of a TransactionManager that fits for the purpose
+ * of this test only, however there are many more pitfalls to deal with Transactions.
+ * <p>
+ * This is just to stress and soak test Transactions with HornetQ.
+ * <p>
+ * And this is dealing with XA directly for the purpose testing only.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public abstract class ClientAbstract extends Thread
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(ClientAbstract.class.getName());
+   private static final Logger log = Logger.getLogger(ClientAbstract.class);
 
    // Attributes ----------------------------------------------------
 
    protected ClientSession session;
 
    protected final ClientSessionFactory sf;
-   
+
    protected Xid activeXid;
 
    protected volatile boolean running = true;
@@ -64,7 +59,7 @@ public abstract class ClientAbstract extends Thread
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public ClientAbstract(ClientSessionFactory sf)
    {
       this.sf = sf;
@@ -131,7 +126,7 @@ public abstract class ClientAbstract extends Thread
          }
          catch (Exception e)
          {
-            ClientAbstract.log.warning("Can't connect to server, retrying");
+            ClientAbstract.log.warn("Can't connect to server, retrying");
             disconnect();
             try
             {
