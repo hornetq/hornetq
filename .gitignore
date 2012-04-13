@@ -1,5 +1,6 @@
 .idea/
 build/
+logs/
 docs/quickstart-guide/target/
 docs/user-manual/target/
 eclipse-output/
