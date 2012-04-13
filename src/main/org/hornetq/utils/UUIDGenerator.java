@@ -150,6 +150,9 @@ public final class UUIDGenerator
          isUpMethod = NetworkInterface.class.getMethod("isUp");
          isLoopbackMethod = NetworkInterface.class.getMethod("isLoopback");
          isVirtualMethod = NetworkInterface.class.getMethod("isVirtual");
+         // check if we have enough security permissions to create and shutdown an executor
+         ExecutorService executor = Executors.newFixedThreadPool(0);
+         executor.shutdownNow();
       }
       catch (Throwable t)
       {
