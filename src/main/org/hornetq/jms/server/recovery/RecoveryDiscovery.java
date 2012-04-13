@@ -23,7 +23,9 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 
 /**
- * A RecoveryDiscovery
+ * <p>This class will have a simple Connection Factory and will listen
+ *  for topology updates. </p>
+ * <p>This Discovery is instantiated by {@link HornetQRecoveryRegistry}
  *
  * @author clebertsuconic
  *
