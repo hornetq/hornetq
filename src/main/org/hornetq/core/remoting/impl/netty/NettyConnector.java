@@ -13,6 +13,9 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
@@ -458,7 +461,7 @@ public class NettyConnector implements Connector
          return null;
       }
 
-      SocketAddress address;
+      SocketAddress remoteDestination;
       if (useServlet)
       {
          try
@@ -472,9 +475,28 @@ public class NettyConnector implements Connector
             throw new IllegalArgumentException(e.getMessage());
          }
       }
-      address = new InetSocketAddress(host, port);
 
-      ChannelFuture future = bootstrap.connect(address);
+      // HORNETQ-907 - strip the scope-id from the remote destination so we can work with IPv6
+      remoteDestination = new InetSocketAddress(host, port);
+      InetAddress inetAddress = ((InetSocketAddress) remoteDestination).getAddress();
+      if (inetAddress instanceof Inet6Address)
+      {
+         Inet6Address inet6Address = (Inet6Address) inetAddress;
+         if (inet6Address.getScopeId() != 0)
+         {
+            try
+            {
+               remoteDestination = new InetSocketAddress(InetAddress.getByAddress(inet6Address.getAddress()), ((InetSocketAddress) remoteDestination).getPort());
+            }
+            catch (UnknownHostException e)
+            {
+               throw new IllegalArgumentException(e.getMessage());
+            }
+         }
+      }
+      NettyConnector.log.debug("Remote destination: " + remoteDestination);
+
+      ChannelFuture future = bootstrap.connect(remoteDestination);
       future.awaitUninterruptibly();
 
       if (future.isSuccess())
