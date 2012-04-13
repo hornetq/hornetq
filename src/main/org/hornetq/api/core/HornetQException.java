@@ -189,6 +189,11 @@ public class HornetQException extends Exception
    public static final int NATIVE_ERROR_ALLOCATE_MEMORY = 209;
 
    /**
+    * The outcome of a tx is unknown
+    */
+   public static final int TRANSACTION_OUTCOME_UNKNOWN = 210;
+
+   /**
     * AIO is full
     */
    public static final int NATIVE_ERROR_AIO_FULL = 211;
