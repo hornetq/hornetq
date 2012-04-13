@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
@@ -40,7 +40,7 @@ import org.hornetq.utils.TypedProperties;
  */
 public class RemoteGroupingHandler implements GroupingHandler
 {
-   private static Logger log = Logger.getLogger(RemoteGroupingHandler.class.getName());
+   private static Logger log = Logger.getLogger(RemoteGroupingHandler.class);
 
    private final SimpleString name;
 
@@ -103,8 +103,8 @@ public class RemoteGroupingHandler implements GroupingHandler
 
          managementService.sendNotification(notification);
 
-         sendCondition.await(timeout, TimeUnit.MILLISECONDS);
-
+         if (!sendCondition.await(timeout, TimeUnit.MILLISECONDS))
+            log.warn("timed-out waiting for sendCondition");
          response = responses.get(proposal.getGroupId());
 
       }
