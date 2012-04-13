@@ -55,11 +55,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
    private ClientSessionFactory csf;
 
-   private XAResource delegate;
+   private ClientSession delegate;
 
    private XARecoveryConfig[] xaRecoveryConfigs;
-
-   // private TransportConfiguration currentConnection;
 
    public HornetQXAResourceWrapper(XARecoveryConfig... xaRecoveryConfigs)
    {
@@ -76,7 +74,12 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public Xid[] recover(final int flag) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("Recover " + xaResource);
+
+      if (log.isDebugEnabled())
+      {
+         log.debug("looking for recover at " + xaResource + " configuration " + Arrays.toString(this.xaRecoveryConfigs));
+      }
+      
       try
       {
          Xid[] xids = xaResource.recover(flag);
@@ -308,6 +311,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       for (XARecoveryConfig xaRecoveryConfig : xaRecoveryConfigs)
       {
 
+         if (xaRecoveryConfig == null)
+         {
+            continue;
+         }
          if (log.isDebugEnabled())
          {
             log.debug("Trying to connect recovery on " + xaRecoveryConfig + " of " + Arrays.toString(xaRecoveryConfigs));
@@ -317,13 +324,17 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
          try
          {
+            // setting ha=false because otherwise the connector would go towards any server, causing Heuristic exceptions
+            // we really need to control what server it's connected to
+
+            // Manual configuration may still use discovery, so we will keep this
             if (xaRecoveryConfig.getDiscoveryConfiguration() != null)
             {
-               serverLocator = HornetQClient.createServerLocator(xaRecoveryConfig.isHA(), xaRecoveryConfig.getDiscoveryConfiguration());
+               serverLocator = HornetQClient.createServerLocator(false, xaRecoveryConfig.getDiscoveryConfiguration());
             }
             else
             {
-               serverLocator = HornetQClient.createServerLocator(xaRecoveryConfig.isHA(), xaRecoveryConfig.getTransportConfig());
+               serverLocator = HornetQClient.createServerLocator(false, xaRecoveryConfig.getTransportConfig());
             }
             serverLocator.disableFinalizeCheck();
             csf = serverLocator.createSessionFactory();
@@ -401,28 +412,54 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
     */
    public void close()
    {
-      try
-      {
          ServerLocator oldServerLocator = null;
          ClientSessionFactory oldCSF = null;
+         ClientSession oldDelegate = null;
          synchronized (HornetQXAResourceWrapper.lock)
          {
             oldCSF = csf;
             csf = null;
+            oldDelegate = delegate;
             delegate = null;
             oldServerLocator = serverLocator;
             serverLocator = null;
          }
+         
+         if (oldDelegate != null)
+         {
+            try
+            {
+               oldDelegate.close();
+            }
+            catch (Throwable ignorable)
+            {
+               log.debug(ignorable.getMessage(), ignorable);
+            }
+         }
+         
          if (oldCSF != null)
          {
-            oldCSF.close();
-            oldServerLocator.close();
+            try
+            {
+               oldCSF.close();
+            }
+            catch (Throwable ignorable)
+            {
+               log.debug(ignorable.getMessage(), ignorable);
+            }
          }
-      }
-      catch (Throwable ignored)
-      {
-         HornetQXAResourceWrapper.log.debug("Ignored error during close", ignored);
-      }
+         
+         if (oldServerLocator != null)
+         {
+            try
+            {
+               oldServerLocator.close();
+            }
+            catch (Throwable ignorable)
+            {
+               log.debug(ignorable.getMessage(), ignorable);
+            }
+         }
    }
 
    /**

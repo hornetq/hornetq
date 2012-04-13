@@ -518,7 +518,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private synchronized TransportConfiguration selectConnector()
    {
-      if (receivedTopology)
+      // if the ServerLocator is !had, we will always use the initialConnectors
+      // on that case if the ServerLocator was configured to be in-vm, it will always be in-vm no matter
+      // what updates were sent from the server
+      if (receivedTopology && ha)
       {
          int pos = loadBalancingPolicy.select(topologyArray.length);
 
@@ -526,12 +529,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          return pair.getA();
       }
-
-      // Get from initialconnectors
-
-      int pos = loadBalancingPolicy.select(initialConnectors.length);
-
-      return initialConnectors[pos];
+      else
+      {
+         // Get from initialconnectors
+   
+         int pos = loadBalancingPolicy.select(initialConnectors.length);
+   
+         return initialConnectors[pos];
+      }
    }
 
    public void start(Executor executor) throws Exception
@@ -779,29 +784,25 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
          while (retry);
 
-         if (ha || clusterConnection)
+         final long timeout = System.currentTimeMillis() + callTimeout;
+         while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
          {
-            final long timeout = System.currentTimeMillis() + 30000;
-            while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
+            // Now wait for the topology
+
+            try
             {
-               // Now wait for the topology
-
-               try
-               {
-                  wait(1000);
-               }
-               catch (InterruptedException ignore)
-               {
-               }
-
+               wait(1000);
+            }
+            catch (InterruptedException ignore)
+            {
             }
 
-            if (System.currentTimeMillis() > timeout && !receivedTopology)
-            {
-               throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                          "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
-            }
+         }
 
+         if (System.currentTimeMillis() > timeout && !receivedTopology)
+         {
+            throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
+                                       "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
          }
 
          addFactory(factory);
@@ -1392,12 +1393,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
-      if (!ha)
-      {
-         // there's no topology
-         return;
-      }
-
       if (log.isDebugEnabled())
       {
          log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));

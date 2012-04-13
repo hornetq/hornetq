@@ -1,7 +1,9 @@
 .idea/
 build/
+logs/
 docs/quickstart-guide/target/
 docs/user-manual/target/
+eclipse-output/
 examples/common/Common1.iml
 examples/core/embedded-remote/Embedded-remote.iml
 examples/core/embedded/Embedded3.iml

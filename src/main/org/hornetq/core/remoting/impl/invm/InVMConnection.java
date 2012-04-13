@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.impl.invm;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -244,6 +247,22 @@ public class InVMConnection implements Connection
    {
       return executor;
    }
+   
+   
+   /**
+    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * same target this is connect to
+    * @return
+    */
+   public TransportConfiguration getConnectorConfig()
+   {
+      Map<String, Object> params = new HashMap<String, Object>();
+
+      params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, serverID);
+      
+      return new TransportConfiguration(InVMConnectorFactory.class.getName(), params);
+   }
+
 
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
