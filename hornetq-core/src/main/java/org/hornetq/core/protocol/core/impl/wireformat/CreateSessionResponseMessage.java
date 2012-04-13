@@ -19,20 +19,12 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class CreateSessionResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private int serverVersion;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public CreateSessionResponseMessage(final int serverVersion)
    {
@@ -45,8 +37,6 @@ public class CreateSessionResponseMessage extends PacketImpl
    {
       super(PacketImpl.CREATESESSION_RESP);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public boolean isResponse()
@@ -72,31 +62,32 @@ public class CreateSessionResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof CreateSessionResponseMessage == false)
-      {
-         return false;
-      }
-
-      CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
-
-      boolean matches = super.equals(other) && serverVersion == r.serverVersion;
-
-      return matches;
-   }
-
-   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + serverVersion;
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof CreateSessionResponseMessage))
+         return false;
+      CreateSessionResponseMessage other = (CreateSessionResponseMessage)obj;
+      if (serverVersion != other.serverVersion)
+         return false;
+      return true;
+   }
 }

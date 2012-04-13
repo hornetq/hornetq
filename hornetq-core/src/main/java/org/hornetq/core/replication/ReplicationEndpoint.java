@@ -917,7 +917,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
     * backup server of the live's nodeID.
     * @param quorumManager
     */
-   public void setQuorumManager(QuorumManager quorumManager)
+   public synchronized void setQuorumManager(QuorumManager quorumManager)
    {
       this.quorumManager = quorumManager;
    }

@@ -202,8 +202,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return;
       }
 
-      started = true;
-
       stopping = false;
 
       if (activated)
@@ -218,6 +216,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STARTED, props);
          notificationService.sendNotification(notification);
       }
+
+      started = true;
    }
 
    public String debug()

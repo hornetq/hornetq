@@ -130,8 +130,7 @@ public class XMLUtilTest extends TestCase
       }
       catch (IllegalArgumentException e)
       {
-         // OK
-         e.printStackTrace();
+         // expected
       }
    }
 

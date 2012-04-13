@@ -72,7 +72,8 @@ public class NettySecurityClientTest extends ServiceTestBase
          vmargs = new String[] { "-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath() };
       }
 
-      // spawn a JVM that creates a client withor without a security manager which sends and receives a test message
+      // spawn a JVM that creates a client with a security manager which sends and receives a
+      // test message
       Process p = SpawnedVMSupport.spawnVM(SimpleClient.class.getName(),
                                            "-Xms512m -Xmx512m ",
                                            vmargs,
