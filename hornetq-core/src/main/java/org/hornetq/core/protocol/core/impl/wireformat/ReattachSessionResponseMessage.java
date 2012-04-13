@@ -17,25 +17,17 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A ReattachSessionResponseMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class ReattachSessionResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private int lastConfirmedCommandID;
 
    private boolean reattached;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReattachSessionResponseMessage(final int lastConfirmedCommandID, final boolean reattached)
    {
@@ -84,29 +76,35 @@ public class ReattachSessionResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof ReattachSessionResponseMessage == false)
-      {
-         return false;
-      }
-
-      ReattachSessionResponseMessage r = (ReattachSessionResponseMessage)other;
-
-      return super.equals(other) && lastConfirmedCommandID == r.lastConfirmedCommandID;
-   }
-
-   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + lastConfirmedCommandID;
+      result = prime * result + (reattached ? 1231 : 1237);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof ReattachSessionResponseMessage))
+         return false;
+      ReattachSessionResponseMessage other = (ReattachSessionResponseMessage)obj;
+      if (lastConfirmedCommandID != other.lastConfirmedCommandID)
+         return false;
+      if (reattached != other.reattached)
+         return false;
+      return true;
+   }
 }

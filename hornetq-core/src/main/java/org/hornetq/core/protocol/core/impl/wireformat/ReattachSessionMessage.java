@@ -17,25 +17,17 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A ReattachSessionMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class ReattachSessionMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private String name;
 
    private int lastConfirmedCommandID;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReattachSessionMessage(final String name, final int lastConfirmedCommandID)
    {
@@ -50,8 +42,6 @@ public class ReattachSessionMessage extends PacketImpl
    {
       super(PacketImpl.REATTACH_SESSION);
    }
-
-   // Public --------------------------------------------------------
 
    public String getName()
    {
@@ -78,29 +68,40 @@ public class ReattachSessionMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof ReattachSessionMessage == false)
-      {
-         return false;
-      }
-
-      ReattachSessionMessage r = (ReattachSessionMessage)other;
-
-      return super.equals(other) && name.equals(r.name);
-   }
-
-   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + lastConfirmedCommandID;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof ReattachSessionMessage))
+         return false;
+      ReattachSessionMessage other = (ReattachSessionMessage)obj;
+      if (lastConfirmedCommandID != other.lastConfirmedCommandID)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      return true;
+   }
 }

@@ -22,19 +22,11 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionAcknowledgeMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long consumerID;
 
    private long messageID;
-   
+
    private boolean requiresResponse;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionAcknowledgeMessage(final long consumerID, final long messageID, final boolean requiresResponse)
    {
@@ -90,24 +82,32 @@ public class SessionAcknowledgeMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionAcknowledgeMessage == false)
-      {
-         return false;
-      }
-
-      SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
-
-      return super.equals(other) && consumerID == r.consumerID &&
-             messageID == r.messageID &&
-             requiresResponse == r.requiresResponse;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + (int)(messageID ^ (messageID >>> 32));
+      result = prime * result + (requiresResponse ? 1231 : 1237);
+      return result;
    }
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionAcknowledgeMessage))
+         return false;
+      SessionAcknowledgeMessage other = (SessionAcknowledgeMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (messageID != other.messageID)
+         return false;
+      if (requiresResponse != other.requiresResponse)
+         return false;
+      return true;
+   }
 }
