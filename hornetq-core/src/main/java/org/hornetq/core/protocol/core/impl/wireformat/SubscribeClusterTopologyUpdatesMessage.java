@@ -24,10 +24,6 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
 {
    private boolean clusterConnection;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public SubscribeClusterTopologyUpdatesMessage(final boolean clusterConnection)
    {
       super(PacketImpl.SUBSCRIBE_TOPOLOGY);
