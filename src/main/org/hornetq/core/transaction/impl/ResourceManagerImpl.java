@@ -129,11 +129,11 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
    {
       List<Xid> xids = new ArrayList<Xid>();
 
-      for (Xid xid : transactions.keySet())
+      for (Map.Entry<Xid, Transaction> entry : transactions.entrySet())
       {
-         if (transactions.get(xid).getState() == Transaction.State.PREPARED)
+         if (entry.getValue().getState() == Transaction.State.PREPARED)
          {
-            xids.add(xid);
+            xids.add(entry.getKey());
          }
       }
       return xids;
@@ -141,12 +141,11 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    public Map<Xid, Long> getPreparedTransactionsWithCreationTime()
    {
-      List<Xid> xids = getPreparedTransactions();
       Map<Xid, Long> xidsWithCreationTime = new HashMap<Xid, Long>();
 
-      for (Xid xid : xids)
+      for (Map.Entry<Xid, Transaction> entry : transactions.entrySet())
       {
-         xidsWithCreationTime.put(xid, transactions.get(xid).getCreateTime());
+         xidsWithCreationTime.put(entry.getKey(), entry.getValue().getCreateTime());
       }
       return xidsWithCreationTime;
    }
