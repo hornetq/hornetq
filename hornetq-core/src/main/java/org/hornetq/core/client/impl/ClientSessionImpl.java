@@ -520,12 +520,20 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       return this;
    }
 
-   private void rollbackOnFailover() throws HornetQException
+   private void rollbackOnFailover(boolean outcomeKnown) throws HornetQException
    {
       rollback(false);
 
+      if(outcomeKnown)
+      {
       throw new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK,
                                  "The transaction was rolled back on failover to a backup server");
+   }
+      else
+      {
+         throw new HornetQException(HornetQException.TRANSACTION_OUTCOME_UNKNOWN,
+               "The transaction was rolled back on failover however commit may have been succesful");
+      }
    }
 
    public void commit() throws HornetQException
@@ -539,7 +547,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
       if (rollbackOnly)
       {
-         rollbackOnFailover();
+         rollbackOnFailover(true);
       }
 
       flushAcks();
@@ -555,7 +563,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
             // The call to commit was unlocked on failover, we therefore rollback the tx,
             // and throw a transaction rolled back exception instead
 
-            rollbackOnFailover();
+            rollbackOnFailover(false);
          }
          else
          {
