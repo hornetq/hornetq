@@ -18,20 +18,11 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * @version <tt>$Revision$</tt>
  */
 public class SessionConsumerCloseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private long consumerID;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionConsumerCloseMessage(final long objectID)
    {
@@ -71,22 +62,26 @@ public class SessionConsumerCloseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionConsumerCloseMessage == false)
-      {
-         return false;
-      }
-
-      SessionConsumerCloseMessage r = (SessionConsumerCloseMessage)other;
-
-      return super.equals(other) && consumerID == r.consumerID;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      return result;
    }
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionConsumerCloseMessage))
+         return false;
+      SessionConsumerCloseMessage other = (SessionConsumerCloseMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      return true;
+   }
 }

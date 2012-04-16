@@ -21,9 +21,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A SessionBindingQueryResponseMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -87,38 +87,34 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionBindingQueryResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionBindingQueryResponseMessage r = (SessionBindingQueryResponseMessage)other;
-
-      if (super.equals(other) && exists == r.exists)
-      {
-         if (queueNames.size() == r.queueNames.size())
-         {
-            for (int i = 0; i < queueNames.size(); i++)
-            {
-               if (!queueNames.get(i).equals(r.queueNames.get(i)))
-               {
-                  return false;
-               }
-            }
-         }
-         else
-         {
-            return false;
-         }
-      }
-      else
-      {
-         return false;
-      }
-
-      return true;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (exists ? 1231 : 1237);
+      result = prime * result + ((queueNames == null) ? 0 : queueNames.hashCode());
+      return result;
    }
 
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionBindingQueryResponseMessage))
+         return false;
+      SessionBindingQueryResponseMessage other = (SessionBindingQueryResponseMessage)obj;
+      if (exists != other.exists)
+         return false;
+      if (queueNames == null)
+      {
+         if (other.queueNames != null)
+            return false;
+      }
+      else if (!queueNames.equals(other.queueNames))
+         return false;
+      return true;
+   }
 }

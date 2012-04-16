@@ -18,9 +18,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A SessionQueueQueryMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -58,16 +58,31 @@ public class SessionBindingQueryMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionBindingQueryMessage == false)
-      {
-         return false;
-      }
-
-      SessionBindingQueryMessage r = (SessionBindingQueryMessage)other;
-
-      return super.equals(other) && address.equals(r.address);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      return result;
    }
 
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionBindingQueryMessage))
+         return false;
+      SessionBindingQueryMessage other = (SessionBindingQueryMessage)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      return true;
+   }
 }
