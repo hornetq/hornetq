@@ -127,13 +127,13 @@ public class ExtraStompTest extends StompTestBase
 
          QueueBrowser browser = session.createBrowser(queue);
          
-         Enumeration enu = browser.getEnumeration();
+         Enumeration<Message> enu = browser.getEnumeration();
          
          while (enu.hasMoreElements())
          {
-            Message msg = (Message)enu.nextElement();
+            Message msg = enu.nextElement();
             String msgId = msg.getStringProperty("hq-message-id");
-            if (enable)
+            if (enable != null && enable.booleanValue())
             {
                assertNotNull(msgId);
                assertTrue(msgId.indexOf("STOMP") == 0);
