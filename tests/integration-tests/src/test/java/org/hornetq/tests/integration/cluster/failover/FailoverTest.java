@@ -1625,7 +1625,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
+               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
                {
                   // Ok - now we retry the commit after removing the interceptor
 
@@ -1746,7 +1746,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
+               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
                {
                   // Ok - now we retry the commit after removing the interceptor
 
