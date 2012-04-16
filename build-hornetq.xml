@@ -833,6 +833,8 @@
          <manifest>
             <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
             <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
          </manifest>
       </jar>
 
@@ -855,6 +857,8 @@
          <manifest>
             <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
             <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
          </manifest>
       </jar>
    </target>
@@ -866,6 +870,12 @@
          <fileset dir="${src.config.dir}/common">
             <include name="**/hornetq-jms.xsd"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
 
    </target>
@@ -878,6 +888,12 @@
          <fileset dir="${src.config.dir}/common">
             <include name="**/hornetq-jms.xsd"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
 	</target>
 
@@ -885,8 +901,14 @@
 
       <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">
          <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
-	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+	     <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
          <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
 
    </target>
@@ -898,35 +920,55 @@
             <include name="org/hornetq/jms/client/**/*.*"/>
             <include name="org/hornetq/jms/referenceable/**/*.*"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
-	   <target name="jar-jms-client-java5" depends="compile-jms-java5">
+   <target name="jar-jms-client-java5" depends="compile-jms-java5">
+      <jar jarfile="${build.jars.dir}/${jms.client.java5.jar.name}">
+         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
+         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+        </manifest>
+      </jar>
+   </target>
 
-	      <jar jarfile="${build.jars.dir}/${jms.client.java5.jar.name}">
-	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
-		      <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
-	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
-	      </jar>
+   <target name="jar-jms-client-java5-sources">
+      <jar jarfile="${build.jars.dir}/${jms.client.java5.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/api/jms/**/*.*"/>
+            <include name="org/hornetq/jms/client/**/*.*"/>
+            <include name="org/hornetq/jms/referenceable/**/*.*"/>
+         </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
+      </jar>
+   </target>
 
-	   </target>
-
-	   <target name="jar-jms-client-java5-sources">
-	      <jar jarfile="${build.jars.dir}/${jms.client.java5.sources.jar.name}">
-	         <fileset dir="${src.main.dir}">
-	            <include name="org/hornetq/api/jms/**/*.*"/>
-	            <include name="org/hornetq/jms/client/**/*.*"/>
-	            <include name="org/hornetq/jms/referenceable/**/*.*"/>
-	         </fileset>
-	      </jar>
-	   </target>
-
-	<target name="jar-jboss-integration" depends="compile-jboss-integration">
-
+   <target name="jar-jboss-integration" depends="compile-jboss-integration">
       <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
          <fileset dir="${build.jboss.integration.classes.dir}" includes="**"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
-
    </target>
 
    <target name="jar-jboss-integration-sources">
@@ -934,15 +976,25 @@
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/jboss/**/*.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
-    <target name="jar-twitter-integration" depends="compile-twitter-integration">
-
+   <target name="jar-twitter-integration" depends="compile-twitter-integration">
       <jar jarfile="${build.jars.dir}/${twitter.integration.jar.name}">
          <fileset dir="${build.twitter.integration.classes.dir}" includes="**"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
-
    </target>
 
    <target name="jar-twitter-integration-sources">
@@ -950,15 +1002,25 @@
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/twitter/**/*.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
-    <target name="jar-spring-integration" depends="compile-spring-integration">
-
+   <target name="jar-spring-integration" depends="compile-spring-integration">
       <jar jarfile="${build.jars.dir}/${spring.integration.jar.name}">
          <fileset dir="${build.spring.integration.classes.dir}" includes="**"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
-
    </target>
 
    <target name="jar-spring-integration-sources">
@@ -966,16 +1028,20 @@
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/spring/**/*.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
 	<!-- author: Lucas Amador -->
    <target name="jar-jboss-service" depends="compile-jboss-service">
-
       <jar jarfile="${build.jars.dir}/${service.sar.name}">
          <fileset dir="${build.service.classes.dir}" includes="**"/>
       </jar>
-
    </target>
 
    <target name="jar-jboss-service-sources">
@@ -987,11 +1053,15 @@
    </target>
 
    <target name="jar-bootstrap" depends="compile-bootstrap">
-
       <jar jarfile="${build.jars.dir}/${bootstrap.jar.name}">
          <fileset dir="${build.bootstrap.classes.dir}" includes="**"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
-
    </target>
 
    <target name="jar-bootstrap-sources">
@@ -999,15 +1069,25 @@
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/bootstrap/**/*.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
    <target name="jar-logging" depends="compile-logging">
-
       <jar jarfile="${build.jars.dir}/${logging.jar.name}">
          <fileset dir="${build.logging.classes.dir}" includes="**"/>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
-
    </target>
 
    <target name="jar-logging-sources">
@@ -1015,6 +1095,12 @@
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/logging/**/*.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
@@ -1047,6 +1133,12 @@
             <include name="org/hornetq/core/server/ServerMessage.class"/>
          	<include name="org/hornetq/core/journal/EncodingSupport.class"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
 
    </target>
@@ -1080,6 +1172,12 @@
             <include name="org/hornetq/core/server/ServerMessage.java"/>
             <include name="org/hornetq/core/journal/EncodingSupport.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
@@ -1112,6 +1210,12 @@
             <include name="org/hornetq/core/server/ServerMessage.class"/>
             <include name="org/hornetq/core/journal/EncodingSupport.class"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
 
    </target>
@@ -1145,6 +1249,12 @@
             <include name="org/hornetq/core/server/ServerMessage.java"/>
             <include name="org/hornetq/core/journal/EncodingSupport.java"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 	
@@ -1153,6 +1263,12 @@
          <fileset dir="${build.ra.classes.dir}">
            <include name="org/hornetq/ra/**/*.class"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
       <jar jarfile="${build.jars.dir}/${ra.rar.name}">
          <metainf dir="${src.config.dir}" includes="ra.xml"/>
@@ -1167,6 +1283,12 @@
          <fileset dir="${src.main.dir}">
            <include name="org/hornetq/ra/**/*"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
@@ -1187,6 +1309,12 @@
          <fileset dir="${native.bin.dir}">
            <include  name="**/*.so"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
@@ -1202,33 +1330,38 @@
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
          </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+            <attribute name="Implementation-Version" value="${hornetq.version.string}"/>
+            <attribute name="Specification-Version" value="${module.version}"/>
+         </manifest>
       </jar>
    </target>
 
    <target name="jar-rest-init" depends="jar-jms">
       <ant antfile="build-maven.xml" target="upload-local-target">
-	<property name="artifact.id" value="hornetq-core"/>
-	<property name="file-name" value="hornetq-core"/>
+         <property name="artifact.id" value="hornetq-core"/>
+         <property name="file-name" value="hornetq-core"/>
       </ant>
       <ant antfile="build-maven.xml" target="upload-local-target">
-	<property name="artifact.id" value="hornetq-jms"/>
-	<property name="file-name" value="hornetq-jms"/>
+         <property name="artifact.id" value="hornetq-jms"/>
+         <property name="file-name" value="hornetq-jms"/>
       </ant>
    </target>
       
-
    <target name="jar-rest" depends="jar-rest-init">
       <ant antfile="build-thirdparty.xml" target="maven-install">
-        <property name="maven.opts" value="-Dmaven.test.skip=true"/>
-	<property name="maven.goal" value="install"/>
-	<property name="working.dir" value="hornetq-rest"/>
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+	     <property name="working.dir" value="hornetq-rest"/>
       </ant>
    </target>
 
    <target name="rest-tests" depends="jar-rest">
       <ant antfile="build-thirdparty.xml" target="maven-install">
-	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
-	<property name="maven.goal" value="install"/>
+         <property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+         <property name="maven.goal" value="install"/>
       </ant>
    </target>
 
