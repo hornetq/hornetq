@@ -14,6 +14,9 @@ package org.hornetq.core.remoting.impl.netty;
 
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.Inet6Address;
+import java.net.UnknownHostException;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -472,6 +475,8 @@ public class NettyConnector implements Connector
             throw new IllegalArgumentException(e.getMessage());
          }
       }
+
+      // HORNETQ-907 - strip off IPv6 scope-id (if necessary)
       remoteDestination = new InetSocketAddress(host, port);
       InetAddress inetAddress = ((InetSocketAddress) remoteDestination).getAddress();
       if (inetAddress instanceof Inet6Address)
