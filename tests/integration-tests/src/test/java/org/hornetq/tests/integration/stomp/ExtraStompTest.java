@@ -135,7 +135,7 @@ public class ExtraStompTest extends StompTestBase
          {
             Message msg = (Message) enu.nextElement();
             String msgId = msg.getStringProperty("hq-message-id");
-            if (enable)
+            if (enable != null && enable.booleanValue())
             {
                assertNotNull(msgId);
                assertTrue(msgId.indexOf("STOMP") == 0);
