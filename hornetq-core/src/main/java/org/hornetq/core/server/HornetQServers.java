@@ -18,7 +18,6 @@ import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
@@ -37,8 +36,6 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
  */
 public class HornetQServers
 {
-   private static final Logger log = Logger.getLogger(HornetQServers.class);
-
    public static HornetQServer newHornetQServer(final Configuration config, final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();

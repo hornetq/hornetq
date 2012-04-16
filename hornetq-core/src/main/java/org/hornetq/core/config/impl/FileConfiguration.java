@@ -18,7 +18,7 @@ import java.io.Reader;
 import java.net.URL;
 
 import org.hornetq.core.deployers.impl.FileConfigurationParser;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -31,9 +31,6 @@ import org.w3c.dom.Element;
 public class FileConfiguration extends ConfigurationImpl
 {
    private static final long serialVersionUID = -4766689627675039596L;
-
-   private static final Logger log = Logger.getLogger(FileConfiguration.class);
-
    // Constants ------------------------------------------------------------------------
 
    private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
@@ -67,7 +64,7 @@ public class FileConfiguration extends ConfigurationImpl
          url = new URL(configurationUrl);
       }
 
-      FileConfiguration.log.debug("Loading server configuration from " + url);
+      HornetQLogger.LOGGER.debug("Loading server configuration from " + url);
 
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);

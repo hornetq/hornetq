@@ -23,7 +23,6 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
 
@@ -37,8 +36,6 @@ import org.hornetq.core.message.impl.MessageImpl;
  */
 public class ClientMessageImpl extends MessageImpl implements ClientMessageInternal
 {
-   private static final Logger log = Logger.getLogger(ClientMessageImpl.class);
-
    // added this constant here so that the client package have no dependency on JMS
    public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
 

@@ -7,15 +7,13 @@ import java.nio.ByteBuffer;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.replication.ReplicatedLargeMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.LargeServerMessage;
 
 public final class LargeServerMessageInSync implements ReplicatedLargeMessage
 {
-   private static final Logger log = Logger.getLogger(LargeServerMessageInSync.class);
-
    private static final String SYNC_EXTENSION = ".sync";
    private final LargeServerMessage mainLM;
    private final StorageManager storageManager;
@@ -83,7 +81,7 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
          }
          catch (Exception e)
          {
-            log.error(e.getMessage(), e);
+            HornetQLogger.LOGGER.largeMessageErrorReleasingResources(e);
          }
       }
    }

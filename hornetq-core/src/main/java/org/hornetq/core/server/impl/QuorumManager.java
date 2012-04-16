@@ -18,9 +18,9 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 
 /**
@@ -32,7 +32,6 @@ import org.hornetq.core.server.HornetQServer;
  */
 public final class QuorumManager implements FailureListener
 {
-   private static final Logger log = Logger.getLogger(QuorumManager.class);
    private String targetServerID = "";
    private final ExecutorService executor;
    private final String serverIdentity;
@@ -102,7 +101,7 @@ public final class QuorumManager implements FailureListener
          }
          // -1: because the live server is not being filtered out.
          boolean vote = nodeIsDown(total, pingCount.get());
-         log.trace("quorum vote is liveIsDown=" + vote + ", count=" + pingCount);
+         HornetQLogger.LOGGER.trace("quorum vote is liveIsDown=" + vote + ", count=" + pingCount);
          return vote;
       }
       finally
@@ -243,7 +242,7 @@ public final class QuorumManager implements FailureListener
          catch (HornetQException e)
          {
             if (e.getCode() != HornetQException.NOT_CONNECTED)
-               log.warn("Unexpected exception while trying to reconnect", e);
+               HornetQLogger.LOGGER.errorReConnecting(e);
          }
       }
 
@@ -276,7 +275,7 @@ public final class QuorumManager implements FailureListener
          }
          catch (Exception e)
          {
-            log.error("Error while restarting the backup server: " + backup, e);
+            HornetQLogger.LOGGER.errorRestartingBackupServer(e, backup);
          }
       }
 

@@ -29,11 +29,11 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -52,9 +52,8 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ClusterConnectionBridge extends BridgeImpl
 {
-   private static final Logger log = Logger.getLogger(ClusterConnectionBridge.class);
 
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final ClusterConnection clusterConnection;
 
@@ -140,10 +139,10 @@ public class ClusterConnectionBridge extends BridgeImpl
       // we need to disable DLQ check on the clustered bridges
       queue.setInternalQueue(true);
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
-                   new Exception("trace"));
+         HornetQLogger.LOGGER.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
+               new Exception("trace"));
       }
    }
 
@@ -153,8 +152,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
       if (factory == null)
       {
-         log.warn("NodeID=" + targetNodeID +
-                  " is not available on the topology. Retrying the connection to that node now");
+         HornetQLogger.LOGGER.nodeNotAvailable(targetNodeID);
          return null;
       }
       factory.setReconnectAttempts(0);
@@ -183,9 +181,9 @@ public class ClusterConnectionBridge extends BridgeImpl
       // Note we must copy since same message may get routed to other nodes which require different headers
       ServerMessage messageCopy = message.copy();
 
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Clustered bridge  copied message " + message + " as " + messageCopy + " before delivery");
+         HornetQLogger.LOGGER.trace("Clustered bridge  copied message " + message + " as " + messageCopy + " before delivery");
       }
 
       // TODO - we can optimise this
@@ -197,11 +195,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (queueIds == null)
       {
          // Sanity check only
-         log.warn("no queue IDs defined!,  originalMessage  = " + message +
-                  ", copiedMessage = " +
-                  messageCopy +
-                  ", props=" +
-                  idsHeaderName);
+         HornetQLogger.LOGGER.noQueueIdDefined(message, messageCopy, idsHeaderName);
          throw new IllegalStateException("no queueIDs defined");
       }
 
@@ -222,9 +216,9 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    private void setupNotificationConsumer() throws Exception
    {
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Setting up notificationConsumer between " + this.clusterConnection.getConnector() +
+         HornetQLogger.LOGGER.debug("Setting up notificationConsumer between " + this.clusterConnection.getConnector() +
                    " and " +
                    flowRecord.getBridge().getForwardingConnection() +
                    " clusterConnection = " +
@@ -240,7 +234,7 @@ public class ClusterConnectionBridge extends BridgeImpl
          {
             try
             {
-               log.debug("Closing notification Consumer for reopening " + notifConsumer +
+               HornetQLogger.LOGGER.debug("Closing notification Consumer for reopening " + notifConsumer +
                          " on bridge " +
                          this.getName());
                notifConsumer.close();
@@ -249,7 +243,7 @@ public class ClusterConnectionBridge extends BridgeImpl
             }
             catch (HornetQException e)
             {
-               log.error("Failed to close consumer", e);
+               HornetQLogger.LOGGER.errorClosingConsumer(e);
             }
          }
 
@@ -297,7 +291,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
          ClientMessage message = session.createMessage(false);
 
-         log.debug("Requesting sendQueueInfoToQueue through " + this, new Exception("trace"));
+         HornetQLogger.LOGGER.debug("Requesting sendQueueInfoToQueue through " + this, new Exception("trace"));
          ManagementHelper.putOperationInvocation(message,
                                                  ResourceNames.CORE_SERVER,
                                                  "sendQueueInfoToQueue",
@@ -306,9 +300,9 @@ public class ClusterConnectionBridge extends BridgeImpl
 
          ClientProducer prod = session.createProducer(managementAddress);
 
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug("Cluster connetion bridge on " + clusterConnection + " requesting information on queues");
+            HornetQLogger.LOGGER.debug("Cluster connetion bridge on " + clusterConnection + " requesting information on queues");
          }
 
          prod.send(message);
@@ -338,12 +332,12 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    protected void fail(final boolean permanently)
    {
-      log.debug("Cluster Bridge " + this.getName() + " failed, permanently=" + permanently);
+      HornetQLogger.LOGGER.debug("Cluster Bridge " + this.getName() + " failed, permanently=" + permanently);
       super.fail(permanently);
 
       if (permanently)
       {
-         log.debug("cluster node for bridge " + this.getName() + " is permanently down");
+         HornetQLogger.LOGGER.debug("cluster node for bridge " + this.getName() + " is permanently down");
          discoveryLocator.notifyNodeDown(System.currentTimeMillis(), targetNodeID);
       }
 

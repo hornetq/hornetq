@@ -38,11 +38,11 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -67,7 +67,6 @@ import org.hornetq.utils.UUID;
  */
 public class ClusterManagerImpl implements ClusterManagerInternal
 {
-   private static final Logger log = Logger.getLogger(ClusterManagerImpl.class);
 
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
 
@@ -266,7 +265,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          }
          catch (Exception e)
          {
-            log.warn("Error closing serverLocator=" + clusterLocator + ", message=" + e.getMessage(), e);
+            HornetQLogger.LOGGER.errorClosingServerLocator(e, clusterLocator);
          }
       }
       clusterLocators.clear();
@@ -327,7 +326,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             }
             catch (Exception e)
             {
-               log.warn("unable to start broadcast group " + broadcastGroup.getName(), e);
+               HornetQLogger.LOGGER.unableToStartBroadcastGroup(e, broadcastGroup.getName());
             }
          }
 
@@ -339,7 +338,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             }
             catch (Exception e)
             {
-               log.warn("unable to start cluster connection " + clusterConnection.getName(), e);
+               HornetQLogger.LOGGER.unableToStartClusterConnection(e, clusterConnection.getName());
             }
          }
 
@@ -351,7 +350,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             }
             catch (Exception e)
             {
-               log.warn("unable to start bridge " + bridge.getName(), e);
+               HornetQLogger.LOGGER.unableToStartBridge(e, bridge.getName());
             }
          }
       }
@@ -379,7 +378,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          if (connector == null)
          {
-            log.warn("No connector with name '" + config.getConnectorName() + "'. backup cannot be announced.");
+            HornetQLogger.LOGGER.announceBackupNoConnector(config.getConnectorName());
             return;
          }
          liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector, configuration.getClusterUser(),
@@ -387,7 +386,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
       else
       {
-         log.warn("no cluster connections defined, unable to announce backup");
+         HornetQLogger.LOGGER.announceBackupNoClusterConnections();
       }
    }
 
@@ -405,27 +404,26 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       if (config.getName() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify a unique name for each bridge. This one will not be deployed.");
+         HornetQLogger.LOGGER.bridgeNotUnique();
 
          return;
       }
 
       if (config.getQueueName() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify a queue name for each bridge. This one will not be deployed.");
+         HornetQLogger.LOGGER.bridgeNoQueue();
 
          return;
       }
 
       if (config.getForwardingAddress() == null)
       {
-         ClusterManagerImpl.log.debug("Forward address is not specified. Will use original message address instead");
+         HornetQLogger.LOGGER.bridgeNoForwardAddress();
       }
 
       if (bridges.containsKey(config.getName()))
       {
-         ClusterManagerImpl.log.warn("There is already a bridge with name " + config.getName() +
-                                     " deployed. This one will not be deployed.");
+         HornetQLogger.LOGGER.bridgeAlreadyDeployed(config.getName());
 
          return;
       }
@@ -436,8 +434,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       if (binding == null)
       {
-         ClusterManagerImpl.log.warn("No queue found with name " + config.getQueueName() +
-                                     " bridge will not be deployed.");
+         HornetQLogger.LOGGER.bridgeNoQueue(config.getQueueName());
 
          return;
       }
@@ -452,8 +449,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                                                 .get(config.getDiscoveryGroupName());
          if (discoveryGroupConfiguration == null)
          {
-            ClusterManagerImpl.log.warn("No discovery group configured with name '" + config.getDiscoveryGroupName() +
-                                        "'. The bridge will not be deployed.");
+            HornetQLogger.LOGGER.bridgeNoDiscoveryGroup(config.getDiscoveryGroupName());
 
             return;
          }
@@ -510,7 +506,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       serverLocator.setCallTimeout(config.getCallTimeout());
       if (!config.isUseDuplicateDetection())
       {
-         log.debug("Bridge " + config.getName() +
+         HornetQLogger.LOGGER.debug("Bridge " + config.getName() +
                    " is configured to not use duplicate detecion, it will send messages synchronously");
       }
 
@@ -576,7 +572,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.warn(e.getMessage(), e);
          }
       }
       bridges.clear();
@@ -607,14 +603,14 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       if (config.getName() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify a unique name for each cluster connection. This one will not be deployed.");
+         HornetQLogger.LOGGER.clusterConnectionNotUnique();
 
          return;
       }
 
       if (config.getAddress() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify an address for each cluster connection. This one will not be deployed.");
+         HornetQLogger.LOGGER.clusterConnectionNoForwardAddress();
 
          return;
       }
@@ -623,15 +619,13 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       if (connector == null)
       {
-         log.warn("No connector with name '" + config.getConnectorName() +
-                  "'. The cluster connection will not be deployed.");
+         HornetQLogger.LOGGER.clusterConnectionNoConnector(config.getConnectorName());
          return;
       }
 
       if (clusterConnections.containsKey(config.getName()))
       {
-         log.warn("Cluster Configuration  '" + config.getConnectorName() +
-                  "' already exists. The cluster connection will not be deployed.", new Exception("trace"));
+         HornetQLogger.LOGGER.clusterConnectionAlreadyExists(config.getConnectorName());
          return;
       }
 
@@ -644,14 +638,13 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          if (dg == null)
          {
-            ClusterManagerImpl.log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
-                                        "'. The cluster connection will not be deployed.");
+            HornetQLogger.LOGGER.clusterConnectionNoDiscoveryGroup(config.getDiscoveryGroupName());
             return;
          }
 
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug(this + " Starting a Discovery Group Cluster Connection, name=" +
+            HornetQLogger.LOGGER.debug(this + " Starting a Discovery Group Cluster Connection, name=" +
                       config.getDiscoveryGroupName() +
                       ", dg=" +
                       dg);
@@ -691,9 +684,9 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
                                                                                   : null;
 
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug(this + " defining cluster connection towards " + Arrays.toString(tcConfigs));
+            HornetQLogger.LOGGER.debug(this + " defining cluster connection towards " + Arrays.toString(tcConfigs));
          }
 
          clusterConnection = new ClusterConnectionImpl(this,
@@ -735,9 +728,9 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       clusterConnections.put(config.getName(), clusterConnection);
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
+         HornetQLogger.LOGGER.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
       }
    }
 
@@ -767,8 +760,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       if (broadcastGroups.containsKey(config.getName()))
       {
-         ClusterManagerImpl.log.warn("There is already a broadcast-group with name " + config.getName() +
-                                     " deployed. This one will not be deployed.");
+         HornetQLogger.LOGGER.broadcastGroupAlreadyExists(config.getName());
 
          return;
       }
@@ -817,10 +809,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    private void logWarnNoConnector(final String connectorName, final String bgName)
    {
-      ClusterManagerImpl.log.warn("There is no connector deployed with name '" + connectorName +
-                                  "'. The broadcast group with name '" +
-                                  bgName +
-                                  "' will not be deployed.");
+      HornetQLogger.LOGGER.broadcastGroupNoConnector(connectorName, bgName);
    }
 
    private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
@@ -834,8 +823,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          if (connector == null)
          {
-            ClusterManagerImpl.log.warn("No connector defined with name '" + connectorName +
-                                        "'. The bridge will not be deployed.");
+            HornetQLogger.LOGGER.bridgeNoConnector(connectorName);
 
             return null;
          }

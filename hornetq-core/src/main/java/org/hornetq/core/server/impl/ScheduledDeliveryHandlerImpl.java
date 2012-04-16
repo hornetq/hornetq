@@ -21,7 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
@@ -36,9 +36,7 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
  */
 public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 {
-   private static final Logger log = Logger.getLogger(ScheduledDeliveryHandlerImpl.class);
-
-   private static final boolean trace = ScheduledDeliveryHandlerImpl.log.isTraceEnabled();
+   private static final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final ScheduledExecutorService scheduledExecutor;
    
@@ -59,7 +57,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       {
          if (ScheduledDeliveryHandlerImpl.trace)
          {
-            ScheduledDeliveryHandlerImpl.log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
+            HornetQLogger.LOGGER.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
          }
 
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref.getScheduledDeliveryTime());

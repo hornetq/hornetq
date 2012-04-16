@@ -54,7 +54,6 @@ import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -74,6 +73,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdat
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PersistentQueueBindingEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
@@ -97,8 +97,6 @@ public class XmlDataExporter
    public static final Long LARGE_MESSAGE_CHUNK_SIZE = 1000L;
 
    // Attributes ----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(XmlDataExporter.class);
 
    private JournalStorageManager storageManager;
 
@@ -205,8 +203,8 @@ public class XmlDataExporter
       getBindings();
       processMessageJournal();
       printDataAsXML();
-      log.debug("\n\nProcessing took: " + (System.currentTimeMillis() - start) + "ms");
-      log.debug("Output " + messagesPrinted + " messages and " + bindingsPrinted + " bindings.");
+      HornetQLogger.LOGGER.debug("\n\nProcessing took: " + (System.currentTimeMillis() - start) + "ms");
+      HornetQLogger.LOGGER.debug("Output " + messagesPrinted + " messages and " + bindingsPrinted + " bindings.");
    }
 
    // Package protected ---------------------------------------------
@@ -229,7 +227,7 @@ public class XmlDataExporter
 
       Journal messageJournal = storageManager.getMessageJournal();
 
-      log.debug("Reading journal from " + config.getJournalDirectory());
+      HornetQLogger.LOGGER.debug("Reading journal from " + config.getJournalDirectory());
 
       messageJournal.start();
 
@@ -343,7 +341,7 @@ public class XmlDataExporter
 
       bindingsJournal.start();
 
-      log.debug("Reading bindings journal from " + config.getBindingsDirectory());
+      HornetQLogger.LOGGER.debug("Reading bindings journal from " + config.getBindingsDirectory());
 
       ((JournalImpl) bindingsJournal).load(records, null, null, false);
 
@@ -451,12 +449,12 @@ public class XmlDataExporter
             {
                folder = pageStore.getFolder();
             }
-            log.debug("Reading page store " + store + " folder = " + folder);
+            HornetQLogger.LOGGER.debug("Reading page store " + store + " folder = " + folder);
 
             int pageId = (int) pageStore.getFirstPage();
             for (int i = 0; i < pageStore.getNumberOfPages(); i++)
             {
-               log.debug("Reading page " + pageId);
+               HornetQLogger.LOGGER.debug("Reading page " + pageId);
                Page page = pageStore.createPage(pageId);
                page.open();
                List<PagedMessage> messages = page.read(sm);

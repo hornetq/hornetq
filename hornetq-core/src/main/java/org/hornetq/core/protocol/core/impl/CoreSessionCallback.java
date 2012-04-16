@@ -13,7 +13,6 @@
 package org.hornetq.core.protocol.core.impl;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
@@ -34,8 +33,6 @@ import org.hornetq.spi.core.remoting.ReadyListener;
  */
 public final class CoreSessionCallback implements SessionCallback
 {
-   private static final Logger log = Logger.getLogger(CoreSessionCallback.class);
-
    private final Channel channel;
 
    private ProtocolManager protocolManager;

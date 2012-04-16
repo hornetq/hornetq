@@ -35,7 +35,6 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -48,14 +47,7 @@ import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.QueueFactory;
-import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.*;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.server.management.ManagementService;
@@ -80,9 +72,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
-   private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
@@ -218,7 +208,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       if (isTrace)
       {
-         log.trace("Receiving notification : " + notification + " on server " + this.server);
+         HornetQLogger.LOGGER.trace("Receiving notification : " + notification + " on server " + this.server);
       }
       synchronized (notificationLock)
       {
@@ -475,10 +465,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-
-      if (log.isDebugEnabled())
+      
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
+         HornetQLogger.LOGGER.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
       }
 
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
@@ -623,15 +613,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       else
       {
     	 // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
-    	 if (log.isDebugEnabled())
+    	 if (HornetQLogger.LOGGER.isDebugEnabled())
     	 {
-    	    log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
+    	    HornetQLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
     	 }
       }
-
-      if (log.isTraceEnabled())
+      
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Message after routed=" + message);
+         HornetQLogger.LOGGER.trace("Message after routed=" + message);
       }
 
       if (context.getQueueCount() == 0)
@@ -647,17 +637,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             // Send to the DLA for the address
 
             SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-
-            if (log.isDebugEnabled())
+            
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
+               HornetQLogger.LOGGER.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
             }
 
             if (dlaAddress == null)
             {
-               PostOfficeImpl.log.warn("Did not route to any bindings for address " + address +
-                                       " and sendToDLAOnNoRoute is true " +
-                                       "but there is no DLA configured for the address, the message will be ignored.");
+               HornetQLogger.LOGGER.noDLA(address);
             }
             else
             {
@@ -670,9 +658,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
          else
          {
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug("Message " + message + " is not going anywhere as it didn't have a binding on address:" + address);
+               HornetQLogger.LOGGER.debug("Message " + message + " is not going anywhere as it didn't have a binding on address:" + address);
             }
          }
       }
@@ -788,10 +776,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
-
-      if (log.isDebugEnabled())
+      
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
+         HornetQLogger.LOGGER.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
       }
 
       Queue queue = (Queue)binding.getBindable();
@@ -809,9 +797,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          for (QueueInfo info : queueInfos.values())
          {
-            if (log.isTraceEnabled())
+            if (HornetQLogger.LOGGER.isTraceEnabled())
             {
-               log.trace("QueueInfo on sendQueueInfoToQueue = " + info);
+               HornetQLogger.LOGGER.trace("QueueInfo on sendQueueInfoToQueue = " + info);
             }
             if (info.getAddress().startsWith(address))
             {
@@ -1069,9 +1057,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             public void onError(final int errorCode, final String errorMessage)
             {
-               PostOfficeImpl.log.warn("It wasn't possible to add references due to an IO error code " + errorCode +
-                                       " message = " +
-                                       errorMessage);
+               HornetQLogger.LOGGER.ioErrorAddingReferences(errorCode, errorMessage);
             }
 
             public void done()
@@ -1175,10 +1161,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          if (cacheBridge.contains(bridgeDupBytes))
          {
             StringBuffer warnMessage = new StringBuffer();
-            warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
-            warnMessage.append(message.toString());
-            PostOfficeImpl.log.warn(warnMessage.toString());
 
+            HornetQLogger.LOGGER.duplicateMessageDetectedThruBridge(message);
+            
             if (context.getTransaction() != null)
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
@@ -1217,8 +1202,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (rejectDuplicates && isDuplicate)
          {
+            HornetQLogger.LOGGER.duplicateMessageDetected(message);
+
             String warnMessage = "Duplicate message detected - message will not be routed. Message information:" + message.toString();
-            PostOfficeImpl.log.warn(warnMessage);
 
             if (context.getTransaction() != null)
             {
@@ -1341,7 +1327,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
                catch (Exception e)
                {
-                  PostOfficeImpl.log.error("failed to expire messages for queue " + queue.getName(), e);
+                  HornetQLogger.LOGGER.errorExpiringMessages(e);
                }
             }
          }

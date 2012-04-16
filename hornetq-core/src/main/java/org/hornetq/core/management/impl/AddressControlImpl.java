@@ -21,7 +21,6 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
@@ -45,8 +44,6 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
 {
 
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(AddressControlImpl.class);
 
    // Attributes ----------------------------------------------------
 

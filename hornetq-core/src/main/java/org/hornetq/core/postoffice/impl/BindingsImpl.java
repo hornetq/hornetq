@@ -27,11 +27,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -50,9 +50,7 @@ import org.hornetq.core.server.group.impl.Response;
  */
 public class BindingsImpl implements Bindings
 {
-   private static final Logger log = Logger.getLogger(BindingsImpl.class);
-
-   private static boolean isTrace = log.isTraceEnabled();
+   private static boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
 
@@ -91,7 +89,7 @@ public class BindingsImpl implements Bindings
    {
       if (isTrace)
       {
-         log.trace("addBinding(" + binding + ") being called");
+         HornetQLogger.LOGGER.trace("addBinding(" + binding + ") being called");
       }
       if (binding.isExclusive())
       {
@@ -122,7 +120,7 @@ public class BindingsImpl implements Bindings
 
       if (isTrace)
       {
-         log.trace("Adding binding " + binding + " into " + this + " bindingTable: " + debugBindings());
+         HornetQLogger.LOGGER.trace("Adding binding " + binding + " into " + this + " bindingTable: " + debugBindings());
       }
 
    }
@@ -154,7 +152,7 @@ public class BindingsImpl implements Bindings
 
       if (isTrace)
       {
-         log.trace("Removing binding " + binding + " into " + this + " bindingTable: " + debugBindings());
+         HornetQLogger.LOGGER.trace("Removing binding " + binding + " into " + this + " bindingTable: " + debugBindings());
       }
    }
 
@@ -168,7 +166,7 @@ public class BindingsImpl implements Bindings
 
       if (isTrace)
       {
-         log.trace("Redistributing message " + message);
+         HornetQLogger.LOGGER.trace("Redistributing message " + message);
       }
 
       SimpleString routingName = originatingQueue.getName();
@@ -288,7 +286,7 @@ public class BindingsImpl implements Bindings
          {
             if (isTrace)
             {
-               log.trace("Routing message " + message + " on binding=" + this);
+               HornetQLogger.LOGGER.trace("Routing message " + message + " on binding=" + this);
             }
             for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
             {
@@ -597,7 +595,7 @@ public class BindingsImpl implements Bindings
          }
          else
          {
-            log.warn("Couldn't find binding with id=" + bindingID + " on routeFromCluster for message=" + message + " binding = " + this);
+            HornetQLogger.LOGGER.warn("Couldn't find binding with id=" + bindingID + " on routeFromCluster for message=" + message + " binding = " + this);
          }
       }
    }

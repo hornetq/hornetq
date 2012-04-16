@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
@@ -41,8 +41,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 {
-   private static final Logger log = Logger.getLogger(ResourceManagerImpl.class);
-
    private final ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
 
    private final List<HeuristicCompletionHolder> heuristicCompletions = new ArrayList<HeuristicCompletionHolder>();
@@ -215,7 +213,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
             if (tx.hasTimedOut(now, defaultTimeoutSeconds))
             {
                transactions.remove(tx.getXid());
-               ResourceManagerImpl.log.warn("transaction with xid " + tx.getXid() + " timed out");
+               HornetQLogger.LOGGER.unexpectedXid(tx.getXid());
                timedoutTransactions.add(tx);
             }
          }
@@ -228,7 +226,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
             }
             catch (Exception e)
             {
-               ResourceManagerImpl.log.error("failed to timeout transaction, xid:" + failedTransaction.getXid(), e);
+               HornetQLogger.LOGGER.errorTimingOutTX(e, failedTransaction.getXid());
             }
          }
       }

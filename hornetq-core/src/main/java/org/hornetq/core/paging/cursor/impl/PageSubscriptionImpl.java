@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
@@ -42,6 +41,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -62,16 +62,10 @@ import org.hornetq.utils.LinkedListIterator;
 class PageSubscriptionImpl implements PageSubscription
 {
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PageSubscriptionImpl.class);
 
    // Attributes ----------------------------------------------------
 
-   private final boolean isTrace = PageSubscriptionImpl.log.isTraceEnabled();
-
-   private static void trace(final String message)
-   {
-      PageSubscriptionImpl.log.trace(message);
-   }
+   private final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private volatile boolean autoCleanup = true;
 
@@ -200,7 +194,7 @@ class PageSubscriptionImpl implements PageSubscription
                }
                catch (Exception e)
                {
-                  PageSubscriptionImpl.log.warn("Error on cleaning up cursor pages", e);
+                  HornetQLogger.LOGGER.problemCleaningCursorPages(e);
                }
             }
          });
@@ -232,7 +226,7 @@ class PageSubscriptionImpl implements PageSubscription
             {
                if (entry.getKey() == lastAckedPosition.getPageNr())
                {
-                   PageSubscriptionImpl.trace("We can't clear page " + entry.getKey() +
+                   HornetQLogger.LOGGER.trace("We can't clear page " + entry.getKey() +
                    " now since it's the current page");
                }
                else
@@ -280,13 +274,11 @@ class PageSubscriptionImpl implements PageSubscription
                      {
                         if (isTrace)
                         {
-                           PageSubscriptionImpl.trace("Removing page " + completePage.getPageId());
+                           HornetQLogger.LOGGER.trace("Removing page " + completePage.getPageId());
                         }
                         if (consumedPages.remove(completePage.getPageId()) == null)
                         {
-                           PageSubscriptionImpl.log.warn("Couldn't remove page " + completePage.getPageId() +
-                                                         " from consumed pages on cursor for address " +
-                                                         pageStore.getAddress());
+                           HornetQLogger.LOGGER.problemRemovingCursorPages(completePage.getPageId(), pageStore.getAddress());
                         }
                      }
                   }
@@ -395,7 +387,7 @@ class PageSubscriptionImpl implements PageSubscription
                {
                   if (isTrace)
                   {
-                     trace("Analizing " + pos);
+                     HornetQLogger.LOGGER.trace("Analizing " + pos);
                   }
                   if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
                   {
@@ -405,7 +397,7 @@ class PageSubscriptionImpl implements PageSubscription
 
                if (isTrace)
                {
-                  trace("Returning initial position " + retValue);
+                  HornetQLogger.LOGGER.trace("Returning initial position " + retValue);
                }
 
                return retValue;
@@ -467,7 +459,7 @@ class PageSubscriptionImpl implements PageSubscription
          public void onError(final int errorCode, final String errorMessage)
          {
             error = " errorCode=" + errorCode + ", msg=" + errorMessage;
-            log.error(this + error);
+            HornetQLogger.LOGGER.pageSubscriptionError(this, error);
          }
 
          @Override
@@ -644,7 +636,7 @@ class PageSubscriptionImpl implements PageSubscription
       {
          if (isTrace)
          {
-            PageSubscriptionImpl.trace("********** processing reload!!!!!!!");
+            HornetQLogger.LOGGER.trace("********** processing reload!!!!!!!");
          }
          Collections.sort(recoveredACK);
 
@@ -659,7 +651,7 @@ class PageSubscriptionImpl implements PageSubscription
 
             if (pageInfo == null)
             {
-               log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal. ");
+               HornetQLogger.LOGGER.pageNotFound(pos);
                if (txDeleteCursorOnReload == -1)
                {
                   txDeleteCursorOnReload = store.generateUniqueID();
@@ -697,7 +689,7 @@ class PageSubscriptionImpl implements PageSubscription
       executor.execute(future);
       while (!future.await(1000))
       {
-         PageSubscriptionImpl.log.warn("Waiting page cursor to finish executors - " + this);
+         HornetQLogger.LOGGER.timedOutFlushingExecutorsPagingCursor(this);
       }
    }
 
@@ -781,13 +773,13 @@ class PageSubscriptionImpl implements PageSubscription
       {
          if (isTrace)
          {
-            log.trace("a new position is being processed as ACK");
+            HornetQLogger.LOGGER.trace("a new position is being processed as ACK");
          }
          if (lastAckedPosition != null && lastAckedPosition.getPageNr() != pos.getPageNr())
          {
             if (isTrace)
             {
-               log.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
+               HornetQLogger.LOGGER.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
             }
 
             // there's a different page being acked, we will do the check right away
@@ -963,7 +955,7 @@ class PageSubscriptionImpl implements PageSubscription
 
          if (isTrace)
          {
-            PageSubscriptionImpl.trace("numberOfMessages =  " + getNumberOfMessages() +
+            HornetQLogger.LOGGER.trace("numberOfMessages =  " + getNumberOfMessages() +
                     " confirmed =  " +
                     (confirmed.get() + 1) +
                     " pendingTX = " + pendingTX +
@@ -1196,9 +1188,8 @@ class PageSubscriptionImpl implements PageSubscription
                                                                                               .getTransactionID());
                   if (tx == null)
                   {
-                     log.warn("Couldn't locate page transaction " + message.getPagedMessage().getTransactionID() +
-                              ", ignoring message on position " +
-                              message.getPosition() + " on address=" + pageStore.getAddress() + " queue=" + queue.getName());
+                     HornetQLogger.LOGGER.pageSubscriptionCouldntLoad(message.getPagedMessage().getTransactionID(),
+                           message.getPosition(), pageStore.getAddress(), queue.getName());
                      valid = false;
                      ignored = true;
                   }

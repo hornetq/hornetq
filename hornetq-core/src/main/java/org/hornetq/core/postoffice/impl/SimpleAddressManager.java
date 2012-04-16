@@ -18,12 +18,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -34,8 +34,6 @@ import org.hornetq.core.postoffice.BindingsFactory;
  */
 public class SimpleAddressManager implements AddressManager
 {
-   private static final Logger log = Logger.getLogger(SimpleAddressManager.class);
-
    /**
     * HashMap<Address, Binding>
     */
@@ -60,9 +58,9 @@ public class SimpleAddressManager implements AddressManager
          throw new HornetQException(HornetQException.QUEUE_EXISTS, "Binding already exists " + binding);
       }
       
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Adding binding " + binding + " with address = " + binding.getUniqueName(), new Exception ("trace"));
+         HornetQLogger.LOGGER.debug("Adding binding " + binding + " with address = " + binding.getUniqueName(), new Exception ("trace"));
       }
 
       return addMappingInternal(binding.getAddress(), binding);

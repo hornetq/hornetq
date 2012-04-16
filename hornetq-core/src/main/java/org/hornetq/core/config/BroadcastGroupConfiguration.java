@@ -16,7 +16,6 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A BroadcastGroupConfiguration
@@ -29,8 +28,6 @@ import org.hornetq.core.logging.Logger;
 public class BroadcastGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 1052413739064253955L;
-
-   private static final Logger log = Logger.getLogger(BroadcastGroupConfiguration.class);
 
    private String name;
 

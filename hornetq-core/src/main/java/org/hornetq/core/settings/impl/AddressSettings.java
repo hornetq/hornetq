@@ -31,6 +31,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 {
    private static final long serialVersionUID = 1607502280582336366L;
 
+
    /**
     * defaults used if null, this allows merging
     */

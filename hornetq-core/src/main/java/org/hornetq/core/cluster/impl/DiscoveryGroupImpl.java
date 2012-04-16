@@ -36,7 +36,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.TypedProperties;
@@ -51,9 +51,7 @@ import org.hornetq.utils.TypedProperties;
  */
 public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 {
-   private static final Logger log = Logger.getLogger(DiscoveryGroupImpl.class);
-   
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private static final int SOCKET_TIMEOUT = 500;
 
@@ -128,13 +126,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             try {
                socket = new MulticastSocket(new InetSocketAddress(groupAddress, groupPort));
             } catch (IOException e) {
-               StringBuilder builder = new StringBuilder();
-               builder.append("Could not bind to ").append(groupAddress.getHostAddress()).append(" (");
-               builder.append((groupAddress instanceof Inet4Address) ? "IPv4" : "IPv6").append(" address)");
-               builder.append("; make sure your discovery group-address is of the same type as the IP stack (IPv4 or IPv6).");
-               builder.append("\nIgnoring discovery group-address, but this may lead to cross talking.");
-
-               log.warn(builder.toString(), e);
+               HornetQLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
 
                socket = new MulticastSocket(groupPort);
             }
@@ -155,7 +147,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       catch (IOException e)
       {
-         log.error("Failed to create discovery group socket", e);
+         HornetQLogger.LOGGER.failedToStartDiscovery(e);
 
          return;
       }
@@ -205,7 +197,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       catch (Throwable ignored)
       {
-         log.warn(ignored.toString(), ignored);
+         HornetQLogger.LOGGER.failedToStopDiscovery(ignored);
       }
 
       try
@@ -214,7 +206,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          thread.join(10000);
          if(thread.isAlive())
          {
-            log.warn("Timed out waiting to stop discovery thread");
+            HornetQLogger.LOGGER.timedOutStoppingDiscovery();
          }
       }
       catch (InterruptedException e)
@@ -234,7 +226,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          }
          catch (Exception e)
          {
-            DiscoveryGroupImpl.log.warn("unable to send notification when discovery group is stopped", e);
+            HornetQLogger.LOGGER.errorSendingNotifOnDiscoveryStop(e);
          }
       }
    }
@@ -310,10 +302,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {
          if (!currentUniqueID.equals(uniqueID))
          {
-            log.warn("There are more than one servers on the network broadcasting the same node id. " + "You will see this message exactly once (per node) if a node is restarted, in which case it can be safely "
-                     + "ignored. But if it is logged continuously it means you really do have more than one node on the same network "
-                     + "active concurrently with the same node id. This could occur if you have a backup node active at the same time as "
-                     + "its live node. nodeID=" + originatingNodeID);
+            HornetQLogger.LOGGER.multipleServersBroadcastingSameNode(originatingNodeID);
             uniqueIDMap.put(originatingNodeID, uniqueID);
          }
       }
@@ -347,7 +336,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                }
                else
                {
-                  log.warn(e.getMessage(), e);
+                  HornetQLogger.LOGGER.errorReceivingPAcketInDiscovery(e);
                }
             }
             catch (InterruptedIOException e)
@@ -410,10 +399,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             {
                if (isTrace)
                {
-                  log.trace("Connectors changed on Discovery:");
+                  HornetQLogger.LOGGER.trace("Connectors changed on Discovery:");
                   for (DiscoveryEntry connector : connectors.values())
                   {
-                     log.trace(connector);
+                     HornetQLogger.LOGGER.trace(connector);
                   }
                }
                callListeners();
@@ -429,7 +418,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       catch (Exception e)
       {
-         DiscoveryGroupImpl.log.error("Failed to receive datagram", e);
+         HornetQLogger.LOGGER.failedToReceiveDatagramInDiscovery(e);
       }
    }
 
@@ -459,7 +448,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          catch (Throwable t)
          {
             // Catch it so exception doesn't prevent other listeners from running
-            DiscoveryGroupImpl.log.error("Failed to call discovery listener", t);
+            HornetQLogger.LOGGER.failedToCallListenerInDiscovery(t);
          }
       }
    }
@@ -481,7 +470,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          {
             if (isTrace)
             {
-               log.trace("Timed out node on discovery:" + entry.getValue());
+               HornetQLogger.LOGGER.trace("Timed out node on discovery:" + entry.getValue());
             }
             iter.remove();
 

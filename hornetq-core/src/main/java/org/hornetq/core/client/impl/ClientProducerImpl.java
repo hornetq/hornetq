@@ -22,7 +22,6 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.Channel;
@@ -46,7 +45,6 @@ public class ClientProducerImpl implements ClientProducerInternal
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientProducerImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
 

@@ -26,7 +26,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
@@ -35,6 +34,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -49,9 +49,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -324,10 +322,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          destroyed = true;
       }
 
-      RemotingConnectionImpl.log.warn("Connection failure has been detected: " + me.getMessage() +
-                                      " [code=" +
-                                      me.getCode() +
-                                      "]");
+      HornetQLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getCode());
 
       // Then call the listeners
       callFailureListeners(me);
@@ -478,7 +473,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
          if (isTrace)
          {
-            log.trace("handling packet " + packet);
+            HornetQLogger.LOGGER.trace("handling packet " + packet);
          }
 
          if (packet.isAsyncExec() && executor != null)
@@ -495,7 +490,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                   }
                   catch (Throwable t)
                   {
-                     RemotingConnectionImpl.log.error("Unexpected error", t);
+                     HornetQLogger.LOGGER.errorHandlingPacket(t, packet);
                   }
 
                   executing = false;
@@ -519,7 +514,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       }
       catch (Exception e)
       {
-         log.error("Failed to decode", e);
+         HornetQLogger.LOGGER.errorDecodingPacket(e);
       }
    }
 
@@ -540,7 +535,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
             }
             catch (final Throwable e)
             {
-               RemotingConnectionImpl.log.warn("Failure in calling interceptor: " + interceptor, e);
+               HornetQLogger.LOGGER.errorCallingInterceptor(e, interceptor);
             }
          }
       }
@@ -581,7 +576,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            RemotingConnectionImpl.log.error("Failed to execute failure listener", t);
+            HornetQLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }
@@ -601,7 +596,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            RemotingConnectionImpl.log.error("Failed to execute failure listener", t);
+            HornetQLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }

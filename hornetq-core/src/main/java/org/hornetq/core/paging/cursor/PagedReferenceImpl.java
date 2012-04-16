@@ -17,8 +17,8 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -33,9 +33,10 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class PagedReferenceImpl implements PagedReference
 {
-   private static final Logger log = Logger.getLogger(PagedReferenceImpl.class);
 
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final long serialVersionUID = -8640232251318264710L;
+
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final PagePosition position;
 
@@ -185,7 +186,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.incrementAndGet();
       if (isTrace)
       {
-         log.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+         HornetQLogger.LOGGER.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
       }
 
    }
@@ -198,7 +199,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.decrementAndGet();
       if (isTrace)
       {
-         log.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+         HornetQLogger.LOGGER.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
       }
    }
 

@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
@@ -29,8 +28,6 @@ import org.w3c.dom.Node;
  */
 public class SecurityDeployer extends XmlDeployer
 {
-   private static final Logger log = Logger.getLogger(SecurityDeployer.class);
-
    private static final String QUEUES_XML = "hornetq-queues.xml";
 
    private static final String MATCH = "match";

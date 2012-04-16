@@ -22,12 +22,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -41,8 +41,6 @@ import org.hornetq.utils.DataConstants;
 public class PageTransactionInfoImpl implements PageTransactionInfo
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(PageTransactionInfoImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -104,7 +102,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          }
          catch (Exception e)
          {
-            log.warn("Can't delete page transaction id=" + this.recordID);
+            HornetQLogger.LOGGER.pageTxDeleteError(e, recordID);
          }
 
          pagingManager.removeTransaction(this.transactionID);

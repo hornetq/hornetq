@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**
@@ -28,8 +27,6 @@ import org.hornetq.core.message.impl.MessageInternal;
  */
 public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 {
-   private static final Logger log = Logger.getLogger(ResetLimitWrappedHornetQBuffer.class);
-
    private final int limit;
 
    private final MessageInternal message;

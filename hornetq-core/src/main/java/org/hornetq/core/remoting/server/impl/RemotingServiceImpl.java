@@ -33,8 +33,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.config.Configuration; 
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
@@ -42,6 +41,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -69,10 +69,7 @@ import org.hornetq.utils.HornetQThreadFactory;
 public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycleListener
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    public static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
 
@@ -125,7 +122,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            RemotingServiceImpl.log.warn("Error instantiating interceptor \"" + interceptorClass + "\"", e);
+            HornetQLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
          }
       }
       this.managementService = managementService;
@@ -189,8 +186,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
                if (!invalid.isEmpty())
                {
-                  RemotingServiceImpl.log.warn(ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring the acceptor: ",
-                                                                                              invalid) + " the acceptor will not be started.");
+                  HornetQLogger.LOGGER.invalidAcceptorKeys(ConfigurationHelper.stringSetToCommaListString(invalid));
 
                   continue;
                }
@@ -225,7 +221,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            RemotingServiceImpl.log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
+            HornetQLogger.LOGGER.errorCreatingAcceptor(e, info.getFactoryClassName());
          }
       }
 
@@ -263,7 +259,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          catch (Exception e)
          {
-            RemotingServiceImpl.log.error("Failed to stop acceptor", e);
+            HornetQLogger.LOGGER.errorStoppingAcceptor();
          }
       }
       HashMap<Object, ConnectionEntry> connectionEntries = new HashMap<Object, ConnectionEntry>(connections);
@@ -274,9 +270,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.getValue().connection;
 
-         if (log.isTraceEnabled())
+         if (HornetQLogger.LOGGER.isTraceEnabled())
          {
-            log.trace("Sending connection.disconnection packet to " + conn);
+            HornetQLogger.LOGGER.trace("Sending connection.disconnection packet to " + conn);
          }
 
          if (!conn.equals(backupRemotingConnection) && !conn.isClient())
@@ -305,16 +301,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug("Pausing acceptor " + acceptor);
+            HornetQLogger.LOGGER.debug("Pausing acceptor " + acceptor);
          }
          acceptor.pause();
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Sending disconnect on live connections");
+         HornetQLogger.LOGGER.debug("Sending disconnect on live connections");
       }
 
       HashSet<ConnectionEntry> connectionEntries = new HashSet<ConnectionEntry>(connections.values());
@@ -325,9 +321,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.connection;
 
-         if (log.isTraceEnabled())
+         if (HornetQLogger.LOGGER.isTraceEnabled())
          {
-            log.trace("Sending connection.disconnection packet to " + conn);
+            HornetQLogger.LOGGER.trace("Sending connection.disconnection packet to " + conn);
          }
 
          conn.disconnect(criticalError);
@@ -355,7 +351,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          if (!ok)
          {
-            log.warn("Timed out waiting for remoting thread pool to terminate");
+            HornetQLogger.LOGGER.timeoutRemotingThreadPool();
          }
       }
 
@@ -378,7 +374,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
       else
       {
-         log.info("failed to remove connection");
+         HornetQLogger.LOGGER.errorRemovingConnection();
 
          return null;
       }
@@ -421,7 +417,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       if (isTrace)
       {
-         log.trace("Connection created " + connection);
+         HornetQLogger.LOGGER.trace("Connection created " + connection);
       }
 
       connections.put(connection.getID(), entry);
@@ -432,7 +428,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       if (isTrace)
       {
-         log.trace("Connection removed " + connectionID + " from server " + this.server, new Exception("trace"));
+         HornetQLogger.LOGGER.trace("Connection removed " + connectionID + " from server " + this.server, new Exception("trace"));
       }
 
       ConnectionEntry conn = connections.get(connectionID);
@@ -533,9 +529,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          else
          {
-            if (log.isTraceEnabled())
+            if (HornetQLogger.LOGGER.isTraceEnabled())
             {
-               log.trace("ConnectionID = " + connectionID + " was already closed, so ignoring packet");
+               HornetQLogger.LOGGER.trace("ConnectionID = " + connectionID + " was already closed, so ignoring packet");
             }
          }
       }
@@ -657,7 +653,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             }
             catch (Throwable e)
             {
-               log.warn(e.getMessage(), e);
+               HornetQLogger.LOGGER.errorOnFailureCheck(e);
             }
          }
       }

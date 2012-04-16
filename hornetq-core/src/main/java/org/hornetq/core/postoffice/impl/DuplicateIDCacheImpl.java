@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.DuplicateIDCache;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -40,8 +40,6 @@ import org.hornetq.core.transaction.TransactionOperation;
  */
 public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
-   private static final Logger log = Logger.getLogger(DuplicateIDCacheImpl.class);
-
    // ByteHolder, position
    private final Map<ByteArrayHolder, Integer> cache = new ConcurrentHashMap<ByteArrayHolder, Integer>();
 
@@ -218,7 +216,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
                }
                catch (Exception e)
                {
-                  DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
+                  HornetQLogger.LOGGER.errorDeletingDuplicateCache(e);
                }
             }
          }

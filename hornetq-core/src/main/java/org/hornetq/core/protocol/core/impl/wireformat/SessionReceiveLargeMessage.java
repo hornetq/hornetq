@@ -16,7 +16,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.client.impl.ClientLargeMessageImpl;
 import org.hornetq.core.client.impl.ClientLargeMessageInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
@@ -29,8 +28,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionReceiveLargeMessage extends PacketImpl
 {
-   private static final Logger log = Logger.getLogger(SessionReceiveLargeMessage.class);
-
    private MessageInternal message;
 
    /** Since we receive the message before the entire message was received, */

@@ -19,12 +19,12 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.ConnectorServiceFactory;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ConfigurationHelper;
 
 /**
@@ -37,8 +37,6 @@ import org.hornetq.utils.ConfigurationHelper;
  */
 public class ConnectorsService implements HornetQComponent
 {
-   private static final Logger log = Logger.getLogger(ConnectorsService.class);
-
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
@@ -81,8 +79,7 @@ public class ConnectorsService implements HornetQComponent
 
             if (!invalid.isEmpty())
             {
-               log.warn(ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring the connector service: ",
-                                                                                           invalid) + " the connector will not be started.");
+               HornetQLogger.LOGGER.connectorKeysInvalid(ConfigurationHelper.stringSetToCommaListString(invalid));
 
                continue;
             }
@@ -92,8 +89,7 @@ public class ConnectorsService implements HornetQComponent
 
          if (!invalid.isEmpty())
          {
-            log.warn(ConfigurationHelper.stringSetToCommaListString("The following keys are required for configuring the connector service: ",
-                                                                                        invalid) + " the connector will not be started.");
+            HornetQLogger.LOGGER.connectorKeysMissing(ConfigurationHelper.stringSetToCommaListString(invalid));
 
             continue;
          }
@@ -109,7 +105,7 @@ public class ConnectorsService implements HornetQComponent
          }
          catch (Throwable e)
          {
-            log.info("unable to start connector service: " + connector.getName(), e);
+            HornetQLogger.LOGGER.errorStartingConnectorService(e, connector.getName());
          }
       }
       isStarted = true;
@@ -129,7 +125,7 @@ public class ConnectorsService implements HornetQComponent
          }
          catch (Throwable e)
          {
-            log.info("unable to stop connector service: " + connector.getName(), e);
+            HornetQLogger.LOGGER.errorStoppingConnectorService(e, connector.getName());
          }
       }
       connectors.clear();

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -31,8 +30,6 @@ import org.hornetq.core.postoffice.BindingsFactory;
  */
 public class WildcardAddressManager extends SimpleAddressManager
 {
-   private static final Logger log = Logger.getLogger(WildcardAddressManager.class);
-
    static final char SINGLE_WORD = '*';
 
    static final char ANY_WORDS = '#';

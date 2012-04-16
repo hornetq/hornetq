@@ -14,7 +14,7 @@ package org.hornetq.core.remoting.impl.netty;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -33,8 +33,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
  */
 class HornetQChannelHandler extends SimpleChannelHandler
 {
-   private static final Logger log = Logger.getLogger(HornetQChannelHandler.class);
-
    private final ChannelGroup group;
 
    private final BufferHandler handler;
@@ -117,7 +115,7 @@ class HornetQChannelHandler extends SimpleChannelHandler
          }
          catch (Exception ex)
          {
-            HornetQChannelHandler.log.error("failed to notify the listener:", ex);
+            HornetQLogger.LOGGER.errorCallingLifeCycleListener(ex);
          }
       }
    }   

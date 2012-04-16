@@ -13,10 +13,11 @@
 
 package org.hornetq.utils;
 
+import org.hornetq.core.server.HornetQLogger;
+
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A factory for producing executors that run all tasks in order, which delegate to a single common executor instance.
@@ -29,8 +30,6 @@ import org.hornetq.core.logging.Logger;
  */
 public final class OrderedExecutorFactory implements ExecutorFactory
 {
-   private static final Logger log = Logger.getLogger(OrderedExecutorFactory.class);
-
    private final Executor parent;
 
    /**
@@ -101,7 +100,7 @@ public final class OrderedExecutorFactory implements ExecutorFactory
                   }
                   catch (Throwable t)
                   {
-                     log.error("Caught unexpected Throwable", t);
+                     HornetQLogger.LOGGER.caughtunexpectedThrowable(t);
                   }
                }
             }

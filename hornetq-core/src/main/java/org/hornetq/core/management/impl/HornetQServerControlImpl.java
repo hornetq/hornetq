@@ -48,7 +48,6 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.persistence.StorageManager;
@@ -82,8 +81,6 @@ import org.hornetq.utils.json.JSONObject;
 public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQServerControlImpl.class);
 
    // Attributes ----------------------------------------------------
 

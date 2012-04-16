@@ -46,8 +46,8 @@ import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
@@ -70,8 +70,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    };
 
    private static final long serialVersionUID = -1615857864410205260L;
-
-   private static final Logger log = Logger.getLogger(ServerLocatorImpl.class);
 
    private final boolean ha;
 
@@ -549,7 +547,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                if (!isClosed())
                {
-                  log.warn("did not connect the cluster connection to other nodes", e);
+                  HornetQLogger.LOGGER.errorConnectingToNodes(e);
                }
             }
          }
@@ -594,9 +592,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       TopologyMember topologyMember = topology.getMember(nodeID);
 
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Creating connection factory towards " + nodeID + " = " + topologyMember + ", topology=" + topology.describe());
+         HornetQLogger.LOGGER.trace("Creating connection factory towards " + nodeID + " = " + topologyMember + ", topology=" + topology.describe());
       }
 
       if (topologyMember == null)
@@ -1232,9 +1230,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       if (state == STATE.CLOSED)
       {
-         if (log.isDebugEnabled())
+         if (HornetQLogger.LOGGER.isDebugEnabled())
          {
-            log.debug(this + " is already closed when calling closed");
+            HornetQLogger.LOGGER.debug(this + " is already closed when calling closed");
          }
          return;
       }
@@ -1251,7 +1249,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
             catch (Exception e)
             {
-               log.error("Failed to stop discovery group", e);
+               HornetQLogger.LOGGER.failedToStopDiscovery(e);
             }
          }
       }
@@ -1299,7 +1297,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
                {
-                  log.warn("Timed out waiting for pool to terminate");
+                  HornetQLogger.LOGGER.timedOutWaitingForTermination();
                }
             }
             catch (InterruptedException ignore)
@@ -1315,7 +1313,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
                {
-                  log.warn("Timed out waiting for scheduled pool to terminate");
+                  HornetQLogger.LOGGER.timedOutWaitingForScheduledPoolTermination();
                }
             }
             catch (InterruptedException ignore)
@@ -1341,9 +1339,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          return;
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
+         HornetQLogger.LOGGER.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
 
       topology.removeMember(eventTime, nodeID);
@@ -1388,9 +1386,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          return;
       }
 
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
+         HornetQLogger.LOGGER.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
       TopologyMember member = new TopologyMember(connectorPair.getA(), connectorPair.getB());
@@ -1501,7 +1499,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                }
                catch (HornetQException e)
                {
-                  log.warn(e.getMessage(), e);
+                  HornetQLogger.LOGGER.errorConnectingToNodes(e);
                }
             }
          };
@@ -1601,9 +1599,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                retryNumber++;
                for (Connector conn : connectors)
                {
-                  if (log.isDebugEnabled())
+                  if (HornetQLogger.LOGGER.isDebugEnabled())
                   {
-                     log.debug(this + "::Submitting connect towards " + conn);
+                     HornetQLogger.LOGGER.debug(this + "::Submitting connect towards " + conn);
                   }
 
                   csf = conn.tryConnect();
@@ -1625,7 +1623,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                               catch (Exception e)
                               {
                                  // There isn't much to be done if this happens here
-                                 log.warn(e.getMessage());
+                                 HornetQLogger.LOGGER.errorStartingLocator(e);
                               }
                            }
                         }
@@ -1637,9 +1635,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                         }
                      });
 
-                     if (log.isDebugEnabled())
+                     if (HornetQLogger.LOGGER.isDebugEnabled())
                      {
-                        log.debug("Returning " + csf +
+                        HornetQLogger.LOGGER.debug("Returning " + csf +
                                   " after " +
                                   retryNumber +
                                   " retries on StaticConnector " +
@@ -1664,18 +1662,18 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          catch (RejectedExecutionException e)
          {
-            log.debug("Rejected execution", e);
+            HornetQLogger.LOGGER.debug("Rejected execution", e);
             throw e;
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorConnectingToNodes(e);
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
          }
 
          if (!isClosed())
          {
-            log.warn("Failed to connect to any static connector, throwing exception now");
+            HornetQLogger.LOGGER.errorConnectingToNodes(e);
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
          }
          return null;
@@ -1732,10 +1730,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          if (!isClosed() && finalizeCheck)
          {
-            log.warn("I'm closing a core ServerLocator you left open. Please make sure you close all ServerLocators explicitly " + "before letting them go out of scope! " +
-                     System.identityHashCode(this));
-
-            log.warn("The ServerLocator you didn't close was created here:", e);
+            HornetQLogger.LOGGER.serverLocatorNotClosed(e, System.identityHashCode(this));
 
             if (ServerLocatorImpl.finalizeCallback != null)
             {
@@ -1762,9 +1757,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          public ClientSessionFactory tryConnect() throws HornetQException
          {
-            if (log.isDebugEnabled())
+            if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               log.debug(this + "::Trying to connect to " + factory);
+               HornetQLogger.LOGGER.debug(this + "::Trying to connect to " + factory);
             }
             try
             {
@@ -1786,7 +1781,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
             catch (HornetQException e)
             {
-               log.debug(this + "::Exception on establish connector initial connection", e);
+               HornetQLogger.LOGGER.debug(this + "::Exception on establish connector initial connection", e);
                return null;
             }
          }

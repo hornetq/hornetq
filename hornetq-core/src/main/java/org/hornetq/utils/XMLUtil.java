@@ -31,7 +31,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -49,8 +49,6 @@ import org.xml.sax.SAXException;
 public class XMLUtil
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(XMLUtil.class);
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -213,7 +211,7 @@ public class XMLUtil
             }
             catch (Exception e)
             {
-               XMLUtil.log.error("Failed to invoke getTextContent() on node " + n, e);
+               HornetQLogger.LOGGER.errorOnXMLTransform(e, n);
                return null;
             }
          }
@@ -404,7 +402,7 @@ public class XMLUtil
             val = parts[1].trim();
          }
          String sysProp = System.getProperty(prop, val);
-         XMLUtil.log.debug("replacing " + subString + " with " + sysProp);
+         HornetQLogger.LOGGER.debug("replacing " + subString + " with " + sysProp);
          xml = xml.replace(subString, sysProp);
 
       }
@@ -493,7 +491,7 @@ public class XMLUtil
       }
       catch (SAXException e)
       {
-         XMLUtil.log.error("Invalid configuration", e);
+         HornetQLogger.LOGGER.errorOnXMLTransformInvalidConf(e);
 
          throw new IllegalStateException("Invalid configuration", e);
       }

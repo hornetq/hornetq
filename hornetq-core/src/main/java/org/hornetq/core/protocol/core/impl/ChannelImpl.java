@@ -23,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CommandConfirmationHandler;
@@ -31,6 +30,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  * A ChannelImpl
@@ -71,9 +71,7 @@ public final class ChannelImpl implements Channel
       }
    }
 
-   private static final Logger log = Logger.getLogger(ChannelImpl.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private volatile long id;
 
@@ -211,7 +209,7 @@ public final class ChannelImpl implements Channel
 
          if (isTrace)
          {
-            log.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
+            HornetQLogger.LOGGER.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
          }
 
          HornetQBuffer buffer = packet.encode(connection);
@@ -250,7 +248,7 @@ public final class ChannelImpl implements Channel
 
          if (isTrace)
          {
-            log.trace("Writing buffer for channelID=" + id);
+            HornetQLogger.LOGGER.trace("Writing buffer for channelID=" + id);
          }
 
 
@@ -296,7 +294,7 @@ public final class ChannelImpl implements Channel
                   {
                      if (!failoverCondition.await(connection.getBlockingCallFailoverTimeout(), TimeUnit.MILLISECONDS))
                      {
-                        log.debug("timed-out waiting for failover condition");
+                        HornetQLogger.LOGGER.debug("timed-out waiting for failover condition");
                      }
                   }
                }
@@ -428,7 +426,7 @@ public final class ChannelImpl implements Channel
       {
          if (isTrace)
          {
-            log.trace("Replaying commands on channelID=" + id);
+            HornetQLogger.LOGGER.trace("Replaying commands on channelID=" + id);
          }
          clearUpTo(otherLastConfirmedCommandID);
 
@@ -579,10 +577,7 @@ public final class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            ChannelImpl.log.warn("Can't find packet to clear: " + " last received command id " +
-                                 lastReceivedCommandID +
-                                 " first stored command id " +
-                                 firstStoredCommandID);
+            HornetQLogger.LOGGER.cannotFindPacketToClear(lastReceivedCommandID, firstStoredCommandID);
             firstStoredCommandID = lastReceivedCommandID + 1;
             return;
          }

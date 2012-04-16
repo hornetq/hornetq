@@ -18,7 +18,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTIN
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
@@ -28,6 +27,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMess
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  *
@@ -38,8 +38,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
  */
 public class ClientSessionPacketHandler implements ChannelHandler
 {
-   private static final Logger log = Logger.getLogger(ClientSessionPacketHandler.class);
-
    private final ClientSessionInternal clientSession;
 
    private final Channel channel;
@@ -98,7 +96,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
                // For now we just log it
                HornetQExceptionMessage mem = (HornetQExceptionMessage)packet;
 
-               ClientSessionPacketHandler.log.error("Received exception asynchronously from server", mem.getException());
+               HornetQLogger.LOGGER.receivedExceptionAsynchronously(mem.getException());
 
                break;
             }
@@ -110,7 +108,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         ClientSessionPacketHandler.log.error("Failed to handle packet", e);
+         HornetQLogger.LOGGER.failedToHandlePacket(e);
       }
 
       channel.confirm(packet);

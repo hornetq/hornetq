@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -42,8 +42,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class FileDeploymentManager implements Runnable, DeploymentManager
 {
-   private static final Logger log = Logger.getLogger(FileDeploymentManager.class);
-
    private final List<Deployer> deployers = new ArrayList<Deployer>();
 
    private final Map<Pair<URI, Deployer>, DeployInfo> deployed = new HashMap<Pair<URI, Deployer>, DeployInfo>();
@@ -117,9 +115,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
          for (String filename : filenames)
          {
-            FileDeploymentManager.log.debug("the filename is " + filename);
-
-            FileDeploymentManager.log.debug(System.getProperty("java.class.path"));
+            HornetQLogger.LOGGER.debug("the filename is " + filename);
 
             Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
 
@@ -127,16 +123,16 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             {
                URI uri = urls.nextElement().toURI();
 
-               FileDeploymentManager.log.debug("Got URI " + uri);
+               HornetQLogger.LOGGER.debug("Got URI " + uri);
 
                try
                {
-                  FileDeploymentManager.log.debug("Deploying " + uri + " for " + deployer.getClass().getSimpleName());
+                  HornetQLogger.LOGGER.debug("Deploying " + uri + " for " + deployer.getClass().getSimpleName());
                   deployer.deploy(uri);
                }
                catch (Exception e)
                {
-                  FileDeploymentManager.log.error("Error deploying " + uri, e);
+                  HornetQLogger.LOGGER.errorDeployingURI(e, uri);
                }
 
                Pair<URI, Deployer> pair = new Pair<URI, Deployer>(uri, deployer);
@@ -201,7 +197,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                   {
                      uri = url.toURI();
                   } catch (URISyntaxException e) {
-                     log.error("Error deploying " + url + ": " + e.getMessage(), e);
+                     HornetQLogger.LOGGER.errorDeployingURI(e);
                      continue;
                   }
 
@@ -221,7 +217,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      }
                      catch (Exception e)
                      {
-                        FileDeploymentManager.log.error("Error deploying " + uri, e);
+                        HornetQLogger.LOGGER.errorDeployingURI(e, uri);
                      }
                   }
                   else if (newLastModified > info.lastModified)
@@ -234,7 +230,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      }
                      catch (Exception e)
                      {
-                        FileDeploymentManager.log.error("Error redeploying " + uri, e);
+                        HornetQLogger.LOGGER.errorDeployingURI(e, uri);
                      }
                   }
                }
@@ -249,18 +245,18 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                if (!fileExists(pair.getA()))
                {
                   Deployer deployer = entry.getValue().deployer;
-                  FileDeploymentManager.log.debug("Undeploying " + deployer + " with url " + pair.getA());
+                  HornetQLogger.LOGGER.debug("Undeploying " + deployer + " with url " + pair.getA());
                   deployer.undeploy(pair.getA());
                   toRemove.add(pair);
                }
             }
             catch (URISyntaxException e)
             {
-               FileDeploymentManager.log.error("Error undeploying " + pair.getA() + ": " + e.getMessage(), e);
+               HornetQLogger.LOGGER.errorUnDeployingURI(e, pair.getA());
             }
             catch (Exception e)
             {
-               FileDeploymentManager.log.error("Error undeploying " + pair.getA(), e);
+               HornetQLogger.LOGGER.errorUnDeployingURI(e, pair.getA());
             }
          }
          for (Pair<URI, Deployer> pair : toRemove)
@@ -270,7 +266,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
       catch (IOException e)
       {
-         FileDeploymentManager.log.warn("error scanning for URL's " + e);
+         HornetQLogger.LOGGER.errorScanningURLs(e);
       }
    }
 

@@ -15,7 +15,6 @@ package org.hornetq.core.postoffice.impl;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Bindable;
@@ -34,8 +33,6 @@ import org.hornetq.core.server.ServerMessage;
  */
 public class LocalQueueBinding implements QueueBinding
 {
-   private static final Logger log = Logger.getLogger(LocalQueueBinding.class);
-
    private final SimpleString address;
 
    private final Queue queue;

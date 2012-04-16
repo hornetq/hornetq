@@ -35,8 +35,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -91,9 +91,6 @@ import org.jboss.netty.util.VirtualExecutorService;
 public class NettyConnector implements Connector
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(NettyConnector.class);
-
    // Attributes ----------------------------------------------------
 
    private ClientSocketChannelFactory channelFactory;
@@ -406,12 +403,9 @@ public class NettyConnector implements Connector
 
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-         NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
-                                                                                          .getNettyVersion() +
-                                 " using " +
-                                 Version.ID);
+         HornetQLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
       }
-      NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
+      HornetQLogger.LOGGER.debug("Started Netty Connector version " + Version.ID);
    }
 
    public synchronized void close()
@@ -529,7 +523,7 @@ public class NettyConnector implements Connector
 
          if (t != null && !(t instanceof ConnectException))
          {
-            NettyConnector.log.error("Failed to create netty connection", future.getCause());
+            HornetQLogger.LOGGER.errorCreatingNettyConnection(future.getCause());
          }
 
          return null;

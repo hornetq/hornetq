@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 
@@ -31,7 +30,6 @@ import org.hornetq.core.security.Role;
  */
 public class HornetQSecurityManagerImpl implements HornetQSecurityManager
 {
-   private static final Logger log = Logger.getLogger(HornetQSecurityManagerImpl.class);
 
    // Static --------------------------------------------------------
 

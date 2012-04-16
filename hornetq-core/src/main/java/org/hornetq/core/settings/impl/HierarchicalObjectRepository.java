@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.Mergeable;
@@ -36,7 +36,6 @@ import org.hornetq.core.settings.Mergeable;
  */
 public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
-   Logger log = Logger.getLogger(HierarchicalObjectRepository.class);
 
    /**
     * The default Match to fall back to
@@ -183,7 +182,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       boolean isImmutable = immutables.contains(match);
       if (isImmutable)
       {
-         log.debug("Cannot remove match "  + match + " since it came from a main config");
+         HornetQLogger.LOGGER.debug("Cannot remove match "  + match + " since it came from a main config");
       }
       else
       {
@@ -241,7 +240,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
          }
          catch (Throwable e)
          {
-            log.error("Unable to call listener:", e);
+            HornetQLogger.LOGGER.errorCallingRepoListener(e);
          }
       }
    }

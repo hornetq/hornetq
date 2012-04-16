@@ -27,12 +27,12 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ConcurrentHashSet;
 
@@ -48,8 +48,6 @@ import org.hornetq.utils.ConcurrentHashSet;
  */
 public class DelegatingSession implements ClientSessionInternal
 {
-   private static final Logger log = Logger.getLogger(DelegatingSession.class);
-
    private final ClientSessionInternal session;
 
    private final Exception creationStack;
@@ -62,11 +60,11 @@ public class DelegatingSession implements ClientSessionInternal
 
    public static void dumpSessionCreationStacks()
    {
-      DelegatingSession.log.info("**** Dumping session creation stacks ****");
+      HornetQLogger.LOGGER.dumpingSessionStacks();
 
       for (DelegatingSession session : DelegatingSession.sessions)
       {
-         DelegatingSession.log.info("session created", session.creationStack);
+         HornetQLogger.LOGGER.dumpingSessionStack(session.creationStack);
       }
    }
 
@@ -77,10 +75,7 @@ public class DelegatingSession implements ClientSessionInternal
       // 
       if (!closed && !session.isClosed())
       {
-         DelegatingSession.log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
-                                    System.identityHashCode(this));
-
-         DelegatingSession.log.warn("The ClientSession you didn't close was created here:", creationStack);
+         HornetQLogger.LOGGER.clientSessionNotClosed(creationStack, System.identityHashCode(this));
 
          close();
       }
