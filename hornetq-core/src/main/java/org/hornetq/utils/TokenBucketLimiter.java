@@ -14,19 +14,19 @@
 package org.hornetq.utils;
 
 /**
- * 
- * A TokenBucketLimiterImpl
- * 
- * This class can throttle to a specfic rate, using an algorithm based on the Token Bucket metaphor
- * http://en.wikipedia.org/wiki/Token_bucket
- * 
- * The rate is specified in Hertz
- * 
+ * This class can throttle to a specific rate, using an algorithm based on the <a
+ * href="http://en.wikipedia.org/wiki/Token_bucket">Token Bucket metaphor</a>.
+ * <p>
+ * The rate is specified in cycles per second (or 'Hertz').
+ * @see http://en.wikipedia.org/wiki/Token_bucket
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public interface TokenBucketLimiter
 {
+   /**
+    * Returns the rate in cycles per second (which is the same as saying 'in Hertz').
+    * @see https://en.wikipedia.org/wiki/Hertz
+    */
    int getRate();
 
    boolean isSpin();
