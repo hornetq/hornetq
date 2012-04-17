@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.unit.util;
 
+import org.hornetq.tests.unit.UnitTestLogger;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,8 +34,6 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
@@ -45,8 +45,6 @@ public class InVMContext implements Context, Serializable
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 385743957345L;
-
-   private static final Logger log = Logger.getLogger(InVMContext.class);
 
    // Static --------------------------------------------------------
 
@@ -321,7 +319,7 @@ public class InVMContext implements Context, Serializable
 
    private void internalBind(String name, final Object obj, final boolean rebind) throws NamingException
    {
-      InVMContext.log.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
+      UnitTestLogger.LOGGER.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
       name = trimSlashes(name);
       int i = name.lastIndexOf("/");
       InVMContext c = this;

@@ -37,7 +37,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -58,8 +58,6 @@ public class AsynchronousFileTest extends AIOTestBase
       return UnitTestCase.createAIOTestSuite(AsynchronousFileTest.class);
    }
 
-   private static final Logger log = Logger.getLogger(AsynchronousFileTest.class);
-
    private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
 
    byte commonBuffer[] = null;
@@ -70,7 +68,7 @@ public class AsynchronousFileTest extends AIOTestBase
 
    private static void debug(final String msg)
    {
-      AsynchronousFileTest.log.debug(msg);
+      UnitTestLogger.LOGGER.debug(msg);
    }
 
    @Override

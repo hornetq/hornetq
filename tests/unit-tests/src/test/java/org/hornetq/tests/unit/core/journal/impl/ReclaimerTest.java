@@ -24,7 +24,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.Reclaimer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -36,8 +35,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class ReclaimerTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(ReclaimerTest.class);
-
    private JournalFile[] files;
 
    private Reclaimer reclaimer;

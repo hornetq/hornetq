@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
 
@@ -28,9 +28,6 @@ import org.hornetq.utils.ReusableLatch;
  */
 public class ReusableLatchTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(ReusableLatchTest.class);
-
-   
    public void testLatchWithParameterizedDown() throws Exception
    {
       ReusableLatch latch = new ReusableLatch(1000);
@@ -94,12 +91,12 @@ public class ReusableLatchTest extends UnitTestCase
             {
                if (!latch.await(5000))
                {
-                  ReusableLatchTest.log.error("Latch timed out");
+                  UnitTestLogger.LOGGER.error("Latch timed out");
                }
             }
             catch (Exception e)
             {
-               ReusableLatchTest.log.error(e);
+               UnitTestLogger.LOGGER.error(e);
             }
             waiting = false;
          }
@@ -133,7 +130,7 @@ public class ReusableLatchTest extends UnitTestCase
             }
             catch (Exception e)
             {
-               ReusableLatchTest.log.error(e.getMessage(), e);
+               UnitTestLogger.LOGGER.error(e.getMessage(), e);
             }
          }
       }
@@ -195,7 +192,7 @@ public class ReusableLatchTest extends UnitTestCase
             }
             catch (Exception e)
             {
-               ReusableLatchTest.log.error(e.getMessage(), e);
+               UnitTestLogger.LOGGER.error(e.getMessage(), e);
             }
          }
       }
@@ -268,12 +265,12 @@ public class ReusableLatchTest extends UnitTestCase
             {
                if (!latch.await(1000))
                {
-                  ReusableLatchTest.log.error("Latch timed out!", new Exception("trace"));
+                  UnitTestLogger.LOGGER.error("Latch timed out!", new Exception("trace"));
                }
             }
             catch (Exception e)
             {
-               ReusableLatchTest.log.error(e);
+               UnitTestLogger.LOGGER.error(e);
                this.e = e;
             }
             waiting = false;

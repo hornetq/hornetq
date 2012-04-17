@@ -32,7 +32,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
@@ -86,8 +86,6 @@ public class AlignedJournalImplTest extends UnitTestCase
    private ArrayList<PreparedTransactionInfo> transactions = null;
 
    // Static --------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(AlignedJournalImplTest.class);
 
    // Constructors --------------------------------------------------
 
@@ -289,9 +287,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      AlignedJournalImplTest.log.debug("Initial:--> " + journalImpl.debug());
+      UnitTestLogger.LOGGER.debug("Initial:--> " + journalImpl.debug());
 
-      AlignedJournalImplTest.log.debug("_______________________________");
+      UnitTestLogger.LOGGER.debug("_______________________________");
 
       for (int i = 0; i < 50; i++)
       {
@@ -335,9 +333,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       Assert.assertEquals(2, factory.listFiles("tt").size());
 
-      AlignedJournalImplTest.log.debug("Initial:--> " + journalImpl.debug());
+      UnitTestLogger.LOGGER.debug("Initial:--> " + journalImpl.debug());
 
-      AlignedJournalImplTest.log.debug("_______________________________");
+      UnitTestLogger.LOGGER.debug("_______________________________");
 
       for (int i = 0; i < 50; i++)
       {
@@ -371,15 +369,15 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkReclaimStatus();
 
-      AlignedJournalImplTest.log.debug(journalImpl.debug());
+      UnitTestLogger.LOGGER.debug(journalImpl.debug());
 
       journalImpl.debugWait();
 
-      AlignedJournalImplTest.log.debug("Final:--> " + journalImpl.debug());
+      UnitTestLogger.LOGGER.debug("Final:--> " + journalImpl.debug());
 
-      AlignedJournalImplTest.log.debug("_______________________________");
+      UnitTestLogger.LOGGER.debug("_______________________________");
 
-      AlignedJournalImplTest.log.debug("Files bufferSize:" + factory.listFiles("tt").size());
+      UnitTestLogger.LOGGER.debug("Files bufferSize:" + factory.listFiles("tt").size());
 
       Assert.assertEquals(2, factory.listFiles("tt").size());
 
@@ -410,7 +408,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       catch (Exception e)
       {
-         AlignedJournalImplTest.log.warn(e);
+         UnitTestLogger.LOGGER.warn(e);
       }
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
@@ -462,7 +460,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
       catch (Exception e)
       {
-         AlignedJournalImplTest.log.debug("Expected exception " + e, e);
+         UnitTestLogger.LOGGER.debug("Expected exception " + e, e);
       }
 
 
