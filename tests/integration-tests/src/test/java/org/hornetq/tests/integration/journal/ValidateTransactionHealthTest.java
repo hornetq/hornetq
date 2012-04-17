@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -254,9 +253,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.TransactionFailureCallback#failedTransaction(long, java.util.List, java.util.List)
-       */
       public void failedTransaction(final long transactionID,
                                     final List<RecordInfo> records,
                                     final List<RecordInfo> recordsToDelete)
@@ -285,7 +281,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
       try
       {
-         Journal journal = ValidateTransactionHealthTest.appendData(journalType,
+         ValidateTransactionHealthTest.appendData(journalType,
                                                                     journalDir,
                                                                     numberOfElements,
                                                                     transactionSize,
@@ -293,7 +289,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
          // We don't stop the journal on the case of an external process...
          // The test is making sure that committed data can be reloaded fine...
-         // i.e. committs are sync on disk as stated on the transaction.
+         // i.e. commits are sync on disk as stated on the transaction.
          // The journal shouldn't leave any state impeding reloading the server
       }
       catch (Exception e)
