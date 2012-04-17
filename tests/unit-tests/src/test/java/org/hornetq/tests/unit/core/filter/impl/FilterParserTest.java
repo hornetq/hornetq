@@ -23,7 +23,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.FilterParser;
 import org.hornetq.core.filter.impl.Identifier;
 import org.hornetq.core.filter.impl.Operator;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -40,8 +40,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class FilterParserTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(FilterParserTest.class);
-
    private Map<SimpleString, Identifier> identifierMap;
 
    private FilterParser parser;
@@ -58,56 +56,56 @@ public class FilterParserTest extends UnitTestCase
    public void testSimpleUnary() throws Exception
    {
       // Neg Long
-      FilterParserTest.log.trace("parse(-12345 = -1 * 12345)");
+      UnitTestLogger.LOGGER.trace("parse(-12345 = -1 * 12345)");
       Operator result = (Operator)parser.parse(new SimpleString("-12345 = -1 * 12345"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
 
       // Neg Double
-      FilterParserTest.log.trace("parse(-1 * 12345.67 = -12345.67)");
+      UnitTestLogger.LOGGER.trace("parse(-1 * 12345.67 = -12345.67)");
       result = (Operator)parser.parse(new SimpleString("-1 * 12345.67 = -12345.67"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
 
-      FilterParserTest.log.trace("parse(-(1 * 12345.67) = -12345.67)");
+      UnitTestLogger.LOGGER.trace("parse(-(1 * 12345.67) = -12345.67)");
       result = (Operator)parser.parse(new SimpleString("-(1 * 12345.67) = -12345.67"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
    }
 
    public void testPrecedenceNAssoc() throws Exception
    {
-      FilterParserTest.log.trace("parse(4 + 2 * 3 / 2 = 7)");
+      UnitTestLogger.LOGGER.trace("parse(4 + 2 * 3 / 2 = 7)");
       Operator result = (Operator)parser.parse(new SimpleString("4 + 2 * 3 / 2 = 7"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
 
-      FilterParserTest.log.trace("parse(4 + ((2 * 3) / 2) = 7)");
+      UnitTestLogger.LOGGER.trace("parse(4 + ((2 * 3) / 2) = 7)");
       result = (Operator)parser.parse(new SimpleString("4 + ((2 * 3) / 2) = 7"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
 
-      FilterParserTest.log.trace("parse(4 * -2 / -1 - 4 = 4)");
+      UnitTestLogger.LOGGER.trace("parse(4 * -2 / -1 - 4 = 4)");
       result = (Operator)parser.parse(new SimpleString("4 * -2 / -1 - 4 = 4"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
 
-      FilterParserTest.log.trace("parse(4 * ((-2 / -1) - 4) = -8)");
+      UnitTestLogger.LOGGER.trace("parse(4 * ((-2 / -1) - 4) = -8)");
       result = (Operator)parser.parse(new SimpleString("4 * ((-2 / -1) - 4) = -8"), identifierMap);
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       b = (Boolean)result.apply();
       Assert.assertTrue("is true", b.booleanValue());
    }
 
    public void testIds() throws Exception
    {
-      FilterParserTest.log.trace("parse(a + b * c / d = e)");
+      UnitTestLogger.LOGGER.trace("parse(a + b * c / d = e)");
       Operator result = (Operator)parser.parse(new SimpleString("a + b * c / d = e"), identifierMap);
       // 4 + 2 * 3 / 2 = 7
       Identifier a = identifierMap.get(new SimpleString("a"));
@@ -120,7 +118,7 @@ public class FilterParserTest extends UnitTestCase
       d.setValue(new Long(2));
       Identifier e = identifierMap.get(new SimpleString("e"));
       e.setValue(new Long(7));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue("is true", bool.booleanValue());
 
@@ -128,88 +126,88 @@ public class FilterParserTest extends UnitTestCase
 
    public void testTrueINOperator() throws Exception
    {
-      FilterParserTest.log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("Status IN ('new', 'cleared', 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("new"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue("is true", bool.booleanValue());
    }
 
    public void testFalseINOperator() throws Exception
    {
-      FilterParserTest.log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("Status IN ('new', 'cleared', 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("none"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue("is false", !bool.booleanValue());
    }
 
    public void testTrueNOTINOperator() throws Exception
    {
-      FilterParserTest.log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("Status NOT IN ('new', 'cleared', 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("none"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue(bool.booleanValue());
    }
 
    public void testFalseNOTINOperator() throws Exception
    {
-      FilterParserTest.log.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("Status NOT IN ('new', 'cleared', 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("new"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertFalse(bool.booleanValue());
    }
 
    public void testTrueOROperator() throws Exception
    {
-      FilterParserTest.log.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("(Status = 'new') OR (Status = 'cleared') OR (Status= 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("new"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue("is true", bool.booleanValue());
    }
 
    public void testFalseOROperator() throws Exception
    {
-      FilterParserTest.log.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
+      UnitTestLogger.LOGGER.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
       Operator result = (Operator)parser.parse(new SimpleString("(Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged')"),
                                                identifierMap);
       Identifier a = identifierMap.get(new SimpleString("Status"));
       a.setValue(new SimpleString("none"));
-      FilterParserTest.log.trace("result -> " + result);
+      UnitTestLogger.LOGGER.trace("result -> " + result);
       Boolean bool = (Boolean)result.apply();
       Assert.assertTrue("is false", !bool.booleanValue());
    }
 
    public void testInvalidSelector() throws Exception
    {
-      FilterParserTest.log.trace("parse(definitely not a message selector!)");
+      UnitTestLogger.LOGGER.trace("parse(definitely not a message selector!)");
       try
       {
          Object result = parser.parse(new SimpleString("definitely not a message selector!"), identifierMap);
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Assert.fail("Should throw an Exception.\n");
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("testInvalidSelector failed as expected", e);
+         UnitTestLogger.LOGGER.trace("testInvalidSelector failed as expected", e);
       }
    }
 
@@ -220,9 +218,9 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(average = +6.2)");
+         UnitTestLogger.LOGGER.trace("parse(average = +6.2)");
          Object result = parser.parse(new SimpleString("average = +6.2"), identifierMap);
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
       }
       catch (Exception e)
       {
@@ -234,9 +232,9 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(average = -95.7)");
+         UnitTestLogger.LOGGER.trace("parse(average = -95.7)");
          Object result = parser.parse(new SimpleString("average = -95.7"), identifierMap);
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
       }
       catch (Exception e)
       {
@@ -248,9 +246,9 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(average = 7.)");
+         UnitTestLogger.LOGGER.trace("parse(average = 7.)");
          Object result = parser.parse(new SimpleString("average = 7."), identifierMap);
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
       }
       catch (Exception e)
       {
@@ -262,16 +260,16 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(weight > 2500)");
+         UnitTestLogger.LOGGER.trace("parse(weight > 2500)");
          Operator result = (Operator)parser.parse(new SimpleString("weight > 2500"), identifierMap);
          identifierMap.get(new SimpleString("weight")).setValue(new Integer(3000));
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Boolean bool = (Boolean)result.apply();
          Assert.assertTrue("is true", bool.booleanValue());
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("failed", e);
+         UnitTestLogger.LOGGER.trace("failed", e);
          Assert.fail("" + e);
       }
    }
@@ -280,16 +278,16 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(weight > 2500)");
+         UnitTestLogger.LOGGER.trace("parse(weight > 2500)");
          Operator result = (Operator)parser.parse(new SimpleString("weight > 2500"), identifierMap);
          identifierMap.get(new SimpleString("weight")).setValue(new Float(3000));
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Boolean bool = (Boolean)result.apply();
          Assert.assertTrue("is true", bool.booleanValue());
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("failed", e);
+         UnitTestLogger.LOGGER.trace("failed", e);
          Assert.fail("" + e);
       }
    }
@@ -298,16 +296,16 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(weight < 1.5)");
+         UnitTestLogger.LOGGER.trace("parse(weight < 1.5)");
          Operator result = (Operator)parser.parse(new SimpleString("weight < 1.5"), identifierMap);
          identifierMap.get(new SimpleString("weight")).setValue(new Double(1.2));
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Boolean bool = (Boolean)result.apply();
          Assert.assertTrue("is true", bool.booleanValue());
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("failed", e);
+         UnitTestLogger.LOGGER.trace("failed", e);
          Assert.fail("" + e);
       }
    }
@@ -316,20 +314,20 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(JMSType = 'car' AND color = 'blue' AND weight > 2500)");
+         UnitTestLogger.LOGGER.trace("parse(JMSType = 'car' AND color = 'blue' AND weight > 2500)");
          Operator result = (Operator)parser.parse(new SimpleString("JMSType = 'car' AND color = 'blue' AND weight > 2500"),
                                                   identifierMap);
          identifierMap.get(new SimpleString("JMSType")).setValue(new SimpleString("car"));
          identifierMap.get(new SimpleString("color")).setValue(new SimpleString("blue"));
          identifierMap.get(new SimpleString("weight")).setValue(new SimpleString("3000"));
 
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Boolean bool = (Boolean)result.apply();
          Assert.assertTrue("is false", !bool.booleanValue());
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("failed", e);
+         UnitTestLogger.LOGGER.trace("failed", e);
          Assert.fail("" + e);
       }
    }
@@ -338,18 +336,18 @@ public class FilterParserTest extends UnitTestCase
    {
       try
       {
-         FilterParserTest.log.trace("parse(Cateogry IN ('category1') AND Rating >= 2");
+         UnitTestLogger.LOGGER.trace("parse(Cateogry IN ('category1') AND Rating >= 2");
          Operator result = (Operator)parser.parse(new SimpleString("Category IN ('category1') AND Rating >= 2"),
                                                   identifierMap);
          identifierMap.get(new SimpleString("Category")).setValue(new SimpleString("category1"));
          identifierMap.get(new SimpleString("Rating")).setValue(new Integer(3));
-         FilterParserTest.log.trace("result -> " + result);
+         UnitTestLogger.LOGGER.trace("result -> " + result);
          Boolean bool = (Boolean)result.apply();
          Assert.assertTrue("is true", bool.booleanValue());
       }
       catch (Exception e)
       {
-         FilterParserTest.log.trace("failed", e);
+         UnitTestLogger.LOGGER.trace("failed", e);
          Assert.fail("" + e);
       }
    }

@@ -25,7 +25,6 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -37,8 +36,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 {
-   protected final Logger log = Logger.getLogger(this.getClass());
-
    @Override
    protected void setUp() throws Exception
    {

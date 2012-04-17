@@ -21,7 +21,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -33,8 +33,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class FileDeploymentManagerTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(FileDeploymentManagerTest.class);
-
    public void testStartStop1() throws Exception
    {
       testStartStop1("fdm_test_file.xml");
@@ -67,7 +65,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
 
-      FileDeploymentManagerTest.log.debug("Filename is " + filename);
+      UnitTestLogger.LOGGER.debug("Filename is " + filename);
 
       File file = new File("target/test-classes/");
 
@@ -75,7 +73,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       file = new File("target/test-classes/" + filename);
 
-      FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
+      UnitTestLogger.LOGGER.debug(file.getAbsoluteFile());
 
       file.createNewFile();
 
@@ -110,7 +108,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
 
-      FileDeploymentManagerTest.log.debug("Filename is " + filename);
+      UnitTestLogger.LOGGER.debug("Filename is " + filename);
 
       File file = new File("target/test-classes/");
 
@@ -118,7 +116,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       file = new File("target/test-classes/" + filename);
 
-      FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
+      UnitTestLogger.LOGGER.debug(file.getAbsoluteFile());
 
       file.createNewFile();
 

@@ -23,7 +23,7 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -37,8 +37,6 @@ import org.hornetq.tests.util.RandomUtil;
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
-   private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
-   
    protected void tearDown() throws Exception
    {
       List<String> files = fileFactory.listFiles(fileExtension);
@@ -1116,8 +1114,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(4, files3.size());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
-      JournalImplTestUnit.log.debug("data files count " + journal.getDataFilesCount());
-      JournalImplTestUnit.log.debug("free files count " + journal.getFreeFilesCount());
+      UnitTestLogger.LOGGER.debug("data files count " + journal.getDataFilesCount());
+      UnitTestLogger.LOGGER.debug("free files count " + journal.getFreeFilesCount());
 
       Assert.assertEquals(2, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
@@ -2041,7 +2039,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       addWithSize(1024 - JournalImpl.SIZE_ADD_RECORD, 6);
 
-      JournalImplTestUnit.log.debug("Debug journal on testPrepareReclaim ->\n" + debugJournal());
+      UnitTestLogger.LOGGER.debug("Debug journal on testPrepareReclaim ->\n" + debugJournal());
 
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
@@ -3002,7 +3000,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       addTx(4, 31);
       commit(3);
 
-      JournalImplTestUnit.log.debug("Debug on Journal before stopJournal - \n" + debugJournal());
+      UnitTestLogger.LOGGER.debug("Debug on Journal before stopJournal - \n" + debugJournal());
 
       stopJournal();
       createJournal();

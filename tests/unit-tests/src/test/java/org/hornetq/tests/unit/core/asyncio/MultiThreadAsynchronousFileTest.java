@@ -26,7 +26,7 @@ import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -48,8 +48,6 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       return UnitTestCase.createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
    }
 
-   static Logger log = Logger.getLogger(MultiThreadAsynchronousFileTest.class);
-
    AtomicInteger position = new AtomicInteger(0);
 
    static final int SIZE = 1024;
@@ -64,7 +62,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    private static void debug(final String msg)
    {
-      MultiThreadAsynchronousFileTest.log.debug(msg);
+      UnitTestLogger.LOGGER.debug(msg);
    }
 
    @Override
