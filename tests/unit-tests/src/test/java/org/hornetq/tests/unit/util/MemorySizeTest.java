@@ -15,9 +15,9 @@ package org.hornetq.tests.unit.util;
 
 import junit.framework.TestCase;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.utils.MemorySize;
 
 /**
@@ -29,11 +29,9 @@ import org.hornetq.utils.MemorySize;
  */
 public class MemorySizeTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(MemorySizeTest.class);
-
    public void testObjectSizes() throws Exception
    {
-      MemorySizeTest.log.info("Server message size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
+      UnitTestLogger.LOGGER.info("Server message size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
       {
          public Object createObject()
          {
@@ -41,7 +39,7 @@ public class MemorySizeTest extends TestCase
          }
       }));
 
-      MemorySizeTest.log.info("Message reference size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
+      UnitTestLogger.LOGGER.info("Message reference size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()
       {
          public Object createObject()
          {

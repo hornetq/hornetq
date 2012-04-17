@@ -25,10 +25,10 @@ import javax.jms.ConnectionMetaData;
 import junit.framework.Assert;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionMetaData;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -37,7 +37,6 @@ import org.hornetq.tests.util.UnitTestCase;
 public class ManifestTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
-   Logger log = Logger.getLogger(ManifestTest.class);
 
    // Static --------------------------------------------------------
 
@@ -52,7 +51,7 @@ public class ManifestTest extends UnitTestCase
       Properties props = System.getProperties();
       String userDir = props.getProperty("build.lib");
 
-      log.trace("userDir is " + userDir);
+      UnitTestLogger.LOGGER.trace("userDir is " + userDir);
 
       // The jar must be there
       File file = new File("build/jars", "hornetq-core.jar");

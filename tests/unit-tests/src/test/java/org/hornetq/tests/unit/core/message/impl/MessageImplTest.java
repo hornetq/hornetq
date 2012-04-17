@@ -20,7 +20,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -31,8 +30,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class MessageImplTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(MessageImplTest.class);
-
    public void getSetAttributes()
    {
       for (int j = 0; j < 10; j++)
