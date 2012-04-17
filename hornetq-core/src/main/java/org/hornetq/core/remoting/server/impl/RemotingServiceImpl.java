@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -542,6 +543,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       private final long pauseInterval;
 
       private volatile boolean closed;
+      private final CountDownLatch latch = new CountDownLatch(1);
 
       FailureCheckAndFlushThread(final long pauseInterval)
       {
@@ -554,10 +556,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          closed = true;
 
-         synchronized (this)
-         {
-            notify();
-         }
+         latch.countDown();
 
          if (!criticalError)
          {
@@ -627,29 +626,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                   }
                }
 
-               synchronized (this)
-               {
-                  long toWait = pauseInterval;
-
-                  long start = System.currentTimeMillis();
-
-                  while (!closed && toWait > 0)
-                  {
-                     try
-                     {
-                        wait(toWait);
-                     }
-                     catch (InterruptedException e)
-                     {
-                     }
-
-                     now = System.currentTimeMillis();
-
-                     toWait -= now - start;
-
-                     start = now;
-                  }
-               }
+               if (latch.await(pauseInterval, TimeUnit.MILLISECONDS))
+                  return;
             }
             catch (Throwable e)
             {

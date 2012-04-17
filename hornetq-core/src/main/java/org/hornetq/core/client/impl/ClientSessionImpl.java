@@ -464,7 +464,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
     * MessageHandler call a blocking method like rollback or acknowledge (blocking) This can block
     * until failover completes, which disallows the thread to be used to deliver any responses to
     * the client during that period, so failover won't occur. If we want direct consumers we need to
-    * rethink how they work
+    * rethink how they work.
     */
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
@@ -1800,8 +1800,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                                                                browseOnly,
                                                                clientWindowSize,
                                                                ackBatchSize,
-                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
-                                                                                                                false)
+ consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate)
                                                                                   : null,
                                                                executor,
                                                                flowControlExecutor,
@@ -1830,7 +1829,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       ClientProducerInternal producer = new ClientProducerImpl(this,
                                                                address,
                                                                maxRate == -1 ? null
-                                                                            : new TokenBucketLimiterImpl(maxRate, false),
+ : new TokenBucketLimiterImpl(maxRate),
                                                                autoCommitSends && blockOnNonDurableSend,
                                                                autoCommitSends && blockOnDurableSend,
                                                                autoGroup,

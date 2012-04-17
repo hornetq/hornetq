@@ -46,10 +46,10 @@ import org.hornetq.utils.UUIDGenerator;
  * A DiscoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 8 Dec 2008 12:36:26
- * 
- * 
+ *
+ *
  *
  *
  */
@@ -932,8 +932,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
-      dg.setNotificationService(notifService);
+ timeout, notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());
 

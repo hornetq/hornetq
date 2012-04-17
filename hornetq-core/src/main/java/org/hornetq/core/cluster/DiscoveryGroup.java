@@ -15,8 +15,6 @@ package org.hornetq.core.cluster;
 
 import java.util.List;
 
-import org.hornetq.core.server.management.NotificationService;
-
 /**
  * A DiscoveryGroup
  *
@@ -28,8 +26,6 @@ import org.hornetq.core.server.management.NotificationService;
  */
 public interface DiscoveryGroup
 {
-   void setNotificationService(NotificationService notificationService);
-
    String getName();
 
    List<DiscoveryEntry> getDiscoveryEntries();

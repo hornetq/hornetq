@@ -14,9 +14,9 @@
 package org.hornetq.utils;
 
 /**
- * 
+ *
  * A TokenBucketLimiterImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -26,11 +26,16 @@ public class TokenBucketLimiterImpl implements TokenBucketLimiter
 
    private final boolean spin;
 
-   private volatile long last;
+   private long last;
 
-   private volatile int tokens;
+   private int tokens;
 
-   private volatile int tokensAdded;
+   private int tokensAdded;
+
+   public TokenBucketLimiterImpl(final int rate)
+   {
+      this(rate, false);
+   }
 
    public TokenBucketLimiterImpl(final int rate, final boolean spin)
    {
