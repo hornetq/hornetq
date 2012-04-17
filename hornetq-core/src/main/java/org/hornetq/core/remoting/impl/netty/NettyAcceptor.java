@@ -34,10 +34,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -87,8 +87,6 @@ import org.jboss.netty.util.VirtualExecutorService;
  */
 public class NettyAcceptor implements Acceptor
 {
-   static final Logger log = Logger.getLogger(NettyAcceptor.class);
-
    private final ClusterConnection clusterConnection;
 
    private ChannelFactory channelFactory;
@@ -455,10 +453,7 @@ public class NettyAcceptor implements Acceptor
 
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-         NettyAcceptor.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
-                                                                                         .getNettyVersion() +
-                                " using " +
-                                Version.ID);
+         HornetQLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
       }
 
       if (notificationService != null)
@@ -482,14 +477,7 @@ public class NettyAcceptor implements Acceptor
                                                                          TimeUnit.MILLISECONDS);
       }
 
-      NettyAcceptor.log.info("Started Netty Acceptor version " + Version.ID +
-                             " " +
-                             host +
-                             ":" +
-                             port +
-                             " for " +
-                             protocol +
-                             " protocol");
+      HornetQLogger.LOGGER.startedNettyAcceptor(Version.ID, host, port, protocol);
    }
 
    private void startServerChannels()
@@ -547,14 +535,14 @@ public class NettyAcceptor implements Acceptor
 
       if (!future.isCompleteSuccess())
       {
-         NettyAcceptor.log.warn("channel group did not completely close");
+         HornetQLogger.LOGGER.nettyChannelGroupError();
          Iterator<Channel> iterator = future.getGroup().iterator();
          while (iterator.hasNext())
          {
             Channel channel = iterator.next();
             if (channel.isBound())
             {
-               NettyAcceptor.log.warn(channel + " is still connected to " + channel.getRemoteAddress());
+               HornetQLogger.LOGGER.nettyChannelStillOpen(channel, channel.getRemoteAddress());
             }
          }
       }
@@ -617,14 +605,14 @@ public class NettyAcceptor implements Acceptor
       ChannelGroupFuture future = serverChannelGroup.unbind().awaitUninterruptibly();
       if (!future.isCompleteSuccess())
       {
-         NettyAcceptor.log.warn("server channel group did not completely unbind");
+         HornetQLogger.LOGGER.nettyChannelGroupBindError();
          Iterator<Channel> iterator = future.getGroup().iterator();
          while (iterator.hasNext())
          {
             Channel channel = iterator.next();
             if (channel.isBound())
             {
-               NettyAcceptor.log.warn(channel + " is still bound to " + channel.getRemoteAddress());
+               HornetQLogger.LOGGER.nettyChannelStillBound(channel, channel.getRemoteAddress());
             }
          }
       }

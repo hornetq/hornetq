@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  * A SoftValueHashMap
@@ -36,9 +36,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implements Map<K, V>
 {
-   private static final Logger log = Logger.getLogger(SoftValueHashMap.class);
-
-   private final boolean isTrace = log.isTraceEnabled();
+   private final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // The soft references that are already good.
    // too bad there's no way to override the queue method on ReferenceQueue, so I wouldn't need this
@@ -199,7 +197,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
                
                if (isTrace)
                {
-                  log.trace("Removing " + removed + " with id = " + ref.key + " from SoftValueHashMap");
+                  HornetQLogger.LOGGER.trace("Removing " + removed + " with id = " + ref.key + " from SoftValueHashMap");
                }
    
                if (mapDelegate.size() <= maxElements)

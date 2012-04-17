@@ -27,7 +27,6 @@ import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.core.persistence.StorageManager;
@@ -52,8 +51,6 @@ import org.hornetq.utils.json.JSONObject;
 public class QueueControlImpl extends AbstractControl implements QueueControl
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(QueueControlImpl.class);
 
    // Attributes ----------------------------------------------------
 

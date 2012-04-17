@@ -20,11 +20,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -44,8 +44,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class LastValueQueue extends QueueImpl
 {
-   private static final Logger log = Logger.getLogger(LastValueQueue.class);
-
    private final Map<SimpleString, HolderReference> map = new ConcurrentHashMap<SimpleString, HolderReference>();
 
    public LastValueQueue(final long persistenceID,
@@ -98,7 +96,7 @@ public class LastValueQueue extends QueueImpl
             }
             catch (Exception e)
             {
-               LastValueQueue.log.error("Failed to ack old reference", e);
+               HornetQLogger.LOGGER.errorAckingOldReference(e);
             }
 
             hr.setReference(ref);
@@ -140,7 +138,7 @@ public class LastValueQueue extends QueueImpl
             }
             catch (Exception e)
             {
-               LastValueQueue.log.error("Failed to ack old reference", e);
+               HornetQLogger.LOGGER.errorAckingOldReference(e);
             }
          }
          else

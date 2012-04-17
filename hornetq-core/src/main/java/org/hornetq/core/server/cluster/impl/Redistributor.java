@@ -17,11 +17,11 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
@@ -39,8 +39,6 @@ import org.hornetq.utils.FutureLatch;
  */
 public class Redistributor implements Consumer
 {
-   private static final Logger log = Logger.getLogger(Redistributor.class);
-
    private boolean active;
 
    private final StorageManager storageManager;
@@ -95,7 +93,7 @@ public class Redistributor implements Consumer
 
       if (!ok)
       {
-         Redistributor.log.warn("Timed out waiting for tasks to complete");
+         HornetQLogger.LOGGER.errorStoppingRedistributor();
       }
    }
 
@@ -157,9 +155,7 @@ public class Redistributor implements Consumer
 
          public void onError(final int errorCode, final String errorMessage)
          {
-            Redistributor.log.warn("IO Error during redistribution, errorCode = " + errorCode +
-                                   " message = " +
-                                   errorMessage);
+            HornetQLogger.LOGGER.ioErrorRedistributing(errorCode, errorMessage);
          }
 
          public void done()

@@ -20,9 +20,9 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 
@@ -36,8 +36,6 @@ import org.hornetq.core.transaction.TransactionOperation;
 public class TransactionImpl implements Transaction
 {
    private List<TransactionOperation> operations;
-
-   private static final Logger log = Logger.getLogger(TransactionImpl.class);
 
    private static final int INITIAL_NUM_PROPERTIES = 10;
 
@@ -207,9 +205,7 @@ public class TransactionImpl implements Transaction
 
             public void onError(final int errorCode, final String errorMessage)
             {
-               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
-                                        ", message = " +
-                                        errorMessage);
+               HornetQLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
             }
 
             public void done()
@@ -287,9 +283,7 @@ public class TransactionImpl implements Transaction
 
             public void onError(final int errorCode, final String errorMessage)
             {
-               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
-                                        ", message = " +
-                                        errorMessage);
+               HornetQLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
             }
 
             public void done()
@@ -311,7 +305,7 @@ public class TransactionImpl implements Transaction
       {
          public void onError(int errorCode, String errorMessage)
          {
-            log.error("Error=" + errorCode + ", message=" + errorMessage);
+            HornetQLogger.LOGGER.error("Error=" + errorCode + ", message=" + errorMessage);
          }
 
          public void done()
@@ -372,9 +366,7 @@ public class TransactionImpl implements Transaction
 
             public void onError(final int errorCode, final String errorMessage)
             {
-               TransactionImpl.log.warn("IO Error completing the transaction, code = " + errorCode +
-                                        ", message = " +
-                                        errorMessage);
+               HornetQLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
             }
 
             public void done()
@@ -431,9 +423,9 @@ public class TransactionImpl implements Transaction
 
    public void markAsRollbackOnly(final HornetQException exception)
    {
-      if (log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Marking Transaction " + this.id + " as rollback only");
+         HornetQLogger.LOGGER.debug("Marking Transaction " + this.id + " as rollback only");
       }
       state = State.ROLLBACK_ONLY;
 

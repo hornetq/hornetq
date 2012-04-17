@@ -25,7 +25,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -45,8 +45,6 @@ import org.hornetq.utils.UUIDGenerator;
 class StompProtocolManager implements ProtocolManager
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(StompProtocolManager.class);
 
    // Attributes ----------------------------------------------------
 
@@ -130,7 +128,7 @@ class StompProtocolManager implements ProtocolManager
          }
          catch (Exception e)
          {
-            log.error("Failed to decode", e);
+            HornetQLogger.LOGGER.errorDecodingPacket(e);
             return;
          }
          
@@ -154,15 +152,15 @@ class StompProtocolManager implements ProtocolManager
 
    public void send(final StompConnection connection, final StompFrame frame)
    {
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("sent " + frame);
+         HornetQLogger.LOGGER.trace("sent " + frame);
       }
       synchronized (connection)
       {
          if (connection.isDestroyed())
          {
-            log.warn("Connection closed " + connection);
+            HornetQLogger.LOGGER.connectionClosed(connection);
             return;
          }
 
@@ -172,7 +170,7 @@ class StompProtocolManager implements ProtocolManager
          }
          catch (Exception e)
          {
-            log.error("Unable to send frame " + frame, e);
+            HornetQLogger.LOGGER.errorSendingFrame(e, frame);
          }
       }
    }
@@ -253,7 +251,7 @@ class StompProtocolManager implements ProtocolManager
                }
                catch (Exception e)
                {
-                  log.warn(e.getMessage(), e);
+                  HornetQLogger.LOGGER.errorCleaningStompConn(e);
                }
             }
 
@@ -272,7 +270,7 @@ class StompProtocolManager implements ProtocolManager
                   }
                   catch (Exception e)
                   {
-                     log.warn(e.getMessage(), e);
+                     HornetQLogger.LOGGER.errorCleaningStompConn(e);
                   }
                   iterator.remove();
                }
@@ -287,7 +285,7 @@ class StompProtocolManager implements ProtocolManager
       {
          public void onError(final int errorCode, final String errorMessage)
          {
-            log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+            HornetQLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
             
             HornetQStompException e = new HornetQStompException("Error sending reply",
                   new HornetQException(errorCode, errorMessage));
@@ -397,10 +395,10 @@ class StompProtocolManager implements ProtocolManager
 
    public void beginTransaction(StompConnection connection, String txID) throws Exception
    {
-      log.error("-------------------------------begin tx: " + txID);
+      HornetQLogger.LOGGER.stompBeginTX(txID);
       if (transactedSessions.containsKey(txID))
       {
-         log.error("------------------------------Error, tx already exist!");
+         HornetQLogger.LOGGER.stompErrorTXExists(txID);
          throw new HornetQStompException(connection, "Transaction already started: " + txID);
       }
       // create the transacted session

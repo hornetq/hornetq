@@ -15,7 +15,6 @@ package org.hornetq.core.config;
 
 import java.io.Serializable;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -30,8 +29,6 @@ import org.hornetq.utils.UUIDGenerator;
 public class DivertConfiguration implements Serializable
 {
    private static final long serialVersionUID = 6910543740464269629L;
-
-   private static final Logger log = Logger.getLogger(DivertConfiguration.class);
 
    private String name;
 

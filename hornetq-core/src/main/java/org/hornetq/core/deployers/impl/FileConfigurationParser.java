@@ -40,8 +40,8 @@ import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalConstants;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -66,8 +66,6 @@ public class FileConfigurationParser
 {
 
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(FileConfigurationParser.class);
 
    private static final String CONFIGURATION_SCHEMA_URL = "schema/hornetq-configuration.xsd";
 
@@ -330,15 +328,14 @@ public class FileConfigurationParser
 
          if (connectorConfig.getName() == null)
          {
-            FileConfigurationParser.log.warn("Cannot deploy a connector with no name specified.");
+            HornetQLogger.LOGGER.connectorWithNoName();
 
             continue;
          }
 
          if (config.getConnectorConfigurations().containsKey(connectorConfig.getName()))
          {
-            FileConfigurationParser.log.warn("There is already a connector with name " + connectorConfig.getName() +
-                                             " deployed. This one will not be deployed.");
+            HornetQLogger.LOGGER.connectorAlreadyDeployed(connectorConfig.getName());
 
             continue;
          }
@@ -470,7 +467,7 @@ public class FileConfigurationParser
          {
             if (validateAIO)
             {
-               log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+               HornetQLogger.LOGGER.AIONotFound();
             }
 
             config.setJournalType(JournalType.NIO);
@@ -985,8 +982,7 @@ public class FileConfigurationParser
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {
-         FileConfigurationParser.log.warn("There is already a discovery group with name " + name +
-                                          " deployed. This one will not be deployed.");
+         HornetQLogger.LOGGER.discoveryGroupAlreadyDeployed(name);
 
          return;
       }

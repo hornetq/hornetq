@@ -29,12 +29,12 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.ExecutorFactory;
@@ -50,7 +50,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PagingStoreFactoryNIO.class);
 
    private static final String ADDRESS_FILE = "address.txt";
 
@@ -196,9 +195,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
             if (!addressFile.exists())
             {
-               PagingStoreFactoryNIO.log.warn("Directory " + file.toString() +
-                                              " didn't have an identification file " +
-                                              PagingStoreFactoryNIO.ADDRESS_FILE);
+               HornetQLogger.LOGGER.pageStoreFactoryNoIdFile(file.toString(), PagingStoreFactoryNIO.ADDRESS_FILE);
                continue;
             }
 

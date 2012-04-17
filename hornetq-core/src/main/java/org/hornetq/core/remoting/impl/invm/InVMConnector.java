@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -36,8 +36,6 @@ import org.hornetq.utils.OrderedExecutorFactory;
  */
 public class InVMConnector implements Connector
 {
-   public static final Logger log = Logger.getLogger(InVMConnector.class);
-
    // Used for testing failure only
    public static volatile boolean failOnCreateConnection;
 
@@ -129,7 +127,7 @@ public class InVMConnector implements Connector
       {
          InVMConnector.incFailures();
          
-         log.debug("Returning null on InVMConnector for tests");
+         HornetQLogger.LOGGER.debug("Returning null on InVMConnector for tests");
          // For testing only
          return null;
       }

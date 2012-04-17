@@ -20,10 +20,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -38,9 +38,8 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
 
    // Constants -----------------------------------------------------
-   static final Logger log = Logger.getLogger(PageSubscriptionCounterImpl.class);
-
-   static final boolean isTrace = log.isTraceEnabled();
+   
+   static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -277,7 +276,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
          if (isTrace)
          {
-            log.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());
+            HornetQLogger.LOGGER.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());
          }
 
          storage.commit(txCleanup);
@@ -286,7 +285,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       {
          newRecordID = recordID;
 
-         log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.problemCleaningPagesubscriptionCounter(e);
          try
          {
             storage.rollback(txCleanup);

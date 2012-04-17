@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 
 /**
  * A ProducerCreditManager
@@ -29,8 +28,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class ClientProducerCreditManagerImpl implements ClientProducerCreditManager
 {
-   private static final Logger log = Logger.getLogger(ClientProducerCreditManagerImpl.class);
-
    public static final int MAX_UNREFERENCED_CREDITS_CACHE_SIZE = 1000;
 
    private final Map<SimpleString, ClientProducerCredits> producerCredits = new LinkedHashMap<SimpleString, ClientProducerCredits>();

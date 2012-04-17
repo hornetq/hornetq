@@ -21,13 +21,13 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -69,8 +69,7 @@ public class PagingManagerImpl implements PagingManager
    // Static
    // --------------------------------------------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
-   private static boolean isTrace = log.isTraceEnabled();
+   private static boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Constructors
    // --------------------------------------------------------------------------------------------------------------------
@@ -167,7 +166,7 @@ public class PagingManagerImpl implements PagingManager
    {
       if (isTrace)
       {
-         log.trace("Adding pageTransaction " + pageTransaction.getTransactionID());
+         HornetQLogger.LOGGER.trace("Adding pageTransaction " + pageTransaction.getTransactionID());
       }
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
    }
@@ -176,7 +175,7 @@ public class PagingManagerImpl implements PagingManager
    {
       if (isTrace)
       {
-         log.trace("Removing pageTransaction " +id);
+         HornetQLogger.LOGGER.trace("Removing pageTransaction " +id);
       }
       transactions.remove(id);
    }
@@ -185,7 +184,7 @@ public class PagingManagerImpl implements PagingManager
    {
       if (isTrace)
       {
-         log.trace("looking up pageTX = " + id);
+         HornetQLogger.LOGGER.trace("looking up pageTX = " + id);
       }
       return transactions.get(id);
    }

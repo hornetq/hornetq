@@ -15,7 +15,6 @@ package org.hornetq.core.deployers.impl;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.w3c.dom.Node;
@@ -26,8 +25,6 @@ import org.w3c.dom.Node;
  */
 public class AddressSettingsDeployer extends XmlDeployer
 {
-   private static final Logger log = Logger.getLogger(AddressSettingsDeployer.class);
-
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final FileConfigurationParser parser = new FileConfigurationParser();

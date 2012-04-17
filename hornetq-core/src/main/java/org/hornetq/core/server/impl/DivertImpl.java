@@ -15,10 +15,10 @@ package org.hornetq.core.server.impl;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
@@ -34,8 +34,6 @@ import org.hornetq.core.server.cluster.Transformer;
  */
 public class DivertImpl implements Divert
 {
-   private static final Logger log = Logger.getLogger(DivertImpl.class);
-
    private final PostOffice postOffice;
 
    private final SimpleString forwardAddress;
@@ -85,9 +83,9 @@ public class DivertImpl implements Divert
 
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
       
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Diverting message " + message + " into " + this);
+         HornetQLogger.LOGGER.trace("Diverting message " + message + " into " + this);
       }
 
       long id = storageManager.generateUniqueID();

@@ -53,7 +53,6 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -96,6 +95,7 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.BindingQueryResult;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -111,8 +111,6 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class ServerSessionPacketHandler implements ChannelHandler
 {
-   private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
-
    private final ServerSession session;
 
    private final StorageManager storageManager;
@@ -155,7 +153,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    public void connectionFailed(final HornetQException exception, boolean failedOver)
    {
-      log.warn("Client connection failed, clearing up resources for session " + session.getName());
+      HornetQLogger.LOGGER.clientConnectionFailed(session.getName());
 
       try
       {
@@ -163,10 +161,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to close session", e);
+         HornetQLogger.LOGGER.errorClosingSession(e);
       }
 
-      log.warn("Cleared up resources for session " + session.getName());
+      HornetQLogger.LOGGER.clearingUpSession(session.getName());
    }
 
    public void close()
@@ -179,7 +177,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to close session", e);
+         HornetQLogger.LOGGER.errorClosingSession(e);
       }
    }
 
@@ -512,38 +510,38 @@ public class ServerSessionPacketHandler implements ChannelHandler
          {
             if (requiresResponse)
             {
-               log.debug("Sending exception to client", e);
+               HornetQLogger.LOGGER.debug("Sending exception to client", e);
                response = new SessionXAResponseMessage(true, e.errorCode, e.getMessage());
             }
             else
             {
-               log.error("Caught XA exception", e);
+               HornetQLogger.LOGGER.caughtXaException(e);
             }
          }
          catch (HornetQException e)
          {
             if (requiresResponse)
             {
-               log.debug("Sending exception to client", e);
-               response = new HornetQExceptionMessage(e);
+               HornetQLogger.LOGGER.debug("Sending exception to client", e);
+               response = new HornetQExceptionMessage((HornetQException)e);
             }
             else
             {
-               log.error("Caught exception", e);
+               HornetQLogger.LOGGER.caughtException(e);
             }
          }
          catch (Throwable t)
          {
             if (requiresResponse)
             {
-               log.warn("Sending unexpected exception to the client", t);
+               HornetQLogger.LOGGER.warn("Sending unexpected exception to the client", t);
                HornetQException hqe = new HornetQException(HornetQException.INTERNAL_ERROR);
                hqe.initCause(t);
                response = new HornetQExceptionMessage(hqe);
             }
             else
             {
-               log.error("Caught unexpected exception", t);
+               HornetQLogger.LOGGER.caughtException(t);
             }
          }
 
@@ -564,7 +562,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       {
          public void onError(final int errorCode, final String errorMessage)
          {
-            log.warn("Error processing IOCallback code = " + errorCode + " message = " + errorMessage);
+            HornetQLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
 
             HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage(new HornetQException(errorCode,
                                                                                                         errorMessage));

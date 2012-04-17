@@ -27,6 +27,7 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
@@ -40,8 +41,6 @@ import org.hornetq.utils.TypedProperties;
  */
 public class RemoteGroupingHandler implements GroupingHandler
 {
-   private static Logger log = Logger.getLogger(RemoteGroupingHandler.class);
-
    private final SimpleString name;
 
    private final ManagementService managementService;
@@ -104,7 +103,7 @@ public class RemoteGroupingHandler implements GroupingHandler
          managementService.sendNotification(notification);
 
          if (!sendCondition.await(timeout, TimeUnit.MILLISECONDS))
-            log.warn("timed-out waiting for sendCondition");
+            HornetQLogger.LOGGER.groupHandlerSendTimeout();
          response = responses.get(proposal.getGroupId());
 
       }

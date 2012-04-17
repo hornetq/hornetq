@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.SimpleBytes;
@@ -26,6 +25,7 @@ import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  *
@@ -33,8 +33,6 @@ import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
  */
 public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements FrameEventListener
 {
-   private static final Logger log = Logger.getLogger(StompFrameHandlerV11.class);
-
    private static final char ESC_CHAR = '\\';
 
    private HeartBeater heartBeater;
@@ -154,7 +152,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
          catch (InterruptedException e)
          {
-            log.warn("Interrupted while waiting for heart beater to die", e);
+            HornetQLogger.LOGGER.errorOnStompHeartBeat(e);
          }
       }
       return null;
@@ -200,7 +198,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
       if (txID != null)
       {
-         log.warn("Transactional acknowledgement is not supported");
+         HornetQLogger.LOGGER.stompTXAckNorSupported();
       }
 
       if (subscriptionID == null)
@@ -334,7 +332,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
          catch (UnsupportedEncodingException e1)
          {
-            log.error("Cannot create ping frame due to encoding problem.", e1);
+            HornetQLogger.LOGGER.errorOnStompPingFrame(e1);
          }
 
          synchronized (this)

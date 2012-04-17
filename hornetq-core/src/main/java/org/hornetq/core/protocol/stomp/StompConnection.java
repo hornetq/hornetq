@@ -24,9 +24,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
-import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.FailureListener; 
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -44,8 +44,6 @@ import org.hornetq.utils.ConfigurationHelper;
  */
 public class StompConnection implements RemotingConnection
 {
-   private static final Logger log = Logger.getLogger(StompConnection.class);
-   
    protected static final String CONNECTION_ID_PROP = "__HQ_CID";
 
    private final StompProtocolManager manager;
@@ -247,11 +245,7 @@ public class StompConnection implements RemotingConnection
          destroyed = true;
       }
 
-      log.warn("Connection failure has been detected: " + me.getMessage() +
-                                      " [code=" +
-                                      me.getCode() +
-                                      "]");
-
+      HornetQLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getCode());
       // Then call the listeners
       callFailureListeners(me);
 
@@ -361,7 +355,7 @@ public class StompConnection implements RemotingConnection
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            log.error("Failed to execute failure listener", t);
+            HornetQLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }
@@ -381,7 +375,7 @@ public class StompConnection implements RemotingConnection
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            log.error("Failed to execute failure listener", t);
+            HornetQLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }

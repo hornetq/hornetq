@@ -17,7 +17,6 @@ import java.io.InputStream;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.MessageReference;
@@ -38,7 +37,6 @@ import org.hornetq.utils.TypedProperties;
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
-   private static final Logger log = Logger.getLogger(ServerMessageImpl.class);
 
    private int durableRefCount;
 

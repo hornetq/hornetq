@@ -25,10 +25,10 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 
 /**
  * This implementation delegates to the JAAS security interfaces.
@@ -42,13 +42,11 @@ import org.hornetq.core.server.HornetQComponent;
  */
 public class JAASSecurityManager implements HornetQSecurityManager, HornetQComponent
 {
-   private static final Logger log = Logger.getLogger(JAASSecurityManager.class);
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final boolean trace = JAASSecurityManager.log.isTraceEnabled();
+   private final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private String configurationName;
 
@@ -115,7 +113,7 @@ public class JAASSecurityManager implements HornetQSecurityManager, HornetQCompo
 
          if (trace)
          {
-            JAASSecurityManager.log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
+            HornetQLogger.LOGGER.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
          }
       }
       return authenticated;

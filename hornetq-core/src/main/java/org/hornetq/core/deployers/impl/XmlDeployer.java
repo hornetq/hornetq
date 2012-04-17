@@ -25,8 +25,8 @@ import java.util.Set;
 
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,8 +36,6 @@ import org.w3c.dom.NodeList;
  */
 public abstract class XmlDeployer implements Deployer, HornetQComponent
 {
-   private static Logger log = Logger.getLogger(XmlDeployer.class);
-
    protected static final String NAME_ATTR = "name";
 
    private final Map<URI, Map<String, Node>> configuration = new HashMap<URI, Map<String, Node>>();
@@ -174,7 +172,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             Node keyNode = node.getAttributes().getNamedItem(getKeyAttribute());
             if (keyNode == null)
             {
-               XmlDeployer.log.error("key attribute missing for configuration " + node);
+               HornetQLogger.LOGGER.keyAttributeMissing(node);
                continue;
             }
             String name = keyNode.getNodeValue();
@@ -184,7 +182,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             }
             catch (Exception e1)
             {
-               XmlDeployer.log.error(new StringBuilder("Unable to deploy node " + node + " " + name), e1);
+               HornetQLogger.LOGGER.unableToDeployNode(e1, node);
                continue;
             }
             addToConfiguration(url, name, node);
@@ -233,7 +231,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             }
             catch (Exception e)
             {
-               XmlDeployer.log.warn("problem undeploying " + node, e);
+               HornetQLogger.LOGGER.problemUndeployingNode(e, node);
             }
          }
       }

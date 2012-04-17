@@ -19,8 +19,8 @@ import java.util.concurrent.Semaphore;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
@@ -42,9 +42,6 @@ import org.jboss.netty.handler.ssl.SslHandler;
 public class NettyConnection implements Connection
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(NettyConnection.class);
-
    private static final int BATCHING_BUFFER_SIZE = 8192;
 
    // Attributes ----------------------------------------------------
@@ -106,7 +103,7 @@ public class NettyConnection implements Connection
 
             if (!sslCloseFuture.awaitUninterruptibly(10000))
             {
-               NettyConnection.log.warn("Timed out waiting for ssl close future to complete");
+               HornetQLogger.LOGGER.timeoutClosingSSL();
             }
          }
          catch (Throwable t)
@@ -119,7 +116,7 @@ public class NettyConnection implements Connection
 
       if (!closeFuture.awaitUninterruptibly(10000))
       {
-         NettyConnection.log.warn("Timed out waiting for channel to close");
+         HornetQLogger.LOGGER.timeoutClosingNettyChannel();
       }
 
       closed = true;
@@ -221,7 +218,7 @@ public class NettyConnection implements Connection
 
                   if (!ok)
                   {
-                     NettyConnection.log.warn("Timed out waiting for packet to be flushed");
+                     HornetQLogger.LOGGER.timeoutFlushingPacket();
                   }
 
                   break;

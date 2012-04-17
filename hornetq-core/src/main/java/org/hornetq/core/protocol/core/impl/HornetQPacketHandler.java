@@ -18,7 +18,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -30,6 +29,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessa
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.version.Version;
@@ -43,8 +43,6 @@ import org.hornetq.core.version.Version;
  */
 public class HornetQPacketHandler implements ChannelHandler
 {
-   private static final Logger log = Logger.getLogger(HornetQPacketHandler.class);
-
    private final HornetQServer server;
 
    private final Channel channel1;
@@ -101,7 +99,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          default:
          {
-            log.error("Invalid packet " + packet);
+            HornetQLogger.LOGGER.invalidPacket(packet);
          }
       }
    }
@@ -126,14 +124,7 @@ public class HornetQPacketHandler implements ChannelHandler
 
          if (!isCompatibleClient)
          {
-            log.warn("Client with version " + request.getVersion() +
-                     " and address " +
-                     connection.getRemoteAddress() +
-                     " is not compatible with server version " +
-                     version.getFullVersion() +
-                     ". " +
-                     "Please ensure all clients and servers are upgraded to the same version for them to " +
-                     "interoperate properly");
+            HornetQLogger.LOGGER.incompatibleVersion(request.getVersion(), connection.getRemoteAddress(), version.getFullVersion());
             throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                        "Server and client versions incompatible");
          }
@@ -157,9 +148,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          else if (connection.getClientVersion() != request.getVersion())
          {
-            log.warn("Client is not being consistent on the request versioning. " +
-            		   "It just sent a version id=" + request.getVersion() + 
-            		   " while it informed " + connection.getClientVersion() + " previously");
+            HornetQLogger.LOGGER.incompatibleVersionAfterConnect(request.getVersion(), connection.getClientVersion());
          }
          
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
@@ -192,7 +181,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (HornetQException e)
       {
-         log.error("Failed to create session ", e);
+         HornetQLogger.LOGGER.failedToCreateSession(e);
          response = new HornetQExceptionMessage(e);
 
          if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
@@ -202,9 +191,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to create session ", e);
-
-         log.error("Failed to create session", e);
+         HornetQLogger.LOGGER.failedToCreateSession(e);
 
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
@@ -234,7 +221,7 @@ public class HornetQPacketHandler implements ChannelHandler
             response = new ReattachSessionResponseMessage(-1, false);
          }
 
-         log.debug("Reattaching request from " +  connection.getRemoteAddress());
+         HornetQLogger.LOGGER.debug("Reattaching request from " +  connection.getRemoteAddress());
 
 
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());
@@ -251,8 +238,8 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
-               
-               log.warn("Reattach request from " + connection.getRemoteAddress() + " failed as there is no confirmationWindowSize configured, which may be ok for your system");
+
+               HornetQLogger.LOGGER.reattachRequestFailed(connection.getRemoteAddress());
 
                sessionHandler.closeListeners();
                sessionHandler.close();
@@ -271,7 +258,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to reattach session", e);
+         HornetQLogger.LOGGER.failedToReattachSession(e);
 
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
@@ -291,7 +278,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         log.error("Failed to handle create queue", e);
+         HornetQLogger.LOGGER.failedToHandleCreateQueue(e);
       }
    }
 }

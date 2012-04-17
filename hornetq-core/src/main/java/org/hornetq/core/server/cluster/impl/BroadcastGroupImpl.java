@@ -25,7 +25,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -42,7 +42,6 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 {
-   private static final Logger log = Logger.getLogger(BroadcastGroupImpl.class);
 
    private final String nodeID;
 
@@ -120,8 +119,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          if (localAddress != null)
          {
-            log.warn("local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound " + 
-                     "to a local address/port");
+            HornetQLogger.LOGGER.broadcastGroupBindError();
          }
          socket = new DatagramSocket();
       }
@@ -164,7 +162,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          }
          catch (Exception e)
          {
-            BroadcastGroupImpl.log.warn("unable to send notification when broadcast group is stopped", e);
+            HornetQLogger.LOGGER.broadcastGroupClosed(e);
          }
       }
 
@@ -240,7 +238,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
       catch (Exception e)
       {
-         BroadcastGroupImpl.log.error("Failed to broadcast connector configs", e);
+         HornetQLogger.LOGGER.errorBroadcastingConnectorConfigs(e);
       }
    }
 

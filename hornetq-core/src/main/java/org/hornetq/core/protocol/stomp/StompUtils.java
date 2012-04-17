@@ -36,6 +36,10 @@ public class StompUtils
    // Constants -----------------------------------------------------
    private static final String DEFAULT_MESSAGE_PRIORITY= "4";
 
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
       Map<String, String> headers = new HashMap<String, String>(frame.getHeadersMap());

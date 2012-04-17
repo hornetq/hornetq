@@ -19,9 +19,9 @@
           <artifactId>jnpserver</artifactId>
       </dependency>
       <dependency>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging-spi</artifactId>
-      </dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
    </dependencies>
 
    <build>
@@ -45,6 +45,7 @@
                      <artifactSet>
                         <excludes>
                            <exclude>org.jboss.netty:netty</exclude>
+                           <exclude>org.jboss.logging:jboss-logging-spi</exclude>
                         </excludes>
                      </artifactSet>
                      <filters>
@@ -57,7 +58,7 @@
                            </includes>
                         </filter>
                         <filter>
-                           <artifact>org.jboss.logging:jboss-logging-spi</artifact>
+                           <artifact>org.jboss.logging:jboss-logging</artifact>
                            <includes>
                               <include>org/jboss/logging/**/*.class</include>
                            </includes>

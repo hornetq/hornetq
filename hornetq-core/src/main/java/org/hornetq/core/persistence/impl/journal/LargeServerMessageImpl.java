@@ -20,8 +20,8 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -40,10 +40,7 @@ import org.hornetq.utils.TypedProperties;
 public class LargeServerMessageImpl extends ServerMessageImpl implements LargeServerMessage
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(LargeServerMessageImpl.class);
-
-   private static boolean isTrace = LargeServerMessageImpl.log.isTraceEnabled();
+   private static boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -171,7 +168,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorIncrementDelayDeletionCount(e);
       }
    }
 
@@ -200,7 +197,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       {
          if (LargeServerMessageImpl.isTrace)
          {
-            LargeServerMessageImpl.log.trace("Deleting file " + file + " as the usage was complete");
+            HornetQLogger.LOGGER.trace("Deleting file " + file + " as the usage was complete");
          }
 
          try
@@ -209,7 +206,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            LargeServerMessageImpl.log.error(e.getMessage(), e);
+            HornetQLogger.LOGGER.error(e.getMessage(), e);
          }
       }
    }
@@ -284,7 +281,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            LargeServerMessageImpl.log.error(e.getMessage(), e);
+            HornetQLogger.LOGGER.largeMessageErrorReleasingResources(e);
          }
       }
    }
@@ -336,7 +333,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       }
       catch (Exception e)
       {
-         log.warn("Error on copying large message " + this + " for DLA or Expiry", e);
+         HornetQLogger.LOGGER.lareMessageErrorCopying(e, this);
          return null;
       }
       finally

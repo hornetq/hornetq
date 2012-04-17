@@ -14,7 +14,6 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -33,8 +32,6 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  */
 public class HornetQFrameDecoder extends FrameDecoder
 {
-   private static final Logger log = Logger.getLogger(HornetQFrameDecoder.class);
-
    private final BufferDecoder decoder;
 
    public HornetQFrameDecoder(final BufferDecoder decoder)

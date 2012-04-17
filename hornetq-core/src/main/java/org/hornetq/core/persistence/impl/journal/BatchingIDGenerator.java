@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.IDGenerator;
 
@@ -34,8 +34,6 @@ public class BatchingIDGenerator implements IDGenerator
 {
 
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(BatchingIDGenerator.class);
 
    // Attributes ----------------------------------------------------
 
@@ -129,7 +127,7 @@ public class BatchingIDGenerator implements IDGenerator
       }
       catch (Exception e)
       {
-         BatchingIDGenerator.log.error("Failed to store id", e);
+         HornetQLogger.LOGGER.batchingIdError(e);
       }
    }
 

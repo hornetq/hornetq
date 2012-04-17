@@ -44,7 +44,6 @@ import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.AcceptorControlImpl;
 import org.hornetq.core.management.impl.AddressControlImpl;
 import org.hornetq.core.management.impl.BridgeControlImpl;
@@ -62,6 +61,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
@@ -89,9 +89,7 @@ public class ManagementServiceImpl implements ManagementService
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
-   
-   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final MBeanServer mbeanServer;
 
@@ -227,9 +225,9 @@ public class ManagementServiceImpl implements ManagementService
 
       registerInRegistry(ResourceNames.CORE_ADDRESS + address, addressControl);
 
-      if (ManagementServiceImpl.log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         ManagementServiceImpl.log.debug("registered address " + objectName);
+         HornetQLogger.LOGGER.debug("registered address " + objectName);
       }
    }
 
@@ -265,9 +263,9 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, queueControl);
       registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
 
-      if (ManagementServiceImpl.log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         ManagementServiceImpl.log.debug("registered queue " + objectName);
+         HornetQLogger.LOGGER.debug("registered queue " + objectName);
       }
    }
 
@@ -286,9 +284,9 @@ public class ManagementServiceImpl implements ManagementService
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
 
-      if (ManagementServiceImpl.log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         ManagementServiceImpl.log.debug("registered divert " + objectName);
+         HornetQLogger.LOGGER.debug("registered divert " + objectName);
       }
    }
 
@@ -397,9 +395,9 @@ public class ManagementServiceImpl implements ManagementService
       ServerMessage reply = new ServerMessageImpl(storageManager.generateUniqueID(), 512);
 
       String resourceName = message.getStringProperty(ManagementHelper.HDR_RESOURCE_NAME);
-      if (ManagementServiceImpl.log.isDebugEnabled())
+      if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         ManagementServiceImpl.log.debug("handling management message for " + resourceName);
+         HornetQLogger.LOGGER.debug("handling management message for " + resourceName);
       }
 
       String operation = message.getStringProperty(ManagementHelper.HDR_OPERATION_NAME);
@@ -423,7 +421,7 @@ public class ManagementServiceImpl implements ManagementService
          }
          catch (Exception e)
          {
-            ManagementServiceImpl.log.warn("exception while invoking " + operation + " on " + resourceName, e);
+            HornetQLogger.LOGGER.managementOperationError(e, operation, resourceName);
             reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
             String exceptionMessage = e.getMessage();
             if (e instanceof InvocationTargetException)
@@ -452,9 +450,7 @@ public class ManagementServiceImpl implements ManagementService
             }
             catch (Exception e)
             {
-               ManagementServiceImpl.log.warn("exception while retrieving attribute " + attribute +
-                                              " on " +
-                                              resourceName, e);
+               HornetQLogger.LOGGER.managementAttributeError(e, attribute, resourceName);
                reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
@@ -599,9 +595,7 @@ public class ManagementServiceImpl implements ManagementService
             }
             if (!unexpectedResourceNames.isEmpty())
             {
-               ManagementServiceImpl.log.warn("On ManagementService stop, there are " + unexpectedResourceNames.size() +
-                                              " unexpected registered MBeans: " +
-                                              unexpectedResourceNames);
+               HornetQLogger.LOGGER.managementStopError(unexpectedResourceNames.size(), unexpectedResourceNames);
             }
 
             for (ObjectName on : registeredNames)
@@ -664,7 +658,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       if (isTrace)
       {
-         log.trace("Sending Notification = "  + notification + 
+         HornetQLogger.LOGGER.trace("Sending Notification = "  + notification +
                    ", notificationEnabled=" + notificationsEnabled + 
                    " messagingServerControl=" + messagingServerControl);
       }
@@ -689,7 +683,7 @@ public class ManagementServiceImpl implements ManagementService
                   catch (Exception e)
                   {
                      // Exception thrown from one listener should not stop execution of others
-                     ManagementServiceImpl.log.error("Failed to call listener", e);
+                     HornetQLogger.LOGGER.errorCallingNotifListener(e);
                   }
                }
 
@@ -698,9 +692,9 @@ public class ManagementServiceImpl implements ManagementService
                // https://jira.jboss.org/jira/browse/HORNETQ-317
                if (messagingServer == null || !messagingServer.isInitialised())
                {
-            	  if (log.isDebugEnabled())
+            	  if (HornetQLogger.LOGGER.isDebugEnabled())
             	  {
-            	     log.debug("ignoring message " + notification + " as the server is not initialized");
+            	     HornetQLogger.LOGGER.debug("ignoring message " + notification + " as the server is not initialized");
             	  }
                   return;
                }

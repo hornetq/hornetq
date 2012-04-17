@@ -34,6 +34,16 @@ import org.hornetq.utils.DataConstants;
  */
 public class PagedMessageImpl implements PagedMessage
 {
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
    /**
     * Large messages will need to be instantiated lazily during getMessage when the StorageManager
     * is available

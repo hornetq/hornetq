@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -29,8 +28,6 @@ import org.hornetq.utils.DataConstants;
 public class SessionSendMessage extends MessagePacket
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SessionSendMessage.class);
 
    // Attributes ----------------------------------------------------
 

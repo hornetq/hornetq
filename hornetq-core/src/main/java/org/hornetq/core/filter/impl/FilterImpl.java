@@ -20,7 +20,7 @@ import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.ServerMessage;
 
 /**
@@ -58,8 +58,6 @@ public class FilterImpl implements Filter
 {
 
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(FilterImpl.class);
 
    private final SimpleString sfilterString;
 
@@ -112,7 +110,7 @@ public class FilterImpl implements Filter
       }
       catch (Throwable e)
       {
-         FilterImpl.log.error("Invalid filter: " + str, e);
+         HornetQLogger.LOGGER.invalidFilter(e, str);
 
          throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString +
                                                                                 " " +
@@ -168,7 +166,7 @@ public class FilterImpl implements Filter
       }
       catch (Exception e)
       {
-         FilterImpl.log.warn("Invalid filter string: " + sfilterString, e);
+         HornetQLogger.LOGGER.invalidFilter(e, sfilterString);
 
          return false;
       }

@@ -63,7 +63,6 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -87,6 +86,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicatedJournal;
 import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -124,8 +124,6 @@ import org.hornetq.utils.XidCodecSupport;
  */
 public class JournalStorageManager implements StorageManager
 {
-   private static final Logger log = Logger.getLogger(JournalStorageManager.class);
-
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
    // grouping journal record type
@@ -295,7 +293,7 @@ public class JournalStorageManager implements StorageManager
 
       if (config.getJournalType() == JournalType.ASYNCIO)
       {
-         JournalStorageManager.log.info("Using AIO Journal");
+         HornetQLogger.LOGGER.journalUseAIO();
 
          journalFF = new AIOSequentialFileFactory(journalDir,
                                                   config.getJournalBufferSize_AIO(),
@@ -305,7 +303,7 @@ public class JournalStorageManager implements StorageManager
       }
       else if (config.getJournalType() == JournalType.NIO)
       {
-         JournalStorageManager.log.info("Using NIO Journal");
+         HornetQLogger.LOGGER.journalUseNIO();
          journalFF = new NIOSequentialFileFactory(journalDir,
                                                   true,
                                                   config.getJournalBufferSize_NIO(),
@@ -466,7 +464,7 @@ public class JournalStorageManager implements StorageManager
          }
          catch (Exception e)
          {
-            log.error("exception while stopping the replicationManager", e);
+            HornetQLogger.LOGGER.errorStoppingReplicationManager(e);
          }
          replicator = null;
       }
@@ -583,6 +581,11 @@ public class JournalStorageManager implements StorageManager
    @Override
    public final void waitOnOperations() throws Exception
    {
+      if (!started)
+      {
+         HornetQLogger.LOGGER.serverIsStopped();
+         throw new IllegalStateException("Server is stopped");
+      }
       waitOnOperations(0);
    }
 
@@ -591,7 +594,7 @@ public class JournalStorageManager implements StorageManager
    {
       if (!started)
       {
-         JournalStorageManager.log.warn("Server is stopped");
+         HornetQLogger.LOGGER.serverIsStopped();
          throw new IllegalStateException("Server is stopped");
       }
       return getContext().waitCompletion(timeout);
@@ -1436,7 +1439,7 @@ public class JournalStorageManager implements StorageManager
          {
             long percent = (long)((((double)reccount) / ((double)totalSize)) * 100f);
 
-            log.info(percent + "% loaded");
+            HornetQLogger.LOGGER.percentLoaded(percent);
          }
 
          RecordInfo record = records.get(reccount);
@@ -1502,7 +1505,7 @@ public class JournalStorageManager implements StorageManager
 
                if (message == null)
                {
-                  log.error("Cannot find message " + record.id);
+                  HornetQLogger.LOGGER.cannotFindMessage(record.id);
                }
                else
                {
@@ -1523,9 +1526,7 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  log.error("Cannot find queue messages for queueID=" + encoding.queueID +
-                            " on ack for messageID=" +
-                            messageID);
+                  HornetQLogger.LOGGER.journalCannotFindQueue(encoding.queueID, messageID);
                }
                else
                {
@@ -1533,7 +1534,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (rec == null)
                   {
-                     log.error("Cannot find message " + messageID);
+                     HornetQLogger.LOGGER.cannotFindMessage(messageID);
                   }
                }
 
@@ -1551,7 +1552,7 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  log.warn("Cannot find queue " + encoding.queueID + " to update delivery count");
+                  HornetQLogger.LOGGER.journalCannotFindQueueDelCount(encoding.queueID);
                }
                else
                {
@@ -1559,7 +1560,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (rec == null)
                   {
-                     log.warn("Cannot find message " + messageID + " to update delivery count");
+                     HornetQLogger.LOGGER.journalCannotFindMessageDelCount(messageID);
                   }
                   else
                   {
@@ -1606,10 +1607,7 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  log.error("Cannot find queue messages " + encoding.queueID +
-                            " for message " +
-                            messageID +
-                            " while processing scheduled messages");
+                  HornetQLogger.LOGGER.journalCannotFindQueueScheduled(encoding.queueID, messageID);
                }
                else
                {
@@ -1618,7 +1616,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (rec == null)
                   {
-                     log.error("Cannot find message " + messageID);
+                     HornetQLogger.LOGGER.cannotFindMessage(messageID);
                   }
                   else
                   {
@@ -1669,7 +1667,7 @@ public class JournalStorageManager implements StorageManager
                }
                else
                {
-                  log.info("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR, deleting record now");
+                  HornetQLogger.LOGGER.journalCannotFindQueueReloading(encoding.queueID);
                   messageJournal.appendDeleteRecord(record.id, false);
 
                }
@@ -1690,7 +1688,7 @@ public class JournalStorageManager implements StorageManager
                }
                else
                {
-                  log.info("Can't find queue " + encoding.queueID + " while reloading PAGE_CURSOR_COUNTER_VALUE, deleting record now");
+                  HornetQLogger.LOGGER.journalCannotFindQueueReloadingPage(encoding.queueID);
                   messageJournal.appendDeleteRecord(record.id, false);
                }
 
@@ -1711,7 +1709,7 @@ public class JournalStorageManager implements StorageManager
                }
                else
                {
-                  log.info("Can't find queue " + encoding.queueID + " while reloading PAGE_CURSOR_COUNTER_INC, deleting record now");
+                  HornetQLogger.LOGGER.journalCannotFindQueueReloadingPageCursor(encoding.queueID);
                   messageJournal.appendDeleteRecord(record.id, false);
                }
 
@@ -1743,7 +1741,7 @@ public class JournalStorageManager implements StorageManager
 
          if (queue == null)
          {
-            log.warn("Message for queue " + queueID + " which does not exist. This message will be ignored.");
+            HornetQLogger.LOGGER.journalCannotFindQueueForMessage(queueID);
 
             continue;
          }
@@ -1802,8 +1800,7 @@ public class JournalStorageManager implements StorageManager
       {
          if (msg.getRefCount() == 0)
          {
-            JournalStorageManager.log.info("Large message: " + msg.getMessageID() +
-                                            " didn't have any associated reference, file will be deleted");
+            HornetQLogger.LOGGER.largeMessageWithNoRef(msg.getMessageID());
             msg.decrementDelayDeletionCount();
          }
       }
@@ -1812,14 +1809,14 @@ public class JournalStorageManager implements StorageManager
       {
          if (msg.getRefCount() == 0)
          {
-            log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
+            HornetQLogger.LOGGER.journalUnreferencedMessage(msg.getMessageID());
             try
             {
                 deleteMessage(msg.getMessageID());
             }
             catch (Exception ignored)
             {
-               log.warn("It wasn't possible to delete message " + msg.getMessageID(), ignored);
+               HornetQLogger.LOGGER.journalErrorDeletingMessage(ignored, msg.getMessageID());
             }
          }
       }
@@ -2311,7 +2308,7 @@ public class JournalStorageManager implements StorageManager
             }
             catch (Exception e)
             {
-               JournalStorageManager.log.warn(e.getMessage(), e);
+               HornetQLogger.LOGGER.journalErrorDeletingMessage(e, largeServerMessageImpl.getMessageID());
             }
          }
 
@@ -2470,9 +2467,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (queue == null)
                   {
-                     log.warn("Message in prepared tx for queue " + encoding.queueID +
-                              " which does not exist. This message will be ignored.");
-
+                     HornetQLogger.LOGGER.journalMessageInPreparedTX(encoding.queueID);
                   }
                   else
                   {
@@ -2507,7 +2502,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (removed == null)
                   {
-                     log.warn("Failed to remove reference for " + messageID);
+                     HornetQLogger.LOGGER.journalErrorRemovingRef(messageID);
                   }
                   else
                   {
@@ -2581,13 +2576,13 @@ public class JournalStorageManager implements StorageManager
                   }
                   else
                   {
-                     log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+                     HornetQLogger.LOGGER.journalCannotFindQueueReloadingACK(encoding.queueID);
                   }
                   break;
                }
                case PAGE_CURSOR_COUNTER_VALUE:
                {
-                  log.warn("PAGE_CURSOR_COUNTER_VALUE record used on a prepared statement, what shouldn't happen");
+                  HornetQLogger.LOGGER.journalPAGEOnPrepared();
 
                   break;
                }
@@ -2609,7 +2604,7 @@ public class JournalStorageManager implements StorageManager
                   }
                   else
                   {
-                     log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+                     HornetQLogger.LOGGER.journalCannotFindQueueReloadingACK(encoding.queueID);
                   }
 
                   break;
@@ -2617,8 +2612,7 @@ public class JournalStorageManager implements StorageManager
 
                default:
                {
-                  JournalStorageManager.log.warn("InternalError: Record type " + recordType +
-                                                 " not recognized. Maybe you're using journal files created on a different version");
+                  HornetQLogger.LOGGER.journalInvalidRecordType(recordType);
                }
             }
          }
@@ -2642,7 +2636,7 @@ public class JournalStorageManager implements StorageManager
                      break;
                   }
                   default:
-                     log.warn("can't locate recordType=" + b + " on loadPreparedTransaction//deleteRecords");
+                     HornetQLogger.LOGGER.journalInvalidRecordTypeOnPreparedTX(b);
                }
             }
 
@@ -3584,7 +3578,7 @@ public class JournalStorageManager implements StorageManager
                }
                catch (Exception e)
                {
-                  JournalStorageManager.log.warn(e.getMessage(), e);
+                  HornetQLogger.LOGGER.journalError(e);
                }
             }
          }
@@ -4185,10 +4179,7 @@ public class JournalStorageManager implements StorageManager
             }
             catch (Throwable e)
             {
-               log.warn("Error while confirming large message completion on rollback for recordID=" + msg +
-                                 "->" +
-                                 e.getMessage(),
-                        e);
+               HornetQLogger.LOGGER.journalErrorConfirmingLargeMessage(e, msg);
             }
          }
       }

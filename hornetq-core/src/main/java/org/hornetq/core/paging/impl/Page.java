@@ -27,6 +27,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
 
@@ -38,11 +39,8 @@ import org.hornetq.utils.DataConstants;
 public class Page implements Comparable<Page>
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(Page.class);
-
-   private static final boolean isTrace = log.isTraceEnabled();
-   private static final boolean isDebug = log.isDebugEnabled();
+   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
+   private static final boolean isDebug = HornetQLogger.LOGGER.isDebugEnabled();
 
    public static final int SIZE_RECORD = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_BYTE;
 
@@ -108,7 +106,7 @@ public class Page implements Comparable<Page>
    {
       if (isDebug)
       {
-         log.debug("reading page " + this.pageId + " on address = " + storeName);
+         HornetQLogger.LOGGER.debug("reading page " + this.pageId + " on address = " + storeName);
       }
 
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
@@ -156,7 +154,7 @@ public class Page implements Comparable<Page>
                      msg.initMessage(storage);
                      if (isTrace)
                      {
-                        log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                        HornetQLogger.LOGGER.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
                      }
                      messages.add(msg);
                   }
@@ -253,7 +251,7 @@ public class Page implements Comparable<Page>
 
       if (isDebug)
       {
-         log.debug("Deleting pageId=" + pageId + " on store " + storeName);
+         HornetQLogger.LOGGER.debug("Deleting pageId=" + pageId + " on store " + storeName);
       }
 
       if (messages != null)
@@ -276,10 +274,7 @@ public class Page implements Comparable<Page>
       {
          if (suspiciousRecords)
          {
-            Page.log.warn("File " + file.getFileName() +
-                              " being renamed to " +
-                              file.getFileName() +
-                              ".invalidPage as it was loaded partially. Please verify your data.");
+            HornetQLogger.LOGGER.pageInvalid(file.getFileName(), file.getFileName());
             file.renameTo(file.getFileName() + ".invalidPage");
          }
          else
@@ -291,7 +286,7 @@ public class Page implements Comparable<Page>
       }
       catch (Exception e)
       {
-         log.warn("Error while deleting page file", e);
+         HornetQLogger.LOGGER.pageDeleteError(e);
          return false;
       }
    }
@@ -330,7 +325,7 @@ public class Page implements Comparable<Page>
       }
       catch (Exception e)
       {
-         log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.pageFinaliseError(e);
       }
    }
 
@@ -364,7 +359,7 @@ public class Page implements Comparable<Page>
     */
    private void markFileAsSuspect(final int position, final int msgNumber)
    {
-      Page.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
+      HornetQLogger.LOGGER.pageSuspectFile(position, msgNumber);
       suspiciousRecords = true;
    }
 

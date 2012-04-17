@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.stomp;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
@@ -30,8 +29,6 @@ import org.hornetq.utils.DataConstants;
  */
 public abstract class VersionedStompFrameHandler
 {
-   private static final Logger log = Logger.getLogger(VersionedStompFrameHandler.class);
-
    protected StompConnection connection;
    
    public static VersionedStompFrameHandler getHandler(StompConnection connection, StompVersions version)

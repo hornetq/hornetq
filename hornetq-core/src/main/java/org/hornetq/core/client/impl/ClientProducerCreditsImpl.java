@@ -16,7 +16,6 @@ package org.hornetq.core.client.impl;
 import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 
 /**
  * A ClientProducerCreditsImpl
@@ -27,8 +26,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class ClientProducerCreditsImpl implements ClientProducerCredits
 {
-   private static final Logger log = Logger.getLogger(ClientProducerCreditsImpl.class);
-
    private final Semaphore semaphore;
 
    private final int windowSize;

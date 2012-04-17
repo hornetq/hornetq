@@ -44,10 +44,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.Base64;
 
 /**
@@ -62,8 +62,6 @@ public class XmlDataImporter
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(XmlDataImporter.class);
 
    XMLStreamReader reader;
 
@@ -178,7 +176,7 @@ public class XmlDataImporter
       {
          while (reader.hasNext())
          {
-            log.debug("EVENT:[" + reader.getLocation().getLineNumber() + "][" + reader.getLocation().getColumnNumber() + "] ");
+            HornetQLogger.LOGGER.debug("EVENT:[" + reader.getLocation().getLineNumber() + "][" + reader.getLocation().getColumnNumber() + "] ");
             if (reader.getEventType() == XMLStreamConstants.START_ELEMENT)
             {
                if (XmlDataConstants.BINDINGS_CHILD.equals(reader.getLocalName()))
@@ -338,7 +336,7 @@ public class XmlDataImporter
       }
 
       logMessage.delete(logMessage.length() - 2, logMessage.length()); // take off the trailing comma
-      log.debug(logMessage);
+      HornetQLogger.LOGGER.debug(logMessage);
 
       message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, buffer.array());
       ClientProducer producer = session.createProducer(destination);
@@ -350,7 +348,7 @@ public class XmlDataImporter
          File tempFile = new File(tempFileName);
          if (!tempFile.delete())
          {
-            log.warn("Could not delete: " + tempFileName);
+            HornetQLogger.LOGGER.warn("Could not delete: " + tempFileName);
          }
       }
    }
@@ -443,7 +441,7 @@ public class XmlDataImporter
       if (isLarge)
       {
          tempFileName = UUID.randomUUID().toString() + ".tmp";
-         log.debug("Creating temp file " + tempFileName + " for large message.");
+         HornetQLogger.LOGGER.debug("Creating temp file " + tempFileName + " for large message.");
          OutputStream out = new FileOutputStream(tempFileName);
          try
          {
@@ -510,11 +508,11 @@ public class XmlDataImporter
       if (!queueQuery.isExists())
       {
          session.createQueue(address, queueName, filter, true);
-         log.debug("Binding queue(name=" + queueName + ", address=" + address + ", filter=" + filter + ")");
+         HornetQLogger.LOGGER.debug("Binding queue(name=" + queueName + ", address=" + address + ", filter=" + filter + ")");
       }
       else
       {
-         log.debug("Binding " + queueName + " already exists so won't re-bind.");
+         HornetQLogger.LOGGER.debug("Binding " + queueName + " already exists so won't re-bind.");
       }
 
       addressMap.put(queueName, address);

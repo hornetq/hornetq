@@ -23,10 +23,10 @@ import java.util.Set;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.Bindable;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -43,8 +43,6 @@ import org.hornetq.core.server.cluster.RemoteQueueBinding;
  */
 public class RemoteQueueBindingImpl implements RemoteQueueBinding
 {
-   private static final Logger log = Logger.getLogger(RemoteQueueBindingImpl.class);
-
    private final SimpleString address;
 
    private final Queue storeAndForwardQueue;
@@ -312,9 +310,9 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
       message.putBytesProperty(idsHeaderName, ids);
       
-      if (log.isTraceEnabled())
+      if (HornetQLogger.LOGGER.isTraceEnabled())
       {
-         log.trace("Adding remoteQueue ID = " + remoteQueueID + " into message=" + message + " store-forward-queue=" + storeAndForwardQueue);
+         HornetQLogger.LOGGER.trace("Adding remoteQueue ID = " + remoteQueueID + " into message=" + message + " store-forward-queue=" + storeAndForwardQueue);
       }
    }
 

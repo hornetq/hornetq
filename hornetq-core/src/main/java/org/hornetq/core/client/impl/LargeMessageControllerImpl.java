@@ -30,9 +30,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -52,8 +52,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private static final String READ_ONLY_ERROR_MESSAGE = "This is a read-only buffer, setOperations are not supported";
 
    // Attributes ----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(LargeMessageControllerImpl.class);
 
    private final ClientConsumerInternal consumerInternal;
 
@@ -188,7 +186,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             }
             catch (Exception e)
             {
-               LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+               HornetQLogger.LOGGER.errorAddingPacket(e);
                handledException = e;
             }
          }
@@ -202,7 +200,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                }
                catch (Exception e)
                {
-                  LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+                  HornetQLogger.LOGGER.errorAddingPacket(e);
                   handledException = e;
                }
             }
@@ -220,7 +218,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
          catch (Exception e)
          {
-            LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorAddingPacket(e);
             handledException = e;
          }
       }
@@ -243,7 +241,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       catch (Exception ignored)
       {
          // what else can we do here?
-         log.warn(ignored.getMessage(), ignored);
+         HornetQLogger.LOGGER.errorCallingCancel(ignored);
       }
 
       packets.offer(new SessionReceiveContinuationMessage());
@@ -649,7 +647,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
       catch (Exception e)
       {
-         LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorReadingIndex(e);
          throw new RuntimeException(e.getMessage(), e);
       }
       this.readerIndex = readerIndex;
@@ -678,7 +676,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
       catch (Exception e)
       {
-         LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorSettingIndex(e);
          throw new RuntimeException(e.getMessage(), e);
       }
       this.readerIndex = readerIndex;
@@ -730,7 +728,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
       catch (Exception e)
       {
-         LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+         HornetQLogger.LOGGER.errorReSettingIndex(e);
          throw new RuntimeException(e.getMessage(), e);
       }
    }
@@ -1417,7 +1415,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
          catch (Exception e)
          {
-            LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+            HornetQLogger.LOGGER.errorReadingCache(e);
             throw new RuntimeException(e.getMessage(), e);
          }
          finally
@@ -1467,7 +1465,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             }
             catch (Exception e)
             {
-               LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+               HornetQLogger.LOGGER.errorClosingCache(e);
             }
             cachedChannel = null;
          }
@@ -1480,7 +1478,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             }
             catch (Exception e)
             {
-               LargeMessageControllerImpl.log.warn(e.getMessage(), e);
+               HornetQLogger.LOGGER.errorClosingCache(e);
             }
             cachedRAFile = null;
          }
@@ -1499,7 +1497,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             }
             catch (Exception e)
             {
-               LargeMessageControllerImpl.log.warn("Exception during finalization for LargeMessage file cache", e);
+               HornetQLogger.LOGGER.errorFinalisingCache(e);
             }
          }
       }
