@@ -13,13 +13,13 @@
 
 package org.hornetq.jms.tests.tools.container;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import java.util.Hashtable;
 
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
-
-import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -32,7 +32,7 @@ public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBu
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(InVMInitialContextFactoryBuilder.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static ---------------------------------------------------------------------------------------
 

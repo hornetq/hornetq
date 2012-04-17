@@ -26,7 +26,7 @@ import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.message.MessageInfo;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.utils.JNDIUtil;
 import org.jboss.security.AnybodyPrincipal;
 import org.jboss.security.AuthenticationManager;
@@ -47,7 +47,7 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
 {
    public static final String TEST_SECURITY_DOMAIN = "java:/jaas/messaging";
 
-   private static final Logger log = Logger.getLogger(MockJBossSecurityManager.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    private boolean simulateJBossJaasSecurityManager;
 

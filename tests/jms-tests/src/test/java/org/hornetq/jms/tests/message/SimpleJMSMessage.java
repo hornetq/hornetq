@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -22,8 +24,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-
-import org.hornetq.core.logging.Logger;
 
 /**
  * Foreign message implementation. Used for testing only.
@@ -37,7 +37,7 @@ public class SimpleJMSMessage implements Message
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SimpleJMSMessage.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static --------------------------------------------------------
 

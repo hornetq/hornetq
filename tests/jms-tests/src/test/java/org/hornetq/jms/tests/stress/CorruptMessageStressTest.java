@@ -22,8 +22,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.JmsTestLogger;
 
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
@@ -36,7 +36,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 
-   private static Logger log = Logger.getLogger(CorruptMessageStressTest.class);
+   private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    public static int PRODUCER_COUNT = 30;
 

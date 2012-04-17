@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.tools.container.InVMInitialContextFactory;
 import org.hornetq.jms.tests.tools.container.LocalTestServer;
 import org.hornetq.jms.tests.tools.container.Server;
@@ -55,7 +55,7 @@ public class ServerManagement
 
    // Static --------------------------------------------------------
 
-   private static Logger log = Logger.getLogger(ServerManagement.class);
+   private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    private static List<Server> servers = new ArrayList<Server>();
 

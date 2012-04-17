@@ -13,11 +13,11 @@
 
 package org.hornetq.jms.tests.stress;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-
-import org.hornetq.core.logging.Logger;
 
 /**
  * 
@@ -32,7 +32,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class Sender extends Runner
 {
-   private static final Logger log = Logger.getLogger(Sender.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    protected MessageProducer prod;
 

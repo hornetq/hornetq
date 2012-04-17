@@ -24,7 +24,6 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -41,7 +40,7 @@ public class ConnectionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ConnectionTest.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static --------------------------------------------------------
 
