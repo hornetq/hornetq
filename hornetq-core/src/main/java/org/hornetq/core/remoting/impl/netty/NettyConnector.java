@@ -13,13 +13,13 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.InetAddress;
 import java.net.Inet6Address;
-import java.net.UnknownHostException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -484,7 +484,7 @@ public class NettyConnector implements Connector
             }
          }
       }
-      NettyConnector.log.debug("Remote destination: " + remoteDestination);
+      HornetQLogger.LOGGER.debug("Remote destination: " + remoteDestination);
 
       ChannelFuture future = bootstrap.connect(remoteDestination);
       future.awaitUninterruptibly();

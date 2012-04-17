@@ -19,14 +19,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionCreateConsumerMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private long id;
 
@@ -37,10 +32,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    private boolean browseOnly;
 
    private boolean requiresResponse;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionCreateConsumerMessage(final long id,
                                        final SimpleString queueName,
@@ -61,8 +52,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       super(PacketImpl.SESS_CREATECONSUMER);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public String toString()
@@ -120,24 +109,48 @@ public class SessionCreateConsumerMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionCreateConsumerMessage == false)
-      {
-         return false;
-      }
-
-      SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
-
-      return super.equals(other) && queueName.equals(r.queueName) && filterString == null ? r.filterString == null
-                                                                                         : filterString.equals(r.filterString);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (browseOnly ? 1231 : 1237);
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + (int)(id ^ (id >>> 32));
+      result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      result = prime * result + (requiresResponse ? 1231 : 1237);
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionCreateConsumerMessage))
+         return false;
+      SessionCreateConsumerMessage other = (SessionCreateConsumerMessage)obj;
+      if (browseOnly != other.browseOnly)
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (id != other.id)
+         return false;
+      if (queueName == null)
+      {
+         if (other.queueName != null)
+            return false;
+      }
+      else if (!queueName.equals(other.queueName))
+         return false;
+      if (requiresResponse != other.requiresResponse)
+         return false;
+      return true;
+   }
 }

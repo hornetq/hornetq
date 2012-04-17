@@ -45,7 +45,7 @@ import org.hornetq.utils.TypedProperties;
  * A DiscoveryGroupImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 17 Nov 2008 13:21:45
  *
  */
@@ -83,31 +83,25 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final Map<String, String> uniqueIDMap = new HashMap<String, String>();
 
-   private NotificationService notificationService;
+   private final NotificationService notificationService;
 
-   public DiscoveryGroupImpl(final String nodeID,
-                             final String name,
-                             final InetAddress localBindAddress,
-                             final InetAddress groupAddress,
-                             final int groupPort,
-                             final long timeout) throws Exception
+   public DiscoveryGroupImpl(final String nodeID, final String name, final InetAddress localBindAddress,
+                             final InetAddress groupAddress, final int groupPort, final long timeout,
+                             NotificationService notificationService) throws Exception
    {
       this.nodeID = nodeID;
-
       this.name = name;
-
       this.timeout = timeout;
-
       this.localBindAddress = localBindAddress;
-
       this.groupAddress = groupAddress;
-
       this.groupPort = groupPort;
+      this.notificationService = notificationService;
    }
 
-   public void setNotificationService(final NotificationService notificationService)
+   public DiscoveryGroupImpl(final String nodeID, final String name, final InetAddress localBindAddress,
+                             final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
    {
-      this.notificationService = notificationService;
+      this(nodeID, name, localBindAddress, groupAddress, groupPort, timeout, null);
    }
 
    public synchronized void start() throws Exception
@@ -192,7 +186,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       try
       {
          socket.close();
-   
+
          socket = null;
       }
       catch (Throwable ignored)
@@ -244,9 +238,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    public synchronized List<DiscoveryEntry> getDiscoveryEntries()
    {
       List<DiscoveryEntry> list = new ArrayList<DiscoveryEntry>();
-      
+
       list.addAll(connectors.values());
-      
+
       return list;
    }
 
@@ -365,7 +359,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                {
                   callListeners();
                }
-               
+
                // Ignore traffic from own node
                continue;
             }
@@ -381,7 +375,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   TransportConfiguration connector = new TransportConfiguration();
 
                   connector.decode(buffer);
-                 
+
                   DiscoveryEntry entry = new DiscoveryEntry(originatingNodeID, connector, System.currentTimeMillis());
 
                   DiscoveryEntry oldVal = connectors.put(originatingNodeID, entry);
@@ -477,7 +471,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             changed = true;
          }
       }
-      
+
       return changed;
    }
 

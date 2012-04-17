@@ -517,7 +517,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return false;
       }
 
-      runAfterActive(new RunnableException()
+      runAfterActive(new WrappedRunnable()
       {
          public String toString()
          {
@@ -573,7 +573,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return false;
       }
 
-      runAfterActive(new RunnableException()
+      runAfterActive(new WrappedRunnable()
       {
          public String toString()
          {
@@ -1084,7 +1084,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final ConnectionFactoryConfiguration cfConfig,
                                                     final String... jndi) throws Exception
    {
-      runAfterActive(new RunnableException()
+      runAfterActive(new WrappedRunnable()
       {
   
          public String toString()
@@ -1732,7 +1732,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   private boolean runAfterActive(RunnableException runnable) throws Exception
+   private boolean runAfterActive(WrappedRunnable runnable) throws Exception
    {
       if (active)
       {
@@ -1747,7 +1747,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   private abstract class RunnableException implements Runnable
+   private abstract class WrappedRunnable implements Runnable
    {
       public void run()
       {

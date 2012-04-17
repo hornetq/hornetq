@@ -179,7 +179,7 @@ public final class InVMAcceptor implements Acceptor
       paused = true;
    }
 
-   public void setNotificationService(final NotificationService notificationService)
+   public synchronized void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;
    }
