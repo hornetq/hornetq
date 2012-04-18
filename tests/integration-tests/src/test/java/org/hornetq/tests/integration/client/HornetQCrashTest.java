@@ -14,13 +14,13 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -31,7 +31,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class HornetQCrashTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(HornetQCrashTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public HornetQServer server;
 

@@ -22,7 +22,7 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -31,7 +31,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
 {
-   private static final Logger log = Logger.getLogger(SymmetricClusterWithBackupTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    public void testStopAllStartAll() throws Throwable

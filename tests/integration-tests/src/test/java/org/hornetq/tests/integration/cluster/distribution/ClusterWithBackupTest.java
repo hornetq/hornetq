@@ -22,7 +22,8 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
+
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * 
@@ -36,7 +37,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class ClusterWithBackupTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(ClusterWithBackupTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected void setUp() throws Exception

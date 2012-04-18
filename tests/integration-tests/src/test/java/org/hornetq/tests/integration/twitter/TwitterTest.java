@@ -31,12 +31,12 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.integration.twitter.TwitterIncomingConnectorServiceFactory;
 import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import twitter4j.*;
@@ -51,7 +51,7 @@ import twitter4j.http.AccessToken;
  */
 public class TwitterTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(TwitterTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    private static final String KEY_CONNECTOR_NAME = "connector.name";
    private static final String KEY_CONSUMER_KEY = "consumerKey";
    private static final String KEY_CONSUMER_SECRET = "consumerSecret";

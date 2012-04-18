@@ -25,8 +25,8 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.HashSet;
 
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -43,7 +43,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
    protected static final String QUEUE_NAME = "queue0";
    protected static final String QUEUES_TESTADDRESS = "queues.testaddress";
-   private static final Logger log = Logger.getLogger(ClusterWithBackupFailoverTestBase.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected abstract void setupCluster(final boolean forwardWhenNoConsumers) throws Exception;
 

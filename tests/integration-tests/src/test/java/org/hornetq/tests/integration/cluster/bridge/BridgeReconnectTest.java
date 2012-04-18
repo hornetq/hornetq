@@ -33,7 +33,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -43,6 +42,7 @@ import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A BridgeReconnectTest
@@ -55,7 +55,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  */
 public class BridgeReconnectTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeReconnectTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private final int NUM_MESSAGES = 100;
    protected boolean isNetty()

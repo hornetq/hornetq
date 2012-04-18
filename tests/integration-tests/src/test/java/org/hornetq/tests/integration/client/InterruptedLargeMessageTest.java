@@ -33,7 +33,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -50,6 +49,7 @@ import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -75,7 +75,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    // Static --------------------------------------------------------
-   private final Logger log = Logger.getLogger(LargeMessageTest.class);
+   private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected ServerLocator locator;
 

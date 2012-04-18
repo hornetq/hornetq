@@ -19,7 +19,7 @@ import junit.framework.TestSuite;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -31,7 +31,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(AIOJournalImplTest.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    public static TestSuite suite()
    {

@@ -13,11 +13,11 @@
 
 package org.hornetq.jms.tests.stress;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-
-import org.hornetq.core.logging.Logger;
 
 /**
  * 
@@ -35,7 +35,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class RecoveringReceiver extends Receiver
 {
-   private static final Logger log = Logger.getLogger(RecoveringReceiver.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    protected int ackSize;
 

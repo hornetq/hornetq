@@ -15,9 +15,9 @@ package org.hornetq.tests.integration.cluster.bridge;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A SimpleTransformer
@@ -30,7 +30,7 @@ import org.hornetq.core.server.cluster.Transformer;
  */
 public class SimpleTransformer implements Transformer
 {
-   private static final Logger log = Logger.getLogger(SimpleTransformer.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public ServerMessage transform(final ServerMessage message)
    {

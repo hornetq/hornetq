@@ -32,9 +32,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
@@ -52,7 +52,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(LargeMessageTestBase.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 

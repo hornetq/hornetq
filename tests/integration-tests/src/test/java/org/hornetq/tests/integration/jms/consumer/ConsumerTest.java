@@ -28,10 +28,10 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -39,7 +39,7 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class ConsumerTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(ConsumerTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final String Q_NAME = "ConsumerTestQueue";
 

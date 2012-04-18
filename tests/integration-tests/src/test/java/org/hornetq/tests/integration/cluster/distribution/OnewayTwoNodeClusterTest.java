@@ -14,8 +14,8 @@
 package org.hornetq.tests.integration.cluster.distribution;
 
 import junit.framework.Assert;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A OnewayTwoNodeClusterTest
@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class OnewayTwoNodeClusterTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(OnewayTwoNodeClusterTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected void setUp() throws Exception

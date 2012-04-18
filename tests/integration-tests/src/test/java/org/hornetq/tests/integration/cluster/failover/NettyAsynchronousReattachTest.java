@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A NettyAsynchronousReattachTest
@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
 public class NettyAsynchronousReattachTest extends NettyAsynchronousFailoverTest
 {
 
-   private final Logger log = Logger.getLogger(NettyAsynchronousReattachTest.class);
+   private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected void crash(final ClientSession... sessions) throws Exception

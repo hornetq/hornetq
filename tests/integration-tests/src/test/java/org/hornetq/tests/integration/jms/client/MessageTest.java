@@ -24,7 +24,7 @@ import javax.jms.StreamMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -39,7 +39,7 @@ public class MessageTest extends JMSTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessageTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final long TIMEOUT = 1000;
 

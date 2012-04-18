@@ -18,8 +18,8 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -36,7 +36,7 @@ public abstract class ClientAbstract extends Thread
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(ClientAbstract.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

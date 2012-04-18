@@ -30,8 +30,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
@@ -46,7 +46,7 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class AsynchronousFailoverTest extends FailoverTestBase
 {
-   private static final Logger log = Logger.getLogger(AsynchronousFailoverTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private volatile CountDownSessionFailureListener listener;
 

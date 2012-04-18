@@ -23,8 +23,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SpawnedVMSupport;
 
@@ -50,7 +50,7 @@ public class ClientExitTest extends ClientTestBase
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientExitTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Attributes -----------------------------------------------------------------------------------
 

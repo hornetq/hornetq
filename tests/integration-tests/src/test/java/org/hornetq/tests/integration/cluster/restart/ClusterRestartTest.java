@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.cluster.restart;
 import java.util.Collection;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
 /**
@@ -25,7 +25,7 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
  */
 public class ClusterRestartTest extends ClusterTestBase
 {
-   Logger log = Logger.getLogger(ClusterRestartTest.class);
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void testRestartWithQueuesCreateInDiffOrder() throws Exception
    {

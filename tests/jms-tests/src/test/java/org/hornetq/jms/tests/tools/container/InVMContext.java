@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.tools.container;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +35,6 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
@@ -47,7 +47,7 @@ public class InVMContext implements Context, Serializable
 
    private static final long serialVersionUID = 385743957345L;
 
-   private static final Logger log = Logger.getLogger(InVMContext.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static --------------------------------------------------------
 

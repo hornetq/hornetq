@@ -36,7 +36,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -44,6 +43,7 @@ import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
@@ -104,7 +104,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected Topology waitForTopology(final HornetQServer server, final int liveNodes, final int backupNodes, final long timeout) throws Exception
    {
-      log.debug("waiting for " + liveNodes + " on the topology for server = " + server);
+      HornetQLogger.LOGGER.debug("waiting for " + liveNodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
 
@@ -155,7 +155,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                    topology.describe() +
                    ")";
 
-      log.error(msg);
+      HornetQLogger.LOGGER.error(msg);
 
       throw new Exception(msg);
    }
@@ -163,7 +163,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected void waitForTopology(final HornetQServer server, String clusterConnectionName, final int nodes, final long timeout) throws Exception
    {
-      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+      HornetQLogger.LOGGER.debug("waiting for " + nodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
 
@@ -190,7 +190,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                    topology +
                    ")";
 
-      log.error(msg);
+      HornetQLogger.LOGGER.error(msg);
 
       throw new Exception(msg);
    }
@@ -294,7 +294,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    // Static --------------------------------------------------------
-   private final Logger log = Logger.getLogger(this.getClass());
+   private final HornetQLogger log = HornetQLogger.LOGGER;
 
    // Constructors --------------------------------------------------
 

@@ -24,11 +24,11 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A MessageRedistributionTest
@@ -41,7 +41,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
  */
 public class MessageRedistributionTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(MessageRedistributionTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public MessageRedistributionTest()
    {

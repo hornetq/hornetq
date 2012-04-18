@@ -27,7 +27,7 @@ import javax.jms.TopicSubscriber;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -41,8 +41,7 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
 {
-
-   Logger log = Logger.getLogger(FlowControlOnIgnoreLargeMessageBodyTest.class);
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Topic topic;
 

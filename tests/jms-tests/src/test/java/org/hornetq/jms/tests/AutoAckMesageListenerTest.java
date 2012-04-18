@@ -24,8 +24,6 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * A AutoAckMesageListenerTest
  *
@@ -38,7 +36,7 @@ public class AutoAckMesageListenerTest extends JMSTestCase
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(AutoAckMesageListenerTest.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

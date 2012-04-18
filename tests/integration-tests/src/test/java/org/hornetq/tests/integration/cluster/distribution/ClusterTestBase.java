@@ -48,7 +48,6 @@ import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -65,6 +64,7 @@ import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -79,7 +79,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class ClusterTestBase extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClusterTestBase.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    public ClusterTestBase()
    {
       super();

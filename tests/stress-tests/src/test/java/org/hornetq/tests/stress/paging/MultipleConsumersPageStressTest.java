@@ -28,10 +28,10 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -44,7 +44,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class MultipleConsumersPageStressTest extends ServiceTestBase
 {
 
-   private final Logger log = Logger.getLogger(this.getClass());
+   private final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    // Constants -----------------------------------------------------
 
