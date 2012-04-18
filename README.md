@@ -15,6 +15,12 @@ The project's source code is hosted at:
 
 https://github.com/hornetq
 
+### Git usage:
+
+Pull requests should be merged without fast forwards '--no-ff'. An easy way to achieve that is to use
+
+```% git config branch.master.mergeoptions --no-ff```
+
 ## Maven
 
 The minimum required Maven version is 3.0.0.
