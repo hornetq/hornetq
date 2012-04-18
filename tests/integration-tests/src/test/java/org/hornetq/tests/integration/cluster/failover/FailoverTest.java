@@ -320,7 +320,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               fail("failing due to exception " + e);
             }
 
          }
@@ -338,8 +338,12 @@ public class FailoverTest extends FailoverTestBase
                   }
                   return msg;
                }
-               catch (Exception ignored)
+               catch (HornetQException ignored)
                {
+                  if (ignored.getCode() == HornetQException.OBJECT_CLOSED)
+                  {
+                     throw new RuntimeException(ignored);
+                  }
                   // retry
                   ignored.printStackTrace();
                }
