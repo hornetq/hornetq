@@ -44,7 +44,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServers;
@@ -55,6 +54,7 @@ import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -69,7 +69,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JMSBridgeImplTest.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

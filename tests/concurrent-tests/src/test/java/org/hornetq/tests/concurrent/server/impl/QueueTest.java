@@ -17,12 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.QueueImpl;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeQueueFactory;
 import org.hornetq.tests.util.UnitTestCase;
@@ -38,7 +38,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class QueueTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(QueueTest.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    private FakeQueueFactory queueFactory = new FakeQueueFactory();
 
