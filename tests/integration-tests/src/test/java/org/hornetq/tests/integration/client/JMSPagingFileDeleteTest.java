@@ -22,14 +22,14 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 public class JMSPagingFileDeleteTest extends JMSTestBase
 {
-   static Logger log = Logger.getLogger(JMSPagingFileDeleteTest.class);
+   static IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    
    Topic topic1;
 

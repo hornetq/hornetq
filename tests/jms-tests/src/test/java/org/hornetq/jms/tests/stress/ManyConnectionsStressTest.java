@@ -27,8 +27,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -45,7 +45,7 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 
-   private static Logger log = Logger.getLogger(RelayStressTest.class);
+   private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    private static final int NUM_CONNECTIONS = 500;
 

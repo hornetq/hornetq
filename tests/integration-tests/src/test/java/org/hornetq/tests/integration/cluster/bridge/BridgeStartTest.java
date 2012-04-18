@@ -32,11 +32,11 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -50,7 +50,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class BridgeStartTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeStartTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected boolean isNetty()
    {

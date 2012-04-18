@@ -32,7 +32,7 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
@@ -43,7 +43,7 @@ import org.hornetq.tests.integration.stomp.util.StompClientConnectionV11;
  */
 public class StompV11Test extends StompTestBase2
 {
-   private static final transient Logger log = Logger.getLogger(StompV11Test.class);
+   private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private StompClientConnection connV11;
 

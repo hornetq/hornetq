@@ -35,7 +35,6 @@ import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
@@ -58,7 +57,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
 
-   protected final Logger log = Logger.getLogger(getClass());
+   protected final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static --------------------------------------------------------
 

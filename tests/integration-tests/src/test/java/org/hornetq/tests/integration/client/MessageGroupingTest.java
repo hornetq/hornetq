@@ -34,10 +34,10 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -45,7 +45,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class MessageGroupingTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(MessageGroupingTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQServer server;
 

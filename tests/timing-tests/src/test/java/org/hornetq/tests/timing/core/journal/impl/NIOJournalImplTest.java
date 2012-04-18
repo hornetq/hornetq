@@ -17,7 +17,7 @@ import java.io.File;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 
 /**
  *
@@ -29,7 +29,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class NIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
 

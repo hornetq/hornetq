@@ -29,7 +29,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.impl.FileConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -37,6 +36,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -47,7 +47,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class JMSServerStartStopTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(JMSServerStartStopTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private JMSServerManager liveJMSServer;
 

@@ -33,10 +33,10 @@ import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.management.Notification;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -55,7 +55,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class DiscoveryTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(DiscoveryTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private final String address1 = getUDPDiscoveryAddress();
 

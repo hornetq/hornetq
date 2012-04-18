@@ -26,10 +26,10 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -42,7 +42,7 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class CloseDestroyedConnectionTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(CloseDestroyedConnectionTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQConnectionFactory cf;
 

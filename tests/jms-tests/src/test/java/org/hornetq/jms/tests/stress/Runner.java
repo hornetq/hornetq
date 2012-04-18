@@ -13,9 +13,9 @@
 
 package org.hornetq.jms.tests.stress;
 
-import javax.jms.Session;
+import org.hornetq.jms.tests.JmsTestLogger;
 
-import org.hornetq.core.logging.Logger;
+import javax.jms.Session;
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.hornetq.core.logging.Logger;
  */
 public abstract class Runner implements Runnable
 {
-   protected Logger log = Logger.getLogger(getClass());
+   protected JmsTestLogger log = JmsTestLogger.LOGGER;
 
    protected Session sess;
 

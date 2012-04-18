@@ -15,7 +15,7 @@ package org.hornetq.tests.timing.util;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TokenBucketLimiterImpl;
 
@@ -28,7 +28,7 @@ import org.hornetq.utils.TokenBucketLimiterImpl;
  */
 public class TokenBucketLimiterImplTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(TokenBucketLimiterImplTest.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    public void testRateWithSpin1() throws Exception
    {

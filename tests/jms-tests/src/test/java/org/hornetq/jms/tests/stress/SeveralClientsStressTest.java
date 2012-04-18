@@ -30,8 +30,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -248,7 +248,7 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
    class Worker extends Thread
    {
 
-      protected Logger log = Logger.getLogger(getClass());
+      protected JmsTestLogger log = JmsTestLogger.LOGGER;
 
       private boolean failed = false;
 

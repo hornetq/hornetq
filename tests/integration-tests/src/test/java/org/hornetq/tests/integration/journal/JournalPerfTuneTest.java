@@ -29,7 +29,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
 
@@ -42,7 +42,7 @@ import org.hornetq.utils.DataConstants;
  */
 public class JournalPerfTuneTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(JournalPerfTuneTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Journal journal;
 

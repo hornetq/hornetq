@@ -18,8 +18,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -38,7 +38,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class Transactional2PCReceiver extends Receiver
 {
-   private static final Logger log = Logger.getLogger(Transactional2PCReceiver.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    protected int commitSize;
 

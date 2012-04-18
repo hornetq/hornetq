@@ -17,7 +17,7 @@ import java.io.File;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
 
 /**
@@ -29,7 +29,7 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
  */
 public class NIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception

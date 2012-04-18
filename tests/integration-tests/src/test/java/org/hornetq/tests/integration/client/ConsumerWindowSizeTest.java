@@ -30,7 +30,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.QueueBinding;
@@ -38,6 +37,7 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -52,7 +52,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private final int TIMEOUT = 5;
 
-   private static final Logger log = Logger.getLogger(ConsumerWindowSizeTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final boolean isTrace = ConsumerWindowSizeTest.log.isTraceEnabled();
 

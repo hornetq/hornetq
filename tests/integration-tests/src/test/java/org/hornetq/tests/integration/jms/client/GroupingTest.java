@@ -23,9 +23,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -36,7 +36,7 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class GroupingTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(GroupingTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Queue queue;
 

@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.stress;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,8 +29,6 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * 
  * A Receiver.
@@ -42,7 +42,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class Receiver extends Runner implements MessageListener
 {
-   private static final Logger log = Logger.getLogger(Receiver.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    private static final long RECEIVE_TIMEOUT = 120000;
 

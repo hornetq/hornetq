@@ -20,9 +20,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JMSTestCase;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -34,7 +34,7 @@ public class ExpiredMessageTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ExpiredMessageTest.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static ---------------------------------------------------------------------------------------
 

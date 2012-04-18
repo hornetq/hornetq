@@ -39,7 +39,6 @@ import javax.transaction.xa.Xid;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.jboss.tm.TxUtils;
 
@@ -2228,7 +2227,7 @@ public class XATest extends HornetQServerTestCase
 
    static class DummyListener implements MessageListener
    {
-      protected Logger log = Logger.getLogger(getClass());
+      protected JmsTestLogger log = JmsTestLogger.LOGGER;
 
       public ArrayList messages = new ArrayList();
 

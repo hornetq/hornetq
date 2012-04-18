@@ -25,8 +25,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.tests.HornetQServerTestCase;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -37,7 +37,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class ConcurrentCloseStressTest extends HornetQServerTestCase
 {
-   private static final Logger log = Logger.getLogger(ConcurrentCloseStressTest.class);
+   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    InitialContext ic;
 
@@ -147,7 +147,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
    static class ReaderThread extends TestThread
    {
-      private static final Logger log = Logger.getLogger(ReaderThread.class);
+      private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
       Connection conn;
 
@@ -224,7 +224,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
    static class ProducerThread extends TestThread
    {
-      private static final Logger log = Logger.getLogger(ProducerThread.class);
+      private static final JmsTestLogger log = JmsTestLogger.LOGGER;
 
       Connection conn;
 

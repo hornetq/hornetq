@@ -33,9 +33,9 @@ import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -48,7 +48,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 {
-   Logger log = Logger.getLogger(this.getClass());
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------

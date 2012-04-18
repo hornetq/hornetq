@@ -28,10 +28,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -45,7 +45,7 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class TopologyClusterTestBase extends ClusterTestBase
 {
 
-    private static final Logger log = Logger.getLogger(TopologyClusterTestBase.class);
+    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final long WAIT_TIMEOUT = 5000;
 

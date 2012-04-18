@@ -33,12 +33,12 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.tests.JmsTestLogger;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 
 /**
@@ -51,8 +51,6 @@ import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 public class LocalTestServer implements Server, Runnable
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(LocalTestServer.class);
 
    private boolean started = false;
 
@@ -109,7 +107,7 @@ public class LocalTestServer implements Server, Runnable
 
          boolean deleted = LocalTestServer.deleteDirectory(dir);
 
-         LocalTestServer.log.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
+         JmsTestLogger.LOGGER.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
       }
 
       PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());

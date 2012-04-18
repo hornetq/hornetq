@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 public class DummyInterceptorB implements Interceptor
 {
 
-   protected Logger log = Logger.getLogger(DummyInterceptorB.class);
+   protected IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    static AtomicInteger syncCounter = new AtomicInteger(0);
 

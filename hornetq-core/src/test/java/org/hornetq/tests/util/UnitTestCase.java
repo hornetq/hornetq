@@ -73,7 +73,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
@@ -88,6 +87,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
@@ -111,7 +111,7 @@ public abstract class UnitTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(UnitTestCase.class);
+   private static final HornetQLogger log = HornetQLogger.LOGGER;
 
    public static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
 
@@ -419,7 +419,7 @@ public abstract class UnitTestCase extends TestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message, Exception e)
    {
-      Logger log = Logger.getLogger(this.getClass());
+      HornetQLogger log = HornetQLogger.LOGGER;
       log.info(message, e);
       System.out.println(message);
       e.printStackTrace(System.out);
@@ -428,7 +428,7 @@ public abstract class UnitTestCase extends TestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message)
    {
-      Logger log = Logger.getLogger(this.getClass());
+      HornetQLogger log = HornetQLogger.LOGGER;
       log.info(message);
       System.out.println(this.getClass().getName() + "::" + message);
    }

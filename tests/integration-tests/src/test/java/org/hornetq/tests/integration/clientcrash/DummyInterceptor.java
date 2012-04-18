@@ -18,17 +18,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class DummyInterceptor implements Interceptor
 {
-   protected Logger log = Logger.getLogger(DummyInterceptor.class);
+   protected IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    boolean sendException = false;
 

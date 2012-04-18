@@ -15,9 +15,9 @@ package org.hornetq.tests.integration.clientcrash;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * Code to be run in an external VM, via main().
@@ -33,7 +33,7 @@ public class GracefulClient
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(GracefulClient.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Static ---------------------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ import junit.framework.Assert;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 
 /**
@@ -33,7 +33,7 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
-   private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    @Override
    protected void tearDown() throws Exception

@@ -19,8 +19,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -34,7 +34,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class MessageConcurrencyTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ConsumerTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQServer server;
 

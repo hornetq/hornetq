@@ -16,8 +16,7 @@ package org.hornetq.jms.tests.util;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.tests.JmsTestLogger;
 
 /**
  * This class will proxy any JUnit assertions and send then to our log outputs.
@@ -30,7 +29,7 @@ public class ProxyAssertSupport extends TestCase
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static Logger log = Logger.getLogger(ProxyAssertSupport.class);
+   private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    public static void assertTrue(final java.lang.String string, final boolean b)
    {

@@ -35,12 +35,12 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.Stomp;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 public class StompTest extends StompTestBase
 {
-   private static final transient Logger log = Logger.getLogger(StompTest.class);
+   private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void testSendManyMessages() throws Exception
    {

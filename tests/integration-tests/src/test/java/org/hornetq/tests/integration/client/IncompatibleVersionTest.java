@@ -27,7 +27,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
@@ -37,6 +36,7 @@ import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.version.impl.VersionImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.VersionLoader;
@@ -50,7 +50,7 @@ import org.hornetq.utils.VersionLoader;
  */
 public class IncompatibleVersionTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(IncompatibleVersionTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------

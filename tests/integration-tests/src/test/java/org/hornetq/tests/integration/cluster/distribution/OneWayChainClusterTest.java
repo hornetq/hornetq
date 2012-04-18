@@ -13,10 +13,10 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class OneWayChainClusterTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(OneWayChainClusterTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected void setUp() throws Exception

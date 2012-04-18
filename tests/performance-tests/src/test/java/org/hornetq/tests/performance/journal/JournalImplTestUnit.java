@@ -22,7 +22,7 @@ import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 
@@ -36,7 +36,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
-   private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    @Override
    protected void tearDown() throws Exception

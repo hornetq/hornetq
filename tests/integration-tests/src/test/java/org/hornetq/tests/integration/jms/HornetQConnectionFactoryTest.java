@@ -31,10 +31,10 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -48,7 +48,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class HornetQConnectionFactoryTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(HornetQConnectionFactoryTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private final String groupAddress = getUDPDiscoveryAddress();
 
