@@ -16,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
@@ -52,16 +51,16 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       {
          connection.setClientID(clientID);
          connection.setValid(true);
-         
+
          response = new StompFrameV10(Stomp.Responses.CONNECTED);
-         
+
          if (frame.hasHeader(Stomp.Headers.ACCEPT_VERSION))
          {
             response.addHeader(Stomp.Headers.Connected.VERSION, "1.0");
          }
-         
+
          response.addHeader(Stomp.Headers.Connected.SESSION, connection.getID().toString());
-         
+
          if (requestID != null)
          {
             response.addHeader(Stomp.Headers.Connected.RESPONSE_ID, requestID);
@@ -112,7 +111,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          }
          subscriptionID = "subscription/" + destination;
       }
-      
+
       try
       {
          connection.unsubscribe(subscriptionID);
@@ -128,7 +127,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    public StompFrame onAck(StompFrame request)
    {
       StompFrame response = null;
-      
+
       String messageID = request.getHeader(Stomp.Headers.Ack.MESSAGE_ID);
       String txID = request.getHeader(Stomp.Headers.TRANSACTION);
 
@@ -136,7 +135,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       {
          HornetQLogger.LOGGER.stompTXAckNorSupported();
       }
-      
+
       try
       {
          connection.acknowledge(messageID, null);
@@ -186,7 +185,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    public void requestAccepted(StompFrame request)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
 }

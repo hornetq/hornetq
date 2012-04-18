@@ -165,7 +165,7 @@ public class JMSTest extends MessageTestBase
 
          ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
 
-         ClientResponse response = request.head();
+         ClientResponse<?> response = request.head();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -205,7 +205,7 @@ public class JMSTest extends MessageTestBase
       manager.getQueueManager().deploy(deployment);
       ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -222,10 +222,11 @@ public class JMSTest extends MessageTestBase
          order.setAmount("$5.00");
          publish(queueName, order, null);
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
+         ClientResponse<?> res =
+                  consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         Order order2 = res.getEntity(Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
          Assert.assertNotNull(consumeNext);
