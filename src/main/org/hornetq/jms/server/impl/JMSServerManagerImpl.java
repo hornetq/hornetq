@@ -189,6 +189,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void activated()
    {
+      if (!started)
+      {
+         return;
+      }
+      
       active = true;
 
       jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
@@ -370,65 +375,68 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       started = true;
    }
 
-   public synchronized void stop() throws Exception
+   public void stop() throws Exception
    {
-      if (!started)
+      synchronized (this)
       {
-         return;
-      }
-
-      if (jmsDeployer != null)
-      {
-         jmsDeployer.stop();
-      }
-
-      if (deploymentManager != null)
-      {
-         deploymentManager.stop();
-      }
-
-      // Storage could be null on a shared store backup server before initialization
-      if (storage != null)
-      {
-         storage.stop();
-      }
-
-      unbindJNDI(queueJNDI);
-
-      unbindJNDI(topicJNDI);
-
-      unbindJNDI(connectionFactoryJNDI);
-
-      for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
-      {
-         shutdownConnectionFactory(connectionFactory);
-      }
-
-      connectionFactories.clear();
-      connectionFactoryJNDI.clear();
-
-      queueJNDI.clear();
-      queues.clear();
-
-      topicJNDI.clear();
-      topics.clear();
-
-      if (registry != null)
-      {
-         registry.close();
-      }
-
-      // it could be null if a backup
-      if (jmsManagementService != null)
-      {
-         jmsManagementService.unregisterJMSServer();
-
-         jmsManagementService.stop();
+         if (!started)
+         {
+            return;
+         }
+   
+         if (jmsDeployer != null)
+         {
+            jmsDeployer.stop();
+         }
+   
+         if (deploymentManager != null)
+         {
+            deploymentManager.stop();
+         }
+   
+         // Storage could be null on a shared store backup server before initialization
+         if (storage != null)
+         {
+            storage.stop();
+         }
+   
+         unbindJNDI(queueJNDI);
+   
+         unbindJNDI(topicJNDI);
+   
+         unbindJNDI(connectionFactoryJNDI);
+   
+         for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
+         {
+            shutdownConnectionFactory(connectionFactory);
+         }
+   
+         connectionFactories.clear();
+         connectionFactoryJNDI.clear();
+   
+         queueJNDI.clear();
+         queues.clear();
+   
+         topicJNDI.clear();
+         topics.clear();
+   
+         if (registry != null)
+         {
+            registry.close();
+         }
+   
+         // it could be null if a backup
+         if (jmsManagementService != null)
+         {
+            jmsManagementService.unregisterJMSServer();
+   
+            jmsManagementService.stop();
+         }
+         
+         started = false;
       }
 
       server.stop();
-
-      started = false;
    }
 
    public boolean isStarted()
