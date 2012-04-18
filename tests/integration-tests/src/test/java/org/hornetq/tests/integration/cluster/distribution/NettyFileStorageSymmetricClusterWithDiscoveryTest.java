@@ -13,7 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
+
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A NettyFileStorageSymmetricClusterWithDiscoveryTest
@@ -24,7 +25,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class NettyFileStorageSymmetricClusterWithDiscoveryTest extends SymmetricClusterWithDiscoveryTest
 {
-   Logger log = Logger.getLogger(NettyFileStorageSymmetricClusterWithDiscoveryTest.class);
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    
    @Override
    protected boolean isNetty()

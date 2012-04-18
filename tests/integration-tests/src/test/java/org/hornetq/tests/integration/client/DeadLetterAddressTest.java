@@ -32,11 +32,11 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -46,7 +46,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class DeadLetterAddressTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(DeadLetterAddressTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQServer server;
 

@@ -29,19 +29,19 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
 public class NIOvsOIOTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(NIOvsOIOTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Constants -----------------------------------------------------
 

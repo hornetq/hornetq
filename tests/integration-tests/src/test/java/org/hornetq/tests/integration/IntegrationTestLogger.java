@@ -21,10 +21,19 @@
 */
 package org.hornetq.tests.integration;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/18/12
  */
-public interface IntegrationTestLogger
+@MessageLogger(projectCode = "HQTEST")
+public interface IntegrationTestLogger extends BasicLogger
 {
+   /**
+    * The integration test logger.
+    */
+   IntegrationTestLogger LOGGER = Logger.getMessageLogger(IntegrationTestLogger.class, IntegrationTestLogger.class.getPackage().getName());
 }

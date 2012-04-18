@@ -39,7 +39,6 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -51,6 +50,7 @@ import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.jms.server.management.JMSUtil;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
@@ -71,7 +71,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class JMSFailoverTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(JMSFailoverTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Constants -----------------------------------------------------
 

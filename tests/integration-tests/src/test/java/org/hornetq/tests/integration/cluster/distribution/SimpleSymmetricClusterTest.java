@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A SimpleSymmetricClusterTest
@@ -31,7 +31,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
    // Constants -----------------------------------------------------
 
-   static final Logger log = Logger.getLogger(SimpleSymmetricClusterTest.class);
+   static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

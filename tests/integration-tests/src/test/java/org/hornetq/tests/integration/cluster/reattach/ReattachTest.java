@@ -31,7 +31,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
@@ -39,6 +38,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -53,7 +53,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ReattachTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ReattachTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
    private HornetQServer service;

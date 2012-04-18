@@ -32,11 +32,11 @@ import javax.transaction.TransactionManager;
 import junit.framework.Assert;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A JMSBridgeTest
@@ -49,7 +49,7 @@ import org.hornetq.jms.client.HornetQMessage;
  */
 public class JMSBridgeTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(JMSBridgeTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // MaxBatchSize but no MaxBatchTime
 

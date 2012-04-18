@@ -23,7 +23,6 @@ import java.util.Map;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -34,10 +33,11 @@ import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 public class StompWebSocketTest extends UnitTestCase {
-    private static final transient Logger log = Logger.getLogger(StompWebSocketTest.class);
+    private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
     private JMSServerManager server;
 
     /**

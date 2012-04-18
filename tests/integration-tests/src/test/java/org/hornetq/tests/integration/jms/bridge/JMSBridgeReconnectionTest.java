@@ -14,10 +14,10 @@ package org.hornetq.tests.integration.jms.bridge;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,7 +29,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
     */
    private static final int TIME_WAIT = 5000;
    
-   private static final Logger log = Logger.getLogger(JMSBridgeReconnectionTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Crash and reconnect
 

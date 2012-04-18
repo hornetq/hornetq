@@ -13,7 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
+
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A SymmetricClusterWithDiscoveryTest
@@ -26,7 +27,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 {
-   private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected final String groupAddress = getUDPDiscoveryAddress();
 

@@ -30,10 +30,10 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -48,7 +48,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class PredefinedQueueTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(PredefinedQueueTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void testFailOnCreatePredefinedQueues() throws Exception
    {

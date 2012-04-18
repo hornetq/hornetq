@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A DelayInterceptor2
@@ -32,7 +32,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  */
 public class DelayInterceptor2 implements Interceptor
 {
-   private static final Logger log = Logger.getLogger(DelayInterceptor2.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private volatile boolean loseResponse = true;
    

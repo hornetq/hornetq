@@ -21,7 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -33,7 +33,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(NoLocalSubscriberTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
 
    // Static --------------------------------------------------------

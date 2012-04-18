@@ -25,10 +25,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -43,7 +43,7 @@ public class MessagePriorityTest extends UnitTestCase
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessagePriorityTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
 
    // Attributes ----------------------------------------------------

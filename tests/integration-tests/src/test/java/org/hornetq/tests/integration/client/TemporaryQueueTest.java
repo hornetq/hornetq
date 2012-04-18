@@ -35,7 +35,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientProducerImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
@@ -47,6 +46,7 @@ import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -61,7 +61,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(TemporaryQueueTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final long CONNECTION_TTL = 2000;
 

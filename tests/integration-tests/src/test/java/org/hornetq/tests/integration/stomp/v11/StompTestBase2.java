@@ -32,7 +32,6 @@ import javax.jms.Topic;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -47,12 +46,13 @@ import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 public abstract class StompTestBase2 extends UnitTestCase
 {
-   private static final transient Logger log = Logger.getLogger(StompTestBase2.class);
+   private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected String hostname = "127.0.0.1";
 

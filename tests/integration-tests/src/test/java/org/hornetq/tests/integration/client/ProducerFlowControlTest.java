@@ -33,11 +33,11 @@ import org.hornetq.core.client.impl.ClientProducerCreditManagerImpl;
 import org.hornetq.core.client.impl.ClientProducerCredits;
 import org.hornetq.core.client.impl.ClientProducerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -51,7 +51,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class ProducerFlowControlTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ProducerFlowControlTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private ServerLocator locator;
 

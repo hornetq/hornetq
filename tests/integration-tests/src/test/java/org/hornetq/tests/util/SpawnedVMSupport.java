@@ -27,8 +27,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import junit.framework.Assert;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -42,7 +42,7 @@ public class SpawnedVMSupport
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SpawnedVMSupport.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

@@ -26,9 +26,9 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -45,7 +45,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class MultiThreadReattachSupport extends ServiceTestBase
 {
 
-   private final Logger log = Logger.getLogger(this.getClass());
+   private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Timer timer;
 

@@ -21,8 +21,8 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
 
@@ -34,7 +34,7 @@ import org.hornetq.tests.util.SpawnedVMSupport;
 public class NettySecurityClientTest extends ServiceTestBase
 {
 
-   private static final Logger log = Logger.getLogger(NettySecurityClientTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQServer messagingService;
 

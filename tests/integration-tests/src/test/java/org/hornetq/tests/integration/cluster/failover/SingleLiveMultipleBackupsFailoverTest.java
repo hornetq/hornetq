@@ -25,9 +25,9 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
@@ -40,7 +40,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    protected ServerLocatorImpl locator;
    private NodeManager nodeManager;
 
-   Logger log = Logger.getLogger(SingleLiveMultipleBackupsFailoverTest.class);
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void _testLoop() throws Exception
    {

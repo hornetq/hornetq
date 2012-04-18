@@ -40,10 +40,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.RandomUtil;
@@ -58,7 +58,7 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverTest extends FailoverTestBase
 {
-	private static final Logger log = Logger.getLogger(FailoverTest.class);
+	private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
 	   private static final int NUM_MESSAGES = 100;
 

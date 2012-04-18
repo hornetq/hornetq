@@ -32,9 +32,9 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -51,7 +51,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(RedeliveryConsumerTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

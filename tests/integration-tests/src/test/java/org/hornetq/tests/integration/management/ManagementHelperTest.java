@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -37,7 +37,7 @@ public class ManagementHelperTest extends TestCase
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ManagementHelperTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Attributes ----------------------------------------------------
 

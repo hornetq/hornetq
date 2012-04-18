@@ -31,7 +31,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -48,7 +47,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class DuplicateDetectionTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(DuplicateDetectionTest.class);
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private HornetQServer messagingService;
 

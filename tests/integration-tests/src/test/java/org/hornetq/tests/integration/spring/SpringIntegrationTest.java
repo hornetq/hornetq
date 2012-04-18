@@ -4,9 +4,9 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -18,7 +18,7 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
  */
 public class SpringIntegrationTest extends UnitTestCase
 {
-   Logger log = Logger.getLogger(SpringIntegrationTest.class);
+   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
    
    protected void setUp() throws Exception
    {
