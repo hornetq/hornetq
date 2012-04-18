@@ -179,7 +179,6 @@ public class PagingTest extends ServiceTestBase
         session.commit();
         producer.close();
         session.close();
-        //System.out.println("Just sent " + numberOfMessages + " messages.");
 
         session = sf.createSession(false, false, false);
         producer = session.createProducer(PagingTest.ADDRESS);
@@ -187,7 +186,6 @@ public class PagingTest extends ServiceTestBase
         session.rollback();
         producer.close();
         session.close();
-        //System.out.println("Just sent (and rolled-back) 1 message.");
 
         session = sf.createSession(false, false, false);
         producer = session.createProducer(PagingTest.ADDRESS);
@@ -226,8 +224,6 @@ public class PagingTest extends ServiceTestBase
             msg = consumer.receive(1000);
             assertNotNull(msg);
             msg.acknowledge();
-            //System.out.println("ack " + i);
-
             if (i % 500 == 0)
             {
                 session.commit();
@@ -411,8 +407,6 @@ public class PagingTest extends ServiceTestBase
                {
                   break;
                }
-               System.out.println("Msg received again : " + msg2.getIntProperty("id"));
-
             }
          }
          assertNull(msg);
@@ -1822,7 +1816,6 @@ public class PagingTest extends ServiceTestBase
    private void internaltestSendReceivePaging(final boolean persistentMessages) throws Exception
    {
 
-      System.out.println("PageDir:" + getPageDir());
       clearData();
 
       Configuration config = createDefaultConfig();
@@ -2163,13 +2156,6 @@ public class PagingTest extends ServiceTestBase
 
                ClientMessage msgReceived = consumer.receiveImmediate();
 
-               if (msgReceived != null)
-               {
-                  System.out.println("new = " + msgReceived.getBooleanProperty("new") +
-                                     " id = " +
-                                     msgReceived.getIntProperty("id"));
-               }
-
                Assert.assertNull(msgReceived);
                consumer.close();
             }
@@ -2248,7 +2234,6 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 50; i++)
          {
-            System.out.println("Sending " + i);
             ClientMessage message = sessionNonTX.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
@@ -2258,7 +2243,6 @@ public class PagingTest extends ServiceTestBase
 
             if (i % 2 == 0)
             {
-               System.out.println("Sending 20 msgs to make it page");
                for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
@@ -2270,7 +2254,6 @@ public class PagingTest extends ServiceTestBase
             }
             else
             {
-               System.out.println("Consuming 20 msgs to make it page");
                ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
                for (int j = 0; j < 20; j++)
                {
@@ -2310,11 +2293,8 @@ public class PagingTest extends ServiceTestBase
 
             Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
-            // System.out.println(messageID);
             Assert.assertNotNull(messageID);
             Assert.assertEquals("message received out of order", i, messageID.intValue());
-
-            System.out.println("MessageID = " + messageID);
 
             message.acknowledge();
          }
@@ -2383,8 +2363,6 @@ public class PagingTest extends ServiceTestBase
                   }
 
                   sessionProducer.commit();
-
-                  System.out.println("Producer gone");
 
                }
                catch (Throwable e)
@@ -2825,7 +2803,6 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 0; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             if (i == 55)
             {
                System.out.println("i = 55");
@@ -2910,7 +2887,6 @@ public class PagingTest extends ServiceTestBase
          // 347 = I just picked any odd number, not rounded, to make sure it's not at the beggining of any page
          for (int i = 0; i < 347; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
             Assert.assertNotNull(msg);
@@ -2943,7 +2919,6 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 347; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
             Assert.assertNotNull(msg);
@@ -3613,13 +3588,11 @@ public class PagingTest extends ServiceTestBase
                   for (int i = 0; i < numberOfMessages; i++)
                   {
                      ClientMessage msg = cons.receive(PagingTest.RECEIVE_TIMEOUT);
-                     System.out.println("Message " + i + " consumed");
                      assertNotNull(msg);
                      msg.acknowledge();
 
                      if (i % 20 == 0)
                      {
-                        System.out.println("Commit consumer");
                         sessionConsumer.commit();
                      }
                   }
@@ -3655,8 +3628,6 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createMessage(persistentMessages);
-
-            System.out.println("Message " + i + " sent");
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -3865,10 +3836,6 @@ public class PagingTest extends ServiceTestBase
                message = consumer.receive(500000);
                assertNotNull(message);
                message.acknowledge();
-
-               // assertEquals(msg, message.getIntProperty("propTest").intValue());
-
-               System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
             }
 
             session.commit();
@@ -3974,8 +3941,6 @@ public class PagingTest extends ServiceTestBase
             message = consumer.receive(500000);
             assertNotNull(message);
             message.acknowledge();
-
-            System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
          }
 
          session.commit();

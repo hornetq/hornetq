@@ -25,7 +25,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.group.GroupingHandler;

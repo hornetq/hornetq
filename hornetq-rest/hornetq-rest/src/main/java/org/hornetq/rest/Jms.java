@@ -1,10 +1,7 @@
 package org.hornetq.rest;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.rest.util.HttpMessageHelper;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.util.GenericType;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Type;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -13,8 +10,9 @@ import javax.jms.ObjectMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
 
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Type;
+import org.hornetq.rest.util.HttpMessageHelper;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.jboss.resteasy.util.GenericType;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -139,7 +137,7 @@ public class Jms
          }
       }
       BytesMessage bytesMessage = (BytesMessage)message;
-      
+
       try
       {
     	  long size = bytesMessage.getBodyLength();

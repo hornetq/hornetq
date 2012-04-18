@@ -509,6 +509,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             }
             catch (Exception e)
             {
+               if (scheduledExecutor.isShutdown())
+                  return;
                HornetQLogger.LOGGER.errorAnnouncingBackup(e);
 
                scheduledExecutor.schedule(new Runnable(){

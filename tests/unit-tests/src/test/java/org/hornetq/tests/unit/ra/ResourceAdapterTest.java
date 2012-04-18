@@ -377,7 +377,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       try
       {
-         HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
+         ra.createHornetQConnectionFactory(connectionFactoryProperties);
          Assert.fail("should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -505,7 +505,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    {
 
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = 2893126091158533715L;
       /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,
