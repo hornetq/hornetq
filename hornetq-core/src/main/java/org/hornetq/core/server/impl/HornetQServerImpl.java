@@ -2120,6 +2120,7 @@ public class HornetQServerImpl implements HornetQServer
             });
 
             HornetQLogger.LOGGER.backupServerStarted(version.getFullVersion(), nodeManager.getNodeId());
+            state = SERVER_STATE.STARTED;
 
             // Server node (i.e. Live node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
