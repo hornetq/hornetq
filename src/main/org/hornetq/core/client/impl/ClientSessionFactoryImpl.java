@@ -1526,7 +1526,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                                              null);
                }
 
-               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
+               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), transportConfig, topMessage.isLast());
             }
          });
       }
