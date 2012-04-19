@@ -374,6 +374,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       }
 
+      started = true;
+
       deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
 
       server.registerActivateCallback(this);
@@ -384,12 +386,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          createJournal();
          storage.installReplication(server.getReplicationEndpoint());
-      }
-
-      started = true;
-      if(!active)
-      {
-         activated();
       }
    }
 
