@@ -265,10 +265,19 @@ public final class UUIDGenerator
    {
       if (address == null)
       {
-         address = UUIDGenerator.getHardwareAddress();
-         if (address == null)
+         // calling UUIDGenerator.getHardwareAddress() is a
+         // time-expensive operation, let make sure it is called
+         // only once
+         synchronized (this)
          {
-            address = generateDummyAddress();
+            if (address == null)
+            {
+               address = UUIDGenerator.getHardwareAddress();
+               if (address == null)
+               {
+                  address = generateDummyAddress();
+               }
+            }
          }
       }
 
