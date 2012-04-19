@@ -87,16 +87,6 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
 
    private HornetQServer server;
 
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testExceptionListener() throws Exception
    {
       connect();
@@ -231,6 +221,8 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
 
    protected void connect()
    {
+      int retries = 0;
+      final int retryLimit = 1000;
       try
       {
          if (context == null)
@@ -250,6 +242,8 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
             }
             catch (Exception e)
             {
+               if (retries++ > retryLimit)
+                  throw e;
                // retry until server is up
                Thread.sleep(100);
             }
