@@ -387,6 +387,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       started = true;
+      if(!active)
+      {
+         activated();
+      }
    }
 
    public void stop() throws Exception
