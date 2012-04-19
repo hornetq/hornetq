@@ -759,8 +759,6 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
-
       nack(connV11, "sub1", messageID);
 
       unsubscribe(connV11, "sub1");
@@ -784,8 +782,6 @@ public class StompV11Test extends StompTestBase2
       ClientStompFrame frame = connV11.receiveFrame();
 
       String messageID = frame.getHeader("message-id");
-
-      System.out.println("Received message with id " + messageID);
 
       nack(connV11, "sub2", messageID);
 
@@ -815,7 +811,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       nack(connV11, "sub2", "someother");
 
@@ -846,7 +842,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       ack(connV11, "sub1", messageID, null);
 
@@ -872,7 +868,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       ack(connV11, "sub2", messageID, null);
 
@@ -902,7 +898,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       ack(connV11, "sub2", "someother", null);
 
@@ -932,7 +928,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       ClientStompFrame ackFrame = connV11.createFrame("ACK");
       //give it a wrong sub id
@@ -970,7 +966,7 @@ public class StompV11Test extends StompTestBase2
 
       String messageID = frame.getHeader("message-id");
 
-      System.out.println("Received message with id " + messageID);
+
 
       ClientStompFrame ackFrame = connV11.createFrame("ACK");
       //give it a wrong sub id
