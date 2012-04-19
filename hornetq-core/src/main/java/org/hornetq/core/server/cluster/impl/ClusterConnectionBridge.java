@@ -52,9 +52,6 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ClusterConnectionBridge extends BridgeImpl
 {
-
-   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
-
    private final ClusterConnection clusterConnection;
 
    private final ClusterManagerInternal clusterManager;
@@ -146,6 +143,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       }
    }
 
+   @Override
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
       ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
@@ -322,6 +320,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       super.stop();
    }
 
+   @Override
    protected void tryScheduleRetryReconnect(final int code)
    {
       if (code != HornetQException.DISCONNECTED)
@@ -330,6 +329,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       }
    }
 
+   @Override
    protected void fail(final boolean permanently)
    {
       HornetQLogger.LOGGER.debug("Cluster Bridge " + this.getName() + " failed, permanently=" + permanently);

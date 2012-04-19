@@ -33,9 +33,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class PagedReferenceImpl implements PagedReference
 {
-
-   private static final long serialVersionUID = -8640232251318264710L;
-
    private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final PagePosition position;

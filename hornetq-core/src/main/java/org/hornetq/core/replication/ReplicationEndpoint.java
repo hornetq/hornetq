@@ -18,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,9 +76,6 @@ import org.hornetq.core.server.impl.QuorumManager;
  */
 public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
-
-   // Constants -----------------------------------------------------
-   // Attributes ----------------------------------------------------
 
    private static final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
