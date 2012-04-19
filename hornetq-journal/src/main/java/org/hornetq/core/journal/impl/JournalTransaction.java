@@ -447,28 +447,11 @@ public class JournalTransaction
       }
 
       /**
-       * @return the file
-       */
-      public JournalFile getFile()
-      {
-         return file;
-      }
-
-      /**
        * @return the id
        */
       public long getId()
       {
          return id;
       }
-
-      /**
-       * @return the size
-       */
-      public int getSize()
-      {
-         return size;
-      }
-
    }
 }

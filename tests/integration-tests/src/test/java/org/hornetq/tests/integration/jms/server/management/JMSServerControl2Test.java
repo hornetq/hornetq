@@ -45,7 +45,6 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -466,7 +465,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       try
       {
          startHornetQServer(InVMAcceptorFactory.class.getName());
-         HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+         HornetQJMSClient.createQueue("test");
          serverManager.createQueue(false, "test", null, true, "test");
 
          JMSServerControl control = createManagementControl();
@@ -552,7 +551,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       try
       {
          startHornetQServer(InVMAcceptorFactory.class.getName());
-         HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+         HornetQJMSClient.createQueue("test");
          serverManager.createQueue(false, "test", null, true, "test");
 
          JMSServerControl control = createManagementControl();

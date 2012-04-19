@@ -31,7 +31,6 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -55,19 +54,9 @@ import org.hornetq.tests.util.UnitTestCase;
 public class JMSServerControlRestartTest extends ManagementTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    protected InVMContext context;
 
    private JMSServerManager serverManager;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testCreateDurableQueueUsingJMXAndRestartServer() throws Exception
    {
@@ -87,7 +76,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       serverManager.stop();
-      
+
       checkNoBinding(context, binding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -100,7 +89,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
-   
+
    public void testCreateDurableQueueUsingJMSAndRestartServer() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -165,12 +154,12 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer);
 
       context = new InVMContext();
-      
+
       serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
       return serverManager;
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {
