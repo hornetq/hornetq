@@ -95,7 +95,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       {
          conn = cf.createConnection();
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          Assert.fail("Should throw exception");
       }
@@ -148,7 +148,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
       Connection conn = cf.createConnection();
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
 
@@ -189,7 +189,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
       Connection conn = cf.createConnection();
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
 
@@ -229,7 +229,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
       Connection conn = cf.createConnection();
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
 
@@ -270,7 +270,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
       Connection conn = cf.createConnection();
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
 

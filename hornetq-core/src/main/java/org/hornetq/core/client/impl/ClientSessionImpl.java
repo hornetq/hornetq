@@ -106,11 +106,6 @@ import org.hornetq.utils.TokenBucketLimiterImpl;
  */
 class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
-   // Constants ----------------------------------------------------------------------------
-
-   private final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
-
-   // Attributes ----------------------------------------------------------------------------
 
    private final Map<String, String> metadata = new HashMap<String, String>();
 

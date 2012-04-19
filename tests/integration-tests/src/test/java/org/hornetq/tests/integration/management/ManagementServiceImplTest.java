@@ -21,7 +21,6 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -29,7 +28,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.server.management.impl.ManagementServiceImpl;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.server.FakeStorageManager;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.util.RandomUtil;
@@ -37,23 +35,11 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class ManagementServiceImplTest extends UnitTestCase
 {
-   // Constants -----------------------------------------------------
-
-   private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testHandleManagementMessageWithOperation() throws Exception
    {
       String queue = RandomUtil.randomString();
@@ -133,7 +119,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Assert.assertTrue((Boolean)ManagementHelper.getResult(reply));
       server.stop();
    }
-   
+
    public void testHandleManagementMessageWithKnownAttribute() throws Exception
    {
       Configuration conf = createBasicConfig();

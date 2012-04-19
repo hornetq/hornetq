@@ -28,7 +28,6 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.integration.remoting.PingTest;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -40,21 +39,11 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class PingStressTest extends ServiceTestBase
 {
-   // Constants -----------------------------------------------------
-
    private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    private static final long PING_INTERVAL = 500;
 
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
