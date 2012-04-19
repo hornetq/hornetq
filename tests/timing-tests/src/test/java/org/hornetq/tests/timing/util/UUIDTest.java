@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.timing.util;
 
+import org.hornetq.utils.UUIDGenerator;
+
 /**
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -26,6 +28,19 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
+
+   public static void main(String[] args)
+   {
+      long start = System.currentTimeMillis();
+      int count = 10000;
+      for (int i = 0; i < count; i++)
+      {
+         // System.out.println(i + " " + UUIDGenerator.asString(UUIDGenerator.getHardwareAddress()));
+         byte[] address = UUIDGenerator.getHardwareAddress();
+      }
+      long end = System.currentTimeMillis();
+      System.out.println("getHardwareAddress() => " + 1.0 * (end - start) / count + " ms");
+   }
 
    // Constructors --------------------------------------------------
 
