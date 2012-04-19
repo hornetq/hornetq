@@ -17,10 +17,19 @@ package org.hornetq.utils;
 
 import java.lang.reflect.Method;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
@@ -141,6 +150,9 @@ public final class UUIDGenerator
          isUpMethod = NetworkInterface.class.getMethod("isUp");
          isLoopbackMethod = NetworkInterface.class.getMethod("isLoopback");
          isVirtualMethod = NetworkInterface.class.getMethod("isVirtual");
+         // check if we have enough security permissions to create and shutdown an executor
+         ExecutorService executor = Executors.newFixedThreadPool(0);
+         executor.shutdownNow();
       }
       catch (Throwable t)
       {
@@ -150,46 +162,29 @@ public final class UUIDGenerator
 
       try
       {
-         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-         while (networkInterfaces.hasMoreElements())
-         {
-            NetworkInterface networkInterface = networkInterfaces.nextElement();
-            boolean up = (Boolean)isUpMethod.invoke(networkInterface);
-            boolean loopback = (Boolean)isLoopbackMethod.invoke(networkInterface);
-            boolean virtual = (Boolean)isVirtualMethod.invoke(networkInterface);
+         List<NetworkInterface> ifaces = getAllNetworkInterfaces();
 
-            if (loopback || virtual || !up)
-            {
-               continue;
-            }
-
-            Object res = getHardwareAddressMethod.invoke(networkInterface);
-            if (res != null && res instanceof byte[])
-            {
-               byte[] address = (byte[])res;
-               byte[] paddedAddress = UUIDGenerator.getZeroPaddedSixBytes(address);
-
-               if (UUIDGenerator.isBlackList(address))
-               {
-                  continue;
-               }
-
-               if (paddedAddress != null)
-               {
-                  if (UUIDGenerator.log.isDebugEnabled())
-                  {
-                     UUIDGenerator.log.debug("using hardware address " + UUIDGenerator.asString(paddedAddress));
-                  }
-                  return paddedAddress;
-               }
-            }
+         if (ifaces.size() == 0) {
+            return null;
          }
-      }
-      catch (Throwable t)
-      {
-      }
 
-      return null;
+         byte[] address = findFirstMatchingHardwareAddress(ifaces,
+                                              getHardwareAddressMethod,
+                                              isUpMethod,
+                                              isLoopbackMethod,
+                                              isVirtualMethod);
+         if (address != null) {
+            if (UUIDGenerator.log.isDebugEnabled())
+            {
+               UUIDGenerator.log.debug("using hardware address " + UUIDGenerator.asString(address));
+            }
+            return address;
+         }
+         return null;
+      } catch(Exception e)
+      {
+         return null;
+      }
    }
 
    public final SimpleString generateSimpleStringUUID()
@@ -290,5 +285,86 @@ public final class UUIDGenerator
       }
       s.append(bytes[bytes.length - 1]);
       return s.toString();
+   }
+
+   private static List<NetworkInterface> getAllNetworkInterfaces()
+   {
+      Enumeration<NetworkInterface> networkInterfaces;
+      try
+      {
+         networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+         List<NetworkInterface> ifaces = new ArrayList<NetworkInterface>();
+         while (networkInterfaces.hasMoreElements())
+         {
+            ifaces.add(networkInterfaces.nextElement());
+         }
+         return ifaces;
+      }
+      catch (SocketException e)
+      {
+         return Collections.emptyList();
+      }
+   }
+
+   private static byte[] findFirstMatchingHardwareAddress(List<NetworkInterface> ifaces,
+                                                          final Method getHardwareAddressMethod,
+                                                          final Method isUpMethod,
+                                                          final Method isLoopbackMethod,
+                                                          final Method isVirtualMethod)
+   {
+      ExecutorService executor = Executors.newFixedThreadPool(ifaces.size());
+      Collection<Callable<byte[]>> tasks = new ArrayList<Callable<byte[]>>();
+
+      for (final NetworkInterface networkInterface : ifaces)
+      {
+         tasks.add(new Callable<byte[]>()
+                   {
+            public byte[] call() throws Exception
+            {
+               boolean up = (Boolean)isUpMethod.invoke(networkInterface );
+               boolean loopback = (Boolean)isLoopbackMethod.invoke(networkInterface);
+               boolean virtual = (Boolean)isVirtualMethod.invoke(networkInterface);
+
+               if (loopback || virtual || !up)
+               {
+                  throw new Exception("not suitable interface");
+               }
+
+               Object res = getHardwareAddressMethod.invoke(networkInterface);
+               if (res != null && res instanceof byte[]) {
+
+                  byte[] address = (byte[])res;
+                  byte[] paddedAddress = UUIDGenerator.getZeroPaddedSixBytes(address);
+
+                  if (UUIDGenerator.isBlackList(address))
+                  {
+                     throw new Exception("black listed address");
+                  }
+
+                  if (paddedAddress != null)
+                  {
+                     return paddedAddress;
+                  }
+               }
+
+               throw new Exception("invalid network interface");
+            }
+         });
+      }
+      try
+      {
+         // we wait 5 seconds to get the first matching hardware address. After that, we give up and return null
+         byte[] address = executor.invokeAny(tasks, 5, TimeUnit.SECONDS);
+         return address;
+      }
+      catch (Exception e)
+      {
+         return null;
+      }
+      finally
+      {
+         executor.shutdownNow();
+      }
    }
 }
