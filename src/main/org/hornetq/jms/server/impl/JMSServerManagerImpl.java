@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -726,6 +727,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    public boolean removeQueueFromJNDI(final String name) throws Exception
    {
+      final AtomicBoolean valueReturn = new AtomicBoolean(false);
+
       // HORNETQ-911 - make this runAfterActive to prevent WARN messages on shutdown/undeployment when the backup was never activated
       runAfterActive(new RunnableException()
       {
@@ -741,11 +744,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             if (removeFromJNDI(queues, queueJNDI, name))
             {
                storage.deleteDestination(PersistedType.Queue, name);
+               valueReturn.set(true);
             }
          }
       });
 
-      return true;
+      return valueReturn.get();
    }
 
    /* (non-Javadoc)
@@ -772,6 +776,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    */
    public boolean removeTopicFromJNDI(final String name) throws Exception
    {
+      final AtomicBoolean valueReturn = new AtomicBoolean(false);
+
       // HORNETQ-911 - make this runAfterActive to prevent WARN messages on shutdown/undeployment when the backup was never activated
       runAfterActive(new RunnableException()
       {
@@ -786,12 +792,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
             if (removeFromJNDI(topics, topicJNDI, name))
             {
-               storage.deleteDestination(PersistedType.Queue, name);
+               storage.deleteDestination(PersistedType.Topic, name);
+               valueReturn.set(true);
             }
          }
       });
 
-      return true;
+      return valueReturn.get();
    }
 
    /* (non-Javadoc)
@@ -1348,6 +1355,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized boolean destroyConnectionFactory(final String name) throws Exception
    {
+      final AtomicBoolean valueReturn = new AtomicBoolean(false);
+
       // HORNETQ-911 - make this runAfterActive to prevent WARN messages on shutdown/undeployment when the backup was never activated
       runAfterActive(new RunnableException()
       {
@@ -1362,10 +1371,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             shutdownConnectionFactory(name);
 
             storage.deleteConnectionFactory(name);
+            valueReturn.set(true);
          }
       });
 
-      return true;
+      return valueReturn.get();
    }
 
    /**
@@ -1638,7 +1648,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    /**
-    * @param server
+    * @throws Exception
     */
    private void initJournal() throws Exception
    {
