@@ -75,7 +75,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private volatile boolean started = false;
 
-   private final Set<TransportConfiguration> transportConfigs;
+   private final Set<TransportConfiguration> acceptorsConfig;
 
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
@@ -111,7 +111,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                               final ManagementService managementService,
                               final ScheduledExecutorService scheduledThreadPool)
    {
-      transportConfigs = config.getAcceptorConfigurations();
+      acceptorsConfig = config.getAcceptorConfigurations();
 
       this.server = server;
 
@@ -175,7 +175,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-      for (TransportConfiguration info : transportConfigs)
+      for (TransportConfiguration info : acceptorsConfig)
       {
          try
          {
@@ -488,9 +488,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Private -------------------------------------------------------
    
-   private ClusterConnection lookupClusterConnection(TransportConfiguration config)
+   private ClusterConnection lookupClusterConnection(TransportConfiguration acceptorConfig)
    {
-      String clusterConnectionName = (String)config.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
+      String clusterConnectionName = (String)acceptorConfig.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
       
       ClusterConnection clusterConnection = null;
       if (clusterConnectionName != null)
@@ -498,9 +498,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
       }
       
+      // if not found we will still use the default name, even if a name was provided
       if (clusterConnection == null)
       {
-         clusterConnection = clusterManager.getDefaultConnection();
+         clusterConnection = clusterManager.getDefaultConnection(acceptorConfig);
       }
       
       return clusterConnection;

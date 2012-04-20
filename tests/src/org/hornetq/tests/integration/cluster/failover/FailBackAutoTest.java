@@ -96,7 +96,7 @@ public class FailBackAutoTest extends FailoverTestBase
       
       assertTrue(latch.await(5, TimeUnit.SECONDS));
       
-      log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection().getTopology().describe());
+      log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection(null).getTopology().describe());
       
       log.info("Server Crash!!!");
 
