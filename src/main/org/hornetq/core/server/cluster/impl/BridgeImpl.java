@@ -38,6 +38,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -110,6 +111,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
+   
+   private boolean deliveringLargeMessage;
 
    private final String user;
 
@@ -534,20 +537,24 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             return HandleStatus.BUSY;
          }
+         
+         if (deliveringLargeMessage)
+         {
+            return HandleStatus.BUSY;
+         }
 
          if (isTrace)
          {
             log.trace("Bridge " + this + " is handling reference=" + ref);
          }
+         
          ref.handled();
-
-         ServerMessage message = ref.getMessage();
 
          refs.add(ref);
 
-         message = beforeForward(message);
+         final ServerMessage message = beforeForward(ref.getMessage());
 
-         SimpleString dest;
+         final SimpleString dest;
 
          if (forwardingAddress != null)
          {
@@ -558,38 +565,17 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
-         // if we failover during send then there is a chance that the
-         // that this will throw a disconnect, we need to remove the message
-         // from the acks so it will get resent, duplicate detection will cope
-         // with any messages resent
-
-         if (log.isTraceEnabled())
+         
+         if (message.isLargeMessage())
          {
-            log.trace("going to send message " + message);
+            deliveringLargeMessage = true;
+            deliverLargeMessage(dest, ref, (LargeServerMessage)message);
+            return HandleStatus.HANDLED;
          }
-
-         try
+         else
          {
-            producer.send(dest, message);
+            return deliverStandardMessage(dest, ref, message);
          }
-         catch (final HornetQException e)
-         {
-            log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
-
-            refs.remove(ref);
-            
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  connectionFailed(e, false);
-               }
-            });
-
-            return HandleStatus.BUSY;
-         }
-
-         return HandleStatus.HANDLED;
       }
    }
 
@@ -642,6 +628,89 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   
+   private void deliverLargeMessage(final SimpleString dest,
+                                    final MessageReference ref,
+                                    final LargeServerMessage message)
+   {
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               producer.send(dest, message);
+               
+               // as soon as we are done sending the large message
+               // we unset the delivery flag and we will call the deliveryAsync on the queue
+               // so the bridge will be able to resume work
+               unsetLargeMessageDelivery();
+               
+               if (queue != null)
+               {
+                  queue.deliverAsync();
+               }
+            }
+            catch (final HornetQException e)
+            {
+               unsetLargeMessageDelivery();
+               log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
+
+               executor.execute(new Runnable()
+               {
+                  public void run()
+                  {
+                     connectionFailed(e, false);
+                  }
+               });
+            }
+         }
+      });
+   }
+   
+   /**
+    * @param ref
+    * @param message
+    * @return
+    */
+   private HandleStatus deliverStandardMessage(SimpleString dest, final MessageReference ref, ServerMessage message)
+   {
+      // if we failover during send then there is a chance that the
+      // that this will throw a disconnect, we need to remove the message
+      // from the acks so it will get resent, duplicate detection will cope
+      // with any messages resent
+  
+      if (log.isTraceEnabled())
+      {
+         log.trace("going to send message " + message);
+      }
+  
+      try
+      {
+         producer.send(dest, message);
+      }
+      catch (final HornetQException e)
+      {
+         log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
+  
+         // We remove this reference as we are returning busy which means the reference will never leave the Queue.
+         // because of this we have to remove the reference here
+         refs.remove(ref);
+         
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               connectionFailed(e, false);
+            }
+         });
+  
+         return HandleStatus.BUSY;
+      }
+  
+      return HandleStatus.HANDLED;
+   }
 
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
@@ -985,6 +1054,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          queue.deliverAsync();
       }
+   }
+
+   /**
+    * just set deliveringLargeMessage to false
+    */
+   private synchronized void unsetLargeMessageDelivery()
+   {
+      deliveringLargeMessage = false;
    }
 
    // The scheduling will still use the main executor here
