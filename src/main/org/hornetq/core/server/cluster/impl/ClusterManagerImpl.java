@@ -19,7 +19,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -144,7 +146,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       out.println("Information on " + this);
       out.println("*******************************************************");
 
-      for (ClusterConnection conn : this.clusterConnections.values())
+      for (ClusterConnection conn : cloneClusterConnections())
       {
          out.println(conn.describe());
       }
@@ -154,9 +156,27 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       return str.toString();
    }
    
-   public ClusterConnection getDefaultConnection()
+   public ClusterConnection getDefaultConnection(TransportConfiguration acceptorConfig)
    {
-      return defaultClusterConnection;
+      if (acceptorConfig == null)
+      {
+         return defaultClusterConnection;
+      }
+      else if (defaultClusterConnection != null && defaultClusterConnection.getConnector().isEquivalent(acceptorConfig))
+      {
+         return defaultClusterConnection;
+      }
+      else
+      {
+         for (ClusterConnection conn : cloneClusterConnections())
+         {
+            if (conn.getConnector().isEquivalent(acceptorConfig))
+            {
+               return conn;
+            }
+         }
+         return null;
+      }
    }
 
    public String toString()
@@ -356,7 +376,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    public void announceBackup() throws Exception
    {
-      for (ClusterConnection conn : this.clusterConnections.values())
+      for (ClusterConnection conn : cloneClusterConnections())
       {
          conn.announceBackup();
       }
@@ -814,6 +834,13 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
 
       return tcConfigs;
+   }
+
+   private synchronized Collection<ClusterConnection> cloneClusterConnections()
+   {
+      ArrayList<ClusterConnection> list = new ArrayList<ClusterConnection>(clusterConnections.size());
+      list.addAll(clusterConnections.values());
+      return list;
    }
 
 
