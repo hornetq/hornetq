@@ -275,7 +275,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
        */
-      public void cancel(Transaction tx, MessageReference ref) throws Exception
+      public void cancel(Transaction tx, MessageReference ref)
       {
          // TODO Auto-generated method stub
 

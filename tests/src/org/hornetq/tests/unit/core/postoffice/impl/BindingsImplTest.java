@@ -1019,6 +1019,15 @@ public class BindingsImplTest extends UnitTestCase
          return false;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#finishCopy()
+       */
+      public void finishCopy() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    class FakeFilter implements Filter
