@@ -25,7 +25,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.hornetq.core.logging.Logger;
 import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
 import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
 import org.jboss.kernel.spi.config.KernelConfig;
@@ -38,8 +37,6 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
  */
 public class HornetQBootstrapServer extends BasicBootstrap
 {
-   private static Logger log = Logger.getLogger(HornetQBootstrapServer.class);
-
    /**
     * The deployer
     */
@@ -65,7 +62,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
-      HornetQBootstrapServer.log.info("Starting HornetQ Server");
+      HornetQBootstrapLogger.LOGGER.serverStarting();
 
       final HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(args);
 
@@ -85,7 +82,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       {
          if (!file.delete())
          {
-            log.error("Failed to delete " + file.getAbsolutePath());
+            HornetQBootstrapLogger.LOGGER.errorDeletingFile(file.getAbsolutePath());
          }
       }
       final Timer timer = new Timer("HornetQ Server Shutdown Timer", true);
@@ -119,7 +116,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
       }
       catch (RuntimeException e)
       {
-         HornetQBootstrapServer.log.error("Failed to start server", e);
+         HornetQBootstrapLogger.LOGGER.errorStartingServer(e);
 
          throw e;
       }
@@ -167,16 +164,17 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public void undeploy(final KernelDeployment deployment) throws Throwable
    {
-      HornetQBootstrapServer.log.debug("Undeploying " + deployment.getName());
+      HornetQBootstrapLogger.LOGGER.debug("Undeploying " + deployment.getName());
       deployments.remove(deployment);
       try
       {
          deployer.undeploy(deployment);
-         HornetQBootstrapServer.log.debug("Undeployed " + deployment.getName());
+         HornetQBootstrapLogger.LOGGER.debug("Undeployed " + deployment.getName());
       }
       catch (Throwable t)
       {
-         HornetQBootstrapServer.log.warn("Error during undeployment: " + deployment.getName(), t);
+         HornetQBootstrapLogger.LOGGER.errorDuringUndeployment(t, deployment.getName());
+         HornetQBootstrapLogger.LOGGER.warn("Error during undeployment: " + deployment.getName(), t);
       }
    }
 
@@ -234,16 +232,16 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    private KernelDeployment deploy(final URL url) throws Throwable
    {
-      HornetQBootstrapServer.log.debug("Deploying " + url);
+      HornetQBootstrapLogger.LOGGER.debug("Deploying " + url);
       KernelDeployment deployment = deployer.deploy(url);
       deployments.add(deployment);
-      HornetQBootstrapServer.log.debug("Deployed " + url);
+      HornetQBootstrapLogger.LOGGER.debug("Deployed " + url);
       return deployment;
    }
 
    public void shutDown()
    {
-      log.info("Stopping HornetQ Server...");
+      HornetQBootstrapLogger.LOGGER.serverStopping();
 
       ListIterator<KernelDeployment> iterator = deployments.listIterator(deployments.size());
       while (iterator.hasPrevious())
@@ -255,7 +253,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
          }
          catch (Throwable t)
          {
-            HornetQBootstrapServer.log.warn("Unable to undeploy: " + deployment.getName(), t);
+            HornetQBootstrapLogger.LOGGER.errorDuringUndeployment(t, deployment.getName());
          }
       }
    }
