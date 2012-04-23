@@ -25,8 +25,8 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.InflaterReader;
@@ -39,8 +39,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
  */
 final class CompressedLargeMessageControllerImpl implements LargeMessageController
 {
-   private static final Logger log = Logger.getLogger(CompressedLargeMessageControllerImpl.class);
-
    private static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
 
    private final LargeMessageController bufferDelegate;
@@ -567,7 +565,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
          int nReadBytes = getStream().read(dst, dstIndex, length);
          if (nReadBytes < length)
          {
-            log.warn("tried to read " + length + " bytes from stream but only got " + nReadBytes);
+            HornetQLogger.LOGGER.compressedLargeMessageError(length, nReadBytes);
          }
       }
       catch (Exception e)

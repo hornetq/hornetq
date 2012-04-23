@@ -34,10 +34,10 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
+import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -52,14 +52,9 @@ import org.hornetq.ra.Util;
 public class HornetQActivation
 {
    /**
-    * The logger
-    */
-   private static final Logger log = Logger.getLogger(HornetQActivation.class);
-
-   /**
     * Trace enabled
     */
-   private static boolean trace = HornetQActivation.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * The onMessage method
@@ -135,7 +130,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
       }
 
       this.ra = ra;
@@ -160,7 +155,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("getActivationSpec()");
+         HornetQRALogger.LOGGER.trace("getActivationSpec()");
       }
 
       return spec;
@@ -175,7 +170,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("getMessageEndpointFactory()");
+         HornetQRALogger.LOGGER.trace("getMessageEndpointFactory()");
       }
 
       return endpointFactory;
@@ -190,7 +185,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("isDeliveryTransacted()");
+         HornetQRALogger.LOGGER.trace("isDeliveryTransacted()");
       }
 
       return isDeliveryTransacted;
@@ -205,7 +200,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("getWorkManager()");
+         HornetQRALogger.LOGGER.trace("getWorkManager()");
       }
 
       return ra.getWorkManager();
@@ -220,7 +215,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("isTopic()");
+         HornetQRALogger.LOGGER.trace("isTopic()");
       }
 
       return isTopic;
@@ -235,7 +230,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("start()");
+         HornetQRALogger.LOGGER.trace("start()");
       }
       deliveryActive.set(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
@@ -264,7 +259,7 @@ public class HornetQActivation
    {
       if (HornetQActivation.trace)
       {
-         HornetQActivation.log.trace("stop()");
+         HornetQRALogger.LOGGER.trace("stop()");
       }
 
       deliveryActive.set(false);
@@ -278,7 +273,7 @@ public class HornetQActivation
     */
    protected synchronized void setup() throws Exception
    {
-      HornetQActivation.log.debug("Setting up " + spec);
+      HornetQRALogger.LOGGER.debug("Setting up " + spec);
 
       setupCF();
 
@@ -306,7 +301,7 @@ public class HornetQActivation
          }
       }
 
-      HornetQActivation.log.debug("Setup complete " + this);
+      HornetQRALogger.LOGGER.debug("Setup complete " + this);
    }
 
    /**
@@ -314,7 +309,7 @@ public class HornetQActivation
     */
    protected synchronized void teardown()
    {
-      HornetQActivation.log.debug("Tearing down " + spec);
+      HornetQRALogger.LOGGER.debug("Tearing down " + spec);
 
       if(resourceRecovery != null)
       {
@@ -330,7 +325,7 @@ public class HornetQActivation
          factory.close();
          factory = null;
       }
-      HornetQActivation.log.debug("Tearing down complete " + this);
+      HornetQRALogger.LOGGER.debug("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
@@ -376,7 +371,7 @@ public class HornetQActivation
             result.addMetaData("jms-client-id", clientID);
          }
 
-         HornetQActivation.log.debug("Using queue connection " + result);
+         HornetQRALogger.LOGGER.debug("Using queue connection " + result);
 
          return result;
       }
@@ -391,7 +386,7 @@ public class HornetQActivation
          }
          catch (Exception e)
          {
-            HornetQActivation.log.trace("Ignored error closing connection", e);
+            HornetQRALogger.LOGGER.trace("Ignored error closing connection", e);
          }
          if (t instanceof Exception)
          {
@@ -422,16 +417,16 @@ public class HornetQActivation
          {
             ctx = new InitialContext(spec.getParsedJndiParams());
          }
-         HornetQActivation.log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
+         HornetQRALogger.LOGGER.debug("Using context " + ctx.getEnvironment() + " for " + spec);
          if (HornetQActivation.trace)
          {
-            HornetQActivation.log.trace("setupDestination(" + ctx + ")");
+            HornetQRALogger.LOGGER.trace("setupDestination(" + ctx + ")");
          }
 
          String destinationTypeString = spec.getDestinationType();
          if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
          {
-            HornetQActivation.log.debug("Destination type defined as " + destinationTypeString);
+            HornetQRALogger.LOGGER.debug("Destination type defined as " + destinationTypeString);
 
             Class<?> destinationType;
             if (Topic.class.getName().equals(destinationTypeString))
@@ -444,7 +439,7 @@ public class HornetQActivation
                destinationType = Queue.class;
             }
 
-            HornetQActivation.log.debug("Retrieving destination " + destinationName +
+            HornetQRALogger.LOGGER.debug("Retrieving destination " + destinationName +
                                         " of type " +
                                         destinationType.getName());
             try
@@ -470,8 +465,8 @@ public class HornetQActivation
          }
          else
          {
-            HornetQActivation.log.debug("Destination type not defined");
-            HornetQActivation.log.debug("Retrieving destination " + destinationName +
+            HornetQRALogger.LOGGER.debug("Destination type not defined");
+            HornetQRALogger.LOGGER.debug("Retrieving destination " + destinationName +
                                         " of type " +
                                         Destination.class.getName());
 
@@ -495,7 +490,7 @@ public class HornetQActivation
          }
       }
 
-      HornetQActivation.log.debug("Got destination " + destination + " from " + destinationName);
+      HornetQRALogger.LOGGER.debug("Got destination " + destination + " from " + destinationName);
    }
 
    /**
@@ -529,11 +524,11 @@ public class HornetQActivation
    {
       if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
       {
-         log.info("awaiting topic/queue creation " + getActivationSpec().getDestination());
+         HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
       }
       else
       {
-         log.warn("Failure in HornetQ activation " + spec, failure);
+         HornetQRALogger.LOGGER.failureInActivation(failure, spec);
       }
       int reconnectCount = 0;
       int setupAttempts = spec.getSetupAttempts();
@@ -554,26 +549,26 @@ public class HornetQActivation
             }
             catch (InterruptedException e)
             {
-               log.debug("Interrupted trying to reconnect " + spec, e);
+               HornetQRALogger.LOGGER.debug("Interrupted trying to reconnect " + spec, e);
                break;
             }
 
-            log.info("Attempting to reconnect " + spec);
+            HornetQRALogger.LOGGER.attemptingReconnect(spec);
             try
             {
                setup();
-               log.info("Reconnected with HornetQ");            
+               HornetQRALogger.LOGGER.reconnected();
                break;
             }
             catch (Throwable t)
             {
                if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
                {
-                  log.info("awaiting topic/queue creation " + getActivationSpec().getDestination());
+                  HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
                }
                else
                {
-                  log.error("Unable to reconnect " + spec, t);
+                  HornetQRALogger.LOGGER.errorReconnecting(t, spec);
                }
             }
             ++reconnectCount;

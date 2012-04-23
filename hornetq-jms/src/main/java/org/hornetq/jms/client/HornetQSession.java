@@ -55,7 +55,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS Session.
@@ -84,8 +83,6 @@ public class HornetQSession implements Session, QueueSession, TopicSession
    private static SimpleString REJECTING_FILTER = new SimpleString("_HQX=-1");
 
    // Static --------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQSession.class);
 
    // Attributes ----------------------------------------------------
 

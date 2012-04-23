@@ -3,7 +3,7 @@ package org.hornetq.rest.topic;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumer;
 import org.hornetq.rest.queue.push.PushStore;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
@@ -14,8 +14,6 @@ import org.hornetq.rest.queue.push.xml.PushRegistration;
  */
 public class PushSubscription extends PushConsumer
 {
-   private static final Logger log = Logger.getLogger(PushSubscription.class);
-
    public PushSubscription(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store)
    {
       super(factory, destination, id, registration, store);
@@ -40,7 +38,7 @@ public class PushSubscription extends PushConsumer
       }
       catch (HornetQException e)
       {
-         log.error(e);
+         HornetQRestLogger.LOGGER.errorDeletingSubscriberQueue(e);
       }
       finally
       {

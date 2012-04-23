@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
@@ -44,8 +44,6 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 
    // Timeout used to wait executors to shutdown
    protected static final int EXECUTOR_TIMEOUT = 60;
-
-   private static final Logger log = Logger.getLogger(AbstractSequentialFileFactory.class);
 
    protected final String journalDir;
 
@@ -101,8 +99,7 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
          {
             if (!writeExecutor.awaitTermination(AbstractSequentialFileFactory.EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
             {
-               AbstractSequentialFileFactory.log.warn("Timed out on AIO writer shutdown",
-                                                      new Exception("Timed out on AIO writer shutdown"));
+               HornetQJournalLogger.LOGGER.timeoutOnWriterShutdown(new Exception("trace"));
             }
          }
          catch (InterruptedException e)

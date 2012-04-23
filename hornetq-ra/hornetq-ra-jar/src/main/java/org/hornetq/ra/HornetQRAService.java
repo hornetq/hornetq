@@ -19,7 +19,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A HornetQRAService ensures that HornetQ Resource Adapter will be stopped *before* the HornetQ server.
@@ -32,9 +31,6 @@ import org.hornetq.core.logging.Logger;
 public class HornetQRAService
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQRAService.class);
-
    // Attributes ----------------------------------------------------
 
    private final MBeanServer mBeanServer;
@@ -72,7 +68,7 @@ public class HornetQRAService
       }
       catch (Exception e)
       {
-         log.error("Unable to stop HornetQ resource adapter.", e);
+         HornetQRALogger.LOGGER.errorStoppingRA(e);
       }
    }
 

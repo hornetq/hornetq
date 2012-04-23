@@ -21,7 +21,14 @@
 */
 package org.hornetq.integration.jboss;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import javax.security.auth.Subject;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -41,6 +48,20 @@ import org.jboss.logging.MessageLogger;
  * so an INFO message would be 131000 to 131999
  */
 @MessageLogger(projectCode = "HQ")
-public class HornetQJBossLogger
+public interface HornetQJBossLogger extends BasicLogger
 {
+   /**
+    * The jboss integration logger.
+    */
+   HornetQJBossLogger LOGGER = Logger.getMessageLogger(HornetQJBossLogger.class, HornetQJBossLogger.class.getPackage().getName());
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 131001, value = "Security Context Setting Subject = {0}",
+         format = Message.Format.MESSAGE_FORMAT)
+   void settingSecuritySubject(Subject subject);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 132001, value = "An error happened while setting the context",
+         format = Message.Format.MESSAGE_FORMAT)
+   void errorSettingSecurityContext(@Cause Throwable Throwable);
 }

@@ -18,7 +18,6 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueSender;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQQueueSender.
@@ -29,11 +28,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAQueueSender extends HornetQRAMessageProducer implements QueueSender
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAQueueSender.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAQueueSender.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -46,7 +42,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
 
       if (HornetQRAQueueSender.trace)
       {
-         HornetQRAQueueSender.log.trace("constructor(" + producer + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + producer + ", " + session + ")");
       }
    }
 
@@ -59,7 +55,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
    {
       if (HornetQRAQueueSender.trace)
       {
-         HornetQRAQueueSender.log.trace("getQueue()");
+         HornetQRALogger.LOGGER.trace("getQueue()");
       }
 
       return ((QueueSender)producer).getQueue();
@@ -85,7 +81,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
       {
          if (HornetQRAQueueSender.trace)
          {
-            HornetQRAQueueSender.log.trace("send " + this +
+            HornetQRALogger.LOGGER.trace("send " + this +
                                            " destination=" +
                                            destination +
                                            " message=" +
@@ -103,7 +99,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
 
          if (HornetQRAQueueSender.trace)
          {
-            HornetQRAQueueSender.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -125,7 +121,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
       {
          if (HornetQRAQueueSender.trace)
          {
-            HornetQRAQueueSender.log.trace("send " + this + " destination=" + destination + " message=" + message);
+            HornetQRALogger.LOGGER.trace("send " + this + " destination=" + destination + " message=" + message);
          }
 
          checkState();
@@ -133,7 +129,7 @@ public class HornetQRAQueueSender extends HornetQRAMessageProducer implements Qu
 
          if (HornetQRAQueueSender.trace)
          {
-            HornetQRAQueueSender.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally

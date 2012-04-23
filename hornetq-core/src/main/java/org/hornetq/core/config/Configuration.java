@@ -450,20 +450,6 @@ public interface Configuration extends Serializable
     */
    void setPersistIDCache(boolean persist);
 
-   /**
-    * Returns the name of the {@link LogDelegateFactory} implementation used by this server
-    * for logging.
-    * <br>
-    * Default value is "org.hornetq.core.logging.impl.JULLogDelegateFactory"
-    */
-   String getLogDelegateFactoryClassName();
-
-   /**
-    * Sets the name of the {@link LogDelegateFactory} implementation used by this server
-    * for logging.
-    */
-   void setLogDelegateFactoryClassName(String className);
-
    // Journal related attributes ------------------------------------------------------------
 
    /**

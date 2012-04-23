@@ -16,7 +16,6 @@ package org.hornetq.utils;
 import java.lang.ref.SoftReference;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 
 /**
  *
@@ -39,9 +38,7 @@ public final class UTF8Util
 
    static boolean optimizeStrings = true;
 
-   private static final Logger log = Logger.getLogger(UTF8Util.class);
-
-   private static final boolean isTrace = UTF8Util.log.isTraceEnabled();
+   private static final boolean isTrace = HornetQUtilLogger.LOGGER.isTraceEnabled();
 
    private static ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer = new ThreadLocal<SoftReference<StringUtilBuffer>>();
 
@@ -81,7 +78,7 @@ public final class UTF8Util
          if (UTF8Util.isTrace)
          {
             // This message is too verbose for debug, that's why we are using trace here
-            UTF8Util.log.trace("Saving string with utfSize=" + len + " stringSize=" + str.length());
+            HornetQUtilLogger.LOGGER.trace("Saving string with utfSize=" + len + " stringSize=" + str.length());
          }
 
          int stringLength = str.length();
@@ -130,7 +127,7 @@ public final class UTF8Util
       if (UTF8Util.isTrace)
       {
          // This message is too verbose for debug, that's why we are using trace here
-         UTF8Util.log.trace("Reading string with utfSize=" + size);
+         HornetQUtilLogger.LOGGER.trace("Reading string with utfSize=" + size);
       }
 
       int count = 0;

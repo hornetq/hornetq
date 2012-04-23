@@ -27,7 +27,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A TimedBuffer
@@ -39,9 +39,6 @@ import org.hornetq.core.logging.Logger;
 public class TimedBuffer
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(TimedBuffer.class);
-
    // Attributes ----------------------------------------------------
 
    private TimedBufferObserver bufferObserver;
@@ -388,12 +385,9 @@ public class TimedBuffer
             if (lastExecution != 0)
             {
                double rate = 1000 * (double)(bytesF - lastBytesFlushed) / (now - lastExecution);
-               TimedBuffer.log.info("Write rate = " + rate +
-                                    " bytes / sec or " +
-                                    (long)(rate / (1024 * 1024)) +
-                                    " MiB / sec");
+               HornetQJournalLogger.LOGGER.writeRate(rate, (long)(rate / (1024 * 1024)));
                double flushRate = 1000 * (double)(flushesD - lastFlushesDone) / (now - lastExecution);
-               TimedBuffer.log.info("Flush rate = " + flushRate + " flushes / sec");
+               HornetQJournalLogger.LOGGER.flushRate(flushRate);
             }
 
             lastExecution = now;

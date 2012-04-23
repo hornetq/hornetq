@@ -22,10 +22,10 @@ import java.util.Set;
 import javax.naming.InitialContext;
 import javax.security.auth.Subject;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.integration.jboss.HornetQJBossLogger;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.jboss.security.*;
 
@@ -38,13 +38,11 @@ import org.jboss.security.*;
  */
 public class JBossASSecurityManager implements HornetQSecurityManager, HornetQComponent
 {
-   private static final Logger log = Logger.getLogger(JBossASSecurityManager.class);
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final boolean trace = JBossASSecurityManager.log.isTraceEnabled();
+   private final boolean trace = HornetQJBossLogger.LOGGER.isTraceEnabled();
 
    /**
     * the realmmapping
@@ -135,7 +133,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
                if (trace)
                {
-                  JBossASSecurityManager.log.trace("user " + user +
+                  HornetQJBossLogger.LOGGER.trace("user " + user +
                                                    (authenticated ? " is " : " is NOT ") +
                                                    "authorized");
                }
@@ -169,7 +167,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
                if (trace)
                {
-                  JBossASSecurityManager.log.trace("user " + principal.getName() +
+                  HornetQJBossLogger.LOGGER.trace("user " + principal.getName() +
                                                    (authenticated ? " is " : " is NOT ") +
                                                    "authorized");
                }

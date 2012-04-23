@@ -35,7 +35,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX.TX_RECOR
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A JournalCompactor
@@ -46,9 +46,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class JournalCompactor extends AbstractJournalUpdateTask implements JournalRecordProvider
 {
-
-   private static final Logger log = Logger.getLogger(JournalCompactor.class);
-
    // We try to separate old record from new ones when doing the compacting
    // this is a split line
    // We will force a moveNextFiles when the compactCount is bellow than COMPACT_SPLIT_LINE
@@ -288,7 +285,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
          }
          catch (Exception e)
          {
-            JournalCompactor.log.warn("Error replaying pending commands after compacting", e);
+            HornetQJournalLogger.LOGGER.errorReplayingCommands(e);
          }
       }
 
@@ -343,8 +340,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       if (pendingTransactions.get(transactionID) != null)
       {
          // Sanity check, this should never happen
-         log.warn("Inconsistency during compacting: CommitRecord ID = " + transactionID +
-                                         " for an already committed transaction during compacting");
+         HornetQJournalLogger.LOGGER.inconsistencyDuringCompacting(transactionID);
       }
       else
       {
@@ -368,8 +364,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       if (newRecords.get(recordID) != null)
       {
          // Sanity check, it should never happen
-         log.warn("Inconsistency during compacting: Delete record being read on an existent record (id=" + recordID +
-                                         ")");
+         HornetQJournalLogger.LOGGER.inconsistencyDuringCompactingDelete(recordID);
       }
 
    }
@@ -460,8 +455,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 
          if (newRecord == null)
          {
-            JournalCompactor.log.warn("Couldn't find addRecord information for record " + info.id +
-                                      " during compacting");
+            HornetQJournalLogger.LOGGER.compactingWithNoAddRecord(info.id);
          }
          else
          {
@@ -536,7 +530,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
          JournalRecord deleteRecord = journal.getRecords().remove(id);
          if (deleteRecord == null)
          {
-            JournalCompactor.log.warn("Can't find record " + id + " during compact replay");
+            HornetQJournalLogger.LOGGER.noRecordDuringCompactReplay(id);
          }
          else
          {

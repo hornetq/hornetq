@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A SyncSpeedTest
@@ -39,8 +39,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class SyncSpeedTest
 {
-   private static final Logger log = Logger.getLogger(SyncSpeedTest.class);
-
    public static void main(final String[] args)
    {
       try
@@ -171,7 +169,7 @@ public class SyncSpeedTest
          {
             if (!file.delete())
             {
-               log.error("failed to delete file " + file);
+               HornetQJournalLogger.LOGGER.errorDeletingFile(file);
             }
          }
 
@@ -311,7 +309,7 @@ public class SyncSpeedTest
 
          for (Thread t : threads)
          {
-            SyncSpeedTest.log.info("starting thread");
+            HornetQJournalLogger.LOGGER.startingThread();
             t.start();
          }
 

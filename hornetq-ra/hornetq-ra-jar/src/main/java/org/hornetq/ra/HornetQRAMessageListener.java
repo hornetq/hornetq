@@ -16,7 +16,6 @@ package org.hornetq.ra;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message listener
@@ -26,11 +25,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAMessageListener implements MessageListener
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAMessageListener.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAMessageListener.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The message listener */
    private final MessageListener listener;
@@ -47,7 +43,7 @@ public class HornetQRAMessageListener implements MessageListener
    {
       if (HornetQRAMessageListener.trace)
       {
-         HornetQRAMessageListener.log.trace("constructor(" + listener + ", " + consumer + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + listener + ", " + consumer + ")");
       }
 
       this.listener = listener;
@@ -62,7 +58,7 @@ public class HornetQRAMessageListener implements MessageListener
    {
       if (HornetQRAMessageListener.trace)
       {
-         HornetQRAMessageListener.log.trace("onMessage(" + message + ")");
+         HornetQRALogger.LOGGER.trace("onMessage(" + message + ")");
       }
 
       message = consumer.wrapMessage(message);

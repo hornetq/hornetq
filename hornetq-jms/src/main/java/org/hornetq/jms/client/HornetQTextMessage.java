@@ -21,7 +21,6 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS TextMessage.
@@ -44,8 +43,6 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    // Constants -----------------------------------------------------
 
    public static final byte TYPE = Message.TEXT_TYPE;
-
-   public static final Logger log = Logger.getLogger(HornetQTextMessage.class);
 
    // Attributes ----------------------------------------------------
 

@@ -21,7 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.AcknowledgedQueueConsumer;
 import org.hornetq.rest.queue.Acknowledgement;
 import org.hornetq.rest.queue.DestinationServiceManager;
@@ -34,7 +34,6 @@ import org.hornetq.rest.util.TimeoutTask;
  */
 public class SubscriptionsResource implements TimeoutTask.Callback
 {
-   private static final Logger log = Logger.getLogger(SubscriptionsResource.class);
    protected ConcurrentHashMap<String, QueueConsumer> queueConsumers = new ConcurrentHashMap<String, QueueConsumer>();
    protected ClientSessionFactory sessionFactory;
    protected String destination;
@@ -93,7 +92,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       {
          if (System.currentTimeMillis() - consumer.getLastPingTime() > subscription.getTimeout())
          {
-            log.warn("shutdown REST subscription because of session timeout for: " + consumer.getId());
+            HornetQRestLogger.LOGGER.shutdownRestSubscription(consumer.getId());
             consumer.shutdown();
             queueConsumers.remove(consumer.getId());
             serviceManager.getTimeoutTask().remove(consumer.getId());

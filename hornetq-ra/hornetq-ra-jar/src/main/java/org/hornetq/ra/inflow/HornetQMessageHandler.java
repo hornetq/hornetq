@@ -29,9 +29,9 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.ra.HornetQRALogger;
 
 /**
  * The message handler
@@ -44,14 +44,9 @@ import org.hornetq.jms.client.HornetQMessage;
 public class HornetQMessageHandler implements MessageHandler
 {
    /**
-    * The logger
-    */
-   private static final Logger log = Logger.getLogger(HornetQMessageHandler.class);
-
-   /**
     * Trace enabled
     */
-   private static boolean trace = HornetQMessageHandler.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * The session
@@ -92,7 +87,7 @@ public class HornetQMessageHandler implements MessageHandler
    {
       if (HornetQMessageHandler.trace)
       {
-         HornetQMessageHandler.log.trace("setup()");
+         HornetQRALogger.LOGGER.trace("setup()");
       }
 
       HornetQActivationSpec spec = activation.getActivationSpec();
@@ -200,7 +195,7 @@ public class HornetQMessageHandler implements MessageHandler
    {
       if (HornetQMessageHandler.trace)
       {
-         HornetQMessageHandler.log.trace("teardown()");
+         HornetQRALogger.LOGGER.trace("teardown()");
       }
 
       try
@@ -213,7 +208,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable t)
       {
-         HornetQMessageHandler.log.debug("Error releasing endpoint " + endpoint, t);
+         HornetQRALogger.LOGGER.debug("Error releasing endpoint " + endpoint, t);
       }
 
       try
@@ -232,7 +227,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable t)
       {
-         HornetQMessageHandler.log.debug("Error closing core-queue consumer", t);
+         HornetQRALogger.LOGGER.debug("Error closing core-queue consumer", t);
       }
 
       try
@@ -244,7 +239,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable t)
       {
-         HornetQMessageHandler.log.debug("Error releasing session " + session, t);
+         HornetQRALogger.LOGGER.debug("Error releasing session " + session, t);
       }
    }
 
@@ -252,7 +247,7 @@ public class HornetQMessageHandler implements MessageHandler
    {
       if (HornetQMessageHandler.trace)
       {
-         HornetQMessageHandler.log.trace("onMessage(" + message + ")");
+         HornetQRALogger.LOGGER.trace("onMessage(" + message + ")");
       }
 
       HornetQMessage msg = HornetQMessage.createMessage(message, session);
@@ -288,7 +283,7 @@ public class HornetQMessageHandler implements MessageHandler
          }
          catch (ResourceException e)
          {
-            HornetQMessageHandler.log.warn("Unable to call after delivery", e);
+            HornetQRALogger.LOGGER.unableToCallAfterDelivery(e);
             return;
          }
          if (useLocalTx)
@@ -298,7 +293,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       catch (Throwable e)
       {
-         HornetQMessageHandler.log.error("Failed to deliver message", e);
+         HornetQRALogger.LOGGER.errorDeliveringMessage(e);
          // we need to call before/afterDelivery as a pair
          if (beforeDelivery)
          {
@@ -318,14 +313,14 @@ public class HornetQMessageHandler implements MessageHandler
                }
                catch (Exception e1)
                {
-                  log.warn("unnable to clear the transaction", e1);
+                  HornetQRALogger.LOGGER.unableToClearTX(e1);
                   try
                   {
                      session.rollback();
                   }
                   catch (HornetQException e2)
                   {
-                     log.warn("Unable to rollback", e2);
+                     HornetQRALogger.LOGGER.unableToRollbackTX(e2);
                      return;
                   }
                }
@@ -337,7 +332,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             catch (ResourceException e1)
             {
-               HornetQMessageHandler.log.warn("Unable to call after delivery", e);
+               HornetQRALogger.LOGGER.unableToCallAfterDelivery(e1);
             }
          }
          if (useLocalTx || !activation.isDeliveryTransacted())
@@ -348,7 +343,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             catch (HornetQException e1)
             {
-               HornetQMessageHandler.log.warn("Unable to roll local transaction back");
+               HornetQRALogger.LOGGER.unableToRollbackTX();
             }
          }
       }
@@ -360,7 +355,7 @@ public class HornetQMessageHandler implements MessageHandler
          }
          catch (HornetQException e)
          {
-            log.warn("unable to reset session after failure");
+            HornetQRALogger.LOGGER.unableToResetSession();
          }
       }
 

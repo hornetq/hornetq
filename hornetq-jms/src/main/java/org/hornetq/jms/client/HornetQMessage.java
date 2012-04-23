@@ -41,7 +41,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.UUID;
 
 /**
@@ -145,8 +144,6 @@ public class HornetQMessage implements javax.jms.Message
       HornetQMessage.reservedIdentifiers.add("IS");
       HornetQMessage.reservedIdentifiers.add("ESCAPE");
    }
-
-   private static final Logger log = Logger.getLogger(HornetQMessage.class);
 
    public static HornetQMessage createMessage(final ClientMessage message, final ClientSession session)
    {

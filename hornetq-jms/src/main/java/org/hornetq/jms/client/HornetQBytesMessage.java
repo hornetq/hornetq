@@ -22,7 +22,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS BytesMessage.
@@ -40,9 +39,6 @@ import org.hornetq.core.logging.Logger;
 public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 {
    // Static -------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQBytesMessage.class);
-
    public static final byte TYPE = Message.BYTES_TYPE;
 
    // Attributes ----------------------------------------------------

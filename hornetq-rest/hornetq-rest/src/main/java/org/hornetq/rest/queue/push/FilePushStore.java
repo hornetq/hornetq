@@ -1,6 +1,6 @@
 package org.hornetq.rest.queue.push;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 import org.hornetq.rest.topic.PushTopicRegistration;
 
@@ -19,7 +19,6 @@ import java.util.Map;
  */
 public class FilePushStore implements PushStore
 {
-   private static final Logger log = Logger.getLogger(FilePushStore.class);
    protected Map<String, PushRegistration> map = new HashMap<String, PushRegistration>();
    protected File dir;
    protected JAXBContext ctx;
@@ -30,7 +29,7 @@ public class FilePushStore implements PushStore
       this.ctx = JAXBContext.newInstance(PushRegistration.class, PushTopicRegistration.class);
       if (this.dir.exists())
       {
-         log.info("Loading REST push store from: " + this.dir.getAbsolutePath());
+         HornetQRestLogger.LOGGER.loadingRestStore(dir.getAbsolutePath());
          for (File file : this.dir.listFiles())
          {
             if (!file.isFile()) continue;
@@ -39,12 +38,12 @@ public class FilePushStore implements PushStore
             {
                reg = (PushRegistration) ctx.createUnmarshaller().unmarshal(file);
                reg.setLoadedFrom(file);
-               log.info("adding REST push registration: " + reg.getId());
+               HornetQRestLogger.LOGGER.addingPushRegistration(reg.getId());
                map.put(reg.getId(), reg);
             }
             catch (Exception e)
             {
-               log.error("Failed to load push store" + file.getName() + " , it is probably corrupted", e);
+               HornetQRestLogger.LOGGER.errorLoadingStore(e, file.getName());
             }
          }
       }

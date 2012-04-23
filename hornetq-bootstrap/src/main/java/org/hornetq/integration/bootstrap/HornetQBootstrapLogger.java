@@ -21,6 +21,11 @@
 */
 package org.hornetq.integration.bootstrap;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -41,6 +46,30 @@ import org.jboss.logging.MessageLogger;
  * so an INFO message would be 101000 to 101999
  */
 @MessageLogger(projectCode = "HQ")
-public class HornetQBootstrapLogger
+public interface HornetQBootstrapLogger extends BasicLogger
 {
+   /**
+    * The default logger.
+    */
+   HornetQBootstrapLogger LOGGER = Logger.getMessageLogger(HornetQBootstrapLogger.class, HornetQBootstrapLogger.class.getPackage().getName());
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 101001, value = "Starting HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
+   void serverStarting();
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 101002, value = "Stopping HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
+   void serverStopping();
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 102001, value = "Error during undeployment: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void errorDuringUndeployment(@Cause Throwable t, String name);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 104001, value = "Failed to delete file {0}", format = Message.Format.MESSAGE_FORMAT)
+   void errorDeletingFile(String name);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 104002, value = "Failed to start server", format = Message.Format.MESSAGE_FORMAT)
+   void errorStartingServer(@Cause Exception e);
 }

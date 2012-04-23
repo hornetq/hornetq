@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * This is a helper class for the Journal, which will control access to dataFiles, openedFiles and freeFiles
@@ -36,10 +36,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class JournalFilesRepository
 {
-
-   private static final Logger log = Logger.getLogger(JournalFilesRepository.class);
-
-   private static final boolean trace = JournalFilesRepository.log.isTraceEnabled();
+   private static final boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
 
    // Used to debug the consistency of the journal ordering.
    // This is meant to be false as these extra checks would cause performance issues
@@ -50,7 +47,7 @@ public class JournalFilesRepository
    // Journal
    private static final void trace(final String message)
    {
-      JournalFilesRepository.log.trace(message);
+      HornetQJournalLogger.LOGGER.trace(message);
    }
 
    // Constants -----------------------------------------------------
@@ -93,7 +90,7 @@ public class JournalFilesRepository
          }
          catch (Exception e)
          {
-            JournalFilesRepository.log.error(e.getMessage(), e);
+            HornetQJournalLogger.LOGGER.errorPushingFile(e);
          }
       }
    };
@@ -156,7 +153,7 @@ public class JournalFilesRepository
          }
          catch (Exception e)
          {
-            JournalFilesRepository.log.warn(e.getMessage(), e);
+            HornetQJournalLogger.LOGGER.errorClosingFile(e);
          }
       }
       openedFiles.clear();
@@ -255,7 +252,7 @@ public class JournalFilesRepository
    {
       if (!dataFiles.remove(file))
       {
-         JournalFilesRepository.log.warn("Could not remove file " + file + " from the list of data files");
+         HornetQJournalLogger.LOGGER.couldNotRemoveFile(file);
       }
    }
 
@@ -309,19 +306,18 @@ public class JournalFilesRepository
       {
          if (file.getFileID() <= seq)
          {
-            log.info("CheckDataFiles:");
-            log.info(debugFiles());
-            log.info("Sequence out of order on journal");
+            HornetQJournalLogger.LOGGER.checkFiles();
+            HornetQJournalLogger.LOGGER.info(debugFiles());
+            HornetQJournalLogger.LOGGER.seqOutOfOrder();
             System.exit(-1);
          }
 
          if (journal.getCurrentFile() != null && journal.getCurrentFile().getFileID() <= file.getFileID())
          {
-            log.info("CheckDataFiles:");
-            log.info(debugFiles());
-            log.info("CurrentFile on the journal is <= the sequence file.getFileID=" + file.getFileID() + " on the dataFiles");
-            log.info("Currentfile.getFileId=" + journal.getCurrentFile().getFileID() + " while the file.getFileID()=" + file.getFileID());
-            log.info("IsSame = (" + (journal.getCurrentFile() == file) + ")");
+            HornetQJournalLogger.LOGGER.checkFiles();
+            HornetQJournalLogger.LOGGER.info(debugFiles());
+            HornetQJournalLogger.LOGGER.currentFile(file.getFileID(), journal.getCurrentFile().getFileID(),
+                  file.getFileID(), (journal.getCurrentFile() == file));
 
            // throw new RuntimeException ("Check failure!");
          }
@@ -339,9 +335,9 @@ public class JournalFilesRepository
       {
          if (file.getFileID() <= lastFreeId)
          {
-            log.info("CheckDataFiles:");
-            log.info(debugFiles());
-            log.info("FreeFileID out of order ");
+            HornetQJournalLogger.LOGGER.checkFiles();
+            HornetQJournalLogger.LOGGER.info(debugFiles());
+            HornetQJournalLogger.LOGGER.fileIdOutOfOrder();
 
             throw new RuntimeException ("Check failure!");
          }
@@ -350,9 +346,9 @@ public class JournalFilesRepository
 
          if (file.getFileID() < seq)
          {
-            log.info("CheckDataFiles:");
-            log.info(debugFiles());
-            log.info("A FreeFile is less then the maximum data");
+            HornetQJournalLogger.LOGGER.checkFiles();
+            HornetQJournalLogger.LOGGER.info(debugFiles());
+            HornetQJournalLogger.LOGGER.fileTooSmall();
 
            // throw new RuntimeException ("Check failure!");
          }
@@ -405,7 +401,7 @@ public class JournalFilesRepository
       }
       if (calculatedSize != fileSize)
       {
-         JournalFilesRepository.log.warn("Deleting " + file + ".. as it doesn't have the configured size");
+         HornetQJournalLogger.LOGGER.deletingFile(file);
          file.getFile().delete();
       }
       else
@@ -432,11 +428,11 @@ public class JournalFilesRepository
       {
          if (trace)
          {
-            log.trace("DataFiles.size() = " + dataFiles.size());
-            log.trace("openedFiles.size() = " + openedFiles.size());
-            log.trace("minfiles = " + minFiles);
-            log.trace("Free Files = "  + freeFiles.size());
-            log.trace("File " + file +
+            HornetQJournalLogger.LOGGER.trace("DataFiles.size() = " + dataFiles.size());
+            HornetQJournalLogger.LOGGER.trace("openedFiles.size() = " + openedFiles.size());
+            HornetQJournalLogger.LOGGER.trace("minfiles = " + minFiles);
+            HornetQJournalLogger.LOGGER.trace("Free Files = "  + freeFiles.size());
+            HornetQJournalLogger.LOGGER.trace("File " + file +
                       " being deleted as freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() (" +
                       (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size()) +
                       ") < minFiles (" + minFiles + ")" );
@@ -495,8 +491,7 @@ public class JournalFilesRepository
          nextFile = openedFiles.poll(5, TimeUnit.SECONDS);
          if (nextFile == null)
          {
-            JournalFilesRepository.log.warn("Couldn't open a file in 60 Seconds",
-                                            new Exception("Warning: Couldn't open a file in 60 Seconds"));
+            HornetQJournalLogger.LOGGER.errorOpeningFile(new Exception("trace"));
          }
       }
 
@@ -523,7 +518,7 @@ public class JournalFilesRepository
 
       if (!openedFiles.offer(nextOpenedFile))
       {
-         log.warn("Failed to add file to openedFiles queue: " + nextOpenedFile + ". This should NOT happen!");
+         HornetQJournalLogger.LOGGER.failedToAddFile(nextOpenedFile);
       }
    }
 
@@ -677,7 +672,7 @@ public class JournalFilesRepository
       }
       catch (Throwable e)
       {
-         JournalFilesRepository.log.warn("Impossible to get the ID part of the file name " + fileName, e);
+         HornetQJournalLogger.LOGGER.errorRetrievingID(e, fileName);
          return 0;
       }
    }

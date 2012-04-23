@@ -25,7 +25,7 @@ import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
@@ -37,10 +37,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 {
-
-   private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
-
-   private static final boolean trace = AIOSequentialFileFactory.log.isTraceEnabled();
+   private static final boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
 
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
 
@@ -51,7 +48,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
    // Journal
    private static final void trace(final String message)
    {
-      AIOSequentialFileFactory.log.trace(message);
+      HornetQJournalLogger.LOGGER.trace(message);
    }
 
    public AIOSequentialFileFactory(final String journalDir)
@@ -204,8 +201,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          {
             if (!pollerExecutor.awaitTermination(AbstractSequentialFileFactory.EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
             {
-               AIOSequentialFileFactory.log.warn("Timed out on AIO poller shutdown",
-                                                 new Exception("Timed out on AIO writer shutdown"));
+               HornetQJournalLogger.LOGGER.timeoutOnPollerShutdown(new Exception("trace"));
             }
          }
          catch (InterruptedException e)

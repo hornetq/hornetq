@@ -19,7 +19,6 @@ import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * The connection manager used in non-managed environments.
@@ -32,12 +31,8 @@ public class HornetQRAConnectionManager implements ConnectionManager
 {
    /** Serial version UID */
    static final long serialVersionUID = 4409118162975011014L;
-
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAConnectionManager.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAConnectionManager.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Constructor
@@ -46,7 +41,7 @@ public class HornetQRAConnectionManager implements ConnectionManager
    {
       if (HornetQRAConnectionManager.trace)
       {
-         HornetQRAConnectionManager.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
    }
 
@@ -61,7 +56,7 @@ public class HornetQRAConnectionManager implements ConnectionManager
    {
       if (HornetQRAConnectionManager.trace)
       {
-         HornetQRAConnectionManager.log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
+         HornetQRALogger.LOGGER.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
       }
 
       ManagedConnection mc = mcf.createManagedConnection(null, cxRequestInfo);
@@ -69,7 +64,7 @@ public class HornetQRAConnectionManager implements ConnectionManager
 
       if (HornetQRAConnectionManager.trace)
       {
-         HornetQRAConnectionManager.log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
+         HornetQRALogger.LOGGER.trace("Allocated connection: " + c + ", with managed connection: " + mc);
       }
 
       return c;

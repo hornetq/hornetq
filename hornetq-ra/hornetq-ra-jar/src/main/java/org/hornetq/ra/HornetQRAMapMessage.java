@@ -18,7 +18,6 @@ import java.util.Enumeration;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message
@@ -29,11 +28,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAMapMessage.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAMapMessage.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -47,7 +43,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
 
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -61,7 +57,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getBoolean(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getBoolean(" + name + ")");
       }
 
       return ((MapMessage)message).getBoolean(name);
@@ -77,7 +73,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getByte(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getByte(" + name + ")");
       }
 
       return ((MapMessage)message).getByte(name);
@@ -93,7 +89,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getBytes(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getBytes(" + name + ")");
       }
 
       return ((MapMessage)message).getBytes(name);
@@ -109,7 +105,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getChar(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getChar(" + name + ")");
       }
 
       return ((MapMessage)message).getChar(name);
@@ -125,7 +121,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getDouble(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getDouble(" + name + ")");
       }
 
       return ((MapMessage)message).getDouble(name);
@@ -141,7 +137,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getFloat(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getFloat(" + name + ")");
       }
 
       return ((MapMessage)message).getFloat(name);
@@ -157,7 +153,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getInt(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getInt(" + name + ")");
       }
 
       return ((MapMessage)message).getInt(name);
@@ -173,7 +169,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getLong(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getLong(" + name + ")");
       }
 
       return ((MapMessage)message).getLong(name);
@@ -188,7 +184,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getMapNames()");
+         HornetQRALogger.LOGGER.trace("getMapNames()");
       }
 
       return ((MapMessage)message).getMapNames();
@@ -204,7 +200,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getObject(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getObject(" + name + ")");
       }
 
       return ((MapMessage)message).getObject(name);
@@ -220,7 +216,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getShort(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getShort(" + name + ")");
       }
 
       return ((MapMessage)message).getShort(name);
@@ -236,7 +232,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("getString(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getString(" + name + ")");
       }
 
       return ((MapMessage)message).getString(name);
@@ -252,7 +248,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("itemExists(" + name + ")");
+         HornetQRALogger.LOGGER.trace("itemExists(" + name + ")");
       }
 
       return ((MapMessage)message).itemExists(name);
@@ -268,7 +264,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setBoolean(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setBoolean(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setBoolean(name, value);
@@ -284,7 +280,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setByte(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setByte(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setByte(name, value);
@@ -302,7 +298,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setBytes(" + name + ", " + value + ", " + offset + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + value + ", " + offset + ", " + length + ")");
       }
 
       ((MapMessage)message).setBytes(name, value, offset, length);
@@ -318,7 +314,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setBytes(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setBytes(name, value);
@@ -334,7 +330,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setChar(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setChar(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setChar(name, value);
@@ -350,7 +346,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setDouble(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setDouble(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setDouble(name, value);
@@ -366,7 +362,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setFloat(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setFloat(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setFloat(name, value);
@@ -382,7 +378,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setInt(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setInt(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setInt(name, value);
@@ -398,7 +394,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setLong(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setLong(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setLong(name, value);
@@ -414,7 +410,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setObject(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setObject(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setObject(name, value);
@@ -430,7 +426,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setShort(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setShort(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setShort(name, value);
@@ -446,7 +442,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRAMapMessage.log.trace("setString(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setString(" + name + ", " + value + ")");
       }
 
       ((MapMessage)message).setString(name, value);

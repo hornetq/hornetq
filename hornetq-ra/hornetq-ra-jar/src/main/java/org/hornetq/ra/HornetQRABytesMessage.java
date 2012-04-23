@@ -16,7 +16,6 @@ package org.hornetq.ra;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message
@@ -27,11 +26,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMessage
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRABytesMessage.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRABytesMessage.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -44,7 +40,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -57,7 +53,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("getBodyLength()");
+         HornetQRALogger.LOGGER.trace("getBodyLength()");
       }
 
       return ((BytesMessage)message).getBodyLength();
@@ -72,7 +68,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readBoolean()");
+         HornetQRALogger.LOGGER.trace("readBoolean()");
       }
 
       return ((BytesMessage)message).readBoolean();
@@ -87,7 +83,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readByte()");
+         HornetQRALogger.LOGGER.trace("readByte()");
       }
 
       return ((BytesMessage)message).readByte();
@@ -104,7 +100,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readBytes(" + value + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("readBytes(" + value + ", " + length + ")");
       }
 
       return ((BytesMessage)message).readBytes(value, length);
@@ -120,7 +116,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readBytes(" + value + ")");
+         HornetQRALogger.LOGGER.trace("readBytes(" + value + ")");
       }
 
       return ((BytesMessage)message).readBytes(value);
@@ -135,7 +131,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readChar()");
+         HornetQRALogger.LOGGER.trace("readChar()");
       }
 
       return ((BytesMessage)message).readChar();
@@ -150,7 +146,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readDouble()");
+         HornetQRALogger.LOGGER.trace("readDouble()");
       }
 
       return ((BytesMessage)message).readDouble();
@@ -165,7 +161,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readFloat()");
+         HornetQRALogger.LOGGER.trace("readFloat()");
       }
 
       return ((BytesMessage)message).readFloat();
@@ -180,7 +176,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readInt()");
+         HornetQRALogger.LOGGER.trace("readInt()");
       }
 
       return ((BytesMessage)message).readInt();
@@ -195,7 +191,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readLong()");
+         HornetQRALogger.LOGGER.trace("readLong()");
       }
 
       return ((BytesMessage)message).readLong();
@@ -210,7 +206,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readShort()");
+         HornetQRALogger.LOGGER.trace("readShort()");
       }
 
       return ((BytesMessage)message).readShort();
@@ -225,7 +221,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readUnsignedByte()");
+         HornetQRALogger.LOGGER.trace("readUnsignedByte()");
       }
 
       return ((BytesMessage)message).readUnsignedByte();
@@ -240,7 +236,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readUnsignedShort()");
+         HornetQRALogger.LOGGER.trace("readUnsignedShort()");
       }
 
       return ((BytesMessage)message).readUnsignedShort();
@@ -255,7 +251,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("readUTF()");
+         HornetQRALogger.LOGGER.trace("readUTF()");
       }
 
       return ((BytesMessage)message).readUTF();
@@ -269,7 +265,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("reset()");
+         HornetQRALogger.LOGGER.trace("reset()");
       }
 
       ((BytesMessage)message).reset();
@@ -284,7 +280,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeBoolean(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeBoolean(" + value + ")");
       }
 
       ((BytesMessage)message).writeBoolean(value);
@@ -299,7 +295,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeByte(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeByte(" + value + ")");
       }
 
       ((BytesMessage)message).writeByte(value);
@@ -316,7 +312,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
       }
 
       ((BytesMessage)message).writeBytes(value, offset, length);
@@ -331,7 +327,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeBytes(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeBytes(" + value + ")");
       }
 
       ((BytesMessage)message).writeBytes(value);
@@ -346,7 +342,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeChar(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeChar(" + value + ")");
       }
 
       ((BytesMessage)message).writeChar(value);
@@ -361,7 +357,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeDouble(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeDouble(" + value + ")");
       }
 
       ((BytesMessage)message).writeDouble(value);
@@ -376,7 +372,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeFloat(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeFloat(" + value + ")");
       }
 
       ((BytesMessage)message).writeFloat(value);
@@ -391,7 +387,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeInt(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeInt(" + value + ")");
       }
 
       ((BytesMessage)message).writeInt(value);
@@ -406,7 +402,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeLong(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeLong(" + value + ")");
       }
 
       ((BytesMessage)message).writeLong(value);
@@ -421,7 +417,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeObject(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeObject(" + value + ")");
       }
 
       ((BytesMessage)message).writeObject(value);
@@ -436,7 +432,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeShort(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeShort(" + value + ")");
       }
 
       ((BytesMessage)message).writeShort(value);
@@ -451,7 +447,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRABytesMessage.log.trace("writeUTF(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeUTF(" + value + ")");
       }
 
       ((BytesMessage)message).writeUTF(value);
