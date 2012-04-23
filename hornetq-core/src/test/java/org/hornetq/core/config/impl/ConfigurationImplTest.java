@@ -49,8 +49,6 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL,
                           conf.getSecurityInvalidationInterval());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME,
-                          conf.getLogDelegateFactoryClassName());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());

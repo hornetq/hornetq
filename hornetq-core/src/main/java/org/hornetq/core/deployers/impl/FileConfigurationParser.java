@@ -281,11 +281,6 @@ public class FileConfigurationParser
                                                            config.getClusterUser(),
                                                            Validators.NO_CHECK));
 
-      config.setLogDelegateFactoryClassName(XMLConfigurationUtil.getString(e,
-                                                                           "log-delegate-factory-class-name",
-                                                                           config.getLogDelegateFactoryClassName(),
-                                                                           Validators.NOT_NULL_OR_EMPTY));
-
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
