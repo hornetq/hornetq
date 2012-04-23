@@ -19,7 +19,7 @@ import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.integration.jboss.HornetQJBossLogger;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
@@ -32,8 +32,6 @@ import org.jboss.security.SecurityContextFactory;
  */
 class SecurityActions
 {
-   private static final Logger log = Logger.getLogger(JBossASSecurityManager.class);
-   
    interface PrincipalInfoAction
    {
       PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
@@ -50,8 +48,7 @@ class SecurityActions
 
                   try
                   {
-                     log.info("========================================================");
-                     log.info("Setting subject = " + subject);
+                     HornetQJBossLogger.LOGGER.settingSecuritySubject(subject);
                      // SecurityAssociation.pushSubjectContext(subject, principal, credential);
                      SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                      if (sc == null)
@@ -74,11 +71,10 @@ class SecurityActions
                      }
                      
                      SecurityContextAssociation.setSecurityContext(sc);
-                     log.info("========================================================");
                   }
                   catch (Throwable t)
                   {
-                     log.warn("An error happened while setting the context", t);
+                     HornetQJBossLogger.LOGGER.errorSettingSecurityContext(t);
                   }
                   
                   return null;
