@@ -25,11 +25,11 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Set;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
+import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
 
@@ -39,8 +39,6 @@ import org.hornetq.utils.ConcurrentHashSet;
  */
 public class RecoveryManager
 {
-   private static Logger log = Logger.getLogger(RecoveryManager.class);
-
    private RecoveryRegistry registry;
 
    private String resourceRecoveryClassNames = "org.jboss.as.messaging.jms.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
@@ -54,7 +52,7 @@ public class RecoveryManager
 
    public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
    {
-      log.debug("registering recovery for factory : " + factory);
+      HornetQRALogger.LOGGER.debug("registering recovery for factory : " + factory);
       
       HornetQResourceRecovery resourceRecovery = newResourceRecovery(factory, userName, password);
       
@@ -121,7 +119,7 @@ public class RecoveryManager
          }
          catch (Throwable e)
          {
-            log.debug("unable to load  recovery registry " + locatorClasses[i], e);
+            HornetQRALogger.LOGGER.debug("unable to load  recovery registry " + locatorClasses[i], e);
          }
          if (registry != null)
          {
@@ -146,7 +144,7 @@ public class RecoveryManager
       }
       else
       {
-         log.debug("Recovery Registry located = " + registry);
+         HornetQRALogger.LOGGER.debug("Recovery Registry located = " + registry);
       }
    }
 

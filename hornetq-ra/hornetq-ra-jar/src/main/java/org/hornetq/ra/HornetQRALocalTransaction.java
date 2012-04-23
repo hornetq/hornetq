@@ -17,7 +17,6 @@ import javax.jms.JMSException;
 import javax.resource.ResourceException;
 import javax.resource.spi.LocalTransaction;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * JMS Local transaction
@@ -28,11 +27,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRALocalTransaction implements LocalTransaction
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRALocalTransaction.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRALocalTransaction.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection mc;
@@ -45,7 +41,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
    {
       if (HornetQRALocalTransaction.trace)
       {
-         HornetQRALocalTransaction.log.trace("constructor(" + mc + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + mc + ")");
       }
 
       this.mc = mc;
@@ -59,7 +55,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
    {
       if (HornetQRALocalTransaction.trace)
       {
-         HornetQRALocalTransaction.log.trace("begin()");
+         HornetQRALogger.LOGGER.trace("begin()");
       }
       
      // mc.setInManagedTx(true);
@@ -73,7 +69,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
    {
       if (HornetQRALocalTransaction.trace)
       {
-         HornetQRALocalTransaction.log.trace("commit()");
+         HornetQRALogger.LOGGER.trace("commit()");
       }
       
       mc.lock();
@@ -103,7 +99,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
    {
       if (HornetQRALocalTransaction.trace)
       {
-         HornetQRALocalTransaction.log.trace("rollback()");
+         HornetQRALogger.LOGGER.trace("rollback()");
       }
       
       mc.lock();

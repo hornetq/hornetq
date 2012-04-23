@@ -20,8 +20,8 @@ import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.ConnectionFactoryProperties;
+import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -38,12 +38,9 @@ import org.hornetq.ra.Util;
 public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
 {
    private static final int DEFAULT_MAX_SESSION = 15;
-
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQActivationSpec.class);
-
+   
    /** Whether trace is enabled */
-   private static boolean trace = HornetQActivationSpec.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    public String strConnectorClassName;
 
@@ -104,7 +101,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
 
       ra = null;
@@ -128,7 +125,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getResourceAdapter()");
+         HornetQRALogger.LOGGER.trace("getResourceAdapter()");
       }
 
       return ra;
@@ -191,7 +188,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setResourceAdapter(" + ra + ")");
+         HornetQRALogger.LOGGER.trace("setResourceAdapter(" + ra + ")");
       }
 
       if (ra == null || !(ra instanceof HornetQResourceAdapter))
@@ -210,7 +207,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getDestination()");
+         HornetQRALogger.LOGGER.trace("getDestination()");
       }
 
       return destination;
@@ -224,7 +221,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setDestination(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setDestination(" + value + ")");
       }
 
       destination = value;
@@ -238,7 +235,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getDestinationType()");
+         HornetQRALogger.LOGGER.trace("getDestinationType()");
       }
 
       return destinationType;
@@ -252,7 +249,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setDestinationType(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setDestinationType(" + value + ")");
       }
 
       destinationType = value;
@@ -266,7 +263,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getMessageSelector()");
+         HornetQRALogger.LOGGER.trace("getMessageSelector()");
       }
 
       return messageSelector;
@@ -280,7 +277,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setMessageSelector(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setMessageSelector(" + value + ")");
       }
 
       messageSelector = value;
@@ -294,7 +291,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getAcknowledgeMode()");
+         HornetQRALogger.LOGGER.trace("getAcknowledgeMode()");
       }
 
       if (Session.DUPS_OK_ACKNOWLEDGE == acknowledgeMode)
@@ -315,7 +312,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setAcknowledgeMode(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setAcknowledgeMode(" + value + ")");
       }
 
       if ("DUPS_OK_ACKNOWLEDGE".equalsIgnoreCase(value) || "Dups-ok-acknowledge".equalsIgnoreCase(value))
@@ -339,7 +336,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getAcknowledgeMode()");
+         HornetQRALogger.LOGGER.trace("getAcknowledgeMode()");
       }
 
       return acknowledgeMode;
@@ -353,7 +350,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getSubscriptionDurability()");
+         HornetQRALogger.LOGGER.trace("getSubscriptionDurability()");
       }
 
       if (subscriptionDurability)
@@ -374,7 +371,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setSubscriptionDurability(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setSubscriptionDurability(" + value + ")");
       }
 
       subscriptionDurability = "Durable".equals(value);
@@ -388,7 +385,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("isSubscriptionDurable()");
+         HornetQRALogger.LOGGER.trace("isSubscriptionDurable()");
       }
 
       return subscriptionDurability;
@@ -402,7 +399,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getSubscriptionName()");
+         HornetQRALogger.LOGGER.trace("getSubscriptionName()");
       }
 
       return subscriptionName;
@@ -416,7 +413,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setSubscriptionName(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setSubscriptionName(" + value + ")");
       }
 
       subscriptionName = value;
@@ -430,7 +427,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getUser()");
+         HornetQRALogger.LOGGER.trace("getUser()");
       }
 
       if (user == null)
@@ -451,7 +448,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setUser(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setUser(" + value + ")");
       }
 
       user = value;
@@ -465,7 +462,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getPassword()");
+         HornetQRALogger.LOGGER.trace("getPassword()");
       }
 
       if (password == null)
@@ -486,7 +483,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setPassword(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setPassword(" + value + ")");
       }
 
       password = value;
@@ -500,7 +497,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getMaxSession()");
+         HornetQRALogger.LOGGER.trace("getMaxSession()");
       }
 
       if (maxSession == null)
@@ -519,7 +516,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setMaxSession(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setMaxSession(" + value + ")");
       }
 
       maxSession = value;
@@ -533,7 +530,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getTransactionTimeout()");
+         HornetQRALogger.LOGGER.trace("getTransactionTimeout()");
       }
 
       return transactionTimeout;
@@ -547,7 +544,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setTransactionTimeout(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setTransactionTimeout(" + value + ")");
       }
 
       transactionTimeout = value;
@@ -574,7 +571,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getSetupAttempts()");
+         HornetQRALogger.LOGGER.trace("getSetupAttempts()");
       }
 
       if (setupAttempts == null)
@@ -591,7 +588,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setSetupAttempts(" + setupAttempts + ")");
+         HornetQRALogger.LOGGER.trace("setSetupAttempts(" + setupAttempts + ")");
       }
 
       this.setupAttempts = setupAttempts;
@@ -601,7 +598,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("getSetupInterval()");
+         HornetQRALogger.LOGGER.trace("getSetupInterval()");
       }
 
       if (setupInterval == null)
@@ -618,7 +615,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setSetupInterval(" + setupInterval + ")");
+         HornetQRALogger.LOGGER.trace("setSetupInterval(" + setupInterval + ")");
       }
 
       this.setupInterval = setupInterval;
@@ -632,7 +629,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("validate()");
+         HornetQRALogger.LOGGER.trace("validate()");
       }
 
       if (destination == null || destination.trim().equals(""))
@@ -650,7 +647,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQActivationSpec.log.trace("setConnectorClassName(" + connectorClassName + ")");
+         HornetQRALogger.LOGGER.trace("setConnectorClassName(" + connectorClassName + ")");
       }
 
       strConnectorClassName = connectorClassName;

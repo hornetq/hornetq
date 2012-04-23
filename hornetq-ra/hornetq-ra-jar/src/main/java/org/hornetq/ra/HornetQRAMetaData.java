@@ -16,7 +16,6 @@ package org.hornetq.ra;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionMetaData;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * Managed connection meta data
@@ -27,11 +26,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAMetaData implements ManagedConnectionMetaData
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAMetaData.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAMetaData.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection mc;
@@ -44,7 +40,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    {
       if (HornetQRAMetaData.trace)
       {
-         HornetQRAMetaData.log.trace("constructor(" + mc + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + mc + ")");
       }
 
       this.mc = mc;
@@ -59,7 +55,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    {
       if (HornetQRAMetaData.trace)
       {
-         HornetQRAMetaData.log.trace("getEISProductName()");
+         HornetQRALogger.LOGGER.trace("getEISProductName()");
       }
 
       return "HornetQ";
@@ -74,7 +70,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    {
       if (HornetQRAMetaData.trace)
       {
-         HornetQRAMetaData.log.trace("getEISProductVersion()");
+         HornetQRALogger.LOGGER.trace("getEISProductVersion()");
       }
 
       return "2.0";
@@ -89,7 +85,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    {
       if (HornetQRAMetaData.trace)
       {
-         HornetQRAMetaData.log.trace("getUserName()");
+         HornetQRALogger.LOGGER.trace("getUserName()");
       }
 
       return mc.getUserName();
@@ -104,7 +100,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    {
       if (HornetQRAMetaData.trace)
       {
-         HornetQRAMetaData.log.trace("getMaxConnections()");
+         HornetQRALogger.LOGGER.trace("getMaxConnections()");
       }
 
       return 0;

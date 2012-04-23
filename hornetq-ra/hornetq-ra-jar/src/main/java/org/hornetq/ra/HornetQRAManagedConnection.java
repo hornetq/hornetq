@@ -50,7 +50,6 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
@@ -63,11 +62,8 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
  */
 public class HornetQRAManagedConnection implements ManagedConnection, ExceptionListener
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAManagedConnection.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAManagedConnection.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The managed connection factory */
    private final HornetQRAManagedConnectionFactory mcf;
@@ -126,7 +122,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("constructor(" + mcf + ", " + cri + ", " + userName + ", ****)");
+         HornetQRALogger.LOGGER.trace("constructor(" + mcf + ", " + cri + ", " + userName + ", ****)");
       }
 
       this.mcf = mcf;
@@ -171,7 +167,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getConnection(" + subject + ", " + cxRequestInfo + ")");
+         HornetQRALogger.LOGGER.trace("getConnection(" + subject + ", " + cxRequestInfo + ")");
       }
 
       // Check user first
@@ -206,7 +202,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("destroyHandles()");
+         HornetQRALogger.LOGGER.trace("destroyHandles()");
       }
 
       try
@@ -218,7 +214,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       }
       catch (Throwable t)
       {
-         HornetQRAManagedConnection.log.trace("Ignored error stopping connection", t);
+         HornetQRALogger.LOGGER.trace("Ignored error stopping connection", t);
       }
 
       for (HornetQRASession session : handles)
@@ -237,7 +233,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("destroy()");
+         HornetQRALogger.LOGGER.trace("destroy()");
       }
 
       if (isDestroyed.get() ||  connection == null)
@@ -253,7 +249,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       }
       catch (JMSException e)
       {
-         HornetQRAManagedConnection.log.debug("Error unsetting the exception listener " + this, e);
+         HornetQRALogger.LOGGER.debug("Error unsetting the exception listener " + this, e);
       }
 
       destroyHandles();
@@ -274,7 +270,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          }
          catch (JMSException e)
          {
-            HornetQRAManagedConnection.log.debug("Error closing session " + this, e);
+            HornetQRALogger.LOGGER.debug("Error closing session " + this, e);
          }
 
          if (connection != null)
@@ -302,7 +298,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("cleanup()");
+         HornetQRALogger.LOGGER.trace("cleanup()");
       }
 
       if (isDestroyed.get())
@@ -333,7 +329,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("associateConnection(" + obj + ")");
+         HornetQRALogger.LOGGER.trace("associateConnection(" + obj + ")");
       }
 
       if (!isDestroyed.get() && obj instanceof HornetQRASession)
@@ -385,7 +381,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("lock()");
+         HornetQRALogger.LOGGER.trace("lock()");
       }
 
       lock.lock();
@@ -399,7 +395,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("tryLock()");
+         HornetQRALogger.LOGGER.trace("tryLock()");
       }
 
       Integer tryLock = mcf.getUseTryLock();
@@ -428,7 +424,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("unlock()");
+         HornetQRALogger.LOGGER.trace("unlock()");
       }
 
       lock.unlock();
@@ -442,7 +438,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("addConnectionEventListener(" + l + ")");
+         HornetQRALogger.LOGGER.trace("addConnectionEventListener(" + l + ")");
       }
 
       eventListeners.add(l);
@@ -456,7 +452,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("removeConnectionEventListener(" + l + ")");
+         HornetQRALogger.LOGGER.trace("removeConnectionEventListener(" + l + ")");
       }
 
       eventListeners.remove(l);
@@ -471,7 +467,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getXAResource()");
+         HornetQRALogger.LOGGER.trace("getXAResource()");
       }
 
       //
@@ -485,7 +481,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("XAResource=" + xaResource);
+         HornetQRALogger.LOGGER.trace("XAResource=" + xaResource);
       }
 
       return xaResource;
@@ -500,14 +496,14 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getLocalTransaction()");
+         HornetQRALogger.LOGGER.trace("getLocalTransaction()");
       }
 
       LocalTransaction tx = new HornetQRALocalTransaction(this);
 
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("LocalTransaction=" + tx);
+         HornetQRALogger.LOGGER.trace("LocalTransaction=" + tx);
       }
 
       return tx;
@@ -523,7 +519,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getMetaData()");
+         HornetQRALogger.LOGGER.trace("getMetaData()");
       }
 
       if (isDestroyed.get())
@@ -543,7 +539,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("setLogWriter(" + out + ")");
+         HornetQRALogger.LOGGER.trace("setLogWriter(" + out + ")");
       }
    }
 
@@ -556,7 +552,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getLogWriter()");
+         HornetQRALogger.LOGGER.trace("getLogWriter()");
       }
 
       return null;
@@ -574,19 +570,19 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       }
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("onException(" + exception + ")");
+         HornetQRALogger.LOGGER.trace("onException(" + exception + ")");
       }
 
       if (isDestroyed.get())
       {
          if (HornetQRAManagedConnection.trace)
          {
-            HornetQRAManagedConnection.log.trace("Ignoring error on already destroyed connection " + this, exception);
+            HornetQRALogger.LOGGER.trace("Ignoring error on already destroyed connection " + this, exception);
          }
          return;
       }
 
-      HornetQRAManagedConnection.log.warn("Handling JMS exception failure: " + this, exception);
+      HornetQRALogger.LOGGER.handlingJMSFailure(exception);
 
       try
       {
@@ -594,7 +590,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       }
       catch (JMSException e)
       {
-         HornetQRAManagedConnection.log.debug("Unable to unset exception listener", e);
+         HornetQRALogger.LOGGER.debug("Unable to unset exception listener", e);
       }
 
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, exception);
@@ -612,7 +608,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       {
          if (HornetQRAManagedConnection.trace)
          {
-            HornetQRAManagedConnection.log.trace("getSession() -> XA session " + xaSession.getSession());
+            HornetQRALogger.LOGGER.trace("getSession() -> XA session " + xaSession.getSession());
          }
 
          return xaSession.getSession();
@@ -621,7 +617,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       {
          if (HornetQRAManagedConnection.trace)
          {
-            HornetQRAManagedConnection.log.trace("getSession() -> session " + xaSession.getSession());
+            HornetQRALogger.LOGGER.trace("getSession() -> session " + xaSession.getSession());
          }
 
          return session;
@@ -636,7 +632,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("sendEvent(" + event + ")");
+         HornetQRALogger.LOGGER.trace("sendEvent(" + event + ")");
       }
 
       int type = event.getId();
@@ -682,7 +678,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("removeHandle(" + handle + ")");
+         HornetQRALogger.LOGGER.trace("removeHandle(" + handle + ")");
       }
 
       handles.remove(handle);
@@ -696,7 +692,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getCRI()");
+         HornetQRALogger.LOGGER.trace("getCRI()");
       }
 
       return cri;
@@ -710,7 +706,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getManagedConnectionFactory()");
+         HornetQRALogger.LOGGER.trace("getManagedConnectionFactory()");
       }
 
       return mcf;
@@ -724,7 +720,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("start()");
+         HornetQRALogger.LOGGER.trace("start()");
       }
 
       if (connection != null)
@@ -741,7 +737,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("stop()");
+         HornetQRALogger.LOGGER.trace("stop()");
       }
 
       if (connection != null)
@@ -758,7 +754,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("getUserName()");
+         HornetQRALogger.LOGGER.trace("getUserName()");
       }
 
       return userName;
@@ -772,7 +768,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    {
       if (HornetQRAManagedConnection.trace)
       {
-         HornetQRAManagedConnection.log.trace("setup()");
+         HornetQRALogger.LOGGER.trace("setup()");
       }
 
       try

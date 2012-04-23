@@ -19,7 +19,6 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQXAResource.
@@ -30,11 +29,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAXAResource implements XAResource
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAXAResource.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAXAResource.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The managed connection */
    private final HornetQRAManagedConnection managedConnection;
@@ -51,7 +47,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("constructor(" + managedConnection + ", " + xaResource + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + managedConnection + ", " + xaResource + ")");
       }
 
       this.managedConnection = managedConnection;
@@ -68,7 +64,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("start(" + xid + ", " + flags + ")");
+         HornetQRALogger.LOGGER.trace("start(" + xid + ", " + flags + ")");
       }
 
       managedConnection.lock();
@@ -81,7 +77,7 @@ public class HornetQRAXAResource implements XAResource
       }
       catch (HornetQException e)
       {
-         log.warn("problem resetting HornetQ xa session after failure");
+         HornetQRALogger.LOGGER.problemResettingXASession();
       }
       try
       {
@@ -104,7 +100,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("end(" + xid + ", " + flags + ")");
+         HornetQRALogger.LOGGER.trace("end(" + xid + ", " + flags + ")");
       }
 
       managedConnection.lock();
@@ -129,7 +125,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("prepare(" + xid + ")");
+         HornetQRALogger.LOGGER.trace("prepare(" + xid + ")");
       }
 
       return xaResource.prepare(xid);
@@ -145,7 +141,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("commit(" + xid + ", " + onePhase + ")");
+         HornetQRALogger.LOGGER.trace("commit(" + xid + ", " + onePhase + ")");
       }
 
       xaResource.commit(xid, onePhase);
@@ -160,7 +156,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("rollback(" + xid + ")");
+         HornetQRALogger.LOGGER.trace("rollback(" + xid + ")");
       }
 
       xaResource.rollback(xid);
@@ -175,7 +171,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("forget(" + xid + ")");
+         HornetQRALogger.LOGGER.trace("forget(" + xid + ")");
       }
 
       managedConnection.lock();
@@ -201,7 +197,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("isSameRM(" + xaRes + ")");
+         HornetQRALogger.LOGGER.trace("isSameRM(" + xaRes + ")");
       }
 
       return xaResource.isSameRM(xaRes);
@@ -217,7 +213,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("recover(" + flag + ")");
+         HornetQRALogger.LOGGER.trace("recover(" + flag + ")");
       }
 
       return xaResource.recover(flag);
@@ -232,7 +228,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("getTransactionTimeout()");
+         HornetQRALogger.LOGGER.trace("getTransactionTimeout()");
       }
 
       return xaResource.getTransactionTimeout();
@@ -248,7 +244,7 @@ public class HornetQRAXAResource implements XAResource
    {
       if (HornetQRAXAResource.trace)
       {
-         HornetQRAXAResource.log.trace("setTransactionTimeout(" + seconds + ")");
+         HornetQRALogger.LOGGER.trace("setTransactionTimeout(" + seconds + ")");
       }
 
       return xaResource.setTransactionTimeout(seconds);

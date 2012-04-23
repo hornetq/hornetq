@@ -18,7 +18,6 @@ import javax.jms.Message;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQQueueSender.
@@ -29,11 +28,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements TopicPublisher
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRATopicPublisher.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRATopicPublisher.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -46,7 +42,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
 
       if (HornetQRATopicPublisher.trace)
       {
-         HornetQRATopicPublisher.log.trace("constructor(" + producer + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + producer + ", " + session + ")");
       }
    }
 
@@ -59,7 +55,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
    {
       if (HornetQRATopicPublisher.trace)
       {
-         HornetQRATopicPublisher.log.trace("getTopic()");
+         HornetQRALogger.LOGGER.trace("getTopic()");
       }
 
       return ((TopicPublisher)producer).getTopic();
@@ -80,7 +76,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       {
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("send " + this +
+            HornetQRALogger.LOGGER.trace("send " + this +
                                               " message=" +
                                               message +
                                               " deliveryMode=" +
@@ -97,7 +93,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
 
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -118,7 +114,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       {
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("send " + this + " message=" + message);
+            HornetQRALogger.LOGGER.trace("send " + this + " message=" + message);
          }
 
          checkState();
@@ -127,7 +123,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
 
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -156,7 +152,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       {
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("send " + this +
+            HornetQRALogger.LOGGER.trace("send " + this +
                                               " destination=" +
                                               destination +
                                               " message=" +
@@ -175,7 +171,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
 
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -197,7 +193,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
       {
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("send " + this + " destination=" + destination + " message=" + message);
+            HornetQRALogger.LOGGER.trace("send " + this + " destination=" + destination + " message=" + message);
          }
 
          checkState();
@@ -206,7 +202,7 @@ public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements
 
          if (HornetQRATopicPublisher.trace)
          {
-            HornetQRATopicPublisher.log.trace("sent " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("sent " + this + " result=" + message);
          }
       }
       finally

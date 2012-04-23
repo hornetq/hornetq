@@ -15,7 +15,6 @@ package org.hornetq.ra;
 import java.io.Serializable;
 import java.util.Hashtable;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * The RA default properties - these are set in the ra.xml file
@@ -29,12 +28,8 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 {
    /** Serial version UID */
    static final long serialVersionUID = -2772367477755473248L;
-
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAProperties.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAProperties.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The user name */
    private String userName;
@@ -72,7 +67,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
    }
 
@@ -84,7 +79,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("getUserName()");
+         HornetQRALogger.LOGGER.trace("getUserName()");
       }
 
       return userName;
@@ -98,7 +93,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("setUserName(" + userName + ")");
+         HornetQRALogger.LOGGER.trace("setUserName(" + userName + ")");
       }
 
       this.userName = userName;
@@ -112,7 +107,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("getPassword()");
+         HornetQRALogger.LOGGER.trace("getPassword()");
       }
 
       return password;
@@ -126,7 +121,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("setPassword(****)");
+         HornetQRALogger.LOGGER.trace("setPassword(****)");
       }
 
       this.password = password;
@@ -170,7 +165,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("getUseLocalTx()");
+         HornetQRALogger.LOGGER.trace("getUseLocalTx()");
       }
 
       return localTx;
@@ -184,7 +179,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       if (HornetQRAProperties.trace)
       {
-         HornetQRAProperties.log.trace("setUseLocalTx(" + localTx + ")");
+         HornetQRALogger.LOGGER.trace("setUseLocalTx(" + localTx + ")");
       }
 
       this.localTx = localTx;

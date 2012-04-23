@@ -18,7 +18,6 @@ import java.io.Serializable;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * The MCF default properties - these are set in the <tx-connection-factory> at the jms-ds.xml
@@ -35,16 +34,10 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     * Serial version UID
     */
    static final long serialVersionUID = -5951352236582886862L;
-
-   /**
-    * The logger
-    */
-   private static final Logger log = Logger.getLogger(HornetQRAMCFProperties.class);
-
    /**
     * Trace enabled
     */
-   private static boolean trace = HornetQRAMCFProperties.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * The queue type
@@ -78,7 +71,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
 
       useTryLock = null;
@@ -93,7 +86,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("getType()");
+         HornetQRALogger.LOGGER.trace("getType()");
       }
 
       return type;
@@ -108,7 +101,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("setConnectorClassName(" + connectorClassName + ")");
+         HornetQRALogger.LOGGER.trace("setConnectorClassName(" + connectorClassName + ")");
       }
 
       strConnectorClassName = connectorClassName;
@@ -138,7 +131,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("setSessionDefaultType(" + type + ")");
+         HornetQRALogger.LOGGER.trace("setSessionDefaultType(" + type + ")");
       }
 
       if (defaultType.equals(HornetQRAMCFProperties.QUEUE_TYPE))
@@ -164,7 +157,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("getSessionDefaultType()");
+         HornetQRALogger.LOGGER.trace("getSessionDefaultType()");
       }
 
       if (type == HornetQRAConnectionFactory.CONNECTION)
@@ -190,7 +183,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("getUseTryLock()");
+         HornetQRALogger.LOGGER.trace("getUseTryLock()");
       }
 
       return useTryLock;
@@ -205,7 +198,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    {
       if (HornetQRAMCFProperties.trace)
       {
-         HornetQRAMCFProperties.log.trace("setUseTryLock(" + useTryLock + ")");
+         HornetQRALogger.LOGGER.trace("setUseTryLock(" + useTryLock + ")");
       }
 
       this.useTryLock = useTryLock;

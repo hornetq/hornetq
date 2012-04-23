@@ -18,7 +18,6 @@ import java.util.Vector;
 
 import javax.jms.ConnectionMetaData;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * This class implements javax.jms.ConnectionMetaData
@@ -29,11 +28,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAConnectionMetaData implements ConnectionMetaData
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAConnectionMetaData.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAConnectionMetaData.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Constructor
@@ -42,7 +38,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
    }
 
@@ -54,7 +50,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getJMSVersion()");
+         HornetQRALogger.LOGGER.trace("getJMSVersion()");
       }
 
       return "1.1";
@@ -68,7 +64,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getJMSMajorVersion()");
+         HornetQRALogger.LOGGER.trace("getJMSMajorVersion()");
       }
 
       return 1;
@@ -82,7 +78,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getJMSMinorVersion()");
+         HornetQRALogger.LOGGER.trace("getJMSMinorVersion()");
       }
 
       return 1;
@@ -96,7 +92,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
+         HornetQRALogger.LOGGER.trace("getJMSProviderName()");
       }
 
       return "HornetQ";
@@ -110,7 +106,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
+         HornetQRALogger.LOGGER.trace("getJMSProviderName()");
       }
 
       return "2.1";
@@ -124,7 +120,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getProviderMajorVersion()");
+         HornetQRALogger.LOGGER.trace("getProviderMajorVersion()");
       }
 
       return 2;
@@ -138,7 +134,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
    {
       if (HornetQRAConnectionMetaData.trace)
       {
-         HornetQRAConnectionMetaData.log.trace("getProviderMinorVersion()");
+         HornetQRALogger.LOGGER.trace("getProviderMinorVersion()");
       }
 
       return 1;

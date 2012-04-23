@@ -16,7 +16,6 @@ package org.hornetq.ra;
 import javax.jms.Session;
 import javax.resource.spi.ConnectionRequestInfo;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * Connection request information
@@ -28,11 +27,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAConnectionRequestInfo.class);
-
    /** Trace enabled */
-   private static boolean trace = HornetQRAConnectionRequestInfo.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The user name */
    private String userName;
@@ -61,7 +57,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("constructor(" + prop + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + prop + ")");
       }
 
       userName = prop.getUserName();
@@ -80,7 +76,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("constructor(" + type + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + type + ")");
       }
 
       this.type = type;
@@ -98,7 +94,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("constructor(" + transacted +
+         HornetQRALogger.LOGGER.trace("constructor(" + transacted +
                                                   ", " +
                                                   acknowledgeMode +
                                                   ", " +
@@ -119,7 +115,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("setDefaults(" + prop + ")");
+         HornetQRALogger.LOGGER.trace("setDefaults(" + prop + ")");
       }
 
       if (userName == null)
@@ -144,7 +140,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("getUserName()");
+         HornetQRALogger.LOGGER.trace("getUserName()");
       }
 
       return userName;
@@ -158,7 +154,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("setUserName(" + userName + ")");
+         HornetQRALogger.LOGGER.trace("setUserName(" + userName + ")");
       }
 
       this.userName = userName;
@@ -172,7 +168,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("getPassword()");
+         HornetQRALogger.LOGGER.trace("getPassword()");
       }
 
       return password;
@@ -186,7 +182,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("setPassword(****)");
+         HornetQRALogger.LOGGER.trace("setPassword(****)");
       }
 
       this.password = password;
@@ -200,7 +196,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("getClientID()");
+         HornetQRALogger.LOGGER.trace("getClientID()");
       }
 
       return clientID;
@@ -214,7 +210,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("setClientID(" + clientID + ")");
+         HornetQRALogger.LOGGER.trace("setClientID(" + clientID + ")");
       }
 
       this.clientID = clientID;
@@ -228,7 +224,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("getType()");
+         HornetQRALogger.LOGGER.trace("getType()");
       }
 
       return type;
@@ -242,7 +238,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("isTransacted() " + transacted);
+         HornetQRALogger.LOGGER.trace("isTransacted() " + transacted);
       }
 
       return transacted;
@@ -256,7 +252,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("getAcknowledgeMode()");
+         HornetQRALogger.LOGGER.trace("getAcknowledgeMode()");
       }
 
       return acknowledgeMode;
@@ -272,7 +268,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("equals(" + obj + ")");
+         HornetQRALogger.LOGGER.trace("equals(" + obj + ")");
       }
 
       if (obj == null)
@@ -304,7 +300,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       if (HornetQRAConnectionRequestInfo.trace)
       {
-         HornetQRAConnectionRequestInfo.log.trace("hashCode()");
+         HornetQRALogger.LOGGER.trace("hashCode()");
       }
 
       int hash = 7;

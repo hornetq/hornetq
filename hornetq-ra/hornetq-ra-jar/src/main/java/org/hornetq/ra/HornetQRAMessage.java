@@ -19,7 +19,6 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message
@@ -29,11 +28,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAMessage implements Message
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAMessage.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAMessage.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The message */
    protected Message message;
@@ -50,7 +46,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + message + ", " + session + ")");
       }
 
       this.message = message;
@@ -65,7 +61,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("acknowledge()");
+         HornetQRALogger.LOGGER.trace("acknowledge()");
       }
 
       session.getSession(); // Check for closed
@@ -80,7 +76,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("clearBody()");
+         HornetQRALogger.LOGGER.trace("clearBody()");
       }
 
       message.clearBody();
@@ -94,7 +90,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("clearProperties()");
+         HornetQRALogger.LOGGER.trace("clearProperties()");
       }
 
       message.clearProperties();
@@ -110,7 +106,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getBooleanProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getBooleanProperty(" + name + ")");
       }
 
       return message.getBooleanProperty(name);
@@ -126,7 +122,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getByteProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getByteProperty(" + name + ")");
       }
 
       return message.getByteProperty(name);
@@ -142,7 +138,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getDoubleProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getDoubleProperty(" + name + ")");
       }
 
       return message.getDoubleProperty(name);
@@ -158,7 +154,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getFloatProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getFloatProperty(" + name + ")");
       }
 
       return message.getFloatProperty(name);
@@ -174,7 +170,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getIntProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getIntProperty(" + name + ")");
       }
 
       return message.getIntProperty(name);
@@ -189,7 +185,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSCorrelationID()");
+         HornetQRALogger.LOGGER.trace("getJMSCorrelationID()");
       }
 
       return message.getJMSCorrelationID();
@@ -204,7 +200,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSCorrelationIDAsBytes()");
+         HornetQRALogger.LOGGER.trace("getJMSCorrelationIDAsBytes()");
       }
 
       return message.getJMSCorrelationIDAsBytes();
@@ -219,7 +215,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSDeliveryMode()");
+         HornetQRALogger.LOGGER.trace("getJMSDeliveryMode()");
       }
 
       return message.getJMSDeliveryMode();
@@ -234,7 +230,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSDestination()");
+         HornetQRALogger.LOGGER.trace("getJMSDestination()");
       }
 
       return message.getJMSDestination();
@@ -249,7 +245,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSExpiration()");
+         HornetQRALogger.LOGGER.trace("getJMSExpiration()");
       }
 
       return message.getJMSExpiration();
@@ -264,7 +260,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSMessageID()");
+         HornetQRALogger.LOGGER.trace("getJMSMessageID()");
       }
 
       return message.getJMSMessageID();
@@ -279,7 +275,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSPriority()");
+         HornetQRALogger.LOGGER.trace("getJMSPriority()");
       }
 
       return message.getJMSPriority();
@@ -294,7 +290,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSRedelivered()");
+         HornetQRALogger.LOGGER.trace("getJMSRedelivered()");
       }
 
       return message.getJMSRedelivered();
@@ -309,7 +305,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSReplyTo()");
+         HornetQRALogger.LOGGER.trace("getJMSReplyTo()");
       }
 
       return message.getJMSReplyTo();
@@ -324,7 +320,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSTimestamp()");
+         HornetQRALogger.LOGGER.trace("getJMSTimestamp()");
       }
 
       return message.getJMSTimestamp();
@@ -339,7 +335,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getJMSType()");
+         HornetQRALogger.LOGGER.trace("getJMSType()");
       }
 
       return message.getJMSType();
@@ -355,7 +351,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getLongProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getLongProperty(" + name + ")");
       }
 
       return message.getLongProperty(name);
@@ -371,7 +367,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getObjectProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getObjectProperty(" + name + ")");
       }
 
       return message.getObjectProperty(name);
@@ -386,7 +382,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getPropertyNames()");
+         HornetQRALogger.LOGGER.trace("getPropertyNames()");
       }
 
       return message.getPropertyNames();
@@ -402,7 +398,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getShortProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getShortProperty(" + name + ")");
       }
 
       return message.getShortProperty(name);
@@ -418,7 +414,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("getStringProperty(" + name + ")");
+         HornetQRALogger.LOGGER.trace("getStringProperty(" + name + ")");
       }
 
       return message.getStringProperty(name);
@@ -434,7 +430,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("propertyExists(" + name + ")");
+         HornetQRALogger.LOGGER.trace("propertyExists(" + name + ")");
       }
 
       return message.propertyExists(name);
@@ -450,7 +446,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setBooleanProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setBooleanProperty(" + name + ", " + value + ")");
       }
 
       message.setBooleanProperty(name, value);
@@ -466,7 +462,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setByteProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setByteProperty(" + name + ", " + value + ")");
       }
 
       message.setByteProperty(name, value);
@@ -482,7 +478,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setDoubleProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setDoubleProperty(" + name + ", " + value + ")");
       }
 
       message.setDoubleProperty(name, value);
@@ -498,7 +494,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setFloatProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setFloatProperty(" + name + ", " + value + ")");
       }
 
       message.setFloatProperty(name, value);
@@ -514,7 +510,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setIntProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setIntProperty(" + name + ", " + value + ")");
       }
 
       message.setIntProperty(name, value);
@@ -529,7 +525,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSCorrelationID(" + correlationID + ")");
+         HornetQRALogger.LOGGER.trace("setJMSCorrelationID(" + correlationID + ")");
       }
 
       message.setJMSCorrelationID(correlationID);
@@ -544,7 +540,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSCorrelationIDAsBytes(" + correlationID + ")");
+         HornetQRALogger.LOGGER.trace("setJMSCorrelationIDAsBytes(" + correlationID + ")");
       }
 
       message.setJMSCorrelationIDAsBytes(correlationID);
@@ -559,7 +555,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSDeliveryMode(" + deliveryMode + ")");
+         HornetQRALogger.LOGGER.trace("setJMSDeliveryMode(" + deliveryMode + ")");
       }
 
       message.setJMSDeliveryMode(deliveryMode);
@@ -574,7 +570,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSDestination(" + destination + ")");
+         HornetQRALogger.LOGGER.trace("setJMSDestination(" + destination + ")");
       }
 
       message.setJMSDestination(destination);
@@ -589,7 +585,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSExpiration(" + expiration + ")");
+         HornetQRALogger.LOGGER.trace("setJMSExpiration(" + expiration + ")");
       }
 
       message.setJMSExpiration(expiration);
@@ -604,7 +600,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSMessageID(" + id + ")");
+         HornetQRALogger.LOGGER.trace("setJMSMessageID(" + id + ")");
       }
 
       message.setJMSMessageID(id);
@@ -619,7 +615,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSPriority(" + priority + ")");
+         HornetQRALogger.LOGGER.trace("setJMSPriority(" + priority + ")");
       }
 
       message.setJMSPriority(priority);
@@ -634,7 +630,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSRedelivered(" + redelivered + ")");
+         HornetQRALogger.LOGGER.trace("setJMSRedelivered(" + redelivered + ")");
       }
 
       message.setJMSRedelivered(redelivered);
@@ -649,7 +645,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSReplyTo(" + replyTo + ")");
+         HornetQRALogger.LOGGER.trace("setJMSReplyTo(" + replyTo + ")");
       }
 
       message.setJMSReplyTo(replyTo);
@@ -664,7 +660,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSTimestamp(" + timestamp + ")");
+         HornetQRALogger.LOGGER.trace("setJMSTimestamp(" + timestamp + ")");
       }
 
       message.setJMSTimestamp(timestamp);
@@ -679,7 +675,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setJMSType(" + type + ")");
+         HornetQRALogger.LOGGER.trace("setJMSType(" + type + ")");
       }
 
       message.setJMSType(type);
@@ -695,7 +691,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setLongProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setLongProperty(" + name + ", " + value + ")");
       }
 
       message.setLongProperty(name, value);
@@ -711,7 +707,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setObjectProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setObjectProperty(" + name + ", " + value + ")");
       }
 
       message.setObjectProperty(name, value);
@@ -727,7 +723,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setShortProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setShortProperty(" + name + ", " + value + ")");
       }
 
       message.setShortProperty(name, value);
@@ -743,7 +739,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("setStringProperty(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setStringProperty(" + name + ", " + value + ")");
       }
 
       message.setStringProperty(name, value);
@@ -758,7 +754,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("hashCode()");
+         HornetQRALogger.LOGGER.trace("hashCode()");
       }
 
       return message.hashCode();
@@ -774,7 +770,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("equals(" + object + ")");
+         HornetQRALogger.LOGGER.trace("equals(" + object + ")");
       }
 
       if (object != null && object instanceof HornetQRAMessage)
@@ -796,7 +792,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRAMessage.log.trace("toString()");
+         HornetQRALogger.LOGGER.trace("toString()");
       }
 
       return message.toString();

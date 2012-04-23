@@ -23,7 +23,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message consumer
@@ -34,11 +33,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAMessageConsumer implements MessageConsumer
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAMessageConsumer.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAMessageConsumer.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The wrapped message consumer */
    protected MessageConsumer consumer;
@@ -58,7 +54,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
 
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("new HornetQMessageConsumer " + this +
+         HornetQRALogger.LOGGER.trace("new HornetQMessageConsumer " + this +
                                             " consumer=" +
                                             consumer +
                                             " session=" +
@@ -74,7 +70,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("close " + this);
+         HornetQRALogger.LOGGER.trace("close " + this);
       }
       try
       {
@@ -94,7 +90,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("checkState()");
+         HornetQRALogger.LOGGER.trace("checkState()");
       }
       session.checkState();
    }
@@ -108,7 +104,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("getMessageListener()");
+         HornetQRALogger.LOGGER.trace("getMessageListener()");
       }
 
       checkState();
@@ -152,7 +148,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("getMessageSelector()");
+         HornetQRALogger.LOGGER.trace("getMessageSelector()");
       }
 
       checkState();
@@ -171,7 +167,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       {
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("receive " + this);
+            HornetQRALogger.LOGGER.trace("receive " + this);
          }
 
          checkState();
@@ -179,7 +175,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
 
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -210,7 +206,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       {
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("receive " + this + " timeout=" + timeout);
+            HornetQRALogger.LOGGER.trace("receive " + this + " timeout=" + timeout);
          }
 
          checkState();
@@ -218,7 +214,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
 
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -248,7 +244,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
       {
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("receiveNoWait " + this);
+            HornetQRALogger.LOGGER.trace("receiveNoWait " + this);
          }
 
          checkState();
@@ -256,7 +252,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
 
          if (HornetQRAMessageConsumer.trace)
          {
-            HornetQRAMessageConsumer.log.trace("received " + this + " result=" + message);
+            HornetQRALogger.LOGGER.trace("received " + this + " result=" + message);
          }
 
          if (message == null)
@@ -282,7 +278,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("closeConsumer()");
+         HornetQRALogger.LOGGER.trace("closeConsumer()");
       }
 
       consumer.close();
@@ -297,7 +293,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("wrapMessage(" + message + ")");
+         HornetQRALogger.LOGGER.trace("wrapMessage(" + message + ")");
       }
 
       if (message instanceof BytesMessage)
@@ -332,7 +328,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
    {
       if (HornetQRAMessageConsumer.trace)
       {
-         HornetQRAMessageConsumer.log.trace("getMessageSelector()");
+         HornetQRALogger.LOGGER.trace("getMessageSelector()");
       }
 
       return new HornetQRAMessageListener(listener, this);

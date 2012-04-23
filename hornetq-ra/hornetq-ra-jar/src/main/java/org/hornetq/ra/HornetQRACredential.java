@@ -24,7 +24,6 @@ import javax.resource.spi.SecurityException;
 import javax.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * Credential information
@@ -37,12 +36,8 @@ public class HornetQRACredential implements Serializable
 {
    /** Serial version UID */
    static final long serialVersionUID = 210476602237497193L;
-
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRACredential.class);
-
-   /** Trace enabled */
-   private static boolean trace = HornetQRACredential.log.isTraceEnabled();
+   
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The user name */
    private String userName;
@@ -57,7 +52,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
    }
 
@@ -69,7 +64,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("getUserName()");
+         HornetQRALogger.LOGGER.trace("getUserName()");
       }
 
       return userName;
@@ -83,7 +78,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("setUserName(" + userName + ")");
+         HornetQRALogger.LOGGER.trace("setUserName(" + userName + ")");
       }
 
       this.userName = userName;
@@ -97,7 +92,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("getPassword()");
+         HornetQRALogger.LOGGER.trace("getPassword()");
       }
 
       return password;
@@ -111,7 +106,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("setPassword(****)");
+         HornetQRALogger.LOGGER.trace("setPassword(****)");
       }
 
       this.password = password;
@@ -131,7 +126,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
+         HornetQRALogger.LOGGER.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
       }
 
       HornetQRACredential jc = new HornetQRACredential();
@@ -169,7 +164,7 @@ public class HornetQRACredential implements Serializable
    {
       if (HornetQRACredential.trace)
       {
-         HornetQRACredential.log.trace("toString()");
+         HornetQRALogger.LOGGER.trace("toString()");
       }
 
       return super.toString() + "{ username=" + userName + ", password=**** }";
@@ -195,7 +190,7 @@ public class HornetQRACredential implements Serializable
       {
          if (HornetQRACredential.trace)
          {
-            HornetQRACredential.log.trace("constructor(" + subject + ", " + mcf + ")");
+            HornetQRALogger.LOGGER.trace("constructor(" + subject + ", " + mcf + ")");
          }
 
          this.subject = subject;
@@ -210,7 +205,7 @@ public class HornetQRACredential implements Serializable
       {
          if (HornetQRACredential.trace)
          {
-            HornetQRACredential.log.trace("run()");
+            HornetQRALogger.LOGGER.trace("run()");
          }
 
          Set<PasswordCredential> creds = subject.getPrivateCredentials(PasswordCredential.class);
@@ -237,7 +232,7 @@ public class HornetQRACredential implements Serializable
       {
          if (HornetQRACredential.trace)
          {
-            HornetQRACredential.log.trace("getCredential(" + subject + ", " + mcf + ")");
+            HornetQRALogger.LOGGER.trace("getCredential(" + subject + ", " + mcf + ")");
          }
 
          GetCredentialAction action = new GetCredentialAction(subject, mcf);
