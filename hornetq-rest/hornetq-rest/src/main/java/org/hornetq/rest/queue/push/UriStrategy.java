@@ -4,7 +4,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.BasicAuth;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 import org.hornetq.rest.queue.push.xml.XmlHttpHeader;
@@ -22,7 +22,6 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class UriStrategy implements PushStrategy
 {
-   private static final Logger log = Logger.getLogger(UriStrategy.class);
    protected HttpClient client = new HttpClient();
    protected ApacheHttpClientExecutor executor = new ApacheHttpClientExecutor(client);
    protected PushRegistration registration;
@@ -83,7 +82,7 @@ public class UriStrategy implements PushStrategy
          ClientResponse res = null;
          try
          {
-            log.debug(method + " " + uri);
+            HornetQRestLogger.LOGGER.debug(method + " " + uri);
             res = request.httpMethod(method);
             int status = res.getStatus();
             if (status == 503)
@@ -101,7 +100,7 @@ public class UriStrategy implements PushStrategy
             }
             else if ((status >= 200 && status < 299) || status == 303 || status == 304)
             {
-               log.debug("Success");
+               HornetQRestLogger.LOGGER.debug("Success");
                return true;
             }
             else if (status >= 400)

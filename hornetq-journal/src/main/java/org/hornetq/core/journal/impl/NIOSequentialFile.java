@@ -26,7 +26,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  *
@@ -38,8 +38,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class NIOSequentialFile extends AbstractSequentialFile
 {
-   private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
-
    private FileChannel channel;
 
    private RandomAccessFile rfile;
@@ -154,7 +152,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
-            NIOSequentialFile.log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + getFileName());
+            HornetQJournalLogger.LOGGER.errorClosingFile(getFileName());
          }
       }
 
@@ -340,13 +338,13 @@ public class NIOSequentialFile extends AbstractSequentialFile
                   }
                   catch (IOException e)
                   {
-                     NIOSequentialFile.log.warn("Exception on submitting write", e);
+                     HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
                      factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), NIOSequentialFile.this);
                      callback.onError(HornetQException.IO_ERROR, e.getMessage());
                   }
                   catch (Throwable e)
                   {
-                     NIOSequentialFile.log.warn("Exception on submitting write", e);
+                     HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
                      callback.onError(HornetQException.IO_ERROR, e.getMessage());
                   }
                }

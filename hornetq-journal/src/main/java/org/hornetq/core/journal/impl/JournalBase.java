@@ -5,16 +5,12 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
-import org.hornetq.core.logging.Logger;
 
 abstract class JournalBase implements Journal
 {
 
    protected final int fileSize;
    private final boolean supportsCallback;
-
-   private static final Logger log = Logger.getLogger(JournalBase.class);
-   private static final boolean trace = log.isTraceEnabled();
 
    public JournalBase(boolean supportsCallback, int fileSize)
    {

@@ -22,7 +22,6 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.recovery.RecoveryRegistry;
 
 /**
@@ -34,10 +33,6 @@ import org.hornetq.jms.server.recovery.RecoveryRegistry;
  */
 public final class Util
 {
-
-   private static final Logger log = Logger.getLogger(Util.class);
-
-
    /**
     * Private constructor
     */
@@ -269,7 +264,7 @@ public final class Util
       }
       catch (Throwable e)
       {
-         log.debug(e.getMessage(), e);
+         HornetQRALogger.LOGGER.debug(e.getMessage(), e);
          return null;
       }
    }
@@ -285,7 +280,7 @@ public final class Util
       }
       catch (Throwable e)
       {
-         log.debug(e.getMessage(), e);
+         HornetQRALogger.LOGGER.debug(e.getMessage(), e);
          return null;
       }
    }

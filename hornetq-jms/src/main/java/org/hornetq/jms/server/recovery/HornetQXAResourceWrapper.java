@@ -25,7 +25,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * XAResourceWrapper.
@@ -45,9 +45,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQXAResourceWrapper implements XAResource, SessionFailureListener
 {
-   /** The log */
-   private static final Logger log = Logger.getLogger(HornetQXAResourceWrapper.class);
-
    /** The state lock */
    private static final Object lock = new Object();
 
@@ -65,9 +62,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    {
       this.xaRecoveryConfigs = xaRecoveryConfigs;
 
-      if (log.isDebugEnabled())
+      if (HornetQJMSLogger.LOGGER.isDebugEnabled())
       {
-         log.debug("Recovery configured with " + Arrays.toString(xaRecoveryConfigs) +
+         HornetQJMSLogger.LOGGER.debug("Recovery configured with " + Arrays.toString(xaRecoveryConfigs) +
                    ", instance=" +
                    System.identityHashCode(this));
       }
@@ -76,21 +73,21 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public Xid[] recover(final int flag) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("Recover " + xaResource);
+      HornetQJMSLogger.LOGGER.debug("Recover " + xaResource);
       try
       {
          Xid[] xids = xaResource.recover(flag);
 
-         if (log.isDebugEnabled() && xids != null && xids.length > 0)
+         if (HornetQJMSLogger.LOGGER.isDebugEnabled() && xids != null && xids.length > 0)
          {
-            log.debug("Recovering these following IDs " + Arrays.toString(xids) + " at " + this);
+            HornetQJMSLogger.LOGGER.debug("Recovering these following IDs " + Arrays.toString(xids) + " at " + this);
          }
 
          return xids;
       }
       catch (XAException e)
       {
-         log.warn(e.getMessage(), e);
+         HornetQJMSLogger.LOGGER.xaRecoverError(e);
          throw check(e);
       }
    }
@@ -98,7 +95,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("Commit " + xaResource + " xid " + " onePhase=" + onePhase);
+      HornetQJMSLogger.LOGGER.debug("Commit " + xaResource + " xid " + " onePhase=" + onePhase);
       try
       {
          xaResource.commit(xid, onePhase);
@@ -112,7 +109,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void rollback(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("Rollback " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("Rollback " + xaResource + " xid ");
       try
       {
          xaResource.rollback(xid);
@@ -126,7 +123,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void forget(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("Forget " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("Forget " + xaResource + " xid ");
       try
       {
          xaResource.forget(xid);
@@ -158,7 +155,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public int prepare(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("prepare " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("prepare " + xaResource + " xid ");
       try
       {
          return xaResource.prepare(xid);
@@ -172,7 +169,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void start(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("start " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("start " + xaResource + " xid ");
       try
       {
          xaResource.start(xid, flags);
@@ -186,7 +183,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void end(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("end " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("end " + xaResource + " xid ");
       try
       {
          xaResource.end(xid, flags);
@@ -200,7 +197,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public int getTransactionTimeout() throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("getTransactionTimeout " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("getTransactionTimeout " + xaResource + " xid ");
       try
       {
          return xaResource.getTransactionTimeout();
@@ -214,7 +211,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("setTransactionTimeout " + xaResource + " xid ");
+      HornetQJMSLogger.LOGGER.debug("setTransactionTimeout " + xaResource + " xid ");
       try
       {
          return xaResource.setTransactionTimeout(seconds);
@@ -227,9 +224,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
-      HornetQXAResourceWrapper.log.warn("Notified of connection failure in xa recovery connectionFactory for provider " + csf +
-                                                 " will attempt reconnect on next pass",
-                                        me);
+      HornetQJMSLogger.LOGGER.xaRecoverConnectionError(me, csf);
       close();
    }
 
@@ -268,7 +263,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             {
                xae.initCause(error);
             }
-            HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            HornetQJMSLogger.LOGGER.debug("Cannot get connectionFactory XAResource", xae);
             throw xae;
          }
          else
@@ -279,7 +274,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             {
                xae.initCause(error);
             }
-            HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            HornetQJMSLogger.LOGGER.debug("Cannot get connectionFactory XAResource", xae);
             throw xae;
          }
 
@@ -308,9 +303,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       for (XARecoveryConfig xaRecoveryConfig : xaRecoveryConfigs)
       {
 
-         if (log.isDebugEnabled())
+         if (HornetQJMSLogger.LOGGER.isDebugEnabled())
          {
-            log.debug("Trying to connect recovery on " + xaRecoveryConfig + " of " + Arrays.toString(xaRecoveryConfigs));
+            HornetQJMSLogger.LOGGER.debug("Trying to connect recovery on " + xaRecoveryConfig + " of " + Arrays.toString(xaRecoveryConfigs));
          }
 
          ClientSession cs = null;
@@ -344,10 +339,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
          }
          catch (Throwable e)
          {
-            log.warn("Can't connect to " + xaRecoveryConfig + " on auto-generated resource recovery", e);
-            if (log.isDebugEnabled())
+            HornetQJMSLogger.LOGGER.xaRecoverAutoConnectionError(e, xaRecoveryConfig);
+            if (HornetQJMSLogger.LOGGER.isDebugEnabled())
             {
-               log.debug(e.getMessage(), e);
+               HornetQJMSLogger.LOGGER.debug(e.getMessage(), e);
             }
             
             try
@@ -357,9 +352,9 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             }
             catch (Throwable ignored)
             {
-               if (log.isTraceEnabled())
+               if (HornetQJMSLogger.LOGGER.isTraceEnabled())
                {
-                  log.trace(e.getMessage(), ignored);
+                  HornetQJMSLogger.LOGGER.trace(e.getMessage(), ignored);
                }
             }
             continue;
@@ -374,7 +369,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
          return delegate;
       }
-      log.warn("Can't connect to any hornetq server on recovery " + Arrays.toString(xaRecoveryConfigs));
+      HornetQJMSLogger.LOGGER.recoveryConnectFailed(Arrays.toString(xaRecoveryConfigs));
       throw new HornetQException(HornetQException.NOT_CONNECTED);
    }
 
@@ -421,7 +416,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
       catch (Throwable ignored)
       {
-         HornetQXAResourceWrapper.log.debug("Ignored error during close", ignored);
+         HornetQJMSLogger.LOGGER.debug("Ignored error during close", ignored);
       }
    }
 
@@ -435,7 +430,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
     */
    protected XAException check(final XAException e) throws XAException
    {
-      log.warn(e.getMessage(), e);
+      HornetQJMSLogger.LOGGER.xaRecoveryError(e);
 
 
       // If any exception happened, we close the connection so we may start fresh

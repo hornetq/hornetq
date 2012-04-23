@@ -17,7 +17,6 @@ import javax.jms.JMSException;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a topic subscriber
@@ -28,11 +27,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implements TopicSubscriber
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRATopicSubscriber.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRATopicSubscriber.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -45,7 +41,7 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
 
       if (HornetQRATopicSubscriber.trace)
       {
-         HornetQRATopicSubscriber.log.trace("constructor(" + consumer + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + consumer + ", " + session + ")");
       }
    }
 
@@ -58,7 +54,7 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
    {
       if (HornetQRATopicSubscriber.trace)
       {
-         HornetQRATopicSubscriber.log.trace("getNoLocal()");
+         HornetQRALogger.LOGGER.trace("getNoLocal()");
       }
 
       checkState();
@@ -74,7 +70,7 @@ public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implement
    {
       if (HornetQRATopicSubscriber.trace)
       {
-         HornetQRATopicSubscriber.log.trace("getTopic()");
+         HornetQRALogger.LOGGER.trace("getTopic()");
       }
 
       checkState();

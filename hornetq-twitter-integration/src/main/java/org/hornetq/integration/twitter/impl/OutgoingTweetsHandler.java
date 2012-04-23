@@ -14,11 +14,11 @@ package org.hornetq.integration.twitter.impl;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.*;
 import org.hornetq.integration.twitter.TwitterConstants;
+import org.hornetq.twitter.HornetQTwitterLogger;
 import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
 import twitter4j.http.AccessToken;
@@ -31,8 +31,6 @@ import java.util.Map;
  */
 public class OutgoingTweetsHandler implements Consumer, ConnectorService
 {
-   private static final Logger log = Logger.getLogger(OutgoingTweetsHandler.class);
-
    private final String connectorName;
 
    private final String consumerKey;
@@ -118,7 +116,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
 
       this.queue.deliverAsync();
       this.isStarted = true;
-      log.debug(connectorName + ": started");
+      HornetQTwitterLogger.LOGGER.debug(connectorName + ": started");
    }
 
    public boolean isStarted()
@@ -133,12 +131,12 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
          return;
       }
 
-      log.debug(connectorName + ": receive shutdown request");
+      HornetQTwitterLogger.LOGGER.debug(connectorName + ": receive shutdown request");
 
       this.queue.removeConsumer(this);
 
       this.isStarted = false;
-      log.debug(connectorName + ": shutdown");
+      HornetQTwitterLogger.LOGGER.debug(connectorName + ": shutdown");
    }
 
    public String getName()
@@ -200,7 +198,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
             if(e.getStatusCode() == 403 )
             {
                // duplicated message
-               log.warn(connectorName + ": HTTP status code = 403: Ignore duplicated message");
+               HornetQTwitterLogger.LOGGER.error403(connectorName);
                queue.acknowledge(ref);
 
                return HandleStatus.HANDLED;
@@ -212,7 +210,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
          }
 
          queue.acknowledge(ref);
-         log.debug(connectorName + ": forwarded to twitter: " + message.getMessageID());
+         HornetQTwitterLogger.LOGGER.debug(connectorName + ": forwarded to twitter: " + message.getMessageID());
          return HandleStatus.HANDLED;
       }
    }

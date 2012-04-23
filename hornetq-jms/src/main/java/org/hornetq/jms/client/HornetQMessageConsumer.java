@@ -29,7 +29,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS MessageConsumer.
@@ -40,8 +40,6 @@ import org.hornetq.core.logging.Logger;
 public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQMessageConsumer.class);
 
    // Static --------------------------------------------------------
 
@@ -237,7 +235,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
             }
             catch (Throwable e)
             {
-               HornetQMessageConsumer.log.error("Failed to prepare message for delivery", e);
+               HornetQJMSLogger.LOGGER.errorPreparingMessage(e);
 
                return null;
             }

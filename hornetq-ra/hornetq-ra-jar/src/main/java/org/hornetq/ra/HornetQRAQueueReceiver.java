@@ -17,7 +17,6 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a queue receiver
@@ -28,11 +27,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements QueueReceiver
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRAQueueReceiver.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRAQueueReceiver.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -45,7 +41,7 @@ public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements 
 
       if (HornetQRAQueueReceiver.trace)
       {
-         HornetQRAQueueReceiver.log.trace("constructor(" + consumer + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + consumer + ", " + session + ")");
       }
    }
 
@@ -58,7 +54,7 @@ public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements 
    {
       if (HornetQRAQueueReceiver.trace)
       {
-         HornetQRAQueueReceiver.log.trace("getQueue()");
+         HornetQRALogger.LOGGER.trace("getQueue()");
       }
 
       checkState();

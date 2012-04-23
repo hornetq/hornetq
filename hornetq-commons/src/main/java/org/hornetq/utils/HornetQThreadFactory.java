@@ -17,8 +17,6 @@ import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  *
  * A HornetQThreadFactory
@@ -28,8 +26,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQThreadFactory implements ThreadFactory
 {
-   private static final Logger log = Logger.getLogger(HornetQThreadFactory.class);
-
    private final ThreadGroup group;
 
    private final AtomicInteger threadCount = new AtomicInteger(0);
@@ -88,7 +84,7 @@ public class HornetQThreadFactory implements ThreadFactory
       }
       catch (java.security.AccessControlException e)
       {
-         log.warn("Missing privileges to set Thread Context Class Loader on Thread Factory. Using current Thread Context Class Loader");
+         HornetQUtilLogger.LOGGER.missingPrivsForClassloader();
       }
 
       return t;

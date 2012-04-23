@@ -23,7 +23,6 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -46,8 +45,6 @@ import org.hornetq.utils.DataConstants;
 public class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQStreamMessage.class);
 
    public static final byte TYPE = Message.STREAM_TYPE;
 

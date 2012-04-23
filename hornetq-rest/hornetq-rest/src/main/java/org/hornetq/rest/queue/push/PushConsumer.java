@@ -6,8 +6,8 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 
 /**
@@ -16,7 +16,6 @@ import org.hornetq.rest.queue.push.xml.PushRegistration;
  */
 public class PushConsumer implements MessageHandler
 {
-   private static final Logger log = Logger.getLogger(PushConsumer.class);
    protected PushRegistration registration;
    protected ClientSessionFactory factory;
    protected ClientSession session;
@@ -81,7 +80,7 @@ public class PushConsumer implements MessageHandler
       }
       consumer.setMessageHandler(this);
       session.start();
-      log.info("Push consumer started for: " + registration.getTarget());
+      HornetQRestLogger.LOGGER.startingPushConsumer(registration.getTarget());
    }
 
    public void stop()
@@ -119,7 +118,7 @@ public class PushConsumer implements MessageHandler
       }
       catch (Exception e)
       {
-         log.error(e);
+         HornetQRestLogger.LOGGER.errorUpdatingStore(e);
       }
       stop();
    }
@@ -143,7 +142,7 @@ public class PushConsumer implements MessageHandler
       {
          try
          {
-            log.debug("Acknowledging: " + clientMessage.getMessageID());
+            HornetQRestLogger.LOGGER.debug("Acknowledging: " + clientMessage.getMessageID());
             session.commit();
             return;
          }
@@ -164,7 +163,7 @@ public class PushConsumer implements MessageHandler
           }
           if (registration.isDisableOnFailure())
          {
-            log.error("Failed to push message to " + registration.getTarget() + " disabling push registration...");
+            HornetQRestLogger.LOGGER.errorPushingMessage(registration.getTarget());
             disableFromFailure();
             return;
          }

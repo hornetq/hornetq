@@ -33,7 +33,6 @@ import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.journal.impl.JournalConstants;
-import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -196,8 +195,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
 
-   public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
-
    // Attributes -----------------------------------------------------------------------------
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
@@ -242,8 +239,6 @@ public class ConfigurationImpl implements Configuration
    protected int idCacheSize = ConfigurationImpl.DEFAULT_ID_CACHE_SIZE;
 
    private boolean persistIDCache = ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE;
-
-   protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    private List<String> interceptorClassNames = new ArrayList<String>();
 
@@ -987,16 +982,6 @@ public class ConfigurationImpl implements Configuration
    public void setMemoryMeasureInterval(final long memoryMeasureInterval)
    {
       this.memoryMeasureInterval = memoryMeasureInterval;
-   }
-
-   public String getLogDelegateFactoryClassName()
-   {
-      return logDelegateFactoryClassName;
-   }
-
-   public void setLogDelegateFactoryClassName(final String className)
-   {
-      logDelegateFactoryClassName = className;
    }
 
    public int getJournalMaxIO_AIO()

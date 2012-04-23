@@ -13,7 +13,7 @@
 
 package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A DummyCallback
@@ -26,8 +26,6 @@ class DummyCallback extends SyncIOCompletion
 {
    private static DummyCallback instance = new DummyCallback();
 
-   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
-
    public static DummyCallback getInstance()
    {
       return DummyCallback.instance;
@@ -39,8 +37,7 @@ class DummyCallback extends SyncIOCompletion
 
    public void onError(final int errorCode, final String errorMessage)
    {
-      DummyCallback.log.warn("Error on writing data!" + errorMessage + " code - " + errorCode,
-                             new Exception(errorMessage));
+      HornetQJournalLogger.LOGGER.errorWritingData(new Exception(errorMessage), errorMessage, errorCode);
    }
 
    @Override

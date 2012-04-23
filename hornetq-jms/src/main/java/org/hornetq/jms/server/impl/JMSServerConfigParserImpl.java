@@ -24,7 +24,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.Validators;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -50,8 +50,6 @@ import org.w3c.dom.NodeList;
  */
 public class JMSServerConfigParserImpl implements JMSServerConfigParser
 {
-   private static final Logger log = Logger.getLogger(JMSServerConfigParserImpl.class);
-
    // Constants -----------------------------------------------------
 
    protected static final String NAME_ATTR = "name";
@@ -106,7 +104,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
             Node keyNode = node.getAttributes().getNamedItem(JMSServerConfigParserImpl.NAME_ATTR);
             if (keyNode == null)
             {
-               JMSServerConfigParserImpl.log.error("key attribute missing for configuration " + node);
+               HornetQJMSLogger.LOGGER.jmsConfigMissingKey(node);
                continue;
             }
 

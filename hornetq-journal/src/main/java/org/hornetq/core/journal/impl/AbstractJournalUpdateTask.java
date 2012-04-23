@@ -26,7 +26,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ConcurrentHashSet;
 
 /**
@@ -44,8 +43,6 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
    // Attributes ----------------------------------------------------
    protected static final String FILE_COMPACT_CONTROL = "journal-rename-control.ctr";
-
-   private static final Logger log = Logger.getLogger(AbstractJournalUpdateTask.class);
 
    protected final JournalImpl journal;
 

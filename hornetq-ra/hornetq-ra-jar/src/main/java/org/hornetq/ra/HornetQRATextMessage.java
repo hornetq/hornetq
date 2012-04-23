@@ -16,7 +16,6 @@ package org.hornetq.ra;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A wrapper for a message
@@ -27,11 +26,8 @@ import org.hornetq.core.logging.Logger;
  */
 public class HornetQRATextMessage extends HornetQRAMessage implements TextMessage
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQRATextMessage.class);
-
    /** Whether trace is enabled */
-   private static boolean trace = HornetQRATextMessage.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * Create a new wrapper
@@ -44,7 +40,7 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
 
       if (HornetQRATextMessage.trace)
       {
-         HornetQRATextMessage.log.trace("constructor(" + message + ", " + session + ")");
+         HornetQRALogger.LOGGER.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
@@ -57,7 +53,7 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
    {
       if (HornetQRATextMessage.trace)
       {
-         HornetQRATextMessage.log.trace("getText()");
+         HornetQRALogger.LOGGER.trace("getText()");
       }
 
       return ((TextMessage)message).getText();
@@ -72,7 +68,7 @@ public class HornetQRATextMessage extends HornetQRAMessage implements TextMessag
    {
       if (HornetQRATextMessage.trace)
       {
-         HornetQRATextMessage.log.trace("setText(" + string + ")");
+         HornetQRALogger.LOGGER.trace("setText(" + string + ")");
       }
 
       ((TextMessage)message).setText(string);

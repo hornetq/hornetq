@@ -15,7 +15,6 @@ package org.hornetq.ra;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -23,14 +22,9 @@ import org.hornetq.core.logging.Logger;
 public class ConnectionFactoryProperties
 {
    /**
-    * The logger
-    */
-   private static final Logger log = Logger.getLogger(HornetQRAMCFProperties.class);
-
-   /**
     * Trace enabled
     */
-   private static boolean trace = ConnectionFactoryProperties.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    private boolean hasBeenUpdated = false;
 
@@ -142,7 +136,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getConnectionLoadBalancingPolicyClassName()");
+         HornetQRALogger.LOGGER.trace("getConnectionLoadBalancingPolicyClassName()");
       }
       return connectionLoadBalancingPolicyClassName;
    }
@@ -151,7 +145,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setSessionDefaultType(" + connectionLoadBalancingPolicyClassName + ")");
+         HornetQRALogger.LOGGER.trace("setSessionDefaultType(" + connectionLoadBalancingPolicyClassName + ")");
       }
       hasBeenUpdated = true;
       this.connectionLoadBalancingPolicyClassName = connectionLoadBalancingPolicyClassName;
@@ -161,7 +155,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDiscoveryAddress()");
+         HornetQRALogger.LOGGER.trace("getDiscoveryAddress()");
       }
       return discoveryAddress;
    }
@@ -170,7 +164,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDiscoveryAddress(" + discoveryAddress + ")");
+         HornetQRALogger.LOGGER.trace("setDiscoveryAddress(" + discoveryAddress + ")");
       }
       hasBeenUpdated = true;
       this.discoveryAddress = discoveryAddress;
@@ -180,7 +174,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDiscoveryPort()");
+         HornetQRALogger.LOGGER.trace("getDiscoveryPort()");
       }
       return discoveryPort;
    }
@@ -189,7 +183,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDiscoveryLocalBindAddress(" + discoveryLocalBindAddress + ")");
+         HornetQRALogger.LOGGER.trace("setDiscoveryLocalBindAddress(" + discoveryLocalBindAddress + ")");
       }
       hasBeenUpdated = true;
       this.discoveryLocalBindAddress = discoveryLocalBindAddress;
@@ -199,7 +193,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDiscoveryLocalBindAddress()");
+         HornetQRALogger.LOGGER.trace("getDiscoveryLocalBindAddress()");
       }
       return discoveryLocalBindAddress;
    }
@@ -208,7 +202,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDiscoveryPort(" + discoveryPort + ")");
+         HornetQRALogger.LOGGER.trace("setDiscoveryPort(" + discoveryPort + ")");
       }
       hasBeenUpdated = true;
       this.discoveryPort = discoveryPort;
@@ -218,7 +212,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDiscoveryRefreshTimeout()");
+         HornetQRALogger.LOGGER.trace("getDiscoveryRefreshTimeout()");
       }
       return discoveryRefreshTimeout;
    }
@@ -227,7 +221,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
+         HornetQRALogger.LOGGER.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
       }
       hasBeenUpdated = true;
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
@@ -237,7 +231,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDiscoveryInitialWaitTimeout()");
+         HornetQRALogger.LOGGER.trace("getDiscoveryInitialWaitTimeout()");
       }
       return discoveryInitialWaitTimeout;
    }
@@ -246,7 +240,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
+         HornetQRALogger.LOGGER.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
       }
       hasBeenUpdated = true;
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
@@ -256,7 +250,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getClientID()");
+         HornetQRALogger.LOGGER.trace("getClientID()");
       }
       return clientID;
    }
@@ -265,7 +259,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setClientID(" + clientID + ")");
+         HornetQRALogger.LOGGER.trace("setClientID(" + clientID + ")");
       }
       hasBeenUpdated = true;
       this.clientID = clientID;
@@ -281,7 +275,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getDupsOKBatchSize()");
+         HornetQRALogger.LOGGER.trace("getDupsOKBatchSize()");
       }
       return dupsOKBatchSize;
    }
@@ -290,7 +284,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
+         HornetQRALogger.LOGGER.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
       }
       hasBeenUpdated = true;
       this.dupsOKBatchSize = dupsOKBatchSize;
@@ -300,7 +294,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getTransactionBatchSize()");
+         HornetQRALogger.LOGGER.trace("getTransactionBatchSize()");
       }
       return transactionBatchSize;
    }
@@ -309,7 +303,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
+         HornetQRALogger.LOGGER.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
       }
       hasBeenUpdated = true;
       this.transactionBatchSize = transactionBatchSize;
@@ -319,7 +313,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getClientFailureCheckPeriod()");
+         HornetQRALogger.LOGGER.trace("getClientFailureCheckPeriod()");
       }
       return clientFailureCheckPeriod;
    }
@@ -328,7 +322,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
+         HornetQRALogger.LOGGER.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
       }
       hasBeenUpdated = true;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -338,7 +332,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getConnectionTTL()");
+         HornetQRALogger.LOGGER.trace("getConnectionTTL()");
       }
       return connectionTTL;
    }
@@ -347,7 +341,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setConnectionTTL(" + connectionTTL + ")");
+         HornetQRALogger.LOGGER.trace("setConnectionTTL(" + connectionTTL + ")");
       }
       hasBeenUpdated = true;
       this.connectionTTL = connectionTTL;
@@ -357,7 +351,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getCallTimeout()");
+         HornetQRALogger.LOGGER.trace("getCallTimeout()");
       }
       return callTimeout;
    }
@@ -366,7 +360,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setCallTimeout(" + callTimeout + ")");
+         HornetQRALogger.LOGGER.trace("setCallTimeout(" + callTimeout + ")");
       }
       hasBeenUpdated = true;
       this.callTimeout = callTimeout;
@@ -376,7 +370,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getConsumerWindowSize()");
+         HornetQRALogger.LOGGER.trace("getConsumerWindowSize()");
       }
       return consumerWindowSize;
    }
@@ -385,7 +379,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
+         HornetQRALogger.LOGGER.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
       }
       hasBeenUpdated = true;
       this.consumerWindowSize = consumerWindowSize;
@@ -395,7 +389,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getConsumerMaxRate()");
+         HornetQRALogger.LOGGER.trace("getConsumerMaxRate()");
       }
       return consumerMaxRate;
    }
@@ -404,7 +398,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
+         HornetQRALogger.LOGGER.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
       }
       hasBeenUpdated = true;
       this.consumerMaxRate = consumerMaxRate;
@@ -414,7 +408,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getConfirmationWindowSize()");
+         HornetQRALogger.LOGGER.trace("getConfirmationWindowSize()");
       }
       return confirmationWindowSize;
    }
@@ -423,7 +417,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
+         HornetQRALogger.LOGGER.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
       }
       hasBeenUpdated = true;
       this.confirmationWindowSize = confirmationWindowSize;
@@ -433,7 +427,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getProducerMaxRate()");
+         HornetQRALogger.LOGGER.trace("getProducerMaxRate()");
       }
       return producerMaxRate;
    }
@@ -442,7 +436,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setProducerMaxRate(" + producerMaxRate + ")");
+         HornetQRALogger.LOGGER.trace("setProducerMaxRate(" + producerMaxRate + ")");
       }
       hasBeenUpdated = true;
       this.producerMaxRate = producerMaxRate;
@@ -452,7 +446,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getMinLargeMessageSize()");
+         HornetQRALogger.LOGGER.trace("getMinLargeMessageSize()");
       }
       return minLargeMessageSize;
    }
@@ -461,7 +455,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
+         HornetQRALogger.LOGGER.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
       }
       hasBeenUpdated = true;
       this.minLargeMessageSize = minLargeMessageSize;
@@ -471,7 +465,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isBlockOnAcknowledge()");
+         HornetQRALogger.LOGGER.trace("isBlockOnAcknowledge()");
       }
       return blockOnAcknowledge;
    }
@@ -480,7 +474,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
+         HornetQRALogger.LOGGER.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
       }
       hasBeenUpdated = true;
       this.blockOnAcknowledge = blockOnAcknowledge;
@@ -490,7 +484,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isBlockOnNonDurableSend()");
+         HornetQRALogger.LOGGER.trace("isBlockOnNonDurableSend()");
       }
       return blockOnNonDurableSend;
    }
@@ -499,7 +493,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setBlockOnNonDurableSend(" + blockOnNonDurableSend + ")");
+         HornetQRALogger.LOGGER.trace("setBlockOnNonDurableSend(" + blockOnNonDurableSend + ")");
       }
       hasBeenUpdated = true;
       this.blockOnNonDurableSend = blockOnNonDurableSend;
@@ -509,7 +503,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isBlockOnDurableSend()");
+         HornetQRALogger.LOGGER.trace("isBlockOnDurableSend()");
       }
       return blockOnDurableSend;
    }
@@ -518,7 +512,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setBlockOnDurableSend(" + blockOnDurableSend + ")");
+         HornetQRALogger.LOGGER.trace("setBlockOnDurableSend(" + blockOnDurableSend + ")");
       }
       hasBeenUpdated = true;
       this.blockOnDurableSend = blockOnDurableSend;
@@ -528,7 +522,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isAutoGroup()");
+         HornetQRALogger.LOGGER.trace("isAutoGroup()");
       }
       return autoGroup;
    }
@@ -537,7 +531,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setAutoGroup(" + autoGroup + ")");
+         HornetQRALogger.LOGGER.trace("setAutoGroup(" + autoGroup + ")");
       }
       hasBeenUpdated = true;
       this.autoGroup = autoGroup;
@@ -547,7 +541,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isPreAcknowledge()");
+         HornetQRALogger.LOGGER.trace("isPreAcknowledge()");
       }
       return preAcknowledge;
    }
@@ -556,7 +550,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setPreAcknowledge(" + preAcknowledge + ")");
+         HornetQRALogger.LOGGER.trace("setPreAcknowledge(" + preAcknowledge + ")");
       }
       hasBeenUpdated = true;
       this.preAcknowledge = preAcknowledge;
@@ -566,7 +560,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getRetryInterval()");
+         HornetQRALogger.LOGGER.trace("getRetryInterval()");
       }
       return retryInterval;
    }
@@ -575,7 +569,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setRetryInterval(" + retryInterval + ")");
+         HornetQRALogger.LOGGER.trace("setRetryInterval(" + retryInterval + ")");
       }
       hasBeenUpdated = true;
       this.retryInterval = retryInterval;
@@ -585,7 +579,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getRetryIntervalMultiplier()");
+         HornetQRALogger.LOGGER.trace("getRetryIntervalMultiplier()");
       }
       return retryIntervalMultiplier;
    }
@@ -594,7 +588,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
+         HornetQRALogger.LOGGER.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
       }
       hasBeenUpdated = true;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
@@ -604,7 +598,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getReconnectAttempts()");
+         HornetQRALogger.LOGGER.trace("getReconnectAttempts()");
       }
       return reconnectAttempts;
    }
@@ -613,7 +607,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
+         HornetQRALogger.LOGGER.trace("setReconnectAttempts(" + reconnectAttempts + ")");
       }
       hasBeenUpdated = true;
       this.reconnectAttempts = reconnectAttempts;
@@ -623,7 +617,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("isUseGlobalPools()");
+         HornetQRALogger.LOGGER.trace("isUseGlobalPools()");
       }
       return useGlobalPools;
    }
@@ -632,7 +626,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setUseGlobalPools(" + useGlobalPools + ")");
+         HornetQRALogger.LOGGER.trace("setUseGlobalPools(" + useGlobalPools + ")");
       }
       hasBeenUpdated = true;
       this.useGlobalPools = useGlobalPools;
@@ -642,7 +636,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getScheduledThreadPoolMaxSize()");
+         HornetQRALogger.LOGGER.trace("getScheduledThreadPoolMaxSize()");
       }
       return scheduledThreadPoolMaxSize;
    }
@@ -651,7 +645,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setScheduledThreadPoolMaxSize(" + scheduledThreadPoolMaxSize + ")");
+         HornetQRALogger.LOGGER.trace("setScheduledThreadPoolMaxSize(" + scheduledThreadPoolMaxSize + ")");
       }
       hasBeenUpdated = true;
       this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
@@ -661,7 +655,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("getThreadPoolMaxSize()");
+         HornetQRALogger.LOGGER.trace("getThreadPoolMaxSize()");
       }
       return threadPoolMaxSize;
    }
@@ -670,7 +664,7 @@ public class ConnectionFactoryProperties
    {
       if (ConnectionFactoryProperties.trace)
       {
-         ConnectionFactoryProperties.log.trace("setThreadPoolMaxSize(" + threadPoolMaxSize + ")");
+         HornetQRALogger.LOGGER.trace("setThreadPoolMaxSize(" + threadPoolMaxSize + ")");
       }
       hasBeenUpdated = true;
       this.threadPoolMaxSize = threadPoolMaxSize;

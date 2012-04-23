@@ -13,7 +13,6 @@
 package org.hornetq.integration.twitter.impl;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
@@ -21,6 +20,7 @@ import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.integration.twitter.TwitterConstants;
+import org.hornetq.twitter.HornetQTwitterLogger;
 import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
 import twitter4j.http.AccessToken;
@@ -35,8 +35,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class IncomingTweetsHandler implements ConnectorService
 {
-   private static final Logger log = Logger.getLogger(IncomingTweetsHandler.class);
-
    private final String connectorName;
 
    private final String consumerKey;
@@ -111,7 +109,7 @@ public class IncomingTweetsHandler implements ConnectorService
       this.paging.setCount(TwitterConstants.FIRST_ATTEMPT_PAGE_SIZE);
       ResponseList<Status> res = this.twitter.getHomeTimeline(paging);
       this.paging.setSinceId(res.get(0).getId());
-      log.debug(connectorName + " initialise(): got latest ID: " + this.paging.getSinceId());
+      HornetQTwitterLogger.LOGGER.debug(connectorName + " initialise(): got latest ID: " + this.paging.getSinceId());
 
       // TODO make page size configurable
       this.paging.setCount(TwitterConstants.DEFAULT_PAGE_SIZE);
@@ -162,11 +160,11 @@ public class IncomingTweetsHandler implements ConnectorService
          putTweetIntoMessage(status, msg);
 
          this.postOffice.route(msg, false);
-         log.debug(connectorName + ": routed: " + status.toString());
+         HornetQTwitterLogger.LOGGER.debug(connectorName + ": routed: " + status.toString());
       }
 
       this.paging.setSinceId(res.get(0).getId());
-      log.debug(connectorName + ": update latest ID: " + this.paging.getSinceId());
+      HornetQTwitterLogger.LOGGER.debug(connectorName + ": update latest ID: " + this.paging.getSinceId());
    }
 
    private void putTweetIntoMessage(final Status status, final ServerMessage msg)
@@ -215,7 +213,7 @@ public class IncomingTweetsHandler implements ConnectorService
          }
          catch (Throwable t)
          {
-            log.warn(connectorName, t);
+            HornetQTwitterLogger.LOGGER.errorPollingTwitter(t);
          }
       }
    }

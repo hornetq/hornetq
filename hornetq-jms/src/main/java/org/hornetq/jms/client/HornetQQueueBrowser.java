@@ -25,7 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS QueueBrowser.
@@ -38,8 +38,6 @@ import org.hornetq.core.logging.Logger;
 public class HornetQQueueBrowser implements QueueBrowser
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQQueueBrowser.class);
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -159,7 +157,7 @@ public class HornetQQueueBrowser implements QueueBrowser
             }
             catch (Exception e)
             {
-               HornetQQueueBrowser.log.error("Failed to create message", e);
+               HornetQJMSLogger.LOGGER.errorCreatingMessage(e);
 
                return null;
             }

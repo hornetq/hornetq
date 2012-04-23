@@ -27,7 +27,6 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 
@@ -45,16 +44,10 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     * Serial version UID
     */
    static final long serialVersionUID = -1452379518562456741L;
-
-   /**
-    * The logger
-    */
-   private static final Logger log = Logger.getLogger(HornetQRAManagedConnectionFactory.class);
-
    /**
     * Trace enabled
     */
-   private static boolean trace = HornetQRAManagedConnectionFactory.log.isTraceEnabled();
+   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /**
     * The resource adapter
@@ -88,7 +81,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("constructor()");
+         HornetQRALogger.LOGGER.trace("constructor()");
       }
 
       ra = null;
@@ -106,7 +99,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.debug("createConnectionFactory()");
+         HornetQRALogger.LOGGER.debug("createConnectionFactory()");
       }
 
       return createConnectionFactory(new HornetQRAConnectionManager());
@@ -123,7 +116,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("createConnectionFactory(" + cxManager + ")");
+         HornetQRALogger.LOGGER.trace("createConnectionFactory(" + cxManager + ")");
       }
 
       cm = cxManager;
@@ -132,7 +125,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("Created connection factory: " + cf +
+         HornetQRALogger.LOGGER.trace("Created connection factory: " + cf +
                                                      ", using connection manager: " +
                                                      cm);
       }
@@ -157,7 +150,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
+         HornetQRALogger.LOGGER.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
       }
 
       HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo)cxRequestInfo);
@@ -166,7 +159,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("jms credential: " + credential);
+         HornetQRALogger.LOGGER.trace("jms credential: " + credential);
       }
 
       HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this,
@@ -177,7 +170,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("created new managed connection: " + mc);
+         HornetQRALogger.LOGGER.trace("created new managed connection: " + mc);
       }
 
       return mc;
@@ -198,7 +191,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("matchManagedConnections(" + connectionSet +
+         HornetQRALogger.LOGGER.trace("matchManagedConnections(" + connectionSet +
                                                      ", " +
                                                      subject +
                                                      ", " +
@@ -211,7 +204,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("Looking for connection matching credentials: " + credential);
+         HornetQRALogger.LOGGER.trace("Looking for connection matching credentials: " + credential);
       }
 
       Iterator connections = connectionSet.iterator();
@@ -232,7 +225,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
                {
                   if (HornetQRAManagedConnectionFactory.trace)
                   {
-                     HornetQRAManagedConnectionFactory.log.trace("Found matching connection: " + mc);
+                     HornetQRALogger.LOGGER.trace("Found matching connection: " + mc);
                   }
 
                   return mc;
@@ -243,7 +236,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("No matching connection was found");
+         HornetQRALogger.LOGGER.trace("No matching connection was found");
       }
 
       return null;
@@ -259,7 +252,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("setLogWriter(" + out + ")");
+         HornetQRALogger.LOGGER.trace("setLogWriter(" + out + ")");
       }
    }
 
@@ -273,7 +266,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getLogWriter()");
+         HornetQRALogger.LOGGER.trace("getLogWriter()");
       }
 
       return null;
@@ -288,7 +281,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getResourceAdapter()");
+         HornetQRALogger.LOGGER.trace("getResourceAdapter()");
       }
 
       return ra;
@@ -306,7 +299,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("setResourceAdapter(" + ra + ")");
+         HornetQRALogger.LOGGER.trace("setResourceAdapter(" + ra + ")");
       }
 
       if (ra == null || !(ra instanceof HornetQResourceAdapter))
@@ -329,7 +322,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("equals(" + obj + ")");
+         HornetQRALogger.LOGGER.trace("equals(" + obj + ")");
       }
 
       if (obj == null)
@@ -359,7 +352,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("hashCode()");
+         HornetQRALogger.LOGGER.trace("hashCode()");
       }
 
       int hash = mcfProperties.hashCode();
@@ -377,7 +370,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getSessionDefaultType()");
+         HornetQRALogger.LOGGER.trace("getSessionDefaultType()");
       }
 
       return mcfProperties.getSessionDefaultType();
@@ -392,7 +385,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("setSessionDefaultType(" + type + ")");
+         HornetQRALogger.LOGGER.trace("setSessionDefaultType(" + type + ")");
       }
 
       mcfProperties.setSessionDefaultType(type);
@@ -713,7 +706,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getUseTryLock()");
+         HornetQRALogger.LOGGER.trace("getUseTryLock()");
       }
 
       return mcfProperties.getUseTryLock();
@@ -728,7 +721,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("setUseTryLock(" + useTryLock + ")");
+         HornetQRALogger.LOGGER.trace("setUseTryLock(" + useTryLock + ")");
       }
 
       mcfProperties.setUseTryLock(useTryLock);
@@ -743,7 +736,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getMetadata()");
+         HornetQRALogger.LOGGER.trace("getMetadata()");
       }
 
       return new HornetQRAConnectionMetaData();
@@ -758,7 +751,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getProperties()");
+         HornetQRALogger.LOGGER.trace("getProperties()");
       }
 
       return mcfProperties;
@@ -774,7 +767,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
-         HornetQRAManagedConnectionFactory.log.trace("getCRI(" + info + ")");
+         HornetQRALogger.LOGGER.trace("getCRI(" + info + ")");
       }
 
       if (info == null)

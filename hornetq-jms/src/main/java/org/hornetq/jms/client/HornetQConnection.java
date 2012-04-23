@@ -42,8 +42,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
+import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
@@ -60,9 +60,6 @@ import org.hornetq.utils.VersionLoader;
 public class HornetQConnection implements Connection, TopicConnection, QueueConnection
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQConnection.class);
-
    public static final int TYPE_GENERIC_CONNECTION = 0;
 
    public static final int TYPE_QUEUE_CONNECTION = 1;
@@ -476,9 +473,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    {
       if (!closed)
       {
-         HornetQConnection.log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " + "before letting them go out of scope!");
-
-         HornetQConnection.log.warn("The JMS connection you didn't close was created here:", creationStack);
+         HornetQJMSLogger.LOGGER.connectionLeftOpen(creationStack);
 
          close();
       }
@@ -669,7 +664,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
             {
                if (!conn.closed)
                {
-                  HornetQConnection.log.error("Failed to get exception listener", e);
+                  HornetQJMSLogger.LOGGER.errorCallingExcListener(e);
                }
             }
          }
