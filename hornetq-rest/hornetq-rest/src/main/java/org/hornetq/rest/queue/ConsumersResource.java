@@ -2,7 +2,7 @@ package org.hornetq.rest.queue;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.util.TimeoutTask;
 
 import javax.ws.rs.DELETE;
@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumersResource implements TimeoutTask.Callback
 {
-   private static final Logger log = Logger.getLogger(ConsumersResource.class);
    protected ConcurrentHashMap<String, QueueConsumer> queueConsumers = new ConcurrentHashMap<String, QueueConsumer>();
    protected ClientSessionFactory sessionFactory;
    protected String destination;
@@ -87,7 +86,7 @@ public class ConsumersResource implements TimeoutTask.Callback
       {
          if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
          {
-            log.warn("shutdown REST consumer because of timeout for: " + consumer.getId());
+            HornetQRestLogger.LOGGER.shutdownRestConsumer(consumer.getId());
             consumer.shutdown();
             queueConsumers.remove(consumer.getId());
             serviceManager.getTimeoutTask().remove(consumer.getId());

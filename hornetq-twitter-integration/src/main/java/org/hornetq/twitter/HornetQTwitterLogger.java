@@ -21,6 +21,11 @@
 */
 package org.hornetq.twitter;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -41,6 +46,18 @@ import org.jboss.logging.MessageLogger;
  * so an INFO message would be 181000 to 181999
  */
 @MessageLogger(projectCode = "HQ")
-public class HornetQTwitterLogger
+public interface HornetQTwitterLogger extends BasicLogger
 {
+   /**
+    * The twitter logger.
+    */
+   HornetQTwitterLogger LOGGER = Logger.getMessageLogger(HornetQTwitterLogger.class, HornetQTwitterLogger.class.getPackage().getName());
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 182001, value = "{0}: HTTP status code = 403: Ignore duplicated message", format = Message.Format.MESSAGE_FORMAT)
+   void error403(String connectorName);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 182002, value = "Error polling Twitter", format = Message.Format.MESSAGE_FORMAT)
+   void errorPollingTwitter(@Cause Throwable t);
 }
