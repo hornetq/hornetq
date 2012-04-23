@@ -13,7 +13,8 @@
 
 package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.logging.Logger;
+
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * 
@@ -36,13 +37,11 @@ import org.hornetq.core.logging.Logger;
  */
 public class Reclaimer
 {
-   private static final Logger log = Logger.getLogger(Reclaimer.class);
-
-   private static boolean trace = Reclaimer.log.isTraceEnabled();
+   private static boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
 
    private static void trace(final String message)
    {
-      Reclaimer.log.trace(message);
+      HornetQJournalLogger.LOGGER.trace(message);
    }
 
    public void scan(final JournalFile[] files)

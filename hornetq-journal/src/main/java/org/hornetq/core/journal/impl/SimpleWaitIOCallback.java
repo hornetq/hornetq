@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A SimpleWaitIOCallback
@@ -28,8 +28,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class SimpleWaitIOCallback extends SyncIOCompletion
 {
-   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
-
    private final CountDownLatch latch = new CountDownLatch(1);
 
    private volatile String errorMessage;
@@ -53,7 +51,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
 
       this.errorMessage = errorMessage;
 
-      SimpleWaitIOCallback.log.warn("Error Message " + errorMessage);
+      HornetQJournalLogger.LOGGER.errorOnIOCallback(errorMessage);
 
       latch.countDown();
    }

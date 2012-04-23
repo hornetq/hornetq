@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.logging.Logger;
 
 /**
  * 
@@ -31,8 +30,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class JournalFileImpl implements JournalFile
 {
-   private static final Logger log = Logger.getLogger(JournalFileImpl.class);
-
    private final SequentialFile file;
 
    private final long fileID;

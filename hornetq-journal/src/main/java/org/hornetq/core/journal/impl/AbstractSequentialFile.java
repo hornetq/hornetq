@@ -28,7 +28,7 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.journal.HornetQJournalLogger;
 
 /**
  * A AbstractSequentialFile
@@ -41,8 +41,6 @@ abstract class AbstractSequentialFile implements SequentialFile
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(AbstractSequentialFile.class);
-
    // Attributes ----------------------------------------------------
 
    private File file;
@@ -105,13 +103,13 @@ abstract class AbstractSequentialFile implements SequentialFile
 
       if (file.exists() && !file.delete())
       {
-         log.error("Failed to delete file " + this);
+         HornetQJournalLogger.LOGGER.errorDeletingFile(this);
       }
    }
 
    public void copyTo(SequentialFile newFileName) throws Exception
    {
-      log.debug("Copying "  + this + " as " + newFileName);
+      HornetQJournalLogger.LOGGER.debug("Copying "  + this + " as " + newFileName);
       newFileName.open();
       if (!isOpen())
       {
@@ -177,10 +175,7 @@ abstract class AbstractSequentialFile implements SequentialFile
 
          while (!donelatch.await(60, TimeUnit.SECONDS))
          {
-            AbstractSequentialFile.log.warn("Executor on file " + getFile().getName() +
-                                                     " couldn't complete its tasks in 60 seconds.",
-                                            new Exception("Warning: Executor on file " + getFile().getName() +
-                                                          " couldn't complete its tasks in 60 seconds."));
+            HornetQJournalLogger.LOGGER.couldNotCompleteTask(new Exception("trace"));
          }
       }
    }
@@ -314,7 +309,7 @@ abstract class AbstractSequentialFile implements SequentialFile
             }
             catch (Throwable e)
             {
-               AbstractSequentialFile.log.warn(e.getMessage(), e);
+               HornetQJournalLogger.LOGGER.errorCompletingCallback(e);
             }
          }
       }
@@ -329,7 +324,7 @@ abstract class AbstractSequentialFile implements SequentialFile
             }
             catch (Throwable e)
             {
-               AbstractSequentialFile.log.warn(e.getMessage(), e);
+               HornetQJournalLogger.LOGGER.errorCallingErrorCallback(e);
             }
          }
       }
