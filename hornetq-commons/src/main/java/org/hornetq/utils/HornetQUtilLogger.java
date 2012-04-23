@@ -21,6 +21,10 @@
 */
 package org.hornetq.utils;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -41,6 +45,15 @@ import org.jboss.logging.MessageLogger;
  * so an INFO message would be 201000 to 201999
  */
 @MessageLogger(projectCode = "HQ")
-public class HornetQUtilLogger
+public interface HornetQUtilLogger extends BasicLogger
 {
+   /**
+    * The default logger.
+    */
+   HornetQUtilLogger LOGGER = Logger.getMessageLogger(HornetQUtilLogger.class, HornetQUtilLogger.class.getPackage().getName());
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 202001, value = "Missing privileges to set Thread Context Class Loader on Thread Factory. Using current Thread Context Class Loader",
+         format = Message.Format.MESSAGE_FORMAT)
+   void missingPrivsForClassloader();
 }

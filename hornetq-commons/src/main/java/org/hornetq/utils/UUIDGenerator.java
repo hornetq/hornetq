@@ -32,13 +32,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 
 public final class UUIDGenerator
 {
    private final static UUIDGenerator sSingleton = new UUIDGenerator();
-
-   private static final Logger log = Logger.getLogger(UUIDGenerator.class);
 
    // Windows has some fake adapters that will return the same HARDWARE ADDRESS on any computer. We need to ignore those
    private static final byte[][] BLACK_LIST = new byte[][] { { 2, 0, 84, 85, 78, 1 } };
@@ -127,9 +124,9 @@ public final class UUIDGenerator
        */
       dummy[0] |= (byte)0x01;
 
-      if (UUIDGenerator.log.isDebugEnabled())
+      if (HornetQUtilLogger.LOGGER.isDebugEnabled())
       {
-         UUIDGenerator.log.debug("using dummy address " + UUIDGenerator.asString(dummy));
+         HornetQUtilLogger.LOGGER.debug("using dummy address " + UUIDGenerator.asString(dummy));
       }
       return dummy;
    }
@@ -174,9 +171,9 @@ public final class UUIDGenerator
                                               isLoopbackMethod,
                                               isVirtualMethod);
          if (address != null) {
-            if (UUIDGenerator.log.isDebugEnabled())
+            if (HornetQUtilLogger.LOGGER.isDebugEnabled())
             {
-               UUIDGenerator.log.debug("using hardware address " + UUIDGenerator.asString(address));
+               HornetQUtilLogger.LOGGER.debug("using hardware address " + UUIDGenerator.asString(address));
             }
             return address;
          }
