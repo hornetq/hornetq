@@ -405,7 +405,6 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage m = consumer.receive(1000);
          assertNotNull(m);
-         System.out.println("received message " + i);
          assertEquals(i, m.getIntProperty("counter").intValue());
       }
    }

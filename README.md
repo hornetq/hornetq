@@ -55,3 +55,25 @@ in Eclipse 3.7.
 Eclipse code formatting and (basic) project configuration files can be
 found at the ```etc/``` folder. You need to manually copy them or use
 a plugin.
+
+### Annotation Pre-Processing
+
+HornetQ uses [JBoss Logging] and that requires source code to be
+generated from Java annotations. Currently M2E doesn't 'just work'
+when Maven is configured to do that, although there is work in
+progress to achieve this [3].
+
+[JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
+
+[3]: <https://bugs.eclipse.org/bugs/show_bug.cgi?id=335036>
+
+While waiting for M2E to solve this once and for all, there are 2 alternatives to work around it:
+
+1. One is to [configure Eclipse to run annotation processors], but that
+requires a direct reference to the JBoss Logging processor (apparently
+Eclipse can't take this from the Maven path).
+
+[configure Eclipse to run annotation processors]: <http://help.eclipse.org/indigo/index.jsp?topic=/org.eclipse.jdt.doc.isv/guide/jdt_apt_getting_started.htm>
+
+2. Compiling the classes through Maven in the command line, and then
+adding the source folder to the project's classpath.

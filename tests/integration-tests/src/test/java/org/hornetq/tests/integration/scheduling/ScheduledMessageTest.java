@@ -786,6 +786,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       final AtomicInteger count = new AtomicInteger(0);
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -798,7 +799,6 @@ public class ScheduledMessageTest extends ServiceTestBase
                {
                   ClientMessage msg = cons.receive(100000);
                   assertNotNull(msg);
-                  System.out.println("Received message " + msg);
                   count.incrementAndGet();
                   msg.acknowledge();
                   session.commit();

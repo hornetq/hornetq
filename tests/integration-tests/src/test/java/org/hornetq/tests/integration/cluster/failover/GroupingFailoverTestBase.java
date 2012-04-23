@@ -84,9 +84,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 2);
-
-         System.out.println("*****************************************************************************");
-      }
+   }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
@@ -171,9 +169,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
          verifyReceiveAllWithGroupIDRoundRobin(2, 30, 1, 2);
-
-         System.out.println("*****************************************************************************");
-      }
+   }
 
    public boolean isNetty()
    {
@@ -181,5 +177,4 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
    }
 
    abstract boolean isSharedServer();
-
 }
