@@ -20,7 +20,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * 
@@ -31,8 +31,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class JMSMessageListenerWrapper implements MessageHandler
 {
-   private static final Logger log = Logger.getLogger(JMSMessageListenerWrapper.class);
-
    private final HornetQSession session;
 
    private final MessageListener listener;
@@ -69,7 +67,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       }
       catch (Exception e)
       {
-         JMSMessageListenerWrapper.log.error("Failed to prepare message for receipt", e);
+         HornetQJMSLogger.LOGGER.errorPreparingMessageForReceipt(e);
 
          return;
       }
@@ -82,7 +80,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
-            JMSMessageListenerWrapper.log.error("Failed to process message", e);
+            HornetQJMSLogger.LOGGER.errorProcessingMessage(e);
          }
       }
 
@@ -94,7 +92,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          // See JMS 1.1 spec, section 4.5.2
 
-         JMSMessageListenerWrapper.log.warn("Unhandled exception thrown from onMessage", e);
+         HornetQJMSLogger.LOGGER.onMessageError(e);
 
          if (!transactedOrClientAck)
          {
@@ -106,7 +104,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
             }
             catch (Exception e2)
             {
-               JMSMessageListenerWrapper.log.error("Failed to recover session", e2);
+               HornetQJMSLogger.LOGGER.errorRecoveringSession(e2);
             }
          }
       }
@@ -123,7 +121,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
-            JMSMessageListenerWrapper.log.error("Failed to process message", e);
+            HornetQJMSLogger.LOGGER.errorProcessingMessage(e);
          }
       }
 

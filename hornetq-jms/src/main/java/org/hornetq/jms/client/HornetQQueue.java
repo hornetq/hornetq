@@ -16,7 +16,6 @@ package org.hornetq.jms.client;
 import javax.jms.Queue;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS Queue.
@@ -32,9 +31,6 @@ import org.hornetq.core.logging.Logger;
 public class HornetQQueue extends HornetQDestination implements Queue
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQQueue.class);
-
    private static final long serialVersionUID = -1106092883162295462L;
 
    // Static --------------------------------------------------------

@@ -42,7 +42,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.registry.JndiBindingRegistry;
@@ -54,6 +53,7 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.TransactionDetail;
+import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
@@ -98,8 +98,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 {
-   private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
-
    private static final String REJECT_FILTER = HornetQServerImpl.GENERIC_IGNORED_FILTER;
 
    private BindingRegistry registry;
@@ -240,7 +238,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          for (Runnable run : cachedCommands)
          {
-            log.info("Running cached command for " + run);
+            HornetQJMSLogger.LOGGER.serverRunningCachedCommand(run);
             run.run();
          }
 
@@ -251,7 +249,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       catch (Exception e)
       {
-         JMSServerManagerImpl.log.error("Failed to start jms deployer", e);
+         HornetQJMSLogger.LOGGER.jmsDeployerStartError(e);
       }
    }
       
@@ -883,10 +881,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             Binding binding = server.getPostOffice().getBinding(new SimpleString(queueName));
             if (binding == null)
             {
-               log.warn("Queue " + queueName +
-                        " doesn't exist on the topic " +
-                        name +
-                        ". It was deleted manually probably.");
+               HornetQJMSLogger.LOGGER.noQueueOnTopic(queueName, name);
                continue;
             }
 
@@ -1659,7 +1654,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                }
                catch (Exception e)
                {
-                  log.warn("Impossible to unbind key " + key + " from JNDI", e);
+                  HornetQJMSLogger.LOGGER.jndiUnbindError(e, key);
                }
             }
          }
@@ -1786,7 +1781,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       else
       {
-         log.info("Caching command for " + runnable + " since the JMS Server is not active yet");
+         HornetQJMSLogger.LOGGER.serverCachingCommand(runnable);
          cachedCommands.add(runnable);
          return false;
       }
@@ -1802,7 +1797,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
          catch (Exception e)
          {
-            log.warn(e.getMessage(), e);
+            HornetQJMSLogger.LOGGER.jmsServerError(e);
          }
       }
 
