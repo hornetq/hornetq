@@ -93,6 +93,7 @@ public class DivertImpl implements Divert
       long id = storageManager.generateUniqueID();
       
       ServerMessage copy = message.copy(id);
+      copy.finishCopy();
 
       // This will set the original MessageId, and the original address
       copy.setOriginalHeaders(message, false);
