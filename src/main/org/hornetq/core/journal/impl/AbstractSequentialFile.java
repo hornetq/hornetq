@@ -108,7 +108,11 @@ public abstract class AbstractSequentialFile implements SequentialFile
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       log.debug("Copying "  + this + " as " + newFileName);
-      newFileName.open();
+      if (!newFileName.isOpen())
+      {
+         newFileName.open();
+      }
+      
       if (!isOpen())
       {
          this.open();
