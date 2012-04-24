@@ -192,7 +192,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
     */
-   public void cancel(final Transaction tx, final MessageReference ref) throws Exception
+   public void cancel(final Transaction tx, final MessageReference ref)
    {
       // TODO Auto-generated method stub
 

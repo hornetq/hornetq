@@ -15,6 +15,7 @@ package org.hornetq.core.server.cluster.impl;
 
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
@@ -24,6 +25,8 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.Future;
@@ -125,21 +128,66 @@ public class Redistributor implements Consumer
       {
          return HandleStatus.BUSY;
       }
-
+      
       final Transaction tx = new TransactionImpl(storageManager);
 
-      boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
+      final Pair<RoutingContext, ServerMessage> routingInfo = postOffice.redistribute(reference.getMessage(), queue, tx);
 
-      if (routed)
-      {
-         ackRedistribution(reference, tx);
-
-         return HandleStatus.HANDLED;
-      }
-      else
+      if (routingInfo == null)
       {
          return HandleStatus.BUSY;
       }
+      
+      if (!reference.getMessage().isLargeMessage())
+      {
+         routingInfo.getB().finishCopy();
+
+         postOffice.processRoute(routingInfo.getB(), routingInfo.getA(), false);
+
+         ackRedistribution(reference, tx);
+      }
+      else
+      {
+         active = false;
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  routingInfo.getB().finishCopy();
+
+                  postOffice.processRoute(routingInfo.getB(), routingInfo.getA(), false);
+      
+                  ackRedistribution(reference, tx);
+                  
+                  synchronized (Redistributor.this)
+                  {
+                     active = true;
+                     
+                     count++;
+                     
+                     queue.deliverAsync();
+                  }
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e2)
+                  {
+                     // Nothing much we can do now
+                     log.warn(e2.getMessage(), e2);
+                  }
+               }
+            }
+         });
+      }
+
+      return HandleStatus.HANDLED;
    }
 
    private void ackRedistribution(final MessageReference reference, final Transaction tx) throws Exception
@@ -171,7 +219,9 @@ public class Redistributor implements Consumer
    {
       count++;
 
-      if (count == batchSize)
+      // We use >= as the large message redistribution will set count to max_int
+      // so we are use the prompter will get called
+      if (count >= batchSize)
       {
          // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
          // long time in the case there are many messages in the queue
