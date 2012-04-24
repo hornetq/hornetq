@@ -15,11 +15,13 @@ package org.hornetq.jms.server.recovery;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -31,13 +33,13 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public class RecoveryDiscovery
+public class RecoveryDiscovery implements SessionFailureListener
 {
    
-   Logger log = Logger.getLogger(RecoveryDiscovery.class);
+   private static final Logger log = Logger.getLogger(RecoveryDiscovery.class);
    
    private ServerLocator locator;
-   private ClientSessionFactory sessionFactory;
+   private ClientSessionFactoryInternal sessionFactory;
    private final XARecoveryConfig config;
    private final AtomicInteger usage = new AtomicInteger(0);
    private boolean started = false;
@@ -52,20 +54,21 @@ public class RecoveryDiscovery
    {
       if (!started)
       {
-         log.debug("Starting RecoveryDiscovery on " + config);
+         log.info("Starting RecoveryDiscovery on " + config);
          started = true;
          
-         // TODO: I'm not sure where to place this configuration?
-         // I would prefer to keep it hard coded so far
          locator = config.createServerLocator();
-         locator.setReconnectAttempts(-1);
-         locator.setRetryInterval(1000);
-         locator.setRetryIntervalMultiplier(2.0);
-         locator.setMaxRetryInterval(60000);
+         locator.disableFinalizeCheck();
          locator.addClusterTopologyListener(new InternalListener());
          try
          {
-            sessionFactory = locator.createSessionFactory();
+            sessionFactory = (ClientSessionFactoryInternal)locator.createSessionFactory();
+            // We are using the SessionFactoryInternal here directly as we don't have information to connect with an user and password
+            // on the session as all we want here is to get the topology
+            // in case of failure we will retry
+            sessionFactory.addFailureListener(this);
+            
+            log.info("RecoveryDiscovery started fine on " + config);
          }
          catch (Exception startupError)
          {
@@ -73,10 +76,37 @@ public class RecoveryDiscovery
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
+         
       }
    }
    
    public synchronized void stop()
+   {
+      internalStop();
+   }
+  
+   /** we may have several connection factories referencing the same connection recovery entry.
+    *  Because of that we need to make a count of the number of the instances that are referencing it,
+    *  so we will remove it as soon as we are done */
+   public int incrementUsage()
+   {
+      return usage.decrementAndGet();
+   }
+
+   public int decrementUsage()
+   {
+      return usage.incrementAndGet();
+   }
+
+   
+   protected void finalize()
+   {
+      // I don't think it's a good thing to synchronize a method on a finalize,
+      // hence the internalStop (no sync) call here
+      internalStop();
+   }
+
+   protected void internalStop()
    {
       if (started)
       {
@@ -107,19 +137,6 @@ public class RecoveryDiscovery
       }
    }
    
-  
-   /** we may have several connection factories referencing the same connection recovery entry.
-    *  Because of that we need to make a count of the number of the instances that are referencing it,
-    *  so we will remove it as soon as we are done */
-   public int incrementUsage()
-   {
-      return usage.decrementAndGet();
-   }
-
-   public int decrementUsage()
-   {
-      return usage.incrementAndGet();
-   }
 
    class InternalListener implements ClusterTopologyListener
    {
@@ -142,6 +159,41 @@ public class RecoveryDiscovery
          // I'm not putting any node down, since it may have previous transactions hanging
       }
       
+   }
+
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.remoting.FailureListener#connectionFailed(org.hornetq.api.core.HornetQException, boolean)
+    */
+   public void connectionFailed(HornetQException exception, boolean failedOver)
+   {
+      if (exception.getCode() == HornetQException.DISCONNECTED)
+      {
+         log.warn("being disconnected for server shutdown", exception);
+      }
+      else
+      {
+         RecoveryDiscovery.log.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
+                                           exception);
+      }
+      internalStop();
+      HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.client.SessionFailureListener#beforeReconnect(org.hornetq.api.core.HornetQException)
+    */
+   public void beforeReconnect(HornetQException exception)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "RecoveryDiscovery [config=" + config + ", started=" + started + "]";
    }
 
 }

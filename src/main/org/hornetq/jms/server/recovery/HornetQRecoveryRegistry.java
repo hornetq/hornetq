@@ -136,6 +136,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
     */
    public void failedDiscovery(RecoveryDiscovery failedDiscovery)
    {
+      log.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
       synchronized (failedDiscoverySet)
       {
          failedDiscoverySet.add(failedDiscovery);
@@ -198,7 +199,15 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
             {
                for (RecoveryDiscovery discovery : failures)
                {
-                  discovery.start();
+                  try
+                  {
+                     log.debug("Retrying discovery " + discovery);
+                     discovery.start();
+                  }
+                  catch (Throwable e)
+                  {
+                     log.warn(e.getMessage(), e);
+                  }
                }
             }
          };
