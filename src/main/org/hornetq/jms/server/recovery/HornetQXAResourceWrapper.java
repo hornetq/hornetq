@@ -230,9 +230,16 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
-      HornetQXAResourceWrapper.log.warn("Notified of connection failure in xa recovery connectionFactory for provider " + csf +
-                                                 " will attempt reconnect on next pass",
-                                        me);
+      if (me.getCode() == HornetQException.DISCONNECTED)
+      {
+         log.debug("being disconnected for server shutdown", me);
+      }
+      else
+      {
+         HornetQXAResourceWrapper.log.warn("Notified of connection failure in xa recovery connectionFactory for provider " + csf +
+                                                    " will attempt reconnect on next pass",
+                                           me);
+      }
       close();
    }
 
