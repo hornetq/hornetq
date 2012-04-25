@@ -102,7 +102,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void incompatibleNativeLibrary();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142002, value = "Couldn't get lock after 60 seconds on closing Asynchronous File:", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142002, value = "Couldn't get lock after 60 seconds on closing Asynchronous File: {0}", format = Message.Format.MESSAGE_FORMAT)
    void couldNotGetLock(String fileName);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -179,77 +179,77 @@ public interface HornetQJournalLogger extends BasicLogger
    void couldNotStopCompactor();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142017, value = "Couldn't stop journal executor after 60 seconds",
+   @Message(id = 142018, value = "Couldn't stop journal executor after 60 seconds",
          format = Message.Format.MESSAGE_FORMAT)
    void couldNotStopJournalExecutor();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142018, value = "Temporary files were left unnatended after a crash on journal directory, deleting invalid files now",
+   @Message(id = 142019, value = "Temporary files were left unnatended after a crash on journal directory, deleting invalid files now",
          format = Message.Format.MESSAGE_FORMAT)
    void tempFilesLeftOpen();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142019, value =  "Deleting orphaned file {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142020, value =  "Deleting orphaned file {0}", format = Message.Format.MESSAGE_FORMAT)
    void deletingOrphanedFile(String fileToDelete);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142020, value =  "Couldn't get lock after 60 seconds on closing Asynchronous File:", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142021, value =  "Couldn't get lock after 60 seconds on closing Asynchronous File: {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorClosingFile(String fileToDelete);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142020, value =  "Error on IO callback, {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142022, value =  "Error on IO callback, {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorOnIOCallback(String errorMessage);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142021, value =  "Timed out on AIO poller shutdown", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142023, value =  "Timed out on AIO poller shutdown", format = Message.Format.MESSAGE_FORMAT)
    void timeoutOnPollerShutdown(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142022, value =  "Executor on file {0} couldn't complete its tasks in 60 seconds.", format = Message.Format.MESSAGE_FORMAT)
-   void couldNotCompleteTask(@Cause Exception e);
+   @Message(id = 142024, value =  "Executor on file {0} couldn't complete its tasks in 60 seconds.", format = Message.Format.MESSAGE_FORMAT)
+   void couldNotCompleteTask(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142023, value =  "Error completing callback", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142025, value =  "Error completing callback", format = Message.Format.MESSAGE_FORMAT)
    void errorCompletingCallback(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142024, value =  "Error calling onError callback", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142026, value =  "Error calling onError callback", format = Message.Format.MESSAGE_FORMAT)
    void errorCallingErrorCallback(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142025, value =  "Timed out on AIO writer shutdown", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142027, value =  "Timed out on AIO writer shutdown", format = Message.Format.MESSAGE_FORMAT)
    void timeoutOnWriterShutdown(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142026, value =  "Error on writing data! {0} code - {1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142028, value =  "Error on writing data! {0} code - {1}", format = Message.Format.MESSAGE_FORMAT)
    void errorWritingData(@Cause Throwable e, String errorMessage, Integer errorCode);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142027, value =  "Error replaying pending commands after compacting", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142029, value =  "Error replaying pending commands after compacting", format = Message.Format.MESSAGE_FORMAT)
    void errorReplayingCommands(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142028, value =  "Error closing file", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142030, value =  "Error closing file", format = Message.Format.MESSAGE_FORMAT)
    void errorClosingFile(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142028, value =  "Couldn't open a file in 60 Seconds", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142031, value =  "Couldn't open a file in 60 Seconds", format = Message.Format.MESSAGE_FORMAT)
    void errorOpeningFile(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142029, value =  "Error retrieving ID part of the file name {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142032, value =  "Error retrieving ID part of the file name {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorRetrievingID(@Cause Throwable e, String fileName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142030, value =  "Error reading journal file", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142033, value =  "Error reading journal file", format = Message.Format.MESSAGE_FORMAT)
    void errorReadingFile(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142031, value =  "Error reinitializing file {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142034, value =  "Error reinitializing file {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorReinitializingFile(@Cause Throwable e, JournalFile file);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142031, value = "Exception on submitting write", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142035, value = "Exception on submitting write", format = Message.Format.MESSAGE_FORMAT)
    void errorSubmittingWrite(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
