@@ -320,7 +320,7 @@ public class HornetQMessageHandler implements MessageHandler
                   }
                   catch (HornetQException e2)
                   {
-                     HornetQRALogger.LOGGER.unableToRollbackTX(e2);
+                     HornetQRALogger.LOGGER.unableToRollbackTX();
                      return;
                   }
                }
