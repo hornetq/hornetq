@@ -84,7 +84,13 @@ public class RemoteProcessHornetQServerSupport
       }
       catch (Throwable t)
       {
+         System.out.println("Exception " + t);
+         if (t instanceof InstantiationException)
+         {
+            System.out.println("Your class must have a constructor without arguments. If it is an inner class, it must be static!");
+         }
          t.printStackTrace();
+         if (t.getCause()!=null) {
          String allStack = t.getCause().getMessage() + "|";
          StackTraceElement[] stackTrace = t.getCause().getStackTrace();
          for (StackTraceElement stackTraceElement : stackTrace)
@@ -92,6 +98,7 @@ public class RemoteProcessHornetQServerSupport
             allStack += stackTraceElement.toString() + "|";
          }
          System.out.println(allStack);
+         }
          System.out.println("KO");
          System.exit(1);
       }
