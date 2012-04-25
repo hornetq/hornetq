@@ -175,7 +175,7 @@ abstract class AbstractSequentialFile implements SequentialFile
 
          while (!donelatch.await(60, TimeUnit.SECONDS))
          {
-            HornetQJournalLogger.LOGGER.couldNotCompleteTask(new Exception("trace"));
+            HornetQJournalLogger.LOGGER.couldNotCompleteTask(new Exception("trace"), file.getName());
          }
       }
    }
