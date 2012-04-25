@@ -16,10 +16,12 @@ package org.hornetq.tests.integration.cluster.util;
 import org.hornetq.core.config.Configuration;
 
 /**
- * A RemoteServerConfiguration
- *
+ * A RemoteServerConfiguration.
+ * <p>
+ * These classes are initialized through their class name through {@link Class#newInstance()}.
+ * Therefore they must have a no argument constructor, and if they are inner classes they must be
+ * static.
  * @author jmesnil
- * 
  */
 public abstract class RemoteServerConfiguration
 {

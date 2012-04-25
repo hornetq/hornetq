@@ -293,10 +293,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return new TransportConfiguration(className, params);
    }
 
-   // Static --------------------------------------------------------
    private final HornetQLogger log = HornetQLogger.LOGGER;
-
-   // Constructors --------------------------------------------------
 
    public ServiceTestBase()
    {
@@ -307,12 +304,6 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       super(name);
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    protected void waitForServer(HornetQServer server) throws InterruptedException
    {
