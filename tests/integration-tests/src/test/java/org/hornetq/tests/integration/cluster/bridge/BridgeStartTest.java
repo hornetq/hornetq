@@ -33,7 +33,6 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -43,10 +42,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A BridgeStartTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 14 Jan 2009 14:05:01
- *
- *
  */
 public class BridgeStartTest extends ServiceTestBase
 {
@@ -61,12 +58,9 @@ public class BridgeStartTest extends ServiceTestBase
    {
       if (isNetty())
       {
-         return NettyConnectorFactory.class.getName();
+         return NETTY_CONNECTOR_FACTORY;
       }
-      else
-      {
-         return "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
-      }
+      return INVM_CONNECTOR_FACTORY;
    }
 
    public void testStartStop() throws Exception
@@ -139,7 +133,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          server0.start();
          waitForServer(server0);
 
@@ -187,7 +181,7 @@ public class BridgeStartTest extends ServiceTestBase
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)
@@ -342,7 +336,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -559,7 +553,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -737,7 +731,7 @@ public class BridgeStartTest extends ServiceTestBase
          BridgeStartTest.log.info("stopping bridge manually");
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = numMessages; i < numMessages * 2; i++)
@@ -772,7 +766,7 @@ public class BridgeStartTest extends ServiceTestBase
          Assert.assertNull(consumer1.receiveImmediate());
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)

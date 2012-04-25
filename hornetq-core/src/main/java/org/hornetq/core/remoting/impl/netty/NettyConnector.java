@@ -257,9 +257,6 @@ public class NettyConnector implements Connector
       this.scheduledThreadPool = scheduledThreadPool;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {

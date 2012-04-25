@@ -139,12 +139,9 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       servers.put(nodeid, new RemoteProcessHornetQServer(backups.get(nodeid)));
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   public class SharedLiveServerConfiguration extends RemoteServerConfiguration
+   public static class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
+
       @Override
       public Configuration getConfiguration()
       {
@@ -176,7 +173,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
          ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1",
                                                                                   "jms",
                                                                                   liveConnector.getName(),
-                                                                                  -1,
+ 100,
                                                                                   false,
                                                                                   false,
                                                                                   1,
@@ -195,7 +192,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration0 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration0 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -204,7 +201,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration1 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration1 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -213,7 +210,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration2 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration2 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -222,7 +219,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration3 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration3 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -231,7 +228,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration4 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration4 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -240,7 +237,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public class SharedBackupServerConfiguration5 extends RemoteServerConfiguration
+   public static class SharedBackupServerConfiguration5 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -249,7 +246,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   protected Configuration createBackupConfiguration(int liveNode,
+   protected static Configuration createBackupConfiguration(int liveNode,
                                                      int nodeid,
                                                      boolean createClusterConnections,
                                                      int... nodes)
@@ -274,7 +271,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1",
                                                                                "jms",
                                                                                backupConnector.getName(),
-                                                                               -1,
+ 100,
                                                                                false,
                                                                                false,
                                                                                1,
