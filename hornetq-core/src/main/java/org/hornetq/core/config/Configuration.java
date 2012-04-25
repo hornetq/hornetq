@@ -26,7 +26,6 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
  *

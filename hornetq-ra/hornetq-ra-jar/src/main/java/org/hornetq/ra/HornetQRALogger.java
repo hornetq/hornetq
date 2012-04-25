@@ -108,10 +108,6 @@ public interface HornetQRALogger extends BasicLogger
    @Message(id = 152008, value = "unable to clear the transaction" , format = Message.Format.MESSAGE_FORMAT)
    void unableToClearTX(@Cause Exception e);
 
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152009, value = "Unable to rollback transaction" , format = Message.Format.MESSAGE_FORMAT)
-   void unableToRollbackTX(@Cause Exception e);
-
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 154001, value = "Error while creating object Reference." , format = Message.Format.MESSAGE_FORMAT)
    void errorCreatingReference(@Cause Exception e);

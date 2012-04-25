@@ -16,6 +16,18 @@
    </properties>
 
     <dependencies>
+      <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+        </dependency>
+
+        <!--
+            JBoss Logging
+        -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
