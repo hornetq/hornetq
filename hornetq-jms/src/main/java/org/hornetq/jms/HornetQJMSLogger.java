@@ -77,7 +77,7 @@ public interface HornetQJMSLogger extends BasicLogger
    void serverRunningCachedCommand(Runnable run);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121004, value = "JMS Server Manager Caching command for {0} since the JMS Server is not active yet" ,
+   @Message(id = 121005, value = "JMS Server Manager Caching command for {0} since the JMS Server is not active yet" ,
          format = Message.Format.MESSAGE_FORMAT)
    void serverCachingCommand(Object runnable);
 
@@ -193,6 +193,6 @@ public interface HornetQJMSLogger extends BasicLogger
    void errorProcessingMessage(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124008, value = "Message Listener failed to recover session" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 124009, value = "Message Listener failed to recover session" , format = Message.Format.MESSAGE_FORMAT)
    void errorRecoveringSession(@Cause Throwable e);
 }
