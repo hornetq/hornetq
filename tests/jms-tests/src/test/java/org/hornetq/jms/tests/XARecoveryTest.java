@@ -2778,8 +2778,8 @@ public class XARecoveryTest extends JMSTestCase
          XAResource res2 = sess2.getXAResource();
 
          // Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImple(new Uid("cadaver"), new Uid("bq1"), 666);
-         Xid xid2 = new XidImple(new Uid("dalidom"), new Uid("bq2"), 661); // TODO
+         Xid xid1 = new XidImple(new Uid("cadaver"), true, 666);
+         Xid xid2 = new XidImple(new Uid("dalidom"), true, 661); // TODO
 
          // Send a message in each tx
 
