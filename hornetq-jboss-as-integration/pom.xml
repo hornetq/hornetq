@@ -48,7 +48,7 @@
       </dependency>
       <!--this for xa recovery-->
       <dependency>
-         <groupId>jboss.jbossts</groupId>
+         <groupId>org.jboss.jbossts</groupId>
          <artifactId>jbossjts</artifactId>
       </dependency>
    </dependencies>
