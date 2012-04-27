@@ -395,14 +395,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       long start = System.currentTimeMillis();
 
-      int bindingCount = 0;
-
-      int totConsumers = 0;
+      int bindingCount;
+      int totConsumers;
 
       do
       {
          bindingCount = 0;
-
          totConsumers = 0;
 
          Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
@@ -2029,26 +2027,30 @@ public abstract class ClusterTestBase extends ServiceTestBase
       clusterConfs.add(clusterConf);
    }
 
+   /**
+    * XXX waitForPrevious actually masks what can be considered a bug: that even controlling for
+    * {@link HornetQServer#waitForInitialization} we still need to wait between starting a shared
+    * store backup and its live.
+    */
    protected void startServers(final int... nodes) throws Exception
    {
       for (int node : nodes)
       {
          log.info("#test start node " + node);
-         if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
+         final long currentTime=System.currentTimeMillis();
+         boolean waitForSelf = currentTime - timeStarts[node] < TIMEOUT_START_SERVER;
+         boolean waitForPrevious = node > 0 && currentTime - timeStarts[node - 1] < TIMEOUT_START_SERVER;
+         if (waitForPrevious || waitForSelf)
          {
             Thread.sleep(TIMEOUT_START_SERVER);
          }
          timeStarts[node] = System.currentTimeMillis();
-
          log.info("starting server " + servers[node]);
          servers[node].start();
 
          log.info("started server " + servers[node]);
          waitForServer(servers[node]);
-
       }
-
-
    }
 
    protected void stopClusterConnections(final int... nodes) throws Exception
