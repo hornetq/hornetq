@@ -688,7 +688,8 @@ public class FilterTest extends UnitTestCase
       FilterParser parse = new FilterParser();
       SimpleStringReader reader = new SimpleStringReader(new SimpleString(largeString));
       parse.ReInit(reader);
-      System.out.println("token:" + parse.getNextToken());
+      // the server would fail at doing this when HORNETQ-545 wasn't solved
+      parse.getNextToken();
    }
    // Private -----------------------------------------------------------------------------------
 
