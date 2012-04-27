@@ -19,6 +19,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.filter.impl.FilterParser;
+import org.hornetq.core.filter.impl.SimpleStringReader;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -666,7 +668,28 @@ public class FilterTest extends UnitTestCase
       doPutStringProperty("MyString", "(?!abc)");
       Assert.assertTrue(filter.match(message));
    }
+   
+   public void testStringLongToken() throws Exception
+   {
+      String largeString;
 
+      {
+         StringBuffer strBuffer = new StringBuffer();
+         strBuffer.append('\'');
+         for (int i = 0; i < 4800; i++)
+         {
+            strBuffer.append('a');
+         }
+         strBuffer.append('\'');
+
+         largeString = strBuffer.toString();
+      }
+
+      FilterParser parse = new FilterParser();
+      SimpleStringReader reader = new SimpleStringReader(new SimpleString(largeString));
+      parse.ReInit(reader);
+      System.out.println("token:" + parse.getNextToken());
+   }
    // Private -----------------------------------------------------------------------------------
 
    private void doPutStringProperty(final String key, final String value)
