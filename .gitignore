@@ -5,7 +5,9 @@
 */*/*/*.iml
 *~
 target
-tests/jms-tests/data
+tests/jms-tests/
+tests/integration-tests/data/
+tests/joram-tests/data/
 org.eclipse.jdt.core.prefs
 org.eclipse.jdt.ui.prefs
 org.eclipse.m2e.core.prefs
