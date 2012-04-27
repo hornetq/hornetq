@@ -278,6 +278,11 @@
           the calling thread has completed meaning that the security context has been cleared. If this is the case then messages
           will need to be sent blocking</para></note>
        </section>
+       <section>
+          <title>Changing the Security Domain</title>
+          <para>The name of the security domain used by the JBoss AS security manager defaults to <literal>java:/jaas/hornetq
+          </literal>.  This can be changed by specifying <literal>securityDomainName</literal> (e.g. java:/jaas/myDomain).
+          </para>
     </section>
     <section>
         <title>Changing the username/password for clustering</title>
