@@ -23,7 +23,7 @@ import javax.resource.spi.ResourceAdapter;
 import org.hornetq.ra.ConnectionFactoryProperties;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.Util;
+import org.hornetq.ra.HornetQRaUtils;
 
 /**
  * The activation spec
@@ -167,7 +167,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setJndiParams(String jndiParams)
    {
       this.jndiParams = jndiParams;
-      parsedJndiParams = Util.parseHashtableConfig(jndiParams);
+      parsedJndiParams = HornetQRaUtils.parseHashtableConfig(jndiParams);
    }
 
    public Hashtable<?,?> getParsedJndiParams()
@@ -652,7 +652,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
       strConnectorClassName = connectorClassName;
 
-      setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
+      setParsedConnectorClassNames(HornetQRaUtils.parseConnectorConnectorConfig(connectorClassName));
    }
 
    /**
@@ -666,7 +666,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setConnectionParameters(final String configuration)
    {
       strConnectionParameters = configuration;
-      setParsedConnectionParameters(Util.parseConfig(configuration));
+      setParsedConnectionParameters(HornetQRaUtils.parseConfig(configuration));
    }
 
    /**

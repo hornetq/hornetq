@@ -309,7 +309,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       if (server == null)
          return;
-      long timetowait = System.currentTimeMillis() + 5000;
+      final long wait = 5000;
+      long timetowait = System.currentTimeMillis() + wait;
       while (!server.isStarted() && System.currentTimeMillis() < timetowait)
       {
          Thread.sleep(50);
@@ -323,7 +324,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (!server.getConfiguration().isBackup())
       {
-         if (!server.waitForInitialization(5000, TimeUnit.MILLISECONDS))
+         if (!server.waitForInitialization(wait, TimeUnit.MILLISECONDS))
             fail("Server didn't initialize: " + server);
       }
    }

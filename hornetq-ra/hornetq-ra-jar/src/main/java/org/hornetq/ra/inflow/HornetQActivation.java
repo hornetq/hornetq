@@ -39,7 +39,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.Util;
+import org.hornetq.ra.HornetQRaUtils;
 
 /**
  * The activation.
@@ -444,7 +444,7 @@ public class HornetQActivation
                                         destinationType.getName());
             try
             {
-               destination = (HornetQDestination)Util.lookup(ctx, destinationName, destinationType);
+               destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, destinationType);
             }
             catch (Exception e)
             {
@@ -470,7 +470,7 @@ public class HornetQActivation
                                         " of type " +
                                         Destination.class.getName());
 
-            destination = (HornetQDestination)Util.lookup(ctx, destinationName, Destination.class);
+            destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
             {
                isTopic = true;

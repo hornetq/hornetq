@@ -53,10 +53,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -80,19 +77,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAll(10, 0);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
 
-         closeAllSessionFactories();
-
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingTimeout() throws Exception
@@ -113,8 +98,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
          setUpGroupHandler(new GroupingHandler()
          {
             public SimpleString getName()
@@ -188,18 +171,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
             e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
          }
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo2queues() throws Exception
@@ -219,10 +190,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
       startServers(0, 1, 2);
-
-      try
-      {
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -249,18 +217,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAllInRange(10, 20, 0);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queues() throws Exception
@@ -281,8 +237,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
@@ -313,18 +267,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAllInRange(10, 20, 0);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queuesRemoteArbitrator() throws Exception
@@ -344,10 +286,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
       startServers(0, 1, 2);
-
-      try
-      {
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -374,19 +313,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAllInRange(20, 30, 1);
-
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queuesNoConsumerOnLocalQueue() throws Exception
@@ -406,10 +332,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
       startServers(0, 1, 2);
-
-      try
-      {
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -439,18 +362,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAllInRange(20, 30, 0);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingRoundRobin() throws Exception
@@ -471,9 +382,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -498,18 +407,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
          verifyReceiveAllWithGroupIDRoundRobin(0, 10, 0, 1, 2);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queuesQueueRemoved() throws Exception
@@ -530,9 +427,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -582,17 +477,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          verifyReceiveAllInRange(50, 60, 3);
          System.out.println("*****************************************************************************");
       }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
-   }
 
    public void testGroupingSendTo3queuesPinnedNodeGoesDown() throws Exception
    {
@@ -612,10 +496,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -685,17 +566,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          verifyReceiveAllInRange(10, 20, 1);
 
          System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
 
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queuesPinnedNodeGoesDownSendBeforeStop() throws Exception
@@ -716,10 +587,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -777,11 +645,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(1);
 
          closeSessionFactory(1);
-         
+
          startServers(1);
 
          setupSessionFactory(1, isNetty());
-         
+
          Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                       TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);
@@ -794,18 +662,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAllInRange(10, 20, 1);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingSendTo3queuesPinnedNodeGoesDownSendAfterRestart() throws Exception
@@ -826,10 +682,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-      try
-      {
-
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
 
@@ -899,18 +752,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
          sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          verifyReceiveAllInRange(20, 30, 1);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingMultipleQueuesOnAddress() throws Exception
@@ -929,9 +770,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
       startServers(0, 1, 2);
-
-      try
-      {
 
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
@@ -965,18 +803,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          verifyReceiveAll(10, 0);
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    public void testGroupingMultipleSending() throws Exception
@@ -995,9 +821,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
       startServers(0, 1, 2);
-
-      try
-      {
 
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
@@ -1032,19 +855,15 @@ public class ClusteredGroupingTest extends ClusterTestBase
          }
 
          verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1, 2);
+   }
 
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
+   @Override
+   protected void tearDown() throws Exception
+   {
+      closeAllConsumers();
+      closeAllSessionFactories();
+      closeAllServerLocatorsFactories();
+      super.tearDown();
    }
 
    public boolean isNetty()
