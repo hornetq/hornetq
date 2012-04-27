@@ -56,6 +56,43 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       super.tearDown();
    }
+   
+   
+
+   public void testLargeToken() throws Exception
+   {
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession();
+
+      session.start();
+
+      session.createQueue("foo", "foo");
+
+      ClientProducer producer = session.createProducer("foo");
+      
+      
+      StringBuffer token = new StringBuffer();
+      
+      token.append("'");
+      for (int i = 0 ; i < 5000; i++)
+      {
+         token.append("a");
+      }
+      token.append("'");
+
+      // The server would fail to create this consumer if HORNETQ-545 wasn't solved
+      ClientConsumer consumer = session.createConsumer("foo", "animal=" + token.toString());
+      
+      consumer.close();
+      
+      producer.close();
+      
+      session.close();
+   }
+
 
    public void testNonMatchingMessagesFollowedByMatchingMessages() throws Exception
    {
