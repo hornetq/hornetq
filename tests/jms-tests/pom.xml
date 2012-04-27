@@ -63,10 +63,6 @@
          <artifactId>commons-logging</artifactId>
       </dependency>
       <dependency>
-         <groupId>log4j</groupId>
-         <artifactId>log4j</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.jboss.spec.javax.transaction</groupId>
          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
       </dependency>
@@ -83,13 +79,17 @@
          <groupId>org.jboss.spec.javax.jms</groupId>
          <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
+       <dependency>
+           <groupId>org.jboss.logging</groupId>
+           <artifactId>jboss-logging-processor</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.jboss.logging</groupId>
+           <artifactId>jboss-logging</artifactId>
+       </dependency>
       <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-processor</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging</artifactId>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
       </dependency>
    </dependencies>
 

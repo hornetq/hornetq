@@ -298,8 +298,6 @@
 
       &lt;allow-failback>true&lt;/allow-failback>
 
-      &lt;log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory&lt;/log-delegate-factory-class-name>
-
       &lt;bindings-directory>/media/shared/data/hornetq-backup/bindings&lt;/bindings-directory>
 
       &lt;journal-directory>/media/shared/data/hornetq-backup/journal&lt;/journal-directory>

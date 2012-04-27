@@ -531,7 +531,7 @@
                   <testFailureIgnore>true</testFailureIgnore>
                   <runOrder>alphabetical</runOrder>
                   <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                  <argLine>-Dlogging.configuration=file:///${user.dir}/distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/</argLine>
+                  <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:///${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/</argLine>
                </configuration>
             </plugin>
             <plugin>
