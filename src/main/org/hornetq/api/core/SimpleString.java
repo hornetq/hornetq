@@ -395,7 +395,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
     * @param dst
     * @param dstBegin
     */
-   public void getChars(final int srcBegin, final int srcEnd, final char dst[], final int dstBegin)
+   public void getChars(final int srcBegin, final int srcEnd, final char dst[], int dstPos)
    {
       if (srcBegin < 0)
       {
@@ -409,16 +409,16 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       {
          throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
       }
+      
+      int j = srcBegin * 2;
 
-      int j = 0;
-
-      for (int i = srcBegin; i < srcEnd - srcBegin; i++)
+      for (int i = srcBegin; i < srcEnd; i++)
       {
          int low = data[j++] & 0xFF;
 
          int high = data[j++] << 8 & 0xFF00;
 
-         dst[i] = (char)(low | high);
+         dst[dstPos++] = (char)(low | high);
       }
    }
 
