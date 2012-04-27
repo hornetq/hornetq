@@ -279,8 +279,8 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
       if (obj instanceof HornetQRAConnectionRequestInfo)
       {
          HornetQRAConnectionRequestInfo you = (HornetQRAConnectionRequestInfo)obj;
-         return Util.compare(userName, you.getUserName()) && Util.compare(password, you.getPassword()) &&
-                Util.compare(clientID, you.getClientID()) &&
+         return HornetQRaUtils.compare(userName, you.getUserName()) && HornetQRaUtils.compare(password, you.getPassword()) &&
+                HornetQRaUtils.compare(clientID, you.getClientID()) &&
                 type == you.getType() &&
                 transacted == you.isTransacted() &&
                 acknowledgeMode == you.getAcknowledgeMode();

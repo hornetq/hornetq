@@ -268,7 +268,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       unparsedConnectors = connectorClassName;
 
-      raProperties.setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
+      raProperties.setParsedConnectorClassNames(HornetQRaUtils.parseConnectorConnectorConfig(connectorClassName));
    }
 
    public String getConnectorClassName()
@@ -286,7 +286,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (config != null)
       {
          this.unparsedProperties = config;
-         raProperties.setParsedConnectionParameters(Util.parseConfig(config));
+         raProperties.setParsedConnectionParameters(HornetQRaUtils.parseConfig(config));
       }
    }
 
@@ -1135,7 +1135,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public void setJndiParams(String jndiParams)
    {
       unparsedJndiParams = jndiParams;
-      raProperties.setParsedJndiParams(Util.parseHashtableConfig(jndiParams));
+      raProperties.setParsedJndiParams(HornetQRaUtils.parseHashtableConfig(jndiParams));
    }
 
    public Hashtable<?,?> getParsedJndiParams()
@@ -1699,7 +1699,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
-         tm = Util.locateTM(locatorClasses[i], locatorMethods[i]);
+         tm = HornetQRaUtils.locateTM(locatorClasses[i], locatorMethods[i]);
          if (tm != null)
          {
             break;

@@ -106,7 +106,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
 
       strConnectorClassName = connectorClassName;
 
-      setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
+      setParsedConnectorClassNames(HornetQRaUtils.parseConnectorConnectorConfig(connectorClassName));
    }
    /**
     * @return the connectionParameters
@@ -119,7 +119,7 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    public void setConnectionParameters(final String configuration)
    {
       strConnectionParameters = configuration;
-      setParsedConnectionParameters(Util.parseConfig(configuration));
+      setParsedConnectionParameters(HornetQRaUtils.parseConfig(configuration));
    }
 
    /**

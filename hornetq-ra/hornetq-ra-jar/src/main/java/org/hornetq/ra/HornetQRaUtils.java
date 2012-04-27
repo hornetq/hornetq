@@ -31,12 +31,12 @@ import org.hornetq.jms.server.recovery.RecoveryRegistry;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public final class Util
+public final class HornetQRaUtils
 {
    /**
     * Private constructor
     */
-   private Util()
+   private HornetQRaUtils()
    {
    }
 
