@@ -36,6 +36,7 @@ tests/**/server.lock
 # /distribution/
 /distribution/target
 /distribution/.project
+/distribution/jboss-mc/.project
 
 # /distribution/hornetq/
 /distribution/hornetq/.project

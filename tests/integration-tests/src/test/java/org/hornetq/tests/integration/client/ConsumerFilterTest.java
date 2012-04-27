@@ -61,6 +61,21 @@ public class ConsumerFilterTest extends ServiceTestBase
       consumer = session.createConsumer("foo", "animal='giraffe'");
    }
 
+   public void testLargeToken() throws Exception
+   {
+      StringBuffer token = new StringBuffer();
+      
+      token.append("'");
+      for (int i = 0 ; i < 5000; i++)
+      {
+         token.append("a");
+      }
+      token.append("'");
+
+      // The server would fail to create this consumer if HORNETQ-545 wasn't solved
+      consumer = session.createConsumer("foo", "animal=" + token.toString());
+   }
+
    public void testNonMatchingMessagesFollowedByMatchingMessages() throws Exception
    {
 
