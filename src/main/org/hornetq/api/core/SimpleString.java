@@ -389,13 +389,15 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    *
+    * This method performs a similar function to {@link String#getChars(int, int, char[], int)}.
+    * This is mainly used by the Parsers on Filters
+    * 
     * @param srcBegin
     * @param srcEnd
-    * @param dst
-    * @param dstBegin
+    * @param dst dd
+    * @param dstPos
     */
-   public void getChars(final int srcBegin, final int srcEnd, final char dst[], int dstPos)
+   public void getChars(final int srcBegin, final int srcEnd, final char dst[], final int dstPos)
    {
       if (srcBegin < 0)
       {
@@ -411,6 +413,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       
       int j = srcBegin * 2;
+      int d = dstPos;
 
       for (int i = srcBegin; i < srcEnd; i++)
       {
@@ -418,7 +421,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
 
          int high = data[j++] << 8 & 0xFF00;
 
-         dst[dstPos++] = (char)(low | high);
+         dst[d++] = (char)(low | high);
       }
    }
 
