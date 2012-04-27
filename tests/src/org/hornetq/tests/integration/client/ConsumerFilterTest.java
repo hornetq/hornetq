@@ -83,7 +83,14 @@ public class ConsumerFilterTest extends ServiceTestBase
       }
       token.append("'");
 
+      // The server would fail to create this consumer if HORNETQ-545 wasn't solved
       ClientConsumer consumer = session.createConsumer("foo", "animal=" + token.toString());
+      
+      consumer.close();
+      
+      producer.close();
+      
+      session.close();
    }
 
 
