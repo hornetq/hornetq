@@ -12,10 +12,7 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 
 import javax.jms.Session;
 import javax.resource.ResourceException;
@@ -480,12 +477,19 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
          return password;
       }
    }
+   
+   public String getOwnPassword()
+   {
+      return password;
+   }
+
 
    /**
     * Set the password
     * @param value The value
+    * @throws Exception 
     */
-   public void setPassword(final String value)
+   public void setPassword(final String value) throws Exception
    {
       if (HornetQActivationSpec.trace)
       {
@@ -755,6 +759,4 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setMaxMessages(final Integer value)
    {
    }
-
-
 }
