@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -201,6 +202,54 @@ public class ConfigurationHelper
          count++;
       }
       return sb.toString();
+   }
+
+   public static String getPasswordProperty(final String propName, final String def, final Map<String, Object> props)
+   {
+      if (props == null)
+      {
+         return def;
+      }
+
+      Object prop = props.get(propName);
+
+      if (prop == null)
+      {
+         return def;
+      }
+
+      String value = prop.toString();
+      Boolean useMask = (Boolean)props.get("hornetq.usemaskedpassword");
+      if (useMask == null || (!useMask))
+      {
+         return value;
+      }
+
+      final String classImpl = (String)props.get("hornetq.passwordcodec");
+
+      if (classImpl == null)
+      {
+         throw new IllegalArgumentException("No available codec to decode password!");
+      }
+
+      SensitiveDataCodec<String> codec = null;
+      try
+      {
+         codec = PasswordMaskingUtil.getCodec(classImpl);
+      }
+      catch (HornetQException e1)
+      {
+         throw new IllegalArgumentException("Failed to get decoder", e1);
+      }
+
+      try
+      {
+         return codec.decode(value);
+      }
+      catch (Exception e)
+      {
+         throw new IllegalArgumentException("Error decoding password", e);
+      }
    }
 
 }

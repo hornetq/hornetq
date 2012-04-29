@@ -230,7 +230,7 @@ public class NettyConnector implements Connector
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
-         keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+         keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                   TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
                                                                   configuration);
       }

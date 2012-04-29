@@ -29,17 +29,25 @@ public class TransportConstants
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
 
    public static final Set<String> ALLOWABLE_ACCEPTOR_KEYS;
+   
+   public static final String USE_MASKED_PASSWORD = "hornetq.usemaskedpassword";
+   
+   public static final String PASSWORD_CODEC = "hornetq.passwordcodec";
 
    static
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
       allowableAcceptorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
       allowableAcceptorKeys.add(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
+      allowableAcceptorKeys.add(TransportConstants.USE_MASKED_PASSWORD);
+      allowableAcceptorKeys.add(TransportConstants.PASSWORD_CODEC);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
       
       Set<String> allowableConnectorKeys = new HashSet<String>();
       allowableConnectorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.USE_MASKED_PASSWORD);
+      allowableConnectorKeys.add(TransportConstants.PASSWORD_CODEC);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

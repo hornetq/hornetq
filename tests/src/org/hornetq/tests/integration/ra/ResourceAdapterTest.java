@@ -14,13 +14,15 @@ package org.hornetq.tests.integration.ra;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -461,6 +463,87 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(spec.isHasBeenUpdated());
    }
    
+   public void testMaskPassword() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+     
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      String mask = (String)codec.encode("helloworld");
+
+      qResourceAdapter.setUseMaskedPassword(true);
+      qResourceAdapter.setPassword(mask);
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.start(ctx);
+      
+      assertEquals("helloworld", qResourceAdapter.getPassword());
+      
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      mask = (String)codec.encode("mdbpassword");
+      spec.setPassword(mask);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      
+      assertEquals("mdbpassword", spec.getPassword());
+      
+      qResourceAdapter.stop();
+      assertTrue(endpoint.released);
+   }
+   
+   public void testMaskPassword2() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+     
+      qResourceAdapter.setUseMaskedPassword(true);
+      qResourceAdapter.setPasswordCodec(DefaultSensitiveStringCodec.class.getName() + ";key=anotherkey");
+
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      Map<String, String> prop = new HashMap<String, String>();
+      
+      prop.put("key", "anotherkey");
+      codec.init(prop);
+      
+      String mask = (String)codec.encode("helloworld");
+
+      qResourceAdapter.setPassword(mask);
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.start(ctx);
+      
+      assertEquals("helloworld", qResourceAdapter.getPassword());
+      
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      mask = (String)codec.encode("mdbpassword");
+      spec.setPassword(mask);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      
+      assertEquals("mdbpassword", spec.getPassword());
+      
+      qResourceAdapter.stop();
+      assertTrue(endpoint.released);
+   }
+
    @Override
    public boolean isSecure()
    {

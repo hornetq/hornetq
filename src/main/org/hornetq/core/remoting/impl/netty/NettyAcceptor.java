@@ -251,13 +251,13 @@ public class NettyAcceptor implements Acceptor
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
-         keyStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
+         keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                   TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
                                                                   configuration);
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
                                                                 configuration);
-         trustStorePassword = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
+         trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
                                                                     TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
                                                                     configuration);
       }
