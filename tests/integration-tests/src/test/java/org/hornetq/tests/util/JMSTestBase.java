@@ -139,7 +139,7 @@ public abstract class JMSTestBase extends ServiceTestBase
    }
 
    @Override
-   protected Configuration createDefaultConfig(boolean netty)
+   protected Configuration createDefaultConfig(boolean netty) throws Exception
    {
       Configuration conf = super.createDefaultConfig(netty);
 

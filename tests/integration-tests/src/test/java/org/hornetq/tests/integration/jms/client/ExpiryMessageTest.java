@@ -45,7 +45,7 @@ public class ExpiryMessageTest extends JMSTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected Configuration createDefaultConfig(boolean netty)
+   protected Configuration createDefaultConfig(boolean netty) throws Exception
    {
       Configuration conf = super.createDefaultConfig(netty);
 

@@ -139,6 +139,10 @@ public class TransportConstants
 
    public static final String STOMP_ENABLE_MESSAGE_ID = "stomp-enable-message-id";
 
+   public static final String USE_MASKED_PASSWORD = "hornetq.usemaskedpassword";
+
+   public static final String PASSWORD_CODEC = "hornetq.passwordcodec";
+
    static
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
@@ -165,6 +169,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
       allowableAcceptorKeys.add(TransportConstants.CONNECTION_TTL);
       allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
+      allowableAcceptorKeys.add(TransportConstants.USE_MASKED_PASSWORD);
+      allowableAcceptorKeys.add(TransportConstants.PASSWORD_CODEC);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
@@ -186,6 +192,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.BATCH_DELAY);
+      allowableConnectorKeys.add(TransportConstants.USE_MASKED_PASSWORD);
+      allowableConnectorKeys.add(TransportConstants.PASSWORD_CODEC);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

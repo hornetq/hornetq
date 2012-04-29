@@ -423,7 +423,7 @@ public interface Configuration extends Serializable
    /**
     * Sets the cluster password for this server.
     */
-   void setClusterPassword(String password);
+   void setClusterPassword(String password) throws Exception;
 
    /**
     * Returns the size of the cache for pre-creating message IDs.
@@ -871,4 +871,25 @@ public interface Configuration extends Serializable
     * Sets the fail-back delay.
     */
    void setFailbackDelay(long delay);
+
+   /**
+    * The default password decoder
+    */
+   void setPasswordCodec(String codec);
+
+   /**
+    * Gets the default password decoder
+    */
+   String getPasswordCodec();
+
+   /**
+    * whehther default using cleartext password
+    */
+   void setMaskPassword(boolean maskPassword);
+
+   /**
+    * if using cleartext password by default
+    */
+   boolean isMaskPassword();
+
 }
