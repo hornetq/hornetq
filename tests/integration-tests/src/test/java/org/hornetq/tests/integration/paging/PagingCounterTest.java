@@ -329,7 +329,7 @@ public class PagingCounterTest extends ServiceTestBase
       sl = createInVMNonHALocator();
    }
 
-   private HornetQServer newHornetQServer()
+   private HornetQServer newHornetQServer() throws Exception
    {
 
       OperationContextImpl.clearContext();

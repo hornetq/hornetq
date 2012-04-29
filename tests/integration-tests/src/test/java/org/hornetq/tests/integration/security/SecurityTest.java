@@ -98,8 +98,9 @@ public class SecurityTest extends ServiceTestBase
 
    /**
     * @return
+    * @throws Exception 
     */
-   private HornetQServer createServer()
+   private HornetQServer createServer() throws Exception
    {
       configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
