@@ -10,6 +10,8 @@
    <xsd:element name="configuration">
    	<xsd:complexType>
    		<xsd:sequence>
+            <xsd:element name="mask-password" type="xsd:boolean" maxOccurs="1" minOccurs="0"></xsd:element>
+            <xsd:element name="password-codec" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
             <xsd:element name="defaultuser" type="userType" maxOccurs="1" minOccurs="0"></xsd:element>
             <xsd:element name="user" type="userType" maxOccurs="unbounded" minOccurs="0"></xsd:element>
    		</xsd:sequence>

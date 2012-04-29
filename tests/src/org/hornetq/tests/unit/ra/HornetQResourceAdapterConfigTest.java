@@ -302,7 +302,20 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>UseAutoRecovery</config-property-name>\n" +
          "         <config-property-type>boolean</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
+         "      </config-property>" +
+         "      <config-property>\n" +
+         "         <description>Whether to use password mask, default false</description>\n" +
+         "         <config-property-name>UseMaskedPassword</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value>false</config-property-value>\n" +
+         "      </config-property>" +
+         "      <config-property>\n" +
+         "         <description>The class definition (full qualified name and its properties) used to encrypt the password</description>\n" +
+         "         <config-property-name>PasswordCodec</config-property-name>\n" +
+         "         <config-property-type>java.lang.String</config-property-type>\n" +
+         "         <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=ssss</config-property-value>\n" +
          "      </config-property>";
+
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
