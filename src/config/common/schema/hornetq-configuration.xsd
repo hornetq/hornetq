@@ -37,6 +37,10 @@
                 </xsd:element>				
                 <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string">
                 </xsd:element>				
+                <xsd:element maxOccurs="1" minOccurs="0" name="password-codec" type="xsd:string">
+                </xsd:element>
+		<xsd:element maxOccurs="1" minOccurs="0" name="mask-password" type="xsd:boolean">
+		</xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xsd:string">
                 </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xsd:boolean">
@@ -564,5 +568,4 @@
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="optional"/>
 	</xsd:complexType>
-
 </xsd:schema>

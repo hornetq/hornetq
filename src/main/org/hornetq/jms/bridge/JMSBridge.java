@@ -108,5 +108,13 @@ public interface JMSBridge extends HornetQComponent
    void setTargetConnectionFactoryFactory(ConnectionFactoryFactory cff);
 
    void setTransactionManager(TransactionManager tm);
+   
+   boolean isUseMaskedPassword();
+   
+   void setUseMaskedPassword(boolean maskPassword);
+   
+   String getPasswordCodec();
+   
+   void setPasswordCodec(String codec);
 
 }
