@@ -146,7 +146,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       createQueue("targetQueue", 1);
 
       setUpAdministeredObjects();
-
+      TxControl.enable();
       // We need a local transaction and recovery manager
       // We must start this after the remote servers have been created or it won't
       // have deleted the database and the recovery manager may attempt to recover transactions
