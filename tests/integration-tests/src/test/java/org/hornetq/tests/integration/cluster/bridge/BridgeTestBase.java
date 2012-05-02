@@ -48,12 +48,12 @@ public abstract class BridgeTestBase extends UnitTestCase
       super.tearDown();
    }
 
-   protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params)
+   protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params) throws Exception
    {
       return createHornetQServer(id, params, netty, null);
    }
 
-    protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params, NodeManager nodeManager)
+    protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params, NodeManager nodeManager) throws Exception
    {
       return createHornetQServer(id, params, netty, nodeManager);
    }
@@ -61,7 +61,7 @@ public abstract class BridgeTestBase extends UnitTestCase
    protected HornetQServer createHornetQServer(final int id,
                                                final Map<String, Object> params,
                                                final boolean netty,
-                                               final NodeManager nodeManager)
+                                               final NodeManager nodeManager) throws Exception
    {
       Configuration serviceConf = createBasicConfig();
       serviceConf.setClustered(true);
@@ -106,7 +106,7 @@ public abstract class BridgeTestBase extends UnitTestCase
                                                final Map<String, Object> params,
                                                final boolean netty,
                                                final int liveId,
-                                               final NodeManager nodeManager)
+                                               final NodeManager nodeManager) throws Exception
    {
       Configuration serviceConf = createBasicConfig();
       serviceConf.setClustered(true);

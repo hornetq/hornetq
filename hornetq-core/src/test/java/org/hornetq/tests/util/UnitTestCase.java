@@ -154,12 +154,12 @@ public abstract class UnitTestCase extends TestCase
 
    // Static --------------------------------------------------------
 
-   protected Configuration createDefaultConfig()
+   protected Configuration createDefaultConfig() throws Exception
    {
       return createDefaultConfig(false);
    }
 
-   protected Configuration createDefaultConfig(final boolean netty)
+   protected Configuration createDefaultConfig(final boolean netty) throws Exception
    {
       if (netty)
       {
@@ -173,7 +173,7 @@ public abstract class UnitTestCase extends TestCase
 
    protected static Configuration createClusteredDefaultConfig(final int index,
                                                                final Map<String, Object> params,
-                                                               final String... acceptors)
+                                                               final String... acceptors) throws Exception
    {
       Configuration config = createDefaultConfig(index, params, acceptors);
 
@@ -184,7 +184,7 @@ public abstract class UnitTestCase extends TestCase
 
    protected static Configuration createDefaultConfig(final int index,
                                                       final Map<String, Object> params,
-                                                      final String... acceptors)
+                                                      final String... acceptors) throws Exception
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -199,7 +199,7 @@ public abstract class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected static ConfigurationImpl createBasicConfig()
+   protected static ConfigurationImpl createBasicConfig() throws Exception
    {
       return createBasicConfig(0);
    }
@@ -207,8 +207,9 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @param serverID
     * @return
+    * @throws Exception 
     */
-   protected static ConfigurationImpl createBasicConfig(final int serverID)
+   protected static ConfigurationImpl createBasicConfig(final int serverID) throws Exception
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -227,7 +228,7 @@ public abstract class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);

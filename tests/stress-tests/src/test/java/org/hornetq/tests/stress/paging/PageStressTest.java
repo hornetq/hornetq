@@ -269,7 +269,7 @@ public class PageStressTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
    @Override
-   protected Configuration createDefaultConfig()
+   protected Configuration createDefaultConfig() throws Exception
    {
       Configuration config = super.createDefaultConfig();
 

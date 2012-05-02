@@ -27,6 +27,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -62,6 +63,39 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
                                                  + "         <role name=\"bar\"/>\n"
                                                  + "      </user>\n"
                                                  + "</configuration>";
+   
+   private static final String maskedPasswordXml = "<configuration>\n"
+                                                   + "<mask-password>true</mask-password>\n"
+                                                   + "<defaultuser name=\"guest\" password=\"PASSWORD_TOKEN1\">\n"
+                                                   + "      <role name=\"guest\"/>\n"
+                                                   + "   </defaultuser>\n"
+                                                   + "      <user name=\"user1\" password=\"PASSWORD_TOKEN2\">\n"
+                                                   + "         <role name=\"guest\"/>\n"
+                                                   + "         <role name=\"foo\"/>\n"
+                                                   + "      </user>\n"
+                                                   + "    <user name=\"user2\" password=\"PASSWORD_TOKEN3\">\n"
+                                                   + "         <role name=\"anotherguest\"/>\n"
+                                                   + "         <role name=\"foo\"/>\n"
+                                                   + "         <role name=\"bar\"/>\n"
+                                                   + "      </user>\n"
+                                                   + "</configuration>";
+
+   private static final String passwordCodecXml = "<configuration>\n"
+                                                  + "<mask-password>true</mask-password>\n"
+                                                  + "<password-codec>PASSWORD_CODEC_TOKEN</password-codec>\n"
+                                                  + "<defaultuser name=\"guest\" password=\"PASSWORD_TOKEN1\">\n"
+                                                  + "      <role name=\"guest\"/>\n"
+                                                  + "   </defaultuser>\n"
+                                                  + "      <user name=\"user1\" password=\"PASSWORD_TOKEN2\">\n"
+                                                  + "         <role name=\"guest\"/>\n"
+                                                  + "         <role name=\"foo\"/>\n"
+                                                  + "      </user>\n"
+                                                  + "    <user name=\"user2\" password=\"PASSWORD_TOKEN3\">\n"
+                                                  + "         <role name=\"anotherguest\"/>\n"
+                                                  + "         <role name=\"foo\"/>\n"
+                                                  + "         <role name=\"bar\"/>\n"
+                                                  + "      </user>\n"
+                                                  + "</configuration>";
 
    @Override
    protected void setUp() throws Exception
@@ -86,7 +120,8 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       for (int i = 0; i < children.getLength(); i++)
       {
          Node node = children.item(i);
-         if (node.getNodeName().equals("user") || node.getNodeName().equals("defaultuser"))
+         String name = node.getNodeName();
+         if (name.equals("user") || name.equals("defaultuser") || name.equals("mask-password") || name.equals("password-codec"))
          {
             deployer.deploy(node);
          }
@@ -157,6 +192,64 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("anotherguest", roles.get(0));
       Assert.assertEquals("foo", roles.get(1));
       Assert.assertEquals("bar", roles.get(2));
+   }
+
+   public void testMaskedPassword() throws Exception
+   {
+      String password1 = "helloworld1";
+      String password2 = "helloworld2";
+      String password3 = "helloworld3";
+
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      String mask1 = (String) codec.encode(password1);
+      String mask2 = (String) codec.encode(password2);
+      String mask3 = (String) codec.encode(password3);
+
+      String config = maskedPasswordXml.replace("PASSWORD_TOKEN1", mask1);
+      config = config.replace("PASSWORD_TOKEN2", mask2);
+      config = config.replace("PASSWORD_TOKEN3", mask3);
+
+      deploy(config);
+
+      User user1 = securityManager.users.get("guest");
+      User user2 = securityManager.users.get("user1");
+      User user3 = securityManager.users.get("user2");
+
+      assertEquals(password1, user1.password);
+      assertEquals(password2, user2.password);
+      assertEquals(password3, user3.password);
+   }
+
+   public void testPasswordCodec() throws Exception
+   {
+      String password1 = "helloworld1";
+      String password2 = "helloworld2";
+      String password3 = "helloworld3";
+
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      Map<String, String> prop = new HashMap<String, String>();
+      prop.put("key", "blahblah");
+      codec.init(prop);
+
+      String mask1 = (String) codec.encode(password1);
+      String mask2 = (String) codec.encode(password2);
+      String mask3 = (String) codec.encode(password3);
+
+      String config = passwordCodecXml.replace("PASSWORD_TOKEN1", mask1);
+      config = config.replace("PASSWORD_TOKEN2", mask2);
+      config = config.replace("PASSWORD_TOKEN3", mask3);
+      config = config.replace("PASSWORD_CODEC_TOKEN", codec.getClass()
+            .getName() + ";key=blahblah");
+
+      deploy(config);
+
+      User user1 = securityManager.users.get("guest");
+      User user2 = securityManager.users.get("user1");
+      User user3 = securityManager.users.get("user2");
+
+      assertEquals(password1, user1.password);
+      assertEquals(password2, user2.password);
+      assertEquals(password3, user3.password);
    }
 
    public void testUndeploy() throws Exception

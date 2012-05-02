@@ -105,7 +105,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       Assert.assertEquals(member2.getA().toString(), cfg2.toString());
    }
 
-   private HornetQServer createServer1()
+   private HornetQServer createServer1() throws Exception
    {
       // Server1 with two acceptors, each acceptor on a different cluster connection
       // talking to a different connector.
@@ -173,7 +173,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       return createServer(false, config1);
    }
 
-   private HornetQServer createServer2()
+   private HornetQServer createServer2() throws Exception
    {
       // Server1 with two acceptors, each acceptor on a different cluster connection
       // talking to a different connector.

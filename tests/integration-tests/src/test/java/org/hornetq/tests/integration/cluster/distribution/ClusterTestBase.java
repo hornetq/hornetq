@@ -1545,7 +1545,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       return servers[node];
    }
 
-   protected void setupServer(final int node, final boolean fileStorage, final boolean netty)
+   protected void setupServer(final int node, final boolean fileStorage, final boolean netty) throws Exception
    {
       setupLiveServer(node, fileStorage, false, netty);
    }
@@ -1553,7 +1553,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void setupLiveServer(final int node,
                                   final boolean fileStorage,
                                   final boolean sharedStorage,
-                                  final boolean netty)
+                                  final boolean netty) throws Exception
    {
       if (servers[node] != null)
       {
@@ -1604,7 +1604,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                     final int liveNode,
                                     final boolean fileStorage,
                                     final boolean sharedStorage,
-                                    final boolean netty)
+                                    final boolean netty) throws Exception
    {
       if (servers[node] != null)
       {
@@ -1650,7 +1650,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                final int port,
                                                final boolean fileStorage,
                                                final boolean netty,
-                                               final boolean sharedStorage)
+                                               final boolean sharedStorage) throws Exception
    {
       if (servers[node] != null)
       {
@@ -1728,7 +1728,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                  final int port,
                                                  final boolean fileStorage,
                                                  final boolean netty,
-                                                 final boolean sharedStorage)
+                                                 final boolean sharedStorage) throws Exception
    {
       if (servers[node] != null)
       {

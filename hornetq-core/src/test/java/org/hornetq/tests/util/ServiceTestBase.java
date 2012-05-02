@@ -448,12 +448,12 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected final HornetQServer createServer(final boolean realFiles)
+   protected final HornetQServer createServer(final boolean realFiles) throws Exception
    {
       return createServer(realFiles, false);
    }
 
-   protected final HornetQServer createServer(final boolean realFiles, final boolean netty)
+   protected final HornetQServer createServer(final boolean realFiles, final boolean netty) throws Exception
    {
       return createServer(realFiles, createDefaultConfig(netty), -1, -1, new HashMap<String, AddressSettings>());
    }
@@ -565,7 +565,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    protected HornetQServer createClusteredServerWithParams(final boolean isNetty,
                                                            final int index,
                                                            final boolean realFiles,
-                                                           final Map<String, Object> params)
+                                                           final Map<String, Object> params) throws Exception
    {
       if (isNetty)
       {
@@ -590,7 +590,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                            final boolean realFiles,
                                                            final int pageSize,
                                                            final int maxAddressSize,
-                                                           final Map<String, Object> params)
+                                                           final Map<String, Object> params) throws Exception
    {
       if (isNetty)
       {
