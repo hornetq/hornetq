@@ -37,6 +37,11 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
  */
 public interface Configuration extends Serializable
 {
+
+   //properties passed to acceptor/connectors.
+   static final String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
+   static final String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
+
    // General attributes -------------------------------------------------------------------
    
    
@@ -419,9 +424,10 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the cluster password for this server.
+    * @throws Exception 
     */
-   void setClusterPassword(String password);
-
+   void setClusterPassword(String password) throws Exception;
+   
    /**
     * Returns the size of the cache for pre-creating message IDs.
     * <br>
@@ -882,4 +888,24 @@ public interface Configuration extends Serializable
    * set the failback delay
    * */
    void setFailbackDelay(long delay);
+
+   /**
+    * The default password decoder
+    */
+   void setPasswordCodec(String codec);
+   
+   /**
+    * Gets the default password decoder
+    */
+   String getPasswordCodec();
+
+   /**
+    * whehther default using cleartext password
+    */
+   void setMaskPassword(boolean maskPassword);
+
+   /**
+    * if using cleartext password by default
+    */
+   boolean isMaskPassword();
 }

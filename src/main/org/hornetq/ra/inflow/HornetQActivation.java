@@ -40,6 +40,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
+import org.hornetq.utils.SensitiveDataCodec;
 
 /**
  * The activation.
@@ -136,6 +137,24 @@ public class HornetQActivation
       if (HornetQActivation.trace)
       {
          HornetQActivation.log.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
+      }
+      
+      if (ra.isUseMaskedPassword())
+      {
+         String pass = spec.getOwnPassword();
+         if (pass != null)
+         {
+            SensitiveDataCodec<String> codec = ra.getPasswordCodec();
+         
+            try
+            {
+               spec.setPassword(codec.decode(pass));
+            }
+            catch (Exception e)
+            {
+               throw new ResourceException(e);
+            }
+         }
       }
 
       this.ra = ra;
