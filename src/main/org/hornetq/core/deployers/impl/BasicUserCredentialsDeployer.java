@@ -15,6 +15,8 @@ package org.hornetq.core.deployers.impl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.utils.PasswordMaskingUtil;
+import org.hornetq.utils.SensitiveDataCodec;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -39,6 +41,14 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
 
    private static final String USER = "user";
 
+   private static final String MASK_PASSWORD = "mask-password";
+
+   private static final String PASSWORD_CODEC = "password-codec";
+
+   private boolean maskPassword = false;
+
+   private SensitiveDataCodec<String> passwordCodec;
+
    public BasicUserCredentialsDeployer(final DeploymentManager deploymentManager,
                                        final HornetQSecurityManager hornetQSecurityManager)
    {
@@ -50,7 +60,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { BasicUserCredentialsDeployer.DEFAULT_USER, BasicUserCredentialsDeployer.USER };
+      return new String[] { MASK_PASSWORD, PASSWORD_CODEC, DEFAULT_USER, USER };
    }
 
    @Override
@@ -62,14 +72,48 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+      String nodeName = node.getNodeName();
+      
+      if (MASK_PASSWORD.equals(nodeName))
+      {
+         String value = node.getTextContent().trim();
+
+         maskPassword = Boolean.parseBoolean(value);
+         
+         if (maskPassword)
+         {
+            passwordCodec = PasswordMaskingUtil.getDefaultCodec();
+         }
+         return;
+      }
+      
+      if (PASSWORD_CODEC.equals(nodeName))
+      {         
+         if (maskPassword)
+         {
+            String codecDesc = node.getTextContent();
+
+            passwordCodec = PasswordMaskingUtil.getCodec(codecDesc);
+         }
+         return;
+      }
+      
+      String username = node.getAttributes().getNamedItem("name").getNodeValue();
       String password = node.getAttributes()
                             .getNamedItem(BasicUserCredentialsDeployer.PASSWORD_ATTRIBUTE)
                             .getNodeValue();
+      
+      if (maskPassword)
+      {
+         if ( (password != null) && (! "".equals(password.trim())) )
+         {
+            password = passwordCodec.decode(password);
+         }
+      }
 
       // add the user
       hornetQSecurityManager.addUser(username, password);
-      String nodeName = node.getNodeName();
+
       if (BasicUserCredentialsDeployer.DEFAULT_USER.equalsIgnoreCase(nodeName))
       {
          hornetQSecurityManager.setDefaultUser(username);
@@ -90,9 +134,15 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    }
 
    @Override
+   public String getKeyAttribute()
+   {
+      return null;
+   }
+
+   @Override
    public void undeploy(final Node node) throws Exception
    {
-      String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+      String username = node.getAttributes().getNamedItem("name").getNodeValue();
       hornetQSecurityManager.removeUser(username);
    }
 

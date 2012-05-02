@@ -46,6 +46,11 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
 
       super.tearDown();
    }
+   
+   public void testMaskedPassword() throws Exception
+   {
+      
+   }
 
    public void testDefaultSecurity()
    {
