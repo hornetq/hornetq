@@ -551,7 +551,9 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public void close()
    {
-      serverLocator.close();
+      ServerLocator locator0 = serverLocator;
+      if (locator0 != null)
+         locator0.close();
    }
 
    public ServerLocator getServerLocator()
@@ -563,7 +565,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    {
       return JMSFactoryType.CF.intValue();
    }
-   
+
    /**
     * @deprecated use {@link ServerLocator#createSessionFactory()}
     */
@@ -702,7 +704,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
       return connection;
    }
-   
+
    @Override
    public String toString()
    {

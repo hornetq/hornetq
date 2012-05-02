@@ -44,8 +44,6 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -61,6 +59,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -68,10 +67,6 @@ import org.hornetq.tests.util.UnitTestCase;
  * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
- *
- * $Id$
- *
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
@@ -85,7 +80,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected XAConnectionFactory cf0xa, cf1xa;
 
-   protected DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory, sourceTopicFactory;
+   protected DestinationFactory sourceQueueFactory;
+   protected DestinationFactory targetQueueFactory;
+   protected DestinationFactory localTargetQueueFactory;
+   protected DestinationFactory sourceTopicFactory;
 
    protected Queue sourceQueue, targetQueue, localTargetQueue;
 
@@ -115,8 +113,8 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setJournalDirectory(getJournalDir(0, false));
       conf0.setBindingsDirectory(getBindingsDir(0, false));
       conf0.setSecurityEnabled(false);
-      conf0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
-      server0 = HornetQServers.newHornetQServer(conf0, false);
+      conf0.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      server0 = addServer(HornetQServers.newHornetQServer(conf0, false));
 
       context0 = new InVMContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
@@ -129,10 +127,9 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.setBindingsDirectory(getBindingsDir(1, false));
       params1 = new HashMap<String, Object>();
       params1.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      conf1.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(),
-                                                                       params1));
+      conf1.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params1));
 
-      server1 = HornetQServers.newHornetQServer(conf1, false);
+      server1 = addServer(HornetQServers.newHornetQServer(conf1, false));
 
       context1 = new InVMContext();
 
@@ -149,7 +146,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       createQueue("targetQueue", 1);
 
       setUpAdministeredObjects();
-
+      TxControl.enable();
       // We need a local transaction and recovery manager
       // We must start this after the remote servers have been created or it won't
       // have deleted the database and the recovery manager may attempt to recover transactions
@@ -163,7 +160,8 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          server = jmsServer1;
       }
-      server.createQueue(false, queueName, null, true, "/queue/" + queueName);
+      assertTrue("queue '/queue/" + queueName + "' created",
+                 server.createQueue(false, queueName, null, true, "/queue/" + queueName));
    }
 
    @Override
@@ -176,14 +174,17 @@ public abstract class BridgeTestBase extends UnitTestCase
       // Check no subscriptions left lying around
 
       checkNoSubscriptions(sourceTopic, 0);
-
+         if (cff0 instanceof HornetQConnectionFactory)
+         {
+            ((HornetQConnectionFactory)cff0).close();
+         }
+         if (cff1 instanceof HornetQConnectionFactory)
+         {
+            ((HornetQConnectionFactory)cff1).close();
+         }
       stopComponent(jmsServer0);
       stopComponent(jmsServer1);
-      stopComponent(server1);
-      stopComponent(server0);
-
       cff0 = cff1 = null;
-
       cff0xa = cff1xa = null;
 
       cf0 = cf1 = null;
@@ -203,18 +204,20 @@ public abstract class BridgeTestBase extends UnitTestCase
       server1 = null;
 
       jmsServer1 = null;
-
+         if (context0 != null)
+            context0.close();
       context0 = null;
-
+         if (context1 != null)
+            context1.close();
       context1 = null;
 
       // Shutting down Arjuna threads
       TxControl.disable(true);
 
       TransactionReaper.terminate(false);
-
       super.tearDown();
    }
+
 
    protected void setUpAdministeredObjects() throws Exception
    {
@@ -223,7 +226,8 @@ public abstract class BridgeTestBase extends UnitTestCase
          public ConnectionFactory createConnectionFactory() throws Exception
          {
             HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                                                                       new TransportConfiguration(
+                                                                                                  INVM_CONNECTOR_FACTORY));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -241,7 +245,8 @@ public abstract class BridgeTestBase extends UnitTestCase
          public Object createConnectionFactory() throws Exception
          {
             HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF,
-                                                                                                                          new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                                                                                                   new TransportConfiguration(
+                                                                                                                              INVM_CONNECTOR_FACTORY));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -263,7 +268,8 @@ public abstract class BridgeTestBase extends UnitTestCase
          public ConnectionFactory createConnectionFactory() throws Exception
          {
             HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                            new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                    new TransportConfiguration(
+                                                                                                                               INVM_CONNECTOR_FACTORY,
                                                                                                                                                        params1));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
@@ -282,7 +288,8 @@ public abstract class BridgeTestBase extends UnitTestCase
          public XAConnectionFactory createConnectionFactory() throws Exception
          {
             HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF,
-                                                                                                                          new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                   new TransportConfiguration(
+                                                                                                                              INVM_CONNECTOR_FACTORY,
                                                                                                                                                      params1));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
@@ -447,7 +454,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
             for (int i = 0; i < numMessages; i++)
             {
-               Assert.assertTrue("" + i, msgs.contains("message" + i));
+               Assert.assertTrue("quality=" + qosMode + ", #=" + i + ", message=" + msgs, msgs.contains("message" + i));
             }
 
             // Should be no more
