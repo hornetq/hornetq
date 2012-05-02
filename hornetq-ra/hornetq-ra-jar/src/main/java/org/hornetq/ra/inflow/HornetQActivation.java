@@ -129,6 +129,8 @@ public class HornetQActivation
                             final MessageEndpointFactory endpointFactory,
                             final HornetQActivationSpec spec) throws ResourceException
    {
+      spec.validate();
+
       if (HornetQActivation.trace)
       {
          HornetQRALogger.LOGGER.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
