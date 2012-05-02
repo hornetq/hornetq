@@ -15,7 +15,11 @@ package org.hornetq.ra;
 import java.io.Serializable;
 import java.util.Hashtable;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.PasswordMaskingUtil;
+import org.hornetq.utils.SensitiveDataCodec;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
 
 /**
  * The RA default properties - these are set in the ra.xml file
@@ -40,7 +44,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private String userName;
 
    /** The password */
-   private String password;
+   private String password = null;
 
    /** Use Local TX instead of XA */
    private Boolean localTx = false;
@@ -64,6 +68,14 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private Hashtable<?,?> jndiParams;
 
    private boolean useJNDI;
+   
+   private boolean useMaskedPassword = false;
+   
+   private String passwordCodec;
+   
+   private boolean initialized = false;
+   
+   private transient SensitiveDataCodec<String> codecInstance;
 
    /**
     * Constructor
@@ -120,6 +132,11 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /**
     * Set the password
+    * Based on UseCleartext property, the password can be
+    * plain text or encoded string. However we cannot decide
+    * which is the case at this moment, because we don't know
+    * when the UseCleartext and PasswordCodec are loaded. So for the moment
+    * we just save the password.
     * @param password The value
     */
    public void setPassword(final String password)
@@ -231,11 +248,65 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       this.setupInterval = setupInterval;
    }
    
+   public boolean isUseMaskedPassword()
+   {
+      return useMaskedPassword;
+   }
+   
+   public void setUseMaskedPassword(boolean useMaskedPassword)
+   {
+      this.useMaskedPassword = useMaskedPassword;
+   }
+   
+   public String getPasswordCodec()
+   {
+      return passwordCodec;
+   }
+   
+   public void setPasswordCodec(String codecs)
+   {
+      passwordCodec = codecs;
+   }
+   
    @Override
    public String toString()
    {
       return "HornetQRAProperties[localTx=" + localTx +
          ", userName=" + userName + ", password=" + password + "]";
+   }
+
+   public synchronized void init() throws HornetQException
+   {
+      if (initialized) return;
+      
+      if (useMaskedPassword)
+      {
+         codecInstance = new DefaultSensitiveStringCodec();
+
+         if (passwordCodec != null)
+         {
+            codecInstance = PasswordMaskingUtil.getCodec(passwordCodec);
+         }
+
+         try
+         {
+            if (password != null)
+            {
+               password = codecInstance.decode(password);
+            }
+         }
+         catch (Exception e)
+         {
+            throw new HornetQException(HornetQException.ILLEGAL_STATE, "Error decoding password using codec instance", e);
+         }
+
+      }
+      initialized = true;
+   }
+
+   public SensitiveDataCodec<String> getCodecInstance()
+   {
+      return codecInstance;
    }
 
 }

@@ -1389,5 +1389,285 @@
                 </tgroup>
             </informaltable>
         </section>
+
+        <section>
+           <title>Using Masked Passwords in Configuration Files</title>
+           <para>By default all passwords in HornetQ server's configuration files are in plaintext form. This usually poses no security issues as those 
+           files should be well protected from unauthorized accessing. However, in some circumstances a user doesn't want to expose its passwords to more 
+           eyes than necessary. </para>
+
+           <para>HornetQ can be configured to use 'masked' passwords in its configuration files. A masked password is an obscure string representation
+           of a real password. To mask a password a user will use an 'encoder'. The encoder takes in the real password and outputs the masked version.
+           A user can then replace the real password in the configuration files with the new masked password.
+           When HornetQ loads a masked password, it uses a suitable 'decoder' to decode it into real password.</para>
+
+           <para>Hornetq provides a default password encoder and decoder. Optionally users can use or implement their own encoder and decoder for 
+           masking the passwords.</para>
+
+           <section> <title>Password Masking in Server Configuration File</title>
+
+              <section> <title>The password masking property</title>
+
+              <para>The server configuration file has a property that defines the default masking behaviors over the entire file scope.</para>
+
+              <para><literal>mask-password</literal>: this boolean type property indicates if a password should be masked or not. Set it to "true" 
+              if you want your passwords masked. The default value is "false".</para>
+              </section>
+
+              <section> <title>Specific masking behaviors</title>
+
+                 <section> <title>cluster-password</title>
+
+                 <para>The nature of the value of cluster-password is subject to the value of property 'mask-password'. If it is true 
+                 the cluster-password is masked.</para>
+                 </section>
+
+                 <section> <title>Passwords in connectors and acceptors</title>
+
+                 <para>In the server configuration, Connectors and Acceptors sometimes needs to specify passwords. For example
+                 if a users wants to use an SSL-enabled NettyAcceptor, it can specify a key-store-password and a trust-store-password. Because
+                 Acceptors and Connectors are pluggable implementations, each transport will have different password masking needs.</para>
+
+                 <para>When a Connector or Acceptor configuration is initialised, HornetQ will add the "mask-password" and
+                 "password-codec" values to the Connector or Acceptors params using the keys <literal>hornetq.usemaskedpassword</literal>
+                 and <literal>hornetq.passwordcodec</literal> respectively. The Netty and InVM implementations will use these
+                 as needed and any other implementations will have access to these to use if they so wish.</para>
+                 </section>
+
+                 <section> <title>Passwords in Core Bridge cofigurations</title>
+
+                 <para>Core Bridges are configured in the server configuration file and so the masking of its 'password' properties 
+                 follows the same rules as that of 'cluster-password'.</para>
+                 </section>
+              </section>
+
+              <section> <title>Examples</title>
+
+              <para>The following table summarizes the relations among the above-mentioned properties</para>
+
+              <table frame="topbot" border="2">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>mask-password</entry>
+                            <entry>cluster-password</entry>
+                            <entry>acceptor/connector passwords</entry>
+                            <entry>bridge password</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>absent</entry>
+                            <entry>plain text</entry>
+                            <entry>plain text</entry>
+                            <entry>plain text</entry>
+                        </row>
+                        <row>
+                            <entry>false</entry>
+                            <entry>plain text</entry>
+                            <entry>plain text</entry>
+                            <entry>plain text</entry>
+                        </row>
+                        <row>
+                            <entry>true</entry>
+                            <entry>masked</entry>
+                            <entry>masked</entry>
+                            <entry>masked</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+              </table>
+
+<para>Examples</para>
+
+<para>Note: In the following examples if related attributed or properties are absent, it means they are not specified in the configure file.</para>
+
+<para>example 1</para>
+
+<programlisting>
+&lt;cluster-password&gt;bbc&lt;/cluster-password&gt;
+</programlisting>
+
+<para>This indicates the cluster password is a plaintext value ("bbc").</para>
+
+<para>example 2</para>
+
+<programlisting>
+&lt;mask-password&gt;true&lt;/mask-password&gt;
+&lt;cluster-password&gt;80cf731af62c290&lt;/cluster-password&gt;
+</programlisting>
+
+              <para>This indicates the cluster password is a masked value and HorentQ will use its built-in decoder to decode it. All other
+              passwords in the configuration file, Connectors, Acceptors and Bridges, will also use masked passwords.</para>
+              </section>
+           </section>
+
+           <section> <title>JMS Bridge password masking</title>
+
+           <para>The JMS Bridges are configured and deployed as separate beans so they need separate configuration to control the password masking. 
+           A JMS Bridge has two password parameters in its constructor, SourcePassword and TargetPassword. It uses the following two optional 
+           properties to control their masking:</para>
+
+           <para><literal>useMaskedPassword</literal> -- If set to "true" the passwords are masked. Default is false.</para>
+           <para><literal>passwordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. Ignored if 
+           <literal>useMaskedPassword</literal> is false. The format of this property is a full qualified class name optionally followed by key/value pairs, 
+           separated by semi-colons. For example:</para>
+
+<literal>
+&lt;property name="useMaskedPassword"&gt;true&lt;/property&gt;
+</literal><para></para>
+<literal>
+&lt;property name="passwordCodec"&gt;com.foo.FooDecoder;key=value&lt;/property&gt;
+</literal>
+           <para>HornetQ will load this property and initialize the class with a parameter map containing the "key"->"value" pair. 
+           If <literal>passwordCodec</literal> is not specified, the built-in decoder is used.</para>
+
+           </section>
+
+           <section> <title>Masking passwords in HorentQ ResourceAdapters and MDB activation configurations</title>
+
+           <para>Both ra.xml and MDB activation configuration have a 'password' property that can be masked. They are controlled by the following two 
+           optional Resource Adapter properties in ra.xml:</para>
+
+           <para><literal>UseMaskedPassword</literal> -- If setting to "true" the passwords are masked. Default is false.</para>
+           <para><literal>PasswordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. 
+              Ignored if UseMaskedPassword is false. The format of this property is a full qualified class name optionally followed by key/value pairs. 
+              It is the same format as that for JMS Bridges. Example:</para>
+
+<programlisting>
+      &lt;config-property&gt;
+        &lt;config-property-name&gt;UseMaskedPassword&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;boolean&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;true&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+      &lt;config-property&gt;
+        &lt;config-property-name&gt;PasswordCodec&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;com.foo.ADecoder;key=helloworld&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+</programlisting>
+
+           <para>With this configuration, both passwords in ra.xml and all of its MDBs will have to be in masked form.</para>
+
+           </section>
+
+           <section> <title>Masking passwords in hornetq-users.xml</title>
+
+           <para>HornetQ's built-in security manager uses plain configuration files where the user passwords are specified in plaintext 
+           forms by default. To mask those parameters the following two properties are needed:</para>
+
+           <para> <literal>mask-password</literal> -- If set to "true" all the passwords are masked. Default is false.</para>
+           <para> <literal>password-codec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. 
+           Ignored if <literal>mask-password</literal> is false. The format of this property is a full qualified class name optionally 
+           followed by key/value pairs. It is the same format as that for JMS Bridges. Example:</para>
+
+<programlisting>
+<mask-password>true</mask-password>
+<password-codec>org.hornetq.utils.DefaultSensitiveStringCodec;key=hello world</password-codec>
+</programlisting>
+
+           <para>When so configured, the HornetQ security manager will initialize a DefaultSensitiveStringCodec with the parameters 
+           "key"->"hello world", then use it to decode all the masked passwords in this configuration file.</para>
+
+           </section>
+
+           <section> <title>Choosing a decoder for password masking</title>
+
+           <para>As described in the previous sections, all password masking requires a decoder. A decoder uses an algorithm to 
+           convert a masked password into its original cleartext form in order to be used in various security operations. The algorithm 
+           used for decoding must match that for encoding. Otherwise the decoding may not be successful.</para>
+
+           <para>For user's convenience HornetQ provides a default built-in Decoder. However a user can if they so wish implement their own.</para>
+
+              <section><title>The built-in Decoder</title>
+
+              <para>Whenever no decoder is specified in the configuration file, the built-in decoder is used. The class name for the built-in 
+              decoder is org.hornetq.utils.DefaultSensitiveStringCodec. It has both encoding and decoding capabilities. It uses java.crypto.Cipher 
+              utilities to encrypt (encode) a plaintext password and decrypt a mask string using same algorithm. Using this decoder/encoder is 
+              pretty straightforward. To get a mask for a password, just run the following in command line:</para>
+
+<programlisting>
+java org.hornetq.utils.DefaultSensitiveStringCodec "your plaintext password"
+</programlisting>
+
+              <para>Make sure the classpath is correct. You'll get something like</para>
+
+<programlisting>
+Encoded password: 80cf731af62c290
+</programlisting>
+
+              <para>Just copy "80cf731af62c290" and replace your plaintext password with it.</para>
+              </section>
+
+              <section><title>Using a different decoder</title>
+
+              <para>It is possible to use a different decoder rather than the built-in one. Simply make sure the decoder
+              is in HornetQ's classpath and configure the server to use it as follows:</para>
+
+<programlisting>
+<password-codec>com.foo.SomeDecoder;key1=value1;key2=value2</password-codec>
+</programlisting>
+
+              <para>If your decoder needs params passed to it you can do this via key/value pairs when configuring.
+              For instance if your decoder needs say a "key-location" parameter, you can define like so:</para>
+
+<programlisting>
+<password-codec>com.foo.NewDecoder;key-location=/some/url/to/keyfile</password-codec>
+</programlisting>
+
+              <para>Then configure your cluster-password like this:</para>
+
+<programlisting>
+<mask-password>true</mask-password>
+<cluster-password>masked_password</cluster-password>
+</programlisting>
+
+              <para>When HornetQ reads the cluster-password it will initialize the NewDecoder and use it to decode "mask_password". 
+              It also process all passwords using the new defined decoder.</para>
+              </section>
+
+              <section><title>Implementing your own ocdecs</title>
+
+              <para>To use a different decoder than the built-in one, you either pick one from existing libraries or you implement it yourself.
+              All decoders must implement the <literal>org.hornetq.utils.SensitiveDataCodec&lt;T&gt;</literal> interface:</para>
+
+<programlisting>
+public interface SensitiveDataCodec&lt;T&gt;
+{
+   T decode(Object mask) throws Exception;
+
+   void init(Map&lt;String, String&gt; params);
+}
+</programlisting>
+
+              <para>This is a generic type interface but normally for a password you just need String type. 
+                  So a new decoder would be defined like </para>
+
+<programlisting>
+public class MyNewDecoder implements SensitiveDataCodec&lt;String&gt;
+{
+   public String decode(Object mask) throws Exception
+   {
+      //decode the mask into cleartext passord
+      return "the password";
+   }
+
+   public void init(Map&lt;String, String&gt; params)
+   {
+      //initialization done here. It is called right after the decoder has been created.
+   }
+}
+</programlisting>
+
+             <para>Last but not least, once you get your own decoder, please add it to the classpath. Otherwise HornetQ will 
+             fail to load it!</para>
+             </section>
+        </section>
     </section>
+  </section>
+
 </chapter>

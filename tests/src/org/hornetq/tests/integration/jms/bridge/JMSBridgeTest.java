@@ -14,8 +14,10 @@ package org.hornetq.tests.integration.jms.bridge;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -37,6 +39,7 @@ import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
 
 /**
  * A JMSBridgeTest
@@ -650,6 +653,199 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
    
+   public void testMaskPassword() throws Exception
+   {
+      JMSBridgeImpl bridge = null;
+
+      Connection connSource = null;
+
+      Connection connTarget = null;
+      
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      String mask = (String)codec.encode("guest");
+
+      try
+      {
+         final int NUM_MESSAGES = 10;
+
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    "guest",
+                                    mask,
+                                    "guest",
+                                    mask,
+                                    null,
+                                    5000,
+                                    10,
+                                    QualityOfServiceMode.AT_MOST_ONCE,
+                                    1,
+                                    -1,
+                                    null,
+                                    null,
+                                    false);
+         bridge.setTransactionManager(newTransactionManager());
+         
+         bridge.setUseMaskedPassword(true);
+
+         bridge.start();
+
+         connSource = cf0.createConnection();
+
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sessSend.createProducer(sourceQueue);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+
+            prod.send(tm);
+         }
+
+         connTarget = cf1.createConnection();
+
+         Session sessRec = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = sessRec.createConsumer(targetQueue);
+
+         connTarget.start();
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(10000);
+
+            Assert.assertNotNull(tm);
+
+            Assert.assertEquals("message" + i, tm.getText());
+         }
+
+         Message m = cons.receiveNoWait();
+
+         Assert.assertNull(m);
+
+      }
+      finally
+      {
+         if (connSource != null)
+         {
+            connSource.close();
+         }
+
+         if (connTarget != null)
+         {
+            connTarget.close();
+         }
+
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+
+         removeAllMessages(sourceQueue.getQueueName(), 0);
+      }
+   }
+
+   public void testPasswordCodec() throws Exception
+   {
+      JMSBridgeImpl bridge = null;
+
+      Connection connSource = null;
+
+      Connection connTarget = null;
+      
+      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
+      Map<String, String> prop = new HashMap<String, String>();
+      prop.put("key", "bridgekey");
+      codec.init(prop);
+      
+      String mask = (String)codec.encode("guest");
+
+      try
+      {
+         final int NUM_MESSAGES = 10;
+
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    "guest",
+                                    mask,
+                                    "guest",
+                                    mask,
+                                    null,
+                                    5000,
+                                    10,
+                                    QualityOfServiceMode.AT_MOST_ONCE,
+                                    1,
+                                    -1,
+                                    null,
+                                    null,
+                                    false);
+         bridge.setTransactionManager(newTransactionManager());
+         
+         bridge.setUseMaskedPassword(true);
+         bridge.setPasswordCodec(codec.getClass().getName() + ";key=bridgekey");
+
+         bridge.start();
+
+         connSource = cf0.createConnection();
+
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sessSend.createProducer(sourceQueue);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+
+            prod.send(tm);
+         }
+
+         connTarget = cf1.createConnection();
+
+         Session sessRec = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = sessRec.createConsumer(targetQueue);
+
+         connTarget.start();
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(10000);
+
+            Assert.assertNotNull(tm);
+
+            Assert.assertEquals("message" + i, tm.getText());
+         }
+
+         Message m = cons.receiveNoWait();
+
+         Assert.assertNull(m);
+
+      }
+      finally
+      {
+         if (connSource != null)
+         {
+            connSource.close();
+         }
+
+         if (connTarget != null)
+         {
+            connTarget.close();
+         }
+
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+
+         removeAllMessages(sourceQueue.getQueueName(), 0);
+      }
+   }
+
    public void testSelector() throws Exception
    {
       JMSBridgeImpl bridge = null;
