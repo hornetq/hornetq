@@ -37,7 +37,7 @@
 
   <!-- Comparison is correct within its context -->
   <Match>
-    <Class name="org.hornetq.ra.Util"/>
+    <Class name="org.hornetq.ra.HornetQRaUtils"/>
     <Or>
       <Method name="compare" params="java.lang.Integer,java.lang.Integer" returns="boolean"/>
       <Method name="compare" params="java.lang.Long,java.lang.Long" returns="boolean"/>

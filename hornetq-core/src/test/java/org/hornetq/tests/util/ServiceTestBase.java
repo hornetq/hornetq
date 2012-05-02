@@ -36,12 +36,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
@@ -68,17 +64,6 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Constants -----------------------------------------------------
 
    protected static final long WAIT_TIMEOUT = 10000;
-
-
-   // Attributes ----------------------------------------------------
-
-   protected static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
-
-   public static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
-
-   protected static final String NETTY_ACCEPTOR_FACTORY = NettyAcceptorFactory.class.getCanonicalName();
-
-   protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    @Override
    protected void tearDown() throws Exception
