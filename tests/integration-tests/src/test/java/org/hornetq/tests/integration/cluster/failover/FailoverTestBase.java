@@ -182,7 +182,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveServer = createTestableServer(liveConfig);
    }
 
-   protected void createReplicatedConfigs()
+   protected void createReplicatedConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager();
 

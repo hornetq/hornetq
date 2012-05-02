@@ -97,7 +97,7 @@ public class DivertAndACKClientTest extends JMSTestBase
    }
 
    @Override
-   protected Configuration createDefaultConfig(final boolean netty)
+   protected Configuration createDefaultConfig(final boolean netty) throws Exception
    {
       Configuration config = super.createDefaultConfig(netty);
 

@@ -153,7 +153,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
                                      int nodeid,
                                      boolean createClusterConnections,
                                      int[] otherBackupNodes,
-                                     int... otherClusterNodes)
+                                     int... otherClusterNodes) throws Exception
    {
       Configuration config1 = super.createDefaultConfig();
       config1.getAcceptorConfigurations().clear();
@@ -208,7 +208,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, liveNode)));
    }
 
-   protected void createLiveConfig(NodeManager nodeManager, int liveNode, int... otherLiveNodes)
+   protected void createLiveConfig(NodeManager nodeManager, int liveNode, int... otherLiveNodes) throws Exception
    {
       TransportConfiguration liveConnector = createTransportConfiguration(isNetty(),
                                                                           false,

@@ -38,7 +38,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       setupClusters();
    }
 
-   protected void setupServers()
+   protected void setupServers() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());

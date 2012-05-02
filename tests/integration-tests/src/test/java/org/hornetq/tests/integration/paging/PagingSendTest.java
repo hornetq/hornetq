@@ -60,7 +60,7 @@ public class PagingSendTest extends ServiceTestBase
       locator = createFactory(isNetty());
    }
 
-   private HornetQServer newHornetQServer()
+   private HornetQServer newHornetQServer() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
 

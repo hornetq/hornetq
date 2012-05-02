@@ -230,6 +230,18 @@ Copyright 2009 Red Hat, Inc.
         <config-property-name>ClientID</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>Whether the password is cleartext or encrypted, default false</description>
+        <config-property-name>UseMaskedPassword</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The class definition (full qualified name and its properties) used to encrypt the password</description>
+        <config-property-name>PasswordCodec</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=something</config-property-value>
       </config-property>-->
 
       <outbound-resourceadapter>

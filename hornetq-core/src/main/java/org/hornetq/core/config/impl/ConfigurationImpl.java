@@ -195,6 +195,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
 
+   public static final boolean DEFAULT_MASK_PASSWORD = false;
+
    // Attributes -----------------------------------------------------------------------------
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
@@ -350,6 +352,10 @@ public class ConfigurationImpl implements Configuration
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
 
    private long failbackDelay = ConfigurationImpl.DEFAULT_FAILBACK_DELAY;
+
+   private boolean maskPassword = ConfigurationImpl.DEFAULT_MASK_PASSWORD;
+
+   private transient String passwordCodec;
 
    // Public -------------------------------------------------------------------------
 
@@ -929,7 +935,7 @@ public class ConfigurationImpl implements Configuration
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
-   public void setClusterPassword(final String theclusterPassword)
+   public void setClusterPassword(final String theclusterPassword) throws Exception
    {
       clusterPassword = theclusterPassword;
    }
@@ -1427,4 +1433,25 @@ public class ConfigurationImpl implements Configuration
       sb.append(")");
       return sb.toString();
    }
+
+   public boolean isMaskPassword()
+   {
+      return maskPassword;
+   }
+
+   public void setMaskPassword(boolean maskPassword)
+   {
+      this.maskPassword = maskPassword;
+   }
+
+   public void setPasswordCodec(String codec)
+   {
+      passwordCodec = codec;
+   }
+
+   public String getPasswordCodec()
+   {
+      return passwordCodec;
+   }
+
 }

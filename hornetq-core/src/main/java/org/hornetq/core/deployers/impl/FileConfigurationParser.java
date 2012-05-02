@@ -46,6 +46,9 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
+import org.hornetq.utils.PasswordMaskingUtil;
+import org.hornetq.utils.SensitiveDataCodec;
 import org.hornetq.utils.XMLConfigurationUtil;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
@@ -270,11 +273,29 @@ public class FileConfigurationParser
                                                                                               config.getManagementNotificationAddress()
                                                                                                     .toString(),
                                                                                               Validators.NOT_NULL_OR_EMPTY)));
+            
+      config.setMaskPassword(XMLConfigurationUtil.getBoolean(e, "mask-password", false));
 
-      config.setClusterPassword(XMLConfigurationUtil.getString(e,
-                                                               "cluster-password",
-                                                               config.getClusterPassword(),
-                                                               Validators.NO_CHECK));
+      config.setPasswordCodec(XMLConfigurationUtil.getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(), 
+                                                                   Validators.NOT_NULL_OR_EMPTY));
+
+      // parsing cluster password
+      String passwordText = XMLConfigurationUtil.getString(e, "cluster-password", null, Validators.NO_CHECK);
+
+      boolean maskText = config.isMaskPassword();
+
+      if (passwordText != null)
+      {
+         if (maskText)
+         {
+            SensitiveDataCodec<String> codec = PasswordMaskingUtil.getCodec(config.getPasswordCodec());
+            config.setClusterPassword(codec.decode(passwordText));
+         }
+         else
+         {
+            config.setClusterPassword(passwordText);
+         }
+      }
 
       config.setClusterUser(XMLConfigurationUtil.getString(e,
                                                            "cluster-user",
@@ -319,7 +340,7 @@ public class FileConfigurationParser
       {
          Element connectorNode = (Element)connectorNodes.item(i);
 
-         TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode);
+         TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode, config);
 
          if (connectorConfig.getName() == null)
          {
@@ -344,7 +365,7 @@ public class FileConfigurationParser
       {
          Element acceptorNode = (Element)acceptorNodes.item(i);
 
-         TransportConfiguration acceptorConfig = parseTransportConfiguration(acceptorNode);
+         TransportConfiguration acceptorConfig = parseTransportConfiguration(acceptorNode, config);
 
          config.getAcceptorConfigurations().add(acceptorConfig);
       }
@@ -871,7 +892,7 @@ public class FileConfigurationParser
 
    // Private -------------------------------------------------------
 
-   private TransportConfiguration parseTransportConfiguration(final Element e)
+   private TransportConfiguration parseTransportConfiguration(final Element e, final Configuration mainConfig)
    {
       Node nameNode = e.getAttributes().getNamedItem("name");
 
@@ -880,6 +901,13 @@ public class FileConfigurationParser
       String clazz = XMLConfigurationUtil.getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
 
       Map<String, Object> params = new HashMap<String, Object>();
+      
+      params.put(Configuration.PROP_MASK_PASSWORD, mainConfig.isMaskPassword());
+
+      if (mainConfig.getPasswordCodec() != null)
+      {
+         params.put(Configuration.PROP_PASSWORD_CODEC, mainConfig.getPasswordCodec());
+      }
 
       NodeList paramsNodes = e.getElementsByTagName("param");
 
@@ -1129,7 +1157,7 @@ public class FileConfigurationParser
                                                                                          timeout));
    }
 
-   private void parseBridgeConfiguration(final Element brNode, final Configuration mainConfig)
+   private void parseBridgeConfiguration(final Element brNode, final Configuration mainConfig) throws Exception
    {
       String name = brNode.getAttribute("name");
 
@@ -1186,10 +1214,30 @@ public class FileConfigurationParser
                                                    ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                                    Validators.NO_CHECK);
 
-      String password = XMLConfigurationUtil.getString(brNode,
-                                                       "password",
-                                                       ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
-                                                       Validators.NO_CHECK);
+      NodeList clusterPassNodes = brNode.getElementsByTagName("password");
+      String password = null;
+      boolean maskPassword = mainConfig.isMaskPassword();
+
+      SensitiveDataCodec<String> codec = null;
+
+      if (clusterPassNodes.getLength() > 0)
+      {
+         Node passNode = clusterPassNodes.item(0);
+         password = passNode.getTextContent();
+      }
+
+      if (password != null)
+      {
+         if (maskPassword)
+         {
+            codec = PasswordMaskingUtil.getCodec(mainConfig.getPasswordCodec());
+            password = codec.decode(password);
+         }
+      }
+      else
+      {
+         password = ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD;
+      }
 
       boolean ha = XMLConfigurationUtil.getBoolean(brNode, "ha", false);
 
