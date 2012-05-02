@@ -104,7 +104,7 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL, conf.getMemoryMeasureInterval());
    }
 
-   public void testSetGetAttributes()
+   public void testSetGetAttributes() throws Exception
    {
       for (int j = 0; j < 100; j++)
       {
