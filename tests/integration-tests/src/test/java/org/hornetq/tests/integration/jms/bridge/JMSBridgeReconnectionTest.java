@@ -25,10 +25,10 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 public class JMSBridgeReconnectionTest extends BridgeTestBase
 {
    /**
-    * 
+    *
     */
    private static final int TIME_WAIT = 5000;
-   
+
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    // Crash and reconnect
@@ -37,53 +37,53 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, false);
    }
 
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P_LargeMessage() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, true);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, true);
    }
 
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, false);
    }
 
    // dups ok
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true, false);
    }
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false, false);
    }
 
    // At most once
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true, false);
    }
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false, false);
+      performCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false, false);
    }
 
    // Crash tests specific to XA transactions
 
    public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
-      testCrashAndReconnectDestCrashBeforePrepare(true);
+      performCrashAndReconnectDestCrashBeforePrepare(true);
    }
 
    public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
-      testCrashAndReconnectDestCrashBeforePrepare(false);
+      performCrashAndReconnectDestCrashBeforePrepare(false);
    }
 
    // Crash before bridge is started
@@ -110,9 +110,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
                                                null,
                                                false);
       bridge.setTransactionManager(newTransactionManager());
-
-      try
-      {
+      addHornetQComponent(bridge);
          bridge.start();
          Assert.assertFalse(bridge.isStarted());
          Assert.assertTrue(bridge.isFailed());
@@ -127,20 +125,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
          Assert.assertTrue(bridge.isStarted());
          Assert.assertFalse(bridge.isFailed());
-      }
-      finally
-      {
-         try
-         {
-            bridge.stop();
-         }
-         catch (Exception e)
-         {
-            JMSBridgeReconnectionTest.log.error("Failed to stop bridge", e);
-         }
-      }
    }
-   
+
    /**
     * https://jira.jboss.org/jira/browse/HORNETQ-287
     */
@@ -173,13 +159,13 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
       bridge.stop();
       Assert.assertFalse(bridge.isStarted());
-      
+
       // we restart and setup the server for the test's tearDown checks
       jmsServer1.start();
       createQueue("targetQueue", 1);
       setUpAdministeredObjects();
    }
-   
+
    /*
     * Send some messages
     * Crash the destination server
@@ -187,7 +173,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestBasic(final QualityOfServiceMode qosMode,
+   private void performCrashAndReconnectDestBasic(final QualityOfServiceMode qosMode,
                                                final boolean persistent,
                                                final boolean largeMessage) throws Exception
    {
@@ -201,9 +187,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          factInUse1 = cff1xa;
       }
 
-      try
-      {
-         bridge = new JMSBridgeImpl(factInUse0,
+      bridge =
+               new JMSBridgeImpl(factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -220,7 +205,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
                                     null,
                                     null,
                                     false);
-         bridge.setTransactionManager(newTransactionManager());
+      addHornetQComponent(bridge);
+      bridge.setTransactionManager(newTransactionManager());
          bridge.start();
 
          final int NUM_MESSAGES = 10;
@@ -248,7 +234,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          JMSBridgeReconnectionTest.log.info("Restarting server");
          jmsServer1.start();
 
-         jmsServer1.createQueue(false, "targetQueue", null, true, "queue/targetQueue");
+      // jmsServer1.createQueue(false, "targetQueue", null, true, "queue/targetQueue");
 
          createQueue("targetQueue", 1);
 
@@ -263,22 +249,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          JMSBridgeReconnectionTest.log.info("Sent messages");
 
          checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false, largeMessage);
-      }
-      finally
-      {
-
-         if (bridge != null)
-         {
-            try
-            {
-               bridge.stop();
-            }
-            catch (Exception e)
-            {
-               JMSBridgeReconnectionTest.log.error("Failed to stop bridge", e);
-            }
-         }
-      }
    }
 
    /*
@@ -289,13 +259,10 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestCrashBeforePrepare(final boolean persistent) throws Exception
+   private void performCrashAndReconnectDestCrashBeforePrepare(final boolean persistent) throws Exception
    {
-      JMSBridgeImpl bridge = null;
-
-      try
-      {
-         bridge = new JMSBridgeImpl(cff0xa,
+      JMSBridgeImpl bridge =
+                  new JMSBridgeImpl(cff0xa,
                                     cff1xa,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -312,6 +279,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
                                     null,
                                     null,
                                     false);
+         addHornetQComponent(bridge);
          bridge.setTransactionManager(newTransactionManager());
 
          bridge.start();
@@ -346,25 +314,5 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, false);
 
          checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false, false);
-      }
-      finally
-      {
-
-         if (bridge != null)
-         {
-            try
-            {
-               bridge.stop();
-            }
-            catch (Exception e)
-            {
-               JMSBridgeReconnectionTest.log.error("Failed to stop bridge", e);
-            }
-         }
-
-      }
    }
-
-   // Inner classes -------------------------------------------------------------------
-
 }
