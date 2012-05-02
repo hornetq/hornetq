@@ -111,6 +111,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private boolean started;
 
+   private final Object stoppingGuard = new Object();
    private boolean stopping = false;
 
    private final LinkedList<Message> messages;
@@ -313,7 +314,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    public synchronized void start() throws Exception
    {
-      stopping = false;
+      synchronized (stoppingGuard)
+      {
+         stopping = false;
+      }
 
       if (started)
       {
@@ -430,10 +434,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       }
    }
 
-   public synchronized void stop() throws Exception
+   public void stop() throws Exception
    {
-      stopping = true;
+      synchronized (stoppingGuard) {
+         if (stopping) return;
+         stopping = true;
+      }
 
+      synchronized (this) {
       if (JMSBridgeImpl.trace)
       {
          HornetQJMSLogger.LOGGER.trace("Stopping " + this);
@@ -509,6 +517,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       if (JMSBridgeImpl.trace)
       {
          HornetQJMSLogger.LOGGER.trace("Stopped " + this);
+      }
       }
    }
 
