@@ -40,6 +40,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.ra.recovery.RecoveryManager;
+import org.hornetq.utils.SensitiveDataCodec;
 
 /**
  * The resource adapter for HornetQ
@@ -299,6 +300,21 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public void setHA(final Boolean ha)
    {
       this.raProperties.setHA(ha);
+   }
+
+   public boolean isUseMaskedPassword()
+   {
+      return this.raProperties.isUseMaskedPassword();
+   }
+
+   public void setUseMaskedPassword(Boolean useMaskedPassword)
+   {
+      this.raProperties.setUseMaskedPassword(useMaskedPassword);
+   }
+
+   public void setPasswordCodec(String passwordCodec)
+   {
+      this.raProperties.setPasswordCodec(passwordCodec);
    }
 
    /**
@@ -1388,6 +1404,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    protected void setup() throws HornetQException
    {
+      raProperties.init();
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
       recoveryHornetQConnectionFactory = createRecoveryHornetQConnectionFactory(raProperties);
       recoveryManager.register(recoveryHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
@@ -1872,4 +1889,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       managedConnectionFactories.add(hornetQRAManagedConnectionFactory);
    }
+
+   public SensitiveDataCodec<String> getPasswordCodec()
+   {
+      return this.raProperties.getCodecInstance();
+   }   
+
 }

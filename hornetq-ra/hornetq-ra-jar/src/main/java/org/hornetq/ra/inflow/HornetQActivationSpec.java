@@ -475,11 +475,16 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
    }
 
+   public String getOwnPassword()
+   {
+      return password;
+   }
+
    /**
     * Set the password
     * @param value The value
     */
-   public void setPassword(final String value)
+   public void setPassword(final String value) throws Exception
    {
       if (HornetQActivationSpec.trace)
       {

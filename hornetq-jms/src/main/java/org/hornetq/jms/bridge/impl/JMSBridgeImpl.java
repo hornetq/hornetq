@@ -46,6 +46,7 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.server.HornetQComponent;
@@ -58,6 +59,9 @@ import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.utils.ClassloadingUtil;
+import org.hornetq.utils.DefaultSensitiveStringCodec;
+import org.hornetq.utils.PasswordMaskingUtil;
+import org.hornetq.utils.SensitiveDataCodec;
 
 /**
  *
@@ -156,6 +160,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private MBeanServer mbeanServer;
 
    private ObjectName objectName;
+
+   private boolean useMaskedPassword = false;
+
+   private String passwordCodec;
 
    private static final int FORWARD_MODE_XA = 0;
 
@@ -323,7 +331,9 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          executor = createExecutor();
       }
-
+      
+      initPasswords();
+      
       checkParams();
 
       TransactionManager tm = getTm();
@@ -386,6 +396,38 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          handleFailureOnStartup();
       }
 
+   }
+
+   private void initPasswords() throws HornetQException
+   {
+      if (useMaskedPassword)
+      {
+         SensitiveDataCodec<String> codecInstance = new DefaultSensitiveStringCodec();
+
+         if (passwordCodec != null)
+         {
+            codecInstance = PasswordMaskingUtil.getCodec(passwordCodec);
+         }
+
+         try
+         {
+            if (this.sourcePassword != null)
+            {
+               sourcePassword = codecInstance.decode(sourcePassword);
+            }
+
+            if (this.targetPassword != null)
+            {
+               targetPassword = codecInstance.decode(targetPassword);
+            }
+         }
+         catch (Exception e)
+         {
+            throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                  "Error decoding password using codec instance", e);
+         }
+
+      }
    }
 
    public synchronized void stop() throws Exception
@@ -2013,6 +2055,26 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
+   }
+
+   public boolean isUseMaskedPassword()
+   {
+      return useMaskedPassword;
+   }
+
+   public void setUseMaskedPassword(boolean maskPassword)
+   {
+      this.useMaskedPassword = maskPassword;
+   }
+
+   public String getPasswordCodec()
+   {
+      return passwordCodec;
+   }
+
+   public void setPasswordCodec(String passwordCodec)
+   {
+      this.passwordCodec = passwordCodec;
    }
 
 }

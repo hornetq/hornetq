@@ -169,13 +169,22 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
          for (int i = 0; i < children.getLength(); i++)
          {
             Node node = children.item(i);
-            Node keyNode = node.getAttributes().getNamedItem(getKeyAttribute());
-            if (keyNode == null)
+
+            String keyAttr = getKeyAttribute();
+            String name = null;
+
+            if (keyAttr != null)
             {
-               HornetQLogger.LOGGER.keyAttributeMissing(node);
-               continue;
+               Node keyNode = node.getAttributes().getNamedItem(
+                     getKeyAttribute());
+               if (keyNode == null)
+               {
+                  HornetQLogger.LOGGER.keyAttributeMissing(node);
+                  continue;
+               }
+               name = keyNode.getNodeValue();
             }
-            String name = keyNode.getNodeValue();
+
             try
             {
                deploy(node);
