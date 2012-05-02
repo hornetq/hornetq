@@ -454,7 +454,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
             for (int i = 0; i < numMessages; i++)
             {
-               Assert.assertTrue("" + i, msgs.contains("message" + i));
+               Assert.assertTrue("quality=" + qosMode + ", #=" + i + ", message=" + msgs, msgs.contains("message" + i));
             }
 
             // Should be no more
