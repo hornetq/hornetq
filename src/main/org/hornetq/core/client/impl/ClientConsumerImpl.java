@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
@@ -491,6 +493,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void clearAtFailover()
    {
       clearBuffer();
+      
+      resetLargeMessageController();
 
       lastAckedMessage = null;
 
@@ -613,7 +617,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          largeMessageCache.deleteOnExit();
       }
 
-      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 5, largeMessageCache);
+      ClientSessionFactory sf = session.getSessionFactory();
+      ServerLocator locator = sf.getServerLocator();
+      int callTimeout = (int)(locator.getCallTimeout() / 1000);
+      
+      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), callTimeout, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
       {

@@ -1373,15 +1373,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       // if we are CMP or BMP using local tx we ignore the ack mode as we are transactional
       if (deliveryTransacted || useLocalTx)
       {
-         int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
-                                                          : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
+         // JBPAPP-8845
+         // If transacted we need to send the ack flush as soon as possible
+         // as if any transaction times out, we need the ack on the server already
          if (useLocalTx)
          {
-            result = parameterFactory.createSession(user, pass, false, false, false, false, actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, false, false, false, false, 0);
          }
          else
          {
-            result = parameterFactory.createSession(user, pass, true, false, false, false, actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, true, false, false, false, 0);
          }
       }
       else
