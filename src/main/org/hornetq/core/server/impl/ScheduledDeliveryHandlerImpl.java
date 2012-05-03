@@ -13,10 +13,11 @@
 package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -169,8 +170,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       public void run()
       {
-         HashSet<Queue> queues = new HashSet<Queue>();
-         LinkedList<MessageReference> references = new LinkedList<MessageReference>();
+         HashMap<Queue, LinkedList<MessageReference>> refs = new HashMap<Queue, LinkedList<MessageReference>>();
 
          synchronized (lockDelivery)
          {
@@ -187,33 +187,26 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    
                      reference.setScheduledDeliveryTime(0);
                      
-                     references.add(reference);
+                     LinkedList<MessageReference> references = refs.get(reference.getQueue());
                      
-                     queues.add(reference.getQueue());
+                     if (references == null)
+                     {
+                        references = new LinkedList<MessageReference>();
+                        refs.put(reference.getQueue(), references);
+                     }
+                     
+                     references.add(reference);
                   }
                }
             }
-            
-            for (MessageReference reference : references)
+
+            for (Map.Entry<Queue, LinkedList<MessageReference>> entry : refs.entrySet())
             {
-               Queue queue = reference.getQueue();
-               synchronized (queue)
-               {
-                  queue.resetAllIterators();
-                  queue.addHead(reference);
-               }
+               entry.getKey().addHead(entry.getValue());
             }
             
             // Just to speed up GC
-            references.clear();
-            
-            for (Queue queue : queues)
-            {
-               synchronized (queue)
-               {
-                  queue.deliverAsync();
-               }
-            }
+            refs.clear();
          }
       }
    }
