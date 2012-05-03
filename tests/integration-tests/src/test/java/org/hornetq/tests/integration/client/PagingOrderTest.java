@@ -115,7 +115,7 @@ public class PagingOrderTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, false, false);
 
-         Queue queue = server.createQueue(ADDRESS, ADDRESS, null, true, false);
+      server.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 

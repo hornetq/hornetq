@@ -19,7 +19,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       setupCluster();
 
       startServers(0, 1, 2);
-      BackupSyncDelay delay = new BackupSyncDelay(servers[4], servers[1], PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
+      new BackupSyncDelay(servers[4], servers[1], PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
       startServers(3, 4, 5);
 
       for (int i : liveServerIDs)
