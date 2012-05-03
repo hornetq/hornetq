@@ -15,8 +15,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.stomp.Stomp;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -31,16 +29,18 @@ import org.hornetq.tests.unit.util.InVMContext;
 
 public class ExtraStompTest extends StompTestBase
 {
-   public ExtraStompTest()
+   @Override
+   public void setUp() throws Exception
    {
       autoCreateServer = false;
+      super.setUp();
    }
 
    public void testConnectionTTL() throws Exception
    {
       try
       {
-         server = createServerWithTTL(3000);
+         server = createServerWithTTL(2000);
          server.start();
 
          setUpAfterServer();
@@ -189,10 +189,10 @@ public class ExtraStompTest extends StompTestBase
          params.put(TransportConstants.STOMP_ENABLE_MESSAGE_ID, enableMessageID);
       }
       params.put(TransportConstants.STOMP_CONSUMERS_CREDIT, "-1");
-      TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
+      TransportConfiguration stompTransport = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
       config.getAcceptorConfigurations().add(stompTransport);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer hornetQServer = HornetQServers.newHornetQServer(config, defUser, defPass);
+      config.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      HornetQServer hornetQServer = addServer(HornetQServers.newHornetQServer(config, defUser, defPass));
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
