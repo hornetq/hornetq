@@ -84,7 +84,9 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private OutputStream outStream;
 
-   private Exception handledException;
+   // There's no need to wait a synchronization
+   // we just set the exception and let other threads to get it as soon as possible
+   private volatile Exception handledException;
 
    private final FileCache fileCache;
 
@@ -128,11 +130,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
    }
 
    // Public --------------------------------------------------------
-
-   public synchronized Exception getHandledException()
-   {
-      return handledException;
-   }
 
    /**
     * 
@@ -230,33 +227,36 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   public synchronized void cancel()
+   public void cancel()
    {
-      
-      int totalSize = 0;
-      Packet polledPacket = null;
-      while ((polledPacket = packets.poll()) != null)
-      {
-         totalSize += polledPacket.getPacketSize();
-      }
-
-      try
-      {
-         consumerInternal.flowControl(totalSize, false);
-      }
-      catch (Exception ignored)
-      {
-         // what else can we do here?
-         log.warn(ignored.getMessage(), ignored);
-      }
-      
+      // Doing this outside of the lock might interrupt the process as soon as possible
       this.handledException = new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Transmission interrupted on consumer shutdown");
-       
-      packets.offer(new SessionReceiveContinuationMessage());
-      streamEnded = true;
-      streamClosed = true;
 
-      notifyAll();
+      synchronized (this)
+      {
+         int totalSize = 0;
+         Packet polledPacket = null;
+         while ((polledPacket = packets.poll()) != null)
+         {
+            totalSize += polledPacket.getPacketSize();
+         }
+   
+         try
+         {
+            consumerInternal.flowControl(totalSize, false);
+         }
+         catch (Exception ignored)
+         {
+            // what else can we do here?
+            log.warn(ignored.getMessage(), ignored);
+         }
+          
+         packets.offer(new SessionReceiveContinuationMessage());
+         streamEnded = true;
+         streamClosed = true;
+   
+         notifyAll();
+      }
    }
 
    public synchronized void close()
@@ -280,7 +280,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             sendPacketToOutput(output, currentPacket);
             currentPacket = null;
          }
-         while (true)
+         while (handledException == null)
          {
             SessionReceiveContinuationMessage packet = packets.poll();
             if (packet == null)
@@ -293,6 +293,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             sendPacketToOutput(output, packet);
          }
 
+         checkException();
          outStream = output;
       }
 
@@ -353,6 +354,19 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
       }
 
+      checkException();
+
+      return streamEnded;
+
+   }
+
+   /**
+    * @throws HornetQException
+    */
+   private void checkException() throws HornetQException
+   {
+      // it's not needed to copy it as we never set it back to null
+      // once the exception is set, the controller is pretty much useless
       if (handledException != null)
       {
          if (handledException instanceof HornetQException)
@@ -366,9 +380,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
                                        handledException);
          }
       }
-
-      return streamEnded;
-
    }
 
    // Channel Buffer Implementation ---------------------------------
