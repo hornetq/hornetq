@@ -621,7 +621,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             
             if (log.isTraceEnabled())
             {
-               log.trace("ACKing ref " + ref + " on " + this);
+               log.trace("ACKing ref " + ref + " on tx= " + tx + ", consumer=" + this);
             }
    
             if (ref == null)

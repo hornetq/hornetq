@@ -301,12 +301,17 @@ public class HornetQMessageHandler implements MessageHandler
          }
          catch (ResourceException e)
          {
-            HornetQMessageHandler.log.warn("Unable to call after delivery", e);
+            HornetQMessageHandler.log.warn("Unable to call after delivery - msg = " + message, e);
             return;
          }
          if (useLocalTx)
          {
             session.commit();
+         }
+         
+         if (trace)
+         {
+            log.trace("finished onMessage on " + message);
          }
       }
       catch (Throwable e)
