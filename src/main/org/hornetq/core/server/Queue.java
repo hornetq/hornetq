@@ -14,6 +14,7 @@
 package org.hornetq.core.server;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -59,6 +60,8 @@ public interface Queue extends Bindable
    void addTail(MessageReference ref, boolean direct);
 
    void addHead(MessageReference ref);
+   
+   void addHead(final LinkedList<MessageReference> refs);
 
    void acknowledge(MessageReference ref) throws Exception;
 
