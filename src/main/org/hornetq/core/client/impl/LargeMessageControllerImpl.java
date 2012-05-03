@@ -72,6 +72,9 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private final int readTimeout;
 
    private long readerIndex = 0;
+   
+   /** This is to control if packets are arriving for a better timeout control */
+   private boolean packetAdded = false;
 
    private long packetPosition = -1;
 
@@ -159,6 +162,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
       synchronized (this)
       {
+         packetAdded = true;
          if (outStream != null)
          {
             try
@@ -334,10 +338,18 @@ public class LargeMessageControllerImpl implements LargeMessageController
             throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
          }
 
-         if (timeWait > 0 && System.currentTimeMillis() > timeOut)
+         if ((timeWait > 0 && System.currentTimeMillis() > timeOut || ! packetAdded) && !streamEnded && handledException == null)
          {
-            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                       "Timeout waiting for LargeMessage Body");
+            if (!packetAdded)
+            {
+               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                        "No packets have arrived within " + timeWait);
+            }
+            else
+            {
+               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                                          "Timeout waiting for LargeMessage Body");
+            }
          }
       }
 

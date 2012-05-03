@@ -14,6 +14,7 @@
 package org.hornetq.tests.unit.core.server.cluster.impl;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -675,6 +676,15 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#addHead(java.util.LinkedList)
+       */
+      public void addHead(LinkedList<MessageReference> refs)
+      {
+         // TODO Auto-generated method stub
+         
       }
 
    }
