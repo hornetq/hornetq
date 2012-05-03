@@ -28,6 +28,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -84,11 +85,11 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
-import org.hornetq.spi.core.remoting.ConnectorFactory;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
 import org.hornetq.utils.TokenBucketLimiterImpl;
+import org.hornetq.utils.XidCodecSupport;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -541,9 +542,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      if (log.isTraceEnabled())
+      if (trace)
       {
-         log.trace("Sending commit");
+         log.trace("calling commit()");
       }
       
       if (rollbackOnly)
@@ -587,6 +588,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void rollback(final boolean isLastMessageAsDelivered) throws HornetQException
    {
+      if (trace)
+      {
+         log.trace("calling rollback(isLastMessageAsDelivered=" + isLastMessageAsDelivered + ")");
+      }
       checkClosed();
 
       // We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
@@ -918,7 +923,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          // Session close should always return without exception
 
          // Note - we only log at trace
-         ClientSessionImpl.log.trace("Failed to close session", e);
+         log.trace("Failed to close session", e);
       }
 
       doCleanup(false);
@@ -1297,6 +1302,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
+      if (trace)
+      {
+         log.trace("call commit(xid=" + convert(xid));
+      }
       checkXA();
 
       // we should never throw rollback if we have already prepared
@@ -1318,17 +1327,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
-            // if we retry and its not there the assume that it was committed
-            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
-            {
-               return;
-            }
             throw new XAException(response.getResponseCode());
+         }
+         
+         if (trace)
+         {
+            log.trace("finished commit on " + convert(xid) + " with response = " + response);
          }
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.warn("failover occured during commit throwing XAException.XA_RETRY");
+         ClientSessionImpl.log.warn("Exception occurred during commit," + convert(xid) + " throwing XAException.XA_RETRY", e);
 
          // Unblocked on failover
          xaRetry = true;
@@ -1340,6 +1349,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void end(final Xid xid, final int flags) throws XAException
    {
+      if (trace)
+      {
+         log.trace("Calling end:: " + convert(xid));
+      }
+      
       checkXA();
 
       if (rollbackOnly)
@@ -1443,6 +1457,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
+      if (trace) 
+      {
+         log.trace("Calling prepare:: " + convert(xid));
+      }
+      
 
       if (rollbackOnly)
       {
@@ -1545,7 +1564,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-
+      
+      if (trace) 
+      {
+         log.trace("Calling rollback:: " + convert(xid));
+      }
+      
       try
       {
          boolean wasStarted = started;
@@ -1576,11 +1600,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
-            // if we retry and its not there the assume that it was rolled back
-            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
-            {
-               return;
-            }
             throw new XAException(response.getResponseCode());
          }
       }
@@ -1588,10 +1607,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          if (e.getCode() == HornetQException.UNBLOCKED)
          {
+            log.warn("Unblocked error during rollback, throwing a retry on XID=" + convert(xid));
             // Unblocked on failover
-            xaRetry = true;
             throw new XAException(XAException.XA_RETRY);
          }
+         
+         log.warn("Sending XAER_RMERR " + convert(xid));
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1616,6 +1637,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void start(final Xid xid, final int flags) throws XAException
    {
+      if (trace)
+      {
+         log.trace("Calling start:: " + convert(xid) + " clientXID=" + xid + " flags = " + flags);
+      }
+      
       checkXA();
 
       Packet packet = null;
@@ -2094,4 +2120,26 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
    }
+   
+   
+   /**
+    * If you ever tried to debug XIDs you will know what this is about.
+    * This will serialize and deserialize the XID to the same way it's going to be printed on server logs 
+    * or print-data.
+    * 
+    * This will convert to the same XID deserialized on the Server, hence we will be able to debug eventual stuff
+    * 
+    * @param xid
+    * @return
+    */
+   private Object convert(Xid xid)
+   {
+      HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(200);
+      XidCodecSupport.encodeXid(xid, buffer);
+      
+      Object obj = XidCodecSupport.decodeXid(buffer);
+      
+      return "xid=" + obj + ",clientXID=" + xid;
+   }
+
 }
