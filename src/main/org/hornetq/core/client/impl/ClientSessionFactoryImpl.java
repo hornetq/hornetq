@@ -1484,47 +1484,39 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          else if (type == PacketImpl.CLUSTER_TOPOLOGY)
          {
             ClusterTopologyChangeMessage topMessage = (ClusterTopologyChangeMessage)packet;
-
-            if (topMessage.isExit())
-            {
-               if (ClientSessionFactoryImpl.isDebug)
-               {
-                  ClientSessionFactoryImpl.log.debug("Notifying " + topMessage.getNodeID() + " going down");
-               }
-               serverLocator.notifyNodeDown(System.currentTimeMillis(), topMessage.getNodeID());
-            }
-            else
-            {
-               if (ClientSessionFactoryImpl.isDebug)
-               {
-                  ClientSessionFactoryImpl.log.debug("Node " + topMessage.getNodeID() +
-                                                     " going up, connector = " +
-                                                     topMessage.getPair() +
-                                                     ", isLast=" +
-                                                     topMessage.isLast() +
-                                                     " csf created at\nserverLocator=" +
-                                                     serverLocator, e);
-               }
-               serverLocator.notifyNodeUp(System.currentTimeMillis(),
-                                          topMessage.getNodeID(),
-                                          topMessage.getPair(),
-                                          topMessage.isLast());
-            }
+            notifyTopologyChange(topMessage);
          }
          else if (type == PacketImpl.CLUSTER_TOPOLOGY_V2)
          {
             ClusterTopologyChangeMessage_V2 topMessage = (ClusterTopologyChangeMessage_V2)packet;
+            notifyTopologyChange(topMessage);
+         }
+      }
 
-            if (topMessage.isExit())
+      /**
+       * @param topMessage
+       */
+      private void notifyTopologyChange(final ClusterTopologyChangeMessage topMessage)
+      {
+         threadPool.execute(new Runnable()
+         {
+            public void run()
             {
-               if (ClientSessionFactoryImpl.isDebug)
+               final long eventUID;
+               if (topMessage instanceof ClusterTopologyChangeMessage_V2)
+                  eventUID = ((ClusterTopologyChangeMessage_V2)topMessage).getUniqueEventID();
+               else
+                  eventUID = System.currentTimeMillis();
+
+               if (topMessage.isExit())
                {
-                  ClientSessionFactoryImpl.log.debug("Notifying " + topMessage.getNodeID() + " going down");
+                  if (ClientSessionFactoryImpl.isDebug)
+                  {
+                     ClientSessionFactoryImpl.log.debug("Notifying " + topMessage.getNodeID() + " going down");
+                  }
+                  serverLocator.notifyNodeDown(eventUID, topMessage.getNodeID());
+                  return;
                }
-               serverLocator.notifyNodeDown(topMessage.getUniqueEventID(), topMessage.getNodeID());
-            }
-            else
-            {
                if (ClientSessionFactoryImpl.isDebug)
                {
                   ClientSessionFactoryImpl.log.debug("Node " + topMessage.getNodeID() +
@@ -1535,20 +1527,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      " csf created at\nserverLocator=" +
                                                      serverLocator, e);
                }
-               
+
                Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
-               
                if (transportConfig.getA() == null && transportConfig.getB() == null)
                {
-                  transportConfig = new Pair<TransportConfiguration, TransportConfiguration>(conn.getTransportConnection().getConnectorConfig(), null);
+                  transportConfig = new Pair<TransportConfiguration, TransportConfiguration>(conn.getTransportConnection()
+                                                                                                 .getConnectorConfig(),
+                                                                                             null);
                }
-               
-               serverLocator.notifyNodeUp(topMessage.getUniqueEventID(),
-                                          topMessage.getNodeID(),
-                                          transportConfig,
-                                          topMessage.isLast());
+               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
             }
-         }
+         });
       }
    }
 
@@ -1692,5 +1681,4 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       reconnectAttempts = attempts;
    }
-
 }
