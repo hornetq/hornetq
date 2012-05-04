@@ -27,7 +27,6 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.impl.QueueImpl;
-import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -39,8 +38,6 @@ public class QueueImplTest extends UnitTestCase
    private static final SimpleString queue1 = new SimpleString("queue1");
 
    private static final long TIMEOUT = 10000;
-
-   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    private ScheduledExecutorService scheduledExecutor;
 

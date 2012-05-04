@@ -129,8 +129,11 @@ public class SessionTest extends ServiceTestBase
       cf = createSessionFactory(locator);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
-         ClientProducer producer = clientSession.createProducer();
-         ClientConsumer consumer = clientSession.createConsumer(queueName);
+      /** keep unused variables in order to maintain references to both objects */
+      @SuppressWarnings("unused")
+      ClientProducer producer = clientSession.createProducer();
+      @SuppressWarnings("unused")
+      ClientConsumer consumer = clientSession.createConsumer(queueName);
 
          Assert.assertEquals(1, server.getRemotingService().getConnections().size());
 

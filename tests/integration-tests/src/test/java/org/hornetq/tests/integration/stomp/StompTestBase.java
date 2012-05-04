@@ -53,15 +53,12 @@ import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 public abstract class StompTestBase extends UnitTestCase
 {
-   private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
-   private int port = 61613;
+   private final int port = 61613;
 
    private Socket stompSocket;
 
@@ -69,7 +66,7 @@ public abstract class StompTestBase extends UnitTestCase
 
    private ConnectionFactory connectionFactory;
 
-   private Connection connection;
+   protected Connection connection;
 
    protected Session session;
 
@@ -78,21 +75,22 @@ public abstract class StompTestBase extends UnitTestCase
    protected Topic topic;
 
    protected JMSServerManager server;
-   
+
    protected String defUser = "brianm";
-   
+
    protected String defPass = "wombats";
-   
+
    protected boolean autoCreateServer = true;
-   
-   
+
+
 
    // Implementation methods
    // -------------------------------------------------------------------------
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       forceGC();
 
       if (autoCreateServer)
@@ -111,7 +109,7 @@ public abstract class StompTestBase extends UnitTestCase
          connection.start();
       }
    }
-   
+
    protected void setUpAfterServer() throws Exception
    {
       connectionFactory = createConnectionFactory();
@@ -129,7 +127,7 @@ public abstract class StompTestBase extends UnitTestCase
 
    /**
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
    protected JMSServerManager createServer() throws Exception
    {
@@ -155,6 +153,7 @@ public abstract class StompTestBase extends UnitTestCase
       return server;
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (autoCreateServer)
@@ -168,7 +167,7 @@ public abstract class StompTestBase extends UnitTestCase
       }
       super.tearDown();
    }
-   
+
    protected void cleanUp() throws Exception
    {
       connection.close();
@@ -230,9 +229,9 @@ public abstract class StompTestBase extends UnitTestCase
    {
       byte[] bytes = data.getBytes("UTF-8");
       OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < bytes.length; i++)
+      for (byte b : bytes)
       {
-         outputStream.write(bytes[i]);
+         outputStream.write(b);
       }
       outputStream.flush();
    }
@@ -240,9 +239,9 @@ public abstract class StompTestBase extends UnitTestCase
    public void sendFrame(byte[] data) throws Exception
    {
       OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < data.length; i++)
+      for (byte element : data)
       {
-         outputStream.write(data[i]);
+         outputStream.write(element);
       }
       outputStream.flush();
    }

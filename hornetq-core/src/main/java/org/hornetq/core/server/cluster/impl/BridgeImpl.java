@@ -36,7 +36,11 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.Notification;
@@ -320,6 +324,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          HornetQLogger.LOGGER.debug("Bridge " + this.name + " being stopped");
       }
+      ClientSessionFactoryInternal localCSF = csf;
+
+      if (localCSF != null)
+         localCSF.cleanup();
 
       if (futureScheduledReconnection != null)
       {
@@ -703,6 +711,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          if (csf == null || csf.isClosed())
          {
+            if (stopping)
+               return;
             csf = createSessionFactory();
             if (csf == null)
             {
@@ -847,6 +857,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
          }
       }
+
+      if (stopping)
+         return;
 
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {

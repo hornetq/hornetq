@@ -809,9 +809,7 @@ public class StompV11Test extends StompTestBase2
 
       ClientStompFrame frame = connV11.receiveFrame();
 
-      String messageID = frame.getHeader("message-id");
-
-
+      frame.getHeader("message-id");
 
       nack(connV11, "sub2", "someother");
 
@@ -896,9 +894,7 @@ public class StompV11Test extends StompTestBase2
 
       ClientStompFrame frame = connV11.receiveFrame();
 
-      String messageID = frame.getHeader("message-id");
-
-
+      frame.getHeader("message-id");
 
       ack(connV11, "sub2", "someother", null);
 

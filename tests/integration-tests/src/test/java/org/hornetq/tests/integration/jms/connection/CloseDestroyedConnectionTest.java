@@ -13,10 +13,7 @@
 package org.hornetq.tests.integration.jms.connection;
 
 import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
 import junit.framework.Assert;
@@ -33,7 +30,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A CloseDestroyedConnectionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -51,7 +48,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -89,11 +86,11 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
 
       super.createQueue(queueName);
 
-      MessageConsumer consumer = sess.createConsumer(queue);
+      sess.createConsumer(queue);
 
-      MessageProducer producer = sess.createProducer(queue);
+      sess.createProducer(queue);
 
-      QueueBrowser browser = sess.createBrowser(queue);
+      sess.createBrowser(queue);
 
       // Now fail the underlying connection
 

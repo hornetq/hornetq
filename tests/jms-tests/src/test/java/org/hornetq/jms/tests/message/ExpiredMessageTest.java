@@ -22,7 +22,6 @@ import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JMSTestCase;
-import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -32,17 +31,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class ExpiredMessageTest extends JMSTestCase
 {
-   // Constants ------------------------------------------------------------------------------------
-
-   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   // Public ---------------------------------------------------------------------------------------
 
    public void testSimpleExpiration() throws Exception
    {

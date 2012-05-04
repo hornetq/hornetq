@@ -18,13 +18,17 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -32,8 +36,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class LVQTest extends UnitTestCase
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
    private HornetQServer server;
 
    private ClientSession clientSession;
@@ -531,6 +533,7 @@ public class LVQTest extends UnitTestCase
       clientSessionTxReceives.commit();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -585,6 +588,7 @@ public class LVQTest extends UnitTestCase
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -601,7 +605,7 @@ public class LVQTest extends UnitTestCase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normalServer
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
       ClientSessionFactory sessionFactory = locator.createSessionFactory();

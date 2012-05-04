@@ -25,7 +25,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -37,18 +36,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ReconnectTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testReconnectNetty() throws Exception
    {
