@@ -153,8 +153,6 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
 
    public void testWrapID() throws Throwable
    {
-      final ConcurrentHashSet<Long> hashSet = new org.hornetq.utils.ConcurrentHashSet<Long>();
-
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
       System.out.println("Current Time = " + TimeAndCounterIDGeneratorTest.hex(System.currentTimeMillis()) + " " + seq);

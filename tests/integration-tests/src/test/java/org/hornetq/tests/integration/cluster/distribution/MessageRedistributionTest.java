@@ -43,19 +43,6 @@ public class MessageRedistributionTest extends ClusterTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-   public MessageRedistributionTest()
-   {
-      super();
-   }
-
-   /**
-    * @param name
-    */
-   public MessageRedistributionTest(String name)
-   {
-      super(name);
-   }
-
    @Override
    protected void setUp() throws Exception
    {
