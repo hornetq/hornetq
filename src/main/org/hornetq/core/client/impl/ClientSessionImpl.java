@@ -1351,7 +1351,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       if (trace)
       {
-         log.trace("Calling end:: " + convert(xid));
+         log.trace("Calling end:: " + convert(xid) + ", flags=" + convertTXFlag(flags));
       }
       
       checkXA();
@@ -2141,5 +2141,27 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       
       return "xid=" + obj + ",clientXID=" + xid;
    }
+
+   private String convertTXFlag(final int flags)
+   {
+      if (flags == XAResource.TMSUSPEND)
+      {
+         return "SESS_XA_SUSPEND";
+      }
+      else if (flags == XAResource.TMSUCCESS)
+      {
+         return "TMSUCCESS";
+      }
+      else if (flags == XAResource.TMFAIL)
+      {
+         return "TMFAIL";
+      }
+      else
+      {
+         return "XAER_INVAL(" + flags + ")";
+      }
+      
+   }
+   
 
 }
