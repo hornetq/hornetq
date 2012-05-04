@@ -344,6 +344,10 @@ public class HornetQActivation
 
       for (HornetQMessageHandler handler : handlers)
       {
+         handler.interruptConsumer();
+      }
+      for (HornetQMessageHandler handler : handlers)
+      {
          handler.teardown();
       }
       if (spec.isHasBeenUpdated())

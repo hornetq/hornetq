@@ -450,14 +450,40 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void close() throws HornetQException
    {
-      doCleanUp(true);
+      doCleanUp(true, false);
+   }
+
+   /**
+    * To be used by MDBs
+    * @param interruptConsumer it will send an interrupt to the thread
+    * @throws HornetQException
+    */
+   public void interruptHandlers() throws HornetQException
+   {
+      closing = true;
+      
+      resetLargeMessageController();
+
+      Thread onThread = onMessageThread;
+      if (onThread != null)
+      {
+         try
+         {
+            // just trying to interrupt any ongoing messages
+            onThread.interrupt();
+         }
+         catch (Throwable ignored)
+         {
+            // security exception probably.. we just ignore it, not big deal!
+         }
+      }
    }
 
    public void cleanUp()
    {
       try
       {
-         doCleanUp(false);
+         doCleanUp(false, false);
       }
       catch (HornetQException e)
       {
@@ -1011,6 +1037,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                         return null;
                      }
                   });
+                  
+                  onMessageThread = null;
                }
 
                if (ClientConsumerImpl.trace)
@@ -1051,7 +1079,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void doCleanUp(final boolean sendCloseMessage) throws HornetQException
+   private void doCleanUp(final boolean sendCloseMessage, final boolean interruptConsumer) throws HornetQException
    {
       try
       {
@@ -1066,6 +1094,23 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          closing = true;
 
          resetLargeMessageController();
+
+         if (interruptConsumer)
+         {
+            Thread onThread = receiverThread;
+            if (onThread != null)
+            {
+               try
+               {
+                  // just trying to interrupt any ongoing messages
+                  onThread.interrupt();
+               }
+               catch (Throwable ignored)
+               {
+                  // security exception probably.. we just ignore it, not big deal!
+               }
+            }
+         }
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
