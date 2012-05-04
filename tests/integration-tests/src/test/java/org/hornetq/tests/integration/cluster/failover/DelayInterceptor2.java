@@ -21,7 +21,6 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A DelayInterceptor2
@@ -32,11 +31,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  */
 public class DelayInterceptor2 implements Interceptor
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
    private volatile boolean loseResponse = true;
-   
-   private CountDownLatch latch = new CountDownLatch(1);
+
+   private final CountDownLatch latch = new CountDownLatch(1);
 
    public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {
@@ -45,7 +42,7 @@ public class DelayInterceptor2 implements Interceptor
          // Lose the response from the commit - only lose the first one
 
          loseResponse = false;
-         
+
          latch.countDown();
 
          return false;
@@ -55,7 +52,7 @@ public class DelayInterceptor2 implements Interceptor
          return true;
       }
    }
-   
+
    public boolean await() throws InterruptedException
    {
       return latch.await(10, TimeUnit.SECONDS);

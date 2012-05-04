@@ -23,9 +23,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -36,66 +34,66 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class GroupingTest extends JMSTestBase
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
    private Queue queue;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       queue = createQueue("TestQueue");
    }
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       jmsServer.destroyQueue("TestQueue");
-      
+
       super.tearDown();
    }
-   
+
    protected void setProperty(Message message)
    {
-      ((HornetQMessage)message).getCoreMessage().putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString("foo"));
+      ((HornetQMessage)message).getCoreMessage().putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, new SimpleString("foo"));
    }
-   
+
    protected ConnectionFactory getCF() throws Exception
    {
       return cf;
    }
-   
+
    public void testGrouping() throws Exception
    {
       ConnectionFactory fact = getCF();
-      
+
       Connection connection = fact.createConnection();
-      
+
       Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
       MessageProducer producer = session.createProducer(queue);
-      
+
       MessageConsumer consumer1 = session.createConsumer(queue);
       MessageConsumer consumer2 = session.createConsumer(queue);
       MessageConsumer consumer3 = session.createConsumer(queue);
-      
+
       connection.start();
-      
+
       String jmsxgroupID = null;
 
       for (int j = 0; j < 100; j++)
       {
          TextMessage message = session.createTextMessage();
-                  
+
          message.setText("Message" + j);
-         
+
          setProperty(message);
-         
+
          producer.send(message);
-         
+
          String prop = message.getStringProperty("JMSXGroupID");
-         
+
          assertNotNull(prop);
-         
+
          if (jmsxgroupID != null)
          {
             assertEquals(jmsxgroupID, prop);
@@ -108,19 +106,19 @@ public class GroupingTest extends JMSTestBase
 
       //All msgs should go to the first consumer
       for (int j = 0; j < 100; j++)
-      {        
+      {
          TextMessage tm = (TextMessage)consumer1.receive(10000);
-         
+
          assertNotNull(tm);
-         
+
          assertEquals("Message" + j, tm.getText());
-         
+
          assertEquals(tm.getStringProperty("JMSXGroupID"), jmsxgroupID);
       }
-      
+
       connection.close();
-      
-      
+
+
    }
 
 }
