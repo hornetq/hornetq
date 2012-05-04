@@ -1351,7 +1351,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       if (trace)
       {
-         log.trace("Calling end:: " + convert(xid));
+         log.trace("Calling end:: " + convert(xid) + ", flags=" + convertTXFlag(flags));
       }
       
       checkXA();
@@ -1639,7 +1639,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       if (trace)
       {
-         log.trace("Calling start:: " + convert(xid) + " clientXID=" + xid + " flags = " + flags);
+         log.trace("Calling start:: " + convert(xid) + " clientXID=" + xid + " flags = " + convertTXFlag(flags));
       }
       
       checkXA();
@@ -2141,5 +2141,41 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       
       return "xid=" + obj + ",clientXID=" + xid;
    }
+
+   private String convertTXFlag(final int flags)
+   {
+      if (flags == XAResource.TMSUSPEND)
+      {
+         return "SESS_XA_SUSPEND";
+      }
+      else if (flags == XAResource.TMSUCCESS)
+      {
+         return "TMSUCCESS";
+      }
+      else if (flags == XAResource.TMFAIL)
+      {
+         return "TMFAIL";
+      }
+      else
+      if (flags == XAResource.TMJOIN)
+      {
+         return "TMJOIN";
+      }
+      else if (flags == XAResource.TMRESUME)
+      {
+         return "TMRESUME";
+      }
+      else if (flags == XAResource.TMNOFLAGS)
+      {
+         // Don't need to flush since the previous end will have done this
+         return "TMNOFLAGS";
+      }
+      else
+      {
+         return "XAER_INVAL(" + flags + ")";
+      }
+      
+   }
+   
 
 }
