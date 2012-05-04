@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -64,7 +66,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       Assert.assertTrue(consumer.isClosed());
 
-      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -72,7 +74,7 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -80,7 +82,7 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {

@@ -21,7 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -104,7 +107,7 @@ public class ReattachTest extends ServiceTestBase
 
          RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
-         conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         conn.fail(new NotConnectedException());
 
          session.start();
 
@@ -169,7 +172,7 @@ public class ReattachTest extends ServiceTestBase
                if (count.incrementAndGet() == 2)
                {
                   System.out.println("Failing");
-                  connection.fail(new HornetQException(1, "bye"));
+                  connection.fail(new HornetQException(HornetQExceptionType.UNSUPPORTED_PACKET, "bye"));
                   return false;
                }
             }
@@ -269,7 +272,7 @@ public class ReattachTest extends ServiceTestBase
 
       t.start();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       session.start();
 
@@ -376,13 +379,13 @@ public class ReattachTest extends ServiceTestBase
             {
             }
 
-            conn2.fail(new HornetQException(HornetQException.NOT_CONNECTED, "Did not receive pong from server"));
+            conn2.fail(new NotConnectedException("Did not receive pong from server"));
          }
       };
 
       t.start();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       Assert.assertTrue(listener.failed);
 
@@ -475,7 +478,7 @@ public class ReattachTest extends ServiceTestBase
 
       t.start();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       // Should throw exception since didn't reconnect
 
@@ -485,9 +488,13 @@ public class ReattachTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
+      catch(ObjectClosedException oce)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       session.close();
@@ -571,7 +578,7 @@ public class ReattachTest extends ServiceTestBase
             {
                try
                {
-                  connFailure.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+                  connFailure.fail(new NotConnectedException());
                }
                catch (Exception e)
                {
@@ -734,7 +741,7 @@ public class ReattachTest extends ServiceTestBase
 
       InVMConnector.failOnCreateConnection = false;
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       Thread t = new Thread()
       {
@@ -825,7 +832,7 @@ public class ReattachTest extends ServiceTestBase
 
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       session.start();
 
@@ -911,7 +918,7 @@ public class ReattachTest extends ServiceTestBase
 
       t.start();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       session.start();
 
@@ -986,7 +993,7 @@ public class ReattachTest extends ServiceTestBase
 
       long start = System.currentTimeMillis();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       session.start();
 
@@ -1064,7 +1071,7 @@ public class ReattachTest extends ServiceTestBase
 
       long start = System.currentTimeMillis();
 
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+      conn.fail(new NotConnectedException());
 
       session.start();
 

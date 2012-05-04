@@ -30,6 +30,8 @@ import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -543,7 +545,7 @@ public class HornetQActivation
     */
    public void handleFailure(Throwable failure)
    {
-      if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
+      if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
       {
          HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
       }
@@ -583,7 +585,7 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               if(failure instanceof HornetQException && ((HornetQException)failure).getCode() == HornetQException.QUEUE_DOES_NOT_EXIST)
+               if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
                {
                   HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
                }

@@ -24,6 +24,7 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
@@ -96,7 +97,7 @@ public class LocalGroupingHandler implements GroupingHandler
             storageManager.addGrouping(groupBinding);
             if (!storageManager.waitOnOperations(timeout))
             {
-               throw new HornetQException(HornetQException.IO_ERROR, "Timeout on waiting I/O completion");
+               throw HornetQMessageBundle.BUNDLE.ioTimeout();
             }
             return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
          }

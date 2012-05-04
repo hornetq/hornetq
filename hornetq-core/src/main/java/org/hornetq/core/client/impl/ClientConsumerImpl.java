@@ -32,6 +32,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
@@ -193,8 +194,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (handler != null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Cannot call receive(...) - a MessageHandler is set");
+         throw HornetQMessageBundle.BUNDLE.messageHandlerSet();
       }
 
       if (clientWindowSize == 0)
@@ -417,8 +417,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (receiverThread != null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Cannot set MessageHandler - consumer is in receive(...)");
+         throw HornetQMessageBundle.BUNDLE.inReceive();
       }
 
       boolean noPreviousHandler = handler == null;
@@ -904,7 +903,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       if (closed)
       {
-         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Consumer is closed");
+         throw HornetQMessageBundle.BUNDLE.consumerClosed();
       }
    }
 

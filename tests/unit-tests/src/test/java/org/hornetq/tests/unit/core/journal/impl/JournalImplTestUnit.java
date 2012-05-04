@@ -19,6 +19,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
@@ -248,10 +249,13 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          load();
       }
-      catch (HornetQException e)
+      catch(IOErrorException ioe)
       {
          exceptionHappened = true;
-         assertEquals(HornetQException.IO_ERROR, e.getCode());
+      }
+      catch (HornetQException e)
+      {
+         fail("invalid exception type:" + e.getType());
       }
       
       assertTrue("Exception was expected", exceptionHappened);

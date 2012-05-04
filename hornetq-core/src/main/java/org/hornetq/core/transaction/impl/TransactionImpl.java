@@ -19,6 +19,8 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
@@ -318,7 +320,7 @@ public class TransactionImpl implements Transaction
             }
             catch (Exception e)
             {
-               onError(HornetQException.IO_ERROR, e.getMessage());
+               onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
             }
             finally
             {

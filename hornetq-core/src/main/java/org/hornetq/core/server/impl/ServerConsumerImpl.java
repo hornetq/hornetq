@@ -13,15 +13,14 @@
 
 package org.hornetq.core.server.impl;
 
+import java.lang.IllegalStateException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.*;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -32,6 +31,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -626,14 +626,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    
             if (ref == null)
             {
-               
-               HornetQException e = new HornetQException(HornetQException.ILLEGAL_STATE, "Could not find reference on consumerID=" +
-                                id +
-                                ", messageId = " +
-                                messageID +
-                                " queue = " +
-                                messageQueue.getName());
-               throw e;
+               throw HornetQMessageBundle.BUNDLE.consumerNoReference(id, messageID, messageQueue.getName());
             }
    
             ref.getQueue().acknowledge(tx, ref);
@@ -660,7 +653,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       catch (Throwable e)
       {
          HornetQLogger.LOGGER.errorAckingMessage((Exception) e);
-         HornetQException hqex = new HornetQException(HornetQException.ILLEGAL_STATE, e.getMessage());
+         HornetQException hqex = new org.hornetq.api.core.IllegalStateException(e.getMessage());
          if (startedTransaction)
          {
             tx.rollback();

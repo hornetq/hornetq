@@ -30,7 +30,9 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -54,6 +56,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.BindingQueryResult;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -334,7 +337,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
-         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "Queue " + queueName + " does not exist");
+         throw HornetQMessageBundle.BUNDLE.noSuchQueue(queueName);
       }
 
       securityStore.check(binding.getAddress(), CheckType.CONSUME, this);
@@ -488,7 +491,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
-         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
+         throw new NonExistentQueueException();
       }
 
       server.destroyQueue(name, this);
@@ -588,7 +591,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (consumer == null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server");
+         throw HornetQMessageBundle.BUNDLE.consumerDoesntExist(consumerID);
       }
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
@@ -1149,7 +1152,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (message.getAddress() == null)
       {
          // This could happen with some tests that are ignoring messages
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "You don't have an address at the Server's Session");
+         throw HornetQMessageBundle.BUNDLE.noAddress();
       }
 
       if (message.getAddress().equals(managementAddress))
@@ -1171,7 +1174,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (currentLargeMessage == null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "large-message not initialized on server");
+         throw HornetQMessageBundle.BUNDLE.largeMessageNotInitialised();
       }
 
       // Immediately release the credits for the continuations- these don't contribute to the in-memory size

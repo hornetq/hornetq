@@ -36,7 +36,9 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 
+import org.hornetq.api.core.DuplicateMetaDataException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -185,7 +187,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       }
       catch (HornetQException e)
       {
-         if (e.getCode() == HornetQException.DUPLICATE_METADATA)
+         if (e.getType() == HornetQExceptionType.DUPLICATE_METADATA)
          {
             throw new IllegalStateException("clientID=" + clientID + " was already set into another connection");
          }

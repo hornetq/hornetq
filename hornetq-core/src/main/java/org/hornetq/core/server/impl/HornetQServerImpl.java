@@ -38,7 +38,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.core.AlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -103,6 +106,7 @@ import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
@@ -393,7 +397,7 @@ public class HornetQServerImpl implements HornetQServer
                 activation = new SharedNothingBackupActivation();
              }
 
-             backupActivationThread = new Thread(activation, "Activation for server " + this);
+             backupActivationThread = new Thread(activation, HornetQMessageBundle.BUNDLE.activationForServer(this));
              backupActivationThread.start();
          }
          // The activation on fail-back may change the value of isBackup, for that reason we are not using else here
@@ -449,19 +453,13 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
 
-      out.println("Generating thread dump because - " + reason);
+      out.println(HornetQMessageBundle.BUNDLE.generatingThreadDump(reason));
       out.println("*******************************************************************************");
 
       for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
       {
          out.println("===============================================================================");
-         out.println("Thread " + el.getKey() +
-                     " name = " +
-                     el.getKey().getName() +
-                     " id = " +
-                     el.getKey().getId() +
-                     " group = " +
-                     el.getKey().getThreadGroup());
+         out.println(HornetQMessageBundle.BUNDLE.threadDump(el.getKey(), el.getKey().getName(), el.getKey().getId(), el.getKey().getThreadGroup()));
          out.println();
          for (StackTraceElement traceEl : el.getValue())
          {
@@ -470,7 +468,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       out.println("===============================================================================");
-      out.println("End Thread dump");
+      out.println(HornetQMessageBundle.BUNDLE.endThreadDump());
       out.println("*******************************************************************************");
 
       HornetQLogger.LOGGER.warn(str.toString());
@@ -691,8 +689,7 @@ public class HornetQServerImpl implements HornetQServer
       StringWriter str = new StringWriter();
       PrintWriter out = new PrintWriter(str);
 
-      out.println("Information about server " + this.identity);
-      out.println("Cluster Connection:" + this.getClusterManager().describe());
+      out.println(HornetQMessageBundle.BUNDLE.serverDescribe(identity, getClusterManager().describe()));
 
       return str.toString();
    }
@@ -830,15 +827,14 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (!configuration.isBackup())
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
+         throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
       }
 
       channel.setHandler(replicationEndpoint);
 
       if (replicationEndpoint.getChannel() != null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Backup replication server is already connected to another server");
+         throw HornetQMessageBundle.BUNDLE.alreadyHaveReplicationServer();
       }
 
       replicationEndpoint.setChannel(channel);
@@ -980,18 +976,14 @@ public class HornetQServerImpl implements HornetQServer
 
       if (binding == null)
       {
-         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "No such queue " + queueName);
+         throw HornetQMessageBundle.BUNDLE.noSuchQueue(queueName);
       }
 
       Queue queue = (Queue)binding.getBindable();
 
       if (queue.getConsumerCount() != 0)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue " + queue.getName() +
-                                                                    " on binding " +
-                                                                    queueName +
-                                                                    " - it has consumers = " +
-                                                                    binding.getClass().getName());
+         HornetQMessageBundle.BUNDLE.cannotDeleteQueue(queue.getName(), queueName, binding.getClass().getName());
       }
 
       if (session != null)
@@ -1129,11 +1121,11 @@ public class HornetQServerImpl implements HornetQServer
       Binding binding = postOffice.getBinding(name);
       if (binding == null)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "No binding for divert " + name);
+         throw HornetQMessageBundle.BUNDLE.noBindingForDivert(name);
       }
       if (!(binding instanceof DivertBinding))
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Binding " + name + " is not a divert");
+         throw HornetQMessageBundle.BUNDLE.bindingNotDivert(name);
       }
 
       postOffice.removeBinding(name);
@@ -1649,7 +1641,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          else
          {
-            throw new HornetQException(HornetQException.QUEUE_EXISTS, "Queue " + queueName + " already exists");
+            throw HornetQMessageBundle.BUNDLE.queueAlreadyExists(queueName);
          }
       }
 
@@ -2016,7 +2008,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       boolean failedAlready = false;
 
-      public synchronized void onIOException(int code, String message, SequentialFile file)
+      public synchronized void onIOException(HornetQExceptionType code, String message, SequentialFile file)
       {
          if (!failedAlready)
          {
@@ -2140,7 +2132,7 @@ public class HornetQServerImpl implements HornetQServer
 
             if (!isRemoteBackupUpToDate())
             {
-               throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup Server was not yet in sync with live");
+               throw HornetQMessageBundle.BUNDLE.backupServerNotInSync();
             }
 
             configuration.setBackup(false);
@@ -2268,7 +2260,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (replicationManager != null)
       {
-         throw new HornetQException(HornetQException.ALREADY_REPLICATING);
+         throw new AlreadyReplicatingException();
       }
 
       if (!isStarted())
@@ -2281,7 +2273,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (replicationManager != null)
          {
-            throw new HornetQException(HornetQException.ALREADY_REPLICATING);
+            throw new AlreadyReplicatingException();
          }
          ReplicationFailureListener listener = new ReplicationFailureListener();
          rc.addCloseListener(listener);
@@ -2322,7 +2314,7 @@ public class HornetQServerImpl implements HornetQServer
                throw (HornetQException)e;
             }
 
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
+            throw HornetQMessageBundle.BUNDLE.replicationStartError(e);
          }
       }
    }
@@ -2383,7 +2375,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (!configuration.isBackup() || configuration.isSharedStore())
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR);
+         throw new InternalErrorException();
       }
       if (!backupUpToDate) return;
       if (activation instanceof SharedNothingBackupActivation)

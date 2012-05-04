@@ -31,6 +31,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A ChannelImpl
@@ -166,10 +167,7 @@ public final class ChannelImpl implements Channel
 
       try
       {
-         response = new HornetQExceptionMessage(new HornetQException(HornetQException.UNBLOCKED,
-                                                                     "Connection failure detected. Unblocking a blocking call that will never get a response"
-
-         ));
+         response = new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.unblockingACall());
 
          sendCondition.signal();
       }
@@ -262,7 +260,7 @@ public final class ChannelImpl implements Channel
    {
       if (closed)
       {
-         throw new HornetQException(HornetQException.NOT_CONNECTED, "Connection is destroyed");
+         throw HornetQMessageBundle.BUNDLE.connectionDestroyed();
       }
 
       if (connection.getBlockingCallTimeout() == -1)
@@ -340,8 +338,7 @@ public final class ChannelImpl implements Channel
 
             if (response == null)
             {
-               throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                          "Timed out waiting for response when sending packet " + packet.getType());
+               throw HornetQMessageBundle.BUNDLE.timedOutSendingPacket(packet.getType());
             }
 
             if (response.getType() == PacketImpl.EXCEPTION)

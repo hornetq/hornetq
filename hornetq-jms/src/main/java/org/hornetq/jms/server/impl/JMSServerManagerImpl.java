@@ -53,6 +53,7 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.TransactionDetail;
+import org.hornetq.jms.HornetQJMSBundle;
 import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -704,8 +705,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       if (registry.lookup(jndiBinding) != null)
       {
-         throw new HornetQException(HornetQException.ADDRESS_EXISTS, "JNDI " + name +
-                                                                     " is already being used by another connection factory");
+         throw HornetQJMSBundle.BUNDLE.cfJndiExists(name);
       }
       boolean added = bindToJndi(jndiBinding, factory);
       if (added)
@@ -1086,7 +1086,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       if (jndi == null)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Connection Factory " + name + " doesn't exist");
+         throw HornetQJMSBundle.BUNDLE.cfDoesntExist(name);
       }
 
       String[] usedJNDI = jndi.toArray(new String[jndi.size()]);
@@ -1288,9 +1288,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          if (groupConfig == null)
          {
-            throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                       "Discovery Group '" + cfConfig.getDiscoveryGroupName() +
-                                                "' doesn't exist on maing config");
+            throw HornetQJMSBundle.BUNDLE.discoveryGroupDoesntExist(cfConfig.getDiscoveryGroupName());
          }
 
          if (cfConfig.isHA())
@@ -1306,8 +1304,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          if (cfConfig.getConnectorNames() == null || cfConfig.getConnectorNames().size() == 0)
          {
-            throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                       "Null Connector name passed to create ConnectionFactory");
+            throw HornetQJMSBundle.BUNDLE.noConnectorNameOnCF();
          }
 
          TransportConfiguration[] configs = new TransportConfiguration[cfConfig.getConnectorNames().size()];
@@ -1318,8 +1315,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             TransportConfiguration connector = server.getConfiguration().getConnectorConfigurations().get(name);
             if (connector == null)
             {
-               throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connector '" + name +
-                                                                          "' not found on the main configuration file");
+               throw HornetQJMSBundle.BUNDLE.noConnectorNameConfiguredOnCF(name);
             }
             configs[count++] = connector;
          }

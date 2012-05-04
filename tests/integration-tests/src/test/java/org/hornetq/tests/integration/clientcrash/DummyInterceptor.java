@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
@@ -52,7 +53,7 @@ public class DummyInterceptor implements Interceptor
       syncCounter.addAndGet(1);
       if (sendException)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR);
+         throw new InternalErrorException();
       }
       if (changeMessage)
       {

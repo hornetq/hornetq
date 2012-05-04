@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
@@ -294,8 +295,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
          }
          catch (Exception e)
          {
-            throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                  "Error decoding password using codec instance", e);
+            throw HornetQRABundle.BUNDLE.errorDecodingPassword(e);
          }
 
       }

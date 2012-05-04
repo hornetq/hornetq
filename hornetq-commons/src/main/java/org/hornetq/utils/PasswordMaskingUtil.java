@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 
 /**
  * A PasswordMarkingUtil
@@ -46,7 +47,7 @@ public class PasswordMaskingUtil
       String[] parts = codecDesc.split(";");
 
       if (parts.length < 1)
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Invalid PasswordCodec value: " + codecDesc);
+         throw new HornetQException(HornetQExceptionType.ILLEGAL_STATE, "Invalid PasswordCodec value: " + codecDesc);
 
       final String codecClassName = parts[0];
 
@@ -76,7 +77,7 @@ public class PasswordMaskingUtil
          {
             String[] keyVal = parts[i].split("=");
             if (keyVal.length != 2)
-               throw new HornetQException(HornetQException.ILLEGAL_STATE, "invalid property: " + parts[i]);
+               throw HornetQUtilBundle.BUNDLE.invalidProperty(parts[i]);
             props.put(keyVal[0], keyVal[1]);
          }
          codecInstance.init(props);

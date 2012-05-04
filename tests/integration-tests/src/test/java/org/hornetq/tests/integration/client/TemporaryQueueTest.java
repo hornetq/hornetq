@@ -20,8 +20,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -213,9 +218,13 @@ public class TemporaryQueueTest extends ServiceTestBase
          session.createConsumer(queue);
          Assert.fail("temp queue must not exist after the remoting connection is closed");
       }
+      catch(NonExistentQueueException neqe)
+      {
+         //ol
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       session.close();
@@ -355,7 +364,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
 
-      conn.fail(new HornetQException(HornetQException.IO_ERROR));
+      conn.fail(new IOErrorException());
 
       prod.send(session.createMessage(false));
       session.commit();
@@ -533,8 +542,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          }
       });
 
-      ((ClientSessionInternal)session).getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                                                 "simulate a client failure"));
+      ((ClientSessionInternal)session).getConnection().fail(new InternalErrorException("simulate a client failure"));
 
       // let some time for the server to clean the connections
       Assert.assertTrue("server has not closed the connection",
@@ -553,7 +561,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.start();
 
       UnitTestCase.expectHornetQException("temp queue must not exist after the server detected the client crash",
-                                          HornetQException.QUEUE_DOES_NOT_EXIST,
+                                          HornetQExceptionType.QUEUE_DOES_NOT_EXIST,
                                           new HornetQAction()
                                           {
                                              public void run() throws HornetQException
@@ -644,7 +652,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          {
             System.out.println("Failing session");
             ServerSessionImpl impl = (ServerSessionImpl) sessionIterator;
-            impl.getRemotingConnection().fail(new HornetQException(HornetQException.DISCONNECTED, "failure e"));
+            impl.getRemotingConnection().fail(new DisconnectedException("failure e"));
          }
       }
 

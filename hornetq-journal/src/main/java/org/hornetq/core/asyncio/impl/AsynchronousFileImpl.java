@@ -26,6 +26,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
@@ -217,9 +219,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
          catch (HornetQException e)
          {
             HornetQException ex = null;
-            if (e.getCode() == HornetQException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
+            if (e.getType() == HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO)
             {
-               ex = new HornetQException(e.getCode(),
+               ex = new HornetQException(e.getType(),
                                          "Can't initialize AIO. Currently AIO in use = " + AsynchronousFileImpl.totalMaxIO.get() +
                                                   ", trying to allocate more " +
                                                   maxIO,
@@ -290,7 +292,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       catch (HornetQException e)
       {
-         fireExceptionListener(e.getCode(), e.getMessage());
+         fireExceptionListener(e.getType().getCode(), e.getMessage());
          throw e;
       }
       if (bufferCallback != null)
@@ -334,14 +336,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
                }
                catch (HornetQException e)
                {
-                  callbackError(aioCallback, sequence, directByteBuffer, e.getCode(), e.getMessage());
+                  callbackError(aioCallback, sequence, directByteBuffer, e.getType().getCode(), e.getMessage());
                }
                catch (RuntimeException e)
                {
                   callbackError(aioCallback,
                                 sequence,
                                 directByteBuffer,
-                                HornetQException.INTERNAL_ERROR,
+                        HornetQExceptionType.INTERNAL_ERROR.getCode(),
                                 e.getMessage());
                }
             }
@@ -359,11 +361,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
          catch (HornetQException e)
          {
-            callbackError(aioCallback, sequence, directByteBuffer, e.getCode(), e.getMessage());
+            callbackError(aioCallback, sequence, directByteBuffer, e.getType().getCode(), e.getMessage());
          }
          catch (RuntimeException e)
          {
-            callbackError(aioCallback, sequence, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
+            callbackError(aioCallback, sequence, directByteBuffer, HornetQExceptionType.INTERNAL_ERROR.getCode(), e.getMessage());
          }
       }
 
@@ -585,7 +587,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       if (ioExceptionListener != null)
       {
-         ioExceptionListener.onIOException(errorCode, errorMessage);
+         ioExceptionListener.onIOException(HornetQExceptionType.getType(errorCode), errorMessage);
       }
    }
 

@@ -31,7 +31,9 @@ import java.util.concurrent.locks.Lock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -53,6 +55,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -237,7 +240,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             msg.append(" and backup configuration ").append(backupConfig);
          }
-         throw new HornetQException(HornetQException.NOT_CONNECTED, msg.toString());
+         throw new NotConnectedException(msg.toString());
       }
 
    }
@@ -383,14 +386,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public void connectionDestroyed(final Object connectionID)
    {
       // It has to use the same executor as the disconnect message is being sent through
-
-      final HornetQException ex = new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected");
-
       closeExecutor.execute(new Runnable()
       {
          public void run()
          {
-            handleConnectionFailure(connectionID, ex);
+            handleConnectionFailure(connectionID, HornetQMessageBundle.BUNDLE.channelDisconnected());
          }
       });
 
@@ -767,8 +767,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                synchronized (inCreateSessionGuard)
                {
                   if (exitLoop)
-                     throw new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                "ClientSession closed while creating session");
+                     throw HornetQMessageBundle.BUNDLE.clientSessionClosed();
                   inCreateSession = true;
                   inCreateSessionLatch = new CountDownLatch(1);
                }
@@ -795,7 +794,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                catch (HornetQException e)
                {
-                  if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+                  if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
                   {
                      connection.destroy();
                   }
@@ -803,7 +802,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   if (exitLoop)
                      throw e;
 
-                  if (e.getCode() == HornetQException.UNBLOCKED)
+                  if (e.getType() == HornetQExceptionType.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
                      // so failover could occur
@@ -877,7 +876,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                else
                {
-                  throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to create session", t);
+                  throw HornetQMessageBundle.BUNDLE.failedToCreateSession(t);
                }
             }
             finally
@@ -896,10 +895,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       // Should never get here
-      throw new HornetQException(HornetQException.INTERNAL_ERROR,
-                                 "Internal Error! ClientSessionFactoryImpl::createSessionInternal "
-                                          + "just reached a condition that was not supposed to happen. "
-                                      + "Please inform this condition to the HornetQ team");
+      throw HornetQMessageBundle.BUNDLE.clietSessionInternal();
    }
 
    private void callSessionFailureListeners(final HornetQException me, final boolean afterReconnect,
@@ -1532,8 +1528,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          try
          {
             CLOSE_RUNNABLES.add(this);
-            conn.fail(new HornetQException(HornetQException.DISCONNECTED,
-                  "The connection was disconnected because of server shutdown"));
+            conn.fail(HornetQMessageBundle.BUNDLE.disconnected());
          } finally
          {
             CLOSE_RUNNABLES.remove(this);
@@ -1629,9 +1624,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             if (!connection.checkDataReceived())
             {
-               final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                                "Did not receive data from server for " + connection.getTransportConnection());
-
                cancelled = true;
 
                threadPool.execute(new Runnable()
@@ -1639,7 +1631,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   // Must be executed on different thread
                   public void run()
                   {
-                     connection.fail(me);
+                     connection.fail(HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection()));
                   }
                });
 

@@ -25,6 +25,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * 
@@ -148,7 +149,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       }
       catch (IOException e)
       {
-         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
+         throw HornetQMessageBundle.BUNDLE.errorSavingBody(e);
       }
    }
 

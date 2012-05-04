@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
 /**
@@ -210,7 +211,7 @@ public class JournalTransaction
 
       if (currentCallback.getErrorMessage() != null)
       {
-         throw new HornetQException(currentCallback.getErrorCode(), currentCallback.getErrorMessage());
+         throw HornetQExceptionType.createException(currentCallback.getErrorCode(), currentCallback.getErrorMessage());
       }
 
       currentCallback.countUp();

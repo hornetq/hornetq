@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal.impl;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.journal.HornetQJournalLogger;
 
 /**

@@ -1,7 +1,11 @@
 package org.hornetq.ra;
 
 
+import org.hornetq.api.core.*;
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -14,6 +18,12 @@ import org.jboss.logging.MessageBundle;
  * so 159000 to 159999
  */
 @MessageBundle(projectCode = "HQ")
-public class HornetQRABundle
+public interface HornetQRABundle
 {
+   HornetQRABundle BUNDLE = Messages.getBundle(HornetQRABundle.class);
+
+   @Message(id = 159001, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
+   org.hornetq.api.core.IllegalStateException errorDecodingPassword(@Cause Exception e);
+
+
 }

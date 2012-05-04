@@ -47,9 +47,11 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.jms.HornetQJMSBundle;
 import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
@@ -427,8 +429,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
          catch (Exception e)
          {
-            throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                  "Error decoding password using codec instance", e);
+            throw HornetQJMSBundle.BUNDLE.errorDecodingPassword(e);
          }
 
       }

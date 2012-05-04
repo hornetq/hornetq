@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -49,7 +51,7 @@ public class ProducerCloseTest extends ServiceTestBase
 
       Assert.assertTrue(producer.isClosed());
 
-      UnitTestCase.expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {

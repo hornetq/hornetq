@@ -41,6 +41,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -87,6 +88,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicatedJournal;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -375,8 +377,7 @@ public class JournalStorageManager implements StorageManager
 
       if (!(messageJournal instanceof JournalImpl) || !(bindingsJournal instanceof JournalImpl))
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR,
-                                    "journals here are not JournalImpl. You can't set a replicator!");
+         throw HornetQMessageBundle.BUNDLE.notJournalImpl();
       }
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
@@ -810,7 +811,7 @@ public class JournalStorageManager implements StorageManager
       if (message.getMessageID() <= 0)
       {
          // Sanity check only... this shouldn't happen unless there is a bug
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+         throw HornetQMessageBundle.BUNDLE.messageIdNotAssigned();
       }
 
       readLock();
@@ -968,7 +969,7 @@ public class JournalStorageManager implements StorageManager
    {
       if (message.getMessageID() <= 0)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+         throw HornetQMessageBundle.BUNDLE.messageIdNotAssigned();
       }
 
       readLock();

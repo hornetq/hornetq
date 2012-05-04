@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -248,7 +249,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          if (sendError)
          {
-            callback.onError(1, "Fake aio error");
+            callback.onError(HornetQExceptionType.UNSUPPORTED_PACKET.getCode(), "Fake aio error");
          }
          else
          {
@@ -268,7 +269,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
             catch (Throwable e)
             {
                e.printStackTrace();
-               callback.onError(-1, e.getMessage());
+               callback.onError(HornetQExceptionType.GENERIC_EXCEPTION.getCode(), e.getMessage());
             }
          }
       }
@@ -748,7 +749,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
     */
-   public void onIOError(int errorCode, String message, SequentialFile file)
+   public void onIOError(HornetQExceptionType errorCode, String message, SequentialFile file)
    {
    }
 

@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.journal.HornetQJournalLogger;
 
 /**
@@ -67,7 +68,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
 
       if (errorMessage != null)
       {
-         throw new HornetQException(errorCode, errorMessage);
+         throw HornetQExceptionType.createException(errorCode, errorMessage);
       }
 
       return;
@@ -79,7 +80,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
 
       if (errorMessage != null)
       {
-         throw new HornetQException(errorCode, errorMessage);
+         throw HornetQExceptionType.createException(errorCode, errorMessage);
       }
 
       return retValue;

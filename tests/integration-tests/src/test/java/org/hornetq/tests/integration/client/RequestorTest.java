@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -214,7 +216,7 @@ public class RequestorTest extends UnitTestCase
       session.close();
 
       UnitTestCase.expectHornetQException("ClientRequestor's session must not be closed",
-                                          HornetQException.OBJECT_CLOSED,
+                                          HornetQExceptionType.OBJECT_CLOSED,
                                           new HornetQAction()
                                           {
                                              public void run() throws Exception
@@ -255,7 +257,7 @@ public class RequestorTest extends UnitTestCase
       requestor.close();
 
       UnitTestCase.expectHornetQException("can not send a request on a closed ClientRequestor",
-                                          HornetQException.OBJECT_CLOSED,
+                                          HornetQExceptionType.OBJECT_CLOSED,
                                           new HornetQAction()
                                           {
 

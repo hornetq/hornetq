@@ -21,6 +21,7 @@ import java.util.TimerTask;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
@@ -248,7 +249,7 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
          }
          else
          {
-            conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
+            conn.fail(new NotConnectedException("blah"));
          }
 
          log.info("** Fail complete");

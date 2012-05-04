@@ -23,9 +23,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 
 /**
@@ -102,7 +105,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
       catch (IOException e)
       {
-         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
          throw e;
       }
 
@@ -203,10 +206,10 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          if (callback != null)
          {
-            callback.onError(HornetQException.IO_ERROR, e.getLocalizedMessage());
+            callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getLocalizedMessage());
          }
          
-         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
 
          throw e;
       }
@@ -268,7 +271,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
       catch (Exception e)
       {
-         callback.onError(-1, e.getMessage());
+         callback.onError(HornetQExceptionType.GENERIC_EXCEPTION.getCode(), e.getMessage());
       }
    }
 
@@ -298,11 +301,11 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          if (callback != null)
          {
-            callback.onError(HornetQException.IO_ERROR, "File not opened");
+            callback.onError(HornetQExceptionType.IO_ERROR.getCode(), "File not opened");
          }
          else
          {
-            throw new HornetQException(HornetQException.IO_ERROR, "File not opened");
+            throw HornetQJournalBundle.BUNDLE.fileNotOpened();
          }
          return;
       }
@@ -318,7 +321,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          }
          catch (IOException e)
          {
-            factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+            factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
          }
       }
       else
@@ -339,13 +342,13 @@ public class NIOSequentialFile extends AbstractSequentialFile
                   catch (IOException e)
                   {
                      HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
-                     factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), NIOSequentialFile.this);
-                     callback.onError(HornetQException.IO_ERROR, e.getMessage());
+                     factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), NIOSequentialFile.this);
+                     callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
                   }
                   catch (Throwable e)
                   {
                      HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
-                     callback.onError(HornetQException.IO_ERROR, e.getMessage());
+                     callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
                   }
                }
                finally

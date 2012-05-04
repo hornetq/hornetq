@@ -23,11 +23,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 
 /**
@@ -152,8 +153,7 @@ abstract class AbstractSequentialFile implements SequentialFile
       {
          if (!file.renameTo(newFile))
          {
-            throw new HornetQException(HornetQException.IO_ERROR, "failed to rename file " + file.getName() + " to " +
-                     newFileName);
+            throw HornetQJournalBundle.BUNDLE.ioRenameFileError(file.getName(), newFileName);
          }
          file = newFile;
       }
