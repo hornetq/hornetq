@@ -25,19 +25,13 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class ClusterTopologyChangeMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ClusterTopologyChangeMessage.class);
-
-   // Attributes ----------------------------------------------------
-
-   private boolean exit;
+   protected boolean exit;
    
-   private String nodeID;
+   protected String nodeID;
    
-   private Pair<TransportConfiguration, TransportConfiguration> pair;
+   protected Pair<TransportConfiguration, TransportConfiguration> pair;
    
-   private boolean last;
+   protected boolean last;
 
    // Static --------------------------------------------------------
 
@@ -71,6 +65,14 @@ public class ClusterTopologyChangeMessage extends PacketImpl
    }
 
    // Public --------------------------------------------------------
+
+   /**
+    * @param clusterTopologyV2
+    */
+   public ClusterTopologyChangeMessage(byte clusterTopologyV2)
+   {
+      super(clusterTopologyV2);
+   }
 
    public String getNodeID()
    {
