@@ -17,21 +17,18 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Transformer;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A SimpleTransformer
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 21 Nov 2008 11:44:37
  *
  *
  */
 public class SimpleTransformer implements Transformer
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
    public ServerMessage transform(final ServerMessage message)
    {
       SimpleString oldProp = (SimpleString)message.getObjectProperty(new SimpleString("wibble"));

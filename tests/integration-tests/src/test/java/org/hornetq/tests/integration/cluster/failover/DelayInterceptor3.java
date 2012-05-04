@@ -18,7 +18,6 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A DelayInterceptor3
@@ -29,7 +28,6 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  */
 public class DelayInterceptor3 implements Interceptor
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
    {

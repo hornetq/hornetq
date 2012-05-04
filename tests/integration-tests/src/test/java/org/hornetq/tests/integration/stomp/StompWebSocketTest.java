@@ -33,11 +33,9 @@ import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
 public class StompWebSocketTest extends UnitTestCase {
-    private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
     private JMSServerManager server;
 
     /**

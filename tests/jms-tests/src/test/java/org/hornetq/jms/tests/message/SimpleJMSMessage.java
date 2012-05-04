@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.hornetq.jms.tests.JmsTestLogger;
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -35,14 +33,6 @@ import javax.jms.Message;
  */
 public class SimpleJMSMessage implements Message
 {
-   // Constants -----------------------------------------------------
-
-   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private boolean ignoreSetDestination;
 
    // Constructors --------------------------------------------------
@@ -125,7 +115,7 @@ public class SimpleJMSMessage implements Message
 
    public String getJMSCorrelationID() throws JMSException
    {
-      
+
       return correlationIDString;
    }
 

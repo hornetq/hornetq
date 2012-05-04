@@ -265,7 +265,7 @@ public class JMSReconnectTest extends UnitTestCase
       Topic topic = HornetQJMSClient.createTopic("mytopic");
 
       //Create a non durable subscriber
-      MessageConsumer consumer = sess.createConsumer(topic);
+      sess.createConsumer(topic);
 
       Thread.sleep(2000);
 
