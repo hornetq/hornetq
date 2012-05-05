@@ -976,7 +976,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                             " multiplier = " +
                                             retryIntervalMultiplier, new Exception("trace"));
       }
-      
+
       long interval = retryInterval;
 
       int count = 0;
@@ -1052,7 +1052,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                if (log.isDebugEnabled())
                {
-            	   log.debug("Reconnection successfull");
+                  log.debug("Reconnection successfull");
                }
                return;
             }
@@ -1363,18 +1363,18 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          public ConnectorFactory run()
          {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(connectorFactoryClassName);
-               return (ConnectorFactory)clazz.newInstance();
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
-                                                           "\"",
-                                                  e);
-            }
+             ClassLoader loader = Thread.currentThread().getContextClassLoader();
+             try
+             {
+                Class<?> clazz = loader.loadClass(connectorFactoryClassName);
+                return (ConnectorFactory)clazz.newInstance();
+             }
+             catch (Exception e)
+             {
+                throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
+                                                            "\"",
+                                                   e);
+             }
          }
       });
    }
@@ -1535,7 +1535,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                                                  .getConnectorConfig(),
                                                                                              null);
                }
-               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
+
+               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), transportConfig, topMessage.isLast());
             }
          });
       }
