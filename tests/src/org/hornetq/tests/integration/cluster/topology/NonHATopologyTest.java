@@ -91,17 +91,14 @@ public class NonHATopologyTest extends ServiceTestBase
 
          factory.close();
 
-         if (!isNetty)
+         TopologyMember member = topology.getMembers().iterator().next();
+         if (isNetty)
          {
-            TopologyMember member = topology.getMembers().iterator().next();
-            if (isNetty)
-            {
-               assertEquals(NettyConnectorFactory.class.getName(), member.getA().getFactoryClassName());
-            }
-            else
-            {
-               assertEquals(InVMConnectorFactory.class.getName(), member.getA().getFactoryClassName());
-            }
+            assertEquals(NettyConnectorFactory.class.getName(), member.getA().getFactoryClassName());
+         }
+         else
+         {
+            assertEquals(InVMConnectorFactory.class.getName(), member.getA().getFactoryClassName());
          }
 
       }
