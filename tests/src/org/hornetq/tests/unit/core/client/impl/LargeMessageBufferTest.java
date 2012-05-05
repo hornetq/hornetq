@@ -521,6 +521,71 @@ public class LargeMessageBufferTest extends UnitTestCase
       });
    }
 
+   public void testStreamDataWaitCompletionOnInCompleteBuffer() throws Exception
+   {
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1);
+      
+
+      class FakeOutputStream extends OutputStream
+      {
+         @Override
+         public void write(int b) throws IOException
+         {
+         }
+      }
+      
+      outBuffer.setOutputStream(new FakeOutputStream());
+      
+      try
+      {
+         outBuffer.waitCompletion(0);
+         fail("supposed to throw an exception");
+      }
+      catch (HornetQException e)
+      {
+      }
+   }
+
+
+   public void testStreamDataWaitCompletionOnSlowComingBuffer() throws Exception
+   {
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1);
+      
+
+      class FakeOutputStream extends OutputStream
+      {
+         @Override
+         public void write(int b) throws IOException
+         {
+         }
+      }
+      
+      outBuffer.setOutputStream(new FakeOutputStream());
+      
+      Thread sender = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(200);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               Thread.sleep(1000);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               Thread.sleep(1000);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, false, false));
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      };
+      
+      sender.start();
+      outBuffer.waitCompletion(0);
+      sender.join();
+   }
+
    public void testErrorOnSetStreaming() throws Exception
    {
       long start = System.currentTimeMillis();
@@ -863,6 +928,13 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
+       */
+      public void interruptHandlers() throws HornetQException
+      {
       }
 
    }
