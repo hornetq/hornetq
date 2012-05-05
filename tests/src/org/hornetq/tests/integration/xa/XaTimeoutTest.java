@@ -15,10 +15,12 @@ package org.hornetq.tests.integration.xa;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -382,6 +384,165 @@ public class XaTimeoutTest extends UnitTestCase
       Assert.assertNull(m);
       clientSession2.close();
    }
+
+
+   public void testTimeoutOnConsumerResend() throws Exception
+   {
+      
+      int numberOfMessages = 100;
+      
+      String outQueue = "outQueue";
+      {
+         ClientSession simpleTXSession = sessionFactory.createTransactedSession();
+         ClientProducer producerTX = simpleTXSession.createProducer(atestq);
+         for (int i = 0 ; i < numberOfMessages ; i++)
+         {
+            ClientMessage m = createTextMessage(clientSession, "m-" + i);
+            m.putIntProperty("msg", i);
+            producerTX.send(m);
+         }
+         simpleTXSession.commit();
+
+         // This test needs 2 queues
+         simpleTXSession.createQueue(outQueue, outQueue);
+         
+         simpleTXSession.close();
+      }
+      
+      final ClientSession outProducerSession = sessionFactory.createSession(true, false, false);
+      final ClientProducer outProducer = outProducerSession.createProducer(outQueue);
+      final AtomicInteger errors = new AtomicInteger(0);
+      
+      final AtomicInteger msgCount = new AtomicInteger(0);
+      
+      final CountDownLatch latchReceives = new CountDownLatch(numberOfMessages + 1); // since the first message will be rolled back
+
+      outProducerSession.setTransactionTimeout(2);
+      clientSession.setTransactionTimeout(2);
+      
+      MessageHandler handler = new MessageHandler()
+      {
+         public void onMessage(ClientMessage message)
+         {
+            try
+            {
+               latchReceives.countDown();
+               
+               Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+               Xid xidOut = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+               
+               clientSession.start(xid, XAResource.TMNOFLAGS);
+               outProducerSession.start(xidOut, XAResource.TMNOFLAGS);
+               
+               message.acknowledge();
+               
+               int msgInt = message.getIntProperty("msg");
+               System.out.println("msg = " + msgInt);
+               
+               ClientMessage msgOut = createTextMessage(outProducerSession, "outMsg=" + msgInt);
+               msgOut.putIntProperty("msg", msgInt);
+               outProducer.send(msgOut);
+               
+               boolean rollback = false;
+               if (msgCount.getAndIncrement() == 0)
+               {
+                  rollback = true;
+                  System.out.println("Forcing first message to time out");
+                  Thread.sleep(5000);
+               }
+               
+               try
+               {
+                  clientSession.end(xid, XAResource.TMSUCCESS);
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+
+               try
+               {
+                  outProducerSession.end(xidOut, XAResource.TMSUCCESS);
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+
+               if (rollback)
+               {
+                  try
+                  {
+                     clientSession.rollback(xid);
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                     clientSession.rollback();
+                  }
+                  
+                  try
+                  {
+                     outProducerSession.rollback(xidOut);
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                     outProducerSession.rollback();
+                  }
+               }
+               else
+               {
+                  clientSession.prepare(xid);
+                  outProducerSession.prepare(xidOut);
+                  clientSession.commit(xid, false);
+                  outProducerSession.commit(xidOut, false);
+               }
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               errors.incrementAndGet();
+            }
+         }
+      };
+      
+      clientConsumer.setMessageHandler(handler);
+      
+      clientSession.start();
+      
+      assertTrue(latchReceives.await(20, TimeUnit.SECONDS));
+      
+      clientConsumer.close();
+      
+      clientConsumer = clientSession.createConsumer(this.atestq);
+      assertNull(clientConsumer.receiveImmediate());
+      
+      
+      clientConsumer.close();
+      
+      clientConsumer = clientSession.createConsumer(outQueue);
+      
+      HashSet<Integer> msgsIds = new HashSet<Integer>();
+      
+      for (int i = 0 ; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = clientConsumer.receive(1000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         msgsIds.add(msg.getIntProperty("msg"));
+      }
+      
+      assertNull(clientConsumer.receiveImmediate());
+      
+      for (int i = 0 ; i < numberOfMessages; i++)
+      {
+         assertTrue(msgsIds.contains(i));
+      }
+      
+      outProducerSession.close();
+      
+    }
 
    public void testChangingTimeoutGetsPickedUp() throws Exception
    {

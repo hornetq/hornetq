@@ -54,7 +54,7 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (!started)
       {
-         log.info("Starting RecoveryDiscovery on " + config);
+         log.debug("Starting RecoveryDiscovery on " + config);
          started = true;
          
          locator = config.createServerLocator();
@@ -68,7 +68,7 @@ public class RecoveryDiscovery implements SessionFailureListener
             // in case of failure we will retry
             sessionFactory.addFailureListener(this);
             
-            log.info("RecoveryDiscovery started fine on " + config);
+            log.debug("RecoveryDiscovery started fine on " + config);
          }
          catch (Exception startupError)
          {

@@ -101,7 +101,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossts-common.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-ejb-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="tests/tmpfiles"/>
 	<classpathentry kind="lib" path="thirdparty/net/java/dev/javacc/lib/javacc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar" sourcepath="/Users/jmesnil/Downloads/netty-3.2.0.BETA1-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/log4j/lib/log4j.jar"/>
