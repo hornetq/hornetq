@@ -52,8 +52,6 @@ public abstract class TransactionDetail
    public static final String KEY_MSG_TYPE = "message_type";
 
    public static final String KEY_MSG_PROPERTIES = "message_properties";
-
-   public static final String KEY_MSG_PAYLOAD = "message_payload";
    
    private Xid xid;
    private Transaction transaction;
@@ -114,7 +112,6 @@ public abstract class TransactionDetail
             ServerMessage msg = ref.getMessage().copy();
 
             msgJson.put(KEY_MSG_TYPE, decodeMessageType(msg));
-            msgJson.put(KEY_MSG_PAYLOAD, decodeMessagePayload(msg));
             msgJson.put(KEY_MSG_PROPERTIES, decodeMessageProperties(msg));
          }
       }
@@ -122,8 +119,6 @@ public abstract class TransactionDetail
    }
 
    public abstract String decodeMessageType(ServerMessage msg);
-   
-   public abstract String decodeMessagePayload(ServerMessage msg);
-   
+    
    public abstract Map<String,Object> decodeMessageProperties(ServerMessage msg);
 }

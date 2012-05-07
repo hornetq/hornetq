@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
@@ -448,14 +450,40 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void close() throws HornetQException
    {
-      doCleanUp(true);
+      doCleanUp(true, false);
+   }
+
+   /**
+    * To be used by MDBs
+    * @param interruptConsumer it will send an interrupt to the thread
+    * @throws HornetQException
+    */
+   public void interruptHandlers() throws HornetQException
+   {
+      closing = true;
+      
+      resetLargeMessageController();
+
+      Thread onThread = onMessageThread;
+      if (onThread != null)
+      {
+         try
+         {
+            // just trying to interrupt any ongoing messages
+            onThread.interrupt();
+         }
+         catch (Throwable ignored)
+         {
+            // security exception probably.. we just ignore it, not big deal!
+         }
+      }
    }
 
    public void cleanUp()
    {
       try
       {
-         doCleanUp(false);
+         doCleanUp(false, false);
       }
       catch (HornetQException e)
       {
@@ -491,6 +519,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void clearAtFailover()
    {
       clearBuffer();
+      
+      resetLargeMessageController();
 
       lastAckedMessage = null;
 
@@ -613,7 +643,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          largeMessageCache.deleteOnExit();
       }
 
-      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 5, largeMessageCache);
+      ClientSessionFactory sf = session.getSessionFactory();
+      ServerLocator locator = sf.getServerLocator();
+      int callTimeout = (int)(locator.getCallTimeout() / 1000);
+      
+      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), callTimeout, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
       {
@@ -1003,6 +1037,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                         return null;
                      }
                   });
+                  
+                  onMessageThread = null;
                }
 
                if (ClientConsumerImpl.trace)
@@ -1043,7 +1079,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void doCleanUp(final boolean sendCloseMessage) throws HornetQException
+   private void doCleanUp(final boolean sendCloseMessage, final boolean interruptConsumer) throws HornetQException
    {
       try
       {
@@ -1058,6 +1094,23 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          closing = true;
 
          resetLargeMessageController();
+
+         if (interruptConsumer)
+         {
+            Thread onThread = receiverThread;
+            if (onThread != null)
+            {
+               try
+               {
+                  // just trying to interrupt any ongoing messages
+                  onThread.interrupt();
+               }
+               catch (Throwable ignored)
+               {
+                  // security exception probably.. we just ignore it, not big deal!
+               }
+            }
+         }
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);

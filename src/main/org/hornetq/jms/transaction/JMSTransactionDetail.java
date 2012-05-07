@@ -70,42 +70,6 @@ public class JMSTransactionDetail extends TransactionDetail
    }
 
    @Override
-   public String decodeMessagePayload(ServerMessage msg)
-   {
-      int type = msg.getType();
-      HornetQBuffer bodyBuffer = msg.getBodyBuffer();
-      
-      try
-      {
-         switch (type)
-         {
-            case HornetQObjectMessage.TYPE: // 2
-               int len = bodyBuffer.readInt();
-               byte[] data = new byte[len];
-               bodyBuffer.readBytes(data);
-               ByteArrayInputStream bais = new ByteArrayInputStream(data);
-               ObjectInputStream ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
-               Serializable object = (Serializable)ois.readObject();
-               return object.toString();
-
-            case HornetQTextMessage.TYPE: // 3
-               return bodyBuffer.readNullableSimpleString().toString();
-
-            case HornetQMapMessage.TYPE: // 5
-               TypedProperties pmap = new TypedProperties();
-               pmap.decode(msg.getBodyBuffer());
-               return pmap.toString();
-            default:
-               return "(Not Available)";
-         }
-      }
-      catch(Throwable t)
-      {
-         return "(Not Available)";
-      }
-   }
-
-   @Override
    public Map<String, Object> decodeMessageProperties(ServerMessage msg)
    {
       try
