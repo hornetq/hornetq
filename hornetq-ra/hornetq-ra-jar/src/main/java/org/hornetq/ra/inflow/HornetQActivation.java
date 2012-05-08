@@ -37,7 +37,7 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.HornetQRaUtils;
@@ -104,7 +104,7 @@ public class HornetQActivation
 
    // Whether we are in the failure recovery loop
    private AtomicBoolean inFailure = new AtomicBoolean(false);
-   private HornetQResourceRecovery resourceRecovery;
+   private XARecoveryConfig resourceRecovery;
 
    static
    {
@@ -338,6 +338,10 @@ public class HornetQActivation
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
 
+      for (HornetQMessageHandler handler : handlers)
+      {
+         handler.interruptConsumer();
+      }
       for (HornetQMessageHandler handler : handlers)
       {
          handler.teardown();

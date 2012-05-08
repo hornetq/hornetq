@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
@@ -53,7 +54,7 @@ public class HornetQMessageHandler implements MessageHandler
     */
    private final ClientSessionInternal session;
 
-   private ClientConsumer consumer;
+   private ClientConsumerInternal consumer;
 
    /**
     * The endpoint
@@ -146,7 +147,7 @@ public class HornetQMessageHandler implements MessageHandler
                session.createQueue(activation.getAddress(), queueName, selectorString, true);
             }
          }
-         consumer = session.createConsumer(queueName, null, false);
+         consumer = (ClientConsumerInternal)session.createConsumer(queueName, null, false);
       }
       else
       {
@@ -168,7 +169,7 @@ public class HornetQMessageHandler implements MessageHandler
          {
             queueName = activation.getAddress();
          }
-         consumer = session.createConsumer(queueName, selectorString);
+         consumer = (ClientConsumerInternal)session.createConsumer(queueName, selectorString);
       }
 
       // Create the endpoint, if we are transacted pass the sesion so it is enlisted, unless using Local TX
@@ -186,6 +187,21 @@ public class HornetQMessageHandler implements MessageHandler
          useXA = false;
       }
       consumer.setMessageHandler(this);
+   }
+   
+   public void interruptConsumer()
+   {
+      try
+      {
+         if (consumer != null)
+         {
+            consumer.interruptHandlers();
+         }
+      }
+      catch (Throwable e)
+      {
+         HornetQRALogger.LOGGER.warn("Error interrupting handler on endpoint " + endpoint + " handler=" + consumer);
+      }
    }
 
    /**
@@ -290,6 +306,11 @@ public class HornetQMessageHandler implements MessageHandler
          {
             session.commit();
          }
+         
+         if (trace)
+         {
+            HornetQRALogger.LOGGER.trace("finished onMessage on " + message);
+         }
       }
       catch (Throwable e)
       {
@@ -313,14 +334,14 @@ public class HornetQMessageHandler implements MessageHandler
                }
                catch (Exception e1)
                {
-                  HornetQRALogger.LOGGER.unableToClearTX(e1);
+                  HornetQRALogger.LOGGER.warn("unnable to clear the transaction", e1);
                   try
                   {
                      session.rollback();
                   }
                   catch (HornetQException e2)
                   {
-                     HornetQRALogger.LOGGER.unableToRollbackTX();
+                     HornetQRALogger.LOGGER.warn("Unable to rollback", e2);
                      return;
                   }
                }

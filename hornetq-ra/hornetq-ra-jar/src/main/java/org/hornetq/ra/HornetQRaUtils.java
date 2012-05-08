@@ -18,11 +18,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
-
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
 
 /**
  * Various utility functions
@@ -254,34 +254,64 @@ public final class HornetQRaUtils
     *  */
    public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
    {
-      try
+      return AccessController.doPrivileged(new PrivilegedAction<TransactionManager>()
       {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         Class<?> aClass = loader.loadClass(locatorClass);
-         Object o = aClass.newInstance();
-         Method m = aClass.getMethod(locatorMethod);
-         return (TransactionManager)m.invoke(o);
-      }
-      catch (Throwable e)
+         public TransactionManager run()
+         {
+            try
+            {
+               ClassLoader loader = Thread.currentThread().getContextClassLoader();
+               Class<?> aClass = loader.loadClass(locatorClass);
+               Object o = aClass.newInstance();
+               Method m = aClass.getMethod(locatorMethod);
+               return (TransactionManager)m.invoke(o);
+            }
+            catch (Throwable e)
+            {
+               HornetQRALogger.LOGGER.debug(e.getMessage(), e);
+               return null;
+            }
+         }
+      });
+   }
+   
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static Object safeInitNewInstance(final String className)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
-         HornetQRALogger.LOGGER.debug(e.getMessage(), e);
-         return null;
-      }
+         public Object run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(className);
+               return clazz.newInstance();
+            }
+            catch (Throwable t)
+            {
+                try
+                {
+                    loader = Thread.currentThread().getContextClassLoader();
+                    if (loader != null)
+                        return loader.loadClass(className).newInstance();
+                }
+                catch (RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                }
+
+                throw new IllegalArgumentException("Could not find class " + className);
+            }
+         }
+      });
    }
 
-   public static RecoveryRegistry locateRecoveryRegistry(final String locatorClass)
-   {
-      try
-      {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         Class<?> aClass = loader.loadClass(locatorClass);
-         Object o = aClass.newInstance();
-         return (RecoveryRegistry)o;
-      }
-      catch (Throwable e)
-      {
-         HornetQRALogger.LOGGER.debug(e.getMessage(), e);
-         return null;
-      }
-   }
+
 }
