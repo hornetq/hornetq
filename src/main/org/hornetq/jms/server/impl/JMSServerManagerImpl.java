@@ -53,6 +53,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -1358,7 +1359,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
       {
          Xid xid = entry.getKey();
-         TransactionDetail detail = new JMSTransactionDetail(xid, resourceManager.getTransaction(xid), entry.getValue());
+         Transaction tx = resourceManager.getTransaction(xid);
+         if (tx == null)
+         {
+            continue;
+         }
+         TransactionDetail detail = new JMSTransactionDetail(xid, tx, entry.getValue());
          txDetailListJson.put(detail.toJSON());
       }
       return txDetailListJson.toString();
@@ -1389,7 +1395,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
       {
          Xid xid = entry.getKey();
-         TransactionDetail detail = new JMSTransactionDetail(xid, resourceManager.getTransaction(xid), entry.getValue());
+         Transaction tx = resourceManager.getTransaction(xid);
+         if (tx == null)
+         {
+            continue;
+         }
+         TransactionDetail detail = new JMSTransactionDetail(xid, tx, entry.getValue());
          JSONObject txJson = detail.toJSON();
 
          html.append("<table border=\"1\">");
@@ -1431,8 +1442,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             html.append("<td>" + msgJson.get(TransactionDetail.KEY_MSG_TYPE) + "</td></tr>");
             html.append("<tr><th>properties</th>");
             html.append("<td colspan=\"3\">" + propstr.toString() + "</td></tr>");
-            html.append("<tr><th colspan=\"4\">payload</th></tr>");
-            html.append("<tr><td colspan=\"4\">" + msgJson.get(TransactionDetail.KEY_MSG_PAYLOAD) + "</td></tr>");
          }
          html.append("</table></td></tr>");
          html.append("</table><br/>");

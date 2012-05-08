@@ -47,6 +47,13 @@ public interface ClientConsumerInternal extends ClientConsumer
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
    void clear(boolean waitForOnMessage) throws HornetQException;
+   
+   /**
+    * To be called by things like MDBs during shutdown of the server
+    * @param interrupt
+    * @throws HornetQException
+    */
+   void interruptHandlers() throws HornetQException;
 
    void clearAtFailover();
 

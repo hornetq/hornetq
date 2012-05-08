@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -681,6 +682,15 @@ public class FakeQueue implements Queue
    {
       // TODO Auto-generated method stub
       return 0;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#addHead(java.util.LinkedList)
+    */
+   public void addHead(LinkedList<MessageReference> refs)
+   {
+      // TODO Auto-generated method stub
+      
    }
 
 }
