@@ -280,7 +280,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testReadPartialData() throws Exception
    {
 
-      final LargeMessageControllerImpl buffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 10, 10);
+      final LargeMessageControllerImpl buffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 10, 10000);
 
       buffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, true));
 
@@ -393,7 +393,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
                                                                           1024 * 11 + 123,
-                                                                          1);
+                                                                          10000);
 
       final PipedOutputStream output = new PipedOutputStream();
       final PipedInputStream input = new PipedInputStream(output);
@@ -523,7 +523,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    public void testStreamDataWaitCompletionOnInCompleteBuffer() throws Exception
    {
-      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1);
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
       
 
       class FakeOutputStream extends OutputStream
@@ -536,6 +536,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       
       outBuffer.setOutputStream(new FakeOutputStream());
       
+      long time = System.currentTimeMillis();
       try
       {
          outBuffer.waitCompletion(0);
@@ -544,12 +545,14 @@ public class LargeMessageBufferTest extends UnitTestCase
       catch (HornetQException e)
       {
       }
+      
+      assertTrue("It was supposed to wait at least 1 second", System.currentTimeMillis() - time > 1000);
    }
 
 
    public void testStreamDataWaitCompletionOnSlowComingBuffer() throws Exception
    {
-      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1);
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
       
 
       class FakeOutputStream extends OutputStream
@@ -589,7 +592,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testErrorOnSetStreaming() throws Exception
    {
       long start = System.currentTimeMillis();
-      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 30);
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 30000);
 
       outBuffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
 
@@ -692,7 +695,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    private LargeMessageControllerImpl splitBuffer(final int splitFactor, final byte[] bytes, final File file) throws Exception
    {
-      LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), bytes.length, 5, file);
+      LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), bytes.length, 5000, file);
 
       ByteArrayInputStream input = new ByteArrayInputStream(bytes);
 
