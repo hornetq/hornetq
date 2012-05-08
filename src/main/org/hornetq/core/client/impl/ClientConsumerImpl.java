@@ -645,7 +645,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       ClientSessionFactory sf = session.getSessionFactory();
       ServerLocator locator = sf.getServerLocator();
-      int callTimeout = (int)(locator.getCallTimeout() / 1000);
+      long callTimeout = locator.getCallTimeout();
       
       currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), callTimeout, largeMessageCache);
 
