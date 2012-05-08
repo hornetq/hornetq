@@ -101,15 +101,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    // if the system should shutdown the pool when shutting down
    private transient boolean shutdownPool;
 
-   private ExecutorService threadPool;
+   private transient ExecutorService threadPool;
 
-   private ScheduledExecutorService scheduledThreadPool;
+   private transient ScheduledExecutorService scheduledThreadPool;
 
-   private DiscoveryGroup discoveryGroup;
+   private transient DiscoveryGroup discoveryGroup;
 
-   private ConnectionLoadBalancingPolicy loadBalancingPolicy;
+   private transient ConnectionLoadBalancingPolicy loadBalancingPolicy;
 
-   private boolean readOnly;
+   private transient boolean readOnly;
 
    // Settable attributes:
 
