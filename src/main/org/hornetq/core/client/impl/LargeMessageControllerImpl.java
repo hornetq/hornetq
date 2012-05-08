@@ -69,7 +69,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private boolean streamClosed = false;
 
-   private final int readTimeout;
+   private final long readTimeout;
 
    private long readerIndex = 0;
    
@@ -96,14 +96,14 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout)
+                                 final long readTimeout)
    {
       this(consumerInternal, totalSize, readTimeout, null);
    }
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout,
+                                 final long readTimeout,
                                  final File cachedFile)
    {
       this(consumerInternal, totalSize, readTimeout, cachedFile, 10 * 1024);
@@ -111,7 +111,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout,
+                                 final long readTimeout,
                                  final File cachedFile,
                                  final int bufferSize)
    {
@@ -327,29 +327,41 @@ public class LargeMessageControllerImpl implements LargeMessageController
          return false;
       }
 
-      long timeOut = System.currentTimeMillis() + timeWait;
+      long timeOut;
+      
+      // If timeWait = 0, we will use the readTimeout
+      // And we will check if no packets have arrived withing readTimeout milliseconds
+      if (timeWait != 0)
+      {
+         timeOut = System.currentTimeMillis() + timeWait;
+      }
+      else
+      {
+         timeOut = System.currentTimeMillis() + readTimeout;
+      }
+      
       while (!streamEnded && handledException == null)
       {
          try
          {
-            this.wait(readTimeout == 0 ? 1 : readTimeout * 1000);
+            this.wait(timeWait == 0 ? readTimeout : timeWait);
          }
          catch (InterruptedException e)
          {
             throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
          }
-
-         if ((timeWait > 0 && System.currentTimeMillis() > timeOut || ! packetAdded) && !streamEnded && handledException == null)
+         
+         if (!streamEnded && handledException == null)
          {
-            if (!packetAdded)
+            if (timeWait != 0 && System.currentTimeMillis() > timeOut)
             {
                throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                        "No packets have arrived within " + timeWait);
+                        "Timeout waiting for LargeMessage Body");
             }
-            else
+            else if (System.currentTimeMillis() > timeOut && !packetAdded)
             {
                throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                          "Timeout waiting for LargeMessage Body");
+                                          "No packets have arrived within " + readTimeout + " milliseconds");
             }
          }
       }
