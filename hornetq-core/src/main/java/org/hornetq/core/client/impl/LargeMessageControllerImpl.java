@@ -38,12 +38,11 @@ import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * This class aggregates several SessionReceiveContinuationMessages as it was being handled by a single buffer.
- * This buffer can be consumed as messages are arriving, and it will hold the packets until they are read using the ChannelBuffer interface, or the setOutputStream or saveStream are called.
- *
+ * This class aggregates several {@link SessionReceiveContinuationMessage}s as it was being handled
+ * by a single buffer. This buffer can be consumed as messages are arriving, and it will hold the
+ * packets until they are read using the ChannelBuffer interface, or the setOutputStream or
+ * saveStream are called.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class LargeMessageControllerImpl implements LargeMessageController
 {

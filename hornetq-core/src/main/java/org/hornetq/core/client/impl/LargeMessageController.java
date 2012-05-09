@@ -53,10 +53,11 @@ public interface LargeMessageController extends HornetQBuffer
    void setOutputStream(final OutputStream output) throws HornetQException;
 
    /**
-    * Saves this buffer to the specified output.
+    * Saves this buffer to the specified output. This is just a blocking version of
+    * {@link #setOutputStream(OutputStream)}.
     */
    void saveBuffer(final OutputStream output) throws HornetQException;
-   
+
    public void addPacket(final SessionReceiveContinuationMessage packet);
 
    /**
