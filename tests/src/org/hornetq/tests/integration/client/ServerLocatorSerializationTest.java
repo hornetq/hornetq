@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009 Red Hat, Inc.
+ *  Red Hat licenses this file to you under the Apache License, version
+ *  2.0 (the "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
+ */
+
+package org.hornetq.tests.integration.client;
+
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.ServiceTestBase;
+
+import java.io.*;
+
+public class ServerLocatorSerializationTest extends ServiceTestBase
+{
+   private HornetQServer server;
+   private static final Logger log = Logger.getLogger(ServerLocatorSerializationTest.class);
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      Configuration configuration = createDefaultConfig(isNetty());
+      server = createServer(false, configuration);
+      server.start();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      server.stop();
+      super.tearDown();
+   }
+
+   public void testLocatorSerialization() throws Exception
+   {
+      log.info("Starting Netty locator");
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
+      
+      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSession session = csf.createSession(false, false);
+      session.close();
+      csf.close();
+
+      log.info("Serializing locator");
+      ServerLocatorImpl locatorImpl = (ServerLocatorImpl) locator;
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(bos);
+      out.writeObject(locatorImpl);
+
+      log.info("De-serializing locator");
+      ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+      ObjectInputStream in = new ObjectInputStream(bis);
+      locatorImpl = (ServerLocatorImpl) in.readObject();
+
+      csf = locator.createSessionFactory();
+      session = csf.createSession(false, false);
+      session.close();
+      csf.close();
+
+      locator.close();
+   }
+
+   public boolean isNetty()
+   {
+      return true;
+   }
+}
