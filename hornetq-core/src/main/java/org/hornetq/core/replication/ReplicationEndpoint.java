@@ -67,6 +67,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
@@ -229,8 +230,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          HornetQLogger.LOGGER.errorHandlingReplciationPacket(e, packet);
          response =
-                  new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                                   "unhandled error during replication", e));
+                  new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.replicationUnhandledError(e));
       }
 
       channel.send(response);
@@ -366,13 +366,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       if (!server.isRemoteBackupUpToDate())
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot compare journals if not in sync!");
+         throw HornetQMessageBundle.BUNDLE.journalsNotInSync();
       }
 
       if (journalLoadInformation == null || journalLoadInformation.length != journalInformation.length)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR,
-                                    "Live Node contains more journals than the backup node. Probably a version match error");
+         throw HornetQMessageBundle.BUNDLE.replicationTooManyJournals();
       }
 
       for (int i = 0; i < journalInformation.length; i++)
@@ -380,8 +379,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          if (!journalInformation[i].equals(journalLoadInformation[i]))
          {
             HornetQLogger.LOGGER.journalcomparisonMismatch(journalParametersToString(journalInformation));
-            throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                       "Backup node can't connect to the live node as the data differs");
+            throw HornetQMessageBundle.BUNDLE.replicationTooManyJournals();
          }
       }
 
@@ -509,7 +507,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             return;
          }
          default:
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Unhandled file type " + msg.getFileType());
+            throw HornetQMessageBundle.BUNDLE.replicationUnhandledFileType(msg.getFileType());
       }
 
       if (data == null)
@@ -535,7 +533,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       if (server.isRemoteBackupUpToDate())
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
+         throw HornetQMessageBundle.BUNDLE.replicationBackupUpToDate();
       }
 
 
@@ -580,7 +578,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                registerJournal(journalContent.typeByte, syncJournal);
                break;
             default:
-               throw new HornetQException(HornetQException.INTERNAL_ERROR, "unhandled data type!");
+               throw HornetQMessageBundle.BUNDLE.replicationUnhandledDataType();
          }
       }
    }

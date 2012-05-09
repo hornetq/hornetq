@@ -9,6 +9,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -40,7 +41,7 @@ final class ReplicationError implements Interceptor
       }
       catch (Exception e)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "error trying to stop " + server, e);
+         throw HornetQMessageBundle.BUNDLE.errorStoppingServer(e, server);
       }
 
       return false;

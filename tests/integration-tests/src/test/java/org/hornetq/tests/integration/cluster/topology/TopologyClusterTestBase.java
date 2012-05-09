@@ -21,8 +21,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -128,17 +130,15 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          session.deleteQueue(rand);
          return session;
       }
-      catch (HornetQException e)
+      catch(ObjectClosedException oce)
       {
-         if (e.getCode() == HornetQException.OBJECT_CLOSED || e.getCode() == HornetQException.UNBLOCKED)
-         {
-             ClientSessionFactory sf = createSessionFactory(locator);
-            return sf.createSession();
-         }
-         else
-         {
-            throw e;
-         }
+         ClientSessionFactory sf = createSessionFactory(locator);
+         return sf.createSession();
+      }
+      catch(UnBlockedException obe)
+      {
+         ClientSessionFactory sf = createSessionFactory(locator);
+         return sf.createSession();
       }
    }
 

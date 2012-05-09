@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.AddressManager;
@@ -24,6 +23,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -55,7 +55,7 @@ public class SimpleAddressManager implements AddressManager
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
-         throw new HornetQException(HornetQException.QUEUE_EXISTS, "Binding already exists " + binding);
+         throw HornetQMessageBundle.BUNDLE.bindingAlreadyExists(binding);
       }
       
       if (HornetQLogger.LOGGER.isDebugEnabled())

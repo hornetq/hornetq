@@ -28,8 +28,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.DuplicateIdException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
@@ -483,7 +485,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (binding == null)
       {
-         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
+         throw new NonExistentQueueException();
       }
 
       if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
@@ -1160,13 +1162,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (cacheBridge.contains(bridgeDupBytes))
          {
-            StringBuffer warnMessage = new StringBuffer();
-
             HornetQLogger.LOGGER.duplicateMessageDetectedThruBridge(message);
             
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
+               context.getTransaction().markAsRollbackOnly(new DuplicateIdException());
             }
 
             message.decrementRefCount();
@@ -1208,7 +1208,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
+               context.getTransaction().markAsRollbackOnly(new DuplicateIdException(warnMessage));
             }
 
             message.decrementRefCount();

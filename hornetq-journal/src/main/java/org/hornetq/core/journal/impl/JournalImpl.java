@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -64,6 +64,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
+import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.DataConstants;
 
@@ -2662,8 +2663,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
          if (!isCompatible)
          {
-            throw new HornetQException(HornetQException.IO_ERROR,
-                                       "Journal files version mismatch. You should export the data from the previous version and import it as explained on the user's manual");
+            throw HornetQJournalBundle.BUNDLE.journalFileMisMatch();
          }
       }
 
@@ -2671,7 +2671,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       if (readUserVersion != userVersion)
       {
-         throw new HornetQException(HornetQException.IO_ERROR, "Journal data belong to a different version");
+         throw HornetQJournalBundle.BUNDLE.journalDifferentVersion();
       }
 
       long fileID = bb.getLong();

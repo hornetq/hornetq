@@ -18,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.IOExceptionListener;
@@ -192,7 +194,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       }
       catch (HornetQException e)
       {
-         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
          throw e;
       }
 
@@ -261,7 +263,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    /* (non-Javadoc)
     * @see org.hornetq.core.asyncio.IOExceptionListener#onException(int, java.lang.String)
     */
-   public void onIOException(int code, String message)
+   public void onIOException(HornetQExceptionType code, String message)
    {
       factory.onIOError(code, message, this);
    }

@@ -31,8 +31,8 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.*;
+import org.hornetq.api.core.SecurityException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -118,9 +118,13 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession(false, true, true);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 
@@ -137,9 +141,13 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
          Assert.fail("should not throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 
@@ -201,9 +209,13 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
    }
@@ -247,9 +259,13 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
    }
@@ -293,9 +309,13 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
    }
@@ -339,9 +359,13 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
    }
@@ -434,9 +458,13 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
    }
@@ -520,9 +548,13 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
       senSession.close();
@@ -560,9 +592,13 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       securityManager.addRole("auser", "receiver");
@@ -612,9 +648,13 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       securityManager.addRole("auser", "receiver");
@@ -630,9 +670,13 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       session.close();
@@ -676,9 +720,13 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       securityManager.addRole("auser", "receiver");
@@ -780,9 +828,13 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
       session.close();
 
@@ -872,17 +924,21 @@ public class SecurityTest extends ServiceTestBase
       options.put("authenticated", Boolean.FALSE);
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
       server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = locator.createSessionFactory();
 
-         try
-         {
-            cf.createSession(false, true, true);
-            Assert.fail("should not throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
+      try
+      {
+         cf.createSession(false, true, true);
+         Assert.fail("should not throw exception");
+      }
+      catch(SecurityException se)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
    }
 
@@ -944,9 +1000,13 @@ public class SecurityTest extends ServiceTestBase
             factory.createSession(false, true, true);
             Assert.fail("should throw exception");
          }
+         catch(SecurityException se)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          // Step 5. bill tries to make a connection using wrong password
@@ -955,9 +1015,13 @@ public class SecurityTest extends ServiceTestBase
             billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
             Assert.fail("should throw exception");
          }
+         catch(SecurityException se)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            assertEquals("User bill failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          // Step 6. bill makes a good connection.
@@ -1075,9 +1139,13 @@ public class SecurityTest extends ServiceTestBase
             factory.createSession(false, true, true);
             Assert.fail("should throw exception");
          }
+         catch(SecurityException se)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          // Step 5. bill tries to make a connection using wrong password
@@ -1086,9 +1154,13 @@ public class SecurityTest extends ServiceTestBase
             billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
             Assert.fail("should throw exception");
          }
+         catch(SecurityException se)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          // Step 6. bill makes a good connection.
@@ -1239,9 +1311,13 @@ public class SecurityTest extends ServiceTestBase
          connection.createConsumer(queue);
          Assert.fail("should throw exception");
       }
+      catch(SecurityException se)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 

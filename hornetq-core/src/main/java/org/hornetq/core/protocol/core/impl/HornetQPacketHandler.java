@@ -18,6 +18,9 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IncompatibleClientServerException;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -30,6 +33,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.version.Version;
@@ -125,13 +129,12 @@ public class HornetQPacketHandler implements ChannelHandler
          if (!isCompatibleClient)
          {
             HornetQLogger.LOGGER.incompatibleVersion(request.getVersion(), connection.getRemoteAddress(), version.getFullVersion());
-            throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                                       "Server and client versions incompatible");
+            throw HornetQMessageBundle.BUNDLE.incompatibleCLientServer();
          }
 
          if (!server.isStarted())
          {
-            throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");
+            throw HornetQMessageBundle.BUNDLE.serverNotStarted();
          }
 
          // XXX HORNETQ-720 Taylor commented out this test. Should be verified.
@@ -184,7 +187,7 @@ public class HornetQPacketHandler implements ChannelHandler
          HornetQLogger.LOGGER.failedToCreateSession(e);
          response = new HornetQExceptionMessage(e);
 
-         if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+         if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
          {
             incompatibleVersion = true;
          }
@@ -193,7 +196,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          HornetQLogger.LOGGER.failedToCreateSession(e);
 
-         response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
+         response = new HornetQExceptionMessage(new InternalErrorException());
       }
 
       // send the exception to the client and destroy
@@ -260,7 +263,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          HornetQLogger.LOGGER.failedToReattachSession(e);
 
-         response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
+         response = new HornetQExceptionMessage(new InternalErrorException());
       }
 
       channel1.send(response);

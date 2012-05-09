@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.unit.UnitTestLogger;
@@ -307,7 +308,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          }
          catch (Exception e)
          {
-            callback.onError(-1, e.toString());
+            callback.onError(HornetQExceptionType.GENERIC_EXCEPTION.getCode(), e.toString());
             e.printStackTrace();
          }
       }

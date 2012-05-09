@@ -51,6 +51,8 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.StorageManager;
@@ -96,6 +98,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.BindingQueryResult;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -496,11 +499,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   }
                   else
                   {
-                     response = new HornetQExceptionMessage(new HornetQException(HornetQException.DUPLICATE_METADATA,
-                                                     "Metadata " + message.getKey() +
-                                                              "=" +
-                                                              message.getData() +
-                                                              " had been set already"));
+                     response = new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.duplicateMetadata(message.getKey(), message.getData()));
                   }
                   break;
                }
@@ -523,7 +522,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             if (requiresResponse)
             {
                HornetQLogger.LOGGER.debug("Sending exception to client", e);
-               response = new HornetQExceptionMessage((HornetQException)e);
+               response = new HornetQExceptionMessage(e);
             }
             else
             {
@@ -535,7 +534,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             if (requiresResponse)
             {
                HornetQLogger.LOGGER.warn("Sending unexpected exception to the client", t);
-               HornetQException hqe = new HornetQException(HornetQException.INTERNAL_ERROR);
+               HornetQException hqe = new InternalErrorException();
                hqe.initCause(t);
                response = new HornetQExceptionMessage(hqe);
             }
@@ -564,8 +563,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          {
             HornetQLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
 
-            HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage(new HornetQException(errorCode,
-                                                                                                        errorMessage));
+            HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage( HornetQExceptionType.createException(errorCode, errorMessage));
 
             doConfirmAndResponse(confirmPacket, exceptionMessage, flush, closeChannel);
          }

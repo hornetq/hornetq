@@ -43,6 +43,7 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -615,14 +616,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                   RemotingConnection conn = removeConnection(id);
                   if (conn != null)
                   {
-                     HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                                "Did not receive data from " + conn.getRemoteAddress() +
-                                                                         ". It is likely the client has exited or crashed without " +
-                                                                         "closing its connection, or the network between the server and client has failed. " +
-                                                                         "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
-                                                                         "Please check user manual for more information." +
-                                                                         " The connection will now be closed.");
-                     conn.fail(me);
+                     conn.fail(HornetQMessageBundle.BUNDLE.clientExited(conn.getRemoteAddress()));
                   }
                }
 

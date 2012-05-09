@@ -28,6 +28,7 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.DeflaterReader;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -310,7 +311,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       if (closed)
       {
-         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Producer is closed");
+         throw HornetQMessageBundle.BUNDLE.producerClosed();
       }
    }
 
@@ -334,8 +335,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (msgI.getHeadersAndPropertiesEncodeSize() >= minLargeMessageSize)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Header size (" + headerSize +
-                                                                    ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
+         throw HornetQMessageBundle.BUNDLE.headerSizeTooBig(headerSize);
       }
 
       // msg.getBody() could be Null on LargeServerMessage
@@ -492,9 +492,7 @@ public class ClientProducerImpl implements ClientProducerInternal
             }
             catch (IOException e)
             {
-               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                          "Error reading the LargeMessageBody",
-                                          e);
+               throw HornetQMessageBundle.BUNDLE.errorReadingBody(e);
             }
 
             if (numberOfBytesRead == -1)
@@ -558,9 +556,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       catch (IOException e)
       {
-         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                    "Error closing stream from LargeMessageBody",
-                                    e);
+         throw HornetQMessageBundle.BUNDLE.errorClosingLargeMessage(e);
       }
    }
    // Inner Classes --------------------------------------------------------------------------------

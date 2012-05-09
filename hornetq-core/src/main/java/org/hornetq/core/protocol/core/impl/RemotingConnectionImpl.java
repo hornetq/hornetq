@@ -322,7 +322,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          destroyed = true;
       }
 
-      HornetQLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getCode());
+      HornetQLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getType());
 
       // Then call the listeners
       callFailureListeners(me);

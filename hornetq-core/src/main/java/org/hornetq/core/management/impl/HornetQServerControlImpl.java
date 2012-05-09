@@ -57,6 +57,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.ServerSession;
@@ -1229,8 +1230,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             if (remoteAddress.contains(ipAddress))
             {
                remotingService.removeConnection(connection.getID());
-               connection.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "connections for " + ipAddress +
-                                                                                     " closed by management"));
+               connection.fail(HornetQMessageBundle.BUNDLE.connectionsClosedByManagement(ipAddress));
                closed = true;
             }
          }

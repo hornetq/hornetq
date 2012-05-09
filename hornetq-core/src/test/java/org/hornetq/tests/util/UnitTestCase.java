@@ -52,6 +52,7 @@ import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -780,7 +781,7 @@ public abstract class UnitTestCase extends TestCase
       return testDir + "/temp";
    }
 
-   protected static void expectHornetQException(final String message, final int errorCode, final HornetQAction action)
+   protected static void expectHornetQException(final String message, final HornetQExceptionType errorCode, final HornetQAction action)
    {
       try
       {
@@ -790,11 +791,11 @@ public abstract class UnitTestCase extends TestCase
       catch (Exception e)
       {
          Assert.assertTrue(e instanceof HornetQException);
-         Assert.assertEquals(errorCode, ((HornetQException)e).getCode());
+         Assert.assertEquals(errorCode, ((HornetQException)e).getType());
       }
    }
 
-   protected static void expectHornetQException(final int errorCode, final HornetQAction action)
+   protected static void expectHornetQException(final HornetQExceptionType errorCode, final HornetQAction action)
    {
       UnitTestCase.expectHornetQException("must throw a HornetQException with the expected errorCode: " + errorCode,
                                           errorCode,

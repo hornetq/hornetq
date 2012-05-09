@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -202,7 +203,7 @@ public class OperationContextUnitTest extends UnitTestCase
       // We use a latch instead of forcing a sleep here
       Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
-      context.onError(1, "Poop happens!");
+      context.onError(HornetQExceptionType.UNSUPPORTED_PACKET.getCode(), "Poop happens!");
 
       t.join();
 

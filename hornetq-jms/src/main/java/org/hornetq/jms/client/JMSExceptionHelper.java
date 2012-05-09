@@ -18,7 +18,10 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.*;
+import org.hornetq.api.core.SecurityException;
+
+import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
 
 /**
  * 
@@ -36,49 +39,49 @@ public class JMSExceptionHelper
    public static JMSException convertFromHornetQException(final HornetQException me)
    {
       JMSException je;
-      switch (me.getCode())
+      switch (me.getType())
       {
-         case HornetQException.CONNECTION_TIMEDOUT:
+         case CONNECTION_TIMEDOUT:
             je = new JMSException(me.getMessage());
             break;
 
-         case HornetQException.ILLEGAL_STATE:
+         case ILLEGAL_STATE:E:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
 
-         case HornetQException.INTERNAL_ERROR:
+         case INTERNAL_ERROR:
             je = new JMSException(me.getMessage());
             break;
 
-         case HornetQException.INVALID_FILTER_EXPRESSION:
+         case INVALID_FILTER_EXPRESSION:
             je = new InvalidSelectorException(me.getMessage());
             break;
 
-         case HornetQException.NOT_CONNECTED:
+         case NOT_CONNECTED:
             je = new JMSException(me.getMessage());
             break;
 
-         case HornetQException.OBJECT_CLOSED:
+         case OBJECT_CLOSED:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
 
-         case HornetQException.QUEUE_DOES_NOT_EXIST:
+         case QUEUE_DOES_NOT_EXIST:
             je = new InvalidDestinationException(me.getMessage());
             break;
 
-         case HornetQException.QUEUE_EXISTS:
+         case QUEUE_EXISTS:
             je = new InvalidDestinationException(me.getMessage());
             break;
 
-         case HornetQException.SECURITY_EXCEPTION:
+         case SECURITY_EXCEPTION:
             je = new JMSSecurityException(me.getMessage());
             break;
 
-         case HornetQException.UNSUPPORTED_PACKET:
+         case UNSUPPORTED_PACKET:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
 
-         case HornetQException.TRANSACTION_ROLLED_BACK:
+         case TRANSACTION_ROLLED_BACK:
             je = new javax.jms.TransactionRolledBackException(me.getMessage());
             break;
 

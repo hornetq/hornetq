@@ -32,6 +32,7 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -478,9 +479,7 @@ public class BindingsImpl implements Bindings
             }
             else
             {
-               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST,
-                                          "queue " + resp.getChosenClusterName() +
-                                                   " has been removed cannot deliver message, queues should not be removed when grouping is used");
+               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
             }
          }
          else
@@ -501,9 +500,7 @@ public class BindingsImpl implements Bindings
             }
             else
             {
-               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST,
-                                          "queue " + resp.getChosenClusterName() +
-                                                   " has been removed cannot deliver message, queues should not be removed when grouping is used");
+               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
             }
          }
       }

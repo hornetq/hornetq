@@ -32,7 +32,9 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -174,9 +176,13 @@ public class ReplicationTest extends ServiceTestBase
          manager.start();
          Assert.fail("Exception was expected");
       }
+      catch(NotConnectedException nce)
+      {
+         //ok
+      }
       catch (HornetQException expected)
       {
-         assertEquals(HornetQException.NOT_CONNECTED, expected.getCode());
+         fail("Invalid Exception type:" + expected.getType());
       }
    }
 
@@ -322,7 +328,7 @@ public class ReplicationTest extends ServiceTestBase
 
       String msg = "I'm an exception";
 
-      ctx.onError(5, msg);
+      ctx.onError(HornetQExceptionType.UNBLOCKED.getCode(), msg);
 
       final AtomicInteger lastError = new AtomicInteger(0);
 

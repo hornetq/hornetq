@@ -15,6 +15,7 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -58,7 +59,7 @@ public class HornetQExceptionMessage extends PacketImpl
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeInt(exception.getCode());
+      buffer.writeInt(exception.getType().getCode());
       buffer.writeNullableString(exception.getMessage());
    }
 
@@ -68,7 +69,7 @@ public class HornetQExceptionMessage extends PacketImpl
       int code = buffer.readInt();
       String msg = buffer.readNullableString();
 
-      exception = new HornetQException(code, msg);
+      exception = HornetQExceptionType.createException(code, msg);
    }
 
    @Override

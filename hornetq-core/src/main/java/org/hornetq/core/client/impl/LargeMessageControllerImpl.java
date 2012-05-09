@@ -33,6 +33,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -297,8 +298,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    {
       if (streamClosed)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "The large message lost connection with its session, either because of a rollback or a closed session");
+         throw HornetQMessageBundle.BUNDLE.largeMessageLostSession();
       }
       setOutputStream(output);
       waitCompletion(0);
@@ -326,21 +326,18 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
          catch (InterruptedException e)
          {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
+            throw HornetQMessageBundle.BUNDLE.largeMessageControllerInterrupted(e);
          }
 
          if (timeWait > 0 && System.currentTimeMillis() > timeOut)
          {
-            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                       "Timeout waiting for LargeMessage Body");
+            throw HornetQMessageBundle.BUNDLE.timeoutOnLargeMessage();
          }
       }
 
       if (handledException != null)
       {
-         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                    "Error on saving LargeMessageBufferImpl",
-                                    handledException);
+         throw HornetQMessageBundle.BUNDLE.errorSavingLargeMessageBuffer(handledException);
       }
 
       return streamEnded;
@@ -1282,7 +1279,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
       catch (IOException e)
       {
-         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error writing body of message", e);
+         throw HornetQMessageBundle.BUNDLE.errorWritingLargeMessage(e);
       }
    }
 

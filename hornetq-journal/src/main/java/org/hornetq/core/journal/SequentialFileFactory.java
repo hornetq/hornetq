@@ -13,6 +13,8 @@
 
 package org.hornetq.core.journal;
 
+import org.hornetq.api.core.HornetQExceptionType;
+
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public interface SequentialFileFactory
    boolean isSupportsCallbacks();
    
    /** The SequentialFile will call this method when a disk IO Error happens during the live phase. */
-   void onIOError(int errorCode, String message, SequentialFile file);
+   void onIOError(HornetQExceptionType errorCode, String message, SequentialFile file);
 
    /** used for cases where you need direct buffer outside of the journal context.
     *  This is because the native layer has a method that can be reused in certain cases like paging */
