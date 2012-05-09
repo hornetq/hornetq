@@ -13,17 +13,26 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 
-import java.io.*;
+import javax.jms.Connection;
+import javax.jms.Session;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ServerLocatorSerializationTest extends ServiceTestBase
 {
@@ -50,7 +59,7 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
    {
       log.info("Starting Netty locator");
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
-      
+
       ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession session = csf.createSession(false, false);
       session.close();
@@ -73,6 +82,35 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
       csf.close();
 
       locator.close();
+      locatorImpl.close();
+   }
+
+   public void testConnectionFactorySerialization() throws Exception
+   {
+      log.info("Starting connection factory");
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session.close();
+      connection.close();
+
+      log.info("Serializing connection factory");
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(bos);
+      out.writeObject(cf);
+
+      log.info("De-serializing connection factory");
+      ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+      ObjectInputStream in = new ObjectInputStream(bis);
+      cf = (HornetQConnectionFactory) in.readObject();
+
+      connection = cf.createConnection();
+      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session.close();
+      connection.close();
+
+      cf.close();
    }
 
    public boolean isNetty()
