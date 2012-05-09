@@ -207,7 +207,7 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @param serverID
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    protected static ConfigurationImpl createBasicConfig(final int serverID) throws Exception
    {
@@ -1011,7 +1011,7 @@ public abstract class UnitTestCase extends TestCase
          {
             exception.printStackTrace();
          }
-         fail("Client Session Factories still tryint to reconnect, see above to see where created");
+            fail("Client Session Factories still trying to reconnect, see above to see where created");
       }
       Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
