@@ -21,6 +21,8 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -449,10 +451,10 @@ public class BridgeReconnectTest extends BridgeTestBase
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         forwardingConnection.fail(new NotConnectedException());
 
          forwardingConnection = getForwardingConnection(bridge);
-         forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         forwardingConnection.fail(new NotConnectedException());
 
          final int numMessages = NUM_MESSAGES;
 
@@ -732,7 +734,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         forwardingConnection.fail(new NotConnectedException());
 
          final int numMessages = NUM_MESSAGES;
 
@@ -770,7 +772,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new HornetQException(5));
+         forwardingConnection.fail(new HornetQException(HornetQExceptionType.UNBLOCKED));
 
          for (int i = 0; i < numMessages; i++)
          {

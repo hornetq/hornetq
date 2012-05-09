@@ -18,7 +18,9 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -159,7 +161,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
          public void connectionFailed(HornetQException exception, boolean failedOver)
          {
-            if (exception.getCode() == HornetQException.DISCONNECTED)
+            if (exception.getType() == HornetQExceptionType.DISCONNECTED)
             {
                flowRecord.serverDisconnected();
                clusterManager.removeClusterLocator(serverLocator);
@@ -321,9 +323,9 @@ public class ClusterConnectionBridge extends BridgeImpl
    }
 
    @Override
-   protected void tryScheduleRetryReconnect(final int code)
+   protected void tryScheduleRetryReconnect(final HornetQExceptionType type)
    {
-      if (code != HornetQException.DISCONNECTED)
+      if (type != HornetQExceptionType.DISCONNECTED)
       {
          scheduleRetryConnect();
       }

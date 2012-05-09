@@ -29,8 +29,11 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SessionCreationException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -82,6 +85,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutRespons
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.IDGenerator;
@@ -519,13 +523,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
       if(outcomeKnown)
       {
-      throw new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK,
-                                 "The transaction was rolled back on failover to a backup server");
-   }
+         throw HornetQMessageBundle.BUNDLE.txRolledBack();
+      }
       else
       {
-         throw new HornetQException(HornetQException.TRANSACTION_OUTCOME_UNKNOWN,
-               "The transaction was rolled back on failover however commit may have been succesful");
+         throw HornetQMessageBundle.BUNDLE.txOutcomeUnknown();
       }
    }
 
@@ -551,7 +553,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         if (e.getCode() == HornetQException.UNBLOCKED)
+         if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             // The call to commit was unlocked on failover, we therefore rollback the tx,
             // and throw a transaction rolled back exception instead
@@ -887,7 +889,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         HornetQLogger.LOGGER.debug("Calling close on session "  + this);
+         HornetQLogger.LOGGER.debug("Calling close on session " + this);
       }
 
       try
@@ -1024,7 +1026,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                      catch (HornetQException e)
                      {
                         // the session was created while its server was starting, retry it:
-                        if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+                        if (e.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED)
                         {
                            HornetQLogger.LOGGER.retryCreateSessionSeverStarting(name);
                            retry = true;
@@ -1457,7 +1459,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         if (e.getCode() == HornetQException.UNBLOCKED)
+         if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             // Unblocked on failover
             try
@@ -1573,7 +1575,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         if (e.getCode() == HornetQException.UNBLOCKED)
+         if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             // Unblocked on failover
             xaRetry = true;
@@ -1638,7 +1640,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       catch (HornetQException e)
       {
          // we can retry this only because we know for sure that no work would have been done
-         if (e.getCode() == HornetQException.UNBLOCKED)
+         if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             try
             {
@@ -1847,7 +1849,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
       if (durable && temp)
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Queue can not be both durable and temporay");
+         throw HornetQMessageBundle.BUNDLE.queueMisConfigured();
       }
 
       CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp, true);
@@ -1868,7 +1870,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       if (closed || inClose)
       {
-         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Session is closed");
+         throw HornetQMessageBundle.BUNDLE.sessionClosed();
       }
    }
 

@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -288,7 +289,7 @@ class StompProtocolManager implements ProtocolManager
             HornetQLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
             
             HornetQStompException e = new HornetQStompException("Error sending reply",
-                  new HornetQException(errorCode, errorMessage));
+                  HornetQExceptionType.createException(errorCode, errorMessage));
 
             StompFrame error = e.getFrame();
             send(connection, error);

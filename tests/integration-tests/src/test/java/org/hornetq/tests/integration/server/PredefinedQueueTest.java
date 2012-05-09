@@ -19,6 +19,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.QueueExistsException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -92,9 +93,13 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (HornetQException me)
+      catch(QueueExistsException se)
       {
-         Assert.assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
       }
       try
       {
@@ -102,9 +107,13 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (HornetQException me)
+      catch(QueueExistsException se)
       {
-         Assert.assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
       }
       try
       {
@@ -112,9 +121,13 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (HornetQException me)
+      catch(QueueExistsException se)
       {
-         Assert.assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
       }
 
       session.close();

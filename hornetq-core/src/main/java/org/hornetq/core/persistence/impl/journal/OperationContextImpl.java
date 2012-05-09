@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.SimpleWaitIOCallback;
 import org.hornetq.core.persistence.OperationContext;
@@ -218,7 +218,7 @@ public class OperationContextImpl implements OperationContext
    }
 
    /**
-    * @param holder
+    * @param task
     */
    private void execute(final IOAsyncTask task)
    {
@@ -246,7 +246,7 @@ public class OperationContextImpl implements OperationContext
       {
          HornetQLogger.LOGGER.errorExecutingIOAsyncTask(e);
          executorsPending.decrementAndGet();
-         task.onError(HornetQException.INTERNAL_ERROR,
+         task.onError(HornetQExceptionType.INTERNAL_ERROR.getCode(),
                       "It wasn't possible to complete IO operation - " + e.getMessage());
       }
    }

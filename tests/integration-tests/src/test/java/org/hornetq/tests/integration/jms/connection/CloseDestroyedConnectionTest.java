@@ -19,6 +19,7 @@ import javax.jms.Session;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -98,7 +99,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
 
       RemotingConnection rc = sessi.getConnection();
 
-      rc.fail(new HornetQException(HornetQException.INTERNAL_ERROR));
+      rc.fail(new InternalErrorException());
 
       // Now close the connection
 

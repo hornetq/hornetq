@@ -22,8 +22,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
@@ -412,7 +414,7 @@ public class ReplicationManager implements HornetQComponent
    {
       public void connectionFailed(final HornetQException me, boolean failedOver)
       {
-         if (me.getCode() == HornetQException.DISCONNECTED)
+         if (me.getType() == HornetQExceptionType.DISCONNECTED)
          {
             // Backup has shut down - no need to log a stack trace
             HornetQLogger.LOGGER.replicationStopOnBackupShutdown();

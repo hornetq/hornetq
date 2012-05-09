@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.UnsupportedPacketException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
@@ -205,19 +206,19 @@ public class FileWrapperJournal extends JournalBase implements Journal
    @Override
    public void appendRollbackRecord(long txID, boolean sync, IOCompletion callback) throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedPacketException();
    }
 
    @Override
    public JournalLoadInformation load(LoaderCallback reloadManager) throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedPacketException();
    }
 
    @Override
    public JournalLoadInformation loadInternalOnly() throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedPacketException();
    }
 
    @Override
@@ -231,13 +232,13 @@ public class FileWrapperJournal extends JournalBase implements Journal
             List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure)
             throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedPacketException();
    }
 
    @Override
    public int getAlignment() throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedPacketException();
    }
 
    @Override

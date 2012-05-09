@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -241,7 +243,7 @@ public final class QuorumManager implements FailureListener
          }
          catch (HornetQException e)
          {
-            if (e.getCode() != HornetQException.NOT_CONNECTED)
+            if (e.getType() != HornetQExceptionType.NOT_CONNECTED)
                HornetQLogger.LOGGER.errorReConnecting(e);
          }
       }

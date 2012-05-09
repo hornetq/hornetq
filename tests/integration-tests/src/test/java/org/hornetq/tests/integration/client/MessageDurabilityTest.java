@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -74,9 +76,13 @@ public class MessageDurabilityTest extends ServiceTestBase
       {
          session.createConsumer(queue);
       }
+      catch(NonExistentQueueException neqe)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 
@@ -143,7 +149,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
 
-      UnitTestCase.expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -170,7 +176,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       restart();
 
       session.start();
-      UnitTestCase.expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
+      UnitTestCase.expectHornetQException(HornetQExceptionType.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {

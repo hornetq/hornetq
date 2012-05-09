@@ -18,10 +18,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.DuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransactionOutcomeUnknownException;
+import org.hornetq.api.core.TransactionRolledBackException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -283,16 +287,18 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                   retry = false;
                }
-               catch (HornetQException e)
+               catch (UnBlockedException ube)
                {
                   AsynchronousFailoverTest.log.info("exception when sending message with counter " + i);
-                  if (e.getCode() != HornetQException.UNBLOCKED)
-                  {
-                     e.printStackTrace();
-                  }
-                  Assert.assertEquals("Expected UNBLOCKED", HornetQException.UNBLOCKED, e.getCode());
+
+                  ube.printStackTrace();
 
                   retry = true;
+
+               }
+               catch (HornetQException e)
+               {
+                  fail("Invalid Exception type:" + e.getType());
                }
             }
             while (retry);
@@ -309,12 +315,16 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                retry = false;
             }
-            catch (HornetQException e)
+            catch (UnBlockedException ube)
             {
                AsynchronousFailoverTest.log.info("exception when creating consumer");
-               Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                retry = true;
+
+            }
+            catch (HornetQException e)
+            {
+               fail("Invalid Exception type:" + e.getType());
             }
          }
          while (retry);
@@ -423,24 +433,33 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                   retry = false;
                }
+               catch(DuplicateIdException die)
+               {
+                  logAndSystemOut("#test duplicate id rejected on sending");
+                  break;
+               }
+               catch(TransactionRolledBackException trbe)
+               {
+                  log.info("#test transaction rollback retrying on sending");
+                  // OK
+                  retry = true;
+               }
+               catch(UnBlockedException ube)
+               {
+                  log.info("#test transaction rollback retrying on sending");
+                  // OK
+                  retry = true;
+               }
+               catch(TransactionOutcomeUnknownException toue)
+               {
+                  log.info("#test transaction rollback retrying on sending");
+                  // OK
+                  retry = true;
+               }
                catch (HornetQException e)
                {
-                  if (e.getCode() == HornetQException.DUPLICATE_ID_REJECTED)
-                  {
-                     logAndSystemOut("#test duplicate id rejected on sending");
-                     break;
-                  }
-                  else if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.UNBLOCKED || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
-                  {
-                     log.info("#test transaction rollback retrying on sending");
-                     // OK
-                     retry = true;
-                  }
-                  else
-                  {
-                     log.info("#test Exception " + e, e);
-                     throw e;
-                  }
+                  log.info("#test Exception " + e, e);
+                  throw e;
                }
             }
             while (retry);
@@ -537,33 +556,36 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   retry = false;
                   blocked = false;
                }
+               catch(TransactionRolledBackException trbe)
+               {
+                  logAndSystemOut("Transaction rolled back with " + msgs.size(), trbe);
+                  // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
+                  // ATM RolledBack exception is being called with the transaction is committed.
+                  // the test will fail if you remove this next line
+                  blocked = true;
+                  retry = true;
+               }
+               catch(TransactionOutcomeUnknownException tou)
+               {
+                  logAndSystemOut("Transaction rolled back with " + msgs.size(), tou);
+                  // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
+                  // ATM RolledBack exception is being called with the transaction is committed.
+                  // the test will fail if you remove this next line
+                  blocked = true;
+                  retry = true;
+               }
+               catch(UnBlockedException ube)
+               {
+                  logAndSystemOut("Unblocked with " + msgs.size(), ube);
+                  // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
+                  // This part of the test is never being called.
+                  blocked = true;
+                  retry = true;
+               }
                catch (HornetQException e)
                {
-                  if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
-                  {
-                     logAndSystemOut("Transaction rolled back with " + msgs.size(), e);
-                     // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
-                     // ATM RolledBack exception is being called with the transaction is committed.
-                     // the test will fail if you remove this next line
-                     blocked = true;
-                  }
-                  else if (e.getCode() == HornetQException.UNBLOCKED)
-                  {
-                     logAndSystemOut("Unblocked with " + msgs.size(), e);
-                     // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
-                     // This part of the test is never being called.
-                     blocked = true;
-                  }
-
-                  if (e.getCode() == HornetQException.UNBLOCKED || e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK)
-                  {
-                     retry = true;
-                  }
-                  else
-                  {
-                     logAndSystemOut(e.getMessage(), e);
-                     throw e;
-                  }
+                  logAndSystemOut(e.getMessage(), e);
+                  throw e;
                }
             }
             while (retry);

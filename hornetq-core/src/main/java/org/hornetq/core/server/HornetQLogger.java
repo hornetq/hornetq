@@ -39,6 +39,7 @@ package org.hornetq.core.server;
  * so an INFO message would be 101000 to 101999
  */
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -312,7 +313,7 @@ public interface HornetQLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112011, value = "Critical IO Error, shutting down the server. code={0}, message={1}", format = Message.Format.MESSAGE_FORMAT)
-   void ioErrorShutdownServer(int code, String message);
+   void ioErrorShutdownServer(HornetQExceptionType code, String message);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112012, value = "Error stopping server", format = Message.Format.MESSAGE_FORMAT)
@@ -710,7 +711,7 @@ public interface HornetQLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112107, value = "Connection failure has been detected: {0} [code={1}]", format = Message.Format.MESSAGE_FORMAT)
-   void connectionFailureDetected(String message, Integer code);
+   void connectionFailureDetected(String message, HornetQExceptionType type);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112108, value = "Failure in calling interceptor: {0}", format = Message.Format.MESSAGE_FORMAT)

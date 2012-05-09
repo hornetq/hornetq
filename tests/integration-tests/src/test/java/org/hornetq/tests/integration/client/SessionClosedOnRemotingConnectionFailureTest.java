@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -60,7 +62,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
 
          RemotingConnection connection = ((ClientSessionInternal)session).getConnection();
 
-         connection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         connection.fail(new NotConnectedException());
 
          Assert.assertTrue(session.isClosed());
 
@@ -76,9 +78,13 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
 
             Assert.fail("Should throw exception");
          }
+         catch(ObjectClosedException oce)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          try
@@ -87,9 +93,13 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
 
             Assert.fail("Should throw exception");
          }
+         catch(ObjectClosedException oce)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
 
          session.close();

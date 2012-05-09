@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.cluster.failover.remote;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
@@ -35,9 +36,13 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
          locator.createSessionFactory();
          fail();
       }
+      catch(NotConnectedException nce)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 }

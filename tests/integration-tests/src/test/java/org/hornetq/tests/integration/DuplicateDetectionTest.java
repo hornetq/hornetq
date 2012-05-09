@@ -19,6 +19,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.DuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -584,10 +585,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
+      catch(DuplicateIdException die)
+      {
+         session.rollback();
+      }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
-         session.rollback();
+         fail("Invalid Exception type:" + e.getType());
       }
 
       ClientConsumer consumer = session.createConsumer(queueName);
@@ -1727,10 +1731,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
+      catch(DuplicateIdException die)
+      {
+         session.rollback();
+      }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
-         session.rollback();
+         fail("Invalid Exception type:" + e.getType());
       }
 
       message2 = consumer.receiveImmediate();
@@ -1744,10 +1751,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
+      catch(DuplicateIdException die)
+      {
+         session.rollback();
+      }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
-         session.rollback();
+         fail("Invalid Exception type:" + e.getType());
       }
 
       message2 = consumer.receiveImmediate();

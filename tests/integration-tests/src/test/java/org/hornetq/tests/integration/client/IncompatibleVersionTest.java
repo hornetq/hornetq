@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.IncompatibleClientServerException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -167,9 +168,13 @@ public class IncompatibleVersionTest extends ServiceTestBase
             channel1.sendBlocking(request);
             fail();
          }
+         catch(IncompatibleClientServerException icsv)
+         {
+            //ok
+         }
          catch (HornetQException e)
          {
-            assertEquals(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS, e.getCode());
+            fail("Invalid Exception type:" + e.getType());
          }
          long start = System.currentTimeMillis();
          while (System.currentTimeMillis() < start + 3 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL)

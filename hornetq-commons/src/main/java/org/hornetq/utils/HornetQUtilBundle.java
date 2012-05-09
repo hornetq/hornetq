@@ -1,7 +1,10 @@
 package org.hornetq.utils;
 
 
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -14,6 +17,10 @@ import org.jboss.logging.MessageBundle;
  * so 209000 to 209999
  */
 @MessageBundle(projectCode = "HQ")
-public class HornetQUtilBundle
+public interface HornetQUtilBundle
 {
+   HornetQUtilBundle BUNDLE = Messages.getBundle(HornetQUtilBundle.class);
+
+   @Message(id = 209001, value = "invalid property: {0}" , format = Message.Format.MESSAGE_FORMAT)
+   org.hornetq.api.core.IllegalStateException invalidProperty(String part);
 }

@@ -15,6 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.utils.ReusableLatch;
 

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.journal;
 
+import org.hornetq.api.core.HornetQExceptionType;
+
 /**
  * A IOCriticalErrorListener
  *
@@ -22,5 +24,5 @@ package org.hornetq.core.journal;
  */
 public interface IOCriticalErrorListener
 {
-   void onIOException(int code, String message, SequentialFile file);
+   void onIOException(HornetQExceptionType code, String message, SequentialFile file);
 }

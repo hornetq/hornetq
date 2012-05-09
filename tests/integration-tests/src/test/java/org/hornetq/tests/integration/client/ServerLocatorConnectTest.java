@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
@@ -107,10 +108,14 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       {
          csf = locator.connect();
       }
+      catch(NotConnectedException nce)
+      {
+         //ok
+      }
       catch (Exception e)
       {
          assertTrue(e instanceof HornetQException);
-         assertEquals(((HornetQException)e).getCode(), HornetQException.NOT_CONNECTED);
+         fail("Invalid Exception type:" + ((HornetQException)e).getType());
       }
       assertNull(csf);
       locator.close();

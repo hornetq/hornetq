@@ -27,6 +27,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -121,7 +122,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
             // nodes
             if (!managementClusterPassword.equals(password))
             {
-               throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);
+               throw HornetQMessageBundle.BUNDLE.unableToValidateUser(user);
             }
             else
             {
@@ -142,7 +143,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);
+            throw HornetQMessageBundle.BUNDLE.unableToValidateUser(user);
          }
       }
    }
@@ -188,12 +189,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new HornetQException(HornetQException.SECURITY_EXCEPTION,
-                                       "User: " + session.getUsername() +
-                                                " doesn't have permission='" +
-                                                checkType +
-                                                "' on address " +
-                                                saddress);
+            throw HornetQMessageBundle.BUNDLE.userNoPermissions(session.getUsername(), checkType, saddress);
          }
          // if we get here we're granted, add to the cache
          ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();

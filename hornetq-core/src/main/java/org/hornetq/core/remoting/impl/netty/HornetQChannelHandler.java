@@ -15,6 +15,7 @@ package org.hornetq.core.remoting.impl.netty;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -103,7 +104,7 @@ class HornetQChannelHandler extends SimpleChannelHandler
       // and we don't want to spew out stack traces in that event
       // The user has access to this exeception anyway via the HornetQException initial cause
 
-      HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
+      HornetQException me = HornetQMessageBundle.BUNDLE.nettyError();
       me.initCause(e.getCause());
       
       synchronized (listener)

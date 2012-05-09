@@ -15,6 +15,7 @@ package org.hornetq.core.server.cluster.impl;
 
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.StorageManager;

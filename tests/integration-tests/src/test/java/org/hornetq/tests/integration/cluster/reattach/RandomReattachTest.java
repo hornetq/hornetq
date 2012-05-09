@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -1514,7 +1515,7 @@ public class RandomReattachTest extends UnitTestCase
       {
          RandomReattachTest.log.info("** Failing connection");
 
-         session.getConnection().fail(new HornetQException(HornetQException.NOT_CONNECTED, "oops"));
+         session.getConnection().fail(new NotConnectedException("oops"));
 
          RandomReattachTest.log.info("** Fail complete");
 

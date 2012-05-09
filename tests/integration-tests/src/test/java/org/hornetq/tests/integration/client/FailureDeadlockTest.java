@@ -18,6 +18,7 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -155,7 +156,7 @@ public class FailureDeadlockTest extends ServiceTestBase
       @Override
       public void run()
       {
-         conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
+         conn.fail(new NotConnectedException("blah"));
       }
    }
 
@@ -171,7 +172,7 @@ public class FailureDeadlockTest extends ServiceTestBase
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();
 
-         rc1.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
+         rc1.fail(new NotConnectedException( "blah"));
 
          try
          {

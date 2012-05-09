@@ -27,11 +27,17 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.DuplicateIdException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransactionOutcomeUnknownException;
+import org.hornetq.api.core.TransactionRolledBackException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -338,12 +344,12 @@ public class FailoverTest extends FailoverTestBase
                   }
                   return msg;
                }
+               catch(ObjectClosedException oce)
+               {
+                  throw new RuntimeException(oce);
+               }
                catch (HornetQException ignored)
                {
-                  if (ignored.getCode() == HornetQException.OBJECT_CLOSED)
-                  {
-                     throw new RuntimeException(ignored);
-                  }
                   // retry
                   ignored.printStackTrace();
                }
@@ -613,9 +619,13 @@ public class FailoverTest extends FailoverTestBase
          session.commit();
          fail("session must have rolled back on failover");
       }
+      catch(TransactionRolledBackException trbe)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         assertTrue(e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK);
+         fail("Invalid Exception type:" + e.getType());
       }
 
       consumer.close();
@@ -691,9 +701,13 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
+      catch(TransactionRolledBackException trbe)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -733,9 +747,13 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
+      catch(TransactionRolledBackException trbe)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       ClientMessage message = session.createMessage(false);
@@ -868,9 +886,13 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
+      catch(TransactionRolledBackException trbe)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         Assert.assertEquals(HornetQException.TRANSACTION_ROLLED_BACK, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
    }
 
@@ -1573,7 +1595,7 @@ public class FailoverTest extends FailoverTestBase
 
       Assert.assertNotNull(sender.e);
 
-      Assert.assertEquals(sender.e.getCode(), HornetQException.UNBLOCKED);
+      Assert.assertEquals(sender.e.getType(), HornetQExceptionType.UNBLOCKED);
 
       session.close();
    }
@@ -1626,26 +1648,43 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
+            catch(TransactionRolledBackException trbe)
+            {
+              // Ok - now we retry the commit after removing the interceptor
+
+               sf.getServerLocator().removeInterceptor(interceptor);
+
+               try
+               {
+                  session.commit();
+
+                  failed = false;
+               }
+               catch (HornetQException e2)
+               {
+                  throw new RuntimeException(e2);
+               }
+            }
+            catch(TransactionOutcomeUnknownException toue)
+            {
+              // Ok - now we retry the commit after removing the interceptor
+
+               sf.getServerLocator().removeInterceptor(interceptor);
+
+               try
+               {
+                  session.commit();
+
+                  failed = false;
+               }
+               catch (HornetQException e2)
+               {
+                  throw new RuntimeException(e2);
+               }
+            }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
-               {
-                  // Ok - now we retry the commit after removing the interceptor
-
-                  sf.getServerLocator().removeInterceptor(interceptor);
-
-                  try
-                  {
-                     session.commit();
-
-                     failed = false;
-                  }
-                  catch (HornetQException e2)
-                  {
-                     throw new RuntimeException(e2);
-                  }
-
-               }
+               //ignore
             }
          }
 
@@ -1701,9 +1740,13 @@ public class FailoverTest extends FailoverTestBase
          session2.commit();
          fail("expecting DUPLICATE_ID_REJECTED exception");
       }
+      catch(DuplicateIdException dide)
+      {
+         //ok
+      }
       catch (HornetQException e)
       {
-         assertEquals(e.getMessage(), HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
+         fail("Invalid Exception type:" + e.getType());
       }
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
@@ -1747,24 +1790,41 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
+            catch(TransactionRolledBackException trbe)
+            {
+               // Ok - now we retry the commit after removing the interceptor
+
+               liveServer.removeInterceptor(interceptor);
+
+               try
+               {
+                  session.commit();
+
+                  failed = false;
+               }
+               catch (HornetQException e2)
+               {
+               }
+            }
+            catch(TransactionOutcomeUnknownException toue)
+            {
+               // Ok - now we retry the commit after removing the interceptor
+
+               liveServer.removeInterceptor(interceptor);
+
+               try
+               {
+                  session.commit();
+
+                  failed = false;
+               }
+               catch (HornetQException e2)
+               {
+               }
+            }
             catch (HornetQException e)
             {
-               if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.TRANSACTION_OUTCOME_UNKNOWN)
-               {
-                  // Ok - now we retry the commit after removing the interceptor
-
-                  liveServer.removeInterceptor(interceptor);
-
-                  try
-                  {
-                     session.commit();
-
-                     failed = false;
-                  }
-                  catch (HornetQException e2)
-                  {
-                  }
-               }
+               //ignore
             }
          }
 

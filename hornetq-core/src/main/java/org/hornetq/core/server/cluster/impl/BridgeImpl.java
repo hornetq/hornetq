@@ -21,8 +21,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SessionCreationException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
@@ -288,8 +291,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                try
                {
                   session.cleanUp(false);
-               }
-               catch (Exception dontcare)
+               } catch (Exception dontcare)
                {
                   HornetQLogger.LOGGER.debug(dontcare.getMessage(), dontcare);
                }
@@ -615,12 +617,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
       }
 
-      fail(me.getCode() == HornetQException.DISCONNECTED);
+      fail(me.getType() == HornetQExceptionType.DISCONNECTED);
 
-      tryScheduleRetryReconnect(me.getCode());
+      tryScheduleRetryReconnect(me.getType());
    }
 
-   protected void tryScheduleRetryReconnect(final int code)
+   protected void tryScheduleRetryReconnect(final HornetQExceptionType type)
    {
       scheduleRetryConnect();
    }
@@ -778,7 +780,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       catch (HornetQException e)
       {
          // the session was created while its server was starting, retry it:
-         if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+         if (e.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED)
          {
             HornetQLogger.LOGGER.errorStartingBridge(name);
 

@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;

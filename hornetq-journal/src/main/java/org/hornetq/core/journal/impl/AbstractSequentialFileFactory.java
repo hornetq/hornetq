@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -132,7 +133,7 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
     */
-   public void onIOError(int errorCode, String message, SequentialFile file)
+   public void onIOError(HornetQExceptionType errorCode, String message, SequentialFile file)
    {
       if (critialErrorListener != null)
       {

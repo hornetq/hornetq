@@ -33,9 +33,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -48,6 +51,7 @@ import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
@@ -374,7 +378,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       catch (Exception e)
       {
          state = null;
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
+         throw HornetQMessageBundle.BUNDLE.failedToInitialiseSessionFactory(e);
       }
    }
 
@@ -696,8 +700,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          if (!ok)
          {
-            throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                       "Timed out waiting to receive initial broadcast from cluster");
+            throw HornetQMessageBundle.BUNDLE.connectionTimedOutInInitialBroadcast();
          }
       }
 
@@ -714,8 +717,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             TransportConfiguration tc = selectConnector();
             if (tc == null)
             {
-               throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                          "Couldn't select a TransportConfiguration to create SessionFactory");
+               throw HornetQMessageBundle.BUNDLE.noTCForSessionFactory();
             }
 
             // try each factory in the list until we find one which works
@@ -749,19 +751,17 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                factory.close();
                factory = null;
-               if (e.getCode() == HornetQException.NOT_CONNECTED)
+               if (e.getType() == HornetQExceptionType.NOT_CONNECTED)
                {
                   attempts++;
 
                   if (topologyArray != null && attempts == topologyArray.length)
                   {
-                     throw new HornetQException(HornetQException.NOT_CONNECTED,
-                                                "Cannot connect to server(s). Tried with all available servers.");
+                     throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
                   }
                   if (topologyArray == null && initialConnectors != null && attempts == initialConnectors.length)
                   {
-                     throw new HornetQException(HornetQException.NOT_CONNECTED,
-                                                "Cannot connect to server(s). Tried with all available servers.");
+                     throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
                   }
                   retry = true;
                }
@@ -792,8 +792,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
             if (System.currentTimeMillis() > timeout && !receivedTopology)
             {
-               throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                          "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
+               throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
             }
 
          }
@@ -1614,7 +1613,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                         // connection
                         public void connectionFailed(HornetQException exception, boolean failedOver)
                         {
-                           if (clusterConnection && exception.getCode() == HornetQException.DISCONNECTED)
+                           if (clusterConnection && exception.getType() == HornetQExceptionType.DISCONNECTED)
                            {
                               try
                               {
@@ -1668,13 +1667,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          catch (Exception e)
          {
             HornetQLogger.LOGGER.errorConnectingToNodes(e);
-            throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
+            throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors(e);
          }
 
          if (!isClosed())
          {
             HornetQLogger.LOGGER.errorConnectingToNodes(e);
-            throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
+            throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors2();
          }
          return null;
       }

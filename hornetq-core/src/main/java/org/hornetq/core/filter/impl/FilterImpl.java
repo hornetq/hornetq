@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.ServerMessage;
 
 /**
@@ -112,9 +113,7 @@ public class FilterImpl implements Filter
       {
          HornetQLogger.LOGGER.invalidFilter(e, str);
 
-         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString +
-                                                                                " " +
-                                                                                e.getMessage());
+         throw HornetQMessageBundle.BUNDLE.invalidFilter(e, str);
       }
    }
 

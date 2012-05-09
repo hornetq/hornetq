@@ -19,6 +19,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.OperationContext;
 
@@ -101,7 +103,7 @@ public class PageSyncTimer
       {
          for (OperationContext ctx : pendingSyncsArray)
          {
-            ctx.onError(HornetQException.IO_ERROR, e.getMessage());
+            ctx.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
          }
       }
       finally
