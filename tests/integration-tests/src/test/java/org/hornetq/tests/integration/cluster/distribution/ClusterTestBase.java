@@ -80,16 +80,6 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class ClusterTestBase extends ServiceTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-   public ClusterTestBase()
-   {
-      super();
-   }
-
-   public ClusterTestBase(String name)
-   {
-      super(name);
-   }
-
 
    private static final int[] PORTS = { TransportConstants.DEFAULT_PORT,
                                        TransportConstants.DEFAULT_PORT + 1,

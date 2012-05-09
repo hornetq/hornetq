@@ -41,7 +41,7 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverOnFlowControlTest extends FailoverTestBase
 {
-   
+
    private static IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void testOverflowSend() throws Exception
@@ -67,23 +67,19 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
                log.debug("Credits: " + credit.getCredits());
                if (count.incrementAndGet() == 2)
                {
+                  log.debug("### crashing server");
                   try
                   {
-                     log.debug("### crashing server");
-                      
-                     InVMConnection.flushEnabled = false;
-                     try
-                     {
-                        crash(false, sessionList.get(0));
-                     }
-                     finally
-                     {
-                        InVMConnection.flushEnabled = true;
-                     }
+                     InVMConnection.setFlushEnabled(false);
+                     crash(false, sessionList.get(0));
                   }
                   catch (Exception e)
                   {
                      e.printStackTrace();
+                  }
+                  finally
+                  {
+                     InVMConnection.setFlushEnabled(true);
                   }
                   return false;
                }

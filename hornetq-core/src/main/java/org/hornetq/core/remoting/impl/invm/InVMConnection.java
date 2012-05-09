@@ -31,7 +31,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A InVMConnection
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -46,19 +46,19 @@ public class InVMConnection implements Connection
    private final String id;
 
    private boolean closed;
-   
+
    // Used on tests
-   public static boolean flushEnabled = true;
+   private static boolean flushEnabled = true;
 
    private final int serverID;
 
    private final Executor executor;
-   
+
    private volatile boolean closing;
 
-   private HornetQPrincipal defaultHornetQPrincipal;
+   private final HornetQPrincipal defaultHornetQPrincipal;
 
-   public InVMConnection(final Acceptor acceptor, 
+   public InVMConnection(final Acceptor acceptor,
                          final int serverID,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
@@ -67,7 +67,7 @@ public class InVMConnection implements Connection
       this(acceptor, serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
    }
 
-   public InVMConnection(final Acceptor acceptor, 
+   public InVMConnection(final Acceptor acceptor,
                          final int serverID,
                          final String id,
                          final BufferHandler handler,
@@ -129,7 +129,7 @@ public class InVMConnection implements Connection
    {
       return id;
    }
-   
+
    public void checkFlushBatchBuffer()
    {
    }
@@ -138,7 +138,7 @@ public class InVMConnection implements Connection
    {
       write(buffer, false, false);
    }
-   
+
    public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
    {
       final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
@@ -178,7 +178,7 @@ public class InVMConnection implements Connection
                }
             }
          });
-         
+
          if (flush && flushEnabled)
          {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -188,7 +188,7 @@ public class InVMConnection implements Connection
                   latch.countDown();
                }
             });
-            
+
             try
             {
                if (!latch.await(10, TimeUnit.SECONDS))
@@ -206,19 +206,19 @@ public class InVMConnection implements Connection
       {
          // Ignore - this can happen if server/client is shutdown and another request comes in
       }
-      
+
    }
 
    public String getRemoteAddress()
    {
       return "invm:" + serverID;
    }
-   
+
    public int getBatchingBufferSize()
    {
       return -1;
    }
-   
+
    public void addReadyListener(ReadyListener listener)
    {
    }
@@ -232,24 +232,19 @@ public class InVMConnection implements Connection
       return defaultHornetQPrincipal;
    }
 
-   public void disableFlush()
+   public static void setFlushEnabled(boolean enable)
    {
-      flushEnabled = false;
+      flushEnabled = enable;
    }
-   
+
    public Executor getExecutor()
    {
       return executor;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
       return "InVMConnection [serverID=" + serverID + ", id=" + id + "]";
    }
-   
-   
 }

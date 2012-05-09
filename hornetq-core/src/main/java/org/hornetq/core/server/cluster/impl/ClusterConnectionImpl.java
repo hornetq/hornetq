@@ -1560,9 +1560,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       return records;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -1601,7 +1598,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       ServerLocatorInternal createServerLocator();
    }
 
-   private class StaticClusterConnector implements ClusterConnector
+   private final class StaticClusterConnector implements ClusterConnector
    {
       private final TransportConfiguration[] tcConfigs;
 
@@ -1622,10 +1619,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             locator.setClusterConnection(true);
             return locator;
          }
-         else
-         {
-            return null;
-         }
+         return null;
       }
 
       @Override
@@ -1636,7 +1630,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    }
 
-   private class DiscoveryClusterConnector implements ClusterConnector
+   private final class DiscoveryClusterConnector implements ClusterConnector
    {
       private final DiscoveryGroupConfiguration dg;
 
@@ -1647,9 +1641,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       public ServerLocatorInternal createServerLocator()
       {
-         ServerLocatorImpl locator = new ServerLocatorImpl(topology, true, dg);
-         return locator;
-
+         return new ServerLocatorImpl(topology, true, dg);
       }
    }
 
