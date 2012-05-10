@@ -1,8 +1,10 @@
 package org.hornetq.api.core;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum HornetQExceptionType implements Serializable
 {
@@ -266,9 +268,18 @@ public enum HornetQExceptionType implements Serializable
       }
    };
 
-   private final static Set<HornetQExceptionType> SET = EnumSet.allOf(HornetQExceptionType.class);
+   private final static Map<Integer, HornetQExceptionType> TYPE_MAP;
+   static
+   {
+      HashMap<Integer, HornetQExceptionType> map = new HashMap<Integer, HornetQExceptionType>();
+      for (HornetQExceptionType type : EnumSet.allOf(HornetQExceptionType.class))
+      {
+         map.put(type.getCode(), type);
+      }
+      TYPE_MAP = Collections.unmodifiableMap(map);
+   }
 
-   private int code;
+   private final int code;
 
    HornetQExceptionType(int code)
    {
@@ -289,13 +300,9 @@ public enum HornetQExceptionType implements Serializable
 
    public static HornetQExceptionType getType(int code)
    {
-      for (HornetQExceptionType hornetQExceptionType : SET)
-      {
-         if (hornetQExceptionType.getCode() == code)
-         {
-            return hornetQExceptionType;
-         }
-      }
-      return GENERIC_EXCEPTION;
+      HornetQExceptionType type = TYPE_MAP.get(code);
+      if (type != null)
+         return type;
+      return HornetQExceptionType.GENERIC_EXCEPTION;
    }
 }
