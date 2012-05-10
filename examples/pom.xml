@@ -8,12 +8,93 @@
       <version>2.3.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>hornetq-examples</artifactId>
+   <groupId>org.hornetq.example</groupId>
+   <artifactId>examples</artifactId>
    <packaging>pom</packaging>
    <name>HornetQ Examples</name>
 
+   <modules>
+      <module>common</module>
+      <!--this needs to be run standalone-->
+      <!--<module>applet</module>-->
+      <module>application-layer-failover</module>
+      <module>bridge</module>
+      <module>browser</module>
+      <module>client-kickoff</module>
+      <module>client-side-load-balancing</module>
+      <module>clustered-durable-subscription</module>
+      <module>clustered-grouping</module>
+      <module>clustered-queue</module>
+      <!--todo this needs to be automated-->
+      <!--<module>clustered-standalone</module>-->
+      <module>clustered-static-oneway</module>
+      <module>clustered-static-discovery</module>
+      <module>clustered-topic</module>
+      <module>consumer-rate-limit</module>
+      <module>dead-letter</module>
+      <module>delayed-redelivery</module>
+      <module>divert</module>
+      <module>durable-subscription</module>
+      <module>embedded</module>
+      <module>embedded-simple</module>
+      <module>expiry</module>
+      <module>http-transport</module>
+      <module>interceptor</module>
+      <module>instantiate-connection-factory</module>
+      <!--todo fix-->
+      <!--<module>jaas</module>-->
+      <!--<module>jms-bridge</module>-->
+      <module>jmx</module>
+      <module>large-message</module>
+      <module>last-value-queue</module>
+      <module>management</module>
+      <module>management-notifications</module>
+      <module>message-counters</module>
+      <module>message-group</module>
+      <module>message-group2</module>
+      <module>message-priority</module>
+      <module>multiple-failover</module>
+      <module>multiple-failover-failback</module>
+      <module>no-consumer-buffering</module>
+      <module>non-transaction-failover</module>
+      <module>paging</module>
+      <!--todo fix-->
+      <!--<module>perf</module>-->
+      <module>producer-rate-limit</module>
+      <module>queue</module>
+      <module>queue-message-redistribution</module>
+      <module>queue-requestor</module>
+      <module>queue-selector</module>
+      <module>reattach-node</module>
+      <module>request-reply</module>
+      <module>scheduled-message</module>
+      <module>security</module>
+      <module>send-acknowledgements</module>
+      <module>spring-integration</module>
+      <module>ssl-enabled</module>
+      <module>stomp</module>
+      <!--this should be run standalone-->
+      <!--<module>stomp-websockets</module>-->
+      <module>stomp1.1</module>
+      <!--this needs to be run standalone as it needs manual intervention-->
+      <!--<module>stop-server-failover</module>-->
+      <module>symmetric-cluster</module>
+      <module>temp-queue</module>
+      <module>topic</module>
+      <module>topic-hierarchies</module>
+      <module>topic-selector-example1</module>
+      <module>topic-selector-example2</module>
+      <module>transactional</module>
+      <module>transaction-failover</module>
+      <module>xa-heuristic</module>
+      <module>xa-receive</module>
+      <module>xa-send</module>
+      <!--todo fix-->
+      <!--<module>xa-with-jta</module>-->
+   </modules>
+
    <build>
-      <resources>
+      <!--<resources>
          <resource>
             <directory>src/main/resources</directory>
             <filtering>true</filtering>
@@ -34,7 +115,7 @@
                </execution>
             </executions>
          </plugin>
-      </plugins>
+      </plugins>-->
    </build>
 
 </project>
