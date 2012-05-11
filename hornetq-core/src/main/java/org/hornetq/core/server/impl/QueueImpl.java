@@ -950,7 +950,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public void cancel(final Transaction tx, final MessageReference reference) throws Exception
+   public void cancel(final Transaction tx, final MessageReference reference)
    {
       getRefsOperation(tx).addAck(reference);
    }

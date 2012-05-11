@@ -34,6 +34,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -1644,7 +1645,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                
                // We use a different thread to send the fail
                // but the exception has to be created here to preserve the stack trace
-               final HornetQException me = HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection();
+               final HornetQException me = HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection());
 
                cancelled = true;
 

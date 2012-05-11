@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -162,10 +163,9 @@ public class FakePostOffice implements PostOffice
 
    }
 
-   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
+   public Pair<RoutingContext, ServerMessage> redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
-      
-      return false;
+      return null;
    }
 
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
@@ -217,6 +217,15 @@ public class FakePostOffice implements PostOffice
     * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.transaction.Transaction, boolean, boolean)
     */
    public void route(ServerMessage message, Transaction tx, boolean direct, boolean rejectDuplicates) throws Exception
+   {
+      
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.PostOffice#processRoute(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext, boolean)
+    */
+   public void processRoute(ServerMessage message, RoutingContext context, boolean direct) throws Exception
    {
       
       

@@ -93,6 +93,12 @@ public class FakeQueue implements Queue
 
    }
 
+   public void addHead(List<MessageReference> ref)
+   {
+      // no-op
+
+   }
+
    public void addTail(MessageReference ref, boolean direct)
    {
       // no-op
@@ -192,7 +198,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
     */
-   public void cancel(final Transaction tx, final MessageReference ref) throws Exception
+   public void cancel(final Transaction tx, final MessageReference ref)
    {
       // no-op
 

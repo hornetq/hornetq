@@ -989,6 +989,10 @@ public class BindingsImplTest extends UnitTestCase
          return false;
       }
 
+      public void finishCopy() throws Exception
+      {
+      }
+
    }
 
    class FakeFilter implements Filter
