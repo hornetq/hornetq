@@ -65,6 +65,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private boolean active;
 
+   private boolean loggedBroadcastException = false;
+
    // Each broadcast group has a unique id - we use this to detect when more than one group broadcasts the same node id
    // on the network which would be an error
    private final String uniqueID;
@@ -235,10 +237,20 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       try
       {
          broadcastConnectors();
+         loggedBroadcastException = false;
       }
       catch (Exception e)
       {
-         HornetQLogger.LOGGER.errorBroadcastingConnectorConfigs(e);
+         // only log the exception at ERROR level once, even if it fails multiple times in a row - HORNETQ-919
+         if (!loggedBroadcastException)
+         {
+            HornetQLogger.LOGGER.errorBroadcastingConnectorConfigs(e);
+            loggedBroadcastException = true;
+         }
+         else
+         {
+            HornetQLogger.LOGGER.debug("Failed to broadcast connector configs...again", e);
+         }
       }
    }
 
