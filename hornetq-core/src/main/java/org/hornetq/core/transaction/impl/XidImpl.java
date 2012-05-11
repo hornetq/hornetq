@@ -48,7 +48,8 @@ public class XidImpl implements Xid, Serializable
 
    public static String toBase64String(final Xid xid)
    {
-      return Base64.encodeBytes(XidImpl.toByteArray(xid));
+      byte data[] = XidImpl.toByteArray(xid);
+      return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }
 
    private static byte[] toByteArray(final Xid xid)
@@ -176,7 +177,8 @@ public class XidImpl implements Xid, Serializable
              " formatID:" +
              formatId +
              " gtxid:" +
-             stringRep(globalTransactionId);
+             stringRep(globalTransactionId) +
+             " base64:" + toBase64String(this);
    }
 
    // Private -------------------------------------------------------------------------------
