@@ -372,4 +372,10 @@ public interface ConnectionFactoryControl
     */
    @Operation(desc = "Adds the factory to another JNDI binding")
    void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+
+   /**
+    * Remove a JNDI binding
+    */
+   @Operation(desc = "Remove an existing JNDI binding")
+   void removeJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
 }

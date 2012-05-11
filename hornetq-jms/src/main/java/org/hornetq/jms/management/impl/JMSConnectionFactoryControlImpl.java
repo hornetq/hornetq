@@ -333,7 +333,12 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    public void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception
    {
-       jmsManager.addConnectionFactoryToJNDI(name, jndi);
+      jmsManager.addConnectionFactoryToJNDI(name, jndi);
+   }
+
+   public void removeJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception
+   {
+      jmsManager.removeConnectionFactoryFromJNDI(name, jndi);
    }
 
    public long getCallTimeout()
