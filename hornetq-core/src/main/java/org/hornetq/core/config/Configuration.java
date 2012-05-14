@@ -40,7 +40,7 @@ public interface Configuration extends Serializable
    //properties passed to acceptor/connectors.
    static final String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
    static final String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
-   
+
    // General attributes -------------------------------------------------------------------
 
 
@@ -283,14 +283,16 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    /**
-    * Returns the name of the connector used to connect to the live node - only used when using
-    * shared nothing (shared store = false).
+    * Returns the name of the connector used to connect to the live node.
+    * <p>
+    * This is only used when using shared nothing (shared store = false).
     */
    String getLiveConnectorName();
 
    /**
-    * Sets the name of the connector used to connect to the live node - only used when using shared
-    * nothing (shared store = false).
+    * Sets the name of the connector used to connect to the live node.
+    * <p>
+    * This is only used when using shared nothing (shared store = false).
     */
    void setLiveConnectorName(String name);
 
