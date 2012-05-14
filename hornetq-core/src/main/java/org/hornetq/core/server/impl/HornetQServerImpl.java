@@ -391,7 +391,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             else
             {
-               activation = new NoSharedStoreLiveActivation();
+               activation = new SharedNothingLiveActivation();
             }
 
             activation.run();
@@ -2202,7 +2202,7 @@ public class HornetQServerImpl implements HornetQServer
    }
 
 
-   private final class NoSharedStoreLiveActivation implements Activation
+   private final class SharedNothingLiveActivation implements Activation
    {
       public void run()
       {
