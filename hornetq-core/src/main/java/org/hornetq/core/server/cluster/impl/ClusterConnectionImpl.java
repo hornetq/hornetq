@@ -1418,8 +1418,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
-         System.out.println("Removing clusterName=" + clusterName + " on " + ClusterConnectionImpl.this);
-
          removeBinding(clusterName);
       }
 

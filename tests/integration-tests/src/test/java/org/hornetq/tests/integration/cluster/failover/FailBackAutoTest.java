@@ -117,11 +117,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       verifyMessageOnServer(0, 1);
 
-      sf.close();
-
-      Assert.assertEquals(0, sf.numSessions());
-
-      Assert.assertEquals(0, sf.numConnections());
+      wrapUpSessionFactory(sf);
    }
 
    /**
@@ -204,10 +200,13 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.close();
 
+      wrapUpSessionFactory(sf);
+   }
+
+   private void wrapUpSessionFactory(ClientSessionFactoryInternal sf)
+   {
       sf.close();
-
       Assert.assertEquals(0, sf.numSessions());
-
       Assert.assertEquals(0, sf.numConnections());
    }
 

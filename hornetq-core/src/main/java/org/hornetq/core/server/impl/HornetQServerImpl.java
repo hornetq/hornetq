@@ -52,7 +52,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -614,7 +613,7 @@ public class HornetQServerImpl implements HornetQServer
             threadPool = null;
 
             if (securityStore != null)
-           securityStore.stop();
+               securityStore.stop();
 
          threadPool = null;
 
@@ -667,10 +666,16 @@ public class HornetQServerImpl implements HornetQServer
          addressSettingsRepository.clearListeners();
 
          addressSettingsRepository.clearCache();
-
-         HornetQLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
+         if (identity != null)
+         {
+            HornetQLogger.LOGGER.serverStopped("identity=" + identity + ",version=" + getVersion().getFullVersion(),
+                                               tempNodeID);
+         }
+         else
+         {
+            HornetQLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
+         }
       }
-
    }
 
    private static void stopComponent(HornetQComponent component) throws Exception
@@ -2047,15 +2052,19 @@ public class HornetQServerImpl implements HornetQServer
             nodeManager.startBackup();
 
             initialisePart1();
-
-            final String liveConnectorName = configuration.getLiveConnectorName();
-            if (liveConnectorName == null)
-            {
-               throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
+            TransportConfiguration[] tp = null;
+            if (attemptFailBack) {
+               tp = configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
+            } else {
+               final String liveConnectorName = configuration.getLiveConnectorName();
+               if (liveConnectorName == null)
+               {
+                  throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
+               }
+               tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
             clusterManager.start();
 
-            final TransportConfiguration tp = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
@@ -2201,8 +2210,9 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            if (isNodeIDUsed())
+            if (isNodeIdUsed())
             {
+
                configuration.setBackup(true);
                return;
             }
@@ -2233,36 +2243,31 @@ public class HornetQServerImpl implements HornetQServer
        * (attempting a fail-back).
        * @throws Exception
        */
-      private boolean isNodeIDUsed() throws Exception
+      private boolean isNodeIdUsed() throws Exception
       {
+         if (configuration.getFailBackConnectors().isEmpty())
+            return false;
          ServerLocatorInternal locator = null;
          try
          {
-            ArrayList<TransportConfiguration> tpSet = new ArrayList<TransportConfiguration>();
 
-            for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
-            {
-               TransportConfiguration tp = configuration.getConnectorConfigurations().get(config.getConnectorName());
-               if (tp != null)
-               {
-                  tpSet.add(tp);
-               }
-            }
-            locator =
-                     (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpSet.toArray(new TransportConfiguration[1]));
+            TransportConfiguration[] tpArray =
+                     configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
+            locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
             locator.setReconnectAttempts(0);
             locator.connect();
+            Thread.sleep(5000); // wait a little for the topology updates
             TopologyMember node = locator.getTopology().getMember(nodeManager.getNodeId().toString());
             return node != null;
          }
          catch (HornetQException error)
          {
-            HornetQLogger.LOGGER.debug(error); // XXX which logging message to use?
             return false;
          }
          finally
          {
             if (locator != null)
+
                locator.close();
          }
       }
@@ -2338,6 +2343,9 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      try
                      {
+                        // we delay stopping the server in order to allow the backup to announce
+                        // itself.
+                        Thread.sleep(5000);
                         stop();
                      }
                      catch (Exception e)

@@ -169,6 +169,41 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertNoMoreMessages();
    }
 
+   /**
+    * Basic fail-back test.
+    * @throws Exception
+    */
+   public void testFailBack() throws Exception
+   {
+      createProducerSendSomeMessages();
+      startBackupCrashLive();
+      receiveMsgsInRange(0, n_msgs);
+      assertNoMoreMessages();
+
+      sendMessages(session, producer, n_msgs);
+      receiveMsgsInRange(0, n_msgs);
+      assertNoMoreMessages();
+
+      sendMessages(session, producer, 2 * n_msgs);
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+      liveServer.start();
+      waitForServer(liveServer.getServer());
+      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
+
+      assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+      assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().isBackup());
+      int i = 0;
+      while (backupServer.isStarted() && i++ < 10)
+      {
+         Thread.sleep(1000);
+      }
+      assertFalse("Backup should stop!", backupServer.getServer().isStarted());
+      assertTrue(liveServer.getServer().isStarted());
+      receiveMsgsInRange(0, 2 * n_msgs);
+      assertNoMoreMessages();
+   }
+
    public void testMessageSync() throws Exception
    {
       createProducerSendSomeMessages();

@@ -584,12 +584,22 @@ public class FailoverTest extends FailoverTestBase
       session.start();
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
       receiveMessages(consumer);
+      producer = session.createProducer(FailoverTestBase.ADDRESS);
       sendMessages(session, producer, 2 * NUM_MESSAGES);
       session.commit();
       assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+
       liveServer.start();
-      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
-      liveServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
+      assertTrue("live initialized after restart", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+      int i = 0;
+      while (backupServer.isStarted() && i++ < 10)
+      {
+         Thread.sleep(1000);
+      }
+      assertFalse("Backup should stop!", backupServer.isStarted());
+      session.start();
+      receiveMessages(consumer);
    }
 
    private void createSessionFactory() throws Exception

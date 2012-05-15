@@ -433,9 +433,9 @@ public class JournalStorageManager implements StorageManager
          replicator.sendSynchronizationDone(nodeID);
          clusterConnection.nodeAnnounced(System.currentTimeMillis(), nodeID, pair, true);
          // XXX HORNETQ-720 SEND a compare journals message?
-      }
-      finally
-      {
+         }
+         finally
+         {
             storageManagerLock.writeLock().unlock();
          }
       }
