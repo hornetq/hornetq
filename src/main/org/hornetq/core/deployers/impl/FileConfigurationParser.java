@@ -904,11 +904,14 @@ public class FileConfigurationParser
 
       Map<String, Object> params = new HashMap<String, Object>();
 
-      params.put(Configuration.PROP_MASK_PASSWORD, mainConfig.isMaskPassword());
-
-      if (mainConfig.getPasswordCodec() != null)
+      if (mainConfig.isMaskPassword())
       {
-         params.put(Configuration.PROP_PASSWORD_CODEC, mainConfig.getPasswordCodec());
+         params.put(Configuration.PROP_MASK_PASSWORD, mainConfig.isMaskPassword());
+
+         if (mainConfig.getPasswordCodec() != null)
+         {
+            params.put(Configuration.PROP_PASSWORD_CODEC, mainConfig.getPasswordCodec());
+         }
       }
 
       NodeList paramsNodes = e.getElementsByTagName("param");
