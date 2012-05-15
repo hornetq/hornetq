@@ -12,17 +12,30 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import javax.jms.Connection;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.unit.ra.MessageEndpointFactory;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 
@@ -32,6 +45,84 @@ import org.hornetq.utils.DefaultSensitiveStringCodec;
  */
 public class ResourceAdapterTest extends HornetQRATestBase
 {
+   public void testStartStopActivationManyTimes() throws Exception
+   {
+      HornetQServer server = createServer(false);
+
+      try
+      {
+
+         server.start();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSession session = factory.createSession(false, false, false);
+         HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue("test");
+         session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
+         session.close();
+
+         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+
+         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+         ra.setUserName("userGlobal");
+         ra.setPassword("passwordGlobal");
+         ra.setTransactionManagerLocatorClass("");
+         ra.setTransactionManagerLocatorMethod("");
+         ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
+
+         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
+
+         conn.close();
+
+         HornetQActivationSpec spec = new HornetQActivationSpec();
+
+         spec.setResourceAdapter(ra);
+
+         spec.setUseJNDI(false);
+
+         spec.setUser("user");
+         spec.setPassword("password");
+
+         spec.setDestinationType("Topic");
+         spec.setDestination("test");
+
+         spec.setMinSession(1);
+         spec.setMaxSession(15);
+
+         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+
+         ServerLocatorImpl serverLocator = (ServerLocatorImpl) ra.getDefaultHornetQConnectionFactory().getServerLocator();
+
+         Field f = Class.forName(ServerLocatorImpl.class.getName()).getDeclaredField("factories");
+
+         f.setAccessible(true);
+
+
+         Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>) f.get(serverLocator);
+
+         for (int i = 0; i < 10 ; i++)
+         {
+            System.out.println(i);
+            assertEquals(factories.size(), 0);
+            activation.start();
+            assertEquals(factories.size(), 15);
+            activation.stop();
+            assertEquals(factories.size(), 0);
+         }
+
+
+         System.out.println("before RA stop => " + factories.size());
+         ra.stop();
+         System.out.println("after RA stop => " + factories.size());
+         assertEquals(factories.size(), 0);
+         locator.close();
+
+      }
+      finally
+      {
+         server.stop();
+      }
+   }
+
    public void testStartStop() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
