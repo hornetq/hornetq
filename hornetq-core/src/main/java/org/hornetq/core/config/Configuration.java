@@ -888,12 +888,12 @@ public interface Configuration extends Serializable
    String getPasswordCodec();
 
    /**
-    * whehther default using cleartext password
+    * Sets if passwords should be masked or not. True means the passwords should be masked.
     */
    void setMaskPassword(boolean maskPassword);
 
    /**
-    * if using cleartext password by default
+    * If passwords are masked. True means the passwords are masked.
     */
    boolean isMaskPassword();
 
