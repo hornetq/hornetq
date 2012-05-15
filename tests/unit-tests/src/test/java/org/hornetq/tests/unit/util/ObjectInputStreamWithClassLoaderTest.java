@@ -19,8 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -47,7 +52,9 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    public static ClassLoader newClassLoader(final Class anyUserClass) throws Exception
    {
-      URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
+      ProtectionDomain protectionDomain = anyUserClass.getProtectionDomain();
+      CodeSource codeSource = protectionDomain.getCodeSource();
+      URL classLocation = codeSource.getLocation();
       StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
       String pathIgnore = System.getProperty("java.home");
       if (pathIgnore == null)
@@ -83,7 +90,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
       try
       {
-         AnObject obj = new AnObject();
+         AnObject obj = new AnObjectImpl();
          byte[] bytes = ObjectInputStreamWithClassLoaderTest.toBytes(obj);
 
          ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(obj.getClass());
@@ -97,6 +104,36 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
          Assert.assertNotSame(obj, deserializedObj);
          Assert.assertNotSame(obj.getClass(), deserializedObj.getClass());
          Assert.assertNotSame(obj.getClass().getClassLoader(), deserializedObj.getClass().getClassLoader());
+         Assert.assertSame(testClassLoader, deserializedObj.getClass().getClassLoader());
+      }
+      finally
+      {
+         Thread.currentThread().setContextClassLoader(originalClassLoader);
+      }
+
+   }
+
+   public void testClassLoaderIsolationWithProxy() throws Exception
+   {
+
+      ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+      try
+      {
+         AnObject obj = new AnObjectImpl();
+         AnObject proxy = (AnObject) Proxy.newProxyInstance(AnObject.class.getClassLoader(), new Class[]{AnObject.class}, new AnObjectInvocationHandler());
+         byte[] bytes = ObjectInputStreamWithClassLoaderTest.toBytes(proxy);
+
+         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(obj.getClass());
+         Thread.currentThread().setContextClassLoader(testClassLoader);
+
+         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+         org.hornetq.utils.ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(bais);
+
+         Object deserializedObj = ois.readObject();
+
+         Assert.assertNotSame(proxy, deserializedObj);
+         Assert.assertNotSame(proxy.getClass(), deserializedObj.getClass());
+         Assert.assertNotSame(proxy.getClass().getClassLoader(), deserializedObj.getClass().getClassLoader());
          Assert.assertSame(testClassLoader, deserializedObj.getClass().getClassLoader());
       }
       finally
@@ -124,8 +161,33 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   private static class AnObject implements Serializable
+   private interface AnObject extends Serializable
+   {
+   }
+
+   private static class AnObjectImpl implements AnObject
    {
       private static final long serialVersionUID = -5172742084489525256L;
+   }
+
+   private static class AnObjectInvocationHandler implements InvocationHandler, Serializable
+   {
+      private static final long serialVersionUID = -3875973764178767452L;
+
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+      {
+         String methodName = method.getName();
+         Class  declaringClass = method.getDeclaringClass();
+
+         if (declaringClass == Object.class) {
+            if ("getClass".equals(methodName)) {
+               return AnObjectImpl.class;
+            }
+            throw new InternalError("unexpected Object method dispatched: " + method);
+         }
+
+         throw new RuntimeException(new NoSuchMethodException(methodName));
+      }
    }
 }
