@@ -1,4 +1,8 @@
 .idea/
+*.iml
+*/*.iml
+*/*/*.iml
+*/*/*/*.iml
 build/
 logs/
 docs/quickstart-guide/target/
