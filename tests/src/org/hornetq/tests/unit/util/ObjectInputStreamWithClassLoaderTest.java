@@ -230,9 +230,6 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    private interface AnObject extends Serializable
    {
-      int myInt = 0;
-      long myLong = 0L;
-
       int getMyInt();
 
       void setMyInt(int value);
@@ -249,26 +246,22 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       int myInt = 0;
       long myLong = 0L;
 
-      @Override
       public int getMyInt()
       {
          return myInt;
       }
 
-      @Override
       public void setMyInt(int value)
       {
          this.myInt = value;
       }
 
-      @Override
       public long getMyLong()
       {
          return myLong;
       }
 
-      @Override
-      public void setMyLong(long value)
+       public void setMyLong(long value)
       {
          this.myLong = value;
       }
@@ -279,7 +272,6 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       private static final long serialVersionUID = -3875973764178767452L;
       private AnObject anObject = new AnObjectImpl();
 
-      @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
       {
          Object obj = method.invoke(anObject, args);
