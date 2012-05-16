@@ -1194,7 +1194,7 @@ public abstract class UnitTestCase extends TestCase
       }
    }
 
-   protected byte[] autoEncode(final Object... args)
+   protected static final byte[] autoEncode(final Object... args)
    {
 
       int size = 0;
@@ -1269,14 +1269,14 @@ public abstract class UnitTestCase extends TestCase
       return buffer.array();
    }
 
-   protected void recreateDirectory(final String directory)
+   protected static final void recreateDirectory(final String directory)
    {
       File file = new File(directory);
       deleteDirectory(file);
       file.mkdirs();
    }
 
-   protected boolean deleteDirectory(final File directory)
+   protected static final boolean deleteDirectory(final File directory)
    {
       if (directory.isDirectory())
       {
@@ -1294,7 +1294,7 @@ public abstract class UnitTestCase extends TestCase
       return directory.delete();
    }
 
-   protected void copyRecursive(final File from, final File to) throws Exception
+   protected static final void copyRecursive(final File from, final File to) throws Exception
    {
       if (from.isDirectory())
       {
