@@ -36,7 +36,7 @@ public class HornetQFileLock extends FileLock
     */
    protected HornetQFileLock(final int handle)
    {
-      super(null, 0, 0, false);
+      super((java.nio.channels.FileChannel)null, 0, 0, false);
       this.handle = handle;
    }
 
