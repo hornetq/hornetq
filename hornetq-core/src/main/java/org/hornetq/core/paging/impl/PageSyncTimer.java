@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.OperationContext;
 
