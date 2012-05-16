@@ -1,7 +1,6 @@
 package org.hornetq.ra;
 
 
-import org.hornetq.api.core.*;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;

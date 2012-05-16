@@ -21,11 +21,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.DisconnectedException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SessionCreationException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;

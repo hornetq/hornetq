@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.IOAsyncTask;

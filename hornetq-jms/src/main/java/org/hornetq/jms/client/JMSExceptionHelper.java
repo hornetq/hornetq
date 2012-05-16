@@ -19,9 +19,6 @@ import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
 import org.hornetq.api.core.*;
-import org.hornetq.api.core.SecurityException;
-
-import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
 
 /**
  * 

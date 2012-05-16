@@ -20,7 +20,6 @@ import java.util.TimerTask;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;

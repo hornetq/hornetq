@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.paging.PageTransactionInfo;

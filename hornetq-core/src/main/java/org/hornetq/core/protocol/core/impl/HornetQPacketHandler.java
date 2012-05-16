@@ -19,7 +19,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.IncompatibleClientServerException;
 import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;

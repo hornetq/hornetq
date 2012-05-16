@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;

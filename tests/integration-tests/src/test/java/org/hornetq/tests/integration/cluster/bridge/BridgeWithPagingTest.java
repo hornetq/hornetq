@@ -20,7 +20,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;

@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.NotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;

@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 
 /**
  * A QueueDeployer
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -58,7 +58,7 @@ public class QueueDeployer extends XmlDeployer
    /**
     * deploy an element
     * @param node the element to deploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public void deploy(final Node node) throws Exception

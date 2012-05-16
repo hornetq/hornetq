@@ -22,7 +22,6 @@
 package org.hornetq.jms;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;

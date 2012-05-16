@@ -42,7 +42,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
