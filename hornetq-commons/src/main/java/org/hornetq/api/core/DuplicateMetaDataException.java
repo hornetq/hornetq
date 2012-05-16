@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_METADATA;
  */
 public class DuplicateMetaDataException extends HornetQException
 {
+   private static final long serialVersionUID = 7877182872143004058L;
+
    public DuplicateMetaDataException()
    {
       super(DUPLICATE_METADATA);

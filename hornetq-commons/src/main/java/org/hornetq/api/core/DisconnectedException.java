@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.DISCONNECTED;
  */
 public class DisconnectedException extends HornetQException
 {
+   private static final long serialVersionUID = 7414966383933311627L;
+
    public DisconnectedException()
    {
       super(DISCONNECTED);

@@ -21,7 +21,6 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -29,6 +28,8 @@ import static org.hornetq.api.core.HornetQExceptionType.NATIVE_ERROR_CANT_INITIA
  */
 public class NativeIOError extends HornetQException
 {
+   private static final long serialVersionUID = 2355120980683293085L;
+
    public NativeIOError()
    {
       super(HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO);

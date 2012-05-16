@@ -32,6 +32,8 @@ import static org.hornetq.api.core.HornetQExceptionType.SESSION_CREATION_REJECTE
  */
 public class SessionCreationException extends HornetQException
 {
+   private static final long serialVersionUID = -4486139158452585895L;
+
    public SessionCreationException()
    {
       super(SESSION_CREATION_REJECTED);

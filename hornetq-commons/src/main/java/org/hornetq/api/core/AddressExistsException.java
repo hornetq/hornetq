@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_EXISTS;
  */
 public class AddressExistsException extends HornetQException
 {
+   private static final long serialVersionUID = 3032730450033992367L;
+
    public AddressExistsException()
    {
       super(ADDRESS_EXISTS);

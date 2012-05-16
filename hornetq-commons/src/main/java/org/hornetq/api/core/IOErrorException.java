@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.IO_ERROR;
  */
 public class IOErrorException extends HornetQException
 {
+   private static final long serialVersionUID = 797277117077787396L;
+
    public IOErrorException()
    {
       super(IO_ERROR);

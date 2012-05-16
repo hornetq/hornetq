@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.SECURITY_EXCEPTION;
  */
 public class SecurityException extends HornetQException
 {
+   private static final long serialVersionUID = 3291210307590756881L;
+
    public SecurityException()
    {
       super(SECURITY_EXCEPTION);

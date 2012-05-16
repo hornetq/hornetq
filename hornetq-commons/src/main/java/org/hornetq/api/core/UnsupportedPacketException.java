@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.UNSUPPORTED_PACKET;
  */
 public class UnsupportedPacketException extends HornetQException
 {
+   private static final long serialVersionUID = -7074681529482463675L;
+
    public UnsupportedPacketException()
    {
       super(UNSUPPORTED_PACKET);

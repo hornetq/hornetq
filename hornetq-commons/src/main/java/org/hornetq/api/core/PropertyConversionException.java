@@ -22,30 +22,10 @@ package org.hornetq.api.core;
 public class PropertyConversionException extends RuntimeException
 {
 
-   // Constants -----------------------------------------------------
-
    private static final long serialVersionUID = -3010008708334904332L;
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
 
    public PropertyConversionException(final String message)
    {
       super(message);
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

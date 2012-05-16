@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERV
  */
 public class IncompatibleClientServerException extends HornetQException
 {
+   private static final long serialVersionUID = -1662999230291452298L;
+
    public IncompatibleClientServerException()
    {
       super(INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
