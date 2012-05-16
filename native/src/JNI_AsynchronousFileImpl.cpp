@@ -16,6 +16,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <string>
 #include <time.h>
 #include <sys/file.h>
