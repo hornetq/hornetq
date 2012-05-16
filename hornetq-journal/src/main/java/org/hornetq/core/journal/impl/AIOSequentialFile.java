@@ -19,7 +19,6 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.IOExceptionListener;

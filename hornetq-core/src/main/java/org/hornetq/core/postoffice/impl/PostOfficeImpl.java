@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.DuplicateIdException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.NonExistentQueueException;
 import org.hornetq.api.core.SimpleString;

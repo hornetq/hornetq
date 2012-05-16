@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.ObjectClosedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;

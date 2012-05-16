@@ -20,7 +20,6 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;

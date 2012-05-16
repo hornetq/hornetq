@@ -36,7 +36,6 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 
-import org.hornetq.api.core.DuplicateMetaDataException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;

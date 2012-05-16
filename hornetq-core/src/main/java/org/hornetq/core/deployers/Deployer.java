@@ -34,21 +34,21 @@ public interface Deployer extends HornetQComponent
    /**
     * Deploy the URL for the first time
     * @param uri The resource todeploy
-    * @throws Exception .
+    * @throws Exception
     */
    void deploy(URI uri) throws Exception;
 
    /**
     * Redeploys a URL if changed
     * @param uri The resource to redeploy
-    * @throws Exception .
+    * @throws Exception
     */
    void redeploy(URI uri) throws Exception;
 
    /**
     * Undeploys a resource that has been removed
     * @param uri The Resource that was deleted
-    * @throws Exception .
+    * @throws Exception
     */
    void undeploy(URI uri) throws Exception;
 }

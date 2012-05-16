@@ -22,9 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.IOErrorException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;

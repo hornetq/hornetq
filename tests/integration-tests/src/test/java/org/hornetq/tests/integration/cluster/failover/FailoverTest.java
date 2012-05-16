@@ -37,7 +37,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransactionOutcomeUnknownException;
 import org.hornetq.api.core.TransactionRolledBackException;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;

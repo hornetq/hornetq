@@ -101,9 +101,8 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * registers a Deployer object which will handle the deployment of URL's
-    *
     * @param deployer The Deployer object
-    * @throws Exception .
+    * @throws Exception
     */
    public synchronized void registerDeployer(final Deployer deployer) throws Exception
    {

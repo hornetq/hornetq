@@ -59,7 +59,6 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

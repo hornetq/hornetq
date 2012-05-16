@@ -71,9 +71,8 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
 
    /**
     * Redeploys a URL if changed
-    *
     * @param url The resource to redeploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public synchronized void redeploy(final URI url) throws Exception
@@ -129,7 +128,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    /**
     * Undeploys a resource that has been removed
     * @param uri The Resource that was deleted
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public synchronized void undeploy(final URI uri) throws Exception
@@ -145,7 +144,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    /**
     * Deploy the URL for the first time
     * @param url The resource to deploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public synchronized void deploy(final URI url) throws Exception
@@ -275,7 +274,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    /**
     * deploy an element
     * @param node the element to deploy
-    * @throws Exception .
+    * @throws Exception
     */
    public abstract void deploy(final Node node) throws Exception;
 
@@ -287,7 +286,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    /**
     * undeploys an element
     * @param node the element to undeploy
-    * @throws Exception .
+    * @throws Exception
     */
    public abstract void undeploy(final Node node) throws Exception;
 

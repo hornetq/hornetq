@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.util.Hashtable;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;

@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.HornetQClient;

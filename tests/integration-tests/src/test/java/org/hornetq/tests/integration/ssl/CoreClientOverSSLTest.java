@@ -18,7 +18,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.ConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.NotConnectedException;

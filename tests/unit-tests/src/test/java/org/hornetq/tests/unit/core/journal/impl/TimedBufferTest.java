@@ -22,7 +22,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.journal.impl.TimedBufferObserver;
