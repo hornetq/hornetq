@@ -938,7 +938,7 @@ public class ConfigurationImpl implements Configuration
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
-   public void setClusterPassword(final String theclusterPassword) throws Exception
+   public void setClusterPassword(final String theclusterPassword)
    {
       clusterPassword = theclusterPassword;
    }
