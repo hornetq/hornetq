@@ -46,8 +46,9 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
    // ----------------------------------------------------------------------
 
    /**
-    * Returns a SimpleString constructed from the <code>string</code> parameter.
-    * If <code>string</code> is <code>null</code>, the return value will be <code>null</code> too.
+    * Returns a SimpleString constructed from the <code>string</code> parameter. If
+    * <code>string</code> is <code>null</code>, the return value will be <code>null</code> too.
+    * @param string String used to instantiate a SimpleString.
     */
    public static SimpleString toSimpleString(final String string)
    {
@@ -386,7 +387,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
    /**
     * This method performs a similar function to {@link String#getChars(int, int, char[], int)}.
     * This is mainly used by the Parsers on Filters
-    * 
+    *
     * @param srcBegin
     * @param srcEnd
     * @param dst
@@ -406,7 +407,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
       {
          throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
       }
-      
+
       int j = srcBegin * 2;
       int d = dstPos;
 

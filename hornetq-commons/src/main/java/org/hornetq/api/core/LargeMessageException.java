@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY
  */
 public class LargeMessageException extends HornetQException
 {
+   private static final long serialVersionUID = 1087867463974768491L;
+
    public LargeMessageException()
    {
       super(LARGE_MESSAGE_ERROR_BODY);

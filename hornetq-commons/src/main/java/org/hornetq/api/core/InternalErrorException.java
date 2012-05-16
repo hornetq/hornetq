@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.INTERNAL_ERROR;
  */
 public class InternalErrorException extends HornetQException
 {
+   private static final long serialVersionUID = -5987814047521530695L;
+
    public InternalErrorException()
    {
       super(INTERNAL_ERROR);

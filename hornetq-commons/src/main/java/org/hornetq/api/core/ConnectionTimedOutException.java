@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
  */
 public class ConnectionTimedOutException extends HornetQException
 {
+   private static final long serialVersionUID = 3244233758084830372L;
+
    public ConnectionTimedOutException()
    {
       super(CONNECTION_TIMEDOUT);

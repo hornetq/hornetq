@@ -383,6 +383,24 @@ public class HornetQServerImpl implements HornetQServer
             test.run();
          }
 
+         if (!configuration.isBackup())
+         {
+            if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
+            {
+               activation = new SharedStoreLiveActivation();
+            }
+            else
+            {
+               activation = new SharedNothingLiveActivation();
+            }
+
+            activation.run();
+            state = SERVER_STATE.STARTED;
+            HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
+                                               identity != null ? identity : "");
+         }
+         // The activation on fail-back may change the value of isBackup, for that reason we are not
+         // using else here
          if (configuration.isBackup())
          {
              if (configuration.isSharedStore())
@@ -400,23 +418,6 @@ public class HornetQServerImpl implements HornetQServer
              backupActivationThread = new Thread(activation, HornetQMessageBundle.BUNDLE.activationForServer(this));
              backupActivationThread.start();
          }
-         // The activation on fail-back may change the value of isBackup, for that reason we are not using else here
-         else
-         {
-             if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
-             {
-                activation = new SharedStoreLiveActivation();
-             }
-             else
-             {
-                activation = new NoSharedStoreLiveActivation();
-             }
-
-             activation.run();
-            state = SERVER_STATE.STARTED;
-             HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(), identity != null ? identity : "");
-         }
-
          // start connector service
          connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
          connectorsService.start();
@@ -2201,7 +2202,7 @@ public class HornetQServerImpl implements HornetQServer
    }
 
 
-   private final class NoSharedStoreLiveActivation implements Activation
+   private final class SharedNothingLiveActivation implements Activation
    {
       public void run()
       {

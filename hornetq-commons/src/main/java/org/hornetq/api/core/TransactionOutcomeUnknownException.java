@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_OUTCOME_UNKN
  */
 public class TransactionOutcomeUnknownException extends HornetQException
 {
+   private static final long serialVersionUID = 7940794286427650558L;
+
    public TransactionOutcomeUnknownException()
    {
       super(TRANSACTION_OUTCOME_UNKNOWN);

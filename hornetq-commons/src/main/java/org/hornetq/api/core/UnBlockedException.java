@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.UNBLOCKED;
  */
 public class UnBlockedException extends HornetQException
 {
+   private static final long serialVersionUID = -4507889261891160608L;
+
    public UnBlockedException()
    {
       super(UNBLOCKED);

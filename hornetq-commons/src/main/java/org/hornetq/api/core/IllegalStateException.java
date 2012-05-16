@@ -32,6 +32,8 @@ import static org.hornetq.api.core.HornetQExceptionType.ILLEGAL_STATE;
  */
 public class IllegalStateException extends HornetQException
 {
+   private static final long serialVersionUID = -4480125401057788511L;
+
    public IllegalStateException()
    {
       super(ILLEGAL_STATE);
