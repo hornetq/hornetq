@@ -428,7 +428,7 @@ public interface Configuration extends Serializable
    /**
     * Sets the cluster password for this server.
     */
-   void setClusterPassword(String password) throws Exception;
+   void setClusterPassword(String password);
 
    /**
     * Returns the size of the cache for pre-creating message IDs.
