@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.NOT_CONNECTED;
  */
 public class NotConnectedException extends HornetQException
 {
+   private static final long serialVersionUID = -3489189971813613325L;
+
    public NotConnectedException(String message)
    {
       super(NOT_CONNECTED, message);

@@ -32,6 +32,8 @@ import static org.hornetq.api.core.HornetQExceptionType.OBJECT_CLOSED;
  */
 public class ObjectClosedException extends HornetQException
 {
+   private static final long serialVersionUID = 809024052184914812L;
+
    public ObjectClosedException()
    {
       super(OBJECT_CLOSED);

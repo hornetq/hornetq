@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.INVALID_FILTER_EXPRESSIO
  */
 public class InvalidFilterExpressionException extends HornetQException
 {
+   private static final long serialVersionUID = 7188625553939665128L;
+
    public InvalidFilterExpressionException()
    {
       super(INVALID_FILTER_EXPRESSION);

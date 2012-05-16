@@ -31,6 +31,8 @@ import static org.hornetq.api.core.HornetQExceptionType.QUEUE_EXISTS;
  */
 public class QueueExistsException extends HornetQException
 {
+   private static final long serialVersionUID = -405552292451883063L;
+
    public QueueExistsException()
    {
       super(QUEUE_EXISTS);
