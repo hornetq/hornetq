@@ -1178,16 +1178,6 @@ public class HornetQServerImpl implements HornetQServer
    }
 
 
-   // Package protected
-   // ----------------------------------------------------------------------------
-
-   // Protected
-   // ------------------------------------------------------------------------------------
-   /**
-    * Protected so tests can change this behaviour
-    * @param backupConnector
-    */
-
    private PagingManager createPagingManager()
    {
 
