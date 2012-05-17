@@ -48,19 +48,19 @@ public class ConfigurationImpl implements Configuration
 
    private static final long serialVersionUID = 4077088945050267843L;
 
-   static final boolean DEFAULT_CLUSTERED = false;
+   public static final boolean DEFAULT_CLUSTERED = false;
 
-   static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
+   public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
-   static final boolean DEFAULT_BACKUP = false;
+   public static final boolean DEFAULT_BACKUP = false;
 
-   private static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
+   public static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
 
-   static final boolean DEFAULT_SHARED_STORE = true;
+   public static final boolean DEFAULT_SHARED_STORE = true;
 
    static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
-   static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
+   public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
    static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
@@ -78,7 +78,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
-   static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
+   public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 
