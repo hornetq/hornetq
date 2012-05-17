@@ -95,7 +95,7 @@
       </dependency>
       <!--this specifically for the JMS Bridge-->
       <dependency>
-         <groupId>org.jboss.integration</groupId>
+         <groupId>org.jboss</groupId>
          <artifactId>jboss-transaction-spi</artifactId>
       </dependency>
       <dependency>

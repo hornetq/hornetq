@@ -43,7 +43,7 @@
             <artifactId>jbossjts</artifactId>
         </dependency>
        <dependency>
-          <groupId>org.jboss.integration</groupId>
+          <groupId>org.jboss</groupId>
           <artifactId>jboss-transaction-spi</artifactId>
        </dependency>
     </dependencies>
