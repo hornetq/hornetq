@@ -59,6 +59,8 @@ public interface Queue extends Bindable
    void addTail(MessageReference ref, boolean direct);
 
    void addHead(MessageReference ref);
+   
+   void addHead(final List<MessageReference> refs);
 
    void acknowledge(MessageReference ref) throws Exception;
 
