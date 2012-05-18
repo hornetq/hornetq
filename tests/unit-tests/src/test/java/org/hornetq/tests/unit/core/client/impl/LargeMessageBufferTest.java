@@ -934,6 +934,13 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
+       */
+      public void interruptHandlers() throws HornetQException
+      {
+      }
+
    }
 
 }
