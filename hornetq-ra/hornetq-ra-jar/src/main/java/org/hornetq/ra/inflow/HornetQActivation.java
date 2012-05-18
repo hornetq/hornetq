@@ -33,6 +33,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -306,8 +307,9 @@ public class HornetQActivation
 
          try
          {
-            session = setupSession();
-            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, i);
+            ClientSessionFactory cf = factory.getServerLocator().createSessionFactory();
+            session = setupSession(cf);
+            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, cf,  i);
             handler.setup();
             session.start();
             handlers.add(handler);
@@ -371,14 +373,15 @@ public class HornetQActivation
     * Setup a session
     * @return The connection
     * @throws Exception Thrown if an error occurs
+    * @param cf
     */
-   protected ClientSession setupSession() throws Exception
+   protected ClientSession setupSession(ClientSessionFactory cf) throws Exception
    {
       ClientSession result = null;
 
       try
       {
-         result = ra.createSession(factory.getServerLocator().createSessionFactory(),
+         result = ra.createSession(cf,
                                    spec.getAcknowledgeModeInt(),
                                    spec.getUser(),
                                    spec.getPassword(),

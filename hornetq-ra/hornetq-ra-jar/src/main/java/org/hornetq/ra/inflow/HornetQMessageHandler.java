@@ -24,9 +24,9 @@ import javax.transaction.TransactionManager;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -73,13 +73,17 @@ public class HornetQMessageHandler implements MessageHandler
 
    private final TransactionManager tm;
 
+   private ClientSessionFactory cf;
+
    public HornetQMessageHandler(final HornetQActivation activation,
                                 final TransactionManager tm,
                                 final ClientSessionInternal session,
+                                final ClientSessionFactory cf,
                                 final int sessionNr)
    {
       this.activation = activation;
       this.session = session;
+      this.cf = cf;
       this.sessionNr = sessionNr;
       this.tm = tm;
    }
@@ -256,6 +260,18 @@ public class HornetQMessageHandler implements MessageHandler
       catch (Throwable t)
       {
          HornetQRALogger.LOGGER.debug("Error releasing session " + session, t);
+      }
+
+      try
+      {
+         if (cf != null)
+         {
+            cf.close();
+         }
+      }
+      catch (Throwable t)
+      {
+         HornetQRALogger.LOGGER.debug("Error releasing session factory " + session, t);
       }
    }
 
