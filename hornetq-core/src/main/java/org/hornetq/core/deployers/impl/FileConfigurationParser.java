@@ -107,6 +107,10 @@ public class FileConfigurationParser
    private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
 
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
+   
+   private static final String REDELIVERY_DELAY_MULTIPLIER_NODE_NAME = "redelivery-delay-multiplier";
+   
+   private static final String MAX_REDELIVERY_DELAY_NODE_NAME = "max-redelivery-delay";
 
    private static final String MAX_DELIVERY_ATTEMPTS = "max-delivery-attempts";
 
@@ -800,6 +804,14 @@ public class FileConfigurationParser
          {
             addressSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
          }
+         else if (FileConfigurationParser.REDELIVERY_DELAY_MULTIPLIER_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            addressSettings.setRedeliveryMultiplier(Double.valueOf(child.getTextContent()));
+         }
+         else if (FileConfigurationParser.MAX_REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            addressSettings.setMaxRedeliveryDelay(Long.valueOf(child.getTextContent()));
+         }
          else if (FileConfigurationParser.MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setMaxSizeBytes(Long.valueOf(child.getTextContent()));
@@ -1410,3 +1422,4 @@ public class FileConfigurationParser
    // Inner classes -------------------------------------------------
 
 }
+
