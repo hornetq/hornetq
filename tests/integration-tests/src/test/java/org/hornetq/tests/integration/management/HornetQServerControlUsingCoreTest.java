@@ -512,11 +512,13 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                         @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts,
                                         @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes,
                                         @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes,
-                                        int pageMaxCacheSize,
+                                        @Parameter(desc = "the max number of pages in the soft memory cache", name="pageMaxCacheSize") int pageMaxCacheSize,
                                         @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay,
+                                        @Parameter(desc = "the redelivery delay multiplier", name="redeliveryMultiplier") double redeliveryMultiplier,
+                                        @Parameter(desc = "the maximum redelivery delay", name="maxRedeliveryDelay") long maxRedeliveryDelay,
                                         @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
                                         @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
-                                        @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
+                                        @Parameter(desc = "the policy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
          {
             proxy.invokeOperation("addAddressSettings",
                                   addressMatch,
@@ -528,6 +530,8 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   pageSizeBytes,
                                   pageMaxCacheSize,
                                   redeliveryDelay,
+                                  redeliveryMultiplier,
+                                  maxRedeliveryDelay,
                                   redistributionDelay,
                                   sendToDLAOnNoRoute,
                                   addressFullMessagePolicy);

@@ -1490,6 +1490,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       settings.put("maxSizeBytes", addressSettings.getMaxSizeBytes());
       settings.put("pageSizeBytes", addressSettings.getPageSizeBytes());
       settings.put("redeliveryDelay", addressSettings.getRedeliveryDelay());
+      settings.put("redeliveryMultiplier", addressSettings.getRedeliveryMultiplier());
+      settings.put("maxRedeliveryDelay", addressSettings.getMaxRedeliveryDelay());
       settings.put("redistributionDelay", addressSettings.getRedistributionDelay());
       settings.put("lastValueQueue", addressSettings.isLastValueQueue());
       settings.put("sendToDLAOnNoRoute", addressSettings.isSendToDLAOnNoRoute());
@@ -1512,6 +1514,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                   final int pageSizeBytes,
                                   final int pageMaxCacheSize,
                                   final long redeliveryDelay,
+                                  final double redeliveryMultiplier,
+                                  final long maxRedeliveryDelay,
                                   final long redistributionDelay,
                                   final boolean sendToDLAOnNoRoute,
                                   final String addressFullMessagePolicy) throws Exception
@@ -1538,6 +1542,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       addressSettings.setMaxSizeBytes(maxSizeBytes);
       addressSettings.setPageSizeBytes(pageSizeBytes);
       addressSettings.setRedeliveryDelay(redeliveryDelay);
+      addressSettings.setRedeliveryMultiplier(redeliveryMultiplier);
+      addressSettings.setMaxRedeliveryDelay(maxRedeliveryDelay);
       addressSettings.setRedistributionDelay(redistributionDelay);
       addressSettings.setSendToDLAOnNoRoute(sendToDLAOnNoRoute);
       if (addressFullMessagePolicy == null)
@@ -1974,3 +1980,4 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    }
 
 }
+

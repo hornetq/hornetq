@@ -36,6 +36,8 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
                           addressSettings.getMessageCounterHistoryDayLimit());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
+      Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER,
+                          addressSettings.getRedeliveryMultiplier());
 
    }
 
@@ -83,6 +85,7 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge2.setExpiryAddress(exp2);
       addressSettingsToMerge2.setMaxSizeBytes(2001);
       addressSettingsToMerge2.setRedeliveryDelay(2003);
+      addressSettingsToMerge2.setRedeliveryMultiplier(2.5);
       addressSettings.merge(addressSettingsToMerge2);
 
       Assert.assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
@@ -91,6 +94,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 2003);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 2.5);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
@@ -104,6 +108,7 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge.setExpiryAddress(exp);
       addressSettingsToMerge.setMaxSizeBytes(1001);
       addressSettingsToMerge.setRedeliveryDelay(1003);
+      addressSettingsToMerge.setRedeliveryMultiplier(1.0);
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
       addressSettings.merge(addressSettingsToMerge);
 
@@ -116,6 +121,8 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge2.setMaxSizeBytes(2001);
       addressSettingsToMerge2.setMessageCounterHistoryDayLimit(2002);
       addressSettingsToMerge2.setRedeliveryDelay(2003);
+      addressSettingsToMerge2.setRedeliveryMultiplier(2.0);
+      addressSettingsToMerge2.setMaxRedeliveryDelay(5000);
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.merge(addressSettingsToMerge2);
 
@@ -125,6 +132,8 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 1003);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0);
+      Assert.assertEquals(addressSettings.getMaxRedeliveryDelay(), 5000);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 }
