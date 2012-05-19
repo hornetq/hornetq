@@ -38,6 +38,10 @@ public class AddressSettingsInfo
    private int pageCacheMaxSize;
 
    private final int maxDeliveryAttempts;
+   
+   private double redeliveryMultiplier;
+   
+   private long maxRedeliveryDelay;
 
    private final long redeliveryDelay;
 
@@ -62,6 +66,8 @@ public class AddressSettingsInfo
                                      object.getInt("pageCacheMaxSize"),
                                      object.getInt("maxDeliveryAttempts"),
                                      object.getLong("redeliveryDelay"),
+                                     object.getDouble("redeliveryMultiplier"),
+                                     object.getLong("maxRedeliveryDelay"),
                                      object.getString("DLA"),
                                      object.getString("expiryAddress"),
                                      object.getBoolean("lastValueQueue"),
@@ -77,6 +83,8 @@ public class AddressSettingsInfo
                               int pageCacheMaxSize,
                               int maxDeliveryAttempts,
                               long redeliveryDelay,
+                              double redeliveryMultiplier,
+                              long maxRedeliveryDelay,
                               String deadLetterAddress,
                               String expiryAddress,
                               boolean lastValueQueue,
@@ -89,6 +97,8 @@ public class AddressSettingsInfo
       this.pageCacheMaxSize = pageCacheMaxSize;
       this.maxDeliveryAttempts = maxDeliveryAttempts;
       this.redeliveryDelay = redeliveryDelay;
+      this.redeliveryMultiplier = redeliveryMultiplier;
+      this.maxRedeliveryDelay = maxRedeliveryDelay;
       this.deadLetterAddress = deadLetterAddress;
       this.expiryAddress = expiryAddress;
       this.lastValueQueue = lastValueQueue;
@@ -158,6 +168,16 @@ public class AddressSettingsInfo
       return sendToDLAOnNoRoute;
    }
 
+   public double getRedeliveryMultiplier()
+   {
+      return redeliveryMultiplier;
+   }
+
+   public long getMaxRedeliveryDelay()
+   {
+      return maxRedeliveryDelay;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -167,3 +187,4 @@ public class AddressSettingsInfo
    // Inner classes -------------------------------------------------
 
 }
+

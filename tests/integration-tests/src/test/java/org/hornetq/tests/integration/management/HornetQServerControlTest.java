@@ -482,6 +482,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       int pageSizeBytes = 10;
       int pageMaxCacheSize = 7;
       long redeliveryDelay = 4;
+      double redeliveryMultiplier = 1;
+      long maxRedeliveryDelay = 1000;
       long redistributionDelay = 5;
       boolean sendToDLAOnNoRoute = true;
       String addressFullMessagePolicy = "PAGE";
@@ -495,6 +497,8 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        pageSizeBytes,
                                        pageMaxCacheSize,
                                        redeliveryDelay,
+                                       redeliveryMultiplier,
+                                       maxRedeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
                                        addressFullMessagePolicy);
@@ -512,6 +516,8 @@ public class HornetQServerControlTest extends ManagementTestBase
                                           1000,
                                           pageMaxCacheSize,
                                           redeliveryDelay,
+                                          redeliveryMultiplier,
+                                          maxRedeliveryDelay,
                                           redistributionDelay,
                                           sendToDLAOnNoRoute,
                                           addressFullMessagePolicy);
@@ -536,6 +542,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(pageSizeBytes, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
+      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier());
+      assertEquals(maxRedeliveryDelay, info.getMaxRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
@@ -549,6 +557,8 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        1000,
                                        pageMaxCacheSize,
                                        redeliveryDelay,
+                                       redeliveryMultiplier,
+                                       maxRedeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
                                        addressFullMessagePolicy);
@@ -565,6 +575,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(1000, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
+      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier());
+      assertEquals(maxRedeliveryDelay, info.getMaxRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
@@ -582,6 +594,8 @@ public class HornetQServerControlTest extends ManagementTestBase
                                           1000,
                                           pageMaxCacheSize,
                                           redeliveryDelay,
+                                          redeliveryMultiplier,
+                                          maxRedeliveryDelay,
                                           redistributionDelay,
                                           sendToDLAOnNoRoute,
                                           addressFullMessagePolicy);
@@ -960,3 +974,4 @@ public class HornetQServerControlTest extends ManagementTestBase
    // Inner classes -------------------------------------------------
 
 }
+
