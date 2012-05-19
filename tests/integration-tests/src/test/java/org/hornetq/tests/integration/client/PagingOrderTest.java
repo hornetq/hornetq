@@ -735,6 +735,8 @@ public class PagingOrderTest extends ServiceTestBase
                                                           1024 * 10,
                                                           5,
                                                           5,
+                                                          1,
+                                                          1000,
                                                           0,
                                                           false,
                                                           "PAGE");
@@ -804,6 +806,8 @@ public class PagingOrderTest extends ServiceTestBase
                                                           10 * 1024,
                                                           5,
                                                           5,
+                                                          1,
+                                                          1000,
                                                           0,
                                                           false,
                                                           "PAGE");
