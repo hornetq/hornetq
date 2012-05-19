@@ -106,11 +106,30 @@ public class BufferHelper
       }
    }
 
+   /**
+    * @param buffer
+    */
+   public static void writeNullableDouble(HornetQBuffer buffer, Double value)
+   {
+      buffer.writeBoolean(value != null);
+
+      if (value != null)
+      {
+         buffer.writeDouble(value.doubleValue());
+      }
+   }
+
    public static int sizeOfNullableLong(Long value)
    {
       return DataConstants.SIZE_BOOLEAN + (value != null ? DataConstants.SIZE_LONG : 0);
    }
 
+   public static int sizeOfNullableDouble(Double value)
+   {
+      return DataConstants.SIZE_BOOLEAN + (value != null ? DataConstants.SIZE_DOUBLE : 0);
+   }
+
+   
    public static Long readNullableLong(HornetQBuffer buffer)
    {
       boolean isNotNull = buffer.readBoolean();
@@ -157,4 +176,19 @@ public class BufferHelper
       }
    }
 
+   public static Double readNullableDouble(HornetQBuffer buffer)
+   {
+      boolean isNotNull = buffer.readBoolean();
+
+      if (isNotNull)
+      {
+         return buffer.readDouble();
+      }
+      else
+      {
+         return null;
+      }
+   }
+
 }
+
