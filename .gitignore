@@ -111,535 +111,578 @@ tests/**/server.lock
 # /examples/javaee/xarecovery/
 /examples/javaee/xarecovery/build
 
-# /examples/jms/
-/examples/jms/build
+# /examples/
+/examples/build
 
-# /examples/jms/applet/
-/examples/jms/applet/build
-
-# /examples/jms/applet/server0/
-/examples/jms/applet/server0/data
+# /examples/applet/
+/examples/applet/build
+
+# /examples/applet/server0/
+/examples/applet/server0/data
 
-# /examples/jms/application-layer-failover/
-/examples/jms/application-layer-failover/build
-/examples/jms/application-layer-failover/logs
+# /examples/application-layer-failover/
+/examples/application-layer-failover/build
+/examples/application-layer-failover/logs
 
-# /examples/jms/application-layer-failover/server0/
-/examples/jms/application-layer-failover/server0/data
-/examples/jms/application-layer-failover/server0/logs
+# /examples/application-layer-failover/server0/
+/examples/application-layer-failover/server0/data
+/examples/application-layer-failover/server0/logs
 
-# /examples/jms/application-layer-failover/server1/
-/examples/jms/application-layer-failover/server1/data
-/examples/jms/application-layer-failover/server1/logs
-/examples/jms/application-layer-failover/server1/KILL_ME
-
-# /examples/jms/bridge/
-/examples/jms/bridge/build
-/examples/jms/bridge/logs
-
-# /examples/jms/bridge/server0/
-/examples/jms/bridge/server0/data
-/examples/jms/bridge/server0/logs
-
-# /examples/jms/bridge/server1/
-/examples/jms/bridge/server1/data
-/examples/jms/bridge/server1/logs
-
-# /examples/jms/browser/
-/examples/jms/browser/build
-/examples/jms/browser/logs
-
-# /examples/jms/browser/server0/
-/examples/jms/browser/server0/data
-/examples/jms/browser/server0/logs
-
-# /examples/jms/client-kickoff/
-/examples/jms/client-kickoff/build
-/examples/jms/client-kickoff/logs
-
-# /examples/jms/client-kickoff/server0/
-/examples/jms/client-kickoff/server0/data
-/examples/jms/client-kickoff/server0/logs
-
-# /examples/jms/client-side-load-balancing/
-/examples/jms/client-side-load-balancing/build
-/examples/jms/client-side-load-balancing/logs
-
-# /examples/jms/client-side-load-balancing/server0/
-/examples/jms/client-side-load-balancing/server0/data
-/examples/jms/client-side-load-balancing/server0/logs
-
-# /examples/jms/client-side-load-balancing/server1/
-/examples/jms/client-side-load-balancing/server1/data
-/examples/jms/client-side-load-balancing/server1/logs
-
-# /examples/jms/client-side-load-balancing/server2/
-/examples/jms/client-side-load-balancing/server2/data
-/examples/jms/client-side-load-balancing/server2/logs
-
-# /examples/jms/clustered-durable-subscription/
-/examples/jms/clustered-durable-subscription/build
-/examples/jms/clustered-durable-subscription/logs
-
-# /examples/jms/clustered-durable-subscription/server0/
-/examples/jms/clustered-durable-subscription/server0/data
-/examples/jms/clustered-durable-subscription/server0/logs
-
-# /examples/jms/clustered-durable-subscription/server1/
-/examples/jms/clustered-durable-subscription/server1/data
-/examples/jms/clustered-durable-subscription/server1/logs
-
-# /examples/jms/clustered-queue/
-/examples/jms/clustered-queue/build
-/examples/jms/clustered-queue/logs
-
-# /examples/jms/clustered-queue/server0/
-/examples/jms/clustered-queue/server0/data
-/examples/jms/clustered-queue/server0/logs
-
-# /examples/jms/clustered-queue/server1/
-/examples/jms/clustered-queue/server1/data
-/examples/jms/clustered-queue/server1/logs
-
-# /examples/jms/clustered-topic/
-/examples/jms/clustered-topic/build
-/examples/jms/clustered-topic/logs
-
-# /examples/jms/clustered-topic/server0/
-/examples/jms/clustered-topic/server0/data
-/examples/jms/clustered-topic/server0/logs
-
-# /examples/jms/clustered-topic/server1/
-/examples/jms/clustered-topic/server1/data
-/examples/jms/clustered-topic/server1/logs
-
-# /examples/jms/consumer-rate-limit/
-/examples/jms/consumer-rate-limit/build
-/examples/jms/consumer-rate-limit/logs
-
-# /examples/jms/consumer-rate-limit/server0/
-/examples/jms/consumer-rate-limit/server0/data
-/examples/jms/consumer-rate-limit/server0/logs
-
-# /examples/jms/dead-letter/
-/examples/jms/dead-letter/build
-/examples/jms/dead-letter/logs
-
-# /examples/jms/dead-letter/server0/
-/examples/jms/dead-letter/server0/data
-/examples/jms/dead-letter/server0/logs
-
-# /examples/jms/delayed-redelivery/
-/examples/jms/delayed-redelivery/build
-/examples/jms/delayed-redelivery/logs
-
-# /examples/jms/delayed-redelivery/server0/
-/examples/jms/delayed-redelivery/server0/data
-/examples/jms/delayed-redelivery/server0/logs
-
-# /examples/jms/divert/
-/examples/jms/divert/build
-/examples/jms/divert/logs
-
-# /examples/jms/divert/server0/
-/examples/jms/divert/server0/data
-/examples/jms/divert/server0/logs
-
-# /examples/jms/divert/server1/
-/examples/jms/divert/server1/data
-/examples/jms/divert/server1/logs
-
-# /examples/jms/durable-subscription/
-/examples/jms/durable-subscription/build
-/examples/jms/durable-subscription/logs
-
-# /examples/jms/durable-subscription/server0/
-/examples/jms/durable-subscription/server0/data
-/examples/jms/durable-subscription/server0/logs
-
-# /examples/jms/embedded/
-/examples/jms/embedded/logs
-/examples/jms/embedded/build
-
-# /examples/jms/expiry/
-/examples/jms/expiry/build
-/examples/jms/expiry/logs
-
-# /examples/jms/expiry/server0/
-/examples/jms/expiry/server0/data
-/examples/jms/expiry/server0/logs
-
-# /examples/jms/http-transport/
-/examples/jms/http-transport/build
-/examples/jms/http-transport/logs
-
-# /examples/jms/http-transport/server0/
-/examples/jms/http-transport/server0/data
-/examples/jms/http-transport/server0/logs
-
-# /examples/jms/instantiate-connection-factory/
-/examples/jms/instantiate-connection-factory/build
-/examples/jms/instantiate-connection-factory/logs
-
-# /examples/jms/instantiate-connection-factory/server0/
-/examples/jms/instantiate-connection-factory/server0/data
-/examples/jms/instantiate-connection-factory/server0/logs
-
-# /examples/jms/interceptor/
-/examples/jms/interceptor/build
-/examples/jms/interceptor/logs
+# /examples/application-layer-failover/server1/
+/examples/application-layer-failover/server1/data
+/examples/application-layer-failover/server1/logs
+/examples/application-layer-failover/server1/KILL_ME
+
+# /examples/bridge/
+/examples/bridge/build
+/examples/bridge/logs
+
+# /examples/bridge/server0/
+/examples/bridge/server0/data
+/examples/bridge/server0/logs
+
+# /examples/bridge/server1/
+/examples/bridge/server1/data
+/examples/bridge/server1/logs
+
+# /examples/browser/
+/examples/browser/build
+/examples/browser/logs
+
+# /examples/browser/server0/
+/examples/browser/server0/data
+/examples/browser/server0/logs
+
+# /examples/client-kickoff/
+/examples/client-kickoff/build
+/examples/client-kickoff/logs
+
+# /examples/client-kickoff/server0/
+/examples/client-kickoff/server0/data
+/examples/client-kickoff/server0/logs
+
+# /examples/client-side-load-balancing/
+/examples/client-side-load-balancing/build
+/examples/client-side-load-balancing/logs
+
+# /examples/client-side-load-balancing/server0/
+/examples/client-side-load-balancing/server0/data
+/examples/client-side-load-balancing/server0/logs
+
+# /examples/client-side-load-balancing/server1/
+/examples/client-side-load-balancing/server1/data
+/examples/client-side-load-balancing/server1/logs
+
+# /examples/client-side-load-balancing/server2/
+/examples/client-side-load-balancing/server2/data
+/examples/client-side-load-balancing/server2/logs
+
+# /examples/clustered-durable-subscription/
+/examples/clustered-durable-subscription/build
+/examples/clustered-durable-subscription/logs
+
+# /examples/clustered-durable-subscription/server0/
+/examples/clustered-durable-subscription/server0/data
+/examples/clustered-durable-subscription/server0/logs
+
+# /examples/clustered-durable-subscription/server1/
+/examples/clustered-durable-subscription/server1/data
+/examples/clustered-durable-subscription/server1/logs
+
+# /examples/clustered-queue/
+/examples/clustered-queue/build
+/examples/clustered-queue/logs
+
+# /examples/clustered-queue/server0/
+/examples/clustered-queue/server0/data
+/examples/clustered-queue/server0/logs
+
+# /examples/clustered-queue/server1/
+/examples/clustered-queue/server1/data
+/examples/clustered-queue/server1/logs
+
+# /examples/clustered-topic/
+/examples/clustered-topic/build
+/examples/clustered-topic/logs
+
+# /examples/clustered-topic/server0/
+/examples/clustered-topic/server0/data
+/examples/clustered-topic/server0/logs
+
+# /examples/clustered-topic/server1/
+/examples/clustered-topic/server1/data
+/examples/clustered-topic/server1/logs
+
+# /examples/consumer-rate-limit/
+/examples/consumer-rate-limit/build
+/examples/consumer-rate-limit/logs
+
+# /examples/consumer-rate-limit/server0/
+/examples/consumer-rate-limit/server0/data
+/examples/consumer-rate-limit/server0/logs
+
+# /examples/dead-letter/
+/examples/dead-letter/build
+/examples/dead-letter/logs
+
+# /examples/dead-letter/server0/
+/examples/dead-letter/server0/data
+/examples/dead-letter/server0/logs
+
+# /examples/delayed-redelivery/
+/examples/delayed-redelivery/build
+/examples/delayed-redelivery/logs
+
+# /examples/delayed-redelivery/server0/
+/examples/delayed-redelivery/server0/data
+/examples/delayed-redelivery/server0/logs
+
+# /examples/divert/
+/examples/divert/build
+/examples/divert/logs
+
+# /examples/divert/server0/
+/examples/divert/server0/data
+/examples/divert/server0/logs
+
+# /examples/divert/server1/
+/examples/divert/server1/data
+/examples/divert/server1/logs
+
+# /examples/durable-subscription/
+/examples/durable-subscription/build
+/examples/durable-subscription/logs
+
+# /examples/durable-subscription/server0/
+/examples/durable-subscription/server0/data
+/examples/durable-subscription/server0/logs
+
+# /examples/embedded/
+/examples/embedded/logs
+/examples/embedded/build
+
+# /examples/expiry/
+/examples/expiry/build
+/examples/expiry/logs
+
+# /examples/expiry/server0/
+/examples/expiry/server0/data
+/examples/expiry/server0/logs
+
+# /examples/http-transport/
+/examples/http-transport/build
+/examples/http-transport/logs
+
+# /examples/http-transport/server0/
+/examples/http-transport/server0/data
+/examples/http-transport/server0/logs
+
+# /examples/instantiate-connection-factory/
+/examples/instantiate-connection-factory/build
+/examples/instantiate-connection-factory/logs
+
+# /examples/instantiate-connection-factory/server0/
+/examples/instantiate-connection-factory/server0/data
+/examples/instantiate-connection-factory/server0/logs
+
+# /examples/interceptor/
+/examples/interceptor/build
+/examples/interceptor/logs
 
-# /examples/jms/interceptor/server0/
-/examples/jms/interceptor/server0/data
-/examples/jms/interceptor/server0/logs
+# /examples/interceptor/server0/
+/examples/interceptor/server0/data
+/examples/interceptor/server0/logs
 
-# /examples/jms/jaas/
-/examples/jms/jaas/build
-/examples/jms/jaas/logs
+# /examples/jaas/
+/examples/jaas/build
+/examples/jaas/logs
 
-# /examples/jms/jaas/server0/
-/examples/jms/jaas/server0/data
-/examples/jms/jaas/server0/logs
+# /examples/jaas/server0/
+/examples/jaas/server0/data
+/examples/jaas/server0/logs
 
-# /examples/jms/jms-bridge/
-/examples/jms/jms-bridge/build
-/examples/jms/jms-bridge/data
+# /examples/jms-bridge/
+/examples/jms-bridge/build
+/examples/jms-bridge/data
 
-# /examples/jms/jmx/
-/examples/jms/jmx/build
-/examples/jms/jmx/logs
+# /examples/jmx/
+/examples/jmx/build
+/examples/jmx/logs
 
-# /examples/jms/jmx/server0/
-/examples/jms/jmx/server0/data
-/examples/jms/jmx/server0/logs
+# /examples/jmx/server0/
+/examples/jmx/server0/data
+/examples/jmx/server0/logs
 
-# /examples/jms/large-message/
-/examples/jms/large-message/build
-/examples/jms/large-message/logs
-/examples/jms/large-message/huge_message_received.dat
-/examples/jms/large-message/huge_message_to_send.dat
+# /examples/large-message/
+/examples/large-message/build
+/examples/large-message/logs
+/examples/large-message/huge_message_received.dat
+/examples/large-message/huge_message_to_send.dat
 
-# /examples/jms/large-message/server0/
-/examples/jms/large-message/server0/logs
-/examples/jms/large-message/server0/data
+# /examples/large-message/server0/
+/examples/large-message/server0/logs
+/examples/large-message/server0/data
 
-# /examples/jms/last-value-queue/
-/examples/jms/last-value-queue/build
-/examples/jms/last-value-queue/logs
+# /examples/last-value-queue/
+/examples/last-value-queue/build
+/examples/last-value-queue/logs
 
-# /examples/jms/last-value-queue/server0/
-/examples/jms/last-value-queue/server0/data
-/examples/jms/last-value-queue/server0/logs
+# /examples/last-value-queue/server0/
+/examples/last-value-queue/server0/data
+/examples/last-value-queue/server0/logs
 
-# /examples/jms/management/
-/examples/jms/management/build
-/examples/jms/management/logs
+# /examples/management/
+/examples/management/build
+/examples/management/logs
 
-# /examples/jms/management/server0/
-/examples/jms/management/server0/data
-/examples/jms/management/server0/logs
+# /examples/management/server0/
+/examples/management/server0/data
+/examples/management/server0/logs
 
-# /examples/jms/management-notifications/
-/examples/jms/management-notifications/build
-/examples/jms/management-notifications/logs
+# /examples/management-notifications/
+/examples/management-notifications/build
+/examples/management-notifications/logs
 
-# /examples/jms/management-notifications/server0/
-/examples/jms/management-notifications/server0/logs
-/examples/jms/management-notifications/server0/data
+# /examples/management-notifications/server0/
+/examples/management-notifications/server0/logs
+/examples/management-notifications/server0/data
 
-# /examples/jms/message-counters/
-/examples/jms/message-counters/build
-/examples/jms/message-counters/logs
+# /examples/message-counters/
+/examples/message-counters/build
+/examples/message-counters/logs
 
-# /examples/jms/message-counters/server0/
-/examples/jms/message-counters/server0/data
-/examples/jms/message-counters/server0/logs
+# /examples/message-counters/server0/
+/examples/message-counters/server0/data
+/examples/message-counters/server0/logs
 
-# /examples/jms/message-group/
-/examples/jms/message-group/build
-/examples/jms/message-group/logs
+# /examples/message-group/
+/examples/message-group/build
+/examples/message-group/logs
 
-# /examples/jms/message-group/server0/
-/examples/jms/message-group/server0/data
-/examples/jms/message-group/server0/logs
+# /examples/message-group/server0/
+/examples/message-group/server0/data
+/examples/message-group/server0/logs
 
-# /examples/jms/message-priority/
-/examples/jms/message-priority/build
-/examples/jms/message-priority/logs
+# /examples/message-priority/
+/examples/message-priority/build
+/examples/message-priority/logs
 
-# /examples/jms/message-priority/server0/
-/examples/jms/message-priority/server0/data
-/examples/jms/message-priority/server0/logs
+# /examples/message-priority/server0/
+/examples/message-priority/server0/data
+/examples/message-priority/server0/logs
 
-# /examples/jms/no-consumer-buffering/
-/examples/jms/no-consumer-buffering/build
-/examples/jms/no-consumer-buffering/logs
+# /examples/no-consumer-buffering/
+/examples/no-consumer-buffering/build
+/examples/no-consumer-buffering/logs
 
-# /examples/jms/no-consumer-buffering/server0/
-/examples/jms/no-consumer-buffering/server0/data
-/examples/jms/no-consumer-buffering/server0/logs
+# /examples/no-consumer-buffering/server0/
+/examples/no-consumer-buffering/server0/data
+/examples/no-consumer-buffering/server0/logs
 
-# /examples/jms/non-transaction-failover/
-/examples/jms/non-transaction-failover/build
+# /examples/non-transaction-failover/
+/examples/non-transaction-failover/build
 
-# /examples/jms/non-transaction-failover/server0/
-/examples/jms/non-transaction-failover/server0/data
+# /examples/non-transaction-failover/server0/
+/examples/non-transaction-failover/server0/data
 
-# /examples/jms/non-transaction-failover/server1/
-/examples/jms/non-transaction-failover/server1/data
+# /examples/non-transaction-failover/server1/
+/examples/non-transaction-failover/server1/data
 
-# /examples/jms/paging/
-/examples/jms/paging/build
-/examples/jms/paging/logs
+# /examples/paging/
+/examples/paging/build
+/examples/paging/logs
 
-# /examples/jms/paging/server0/
-/examples/jms/paging/server0/data
-/examples/jms/paging/server0/logs
+# /examples/paging/server0/
+/examples/paging/server0/data
+/examples/paging/server0/logs
 
-# /examples/jms/perf/
-/examples/jms/perf/build
-/examples/jms/perf/data
+# /examples/perf/
+/examples/perf/build
+/examples/perf/data
 
-# /examples/jms/pre-acknowledge/
-/examples/jms/pre-acknowledge/build
-/examples/jms/pre-acknowledge/logs
+# /examples/pre-acknowledge/
+/examples/pre-acknowledge/build
+/examples/pre-acknowledge/logs
 
-# /examples/jms/pre-acknowledge/server0/
-/examples/jms/pre-acknowledge/server0/data
-/examples/jms/pre-acknowledge/server0/logs
+# /examples/pre-acknowledge/server0/
+/examples/pre-acknowledge/server0/data
+/examples/pre-acknowledge/server0/logs
 
-# /examples/jms/producer-rate-limit/
-/examples/jms/producer-rate-limit/build
-/examples/jms/producer-rate-limit/logs
+# /examples/producer-rate-limit/
+/examples/producer-rate-limit/build
+/examples/producer-rate-limit/logs
 
-# /examples/jms/producer-rate-limit/server0/
-/examples/jms/producer-rate-limit/server0/data
-/examples/jms/producer-rate-limit/server0/logs
+# /examples/producer-rate-limit/server0/
+/examples/producer-rate-limit/server0/data
+/examples/producer-rate-limit/server0/logs
 
-# /examples/jms/queue/
-/examples/jms/queue/build
-/examples/jms/queue/logs
+# /examples/queue/
+/examples/queue/build
+/examples/queue/logs
 
-# /examples/jms/queue/server0/
-/examples/jms/queue/server0/data
-/examples/jms/queue/server0/logs
+# /examples/queue/server0/
+/examples/queue/server0/data
+/examples/queue/server0/logs
 
-# /examples/jms/queue-message-redistribution/
-/examples/jms/queue-message-redistribution/build
-/examples/jms/queue-message-redistribution/logs
+# /examples/queue-message-redistribution/
+/examples/queue-message-redistribution/build
+/examples/queue-message-redistribution/logs
 
-# /examples/jms/queue-message-redistribution/server0/
-/examples/jms/queue-message-redistribution/server0/data
-/examples/jms/queue-message-redistribution/server0/logs
+# /examples/queue-message-redistribution/server0/
+/examples/queue-message-redistribution/server0/data
+/examples/queue-message-redistribution/server0/logs
 
-# /examples/jms/queue-message-redistribution/server1/
-/examples/jms/queue-message-redistribution/server1/data
-/examples/jms/queue-message-redistribution/server1/logs
+# /examples/queue-message-redistribution/server1/
+/examples/queue-message-redistribution/server1/data
+/examples/queue-message-redistribution/server1/logs
 
-# /examples/jms/queue-requestor/
-/examples/jms/queue-requestor/build
-/examples/jms/queue-requestor/logs
+# /examples/queue-requestor/
+/examples/queue-requestor/build
+/examples/queue-requestor/logs
 
-# /examples/jms/queue-requestor/server0/
-/examples/jms/queue-requestor/server0/data
-/examples/jms/queue-requestor/server0/logs
+# /examples/queue-requestor/server0/
+/examples/queue-requestor/server0/data
+/examples/queue-requestor/server0/logs
 
-# /examples/jms/queue-selector/
-/examples/jms/queue-selector/build
-/examples/jms/queue-selector/logs
+# /examples/queue-selector/
+/examples/queue-selector/build
+/examples/queue-selector/logs
 
-# /examples/jms/queue-selector/server0/
-/examples/jms/queue-selector/server0/data
-/examples/jms/queue-selector/server0/logs
+# /examples/queue-selector/server0/
+/examples/queue-selector/server0/data
+/examples/queue-selector/server0/logs
 
-# /examples/jms/reattach-node/
-/examples/jms/reattach-node/build
-/examples/jms/reattach-node/logs
+# /examples/reattach-node/
+/examples/reattach-node/build
+/examples/reattach-node/logs
 
-# /examples/jms/reattach-node/server0/
-/examples/jms/reattach-node/server0/data
-/examples/jms/reattach-node/server0/logs
+# /examples/reattach-node/server0/
+/examples/reattach-node/server0/data
+/examples/reattach-node/server0/logs
 
-# /examples/jms/request-reply/
-/examples/jms/request-reply/build
-/examples/jms/request-reply/logs
+# /examples/request-reply/
+/examples/request-reply/build
+/examples/request-reply/logs
 
-# /examples/jms/request-reply/server0/
-/examples/jms/request-reply/server0/data
-/examples/jms/request-reply/server0/logs
+# /examples/request-reply/server0/
+/examples/request-reply/server0/data
+/examples/request-reply/server0/logs
 
-# /examples/jms/scheduled-message/
-/examples/jms/scheduled-message/build
-/examples/jms/scheduled-message/logs
+# /examples/scheduled-message/
+/examples/scheduled-message/build
+/examples/scheduled-message/logs
 
-# /examples/jms/scheduled-message/server0/
-/examples/jms/scheduled-message/server0/data
-/examples/jms/scheduled-message/server0/logs
+# /examples/scheduled-message/server0/
+/examples/scheduled-message/server0/data
+/examples/scheduled-message/server0/logs
 
-# /examples/jms/security/
-/examples/jms/security/build
-/examples/jms/security/logs
+# /examples/security/
+/examples/security/build
+/examples/security/logs
 
-# /examples/jms/security/server0/
-/examples/jms/security/server0/data
-/examples/jms/security/server0/logs
+# /examples/security/server0/
+/examples/security/server0/data
+/examples/security/server0/logs
 
-# /examples/jms/send-acknowledgements/
-/examples/jms/send-acknowledgements/build
-/examples/jms/send-acknowledgements/logs
+# /examples/send-acknowledgements/
+/examples/send-acknowledgements/build
+/examples/send-acknowledgements/logs
 
-# /examples/jms/send-acknowledgements/server0/
-/examples/jms/send-acknowledgements/server0/data
-/examples/jms/send-acknowledgements/server0/logs
+# /examples/send-acknowledgements/server0/
+/examples/send-acknowledgements/server0/data
+/examples/send-acknowledgements/server0/logs
 
-# /examples/jms/ssl-enabled/
-/examples/jms/ssl-enabled/build
-/examples/jms/ssl-enabled/logs
+# /examples/ssl-enabled/
+/examples/ssl-enabled/build
+/examples/ssl-enabled/logs
 
-# /examples/jms/ssl-enabled/server0/
-/examples/jms/ssl-enabled/server0/data
-/examples/jms/ssl-enabled/server0/logs
+# /examples/ssl-enabled/server0/
+/examples/ssl-enabled/server0/data
+/examples/ssl-enabled/server0/logs
 
-# /examples/jms/static-selector/
-/examples/jms/static-selector/build
-/examples/jms/static-selector/logs
+# /examples/static-selector/
+/examples/static-selector/build
+/examples/static-selector/logs
 
-# /examples/jms/static-selector/server0/
-/examples/jms/static-selector/server0/data
-/examples/jms/static-selector/server0/logs
+# /examples/static-selector/server0/
+/examples/static-selector/server0/data
+/examples/static-selector/server0/logs
 
-# /examples/jms/static-selector-jms/
-/examples/jms/static-selector-jms/logs
-/examples/jms/static-selector-jms/build
+# /examples/static-selector-jms/
+/examples/static-selector-jms/logs
+/examples/static-selector-jms/build
 
-# /examples/jms/static-selector-jms/server0/
-/examples/jms/static-selector-jms/server0/data
-/examples/jms/static-selector-jms/server0/logs
+# /examples/static-selector-jms/server0/
+/examples/static-selector-jms/server0/data
+/examples/static-selector-jms/server0/logs
 
-# /examples/jms/stomp/
-/examples/jms/stomp/build
+# /examples/stomp/
+/examples/stomp/build
 
-# /examples/jms/stomp/server0/
-/examples/jms/stomp/server0/data
+# /examples/stomp/server0/
+/examples/stomp/server0/data
 
-# /examples/jms/symmetric-cluster/
-/examples/jms/symmetric-cluster/build
-/examples/jms/symmetric-cluster/logs
+# /examples/symmetric-cluster/
+/examples/symmetric-cluster/build
+/examples/symmetric-cluster/logs
 
-# /examples/jms/symmetric-cluster/server0/
-/examples/jms/symmetric-cluster/server0/data
-/examples/jms/symmetric-cluster/server0/logs
+# /examples/symmetric-cluster/server0/
+/examples/symmetric-cluster/server0/data
+/examples/symmetric-cluster/server0/logs
 
-# /examples/jms/symmetric-cluster/server1/
-/examples/jms/symmetric-cluster/server1/data
-/examples/jms/symmetric-cluster/server1/logs
+# /examples/symmetric-cluster/server1/
+/examples/symmetric-cluster/server1/data
+/examples/symmetric-cluster/server1/logs
 
-# /examples/jms/symmetric-cluster/server2/
-/examples/jms/symmetric-cluster/server2/data
-/examples/jms/symmetric-cluster/server2/logs
+# /examples/symmetric-cluster/server2/
+/examples/symmetric-cluster/server2/data
+/examples/symmetric-cluster/server2/logs
 
-# /examples/jms/symmetric-cluster/server3/
-/examples/jms/symmetric-cluster/server3/data
-/examples/jms/symmetric-cluster/server3/logs
+# /examples/symmetric-cluster/server3/
+/examples/symmetric-cluster/server3/data
+/examples/symmetric-cluster/server3/logs
 
-# /examples/jms/symmetric-cluster/server4/
-/examples/jms/symmetric-cluster/server4/data
-/examples/jms/symmetric-cluster/server4/logs
+# /examples/symmetric-cluster/server4/
+/examples/symmetric-cluster/server4/data
+/examples/symmetric-cluster/server4/logs
 
-# /examples/jms/symmetric-cluster/server5/
-/examples/jms/symmetric-cluster/server5/data
-/examples/jms/symmetric-cluster/server5/logs
+# /examples/symmetric-cluster/server5/
+/examples/symmetric-cluster/server5/data
+/examples/symmetric-cluster/server5/logs
 
-# /examples/jms/temp-queue/
-/examples/jms/temp-queue/build
-/examples/jms/temp-queue/logs
+# /examples/temp-queue/
+/examples/temp-queue/build
+/examples/temp-queue/logs
 
-# /examples/jms/temp-queue/server0/
-/examples/jms/temp-queue/server0/data
-/examples/jms/temp-queue/server0/logs
+# /examples/temp-queue/server0/
+/examples/temp-queue/server0/data
+/examples/temp-queue/server0/logs
 
-# /examples/jms/topic/
-/examples/jms/topic/build
-/examples/jms/topic/logs
+# /examples/topic/
+/examples/topic/build
+/examples/topic/logs
 
-# /examples/jms/topic/server0/
-/examples/jms/topic/server0/data
-/examples/jms/topic/server0/logs
+# /examples/topic/server0/
+/examples/topic/server0/data
+/examples/topic/server0/logs
 
-# /examples/jms/topic-hierarchies/
-/examples/jms/topic-hierarchies/build
-/examples/jms/topic-hierarchies/logs
+# /examples/topic-hierarchies/
+/examples/topic-hierarchies/build
+/examples/topic-hierarchies/logs
 
-# /examples/jms/topic-hierarchies/server0/
-/examples/jms/topic-hierarchies/server0/data
-/examples/jms/topic-hierarchies/server0/logs
+# /examples/topic-hierarchies/server0/
+/examples/topic-hierarchies/server0/data
+/examples/topic-hierarchies/server0/logs
 
-# /examples/jms/topic-selector-example1/
-/examples/jms/topic-selector-example1/build
-/examples/jms/topic-selector-example1/logs
+# /examples/topic-selector-example1/
+/examples/topic-selector-example1/build
+/examples/topic-selector-example1/logs
 
-# /examples/jms/topic-selector-example1/server0/
-/examples/jms/topic-selector-example1/server0/data
-/examples/jms/topic-selector-example1/server0/logs
+# /examples/topic-selector-example1/server0/
+/examples/topic-selector-example1/server0/data
+/examples/topic-selector-example1/server0/logs
 
-# /examples/jms/topic-selector-example2/
-/examples/jms/topic-selector-example2/build
-/examples/jms/topic-selector-example2/logs
+# /examples/topic-selector-example2/
+/examples/topic-selector-example2/build
+/examples/topic-selector-example2/logs
 
-# /examples/jms/topic-selector-example2/server0/
-/examples/jms/topic-selector-example2/server0/data
-/examples/jms/topic-selector-example2/server0/logs
+# /examples/topic-selector-example2/server0/
+/examples/topic-selector-example2/server0/data
+/examples/topic-selector-example2/server0/logs
 
-# /examples/jms/transaction-failover/
-/examples/jms/transaction-failover/build
+# /examples/transaction-failover/
+/examples/transaction-failover/build
 
-# /examples/jms/transaction-failover/server0/
-/examples/jms/transaction-failover/server0/data
+# /examples/transaction-failover/server0/
+/examples/transaction-failover/server0/data
 
-# /examples/jms/transaction-failover/server1/
-/examples/jms/transaction-failover/server1/data
+# /examples/transaction-failover/server1/
+/examples/transaction-failover/server1/data
 
-# /examples/jms/transactional/
-/examples/jms/transactional/build
-/examples/jms/transactional/logs
+# /examples/transactional/
+/examples/transactional/build
+/examples/transactional/logs
 
-# /examples/jms/transactional/server0/
-/examples/jms/transactional/server0/data
-/examples/jms/transactional/server0/logs
+# /examples/transactional/server0/
+/examples/transactional/server0/data
+/examples/transactional/server0/logs
 
-# /examples/jms/xa-heuristic/
-/examples/jms/xa-heuristic/build
-/examples/jms/xa-heuristic/logs
+# /examples/xa-heuristic/
+/examples/xa-heuristic/build
+/examples/xa-heuristic/logs
 
-# /examples/jms/xa-heuristic/server0/
-/examples/jms/xa-heuristic/server0/data
-/examples/jms/xa-heuristic/server0/logs
+# /examples/xa-heuristic/server0/
+/examples/xa-heuristic/server0/data
+/examples/xa-heuristic/server0/logs
 
-# /examples/jms/xa-receive/
-/examples/jms/xa-receive/build
-/examples/jms/xa-receive/logs
+# /examples/xa-receive/
+/examples/xa-receive/build
+/examples/xa-receive/logs
 
-# /examples/jms/xa-receive/server0/
-/examples/jms/xa-receive/server0/data
-/examples/jms/xa-receive/server0/logs
+# /examples/xa-receive/server0/
+/examples/xa-receive/server0/data
+/examples/xa-receive/server0/logs
 
-# /examples/jms/xa-send/
-/examples/jms/xa-send/build
-/examples/jms/xa-send/logs
+# /examples/xa-send/
+/examples/xa-send/build
+/examples/xa-send/logs
 
-# /examples/jms/xa-send/server0/
-/examples/jms/xa-send/server0/data
-/examples/jms/xa-send/server0/logs
+# /examples/xa-send/server0/
+/examples/xa-send/server0/data
+/examples/xa-send/server0/logs
 
-# /examples/jms/xa-with-jta/
-/examples/jms/xa-with-jta/server0/data
-/examples/jms/xa-with-jta/build
-/examples/jms/xa-with-jta/logs
-/examples/jms/xa-with-jta/ObjectStore
+# /examples/xa-with-jta/
+/examples/xa-with-jta/server0/data
+/examples/xa-with-jta/build
+/examples/xa-with-jta/logs
+/examples/xa-with-jta/ObjectStore
 
-# /examples/jms/xa-with-jta/server0/
-/examples/jms/xa-with-jta/server0/data
-/examples/jms/xa-with-jta/server0/logs
+# /examples/xa-with-jta/server0/
+/examples/xa-with-jta/server0/data
+/examples/xa-with-jta/server0/logs
+
+#	examples/browser/data/
+examples/browser/data/
+
+#	examples/client-kickoff/data/
+examples/client-kickoff/data/
+
+#	examples/consumer-rate-limit/data/
+examples/consumer-rate-limit/data/
+
+#	examples/data/
+examples/data/
+
+#	examples/dead-letter/data/
+examples/dead-letter/data/
+
+#	examples/delayed-redelivery/data/
+examples/delayed-redelivery/data/
+
+#	examples/durable-subscription/data/
+examples/durable-subscription/data/
+
+#	examples/expiry/data/
+examples/expiry/data/
+
+#	examples/http-transport/data/
+examples/http-transport/data/
+
+#	examples/instantiate-connection-factory/data/
+examples/instantiate-connection-factory/data/
+
+#	examples/interceptor/data/
+examples/interceptor/data/
+
+#	examples/jaas/data/
+examples/jaas/data/
+
+#	examples/jmx/data/
+examples/jmx/data/
+
+examples/move.sh
+examples/move2.sh
+examples/pom-template.xml
 
 # /examples/soak/normal/
 /examples/soak/normal/build
