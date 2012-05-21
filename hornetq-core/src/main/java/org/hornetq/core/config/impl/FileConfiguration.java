@@ -56,7 +56,7 @@ public class FileConfiguration extends ConfigurationImpl
       }
 
 
-      URL url = getClass().getClassLoader().getResource(configurationUrl);
+      URL url = Thread.currentThread().getContextClassLoader().getResource(configurationUrl);
 
       if (url == null)
       {
