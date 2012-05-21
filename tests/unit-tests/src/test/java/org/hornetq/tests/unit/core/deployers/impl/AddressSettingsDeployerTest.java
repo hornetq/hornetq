@@ -42,9 +42,11 @@ public class AddressSettingsDeployerTest extends UnitTestCase
                                + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n"
                                + "      <last-value-queue>true</last-value-queue>\n"
                                + "      <redistribution-delay>38383</redistribution-delay>\n"
+                               + "      <redelivery-delay-multiplier>2</redelivery-delay-multiplier>\n"
+                               + "      <max-redelivery-delay>12000</max-redelivery-delay>\n"
                                + "      <send-to-dla-on-no-route>true</send-to-dla-on-no-route>\n"
                                + "   </address-setting>";
-
+   
    private AddressSettingsDeployer addressSettingsDeployer;
 
    private HierarchicalRepository<AddressSettings> repository;
@@ -74,6 +76,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());
       Assert.assertEquals(38383, as.getRedistributionDelay());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertTrue(as.isSendToDLAOnNoRoute());
 
    }
@@ -96,6 +100,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
       Assert.assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
       Assert.assertEquals(100, as.getRedeliveryDelay());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
       Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
       Assert.assertEquals(2387273767666l, as.getPageSizeBytes());
@@ -117,3 +123,4 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    }
 
 }
+

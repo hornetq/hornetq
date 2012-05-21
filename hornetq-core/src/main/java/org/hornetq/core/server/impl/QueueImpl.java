@@ -1923,9 +1923,11 @@ public class QueueImpl implements Queue
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
 
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
-
+      long redeliveryDelay = addressSettings.getRedeliveryDelay();
+      int deliveryCount = reference.getDeliveryCount();
+      
       // First check DLA
-      if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
+      if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
          if (isTrace)
          {
@@ -1938,14 +1940,15 @@ public class QueueImpl implements Queue
       else
       {
          // Second check Redelivery Delay
-         long redeliveryDelay = addressSettings.getRedeliveryDelay();
-
          if (redeliveryDelay > 0)
          {
+            redeliveryDelay = calculateRedeliveryDelay(addressSettings, deliveryCount);
+
             if (isTrace)
             {
                HornetQLogger.LOGGER.trace("Setting redeliveryDelay=" + redeliveryDelay + " on reference=" + reference);
             }
+            
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
 
             if (!reference.isPaged() && message.isDurable() && durable)
@@ -2274,6 +2277,22 @@ public class QueueImpl implements Queue
       }
    }
 
+   private long calculateRedeliveryDelay(final AddressSettings addressSettings, final int deliveryCount) {
+      long redeliveryDelay = addressSettings.getRedeliveryDelay();
+      long maxRedeliveryDelay = addressSettings.getMaxRedeliveryDelay();
+      double redeliveryMultiplier = addressSettings.getRedeliveryMultiplier();
+
+      int tmpDeliveryCount = deliveryCount > 0 ? deliveryCount - 1 : 0;
+      long delay = (long) (redeliveryDelay * (Math.pow(redeliveryMultiplier, tmpDeliveryCount)));
+
+      if (delay > maxRedeliveryDelay)
+      {
+         delay = maxRedeliveryDelay;
+      }
+
+      return delay;
+   }
+
    // Inner classes
    // --------------------------------------------------------------------------
 
@@ -2512,5 +2531,5 @@ public class QueueImpl implements Queue
       }
 
    }
-
 }
+
