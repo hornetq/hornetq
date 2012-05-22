@@ -509,7 +509,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (name == null)
       {
-         throw new IllegalArgumentException("Queue name is null");
+         throw HornetQMessageBundle.BUNDLE.queueNameIsNull();
       }
 
       QueueQueryResult response;
@@ -549,7 +549,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (address == null)
       {
-         throw new IllegalArgumentException("Address is null");
+         throw HornetQMessageBundle.BUNDLE.addressIsNull();
       }
 
       List<SimpleString> names = new ArrayList<SimpleString>();

@@ -15,6 +15,7 @@ package org.hornetq.utils;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -223,8 +224,7 @@ public class ConfigurationHelper
 
       if (classImpl == null)
       {
-         throw new IllegalArgumentException(
-               "No available codec to decode password!");
+         throw HornetQMessageBundle.BUNDLE.noCodec();
       }
 
       SensitiveDataCodec<String> codec = null;
@@ -234,7 +234,7 @@ public class ConfigurationHelper
       }
       catch (HornetQException e1)
       {
-         throw new IllegalArgumentException("Failed to get decoder", e1);
+         throw HornetQMessageBundle.BUNDLE.failedToGetDecoder(e1);
       }
 
       try
@@ -243,7 +243,7 @@ public class ConfigurationHelper
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException("Error decoding password", e);
+         throw HornetQMessageBundle.BUNDLE.errordecodingPassword(e);
       }
    }
 

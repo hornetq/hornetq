@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A ClusterConnectionConfiguration
@@ -123,7 +124,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectionTTL = connectionTTL;
       if (retryInterval <= 0)
-         throw new IllegalArgumentException("retry interval must be positive, was " + retryInterval);
+         throw HornetQMessageBundle.BUNDLE.invalidRetryInterval(retryInterval);
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;

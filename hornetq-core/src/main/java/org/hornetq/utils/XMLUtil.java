@@ -32,6 +32,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -266,17 +267,17 @@ public class XMLUtil
    {
       if (node == null)
       {
-         throw new IllegalArgumentException("the first node to be compared is null");
+         throw HornetQMessageBundle.BUNDLE.firstNodeNull();
       }
 
       if (node2 == null)
       {
-         throw new IllegalArgumentException("the second node to be compared is null");
+         throw HornetQMessageBundle.BUNDLE.secondNodeNull();
       }
 
       if (!node.getNodeName().equals(node2.getNodeName()))
       {
-         throw new IllegalArgumentException("nodes have different node names");
+         throw HornetQMessageBundle.BUNDLE.nodeHaveDifferentNames();
       }
 
       int attrCount = 0;
@@ -295,7 +296,7 @@ public class XMLUtil
 
       if (attrCount != attrCount2)
       {
-         throw new IllegalArgumentException("nodes hava a different number of attributes");
+         throw HornetQMessageBundle.BUNDLE.nodeHaveDifferentAttNumber();
       }
 
       outer: for (int i = 0; i < attrCount; i++)
@@ -315,14 +316,14 @@ public class XMLUtil
                continue outer;
             }
          }
-         throw new IllegalArgumentException("attribute " + name + "=" + value + " doesn't match");
+         throw HornetQMessageBundle.BUNDLE.attsDontMatch(name, value);
       }
 
       boolean hasChildren = node.hasChildNodes();
 
       if (hasChildren != node2.hasChildNodes())
       {
-         throw new IllegalArgumentException("one node has children and the other doesn't");
+         throw HornetQMessageBundle.BUNDLE.oneNodeHasChildren();
       }
 
       if (hasChildren)
@@ -338,7 +339,7 @@ public class XMLUtil
 
          if (length != nodes2.size())
          {
-            throw new IllegalArgumentException("nodes hava a different number of children");
+            throw HornetQMessageBundle.BUNDLE.nodeHasDifferentChildNumber();
          }
 
          for (int i = 0; i < length; i++)
@@ -419,10 +420,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Long value, but '" +
-                                            value +
-                                            "' cannot be parsed as a Long");
+         throw HornetQMessageBundle.BUNDLE.mustBeLong(elem, value);
       }
    }
 
@@ -436,10 +434,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Integer value, but '" +
-                                            value +
-                                            "' cannot be parsed as an Integer");
+         throw HornetQMessageBundle.BUNDLE.mustBeInteger(elem, value);
       }
    }
 
@@ -453,10 +448,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Boolean value, but '" +
-                                            value +
-                                            "' cannot be parsed as a Boolean");
+         throw HornetQMessageBundle.BUNDLE.mustBeBoolean(elem, value);
       }
    }
 
@@ -470,10 +462,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw new IllegalArgumentException("Element " + elem +
-                                            " requires a valid Double value, but '" +
-                                            value +
-                                            "' cannot be parsed as a Double");
+         throw HornetQMessageBundle.BUNDLE.mustBeDouble(elem, value);
       }
    }
 

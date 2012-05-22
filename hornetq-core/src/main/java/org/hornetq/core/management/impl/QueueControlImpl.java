@@ -32,10 +32,7 @@ import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerConsumer;
+import org.hornetq.core.server.*;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.LinkedListIterator;
@@ -568,7 +565,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
          if (binding == null)
          {
-            throw new IllegalArgumentException("No queue found for " + otherQueueName);
+            throw HornetQMessageBundle.BUNDLE.noQueueFound(otherQueueName);
          }
 
          return queue.moveReference(messageID, binding.getAddress(), rejectDuplicates);
@@ -598,7 +595,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
          if (binding == null)
          {
-            throw new IllegalArgumentException("No queue found for " + otherQueueName);
+            throw HornetQMessageBundle.BUNDLE.noQueueFound(otherQueueName);
          }
 
          int retValue = queue.moveReferences(filter, binding.getAddress(), rejectDuplicates);
@@ -653,8 +650,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          if (newPriority < 0 || newPriority > 9)
          {
-            throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
-                                               ". It must be between 0 and 9 (both included)");
+            throw HornetQMessageBundle.BUNDLE.invalidNewPriority(newPriority);
          }
          Filter filter = FilterImpl.createFilter(filterStr);
 
@@ -675,8 +671,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          if (newPriority < 0 || newPriority > 9)
          {
-            throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
-                                               ". It must be between 0 and 9 (both included)");
+            throw HornetQMessageBundle.BUNDLE.invalidNewPriority(newPriority);
          }
          return queue.changeReferencePriority(messageID, (byte)newPriority);
       }

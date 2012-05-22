@@ -1750,7 +1750,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       else
       {
-         throw new IllegalArgumentException("Invalid window size " + windowSize);
+         throw HornetQMessageBundle.BUNDLE.invalidWindowSize(windowSize);
       }
 
       return clientWindowSize;

@@ -35,6 +35,7 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -242,7 +243,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("FailureListener cannot be null");
+         throw HornetQMessageBundle.BUNDLE.failListenerCannotBeNull();
       }
       failureListeners.add(listener);
    }
@@ -251,7 +252,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("FailureListener cannot be null");
+         throw HornetQMessageBundle.BUNDLE.failListenerCannotBeNull();
       }
 
       return failureListeners.remove(listener);
@@ -261,7 +262,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("CloseListener cannot be null");
+         throw HornetQMessageBundle.BUNDLE.closeListenerCannotBeNull();
       }
 
       closeListeners.add(listener);
@@ -271,7 +272,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("CloseListener cannot be null");
+         throw HornetQMessageBundle.BUNDLE.closeListenerCannotBeNull();
       }
 
       return closeListeners.remove(listener);

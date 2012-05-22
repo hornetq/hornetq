@@ -64,7 +64,7 @@ public class PasswordMaskingUtil
             }
             catch (Exception e)
             {
-               throw new IllegalArgumentException("Error instantiating codec \"" + codecClassName + "\"", e);
+               throw HornetQUtilBundle.BUNDLE.errorCreatingCodec(e, codecClassName);
             }
          }
       });

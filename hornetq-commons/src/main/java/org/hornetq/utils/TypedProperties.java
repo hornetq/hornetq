@@ -546,7 +546,7 @@ public final class TypedProperties
                }
                default:
                {
-                  throw new IllegalArgumentException("Invalid type: " + type);
+                  throw HornetQUtilBundle.BUNDLE.invalidType(type);
                }
             }
          }
