@@ -62,7 +62,7 @@ public interface ClusterManager extends HornetQComponent
     *           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
     *           server.
     */
-   void announceReplicatingBackup(Channel liveChannel, boolean attemptingFailBack);
+   void announceReplicatingBackupToLive(Channel liveChannel, boolean attemptingFailBack);
 
    void destroyBridge(String name) throws Exception;
 

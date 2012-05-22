@@ -2083,7 +2083,7 @@ public class HornetQServerImpl implements HornetQServer
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
                      connectToReplicationEndpoint(replicationChannel);
                      replicationEndpoint.start();
-                     clusterManager.announceReplicatingBackup(pingChannel, attemptFailBack);
+                     clusterManager.announceReplicatingBackupToLive(pingChannel, attemptFailBack);
                   }
                   catch (Exception e)
                   {

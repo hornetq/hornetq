@@ -389,10 +389,10 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
   // XXX HORNETQ-720 + cluster fixes: needs review
    @Override
-   public void announceReplicatingBackup(final Channel liveChannel, final boolean attemptingFailBack)
+   public void announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
    {
       List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if(!configs.isEmpty())
+      if (!configs.isEmpty())
       {
          ClusterConnectionConfiguration config = configs.get(0);
 
