@@ -616,6 +616,7 @@ public class HornetQServerImpl implements HornetQServer
             scheduledPool = null;
             threadPool = null;
 
+            if (securityStore != null)
            securityStore.stop();
 
          threadPool = null;
@@ -628,7 +629,6 @@ public class HornetQServerImpl implements HornetQServer
             replicationManager = null;
             replicationEndpoint = null;
          postOffice = null;
-         securityStore = null;
          queueFactory = null;
          resourceManager = null;
          messagingServerControl = null;
@@ -1177,16 +1177,6 @@ public class HornetQServerImpl implements HornetQServer
       this.queueFactory = factory;
    }
 
-
-   // Package protected
-   // ----------------------------------------------------------------------------
-
-   // Protected
-   // ------------------------------------------------------------------------------------
-   /**
-    * Protected so tests can change this behaviour
-    * @param backupConnector
-    */
 
    private PagingManager createPagingManager()
    {
