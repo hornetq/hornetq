@@ -717,3 +717,8 @@ examples/pom-template.xml
 
 native/autom4te.cache
 .settings/org.eclipse.core.resources.prefs
+
+*.iml
+*/*.iml
+*/*/*.iml
+*/*/*/*.iml

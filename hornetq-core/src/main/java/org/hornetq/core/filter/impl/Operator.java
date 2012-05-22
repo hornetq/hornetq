@@ -25,6 +25,7 @@ package org.hornetq.core.filter.impl;
 import java.util.HashSet;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
 * Implementations of the operators used in HornetQ filter expressions
@@ -1294,7 +1295,7 @@ public final class Operator
          case NOT_IN:
             return not_in();
          default:
-            throw new IllegalArgumentException("No operation mapped to int " + operation);
+            throw HornetQMessageBundle.BUNDLE.noOperationMapped(operation);
       }
    }
 

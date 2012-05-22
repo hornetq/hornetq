@@ -37,6 +37,7 @@ import javax.net.ssl.SSLEngine;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -164,12 +165,12 @@ public class NettyConnector implements Connector
    {
       if (listener == null)
       {
-         throw new IllegalArgumentException("Invalid argument null listener");
+         throw HornetQMessageBundle.BUNDLE.nullListener();
       }
 
       if (handler == null)
       {
-         throw new IllegalArgumentException("Invalid argument null handler");
+         throw HornetQMessageBundle.BUNDLE.nullHandler();
       }
 
       this.listener = listener;
@@ -708,7 +709,7 @@ public class NettyConnector implements Connector
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {
-            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+            throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
       }
 

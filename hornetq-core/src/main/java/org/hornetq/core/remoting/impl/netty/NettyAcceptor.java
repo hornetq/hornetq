@@ -38,6 +38,7 @@ import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -709,7 +710,7 @@ public class NettyAcceptor implements Acceptor
       {
          if (connections.putIfAbsent(connection.getID(), (NettyConnection)connection) != null)
          {
-            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+            throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
          listener.connectionCreated(acceptor, connection, NettyAcceptor.this.protocol);

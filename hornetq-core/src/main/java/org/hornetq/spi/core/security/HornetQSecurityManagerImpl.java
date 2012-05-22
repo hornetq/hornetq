@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A basic implementation of the HornetQSecurityManager. This can be used within an appserver and be deployed by
@@ -119,11 +120,11 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
    {
       if (user == null)
       {
-         throw new IllegalArgumentException("User cannot be null");
+         throw HornetQMessageBundle.BUNDLE.nullUser();
       }
       if (password == null)
       {
-         throw new IllegalArgumentException("password cannot be null");
+         throw HornetQMessageBundle.BUNDLE.nullPassword();
       }
       users.put(user, new User(user, password));
    }

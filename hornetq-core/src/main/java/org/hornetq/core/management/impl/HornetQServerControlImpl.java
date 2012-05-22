@@ -849,8 +849,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
          {
-            throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD +
-                                               " ms");
+            throw HornetQMessageBundle.BUNDLE.invalidMessageCounterPeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
          }
 
          if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
@@ -888,7 +887,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          if (count <= 0)
          {
-            throw new IllegalArgumentException("invalid value: count must be greater than 0");
+            throw HornetQMessageBundle.BUNDLE.greaterThanZero(count);
          }
          messageCounterManager.setMaxDayCount(count);
       }

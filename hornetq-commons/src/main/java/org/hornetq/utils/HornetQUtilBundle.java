@@ -1,6 +1,7 @@
 package org.hornetq.utils;
 
 
+import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -22,4 +23,13 @@ public interface HornetQUtilBundle
 
    @Message(id = 209001, value = "invalid property: {0}" , format = Message.Format.MESSAGE_FORMAT)
    org.hornetq.api.core.IllegalStateException invalidProperty(String part);
+
+   @Message(id = 209002, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException invalidType(Byte type);
+
+   @Message(id = 209003, value = "the specified string is too long ({0})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException stringTooLong(Integer length);
+
+   @Message(id = 209004, value = "Error instantiating codec {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException errorCreatingCodec(@Cause Exception e, String codecClassName);
 }

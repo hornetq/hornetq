@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A QueueInfo
@@ -56,15 +57,15 @@ public class QueueInfo implements Serializable
    {
       if (routingName == null)
       {
-         throw new IllegalArgumentException("Routing name is null");
+         throw HornetQMessageBundle.BUNDLE.routeNameIsNull();
       }
       if (clusterName == null)
       {
-         throw new IllegalArgumentException("Cluster name is null");
+         throw HornetQMessageBundle.BUNDLE.clusterNameIsNull();
       }
       if (address == null)
       {
-         throw new IllegalArgumentException("Address is null");
+         throw HornetQMessageBundle.BUNDLE.addressIsNull();
       }
 
       this.routingName = routingName;

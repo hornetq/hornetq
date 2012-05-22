@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -257,7 +258,7 @@ public final class InVMAcceptor implements Acceptor
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
-            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+            throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
          listener.connectionCreated(acceptor, connection, protocol);

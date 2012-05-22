@@ -51,6 +51,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -189,7 +190,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       if (nodeUUID == null)
       {
-         throw new IllegalArgumentException("node id is null");
+         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
 
       this.nodeUUID = nodeUUID;
@@ -304,7 +305,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       if (nodeUUID == null)
       {
-         throw new IllegalArgumentException("node id is null");
+         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
 
       this.nodeUUID = nodeUUID;
@@ -1257,7 +1258,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                }
                default:
                {
-                  throw new IllegalArgumentException("Invalid type " + ntype);
+                  throw HornetQMessageBundle.BUNDLE.invalidType(ntype);
                }
             }
          }

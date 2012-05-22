@@ -387,7 +387,7 @@ public final class ChannelImpl implements Channel
 
       if (!connection.isDestroyed() && !connection.removeChannel(id))
       {
-         throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
+         throw HornetQMessageBundle.BUNDLE.noChannelToClose(id);
       }
 
       if(failingOver)
@@ -563,7 +563,7 @@ public final class ChannelImpl implements Channel
 
       if (numberToClear == -1)
       {
-         throw new IllegalArgumentException("Invalid lastReceivedCommandID: " + lastReceivedCommandID);
+         throw HornetQMessageBundle.BUNDLE.invalidCommandID(lastReceivedCommandID);
       }
 
       int sizeToFree = 0;

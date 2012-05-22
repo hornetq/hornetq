@@ -60,12 +60,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.Divert;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.QueueFactory;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.*;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -747,7 +742,7 @@ public class ManagementServiceImpl implements ManagementService
 
          if (resource == null)
          {
-            throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
+            throw HornetQMessageBundle.BUNDLE.cannotFindResource(resourceName);
          }
 
          Method method = null;
@@ -765,7 +760,7 @@ public class ManagementServiceImpl implements ManagementService
             }
             catch (NoSuchMethodException nsme2)
             {
-               throw new IllegalArgumentException("no getter method for " + attribute);
+               throw HornetQMessageBundle.BUNDLE.noGetterMethod(attribute);
             }
          }
          return method.invoke(resource, new Object[0]);
@@ -782,7 +777,7 @@ public class ManagementServiceImpl implements ManagementService
 
       if (resource == null)
       {
-         throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
+         throw HornetQMessageBundle.BUNDLE.cannotFindResource(resourceName);
       }
 
       Method method = null;
@@ -834,7 +829,7 @@ public class ManagementServiceImpl implements ManagementService
 
       if (method == null)
       {
-         throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
+         throw HornetQMessageBundle.BUNDLE.noOperation(operation, params.length);
       }
 
       Object result = method.invoke(resource, params);

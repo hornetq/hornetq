@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -283,7 +284,7 @@ public class TransportConfiguration implements Serializable
             }
             else
             {
-               throw new IllegalArgumentException("Invalid type " + val);
+               throw HornetQMessageBundle.BUNDLE.invalidEncodeType(val);
             }
          }
       }
@@ -351,7 +352,7 @@ public class TransportConfiguration implements Serializable
             }
             default:
             {
-               throw new IllegalArgumentException("Invalid type " + type);
+               throw HornetQMessageBundle.BUNDLE.invalidType(type);
             }
          }
 

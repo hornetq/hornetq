@@ -412,7 +412,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       if (pmgr == null)
       {
-         throw new IllegalArgumentException("Unknown protocol " + protocol);
+         throw HornetQMessageBundle.BUNDLE.unknownProtocol(protocol);
       }
 
       ConnectionEntry entry = pmgr.createConnectionEntry(acceptor, connection);

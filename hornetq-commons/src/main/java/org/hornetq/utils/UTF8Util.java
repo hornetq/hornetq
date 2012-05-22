@@ -48,14 +48,14 @@ public final class UTF8Util
 
       if (str.length() > 0xffff)
       {
-         throw new IllegalArgumentException("the specified string is too long (" + str.length() + ")");
+         throw HornetQUtilBundle.BUNDLE.stringTooLong(str.length());
       }
 
       final int len = UTF8Util.calculateUTFSize(str, buffer);
 
       if (len > 0xffff)
       {
-         throw new IllegalArgumentException("the encoded string is too long (" + len + ")");
+         throw HornetQUtilBundle.BUNDLE.stringTooLong(len);
       }
 
       out.writeShort((short)len);

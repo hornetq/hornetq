@@ -87,13 +87,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.*;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -1233,8 +1227,7 @@ public abstract class UnitTestCase extends TestCase
          }
          else
          {
-            throw new IllegalArgumentException("method autoEncode doesn't know how to convert " + arg.getClass() +
-                                               " yet");
+            throw HornetQMessageBundle.BUNDLE.autoConvertError(arg.getClass());
          }
       }
 
@@ -1269,8 +1262,7 @@ public abstract class UnitTestCase extends TestCase
          }
          else
          {
-            throw new IllegalArgumentException("method autoEncode doesn't know how to convert " + arg.getClass() +
-                                               " yet");
+            throw HornetQMessageBundle.BUNDLE.autoConvertError(arg.getClass());
          }
       }
 

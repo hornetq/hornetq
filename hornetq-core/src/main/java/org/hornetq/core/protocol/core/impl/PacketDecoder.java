@@ -160,6 +160,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutRespons
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A PacketDecoder
@@ -571,7 +572,7 @@ public final class PacketDecoder
          }
          default:
          {
-            throw new IllegalArgumentException("Invalid type: " + packetType);
+            throw HornetQMessageBundle.BUNDLE.invalidType(packetType);
          }
       }
 
