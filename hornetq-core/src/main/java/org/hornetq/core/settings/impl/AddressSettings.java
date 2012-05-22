@@ -47,7 +47,9 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
 
-   public static final long DEFAULT_REDELIVER_DELAY = 0L;
+    public static final long DEFAULT_REDELIVER_DELAY = 0L;
+
+    public static final long DEFAULT_MAX_REDELIVER_DELAY = 0L;
 
    public static final double DEFAULT_REDELIVER_MULTIPLIER = 1.0;
 
@@ -181,7 +183,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    public long getMaxRedeliveryDelay()
    {
-      return maxRedeliveryDelay;
+      return maxRedeliveryDelay != null ? maxRedeliveryDelay : AddressSettings.DEFAULT_MAX_REDELIVER_DELAY;
    }
 
    public void setMaxRedeliveryDelay(final long maxRedeliveryDelay)
