@@ -13,6 +13,7 @@
 
 package org.hornetq.core.config.impl;
 
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
@@ -43,7 +44,7 @@ public final class Validators
          String str = (String)value;
          if (str == null || str.length() == 0)
          {
-            throw new IllegalArgumentException(String.format("%s must neither be null nor empty", name));
+            throw HornetQMessageBundle.BUNDLE.emptyOrNull(name);
          }
       }
    };
@@ -59,7 +60,7 @@ public final class Validators
          }
          else
          {
-            throw new IllegalArgumentException(String.format("%s  must be greater than 0 (actual value: %s)", name, val));
+            throw HornetQMessageBundle.BUNDLE.greaterThanZero(name, val);
          }
       }
    };
@@ -71,9 +72,7 @@ public final class Validators
          Number val = (Number)value;
          if (val == null || (val.intValue() < 0 || val.intValue() > 100))
          {
-            throw new IllegalArgumentException(String.format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)",
-                                                             name,
-                                                             val));
+            throw HornetQMessageBundle.BUNDLE.notPercent(name, val);
          }
       }
    };
@@ -89,9 +88,7 @@ public final class Validators
          }
          else
          {
-            throw new IllegalArgumentException(String.format("%s  must be greater or equals than 0 (actual value: %s)",
-                                                             name,
-                                                             val));
+            throw HornetQMessageBundle.BUNDLE.greaterThanZero(name, val);
          }
       }
    };
@@ -107,9 +104,7 @@ public final class Validators
          }
          else
          {
-            throw new IllegalArgumentException(String.format("%s  must be equals to -1 or greater than 0 (actual value: %s)",
-                                                             name,
-                                                             val));
+            throw HornetQMessageBundle.BUNDLE.greaterThanMinusOne(name, val);
          }
       }
    };
@@ -125,9 +120,7 @@ public final class Validators
          }
          else
          {
-            throw new IllegalArgumentException(String.format("%s  must be equals to -1 or greater or equals to 0 (actual value: %s)",
-                                                             name,
-                                                             val));
+            throw HornetQMessageBundle.BUNDLE.greaterThanZeroOrMinusOne(name, val);
          }
       }
    };
@@ -143,11 +136,7 @@ public final class Validators
          }
          else
          {
-            throw new IllegalArgumentException(String.format("%s must be betwen %s and %s inclusive (actual value: %s)",
-                                                             name,
-                                                             Thread.MIN_PRIORITY,
-                                                             Thread.MAX_PRIORITY,
-                                                             value));
+            throw HornetQMessageBundle.BUNDLE.mustbeBetween(name, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, value);
          }
       }
    };
@@ -159,7 +148,7 @@ public final class Validators
          String val = (String)value;
          if (val == null || !val.equals(JournalType.NIO.toString()) && !val.equals(JournalType.ASYNCIO.toString()))
          {
-            throw new IllegalArgumentException("Invalid journal type " + val);
+            throw HornetQMessageBundle.BUNDLE.invalidJournalType(val);
          }
       }
    };
@@ -173,7 +162,7 @@ public final class Validators
              !val.equals(AddressFullMessagePolicy.DROP.toString()) &&
              !val.equals(AddressFullMessagePolicy.BLOCK.toString()))
          {
-            throw new IllegalArgumentException("Invalid address full message policy type " + val);
+            throw HornetQMessageBundle.BUNDLE.invalidAddressFullPolicyType(val);
          }
       }
    };

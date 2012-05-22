@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.impl.invm;
 
+import org.hornetq.core.server.HornetQMessageBundle;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -31,7 +33,7 @@ public final class InVMRegistry
    {
       if (acceptors.putIfAbsent(id, acceptor) != null)
       {
-         throw new IllegalArgumentException("Acceptor with id " + id + " already registered");
+         throw HornetQMessageBundle.BUNDLE.acceptorExists(id);
       }
    }
 
@@ -39,7 +41,7 @@ public final class InVMRegistry
    {
       if (acceptors.remove(id) == null)
       {
-         throw new IllegalArgumentException("Acceptor with id " + id + " not registered");
+         throw HornetQMessageBundle.BUNDLE.acceptorNotExists(id);
       }
    }
 

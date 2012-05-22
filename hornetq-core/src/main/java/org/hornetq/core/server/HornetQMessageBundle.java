@@ -27,11 +27,15 @@ import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.security.CheckType;
+import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Connection;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.w3c.dom.Node;
+
+import java.lang.IllegalStateException;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -274,5 +278,199 @@ public interface HornetQMessageBundle
    @Message(id = 119073, value =  "The transaction was rolled back on failover however commit may have been succesful", format = Message.Format.MESSAGE_FORMAT)
    TransactionOutcomeUnknownException txOutcomeUnknown();
 
+   @Message(id = 119074, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidType(Object type);
 
+   @Message(id = 119075, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidEncodeType(Object type);
+
+   @Message(id = 119076, value = "Params for management operations must be of the following type: int long double String boolean Map or array thereof but found {0}",
+         format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidManagementParam(Object type);
+
+   @Message(id = 119077, value = "Invalid window size {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidWindowSize(Integer size);
+
+   @Message(id = 119078, value = "retry interval must be positive, was {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidRetryInterval(Long size);
+
+   @Message(id = 119079, value = "{0} must neither be null nor empty", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException emptyOrNull(String name);
+
+   @Message(id = 119080, value = "{0}  must be greater than 0 (actual value: {1})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException greaterThanZero(String name, Number val);
+
+   @Message(id = 119081, value = "{0} must be a valid percentual value between 0 and 100 (actual value: {1})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException notPercent(String name, Number val);
+
+   @Message(id = 119082, value = "{0}  must be equals to -1 or greater than 0 (actual value: {1})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException greaterThanMinusOne(String name, Number val);
+
+   @Message(id = 119083, value = "{0}  must be equals to -1 or greater or equals to 0 (actual value: {1})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException greaterThanZeroOrMinusOne(String name, Number val);
+
+   @Message(id = 119084, value = "{0} must be betwen {1} and {2} inclusive (actual value: {3})", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException mustbeBetween(String name, Integer minPriority, Integer maxPriority, Object value);
+
+   @Message(id = 119085, value = "Invalid journal type {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidJournalType(String val);
+
+   @Message(id = 119086, value = "Invalid address full message policy type {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidAddressFullPolicyType(String val);
+
+   @Message(id = 119087, value = "No operation mapped to int {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noOperationMapped(Integer operation);
+
+   @Message(id = 119088, value = "invalid value: {0} count must be greater than 0", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException greaterThanZero(Integer count);
+
+   @Message(id = 119089, value = "Cannot set Message Counter Sample Period < {0}ms", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidMessageCounterPeriod(Long period);
+
+   @Message(id = 119090, value = "invalid new Priority value: {0}. It must be between 0 and 9 (both included)", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidNewPriority(Integer period);
+
+   @Message(id = 119091, value = "No queue found for {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noQueueFound(String otherQueueName);
+
+   @Message(id = 119092, value = "Only NIO and AsyncIO are supported journals", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidJournal();
+
+   @Message(id = 119093, value = "Invalid journal type {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidJournalType2(JournalType journalType);
+
+   @Message(id = 119094, value = "Directory {0} does not exist and cannot be created", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException cannotCreateDir(String dir);
+
+   @Message(id = 119095, value = "Invalid index {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidIndex(Integer index);
+
+   @Message(id = 119096, value = "Cannot convert to int", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException cannotConvertToInt();
+
+   @Message(id = 119097, value = "Routing name is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException routeNameIsNull();
+
+   @Message(id = 119098, value = "Cluster name is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException clusterNameIsNull();
+
+   @Message(id = 119099, value = "Address is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException addressIsNull();
+
+   @Message(id = 119100, value = "Binding type not specified", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException bindingTypeNotSpecified();
+
+   @Message(id = 119101, value = "Binding ID is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException bindingIdNotSpecified();
+
+   @Message(id = 119102, value = "Distance is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException distancenotSpecified();
+
+   @Message(id = 119103, value = "Invalid last Received Command ID: {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidCommandID(Integer lastReceivedCommandID);
+
+   @Message(id = 119104, value = "Cannot find channel with id {0} to close", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noChannelToClose(Long id);
+
+   @Message(id = 119105, value = "Close Listener cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException closeListenerCannotBeNull();
+
+   @Message(id = 119106, value = "Fail Listener cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException failListenerCannotBeNull();
+
+   @Message(id = 119107, value = "Connection already exists with id {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException connectionExists(Object id);
+
+   @Message(id = 119108, value = "Acceptor with id {0} already registered", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException acceptorExists(Integer id);
+
+   @Message(id = 119109, value = "Acceptor with id {0} not registered", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException acceptorNotExists(Integer id);
+
+   @Message(id = 119110, value = "Invalid argument null listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullListener();
+
+   @Message(id = 119111, value = "Invalid argument null handler", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullHandler();
+
+   @Message(id = 119112, value = "Unknown protocol {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException unknownProtocol(ProtocolType protocol);
+
+   @Message(id = 119113, value = "node id is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nodeIdNull();
+
+   @Message(id = 119114, value = "Cannot have a replicated backup without configuring its live-server!", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noLiveForReplicatedBackup();
+
+   @Message(id = 119115, value = "Queue name is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException queueNameIsNull();
+
+   @Message(id = 119116, value = "Cannot find resource with name {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException cannotFindResource(String resourceName);
+
+   @Message(id = 119117, value = "no getter method for {0}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noGetterMethod(String resourceName);
+
+   @Message(id = 119118, value = "no operation {0}/{1}", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noOperation(String operation, Integer length);
+
+   @Message(id = 119119, value = "match can not be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullMatch();
+
+   @Message(id = 119120, value = "* can only be at end of match", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException invalidMatch();
+
+   @Message(id = 119121, value = "User cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullUser();
+
+   @Message(id = 119122, value = "Password cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullPassword();
+
+   @Message(id = 119123, value = "No available codec to decode password!", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException noCodec();
+
+   @Message(id = 119124, value = "the first node to be compared is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException firstNodeNull();
+
+   @Message(id = 119125, value = "the second node to be compared is null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException secondNodeNull();
+
+   @Message(id = 119126, value = "nodes have different node names", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nodeHaveDifferentNames();
+
+   @Message(id = 119127, value = "nodes hava a different number of attributes", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nodeHaveDifferentAttNumber();
+
+   @Message(id = 119128, value = "attribute {0}={1} doesn't match", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException attsDontMatch(String name, String value);
+
+   @Message(id = 119129, value = "one node has children and the other doesn't" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException oneNodeHasChildren();
+
+   @Message(id = 119130, value = "nodes hava a different number of children" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nodeHasDifferentChildNumber();
+
+   @Message(id = 119131, value = "Element {0} requires a valid Boolean value, but '{1}' cannot be parsed as a Boolean" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException mustBeBoolean(Node elem, String value);
+
+   @Message(id = 119132, value = "Element {0} requires a valid Double value, but '{1}' cannot be parsed as a Double" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException mustBeDouble(Node elem, String value);
+
+   @Message(id = 119133, value = "Element {0} requires a valid Integer value, but '{1}' cannot be parsed as a Integer" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException mustBeInteger(Node elem, String value);
+
+   @Message(id = 119134, value = "Element {0} requires a valid Long value, but '{1}' cannot be parsed as a Long" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException mustBeLong(Node elem, String value);
+
+   @Message(id = 119135, value = "Failed to get decoder" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException failedToGetDecoder(@Cause Exception e);
+
+   @Message(id = 119136, value = "Error decoding password" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException errordecodingPassword(@Cause Exception e);
+
+   @Message(id = 119137, value = "Error instantiating transformer class {0}" , format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException errorCreatingTransformerClass(@Cause Exception e, String transformerClassName);
+
+   @Message(id = 119138, value = "method autoEncode doesn't know how to convert {0} yet", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException autoConvertError(Class<? extends Object> aClass);
 }

@@ -19,6 +19,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -180,7 +181,7 @@ public class InVMConnector implements Connector
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
-            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+            throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
          listener.connectionCreated(acceptor, connection, protocol);

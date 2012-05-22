@@ -43,6 +43,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -113,7 +114,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       if (nodeUUID == null)
       {
-         throw new IllegalArgumentException("Node uuid is null");
+         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
 
       this.executorFactory = executorFactory;
@@ -748,8 +749,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          }
          catch (Exception e)
          {
-            throw new IllegalArgumentException("Error instantiating transformer class \"" + transformerClassName + "\"",
-                                               e);
+            throw HornetQMessageBundle.BUNDLE.errorCreatingTransformerClass(e, transformerClassName);
          }
       }
       return transformer;

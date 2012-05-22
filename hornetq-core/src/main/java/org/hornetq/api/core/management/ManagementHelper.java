@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -289,9 +290,7 @@ public class ManagementHelper
           param instanceof Byte == false &&
           param instanceof Short == false)
       {
-         throw new IllegalArgumentException("Params for management operations must be of the following type: " + "int long double String boolean Map or array thereof " +
-                                            " but found " +
-                                            param.getClass().getName());
+         throw HornetQMessageBundle.BUNDLE.invalidManagementParam(param.getClass().getName());
       }
    }
 

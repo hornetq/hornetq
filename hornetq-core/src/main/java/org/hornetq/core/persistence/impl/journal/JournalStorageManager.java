@@ -253,7 +253,7 @@ public class JournalStorageManager implements StorageManager
 
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
-         throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
+         throw HornetQMessageBundle.BUNDLE.invalidJournal();
       }
 
       bindingsDir = config.getBindingsDirectory();
@@ -314,7 +314,7 @@ public class JournalStorageManager implements StorageManager
       }
       else
       {
-         throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
+         throw HornetQMessageBundle.BUNDLE.invalidJournalType2(config.getJournalType());
       }
 
       idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
@@ -2360,7 +2360,7 @@ public class JournalStorageManager implements StorageManager
          }
          else
          {
-            throw new IllegalArgumentException("Directory " + dir + " does not exist and will not create it");
+            throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir);
          }
       }
    }

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.settings.impl;
 
+import org.hornetq.core.server.HornetQMessageBundle;
+
 import java.util.regex.Pattern;
 
 /**
@@ -115,11 +117,11 @@ public class Match<T>
    {
       if (match == null)
       {
-         throw new IllegalArgumentException("match can not be null");
+         throw HornetQMessageBundle.BUNDLE.nullMatch();
       }
       if (match.contains("#") && match.indexOf("#") < match.length() - 1)
       {
-         throw new IllegalArgumentException("* can only be at end of match");
+         throw HornetQMessageBundle.BUNDLE.invalidMatch();
       }
    }
 

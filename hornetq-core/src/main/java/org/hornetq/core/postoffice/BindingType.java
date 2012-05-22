@@ -13,6 +13,8 @@
 
 package org.hornetq.core.postoffice;
 
+import org.hornetq.core.server.HornetQMessageBundle;
+
 /**
  * A BindingType
  *
@@ -50,7 +52,7 @@ public enum BindingType
          }
          default:
          {
-            throw new IllegalArgumentException("Invalid index " + index);
+            throw HornetQMessageBundle.BUNDLE.invalidIndex(index);
          }
       }
    }
@@ -71,7 +73,7 @@ public enum BindingType
       }
       else
       {
-         throw new IllegalArgumentException("Cannot convert");
+         throw HornetQMessageBundle.BUNDLE.cannotConvertToInt();
       }
    }
 

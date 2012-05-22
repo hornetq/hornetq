@@ -223,7 +223,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                if (!props.containsProperty(ManagementHelper.HDR_BINDING_TYPE))
                {
-                  throw new IllegalArgumentException("Binding type not specified");
+                  throw HornetQMessageBundle.BUNDLE.bindingTypeNotSpecified();
                }
 
                Integer bindingType = props.getIntProperty(ManagementHelper.HDR_BINDING_TYPE);
@@ -242,7 +242,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                if (!props.containsProperty(ManagementHelper.HDR_BINDING_ID))
                {
-                  throw new IllegalArgumentException("ID is null");
+                  throw HornetQMessageBundle.BUNDLE.bindingIdNotSpecified();
                }
 
                long id = props.getLongProperty(ManagementHelper.HDR_BINDING_ID);
@@ -251,7 +251,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                if (!props.containsProperty(ManagementHelper.HDR_DISTANCE))
                {
-                  throw new IllegalArgumentException("Distance is null");
+                  throw HornetQMessageBundle.BUNDLE.distancenotSpecified();
                }
 
                int distance = props.getIntProperty(ManagementHelper.HDR_DISTANCE);

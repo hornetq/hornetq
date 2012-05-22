@@ -1784,7 +1784,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          else
          {
-            throw new IllegalArgumentException("Directory " + journalDir + " does not exist and will not be created");
+            throw HornetQMessageBundle.BUNDLE.cannotCreateDir(journalDir.getAbsolutePath());
          }
       }
    }
@@ -2058,8 +2058,7 @@ public class HornetQServerImpl implements HornetQServer
             final String liveConnectorName = configuration.getLiveConnectorName();
             if (liveConnectorName == null)
             {
-               throw new IllegalArgumentException(
-                                                  "Cannot have a replicated backup without configuring its live-server!");
+               throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
             }
             clusterManager.start();
 
