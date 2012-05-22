@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +90,14 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
          HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
-         Set<ClientSessionFactoryInternal> factories = ((ServerLocatorImpl)ra.getDefaultHornetQConnectionFactory().getServerLocator()).factories;
+
+         ServerLocatorImpl serverLocator = (ServerLocatorImpl) ra.getDefaultHornetQConnectionFactory().getServerLocator();
+
+         Field f = Class.forName(ServerLocatorImpl.class.getName()).getDeclaredField("factories");
+
+         f.setAccessible(true);
+
+         Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>) f.get(serverLocator);
 
          for (int i = 0; i < 10 ; i++)
          {
