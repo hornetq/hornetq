@@ -148,6 +148,8 @@ public interface HornetQServer extends HornetQComponent
     * @param timeout
     * @param unit
     * @see CountDownLatch#await(long, TimeUnit)
+    * @returns {@code true} if the server was already initialized or if it was initialized within
+    *          the timeout period, {@code false} otherwise.
     * @throws InterruptedException
     */
    boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException;
