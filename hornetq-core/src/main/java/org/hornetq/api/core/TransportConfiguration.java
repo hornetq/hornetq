@@ -27,7 +27,7 @@ import org.hornetq.utils.UUIDGenerator;
  * connection. These will be different dependent on which connector is being used, i.e. Netty or
  * InVM etc. For example:
  * <p/>
- * 
+ *
  * <pre>
  * HashMap&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
  * map.put(&quot;host&quot;, &quot;localhost&quot;);
@@ -210,8 +210,10 @@ public class TransportConfiguration implements Serializable
    @Override
    public String toString()
    {
-      StringBuilder str = new StringBuilder(replaceWildcardChars(factoryClassName));
-
+      StringBuilder str = new StringBuilder(TransportConfiguration.class.getSimpleName());
+      str.append("(name=" + name + ", ");
+      str.append("factory=" + replaceWildcardChars(factoryClassName));
+      str.append(") ");
       if (params != null)
       {
          if (!params.isEmpty())
@@ -236,7 +238,6 @@ public class TransportConfiguration implements Serializable
             first = false;
          }
       }
-
       return str.toString();
    }
 
@@ -360,7 +361,7 @@ public class TransportConfiguration implements Serializable
       }
    }
 
-   private String replaceWildcardChars(final String str)
+   private static String replaceWildcardChars(final String str)
    {
       return str.replace('.', '-');
    }
