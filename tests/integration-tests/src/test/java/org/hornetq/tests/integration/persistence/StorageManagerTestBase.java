@@ -113,7 +113,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    }
 
    /**
-    * @return
     * @throws Exception
     */
    protected void createStorage() throws Exception
@@ -140,7 +139,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    }
 
    /**
-    * @return
     * @throws Exception
     */
    protected void createJMSStorage() throws Exception
@@ -153,13 +151,4 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
       jmsJournal.load();
    }
-
-
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

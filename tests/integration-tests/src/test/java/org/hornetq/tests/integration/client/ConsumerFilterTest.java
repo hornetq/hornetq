@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -286,7 +287,6 @@ public class ConsumerFilterTest extends ServiceTestBase
    /**
     * @param session
     * @param producer
-    * @return
     * @throws HornetQException
     */
    private void sendMessage(ClientSession session, ClientProducer producer, String color, String msg) throws Exception

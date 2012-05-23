@@ -18,12 +18,12 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
 
 /**
- * 
+ *
  * A JMSExceptionHelper
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -42,7 +42,7 @@ public class JMSExceptionHelper
             je = new JMSException(me.getMessage());
             break;
 
-         case ILLEGAL_STATE:E:
+         case ILLEGAL_STATE:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
 
@@ -92,18 +92,4 @@ public class JMSExceptionHelper
 
       return je;
    }
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

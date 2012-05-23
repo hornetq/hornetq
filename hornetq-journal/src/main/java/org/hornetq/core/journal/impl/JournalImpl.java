@@ -2840,7 +2840,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * @return
     * @throws Exception
     */
    private void checkControlFile() throws Exception
