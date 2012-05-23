@@ -13,11 +13,12 @@
 
 package org.hornetq.tests.unit.util;
 
-import junit.framework.Assert;
-import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.ObjectInputStreamWithClassLoader;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -28,6 +29,11 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import junit.framework.Assert;
+
+import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.ObjectInputStreamWithClassLoader;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -225,9 +231,6 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    private interface AnObject extends Serializable
    {
-      int myInt = 0;
-      long myLong = 0L;
-
       int getMyInt();
 
       void setMyInt(int value);
@@ -272,7 +275,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
    private static class AnObjectInvocationHandler implements InvocationHandler, Serializable
    {
       private static final long serialVersionUID = -3875973764178767452L;
-      private AnObject anObject = new AnObjectImpl();
+      private final AnObject anObject = new AnObjectImpl();
 
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable

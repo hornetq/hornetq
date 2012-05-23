@@ -1356,11 +1356,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /**
-    * @param body
-    */
-   // Inner classes -------------------------------------------------
-   private class FileCache
+   private final class FileCache
    {
 
       public FileCache(final File cachedFile)

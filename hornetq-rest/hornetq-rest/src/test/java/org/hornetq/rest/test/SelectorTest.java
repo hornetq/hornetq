@@ -51,6 +51,7 @@ public class SelectorTest extends MessageTestBase
    @XmlRootElement
    public static class Order implements Serializable
    {
+      private static final long serialVersionUID = 482698090549294508L;
       private String name;
       private String amount;
 

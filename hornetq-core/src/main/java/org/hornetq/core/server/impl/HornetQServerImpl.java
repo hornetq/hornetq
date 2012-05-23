@@ -1226,8 +1226,8 @@ public class HornetQServerImpl implements HornetQServer
    }
 
 
-   /*
-    * Start everything apart from RemotingService and loading the data
+   /**
+    * Starts everything apart from RemotingService and loading the data.
     */
    private void initialisePart1() throws Exception
    {

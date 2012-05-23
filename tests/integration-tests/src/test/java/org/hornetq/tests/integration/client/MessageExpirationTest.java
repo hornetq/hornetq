@@ -39,11 +39,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class MessageExpirationTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
    private static final int EXPIRATION = 1000;
-
-   // Attributes ----------------------------------------------------
 
    private HornetQServer server;
 
@@ -52,12 +48,6 @@ public class MessageExpirationTest extends ServiceTestBase
    private ClientSessionFactory sf;
 
    private ServerLocator locator;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testMessageExpiredWithoutExpiryAddress() throws Exception
    {
@@ -148,6 +138,8 @@ public class MessageExpirationTest extends ServiceTestBase
 
       server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
       {
+         private static final long serialVersionUID = -6476053400596299130L;
+
          @Override
          public SimpleString getExpiryAddress()
          {

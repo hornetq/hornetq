@@ -1422,9 +1422,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {

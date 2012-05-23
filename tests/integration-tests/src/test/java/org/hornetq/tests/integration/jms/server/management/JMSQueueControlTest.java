@@ -65,10 +65,6 @@ import org.hornetq.utils.json.JSONArray;
  */
 public class JMSQueueControlTest extends ManagementTestBase
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
 
    private JMSServerManagerImpl serverManager;
@@ -78,12 +74,6 @@ public class JMSQueueControlTest extends ManagementTestBase
    protected String queueName;
 
    protected Context context;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testGetAttributes() throws Exception
    {
@@ -403,6 +393,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       server.getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
       {
+         private static final long serialVersionUID = -7668739851356971411L;
+
          @Override
          public SimpleString getExpiryAddress()
          {
@@ -550,6 +542,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       server.getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
       {
+         private static final long serialVersionUID = -5979378001862611598L;
+
          @Override
          public SimpleString getDeadLetterAddress()
          {

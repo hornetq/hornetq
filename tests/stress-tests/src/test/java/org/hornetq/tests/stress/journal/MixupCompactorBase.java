@@ -164,17 +164,17 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
          }
       }
    }
-   
+
    protected int testMix(final int startAt, final int joinAt, final int secondAt) throws Exception
    {
       startCompactAt = startAt;
       joinCompactAt = joinAt;
       secondCompactAt = secondAt;
-      
+
       currentOperation = 0;
-      
+
       internalTest();
-      
+
       return currentOperation;
    }
 
@@ -224,7 +224,6 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
 
    /**
     * @param startedCompactingLatch
-    * @return
     * @throws InterruptedException
     */
    private void threadCompact() throws InterruptedException
@@ -250,21 +249,9 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
       startedCompactingLatch.await();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase#getFileFactory()
-    */
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       return new NIOSequentialFileFactory(getTestDir());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

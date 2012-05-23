@@ -35,7 +35,7 @@ import org.hornetq.utils.ConfigurationHelper;
  * and tweeted to some Twitter account).
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> Created Jun 29, 2010
  */
-public class ConnectorsService implements HornetQComponent
+public final class ConnectorsService implements HornetQComponent
 {
    private final StorageManager storageManager;
 

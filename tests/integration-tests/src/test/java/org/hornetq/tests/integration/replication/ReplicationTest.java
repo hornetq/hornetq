@@ -412,7 +412,6 @@ public class ReplicationTest extends ServiceTestBase
 
    /**
     * @param manager
-    * @return
     */
    private void blockOnReplication(final StorageManager storage, final ReplicationManager manager) throws Exception
    {
