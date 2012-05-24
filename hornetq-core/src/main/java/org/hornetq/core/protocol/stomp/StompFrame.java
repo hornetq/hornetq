@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -94,18 +93,6 @@ public class StompFrame
    {
       return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " +
                Arrays.toString(bytesBody);
-   }
-
-   public String asString()
-   {
-      StringBuilder out = new StringBuilder(command + '\n');
-      for (Entry<String, String> header : headers.entrySet())
-      {
-         out.append(header.getKey() + ": " + header.getValue() + '\n');
-      }
-      out.append('\n');
-      out.append(body);
-      return out.toString();
    }
 
    public boolean isPing()

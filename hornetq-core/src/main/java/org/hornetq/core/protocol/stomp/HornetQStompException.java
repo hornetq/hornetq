@@ -66,28 +66,32 @@ public class HornetQStompException extends Exception {
       if (handler == null)
       {
          frame = new StompFrame("ERROR");
-         frame.addHeader("message", this.getMessage());
-         if (body != null)
-         {
-            try
-            {
-               frame.setByteBody(body.getBytes("UTF-8"));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-            }
-         }
-         else
-         {
-            frame.setByteBody(new byte[0]);
-         }
       }
       else
       {
          frame = handler.createStompFrame("ERROR");
-         frame.addHeader("message", this.getMessage());
       }
-      frame.setNeedsDisconnect(disconnect);
+      frame.addHeader("message", this.getMessage());
+      for (Header header : headers)
+      {
+        frame.addHeader(header.key, header.val);
+      }
+
+      if (body != null)
+      {
+         try
+         {
+            frame.setByteBody(body.getBytes("UTF-8"));
+         }
+         catch (UnsupportedEncodingException e)
+         {
+         }
+      }
+      else
+      {
+         frame.setByteBody(new byte[0]);
+      }
+     frame.setNeedsDisconnect(disconnect);
       return frame;
    }
 

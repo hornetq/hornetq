@@ -31,8 +31,8 @@
     </prerequisites>
 
    <properties>
-      <netty.version>3.2.3.Final</netty.version>
-      <netty.version.string>3.2.3.Final</netty.version.string>
+      <netty.version>3.4.5.Final</netty.version>
+      <netty.version.string>3.4.5.Final</netty.version.string>
       <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>2</hornetq.version.minorVersion>
@@ -272,7 +272,7 @@
          </dependency>
          <!--needed to compile transport jar-->
          <dependency>
-            <groupId>org.jboss.netty</groupId>
+            <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
             <version>${netty.version}</version>
          </dependency>

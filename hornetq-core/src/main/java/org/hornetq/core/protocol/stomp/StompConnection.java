@@ -714,7 +714,6 @@ public class StompConnection implements RemotingConnection
    public void physicalSend(StompFrame frame) throws Exception
    {
       HornetQBuffer buffer = frame.toHornetQBuffer();
-      
       synchronized (sendLock)
       {
          getTransportConnection().write(buffer, false, false);
