@@ -541,24 +541,27 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       initialise();
 
       this.startExecutor = executor;
-
-      executor.execute(new Runnable()
+      
+      if (executor != null)
       {
-         public void run()
+         executor.execute(new Runnable()
          {
-            try
+            public void run()
             {
-               connect();
-            }
-            catch (Exception e)
-            {
-               if (!isClosed())
+               try
                {
-                  HornetQLogger.LOGGER.errorConnectingToNodes(e);
+                  connect();
+               }
+               catch (Exception e)
+               {
+                  if (!isClosed())
+                  {
+                     HornetQLogger.LOGGER.errorConnectingToNodes(e);
+                  }
                }
             }
-         }
-      });
+         });
+      }
    }
 
    public Executor getExecutor()
