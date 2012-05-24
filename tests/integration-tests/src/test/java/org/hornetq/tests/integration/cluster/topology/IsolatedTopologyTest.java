@@ -101,8 +101,8 @@ public class IsolatedTopologyTest extends ServiceTestBase
 
       TopologyMember member1 = topology.getMember(nodeId1);
       TopologyMember member2 = topology.getMember(nodeId2);
-      Assert.assertEquals(member1.getA().toString(), cfg1.toString());
-      Assert.assertEquals(member2.getA().toString(), cfg2.toString());
+      Assert.assertEquals(member1.getA().getParams().toString(), cfg1.getParams().toString());
+      Assert.assertEquals(member2.getA().getParams().toString(), cfg2.getParams().toString());
    }
 
    private HornetQServer createServer1() throws Exception
