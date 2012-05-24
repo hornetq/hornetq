@@ -393,6 +393,19 @@ public class QueueImpl implements Queue
       directDeliver = false;
    }
 
+   /* Called when a message is cancelled back into the queue */
+   public synchronized void addHead(final List<MessageReference> refs)
+   {
+      for (MessageReference ref: refs)
+      {
+         addHead(ref);
+      }
+      
+      resetAllIterators();
+      
+      deliverAsync();
+   }
+
    public synchronized void reload(final MessageReference ref)
    {
       queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
@@ -950,7 +963,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public void cancel(final Transaction tx, final MessageReference reference) throws Exception
+   public void cancel(final Transaction tx, final MessageReference reference)
    {
       getRefsOperation(tx).addAck(reference);
    }
@@ -2262,19 +2275,7 @@ public class QueueImpl implements Queue
 
    void postRollback(final LinkedList<MessageReference> refs)
    {
-      synchronized (this)
-      {
-         for (MessageReference ref : refs)
-         {
-            addHead(ref);
-         }
-
-         // Need to reset all iterators
-
-         resetAllIterators();
-
-         deliverAsync();
-      }
+      addHead(refs);
    }
 
    private long calculateRedeliveryDelay(final AddressSettings addressSettings, final int deliveryCount) {

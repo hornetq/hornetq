@@ -262,32 +262,48 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
     */
    public SimpleString[] split(final char delim)
    {
-         List<SimpleString> all = new ArrayList<SimpleString>();
+      List<SimpleString> all = null;
 
-         byte low = (byte)(delim & 0xFF); // low byte
-         byte high = (byte)(delim >> 8 & 0xFF); // high byte
+      byte low = (byte)(delim & 0xFF); // low byte
+      byte high = (byte)(delim >> 8 & 0xFF); // high byte
 
-         int lasPos = 0;
-         for (int i = 0; i < data.length; i += 2)
+      int lasPos = 0;
+      for (int i = 0; i < data.length; i += 2)
+      {
+         if (data[i] == low && data[i + 1] == high)
          {
-            if (data[i] == low && data[i + 1] == high)
+            byte[] bytes = new byte[i - lasPos];
+            System.arraycopy(data, lasPos, bytes, 0, bytes.length);
+            lasPos = i + 2;
+            
+            // We will create the ArrayList lazily
+            if (all == null)
             {
-               byte[] bytes = new byte[i - lasPos];
-               System.arraycopy(data, lasPos, bytes, 0, bytes.length);
-               lasPos = i + 2;
-               all.add(new SimpleString(bytes));
+               // There will be at least 2 strings on this case (which is the actual common usecase)
+               // For that reason I'm allocating the ArrayList with 2 already
+               // I have thought about using LinkedList here but I think this will be good enough already
+               // Note by Clebert
+               all = new ArrayList<SimpleString>(2);
             }
+            all.add(new SimpleString(bytes));
          }
+      }
 
-      if (all.isEmpty())
+      if (all == null)
       {
          return new SimpleString[] { this };
       }
+      else
+      {
+         // Adding the last one
          byte[] bytes = new byte[data.length - lasPos];
          System.arraycopy(data, lasPos, bytes, 0, bytes.length);
          all.add(new SimpleString(bytes));
+
+         // Converting it to arrays
          SimpleString[] parts = new SimpleString[all.size()];
          return all.toArray(parts);
+      }
    }
 
    /**

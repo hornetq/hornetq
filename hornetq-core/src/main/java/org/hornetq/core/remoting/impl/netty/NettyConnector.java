@@ -150,6 +150,8 @@ public class NettyConnector implements Connector
 
    private ScheduledFuture<?> batchFlusherFuture;
 
+   private final Map<String, Object> configuration;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -172,6 +174,8 @@ public class NettyConnector implements Connector
       {
          throw HornetQMessageBundle.BUNDLE.nullHandler();
       }
+      
+      this.configuration = configuration;
 
       this.listener = listener;
 
@@ -511,7 +515,7 @@ public class NettyConnector implements Connector
          }
 
          // No acceptor on a client connection
-         NettyConnection conn = new NettyConnection(null, ch, new Listener(), !httpEnabled && batchDelay > 0, false);
+         NettyConnection conn = new NettyConnection(configuration, null, ch, new Listener(), !httpEnabled && batchDelay > 0, false);
 
          return conn;
       }

@@ -38,6 +38,7 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -66,6 +67,7 @@ import org.hornetq.utils.UUID;
 public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowledgementHandler
 {
    // Constants -----------------------------------------------------
+
    private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -108,6 +110,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
+   
+   private boolean deliveringLargeMessage;
 
    private final String user;
 
@@ -200,6 +204,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return;
       }
 
+      started = true;
+
       stopping = false;
 
       if (activated)
@@ -214,8 +220,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STARTED, props);
          notificationService.sendNotification(notification);
       }
-
-      started = true;
    }
 
    public String debug()
@@ -529,20 +533,24 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             return HandleStatus.BUSY;
          }
+         
+         if (deliveringLargeMessage)
+         {
+            return HandleStatus.BUSY;
+         }
 
          if (isTrace)
          {
             HornetQLogger.LOGGER.trace("Bridge " + this + " is handling reference=" + ref);
          }
+         
          ref.handled();
-
-         ServerMessage message = ref.getMessage();
 
          refs.add(ref);
 
-         message = beforeForward(message);
+         final ServerMessage message = beforeForward(ref.getMessage());
 
-         SimpleString dest;
+         final SimpleString dest;
 
          if (forwardingAddress != null)
          {
@@ -553,38 +561,17 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
-         // if we failover during send then there is a chance that the
-         // that this will throw a disconnect, we need to remove the message
-         // from the acks so it will get resent, duplicate detection will cope
-         // with any messages resent
-
-         if (HornetQLogger.LOGGER.isTraceEnabled())
+         
+         if (message.isLargeMessage())
          {
-            HornetQLogger.LOGGER.trace("going to send message " + message);
+            deliveringLargeMessage = true;
+            deliverLargeMessage(dest, ref, (LargeServerMessage)message);
+            return HandleStatus.HANDLED;
          }
-
-         try
+         else
          {
-            producer.send(dest, message);
+            return deliverStandardMessage(dest, ref, message);
          }
-         catch (final HornetQException e)
-         {
-            HornetQLogger.LOGGER.bridgeUnableToSendMessage(e, ref);
-
-            refs.remove(ref);
-
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  connectionFailed(e, false);
-               }
-            });
-
-            return HandleStatus.BUSY;
-         }
-
-         return HandleStatus.HANDLED;
       }
    }
 
@@ -631,6 +618,91 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // fail(false);
    }
 
+    private void deliverLargeMessage(final SimpleString dest,
+                                    final MessageReference ref,
+                                    final LargeServerMessage message)
+   {
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               producer.send(dest, message);
+               
+               // as soon as we are done sending the large message
+               // we unset the delivery flag and we will call the deliveryAsync on the queue
+               // so the bridge will be able to resume work
+               unsetLargeMessageDelivery();
+               
+               if (queue != null)
+               {
+                  queue.deliverAsync();
+               }
+            }
+            catch (final HornetQException e)
+            {
+               unsetLargeMessageDelivery();
+               HornetQLogger.LOGGER.bridgeUnableToSendMessage(e, ref);
+
+               executor.execute(new Runnable()
+               {
+                  public void run()
+                  {
+                     connectionFailed(e, false);
+                  }
+               });
+            }
+         }
+      });
+   }
+   
+   /**
+    * @param ref
+    * @param message
+    * @return
+    */
+   private HandleStatus deliverStandardMessage(SimpleString dest, final MessageReference ref, ServerMessage message)
+   {
+      // if we failover during send then there is a chance that the
+      // that this will throw a disconnect, we need to remove the message
+      // from the acks so it will get resent, duplicate detection will cope
+      // with any messages resent
+  
+      if (HornetQLogger.LOGGER.isTraceEnabled())
+      {
+         HornetQLogger.LOGGER.trace("going to send message " + message);
+      }
+  
+      try
+      {
+         producer.send(dest, message);
+      }
+      catch (final HornetQException e)
+      {
+         HornetQLogger.LOGGER.bridgeUnableToSendMessage(e, ref);
+
+         // We remove this reference as we are returning busy which means the reference will never leave the Queue.
+         // because of this we have to remove the reference here
+         refs.remove(ref);
+         
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               connectionFailed(e, false);
+            }
+         });
+  
+         return HandleStatus.BUSY;
+      }
+  
+      return HandleStatus.HANDLED;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
    @Override
    public String toString()
    {
@@ -922,7 +994,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          catch (Exception e)
          {
-            HornetQLogger.LOGGER.errorStoppingBridge(e);
+           HornetQLogger.LOGGER.error("Failed to stop bridge", e);
          }
       }
    }
@@ -962,6 +1034,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          queue.deliverAsync();
       }
+   }
+
+   /**
+    * just set deliveringLargeMessage to false
+    */
+   private synchronized void unsetLargeMessageDelivery()
+   {
+      deliveringLargeMessage = false;
    }
 
    // The scheduling will still use the main executor here

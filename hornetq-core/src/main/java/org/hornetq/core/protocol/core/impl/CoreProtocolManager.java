@@ -193,6 +193,28 @@ class CoreProtocolManager implements ProtocolManager
                      }
                   });
                }
+               else
+               {
+                  // if not clustered, we send a single notification to the client containing the node-id where the server is connected to
+                  // This is done this way so Recovery discovery could also use the node-id for non-clustered setups
+                  entry.connectionExecutor.execute(new Runnable()
+                  {
+                     public void run()
+                     {
+                        String nodeId = server.getNodeID().toString();
+                        Pair<TransportConfiguration, TransportConfiguration> emptyConfig = new Pair<TransportConfiguration, TransportConfiguration>(null, null);
+                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, emptyConfig, true));
+                        }
+                        else
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage(nodeId, emptyConfig, true));
+                        }
+                     }
+                  });
+                  
+               }
             }
             else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
             {

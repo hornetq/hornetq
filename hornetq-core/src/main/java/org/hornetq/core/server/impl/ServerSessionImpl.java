@@ -1,5 +1,4 @@
 /*
-x * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -69,6 +68,8 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.Transaction.State;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -202,12 +203,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.securityStore = securityStore;
 
       timeoutSeconds = resourceManager.getTimeoutSeconds();
-
-      if (!xa)
-      {
-         tx = new TransactionImpl(storageManager, timeoutSeconds);
-      }
-
       this.xa = xa;
 
       this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
@@ -225,6 +220,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.defaultAddress = defaultAddress;
 
       remotingConnection.addFailureListener(this);
+
+      if (!xa)
+      {
+         tx = newTransaction();
+      }
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -587,13 +587,25 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-
+      
       if (consumer == null)
       {
          throw HornetQMessageBundle.BUNDLE.consumerDoesntExist(consumerID);
       }
-
-      consumer.acknowledge(autoCommitAcks, tx, messageID);
+      
+      if (tx != null && tx.getState() == State.ROLLEDBACK)
+      {
+         // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
+         // have these messages to be stuck on the limbo until the server is restarted
+         // The tx has already timed out, so we need to ack and rollback immediately
+         Transaction newTX = newTransaction();
+         consumer.acknowledge(autoCommitAcks, newTX, messageID);
+         newTX.rollback();
+      }
+      else
+      {
+         consumer.acknowledge(autoCommitAcks, tx, messageID);
+      }
    }
 
    public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
@@ -604,8 +616,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
       }
+      
+      if (tx != null && tx.getState() == State.ROLLEDBACK)
+      {
+          // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
+          // have these messages to be stuck on the limbo until the server is restarted
+          // The tx has already timed out, so we need to ack and rollback immediately
+         Transaction newTX = newTransaction();
+         consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
+         newTX.rollback();
+      }
+      else
+      {
+         consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
+      }
 
-      consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
    }
 
    public void expire(final long consumerID, final long messageID) throws Exception
@@ -630,17 +655,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       finally
       {
-         tx = new TransactionImpl(storageManager, timeoutSeconds);
+         tx = newTransaction();
       }
    }
 
    public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
-	   rollback(false, considerLastMessageAsDelivered);
+      rollback(false, considerLastMessageAsDelivered);
    }
 
    /**
-    *
+    * 
     * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
     * @param considerLastMessageAsDelivered
     * @throws Exception
@@ -651,7 +676,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // Might be null if XA
 
-         tx = new TransactionImpl(storageManager, timeoutSeconds);
+         tx = newTransaction();
       }
 
       doRollback(clientFailed, considerLastMessageAsDelivered, tx);
@@ -662,12 +687,34 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         tx = new TransactionImpl(storageManager, timeoutSeconds);
+         tx = newTransaction();
       }
+   }
+
+   /**
+    * @return
+    */
+   private TransactionImpl newTransaction()
+   {
+      TransactionImpl tx = new TransactionImpl(storageManager, timeoutSeconds);
+      
+      return tx;
+   }
+
+   /**
+    * @param xid
+    * @return
+    */
+   private TransactionImpl newTransaction(final Xid xid)
+   {
+      TransactionImpl tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
+      
+      return tx;
    }
 
    public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
+
       if (tx != null && tx.getXid().equals(xid))
       {
          final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
@@ -677,6 +724,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          Transaction theTx = resourceManager.removeTransaction(xid);
+         
+         
+         if (isTrace)
+         {
+            HornetQLogger.LOGGER.trace("XAcommit into " + theTx + ", xid=" + xid);
+         }
 
          if (theTx == null)
          {
@@ -694,6 +747,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else
             {
+               if (isTrace)
+               {
+                  HornetQLogger.LOGGER.trace("XAcommit into " + theTx + ", xid=" + xid + " cannot find it");
+               }
+
                throw new HornetQXAException(XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
             }
          }
@@ -721,6 +779,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (tx.getState() == Transaction.State.SUSPENDED)
          {
             final String msg = "Cannot end, transaction is suspended";
+
+            throw new HornetQXAException(XAException.XAER_PROTO, msg);
+         }
+         else
+         if (tx.getState() == Transaction.State.ROLLEDBACK)
+         {
+            final String msg = "Cannot end, transaction is rolled back";
+            
+            tx = null;
 
             throw new HornetQXAException(XAException.XAER_PROTO, msg);
          }
@@ -851,6 +918,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          Transaction theTx = resourceManager.removeTransaction(xid);
+         if (isTrace)
+         {
+            HornetQLogger.LOGGER.trace("xarollback into " + theTx);
+         }
 
          if (theTx == null)
          {
@@ -868,6 +939,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else
             {
+               if (isTrace)
+               {
+                  HornetQLogger.LOGGER.trace("xarollback into " + theTx + ", xid=" + xid + " forcing a rollback regular");
+               }
+
+               try
+               {
+                 // jbpapp-8845
+                  // This could have happened because the TX timed out,
+                  // at this point we would be better on rolling back this session as a way to prevent consumers from holding their messages
+                  this.rollback(false);
+               }
+               catch (Exception e)
+               {
+                  HornetQLogger.LOGGER.warn(e.getMessage(), e);
+               }
+               
                throw new HornetQXAException(XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
             }
          }
@@ -875,6 +963,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             if (theTx.getState() == Transaction.State.SUSPENDED)
             {
+               if (isTrace)
+               {
+                  HornetQLogger.LOGGER.trace("xarollback into " + theTx + " sending tx back as it was suspended");
+               }
+
+
                // Put it back
                resourceManager.putTransaction(xid, tx);
 
@@ -899,7 +993,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
+         tx = newTransaction(xid);
+
+         if (isTrace)
+         {
+            HornetQLogger.LOGGER.trace("xastart into tx= " + tx);
+         }
 
          boolean added = resourceManager.putTransaction(xid, tx);
 
@@ -914,6 +1013,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaSuspend() throws Exception
    {
+
+      if (isTrace)
+      {
+         HornetQLogger.LOGGER.trace("xasuspend on " + this.tx);
+      }
+
       if (tx == null)
       {
          final String msg = "Cannot suspend, session is not doing work in a transaction ";
@@ -949,6 +1054,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Transaction theTx = resourceManager.getTransaction(xid);
 
+         if (isTrace)
+         {
+            HornetQLogger.LOGGER.trace("xaprepare into " + ", xid=" + xid + ", tx= " + tx );
+         }
+
          if (theTx == null)
          {
             final String msg = "Cannot find xid in resource manager: " + xid;
@@ -964,7 +1074,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else if (theTx.getState() == Transaction.State.PREPARED)
             {
-               HornetQLogger.LOGGER.ignoringPrepare(xid);
+               HornetQLogger.LOGGER.info("ignoring prepare on xid as already called :" + xid);
             }
             else
             {
@@ -1400,15 +1510,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          ref.getQueue().cancel(theTx, ref);
       }
 
-      theTx.rollback();
-
       if (wasStarted)
       {
-         for (ServerConsumer consumer : consumers.values())
+         theTx.addOperation(new TransactionOperationAbstract()
          {
-            consumer.setStarted(true);
-         }
+            
+            public void afterRollback(Transaction tx)
+            {
+               for (ServerConsumer consumer : consumers.values())
+               {
+                  consumer.setStarted(true);
+               }
+            }
+            
+         });
       }
+      
+      theTx.rollback();
    }
 
    private void doSend(final ServerMessage msg, final boolean direct) throws Exception

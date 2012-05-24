@@ -2631,7 +2631,11 @@ public class JournalStorageManager implements StorageManager
                   case ADD_LARGE_MESSAGE_PENDING:
                   {
                      long messageID = buff.readLong();
-                     pendingLargeMessages.remove(new Pair<Long, Long>(recordDeleted.id, messageID));
+                     if (!pendingLargeMessages.remove(new Pair<Long, Long>(recordDeleted.id, messageID)))
+                     {
+                        // TODO: Logging
+                        HornetQLogger.LOGGER.warn("Large message " + recordDeleted.id + " wasn't found when dealing with add pending large message");
+                     }
                      installLargeMessageConfirmationOnTX(tx, recordDeleted.id);
                      break;
                   }
@@ -3896,6 +3900,19 @@ public class JournalStorageManager implements StorageManager
    {
       return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }
+   
+   private static Xid toXid(final byte[] data)
+   {
+   try
+   {
+         return XidCodecSupport.decodeXid(HornetQBuffers.wrappedBuffer(data));
+      }
+      catch (Exception e)
+      {
+         return null;
+      }
+   }
+
 
    /**
     * @param fileFactory
@@ -3936,7 +3953,8 @@ public class JournalStorageManager implements StorageManager
                            ",numberOfRecords=" +
                            numberOfRecords +
                            ",extraData=" +
-                           encode(extraData));
+                           encode(extraData) + 
+                           ", xid=" + toXid(extraData));
             }
 
             public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception

@@ -14,6 +14,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.HornetQPrincipal;
 
 /**
@@ -77,7 +78,11 @@ public interface Connection
    void removeReadyListener(ReadyListener listener);
 
    /**
-    * Returns the default Principal if there is one for this connection
+    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * same target this is connect to
+    * @return
     */
+   TransportConfiguration getConnectorConfig();
+
    HornetQPrincipal getDefaultHornetQPrincipal();
 }

@@ -40,6 +40,8 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
    int decrementDurableRefCount();
 
    ServerMessage copy(long newID);
+   
+   void finishCopy() throws Exception;
 
    ServerMessage copy();
 
