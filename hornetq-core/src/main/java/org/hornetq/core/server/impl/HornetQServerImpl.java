@@ -2328,6 +2328,26 @@ public class HornetQServerImpl implements HornetQServer
             storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                             clusterConnection, pair,
                                             isFailBackRequest && configuration.isAllowAutoFailBack());
+            if (isFailBackRequest && configuration.isAllowAutoFailBack())
+            {
+               new Thread(new Runnable()
+               {
+
+                  @Override
+                  public void run()
+                  {
+                     try
+                     {
+                        stop();
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+
+               }).start();
+            }
          }
          catch (Exception e)
          {
