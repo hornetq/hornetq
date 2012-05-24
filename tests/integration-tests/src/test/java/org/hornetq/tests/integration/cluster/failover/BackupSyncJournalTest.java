@@ -148,6 +148,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
       receiveMsgsInRange(0, n_msgs);
       assertNoMoreMessages();
+
    }
 
    private void finishSyncAndFailover() throws Exception

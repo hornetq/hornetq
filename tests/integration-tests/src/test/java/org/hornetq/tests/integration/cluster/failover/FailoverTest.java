@@ -540,7 +540,6 @@ public class FailoverTest extends FailoverTestBase
 
    public void testNonTransacted() throws Exception
    {
-
       createSessionFactory();
 
       ClientSession session = createSession(sf, true, true);
@@ -581,9 +580,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, false, false);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session = createSessionAndQueue();
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -647,6 +644,19 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   /**
+    * @return
+    * @throws Exception
+    * @throws HornetQException
+    */
+   private ClientSession createSessionAndQueue() throws Exception, HornetQException
+   {
+      ClientSession session = createSession(sf, false, false);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      return session;
+   }
+
    // https://jira.jboss.org/jira/browse/HORNETQ-285
    public void testFailoverOnInitialConnection() throws Exception
    {
@@ -682,9 +692,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, false, false);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session = createSessionAndQueue();
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -728,9 +736,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, false, false);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session = createSessionAndQueue();
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -781,9 +787,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, false, false);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session = createSessionAndQueue();
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -816,9 +820,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, false, false);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session = createSessionAndQueue();
 
       // create a consumer and start the session before failover
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -857,9 +859,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session1 = createSession(sf, false, false);
-
-      session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session1 = createSessionAndQueue();
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
@@ -899,9 +899,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session1 = createSession(sf, false, false);
-
-      session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session1 = createSessionAndQueue();
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1143,9 +1141,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session1 = createSession(sf, false, false);
-
-      session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session1 = createSessionAndQueue();
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1183,9 +1179,7 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session1 = createSession(sf, false, false);
-
-      session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session1 = createSessionAndQueue();
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1225,9 +1219,7 @@ public class FailoverTest extends FailoverTestBase
    public void testXAMessagesConsumedSoRollbackOnCommit() throws Exception
    {
       createSessionFactory();
-      ClientSession session1 = createSession(sf, false, false);
-
-      session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      ClientSession session1 = createSessionAndQueue();
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1492,25 +1484,25 @@ public class FailoverTest extends FailoverTestBase
 
    public void testSimpleSendAfterFailoverDurableTemporary() throws Exception
    {
-      testSimpleSendAfterFailover(true, true);
+      doSimpleSendAfterFailover(true, true);
    }
 
    public void testSimpleSendAfterFailoverNonDurableTemporary() throws Exception
    {
-      testSimpleSendAfterFailover(false, true);
+      doSimpleSendAfterFailover(false, true);
    }
 
    public void testSimpleSendAfterFailoverDurableNonTemporary() throws Exception
    {
-      testSimpleSendAfterFailover(true, false);
+      doSimpleSendAfterFailover(true, false);
    }
 
    public void testSimpleSendAfterFailoverNonDurableNonTemporary() throws Exception
    {
-      testSimpleSendAfterFailover(false, false);
+      doSimpleSendAfterFailover(false, false);
    }
 
-   private void testSimpleSendAfterFailover(final boolean durable, final boolean temporary) throws Exception
+   private void doSimpleSendAfterFailover(final boolean durable, final boolean temporary) throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
