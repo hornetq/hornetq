@@ -50,7 +50,9 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -2189,6 +2191,12 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
+            if (isNodeIDUsed())
+            {
+               configuration.setBackup(true);
+               return;
+            }
+
             initialisePart1();
 
             initialisePart2();
@@ -2205,6 +2213,47 @@ public class HornetQServerImpl implements HornetQServer
          catch (Exception e)
          {
             HornetQLogger.LOGGER.initializationError(e);
+         }
+      }
+
+      /**
+       * Determines whether there is another server already running with this server's nodeID.
+       * <p>
+       * This can happen in case of a successful fail-over followed by the live's restart
+       * (attempting a fail-back).
+       * @throws Exception
+       */
+      private boolean isNodeIDUsed() throws Exception
+      {
+         ServerLocatorInternal locator = null;
+         try
+         {
+            ArrayList<TransportConfiguration> tpSet = new ArrayList<TransportConfiguration>();
+
+            for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
+            {
+               TransportConfiguration tp = configuration.getConnectorConfigurations().get(config.getConnectorName());
+               if (tp != null)
+               {
+                  tpSet.add(tp);
+               }
+            }
+            locator =
+                     (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpSet.toArray(new TransportConfiguration[1]));
+            locator.setReconnectAttempts(0);
+            locator.connect();
+            TopologyMember node = locator.getTopology().getMember(nodeManager.getNodeId().toString());
+            return node != null;
+         }
+         catch (HornetQException error)
+         {
+            HornetQLogger.LOGGER.debug(error); // XXX which logging message to use?
+            return false;
+         }
+         finally
+         {
+            if (locator != null)
+               locator.close();
          }
       }
 

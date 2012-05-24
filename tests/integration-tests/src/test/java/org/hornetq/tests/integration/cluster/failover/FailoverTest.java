@@ -565,6 +565,33 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
+   /**
+    * Basic fail-back test.
+    * @throws Exception
+    */
+   public void testFailBack() throws Exception
+   {
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      session.commit();
+
+      crash(session);
+
+      session.start();
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      receiveMessages(consumer);
+      sendMessages(session, producer, 2 * NUM_MESSAGES);
+      session.commit();
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      liveServer.start();
+      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
+      liveServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
+   }
+
    private void createSessionFactory() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
