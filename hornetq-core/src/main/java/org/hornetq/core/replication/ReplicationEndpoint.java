@@ -82,6 +82,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    private final IOCriticalErrorListener criticalErrorListener;
    private final HornetQServerImpl server;
+   private final boolean wantedFailBack;
 
    private Channel channel;
 
@@ -114,10 +115,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private QuorumManager quorumManager;
 
    // Constructors --------------------------------------------------
-   public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
+   public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener,
+                              boolean wantedFailBack)
    {
       this.server = server;
       this.criticalErrorListener = criticalErrorListener;
+      this.wantedFailBack = wantedFailBack;
    }
 
    // Public --------------------------------------------------------
@@ -551,6 +554,10 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                break;
             case JournalBindings:
             case JournalMessages:
+               if (wantedFailBack && !packet.isServerToFailBack())
+               {
+                  HornetQLogger.LOGGER.autoFailBackDenied();
+               }
 
                final JournalContent journalContent = SyncDataType.getJournalContentType(packet.getDataType());
                final Journal journal = journalsHolder.get(journalContent);

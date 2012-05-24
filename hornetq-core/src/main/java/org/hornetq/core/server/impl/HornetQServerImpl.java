@@ -376,6 +376,7 @@ public class HornetQServerImpl implements HornetQServer
             test.run();
          }
 
+         final boolean wasLive = !configuration.isBackup();
          if (!configuration.isBackup())
          {
             if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
@@ -388,28 +389,31 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             activation.run();
-            state = SERVER_STATE.STARTED;
-            HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
-                                               identity != null ? identity : "");
          }
-         // The activation on fail-back may change the value of isBackup, for that reason we are not
-         // using else here
+         // The activation on fail-back may change the value of isBackup, for that reason we are
+         // checking again here
          if (configuration.isBackup())
          {
-             if (configuration.isSharedStore())
-             {
-                activation = new SharedStoreBackupActivation();
-             }
-             else
-             {
-                assert replicationEndpoint == null;
-                backupUpToDate = false;
-                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO);
-                activation = new SharedNothingBackupActivation();
-             }
+            if (configuration.isSharedStore())
+            {
+               activation = new SharedStoreBackupActivation();
+            }
+            else
+            {
+               assert replicationEndpoint == null;
+               backupUpToDate = false;
+               replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
+               activation = new SharedNothingBackupActivation(wasLive);
+            }
 
              backupActivationThread = new Thread(activation, HornetQMessageBundle.BUNDLE.activationForServer(this));
              backupActivationThread.start();
+         }
+         else
+         {
+            state = SERVER_STATE.STARTED;
+            HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
+                                               identity != null ? identity : "");
          }
          // start connector service
          connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
@@ -2029,6 +2033,12 @@ public class HornetQServerImpl implements HornetQServer
       private ServerLocatorInternal serverLocator0;
       private volatile boolean failedToConnect;
       private QuorumManager quorumManager;
+      private final boolean attemptFailBack;
+
+      public SharedNothingBackupActivation(boolean attemptFailBack)
+      {
+         this.attemptFailBack = attemptFailBack;
+      }
 
       public void run()
       {
@@ -2073,7 +2083,7 @@ public class HornetQServerImpl implements HornetQServer
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
                      connectToReplicationEndpoint(replicationChannel);
                      replicationEndpoint.start();
-                     clusterManager.announceReplicatingBackup(pingChannel);
+                     clusterManager.announceReplicatingBackup(pingChannel, attemptFailBack);
                   }
                   catch (Exception e)
                   {
@@ -2287,7 +2297,8 @@ public class HornetQServerImpl implements HornetQServer
 
    @Override
    public void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair) throws HornetQException
+                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean isFailBackRequest)
+                                                                                                                  throws HornetQException
    {
       if (replicationManager != null)
       {
@@ -2315,7 +2326,8 @@ public class HornetQServerImpl implements HornetQServer
          {
             replicationManager.start();
             storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-                                            clusterConnection, pair);
+                                            clusterConnection, pair,
+                                            isFailBackRequest && configuration.isAllowAutoFailBack());
          }
          catch (Exception e)
          {

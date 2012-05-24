@@ -75,7 +75,7 @@ class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
-      
+
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
@@ -121,12 +121,12 @@ class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-               
+
                if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
                {
                   channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
                }
-               
+
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
                   public void nodeUP(final long uniqueEventID,
@@ -173,7 +173,7 @@ class CoreProtocolManager implements ProtocolManager
                         }
                      });
                   }
-                  
+
                   @Override
                   public String toString()
                   {
@@ -184,7 +184,7 @@ class CoreProtocolManager implements ProtocolManager
                if (acceptorUsed.getClusterConnection() != null)
                {
                   acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
-                  
+
                   rc.addCloseListener(new CloseListener()
                   {
                      public void connectionClosed()
@@ -233,7 +233,7 @@ class CoreProtocolManager implements ProtocolManager
                {
                   HornetQLogger.LOGGER.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-               
+
                if (acceptorUsed != null)
                {
                   ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
@@ -259,7 +259,8 @@ class CoreProtocolManager implements ProtocolManager
                {
                   try
                   {
-                     server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true));
+                     server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
+                                             msg.isFailBackRequest());
                   }
                   catch (HornetQException e)
                   {

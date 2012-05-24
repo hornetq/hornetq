@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -21,6 +22,7 @@ public class ReplicationStartSyncMessage extends PacketImpl
    private SyncDataType dataType;
    private boolean synchronizationIsFinished;
    private String nodeID;
+   private boolean allowsAutoFailBack;
 
    public enum SyncDataType
    {
@@ -76,10 +78,12 @@ public class ReplicationStartSyncMessage extends PacketImpl
       this.nodeID = nodeID;
    }
 
-   public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID)
+   public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID,
+                                      boolean allowsAutoFailBack)
    {
       this();
       this.nodeID = nodeID;
+      this.allowsAutoFailBack = allowsAutoFailBack;
       synchronizationIsFinished = false;
       ids = new long[datafiles.length];
       for (int i = 0; i < datafiles.length; i++)
@@ -103,6 +107,7 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(synchronizationIsFinished);
+      buffer.writeBoolean(allowsAutoFailBack);
       buffer.writeString(nodeID);
       if (synchronizationIsFinished)
          return;
@@ -118,6 +123,7 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       synchronizationIsFinished = buffer.readBoolean();
+      allowsAutoFailBack = buffer.readBoolean();
       nodeID = buffer.readString();
       if (synchronizationIsFinished)
       {
@@ -132,6 +138,14 @@ public class ReplicationStartSyncMessage extends PacketImpl
       }
    }
 
+   /**
+    * @return whether the server is configured to allow for fail-back
+    * @see {@link Configuration#isAllowAutoFailBack()}
+    */
+   public boolean isServerToFailBack()
+   {
+      return allowsAutoFailBack;
+   }
    /**
     * @return {@code true} if the live has finished synchronizing its data and the backup is
     *         therefore up-to-date, {@code false} otherwise.
@@ -161,8 +175,9 @@ public class ReplicationStartSyncMessage extends PacketImpl
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + Arrays.hashCode(ids);
+      result = prime * result + (allowsAutoFailBack ? 1231 : 1237);
       result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
+      result = prime * result + Arrays.hashCode(ids);
       result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
       result = prime * result + (synchronizationIsFinished ? 1231 : 1237);
       return result;
@@ -172,41 +187,27 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public boolean equals(Object obj)
    {
       if (this == obj)
-      {
          return true;
-      }
       if (!super.equals(obj))
-      {
          return false;
-      }
       if (!(obj instanceof ReplicationStartSyncMessage))
-      {
          return false;
-      }
       ReplicationStartSyncMessage other = (ReplicationStartSyncMessage)obj;
-      if (!Arrays.equals(ids, other.ids))
-      {
+      if (allowsAutoFailBack != other.allowsAutoFailBack)
          return false;
-      }
       if (dataType != other.dataType)
-      {
          return false;
-      }
+      if (!Arrays.equals(ids, other.ids))
+         return false;
       if (nodeID == null)
       {
          if (other.nodeID != null)
-         {
             return false;
-         }
       }
       else if (!nodeID.equals(other.nodeID))
-      {
          return false;
-      }
       if (synchronizationIsFinished != other.synchronizationIsFinished)
-      {
          return false;
-      }
       return true;
    }
 }

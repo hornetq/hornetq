@@ -84,7 +84,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -750,7 +750,7 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.startPaging();
 
       assertNotNull(storeImpl.getCurrentPage());
-      
+
       storeImpl.stop();
    }
 
@@ -1526,7 +1526,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void commit(long txID, boolean lineUpContext) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1535,7 +1535,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void lineUpContext()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1558,7 +1558,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void stop(boolean ioCriticalError) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1567,7 +1567,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void beforePageRead() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1576,7 +1576,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void afterPageRead() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1590,11 +1590,12 @@ public class PagingStoreImplTest extends UnitTestCase
       public void freeDirectBuffer(ByteBuffer buffer)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-         ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+                                ClusterConnection clusterConnection,
+                                Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
          throws Exception
       {
       }
@@ -1699,7 +1700,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void beforePageRead() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1708,7 +1709,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void afterPageRead() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)

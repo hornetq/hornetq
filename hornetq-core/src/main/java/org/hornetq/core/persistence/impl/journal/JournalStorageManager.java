@@ -364,7 +364,8 @@ public class JournalStorageManager implements StorageManager
     */
    @Override
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+                             ClusterConnection clusterConnection,
+                             Pair<TransportConfiguration, TransportConfiguration> pair, final boolean autoFailBack)
       throws Exception
    {
       if (!started)
@@ -396,8 +397,10 @@ public class JournalStorageManager implements StorageManager
             pagingManager.lock();
             try
             {
-               messageFiles = prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID);
-               bindingsFiles = prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID);
+                  messageFiles =
+                           prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID, autoFailBack);
+                  bindingsFiles =
+                           prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID, autoFailBack);
                pageFilesToSync = getPageInformationForSync(pagingManager);
                   largeMessageFilesToSync = getLargeMessageInformation();
             }
@@ -567,12 +570,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private JournalFile[]
-            prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID) throws Exception
+   private JournalFile[] prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID,
+                                               boolean autoFailBack) throws Exception
     {
       journal.forceMoveNextFile();
       JournalFile[] datafiles = journal.getDataFiles();
-      replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
+      replicator.sendStartSyncMessage(datafiles, contentType, nodeID, autoFailBack);
       return datafiles;
     }
 

@@ -294,7 +294,8 @@ public interface StorageManager extends HornetQComponent
    void
             startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
                              ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair) throws Exception;
+                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
+                                                                                                             throws Exception;
 
    /**
     *

@@ -557,7 +557,9 @@ public class NullStorageManager implements StorageManager
 
    @Override
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair) throws Exception
+                             ClusterConnection clusterConnection,
+                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
+                                                                                                             throws Exception
    {
       // no-op
    }

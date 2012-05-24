@@ -17,20 +17,20 @@ public final class BackupRegistrationMessage extends PacketImpl
 {
 
    private TransportConfiguration connector;
-
    private String nodeID;
-
    private String clusterUser;
-
    private String clusterPassword;
+   private boolean backupWantsFailBack;
 
-   public BackupRegistrationMessage(String nodeId, TransportConfiguration tc, String user, String password)
+   public BackupRegistrationMessage(String nodeId, TransportConfiguration tc, String user, String password,
+                                    boolean backupWantsFailBack)
    {
       this();
       connector = tc;
       nodeID = nodeId;
       clusterUser = user;
       clusterPassword = password;
+      this.backupWantsFailBack = backupWantsFailBack;
    }
 
    public BackupRegistrationMessage()
@@ -54,6 +54,7 @@ public final class BackupRegistrationMessage extends PacketImpl
       buffer.writeString(nodeID);
       buffer.writeString(clusterUser);
       buffer.writeString(clusterPassword);
+      buffer.writeBoolean(backupWantsFailBack);
       connector.encode(buffer);
    }
 
@@ -63,31 +64,32 @@ public final class BackupRegistrationMessage extends PacketImpl
       nodeID = buffer.readString();
       clusterUser = buffer.readString();
       clusterPassword = buffer.readString();
+      backupWantsFailBack = buffer.readBoolean();
       connector = new TransportConfiguration();
       connector.decode(buffer);
    }
 
-   /**
-    * @return
-    */
    public String getClusterUser()
    {
       return clusterUser;
    }
 
-   /**
-    * @return
-    */
    public String getClusterPassword()
    {
       return clusterPassword;
+   }
+
+   public boolean isFailBackRequest()
+   {
+      return backupWantsFailBack;
    }
 
    @Override
    public int hashCode()
    {
       final int prime = 31;
-      int result = 1;
+      int result = super.hashCode();
+      result = prime * result + (backupWantsFailBack ? 1231 : 1237);
       result = prime * result + ((clusterPassword == null) ? 0 : clusterPassword.hashCode());
       result = prime * result + ((clusterUser == null) ? 0 : clusterUser.hashCode());
       result = prime * result + ((connector == null) ? 0 : connector.hashCode());
@@ -99,63 +101,42 @@ public final class BackupRegistrationMessage extends PacketImpl
    public boolean equals(Object obj)
    {
       if (this == obj)
-      {
          return true;
-      }
       if (!super.equals(obj))
-      {
          return false;
-      }
       if (!(obj instanceof BackupRegistrationMessage))
-      {
          return false;
-      }
       BackupRegistrationMessage other = (BackupRegistrationMessage)obj;
+      if (backupWantsFailBack != other.backupWantsFailBack)
+         return false;
       if (clusterPassword == null)
       {
          if (other.clusterPassword != null)
-         {
             return false;
-         }
       }
       else if (!clusterPassword.equals(other.clusterPassword))
-      {
          return false;
-      }
       if (clusterUser == null)
       {
          if (other.clusterUser != null)
-         {
             return false;
-         }
       }
       else if (!clusterUser.equals(other.clusterUser))
-      {
          return false;
-      }
       if (connector == null)
       {
          if (other.connector != null)
-         {
             return false;
-         }
       }
       else if (!connector.equals(other.connector))
-      {
          return false;
-      }
       if (nodeID == null)
       {
          if (other.nodeID != null)
-         {
             return false;
-         }
       }
       else if (!nodeID.equals(other.nodeID))
-      {
          return false;
-      }
       return true;
    }
-
 }
