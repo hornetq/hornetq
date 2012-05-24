@@ -77,22 +77,10 @@ a plugin.
 
 ### Annotation Pre-Processing
 
-HornetQ uses [JBoss Logging] and that requires source code to be
-generated from Java annotations. Currently M2E doesn't 'just work'
-when Maven is configured to do that, although there is work in
-progress to achieve this [3].
+HornetQ uses [JBoss Logging] and that requires source code generation
+from Java annotations. In order for it to 'just work' in Eclipse you
+need to install the _Maven Integration for Eclipse JDT Annotation
+Processor Toolkit_ [m2e-apt].
 
 [JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
-
-[3]: <https://bugs.eclipse.org/bugs/show_bug.cgi?id=335036>
-
-While waiting for M2E to solve this once and for all, there are 2 alternatives to work around it:
-
-1. One is to [configure Eclipse to run annotation processors], but that
-requires a direct reference to the JBoss Logging processor (apparently
-Eclipse can't take this from the Maven path).
-
-[configure Eclipse to run annotation processors]: <http://help.eclipse.org/indigo/index.jsp?topic=/org.eclipse.jdt.doc.isv/guide/jdt_apt_getting_started.htm>
-
-2. Compiling the classes through Maven in the command line, and then
-adding the source folder to the project's classpath.
+[m2e-apt]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out

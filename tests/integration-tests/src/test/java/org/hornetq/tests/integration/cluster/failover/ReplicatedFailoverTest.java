@@ -13,13 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-/**
- * A ReplicatedFailoverTest
- *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
- */
 public class ReplicatedFailoverTest extends FailoverTest
 {
 

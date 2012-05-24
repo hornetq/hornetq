@@ -20,11 +20,11 @@ import org.hornetq.core.config.Configuration;
 
 /**
  * A TransportConstants
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TransportConstants
+public final class TransportConstants
 {
    public static final String SERVER_ID_PROP_NAME = "server-id";
 
@@ -41,12 +41,17 @@ public class TransportConstants
       allowableAcceptorKeys.add(Configuration.PROP_PASSWORD_CODEC);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
-      
+
       Set<String> allowableConnectorKeys = new HashSet<String>();
       allowableConnectorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
       allowableConnectorKeys.add(Configuration.PROP_MASK_PASSWORD);
       allowableConnectorKeys.add(Configuration.PROP_PASSWORD_CODEC);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
+   }
+
+   private TransportConstants()
+   {
+      // Utility class
    }
 }
