@@ -13,11 +13,13 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQLogger;
@@ -57,6 +59,8 @@ public class NettyConnection implements Connection
    private final boolean directDeliver;
 
    private volatile HornetQBuffer batchBuffer;
+   
+   private final Map<String, Object> configuration;
 
    private final Semaphore writeLock = new Semaphore(1);
 
@@ -66,12 +70,15 @@ public class NettyConnection implements Connection
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Acceptor acceptor,
-                          final Channel channel,
-                          final ConnectionLifeCycleListener listener,
-                          boolean batchingEnabled,
-                          boolean directDeliver)
+   public NettyConnection(final Map<String, Object> configuration,
+                           final Acceptor acceptor,
+                           final Channel channel,
+                           final ConnectionLifeCycleListener listener,
+                           boolean batchingEnabled,
+                           boolean directDeliver)
    {
+      this.configuration = configuration;
+      
       this.channel = channel;
 
       this.listener = listener;
@@ -167,71 +174,73 @@ public class NettyConnection implements Connection
 
    public void write(HornetQBuffer buffer, final boolean flush, final boolean batched)
    {
+
       try
       {
-      writeLock.acquire();
-      try
-      {
-         if (batchBuffer == null && batchingEnabled && batched && !flush)
+         writeLock.acquire();
+
+         try
          {
-            // Lazily create batch buffer
-
-            batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
-         }
-
-         if (batchBuffer != null)
-         {
-            batchBuffer.writeBytes(buffer, 0, buffer.writerIndex());
-
-            if (batchBuffer.writerIndex() >= BATCHING_BUFFER_SIZE || !batched || flush)
+            if (batchBuffer == null && batchingEnabled && batched && !flush)
             {
-               // If the batch buffer is full or it's flush param or not batched then flush the buffer
-
-               buffer = batchBuffer;
-            }
-            else
-            {
-               return;
-            }
-
-            if (!batched || flush)
-            {
-               batchBuffer = null;
-            }
-            else
-            {
-               // Create a new buffer
+               // Lazily create batch buffer
 
                batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
             }
-         }
 
-         ChannelFuture future = channel.write(buffer.channelBuffer());
-
-         if (flush)
-         {
-            while (true)
+            if (batchBuffer != null)
             {
-               try
+               batchBuffer.writeBytes(buffer, 0, buffer.writerIndex());
+
+               if (batchBuffer.writerIndex() >= BATCHING_BUFFER_SIZE || !batched || flush)
                {
-                  boolean ok = future.await(10000);
+                  // If the batch buffer is full or it's flush param or not batched then flush the buffer
 
-                  if (!ok)
-                  {
-                     HornetQLogger.LOGGER.timeoutFlushingPacket();
-                  }
-
-                  break;
+                  buffer = batchBuffer;
                }
-               catch (InterruptedException ignore)
+               else
                {
+                  return;
+               }
+
+               if (!batched || flush)
+               {
+                  batchBuffer = null;
+               }
+               else
+               {
+                  // Create a new buffer
+
+                  batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+               }
+            }
+
+            ChannelFuture future = channel.write(buffer.channelBuffer());
+
+            if (flush)
+            {
+               while (true)
+               {
+                  try
+                  {
+                     boolean ok = future.await(10000);
+
+                     if (!ok)
+                     {
+                        HornetQLogger.LOGGER.timeoutFlushingPacket();
+                     }
+
+                     break;
+                  }
+                  catch (InterruptedException ignore)
+                  {
+                  }
                }
             }
          }
-      }
-      finally
-      {
-         writeLock.release();
+         finally
+         {
+            writeLock.release();
          }
       }
       catch (InterruptedException e)
@@ -260,7 +269,7 @@ public class NettyConnection implements Connection
       readyListeners.remove(listener);
    }
 
-    //never allow this
+   //never allow this
    public HornetQPrincipal getDefaultHornetQPrincipal()
    {
       return null;
@@ -273,6 +282,25 @@ public class NettyConnection implements Connection
          listener.readyForWriting(ready);
       }
    }
+   
+   
+   /**
+    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * same target this is connect to
+    * @return
+    */
+   public TransportConfiguration getConnectorConfig()
+   {
+      if (configuration != null)
+      {
+         return new TransportConfiguration(NettyConnectorFactory.class.getName(), this.configuration);
+      }
+      else
+      {
+         return null;
+      }
+   }
+
 
    // Public --------------------------------------------------------
 

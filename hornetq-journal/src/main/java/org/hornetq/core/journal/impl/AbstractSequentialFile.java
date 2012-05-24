@@ -37,7 +37,7 @@ import org.hornetq.journal.HornetQJournalLogger;
  *
  *
  */
-abstract class AbstractSequentialFile implements SequentialFile
+public abstract class AbstractSequentialFile implements SequentialFile
 {
 
    // Constants -----------------------------------------------------
@@ -106,24 +106,28 @@ abstract class AbstractSequentialFile implements SequentialFile
          HornetQJournalLogger.LOGGER.errorDeletingFile(this);
       }
    }
-
+   
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       HornetQJournalLogger.LOGGER.debug("Copying "  + this + " as " + newFileName);
-      newFileName.open();
+      if (!newFileName.isOpen())
+      {
+         newFileName.open();
+      }
+      
       if (!isOpen())
       {
          this.open();
       }
-
-
+      
+      
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-
+      
       for (;;)
       {
          buffer.rewind();
          int size = this.read(buffer);
-         newFileName.writeInternal(buffer);
+         newFileName.writeDirect(buffer, false);
          if (size < 10 * 1024)
          {
             break;

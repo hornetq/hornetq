@@ -16,6 +16,7 @@ package org.hornetq.core.server.cluster;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.server.HornetQComponent;
@@ -38,7 +39,7 @@ public interface ClusterManager extends HornetQComponent
     * Return the default ClusterConnection to be used case it's not defined by the acceptor
     * @return default connection
     */
-   ClusterConnection getDefaultConnection();
+   ClusterConnection getDefaultConnection(TransportConfiguration acceptorConfig);
 
    ClusterConnection getClusterConnection(String name);
 

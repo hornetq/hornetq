@@ -59,6 +59,8 @@ public interface Queue extends Bindable
    void addTail(MessageReference ref, boolean direct);
 
    void addHead(MessageReference ref);
+   
+   void addHead(final List<MessageReference> refs);
 
    void acknowledge(MessageReference ref) throws Exception;
 
@@ -66,7 +68,7 @@ public interface Queue extends Bindable
 
    void reacknowledge(Transaction tx, MessageReference ref) throws Exception;
 
-   void cancel(Transaction tx, MessageReference ref) throws Exception;
+   void cancel(Transaction tx, MessageReference ref);
 
    void cancel(MessageReference reference, long timeBase) throws Exception;
 

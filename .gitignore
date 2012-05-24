@@ -1,9 +1,17 @@
+#idea files
+hornetq-pom.ipr
+hornetq-pom.iws
 .idea
 *.iml
 */*.iml
 */*/*.iml
 */*/*/*.iml
+
+# compilation from native
+*/bin
+*/*/bin
 *~
+
 target
 tests/jms-tests/
 tests/integration-tests/data/

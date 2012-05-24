@@ -100,7 +100,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
       }
 
-      Topology topology = server.getClusterManager().getDefaultConnection().getTopology();
+      Topology topology = server.getClusterManager().getDefaultConnection(null).getTopology();
 
       int liveNodesCount = 0;
 

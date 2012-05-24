@@ -56,6 +56,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * 
     */
    private static final long serialVersionUID = 4756893709825838770L;
+
    /**
     * Trace enabled
     */
@@ -101,6 +102,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private String unparsedJndiParams;
 
    private RecoveryManager recoveryManager;
+
+   private boolean useAutoRecovery = true;
 
    private final List<HornetQRAManagedConnectionFactory> managedConnectionFactories = new ArrayList<HornetQRAManagedConnectionFactory>();
 
@@ -208,11 +211,23 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       locateTM();
 
-      recoveryManager.start();
+      recoveryManager.start(useAutoRecovery);
 
       this.ctx = ctx;
 
-      HornetQRALogger.LOGGER.raStarted();
+      if (!configured.getAndSet(true))
+      {
+         try
+         {
+            setup();
+         }
+         catch (HornetQException e)
+         {
+            throw new ResourceAdapterInternalException("Unable to create activation", e);
+         }
+      }
+
+      HornetQRALogger.LOGGER.info("HornetQ resource adaptor started");
    }
 
    /**
@@ -259,6 +274,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       recoveryManager.stop();
 
       HornetQRALogger.LOGGER.raStopped();
+   }
+
+   public void setUseAutoRecovery(Boolean useAutoRecovery)
+   {
+      this.useAutoRecovery = useAutoRecovery;
+   }
+
+   public Boolean isUseAutoRecovery()
+   {
+      return this.useAutoRecovery;
    }
 
    public void setConnectorClassName(final String connectorClassName)
@@ -1335,15 +1360,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       // if we are CMP or BMP using local tx we ignore the ack mode as we are transactional
       if (deliveryTransacted || useLocalTx)
       {
-         int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
-                                                          : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
+         // JBPAPP-8845
+         // If transacted we need to send the ack flush as soon as possible
+         // as if any transaction times out, we need the ack on the server already
          if (useLocalTx)
          {
-            result = parameterFactory.createSession(user, pass, false, false, false, false, actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, false, false, false, false, 0);
          }
          else
          {
-            result = parameterFactory.createSession(user, pass, true, false, false, false, actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, true, false, false, false, 0);
          }
       }
       else
@@ -1884,7 +1910,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
    }
 
-
    public void setManagedConnectionFactory(HornetQRAManagedConnectionFactory hornetQRAManagedConnectionFactory)
    {
       managedConnectionFactories.add(hornetQRAManagedConnectionFactory);
@@ -1893,6 +1918,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public SensitiveDataCodec<String> getPasswordCodec()
    {
       return this.raProperties.getCodecInstance();
-   }   
+   }
 
 }

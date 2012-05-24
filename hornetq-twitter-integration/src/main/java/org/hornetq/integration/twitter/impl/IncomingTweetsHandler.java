@@ -107,8 +107,10 @@ public class IncomingTweetsHandler implements ConnectorService
       
       // getting latest ID
       this.paging.setCount(TwitterConstants.FIRST_ATTEMPT_PAGE_SIZE);
-      ResponseList<Status> res = this.twitter.getHomeTimeline(paging);
-      this.paging.setSinceId(res.get(0).getId());
+
+      // If I used annotations here, it won't compile under JDK 1.7
+      ResponseList res = this.twitter.getHomeTimeline(paging);
+      this.paging.setSinceId(((Status)res.get(0)).getId());
       HornetQTwitterLogger.LOGGER.debug(connectorName + " initialise(): got latest ID: " + this.paging.getSinceId());
 
       // TODO make page size configurable
@@ -140,7 +142,8 @@ public class IncomingTweetsHandler implements ConnectorService
    private void poll() throws Exception
    {
       // get new tweets
-      ResponseList<Status> res = this.twitter.getHomeTimeline(paging);
+      // If I used annotations here, it won't compile under JDK 1.7
+      ResponseList res = this.twitter.getHomeTimeline(paging);
 
       if (res == null || res.size() == 0)
       {
@@ -149,7 +152,7 @@ public class IncomingTweetsHandler implements ConnectorService
 
       for (int i = res.size() - 1; i >= 0; i--)
       {
-         Status status = res.get(i);
+         Status status = (Status)res.get(i);
 
          ServerMessage msg = new ServerMessageImpl(this.storageManager.generateUniqueID(),
                TwitterConstants.INITIAL_MESSAGE_BUFFER_SIZE);
@@ -163,7 +166,7 @@ public class IncomingTweetsHandler implements ConnectorService
          HornetQTwitterLogger.LOGGER.debug(connectorName + ": routed: " + status.toString());
       }
 
-      this.paging.setSinceId(res.get(0).getId());
+      this.paging.setSinceId(((Status)res.get(0)).getId());
       HornetQTwitterLogger.LOGGER.debug(connectorName + ": update latest ID: " + this.paging.getSinceId());
    }
 

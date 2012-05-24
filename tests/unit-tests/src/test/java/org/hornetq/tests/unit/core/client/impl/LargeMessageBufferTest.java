@@ -395,7 +395,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
                                                                           1024 * 11 + 123,
-                                                                          1);
+                                                                          1000);
 
       final PipedOutputStream output = new PipedOutputStream();
       final PipedInputStream input = new PipedInputStream(output);
@@ -522,10 +522,78 @@ public class LargeMessageBufferTest extends UnitTestCase
       });
    }
 
+   public void testStreamDataWaitCompletionOnInCompleteBuffer() throws Exception
+   {
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
+
+
+      class FakeOutputStream extends OutputStream
+      {
+         @Override
+         public void write(int b) throws IOException
+         {
+         }
+      }
+
+      outBuffer.setOutputStream(new FakeOutputStream());
+
+      long time = System.currentTimeMillis();
+      try
+      {
+         outBuffer.waitCompletion(0);
+         fail("supposed to throw an exception");
+      }
+      catch (HornetQException e)
+      {
+      }
+
+      assertTrue("It was supposed to wait at least 1 second", System.currentTimeMillis() - time > 1000);
+   }
+
+
+   public void testStreamDataWaitCompletionOnSlowComingBuffer() throws Exception
+   {
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
+
+
+      class FakeOutputStream extends OutputStream
+      {
+         @Override
+         public void write(int b) throws IOException
+         {
+         }
+      }
+
+      outBuffer.setOutputStream(new FakeOutputStream());
+
+      Thread sender = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(200);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               Thread.sleep(1000);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               Thread.sleep(1000);
+               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, false, false));
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      };
+
+      sender.start();
+      outBuffer.waitCompletion(0);
+      sender.join();
+   }
+
    public void testErrorOnSetStreaming() throws Exception
    {
       long start = System.currentTimeMillis();
-      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 30);
+      final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 30000);
 
       outBuffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
 
@@ -577,9 +645,9 @@ public class LargeMessageBufferTest extends UnitTestCase
       for (int i = 100; i < byteArray.length; i += 10)
       {
          byte readBytes[] = new byte[10];
-         
+
          int size = is.read(readBytes);
-         
+
          for (int j = 0; j < size; j++)
          {
             assertEquals(getSamplebyte(i + j), readBytes[j]);
@@ -628,7 +696,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    private LargeMessageControllerImpl splitBuffer(final int splitFactor, final byte[] bytes, final File file) throws Exception
    {
-      LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), bytes.length, 5, file);
+      LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), bytes.length, 5000, file);
 
       ByteArrayInputStream input = new ByteArrayInputStream(bytes);
 
@@ -864,6 +932,13 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
+       */
+      public void interruptHandlers() throws HornetQException
+      {
       }
 
    }

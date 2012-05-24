@@ -197,6 +197,10 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
       return m;
    }
+   
+   public void finishCopy() throws Exception
+   {
+   }
 
    public ServerMessage copy()
    {
@@ -216,6 +220,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       */
 
       ServerMessage copy = copy(newID);
+      copy.finishCopy();
 
       copy.setOriginalHeaders(this, expiry);
 

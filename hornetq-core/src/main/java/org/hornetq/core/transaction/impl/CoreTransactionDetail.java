@@ -60,12 +60,6 @@ public class CoreTransactionDetail extends TransactionDetail
    }
 
    @Override
-   public String decodeMessagePayload(ServerMessage msg)
-   {
-      return msg.getBodyBuffer().toByteBuffer().toString();
-   }
-
-   @Override
    public Map<String, Object> decodeMessageProperties(ServerMessage msg)
    {
       return msg.toMap();

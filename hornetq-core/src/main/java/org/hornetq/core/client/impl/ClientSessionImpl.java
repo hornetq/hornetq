@@ -30,6 +30,8 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -86,9 +88,11 @@ import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
 import org.hornetq.utils.TokenBucketLimiterImpl;
+import org.hornetq.utils.XidCodecSupport;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -106,7 +110,7 @@ import org.hornetq.utils.TokenBucketLimiterImpl;
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  *
  */
-class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
+public class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
 
    private final Map<String, String> metadata = new HashMap<String, String>();
@@ -237,7 +241,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       this.remotingConnection = remotingConnection;
 
       this.executor = executor;
-
+      
       this.flowControlExecutor = flowControlExecutor;
 
       this.xa = xa;
@@ -285,7 +289,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    // ClientSession implementation
    // -----------------------------------------------------------------
-
+   
    public Channel getChannel()
    {
       return channel;
@@ -537,7 +541,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       {
          HornetQLogger.LOGGER.trace("Sending commit");
       }
-
+      
       if (rollbackOnly)
       {
          rollbackOnFailover(true);
@@ -579,6 +583,10 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void rollback(final boolean isLastMessageAsDelivered) throws HornetQException
    {
+      if (HornetQLogger.LOGGER.isTraceEnabled())
+      {
+         HornetQLogger.LOGGER.trace("calling rollback(isLastMessageAsDelivered=" + isLastMessageAsDelivered + ")");
+      }
       checkClosed();
 
       // We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
@@ -688,7 +696,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       stop(true);
    }
 
-   private void stop(final boolean waitForOnMessage) throws HornetQException
+   public void stop(final boolean waitForOnMessage) throws HornetQException
    {
       checkClosed();
 
@@ -884,7 +892,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          HornetQLogger.LOGGER.debug("Session was already closed, giving up now, this=" + this);
          return;
       }
-
+      
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("Calling close on session " + this);
@@ -1142,12 +1150,12 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
 
       HashMap<String, String> metaDataToSend;
-
+      
       synchronized (metadata)
       {
          metaDataToSend = new HashMap<String, String>(metadata);
       }
-
+      
       // Resetting the metadata after failover
       for (Map.Entry<String, String> entries : metaDataToSend.entrySet())
       {
@@ -1172,7 +1180,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
-
+   
    public void addUniqueMetaData(String key, String data) throws HornetQException
    {
       channel.sendBlocking(new SessionUniqueAddMetaDataMessage(key, data));
@@ -1276,7 +1284,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
             sendAckHandler.sendAcknowledged(scm.getMessage());
          }
       }
-
+      
    }
 
    // XAResource implementation
@@ -1284,6 +1292,10 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
+      if (HornetQLogger.LOGGER.isTraceEnabled())
+      {
+         HornetQLogger.LOGGER.trace("call commit(xid=" + convert(xid));
+      }
       checkXA();
 
       // we should never throw rollback if we have already prepared
@@ -1305,12 +1317,12 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
          if (response.isError())
          {
-            // if we retry and its not there the assume that it was committed
-            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
-            {
-               return;
-            }
             throw new XAException(response.getResponseCode());
+         }
+         
+         if (HornetQLogger.LOGGER.isTraceEnabled())
+         {
+            HornetQLogger.LOGGER.trace("finished commit on " + convert(xid) + " with response = " + response);
          }
       }
       catch (HornetQException e)
@@ -1327,6 +1339,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void end(final Xid xid, final int flags) throws XAException
    {
+      if (HornetQLogger.LOGGER.isTraceEnabled())
+      {
+         HornetQLogger.LOGGER.trace("Calling end:: " + convert(xid) + ", flags=" + convertTXFlag(flags));
+      }
+      
       checkXA();
 
       if (rollbackOnly)
@@ -1430,6 +1447,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
+      if (HornetQLogger.LOGGER.isTraceEnabled()) 
+      {
+         HornetQLogger.LOGGER.trace("Calling prepare:: " + convert(xid));
+      }
+      
 
       if (rollbackOnly)
       {
@@ -1532,7 +1554,12 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-
+      
+      if (HornetQLogger.LOGGER.isTraceEnabled()) 
+      {
+         HornetQLogger.LOGGER.trace("Calling rollback:: " + convert(xid));
+      }
+      
       try
       {
          boolean wasStarted = started;
@@ -1563,11 +1590,6 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
          if (response.isError())
          {
-            // if we retry and its not there the assume that it was rolled back
-            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
-            {
-               return;
-            }
             throw new XAException(response.getResponseCode());
          }
       }
@@ -1603,6 +1625,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void start(final Xid xid, final int flags) throws XAException
    {
+      if (HornetQLogger.LOGGER.isTraceEnabled())
+      {
+         HornetQLogger.LOGGER.trace("Calling start:: " + convert(xid) + " clientXID=" + xid + " flags = " + convertTXFlag(flags));
+      }
+      
       checkXA();
 
       Packet packet = null;
@@ -1687,7 +1714,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       return remotingConnection;
    }
-
+   
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -1795,7 +1822,8 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
                                                                browseOnly,
                                                                clientWindowSize,
                                                                ackBatchSize,
- consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate)
+                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
+                                                                                                                false)
                                                                                   : null,
                                                                executor,
                                                                flowControlExecutor,
@@ -1824,7 +1852,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       ClientProducerInternal producer = new ClientProducerImpl(this,
                                                                address,
                                                                maxRate == -1 ? null
- : new TokenBucketLimiterImpl(maxRate),
+                                                                            : new TokenBucketLimiterImpl(maxRate, false),
                                                                autoCommitSends && blockOnNonDurableSend,
                                                                autoCommitSends && blockOnDurableSend,
                                                                autoGroup,
@@ -1871,7 +1899,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          throw HornetQMessageBundle.BUNDLE.sessionClosed();
       }
    }
-
+   
    private ClassLoader lookupTCCL()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
@@ -1883,7 +1911,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       });
 
    }
-
+   
    /**
     * @param consumerID
     * @return
@@ -1903,7 +1931,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       {
          remotingConnection.removeFailureListener(this);
       }
-
+      
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("calling cleanup on " + this);
@@ -1914,7 +1942,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
          closed = true;
 
          channel.close();
-
+         
          // if the server is sending a disconnect
          // any pending blocked operation could hang without this
          channel.returnBlocking();
@@ -1946,7 +1974,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    private Set<ClientProducerInternal> cloneProducers()
    {
       Set<ClientProducerInternal> producersClone;
-
+      
       synchronized (producers)
       {
          producersClone = new HashSet<ClientProducerInternal>(producers);
@@ -2076,4 +2104,62 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
 
    }
+   
+   
+   /**
+    * If you ever tried to debug XIDs you will know what this is about.
+    * This will serialize and deserialize the XID to the same way it's going to be printed on server logs 
+    * or print-data.
+    * 
+    * This will convert to the same XID deserialized on the Server, hence we will be able to debug eventual stuff
+    * 
+    * @param xid
+    * @return
+    */
+   private Object convert(Xid xid)
+   {
+      HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(200);
+      XidCodecSupport.encodeXid(xid, buffer);
+      
+      Object obj = XidCodecSupport.decodeXid(buffer);
+      
+      return "xid=" + obj + ",clientXID=" + xid;
+   }
+
+   private String convertTXFlag(final int flags)
+   {
+      if (flags == XAResource.TMSUSPEND)
+      {
+         return "SESS_XA_SUSPEND";
+      }
+      else if (flags == XAResource.TMSUCCESS)
+      {
+         return "TMSUCCESS";
+      }
+      else if (flags == XAResource.TMFAIL)
+      {
+         return "TMFAIL";
+      }
+      else
+      if (flags == XAResource.TMJOIN)
+      {
+         return "TMJOIN";
+      }
+      else if (flags == XAResource.TMRESUME)
+      {
+         return "TMRESUME";
+      }
+      else if (flags == XAResource.TMNOFLAGS)
+      {
+         // Don't need to flush since the previous end will have done this
+         return "TMNOFLAGS";
+      }
+      else
+      {
+         return "XAER_INVAL(" + flags + ")";
+      }
+      
+   }
+   
+
 }

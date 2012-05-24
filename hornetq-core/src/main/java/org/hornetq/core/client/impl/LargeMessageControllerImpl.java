@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -67,9 +68,12 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private boolean streamClosed = false;
 
-   private final int readTimeout;
+   private final long readTimeout;
 
    private long readerIndex = 0;
+   
+   /** This is to control if packets are arriving for a better timeout control */
+   private boolean packetAdded = false;
 
    private long packetPosition = -1;
 
@@ -79,7 +83,9 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private OutputStream outStream;
 
-   private Exception handledException;
+   // There's no need to wait a synchronization
+   // we just set the exception and let other threads to get it as soon as possible
+   private volatile Exception handledException;
 
    private final FileCache fileCache;
 
@@ -89,14 +95,14 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout)
+                                 final long readTimeout)
    {
       this(consumerInternal, totalSize, readTimeout, null);
    }
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout,
+                                 final long readTimeout,
                                  final File cachedFile)
    {
       this(consumerInternal, totalSize, readTimeout, cachedFile, 10 * 1024);
@@ -104,7 +110,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
                                  final long totalSize,
-                                 final int readTimeout,
+                                 final long readTimeout,
                                  final File cachedFile,
                                  final int bufferSize)
    {
@@ -124,14 +130,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    // Public --------------------------------------------------------
 
-   public synchronized Exception getHandledException()
-   {
-      return handledException;
-   }
-
-   /**
-    *
-    */
    public void discardUnusedPackets()
    {
       if (outStream == null)
@@ -157,6 +155,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
       synchronized (this)
       {
+         packetAdded = true;
          if (outStream != null)
          {
             try
@@ -224,31 +223,37 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   public synchronized void cancel()
+   public void cancel()
    {
+      // TODO: LOGS
+      // Doing this outside of the lock might interrupt the process as soon as possible
+      this.handledException = new HornetQException(HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY, "Transmission interrupted on consumer shutdown");
 
-      int totalSize = 0;
-      Packet polledPacket = null;
-      while ((polledPacket = packets.poll()) != null)
+      synchronized (this)
       {
-         totalSize += polledPacket.getPacketSize();
+         int totalSize = 0;
+         Packet polledPacket = null;
+         while ((polledPacket = packets.poll()) != null)
+         {
+            totalSize += polledPacket.getPacketSize();
+         }
+   
+         try
+         {
+            consumerInternal.flowControl(totalSize, false);
+         }
+         catch (Exception ignored)
+         {
+            // what else can we do here?
+            HornetQLogger.LOGGER.errorCallingCancel(ignored);
+         }
+          
+         packets.offer(new SessionReceiveContinuationMessage());
+         streamEnded = true;
+         streamClosed = true;
+   
+         notifyAll();
       }
-
-      try
-      {
-         consumerInternal.flowControl(totalSize, false);
-      }
-      catch (Exception ignored)
-      {
-         // what else can we do here?
-         HornetQLogger.LOGGER.errorCallingCancel(ignored);
-      }
-
-      packets.offer(new SessionReceiveContinuationMessage());
-      streamEnded = true;
-      streamClosed = true;
-
-      notifyAll();
    }
 
    public synchronized void close()
@@ -272,7 +277,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             sendPacketToOutput(output, currentPacket);
             currentPacket = null;
          }
-         while (true)
+         while (handledException == null)
          {
             SessionReceiveContinuationMessage packet = packets.poll();
             if (packet == null)
@@ -285,6 +290,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
             sendPacketToOutput(output, packet);
          }
 
+         checkException();
          outStream = output;
       }
 
@@ -317,31 +323,75 @@ public class LargeMessageControllerImpl implements LargeMessageController
          return false;
       }
 
-      long timeOut = System.currentTimeMillis() + timeWait;
+      long timeOut;
+      
+      // If timeWait = 0, we will use the readTimeout
+      // And we will check if no packets have arrived withing readTimeout milliseconds
+      if (timeWait != 0)
+      {
+         timeOut = System.currentTimeMillis() + timeWait;
+      }
+      else
+      {
+         timeOut = System.currentTimeMillis() + readTimeout;
+      }
+      
       while (!streamEnded && handledException == null)
       {
          try
          {
-            this.wait(readTimeout == 0 ? 1 : readTimeout * 1000);
+            this.wait(timeWait == 0 ? readTimeout : timeWait);
          }
          catch (InterruptedException e)
          {
             throw HornetQMessageBundle.BUNDLE.largeMessageControllerInterrupted(e);
          }
-
-         if (timeWait > 0 && System.currentTimeMillis() > timeOut)
+         
+         if (!streamEnded && handledException == null)
          {
-            throw HornetQMessageBundle.BUNDLE.timeoutOnLargeMessage();
+            if (timeWait != 0 && System.currentTimeMillis() > timeOut)
+            {
+               
+               // TODO: what to do here?
+               //throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+               //         "Timeout waiting for LargeMessage Body");
+               throw HornetQMessageBundle.BUNDLE.timeoutOnLargeMessage();
+           }
+            else if (System.currentTimeMillis() > timeOut && !packetAdded)
+            {
+               // throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+               //                           "No packets have arrived within " + readTimeout + " milliseconds");
+               throw HornetQMessageBundle.BUNDLE.timeoutOnLargeMessage();
+            }
          }
       }
 
-      if (handledException != null)
-      {
-         throw HornetQMessageBundle.BUNDLE.errorSavingLargeMessageBuffer(handledException);
-      }
+      checkException();
 
       return streamEnded;
 
+   }
+
+   /**
+    * @throws HornetQException
+    */
+   private void checkException() throws HornetQException
+   {
+      // it's not needed to copy it as we never set it back to null
+      // once the exception is set, the controller is pretty much useless
+      if (handledException != null)
+      {
+         if (handledException instanceof HornetQException)
+         {
+            throw (HornetQException)handledException;
+         }
+         else
+         {
+            throw new HornetQException(HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY,
+                                       "Error on saving LargeMessageBufferImpl",
+                                       handledException);
+         }
+      }
    }
 
    // Channel Buffer Implementation ---------------------------------
@@ -454,21 +504,20 @@ public class LargeMessageControllerImpl implements LargeMessageController
       out.write(bytesToGet);
    }
 
-   private void getBytes(final long index, final OutputStream out, final int length) throws IOException
+   public void getBytes(final long index, final OutputStream out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
-   private int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
+   public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
       getBytes(index, bytesToGet);
       return out.write(ByteBuffer.wrap(bytesToGet));
    }
 
-   @Override
    public int getInt(final int index)
    {
       return (getByte(index) & 0xff) << 24 | (getByte(index + 1) & 0xff) << 16 |

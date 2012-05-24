@@ -419,9 +419,9 @@ public class TwitterTest extends ServiceTestBase
 
          Paging page = new Paging();
          page.setCount(1);
-         ResponseList<Status> res = twitter.getHomeTimeline(page);
+         ResponseList res = twitter.getHomeTimeline(page);
 
-         Assert.assertEquals(testMessage, res.get(0).getText());
+         Assert.assertEquals(testMessage, ((Status)(res.get(0))).getText());
       }
       finally
       {
@@ -569,12 +569,12 @@ public class TwitterTest extends ServiceTestBase
          
          Paging page = new Paging();
          page.setCount(2);
-         ResponseList<Status> res = twitter.getHomeTimeline(page);
+         ResponseList res = twitter.getHomeTimeline(page);
          
-         Assert.assertEquals(testMessage, res.get(1).getText());
-         Assert.assertEquals(-1, res.get(1).getInReplyToStatusId());
-         Assert.assertEquals(replyMessage, res.get(0).getText());
-         Assert.assertEquals(s.getId(), res.get(0).getInReplyToStatusId());
+         Assert.assertEquals(testMessage, ((Status)(res.get(1))).getText());
+         Assert.assertEquals(-1, ((Status)(res.get(1))).getInReplyToStatusId());
+         Assert.assertEquals(replyMessage,((Status)(res.get(0))).getText());
+         Assert.assertEquals(s.getId(), ((Status)(res.get(0))).getInReplyToStatusId());
       }
       finally
       {

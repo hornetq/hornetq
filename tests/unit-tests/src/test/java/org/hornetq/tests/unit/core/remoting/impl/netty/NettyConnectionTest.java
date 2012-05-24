@@ -14,8 +14,10 @@ package org.hornetq.tests.unit.core.remoting.impl.netty;
 
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -44,11 +46,12 @@ import org.jboss.netty.channel.ChannelPipeline;
  */
 public class NettyConnectionTest extends UnitTestCase
 {
+   private static final Map<String,Object> emptyMap = Collections.emptyMap();
 
    public void testGetID() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());
-      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(emptyMap, null, channel, new MyListener(), false, false);
 
       Assert.assertEquals(channel.getId().intValue(), conn.getID());
    }
@@ -60,7 +63,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       Assert.assertEquals(0, channel.getWritten().size());
 
-      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(emptyMap, null, channel, new MyListener(), false, false);
       conn.write(buff);
 
       Assert.assertEquals(1, channel.getWritten().size());
@@ -69,7 +72,7 @@ public class NettyConnectionTest extends UnitTestCase
    public void testCreateBuffer() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());
-      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(emptyMap, null, channel, new MyListener(), false, false);
 
       final int size = 1234;
 

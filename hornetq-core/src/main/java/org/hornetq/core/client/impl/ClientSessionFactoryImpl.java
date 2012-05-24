@@ -34,6 +34,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -385,12 +386,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void connectionDestroyed(final Object connectionID)
    {
+      // The exception has to be created in the same thread where it's being caleld
+      // as to avoid a different stack trace cause
+      final HornetQException ex = HornetQMessageBundle.BUNDLE.channelDisconnected();
+
       // It has to use the same executor as the disconnect message is being sent through
+
       closeExecutor.execute(new Runnable()
       {
          public void run()
          {
-            handleConnectionFailure(connectionID, HornetQMessageBundle.BUNDLE.channelDisconnected());
+            handleConnectionFailure(connectionID, ex);
          }
       });
 
@@ -1027,7 +1033,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   try
                   {
-                  waitLatch.await(interval, TimeUnit.MILLISECONDS);
+                     waitLatch.await(interval, TimeUnit.MILLISECONDS);
                   }
                   catch (InterruptedException ignore)
                   {
@@ -1053,7 +1059,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                if (HornetQLogger.LOGGER.isDebugEnabled())
                {
-            	   HornetQLogger.LOGGER.debug("Reconnection successfull");
+                  HornetQLogger.LOGGER.debug("Reconnection successfull");
                }
                return;
             }
@@ -1491,7 +1497,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                if (topMessage.isExit())
                {
-                  HornetQLogger.LOGGER.debug("Notifying " + topMessage.getNodeID() + " going down");
+                  if (HornetQLogger.LOGGER.isDebugEnabled())
+                  {
+                     HornetQLogger.LOGGER.debug("Notifying " + topMessage.getNodeID() + " going down");
+                  }
 
                   serverLocator.notifyNodeDown(eventUID, topMessage.getNodeID());
                   return;
@@ -1506,7 +1515,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      " csf created at\nserverLocator=" +
                                                      serverLocator, e);
                }
-               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
+
+               Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
+               if (transportConfig.getA() == null && transportConfig.getB() == null)
+               {
+                  transportConfig = new Pair<TransportConfiguration, TransportConfiguration>(conn.getTransportConnection()
+                                                                                                 .getConnectorConfig(),
+                                                                                             null);
+               }
+
+               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), transportConfig, topMessage.isLast());
             }
          });
       }
@@ -1624,6 +1642,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             if (!connection.checkDataReceived())
             {
+               
+               // We use a different thread to send the fail
+               // but the exception has to be created here to preserve the stack trace
+               final HornetQException me = HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection());
+
                cancelled = true;
 
                threadPool.execute(new Runnable()
@@ -1631,7 +1654,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   // Must be executed on different thread
                   public void run()
                   {
-                     connection.fail(HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection()));
+                     connection.fail(me);
                   }
                });
 

@@ -314,7 +314,14 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>PasswordCodec</config-property-name>\n" +
          "         <config-property-type>java.lang.String</config-property-type>\n" +
          "         <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=ssss</config-property-value>\n" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>***add***</description>" +
+         "         <config-property-name>UseAutoRecovery</config-property-name>" +
+         "         <config-property-type>boolean</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
          "      </config-property>";
+
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";

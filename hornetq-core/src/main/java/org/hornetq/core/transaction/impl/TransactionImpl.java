@@ -14,6 +14,7 @@
 package org.hornetq.core.transaction.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -255,7 +256,7 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-
+         
          beforeCommit();
 
          if (containsPersistent || xid != null && state == State.PREPARED)
@@ -442,6 +443,8 @@ public class TransactionImpl implements Transaction
 
    public int getOperationsCount()
    {
+      checkCreateOperations();
+      
       return operations.size();
    }
 
@@ -559,4 +562,24 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      Date dt = new Date(this.createTime);
+      return "TransactionImpl [xid=" + xid +
+             ", id=" +
+             id +
+             ", state=" +
+             state +
+             ", createTime=" +
+             createTime  + "(" + dt + ")" +
+             ", timeoutSeconds=" +
+             timeoutSeconds +
+             ", nr operations = " + getOperationsCount() +
+             "]@" +
+             Integer.toHexString(hashCode());
+   }
 }

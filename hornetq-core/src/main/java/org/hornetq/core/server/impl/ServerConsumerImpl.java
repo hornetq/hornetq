@@ -621,7 +621,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             
             if (HornetQLogger.LOGGER.isTraceEnabled())
             {
-               HornetQLogger.LOGGER.trace("ACKing ref " + ref + " on " + this);
+               HornetQLogger.LOGGER.trace("ACKing ref " + ref + " on tx= " + tx + ", consumer=" + this);
             }
    
             if (ref == null)

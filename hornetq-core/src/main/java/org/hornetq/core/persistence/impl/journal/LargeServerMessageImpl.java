@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.api.core.Message;
 import org.hornetq.core.journal.SequentialFile;
@@ -53,6 +54,10 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
+   
+   // set when a copyFrom is called
+   // The actual copy is done when finishCopy is called
+   private SequentialFile pendingCopy;
 
    private long bodySize = -1;
 
@@ -303,9 +308,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    @Override
    public synchronized ServerMessage copy()
    {
-      long idToUse = messageID;
-
-      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
+      SequentialFile newfile = storageManager.createFileForLargeMessage(messageID, durable);
 
       ServerMessage newMessage = new LargeServerMessageImpl(this,
                                                             properties,
@@ -314,32 +317,59 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       return newMessage;
    }
 
+   public void copyFrom(final SequentialFile fileSource) throws Exception
+   {
+      this.bodySize = -1;
+      this.pendingCopy = fileSource;
+   }
+   
+   
+   public void finishCopy() throws Exception
+   {
+      if (pendingCopy != null)
+      {
+         SequentialFile copyTo = createFile();
+         try
+         {
+            this.pendingRecordID = storageManager.storePendingLargeMessage(this.messageID);
+            copyTo.open();
+            pendingCopy.open();
+            pendingCopy.copyTo(copyTo);          
+         }
+         finally
+         {
+            copyTo.close();
+            pendingCopy.close();
+            pendingCopy = null;
+         }
+         
+         closeFile();
+         bodySize = -1;
+         file = null;
+      }
+   }
 
+   /** 
+    * The copy of the file itself will be done later by {@link LargeServerMessageImpl#finishCopy()}
+    * */
    @Override
    public synchronized ServerMessage copy(final long newID)
    {
       try
       {
-         validateFile();
-         
-         SequentialFile file = this.file;
-         
-         SequentialFile newFile = storageManager.createFileForLargeMessage(newID, durable);
-         
-         file.copyTo(newFile);
-         
-         LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this, properties, newFile, newID);
-         
+         SequentialFile newfile = storageManager.createFileForLargeMessage(newID, durable);
+
+         LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this,
+                                                               properties,
+                                                               newfile,
+                                                               newID);
+         newMessage.copyFrom(createFile());
          return newMessage;
       }
       catch (Exception e)
       {
          HornetQLogger.LOGGER.lareMessageErrorCopying(e, this);
          return null;
-      }
-      finally
-      {
-         releaseResources();
       }
    }
 
@@ -382,7 +412,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
                throw new RuntimeException("MessageID not set on LargeMessage");
             }
 
-            file = storageManager.createFileForLargeMessage(getMessageID(), durable);
+            file = createFile();
 
             openFile();
             
@@ -394,6 +424,14 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          // TODO: There is an IO_ERROR on trunk now, this should be used here instead
          throw new InternalErrorException(e.getMessage(), e);
       }
+   }
+
+   /**
+    * 
+    */
+   protected SequentialFile createFile()
+   {
+      return storageManager.createFileForLargeMessage(getMessageID(), durable);
    }
    
    protected void openFile() throws Exception
@@ -419,7 +457,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    // Inner classes -------------------------------------------------
 
-   private class DecodingContext implements BodyEncoder
+   class DecodingContext implements BodyEncoder
    {
       private SequentialFile cFile;
 
@@ -436,7 +474,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            throw new InternalErrorException(e.getMessage(), e);
+            throw new HornetQException(HornetQExceptionType.INTERNAL_ERROR, e.getMessage(), e);
          }
       }
 
@@ -486,6 +524,17 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
        */
       public long getLargeBodySize()
       {
+         if (bodySize < 0)
+         {
+            try
+            {
+               bodySize = file.size();
+            }
+            catch (Exception e)
+            {
+               HornetQLogger.LOGGER.warn(e.getMessage(), e);
+            }
+         }
          return bodySize;
       }
    }

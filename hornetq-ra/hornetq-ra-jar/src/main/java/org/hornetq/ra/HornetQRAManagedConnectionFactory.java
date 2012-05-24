@@ -28,7 +28,7 @@ import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 
 /**
  * HornetQ ManagedConectionFactory
@@ -72,7 +72,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    /*
    * The resource recovery if there is one
    * */
-   private HornetQResourceRecovery resourceRecovery;
+   private XARecoveryConfig resourceRecovery;
 
    /**
     * Constructor

@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.hornetq.api.core.DuplicateIdException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
@@ -708,17 +709,18 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return reference;
    }
 
-   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
+   /**
+    * The redistribution can't process the route right away as we may be dealing with a large message which will need to be processed on a different thread
+    */
+   public Pair<RoutingContext, ServerMessage> redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
 
       // We have to copy the message and store it separately, otherwise we may lose remote bindings in case of restart before the message
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
       ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
-
+      
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
-
-      boolean res = false;
 
       if (bindings != null)
       {
@@ -728,13 +730,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (routed)
          {
-            processRoute(copyRedistribute, context, false);
-
-            res = true;
+            return new Pair<RoutingContext, ServerMessage> (context, copyRedistribute);
          }
       }
 
-      return res;
+      return null;
    }
 
    public PagingManager getPagingManager()
@@ -942,7 +942,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    }
 
-   private void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
+   public void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
    {
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 

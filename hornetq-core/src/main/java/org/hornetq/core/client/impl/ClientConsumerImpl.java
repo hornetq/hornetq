@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
@@ -132,7 +134,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   ClientConsumerImpl(final ClientSessionInternal session,
+   public ClientConsumerImpl(final ClientSessionInternal session,
                              final long id,
                              final SimpleString queueName,
                              final SimpleString filterString,
@@ -443,14 +445,40 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public void close() throws HornetQException
    {
-      doCleanUp(true);
+      doCleanUp(true, false);
+   }
+
+   /**
+    * To be used by MDBs
+    * @param interruptConsumer it will send an interrupt to the thread
+    * @throws HornetQException
+    */
+   public void interruptHandlers() throws HornetQException
+   {
+      closing = true;
+      
+      resetLargeMessageController();
+
+      Thread onThread = onMessageThread;
+      if (onThread != null)
+      {
+         try
+         {
+            // just trying to interrupt any ongoing messages
+            onThread.interrupt();
+         }
+         catch (Throwable ignored)
+         {
+            // security exception probably.. we just ignore it, not big deal!
+         }
+      }
    }
 
    public void cleanUp()
    {
       try
       {
-         doCleanUp(false);
+         doCleanUp(false, false);
       }
       catch (HornetQException e)
       {
@@ -486,6 +514,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void clearAtFailover()
    {
       clearBuffer();
+      
+      resetLargeMessageController();
 
       lastAckedMessage = null;
 
@@ -608,7 +638,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          largeMessageCache.deleteOnExit();
       }
 
-      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 5, largeMessageCache);
+      ClientSessionFactory sf = session.getSessionFactory();
+      ServerLocator locator = sf.getServerLocator();
+      long callTimeout = locator.getCallTimeout();
+      
+      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), callTimeout, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
       {
@@ -674,11 +708,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          try
          {
-            if (currentLargeMessageController != null)
-            {
-               currentLargeMessageController.cancel();
-               currentLargeMessageController = null;
-            }
+            resetLargeMessageController();
          }
          catch (Throwable e)
          {
@@ -690,6 +720,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Need to send credits for the messages in the buffer
 
       waitForOnMessageToComplete(waitForOnMessage);
+   }
+
+   private void resetLargeMessageController()
+   {
+      
+      LargeMessageController controller = currentLargeMessageController;
+      if (controller != null)
+      {
+         controller.cancel();
+         currentLargeMessageController = null;
+      }
    }
 
    public int getClientWindowSize()
@@ -739,12 +780,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    }
 
    /**
-    *
-    * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
-    * So, this operation needs to be atomic.
-    *
-    * @param discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
-    */
+   *
+   * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
+   * So, this operation needs to be atomic.
+   *
+   * @param discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
+   */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
    {
       if (clientWindowSize >= 0)
@@ -987,6 +1028,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                         return null;
                      }
                   });
+                  
+                  onMessageThread = null;
                }
 
                if (isTrace)
@@ -1027,7 +1070,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void doCleanUp(final boolean sendCloseMessage) throws HornetQException
+   private void doCleanUp(final boolean sendCloseMessage, final boolean interruptConsumer) throws HornetQException
    {
       try
       {
@@ -1041,14 +1084,27 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // might be acked and if the consumer is already closed, the ack will be ignored
          closing = true;
 
+         resetLargeMessageController();
+
+         if (interruptConsumer)
+         {
+            Thread onThread = receiverThread;
+            if (onThread != null)
+            {
+               try
+               {
+                  // just trying to interrupt any ongoing messages
+                  onThread.interrupt();
+               }
+               catch (Throwable ignored)
+               {
+                  // security exception probably.. we just ignore it, not big deal!
+               }
+            }
+         }
+
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
-
-         if (currentLargeMessageController != null)
-         {
-            currentLargeMessageController.cancel();
-            currentLargeMessageController = null;
-         }
 
          closed = true;
 

@@ -515,7 +515,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private synchronized TransportConfiguration selectConnector()
    {
-      if (receivedTopology)
+      // if the ServerLocator is !had, we will always use the initialConnectors
+      // on that case if the ServerLocator was configured to be in-vm, it will always be in-vm no matter
+      // what updates were sent from the server
+      if (receivedTopology && ha)
       {
          int pos = loadBalancingPolicy.select(topologyArray.length);
 
@@ -523,12 +526,14 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          return pair.getA();
       }
-
-      // Get from initialconnectors
-
-      int pos = loadBalancingPolicy.select(initialConnectors.length);
-
-      return initialConnectors[pos];
+      else
+      {
+         // Get from initialconnectors
+   
+         int pos = loadBalancingPolicy.select(initialConnectors.length);
+   
+         return initialConnectors[pos];
+      }
    }
 
    public void start(Executor executor) throws Exception
@@ -556,13 +561,17 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       });
    }
 
+   public Executor getExecutor()
+   {
+      return startExecutor;
+   }
+
    @Override
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
    }
 
-   @Override
    public ClientSessionFactoryInternal connect() throws HornetQException
    {
       synchronized (this)
@@ -771,28 +780,27 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          while (retry);
 
-         if (ha || clusterConnection)
+         // We always wait for the topology, as the server 
+         // will send a single element if not cluster
+         // so clients can know the id of the server they are connected to
+         final long timeout = System.currentTimeMillis() + callTimeout;
+         while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
          {
-            final long timeout = System.currentTimeMillis() + 30000;
-            while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
+            // Now wait for the topology
+
+            try
             {
-               // Now wait for the topology
-
-               try
-               {
-                  wait(1000);
-               }
-               catch (InterruptedException ignore)
-               {
-               }
-
+               wait(1000);
+            }
+            catch (InterruptedException ignore)
+            {
             }
 
-            if (System.currentTimeMillis() > timeout && !receivedTopology)
-            {
-               throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
-            }
+         }
 
+         if (System.currentTimeMillis() > timeout && !receivedTopology)
+         {
+            throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
          }
 
          addFactory(factory);
@@ -1167,6 +1175,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    @Override
+   public String getIdentity()
+   {
+      return identity;
+   }
+
+   @Override
    public void setIdentity(String identity)
    {
       this.identity = identity;
@@ -1377,12 +1391,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
-      if (!ha)
-      {
-         // there's no topology
-         return;
-      }
-
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
