@@ -205,12 +205,12 @@
    <!-- ======================================================================================== -->
 
    <path id="core.compilation.classpath">
-      <path refid="org.jboss.netty.classpath"/>
+      <path refid="io.netty.classpath"/>
    </path>
 
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
-   	  <path refid="org.jboss.netty.classpath"/>
+   	  <path refid="io.netty.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
@@ -219,7 +219,7 @@
 	
    <path id="jms.compilation.jdk15.classpath">
       <path location="${build.core.client.java5.classes.dir}"/>
-   	  <path refid="org.jboss.netty.classpath"/>
+   	  <path refid="io.netty.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
@@ -266,7 +266,7 @@
 
    <path id="javadoc.classpath">
       <path refid="jms.compilation.classpath"/>
-      <path refid="org.jboss.netty.classpath"/>
+      <path refid="io.netty.classpath"/>
    	  <path location="${thirdparty.dir}/org/jboss/apiviz/lib/apiviz.jar" />
       <path location="${build.classes.dir}"/>
    </path>
@@ -333,7 +333,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
-      <path refid="org.jboss.netty.classpath"/>
+      <path refid="io.netty.classpath"/>
  	  <!-- we must include Apache commons logging   -->
  	  <!-- as a transitive dependency from JBoss TM -->
  	  <path refid="apache.logging.classpath"/>
@@ -362,7 +362,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
-      <path refid="org.jboss.netty.classpath"/>
+      <path refid="io.netty.classpath"/>
 	  <!-- we must include Apache commons logging   -->
 	  <!-- as a transitive dependency from JBoss TM -->
    	  <path refid="apache.logging.classpath"/>
@@ -484,7 +484,7 @@
       <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
 
-      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+      <java classname="org.jboss.netty.util.Version" classpathref="io.netty.classpath"
             outputproperty="netty.version" fork="true"/>
       <echo>setting netty version ${netty.version}</echo>
       <copy file="${src.config.dir}/common/hornetq-version.properties"
@@ -528,7 +528,7 @@
          <include name="**/hornetq/utils/**/*.java"/>
          <classpath refid="core.compilation.classpath"/>
       </javac>
-      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+      <java classname="org.jboss.netty.util.Version" classpathref="io.netty.classpath"
             outputproperty="netty.version" fork="true"/>
       <echo>setting netty version ${netty.version}</echo>
       <copy file="${src.config.dir}/common/hornetq-version.properties"
@@ -1423,7 +1423,7 @@
             <include name="jboss-jms-api.jar"/>
          </fileset>
       </copy>
-      <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+      <copy file="${io.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">
          <fileset dir="${src.config.dir}">

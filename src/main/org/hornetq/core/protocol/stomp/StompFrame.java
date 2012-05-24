@@ -93,19 +93,6 @@ class StompFrame
       return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
    }
 
-   public String asString()
-   {
-      String out = command + '\n';
-      for (Entry<String, Object> header : headers.entrySet())
-      {
-         out += header.getKey() + ": " + header.getValue() + '\n';
-      }
-      out += '\n';
-      out += new String(content);
-      return out;
-   }
-
- 
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
       if (buffer == null)
