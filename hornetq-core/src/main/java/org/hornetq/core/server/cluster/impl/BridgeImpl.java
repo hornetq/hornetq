@@ -38,8 +38,8 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HandleStatus;
-import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -99,6 +99,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final Transformer transformer;
 
+   private final Object connectionGuard = new Object();
    private volatile ClientSessionFactoryInternal csf;
 
    protected volatile ClientSessionInternal session;
@@ -110,7 +111,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
-   
+
    private boolean deliveringLargeMessage;
 
    private final String user;
@@ -323,15 +324,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       stopping = true;
-      
+
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("Bridge " + this.name + " being stopped");
       }
-      ClientSessionFactoryInternal localCSF = csf;
-
-      if (localCSF != null)
-         localCSF.cleanup();
+      cleanUpSessionFactory(csf);
 
       if (futureScheduledReconnection != null)
       {
@@ -533,7 +531,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             return HandleStatus.BUSY;
          }
-         
+
          if (deliveringLargeMessage)
          {
             return HandleStatus.BUSY;
@@ -543,7 +541,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             HornetQLogger.LOGGER.trace("Bridge " + this + " is handling reference=" + ref);
          }
-         
+
          ref.handled();
 
          refs.add(ref);
@@ -561,7 +559,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
-         
+
          if (message.isLargeMessage())
          {
             deliveringLargeMessage = true;
@@ -588,7 +586,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             producer.close();
          }
 
-         csf.cleanup();
+         cleanUpSessionFactory(csf);
       }
       catch (Throwable dontCare)
       {
@@ -629,12 +627,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             try
             {
                producer.send(dest, message);
-               
+
                // as soon as we are done sending the large message
                // we unset the delivery flag and we will call the deliveryAsync on the queue
                // so the bridge will be able to resume work
                unsetLargeMessageDelivery();
-               
+
                if (queue != null)
                {
                   queue.deliverAsync();
@@ -656,7 +654,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
       });
    }
-   
+
    /**
     * @param ref
     * @param message
@@ -668,12 +666,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // that this will throw a disconnect, we need to remove the message
       // from the acks so it will get resent, duplicate detection will cope
       // with any messages resent
-  
+
       if (HornetQLogger.LOGGER.isTraceEnabled())
       {
          HornetQLogger.LOGGER.trace("going to send message " + message);
       }
-  
+
       try
       {
          producer.send(dest, message);
@@ -685,7 +683,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          // We remove this reference as we are returning busy which means the reference will never leave the Queue.
          // because of this we have to remove the reference here
          refs.remove(ref);
-         
+
          executor.execute(new Runnable()
          {
             public void run()
@@ -693,10 +691,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                connectionFailed(e, false);
             }
          });
-  
+
          return HandleStatus.BUSY;
       }
-  
+
       return HandleStatus.HANDLED;
    }
 
@@ -775,6 +773,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    /* This is called only when the bridge is activated */
    protected void connect()
    {
+      synchronized (connectionGuard)
+      {
+
       HornetQLogger.LOGGER.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
 
       retryCount++;
@@ -873,6 +874,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          HornetQLogger.LOGGER.errorConnectingBridge(e, this);
       }
+      }
    }
 
    protected void scheduleRetryConnect()
@@ -919,16 +921,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    protected void scheduleRetryConnectFixedTimeout(final long milliseconds)
    {
-      if (csf != null)
-      {
-         try
+      try
          {
-            csf.cleanup();
+         cleanUpSessionFactory(csf);
          }
          catch (Throwable ignored)
          {
          }
-      }
+
 
       if (stopping)
          return;
@@ -1062,5 +1062,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             connect();
          }
       }
+
+   }
+
+   private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
+      {
+      if (factory != null)
+         factory.cleanup();
    }
 }
