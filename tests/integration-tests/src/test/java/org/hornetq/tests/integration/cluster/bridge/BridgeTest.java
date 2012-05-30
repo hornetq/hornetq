@@ -423,7 +423,7 @@ public class BridgeTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         myInterceptor.latch.await();
+      assertTrue("where is the countDown?", myInterceptor.latch.await(30, TimeUnit.SECONDS));
          myInterceptor.ignoreSends = false;
 
          for (int i = 0; i < numMessages; i++)
