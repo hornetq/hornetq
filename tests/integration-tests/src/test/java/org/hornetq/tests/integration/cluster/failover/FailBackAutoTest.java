@@ -45,8 +45,10 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailBackAutoTest extends FailoverTestBase
 {
-   IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private static final int NUM_MESSAGES = 100;
    private ServerLocatorInternal locator;
+   private ClientSessionFactoryInternal sf;
 
    @Override
    protected void setUp() throws Exception
@@ -57,13 +59,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
    public void testAutoFailback() throws Exception
    {
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
-      locator.setFailoverOnInitialConnection(true);
-      locator.setReconnectAttempts(-1);
-      locator.setIdentity("testAutoFailback");
-
-      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      createSessionFactory();
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
@@ -117,7 +113,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       verifyMessageOnServer(0, 1);
 
-      wrapUpSessionFactory(sf);
+      wrapUpSessionFactory();
    }
 
    /**
@@ -145,12 +141,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
    public void testAutoFailbackThenFailover() throws Exception
    {
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
-      locator.setFailoverOnInitialConnection(true);
-      locator.setReconnectAttempts(-1);
-      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-
+      createSessionFactory();
       ClientSession session = sendAndConsume(sf, true);
 
       CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
@@ -200,10 +191,56 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.close();
 
-      wrapUpSessionFactory(sf);
+      wrapUpSessionFactory();
    }
 
-   private void wrapUpSessionFactory(ClientSessionFactoryInternal sf)
+   /**
+    * Basic fail-back test.
+    * @throws Exception
+    */
+   public void testFailBack() throws Exception
+   {
+      createSessionFactory();
+      ClientSession session = sendAndConsume(sf, true);
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      session.commit();
+
+      crash(session);
+
+      session.start();
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      receiveMessages(consumer, 0, NUM_MESSAGES, true);
+      producer = session.createProducer(FailoverTestBase.ADDRESS);
+      sendMessages(session, producer, 2 * NUM_MESSAGES);
+      session.commit();
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      session.addFailureListener(listener);
+
+      liveServer.start();
+
+      assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
+      assertTrue("live initialized after restart", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+
+      session.start();
+      receiveMessages(consumer, 0, NUM_MESSAGES, true);
+   }
+
+   private void createSessionFactory() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true); // unnecessary?
+      locator.setReconnectAttempts(-1);
+      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+   }
+
+   private void wrapUpSessionFactory()
    {
       sf.close();
       Assert.assertEquals(0, sf.numSessions());
