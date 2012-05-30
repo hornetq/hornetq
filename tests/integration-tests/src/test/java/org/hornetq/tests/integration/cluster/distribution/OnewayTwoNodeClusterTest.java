@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.cluster.distribution;
 
 import junit.framework.Assert;
+
 import org.hornetq.tests.integration.IntegrationTestLogger;
 
 
@@ -215,9 +216,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       addConsumer(0, 0, "queue0", null);
 
       addConsumer(1, 1, "queue0", null);
-
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
