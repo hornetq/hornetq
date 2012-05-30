@@ -31,7 +31,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A TestFlowControlOnIgnoreLargeMessageBodyTest
  *
  * @author clebertsuconic
@@ -196,7 +196,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
       private final int numberOfMessages;
 
       private int receiveTimeout = 0;
-      
+
       private final CountDownLatch consumerCreated;
 
       LoadConsumer(final CountDownLatch consumerCreated,
@@ -244,7 +244,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
             session = connection.createSession(true, Session.SESSION_TRANSACTED);
 
             TopicSubscriber subscriber = session.createDurableSubscriber(topic, getName());
-            
+
             consumerCreated.countDown();
 
             int counter = 0;
@@ -336,7 +336,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                                                   FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
 
          LoadConsumer consumers[] = new LoadConsumer[CONSUMERS_COUNT];
-         
+
          CountDownLatch latch = new CountDownLatch(CONSUMERS_COUNT);
 
          for (int i = 0; i < consumers.length; i++)
@@ -353,8 +353,8 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          {
             consumer.start();
          }
-         
-         latch.await();
+
+         waitForLatch(latch);
 
          producer.start();
          producer.join();

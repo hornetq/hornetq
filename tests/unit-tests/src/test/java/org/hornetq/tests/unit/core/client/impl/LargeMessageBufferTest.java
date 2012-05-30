@@ -326,7 +326,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       t.start();
 
-      latchGo.await();
+      UnitTestCase.waitForLatch(latchGo);
 
       buffer.cancel();
 
@@ -610,7 +610,7 @@ public class LargeMessageBufferTest extends UnitTestCase
          }
       });
 
-      latchBytesWritten1.await();
+      UnitTestCase.waitForLatch(latchBytesWritten1);
 
       try
       {

@@ -31,6 +31,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A MultiThreadConsumerStressTest
@@ -111,7 +112,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          threads.add(cons[i]);
       }
 
-      latchReady.await();
+      UnitTestCase.waitForLatch(latchReady);
       latchStart.countDown();
 
       for (BaseThread t : threads)
@@ -245,7 +246,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          latchReady.countDown();
          try
          {
-            latchStart.await();
+            UnitTestCase.waitForLatch(latchStart);
             session = sf.createSession(false, false);
             ClientProducer prod = session.createProducer(ADDRESS);
             for (int i = 0; i < numberOfMessages; i++)
@@ -306,7 +307,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
          latchReady.countDown();
          try
          {
-            latchStart.await();
+            UnitTestCase.waitForLatch(latchStart);
             session = sf.createSession(false, false);
             session.start();
             ClientConsumer cons = session.createConsumer(QUEUE);

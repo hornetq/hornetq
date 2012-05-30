@@ -1197,7 +1197,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             try
             {
                latchReady.countDown();
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
                {
                   journalImpl.appendAddRecordTransactional(i, i, (byte)1, new SimpleEncoding(50, (byte)1));
@@ -1221,7 +1221,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             try
             {
                latchReady.countDown();
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
                {
                   Integer toDelete = queueDelete.poll(10, TimeUnit.SECONDS);
@@ -1243,7 +1243,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       t1.start();
       t2.start();
 
-      latchReady.await();
+      UnitTestCase.waitForLatch(latchReady);
       latchStart.countDown();
 
       t1.join();

@@ -22,6 +22,7 @@ import javax.jms.Message;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -136,7 +137,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       }, "receiver thread");
       receiverThread.start();
 
-      latch.await();
+      UnitTestCase.waitForLatch(latch);
       ProxyAssertSupport.assertNull(expectedMessage);
    }
 
@@ -207,8 +208,8 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       }, "sender thread");
       senderThread.start();
 
-      senderLatch.await();
-      receiverLatch.await();
+      UnitTestCase.waitForLatch(senderLatch);
+      UnitTestCase.waitForLatch(receiverLatch);
 
       if (testFailed)
       {
@@ -290,7 +291,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       queueConsumer.close();
 
       // wait for the reading thread to conclude
-      latch.await();
+      UnitTestCase.waitForLatch(latch);
 
       log.trace("Expected message:" + expectedMessage);
 

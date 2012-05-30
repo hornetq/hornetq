@@ -196,7 +196,7 @@ public class MessageHandlerTest extends ServiceTestBase
       session.start();
 
 
-      latch.await();
+      waitForLatch(latch);
 
       Thread.sleep(100);
 
@@ -288,7 +288,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       Thread.sleep(100);
 
@@ -374,7 +374,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       Thread.sleep(100);
 
