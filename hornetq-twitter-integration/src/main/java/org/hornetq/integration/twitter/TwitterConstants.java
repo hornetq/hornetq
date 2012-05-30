@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * @author <a href="tm.igarashi@gmail.com">Tomohisa Igarashi</a>
  */
-public class TwitterConstants
+public final class TwitterConstants
 {
    public static final String KEY_ID = "id";
    public static final String KEY_SOURCE = "source";
@@ -37,7 +37,7 @@ public class TwitterConstants
    public static final String KEY_GEO_LOCATION_LONGITUDE = "geoLocation.longitude";
    public static final String KEY_PLACE_ID = "place.id";
    public static final String KEY_DISPLAY_COODINATES = "displayCoodinates";
-   
+
    public static final int DEFAULT_POLLING_INTERVAL_SECS = 10;
    public static final int DEFAULT_PAGE_SIZE = 100;
    public static final int FIRST_ATTEMPT_PAGE_SIZE = 1;
@@ -75,7 +75,7 @@ public class TwitterConstants
       REQUIRED_INCOMING_CONNECTOR_KEYS.add(QUEUE_NAME);
 
       ALLOWABLE_OUTGOING_CONNECTOR_KEYS = new HashSet<String>();
-      ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(CONSUMER_KEY); 
+      ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(CONSUMER_KEY);
       ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(CONSUMER_SECRET);
       ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(ACCESS_TOKEN);
       ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(ACCESS_TOKEN_SECRET);
@@ -87,5 +87,10 @@ public class TwitterConstants
       REQUIRED_OUTGOING_CONNECTOR_KEYS.add(ACCESS_TOKEN);
       REQUIRED_OUTGOING_CONNECTOR_KEYS.add(ACCESS_TOKEN_SECRET);
       REQUIRED_OUTGOING_CONNECTOR_KEYS.add(QUEUE_NAME);
+   }
+
+   private TwitterConstants()
+   {
+      // utility class
    }
 }

@@ -53,19 +53,11 @@ import org.hornetq.tests.util.RandomUtil;
 public class BridgeControlTest extends ManagementTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server_0;
 
    private BridgeConfiguration bridgeConfig;
 
    private HornetQServer server_1;
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testAttributes() throws Exception
    {
@@ -130,10 +122,6 @@ public class BridgeControlTest extends ManagementTestBase
                                                         .getSimpleStringProperty(new SimpleString("name"))
                                                         .toString());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
@@ -208,9 +196,4 @@ public class BridgeControlTest extends ManagementTestBase
    {
       return ManagementControlHelper.createBridgeControl(name, mbeanServer);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

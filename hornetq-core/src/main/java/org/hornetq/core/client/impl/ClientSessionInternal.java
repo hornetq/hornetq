@@ -26,7 +26,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A ClientSessionInternal
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ClientSessionInternal extends ClientSession
@@ -34,13 +34,13 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws HornetQException;
-   
+
    void individualAcknowledge(long consumerID, long messageID) throws HornetQException;
 
    boolean isCacheLargeMessageClient();
 
    int getMinLargeMessageSize();
-   
+
    boolean isCompressLargeMessages();
 
    void expire(long consumerID, long messageID) throws HornetQException;
@@ -64,10 +64,10 @@ public interface ClientSessionInternal extends ClientSession
    void handleFailover(CoreRemotingConnection backupConnection);
 
    RemotingConnection getConnection();
-   
+
    Channel getChannel();
 
-   void cleanUp(boolean failingOver) throws Exception;
+   void cleanUp(boolean failingOver) throws HornetQException;
 
    void returnBlocking();
 
@@ -82,15 +82,15 @@ public interface ClientSessionInternal extends ClientSession
    void sendProducerCreditsMessage(int credits, SimpleString address);
 
    ClientProducerCredits getCredits(SimpleString address, boolean anon);
-   
+
    void returnCredits(SimpleString address);
 
    void handleReceiveProducerCredits(SimpleString address, int credits);
-   
+
    ClientProducerCreditManager getProducerCreditManager();
-   
+
    void setAddress(Message message, SimpleString address);
-   
+
    void setPacketSize(int packetSize);
 
    void resetIfNeeded() throws HornetQException;
