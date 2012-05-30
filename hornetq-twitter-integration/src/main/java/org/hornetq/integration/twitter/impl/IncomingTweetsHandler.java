@@ -209,7 +209,7 @@ public class IncomingTweetsHandler implements ConnectorService
        */
       public void run()
       {
-         // Avoid cancelling the task with RuntimeException
+         // Avoid canceling the task with RuntimeException
          try
          {
             poll();

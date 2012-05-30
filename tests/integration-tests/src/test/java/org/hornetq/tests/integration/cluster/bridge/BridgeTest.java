@@ -69,6 +69,10 @@ import org.hornetq.utils.LinkedListIterator;
 public class BridgeTest extends ServiceTestBase
 {
 
+   private HornetQServer server0;
+   private HornetQServer server1;
+   private ServerLocator locator;
+
    protected boolean isNetty()
    {
       return false;
@@ -108,12 +112,7 @@ public class BridgeTest extends ServiceTestBase
 
    public void internaltestSimpleBridge(final boolean largeMessage, final boolean useFiles) throws Exception
    {
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
-         Map<String, Object> server0Params = new HashMap<String, Object>();
+      Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(isNetty(), 0, useFiles, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
@@ -238,31 +237,7 @@ public class BridgeTest extends ServiceTestBase
 
          sf1.close();
 
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-
+      closeFields();
       assertEquals(0, loadQueues(server0).size());
 
    }
@@ -293,9 +268,6 @@ public class BridgeTest extends ServiceTestBase
             latch = new CountDownLatch(numberOfIgnores);
          }
 
-         /* (non-Javadoc)
-          * @see org.hornetq.api.core.Interceptor#intercept(org.hornetq.core.protocol.core.Packet, org.hornetq.spi.core.protocol.RemotingConnection)
-          */
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             if (ignoreSends && packet instanceof SessionSendMessage ||
@@ -315,17 +287,12 @@ public class BridgeTest extends ServiceTestBase
 
       MyInterceptor myInterceptor = new MyInterceptor(3);
 
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
          Map<String, Object> server0Params = new HashMap<String, Object>();
-         server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
+      server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
          addTargetParameters(server1Params);
-         server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
+      server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
@@ -333,7 +300,6 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
-
          TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
 
          HashMap<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
@@ -388,10 +354,10 @@ public class BridgeTest extends ServiceTestBase
          server1.getRemotingService().addInterceptor(myInterceptor);
 
          server0.start();
-         locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc));
-         ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
+      locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc));
+      ClientSessionFactory sf0 = addSessionFactory(locator.createSessionFactory(server0tc));
 
-         ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
+      ClientSessionFactory sf1 = addSessionFactory(locator.createSessionFactory(server1tc));
 
          ClientSession session0 = sf0.createSession(false, true, true);
 
@@ -423,7 +389,7 @@ public class BridgeTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         myInterceptor.latch.await();
+      assertTrue("where is the countDown?", myInterceptor.latch.await(30, TimeUnit.SECONDS));
          myInterceptor.ignoreSends = false;
 
          for (int i = 0; i < numMessages; i++)
@@ -451,31 +417,7 @@ public class BridgeTest extends ServiceTestBase
          sf0.close();
 
          sf1.close();
-
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
+      closeFields();
       assertEquals("there should be no queues", 0, loadQueues(server0).size());
    }
 
@@ -531,12 +473,6 @@ public class BridgeTest extends ServiceTestBase
    {
 
       final int numMessages = 10;
-
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
 
          Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(isNetty(), 0, useFiles, server0Params);
@@ -681,32 +617,7 @@ public class BridgeTest extends ServiceTestBase
          sf0.close();
 
          sf1.close();
-      }
-
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-      }
-
+      closeFields();
       if (useFiles)
       {
          Map<Long, AtomicInteger> counters = loadQueues(server0);
@@ -724,12 +635,6 @@ public class BridgeTest extends ServiceTestBase
    // Created to verify JBPAPP-6057
    public void testStartLater() throws Exception
    {
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
-
          Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
 
@@ -852,32 +757,7 @@ public class BridgeTest extends ServiceTestBase
          session0.close();
 
          sf0.close();
-      }
-
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-      }
-
+      closeFields();
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -885,13 +765,7 @@ public class BridgeTest extends ServiceTestBase
 
    public void testWithDuplicates() throws Exception
    {
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
-
-         Map<String, Object> server0Params = new HashMap<String, Object>();
+      Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
@@ -1041,35 +915,18 @@ public class BridgeTest extends ServiceTestBase
          session0.close();
 
          sf0.close();
-      }
 
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-      }
-
+      closeFields();
       assertEquals(0, loadQueues(server0).size());
 
 
+   }
+
+   private void closeFields() throws Exception
+   {
+      locator.close();
+      server0.stop();
+      server1.stop();
    }
 
    public void testWithTransformer() throws Exception
@@ -1085,11 +942,11 @@ public class BridgeTest extends ServiceTestBase
    public void internaltestWithTransformer(final boolean useFiles) throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
+      server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       addTargetParameters(server1Params);
-      HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
+      server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -1139,9 +996,6 @@ public class BridgeTest extends ServiceTestBase
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      ServerLocator locator = null;
-      try
-      {
          server1.start();
          server0.start();
 
@@ -1202,32 +1056,6 @@ public class BridgeTest extends ServiceTestBase
          sf0.close();
 
          sf1.close();
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-
-         try
-         {
-            server0.stop();
-         }
-         catch (Exception ignored)
-         {
-
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Exception ignored)
-         {
-
-         }
-      }
 
       assertEquals(0, loadQueues(server0).size());
 
@@ -1788,12 +1616,7 @@ public class BridgeTest extends ServiceTestBase
 
    public void testNullForwardingAddress() throws Exception
    {
-      HornetQServer server0 = null;
-      HornetQServer server1 = null;
-      ServerLocator locator = null;
-      try
-      {
-         Map<String, Object> server0Params = new HashMap<String, Object>();
+      Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
@@ -1910,30 +1733,7 @@ public class BridgeTest extends ServiceTestBase
          sf0.close();
 
          sf1.close();
-
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-         try
-         {
-            server0.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            server1.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
+      closeFields();
 
       assertEquals(0, loadQueues(server0).size());
 

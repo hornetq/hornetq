@@ -447,21 +447,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       waitLatch.countDown();
    }
 
-   public void close()
+   private void interruptConnectAndCloseAllSessions(boolean close)
    {
-      if (closed)
-      {
-         return;
-      }
-
       exitLoop = true;
       synchronized (inCreateSessionGuard)
       {
          if (inCreateSessionLatch != null)
             inCreateSessionLatch.countDown();
       }
-
-      forceReturnChannel1();
+         forceReturnChannel1();
 
       // we need to stop the factory from connecting if it is in the middle of trying to failover before we get the lock
       causeExit();
@@ -469,19 +463,22 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          synchronized (failoverLock)
          {
-            HashSet<ClientSession> sessionsToClose;
+            HashSet<ClientSessionInternal> sessionsToClose;
             synchronized (sessions)
             {
-               sessionsToClose = new HashSet<ClientSession>(sessions);
+               sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
             }
             // work on a copied set. the session will be removed from sessions when session.close() is called
-            for (ClientSession session : sessionsToClose)
+            for (ClientSessionInternal session : sessionsToClose)
             {
                try
                {
-                  session.close();
+                  if (close)
+                     session.close();
+                  else
+                     session.cleanUp(false);
                }
-               catch (HornetQException e)
+               catch (Exception e)
                {
                   HornetQLogger.LOGGER.unableToCloseSession(e);
                }
@@ -492,6 +489,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       closed = true;
+   }
+
+   public void close()
+   {
+      if (closed)
+      {
+         return;
+      }
+      interruptConnectAndCloseAllSessions(true);
 
       serverLocator.factoryClosed(this);
    }
@@ -503,32 +509,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return;
       }
 
-      // we need to stop the factory from connecting if it is in the middle of trying to failover before we get the lock
-      causeExit();
-      synchronized (createSessionLock)
-      {
-         HashSet<ClientSessionInternal> sessionsToClose;
-         synchronized (sessions)
-         {
-            sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
-         }
-         // work on a copied set. the session will be removed from sessions when session.close() is called
-         for (ClientSessionInternal session : sessionsToClose)
-         {
-            try
-            {
-               session.cleanUp(false);
-            }
-            catch (Exception e)
-            {
-               HornetQLogger.LOGGER.unableToCloseSession(e);
-            }
-         }
-
-         checkCloseConnection();
-      }
-
-      closed = true;
+      interruptConnectAndCloseAllSessions(false);
    }
 
    public boolean isClosed()
@@ -553,15 +534,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       stopPingingAfterOne = false;
    }
-
-   // Protected
-   // ------------------------------------------------------------------------------------
-
-   // Package Private
-   // ------------------------------------------------------------------------------
-
-   // Private
-   // --------------------------------------------------------------------------------------
 
    private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
@@ -1642,7 +1614,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             if (!connection.checkDataReceived())
             {
-               
+
                // We use a different thread to send the fail
                // but the exception has to be created here to preserve the stack trace
                final HornetQException me = HornetQMessageBundle.BUNDLE.connectionTimedOut(connection.getTransportConnection());
