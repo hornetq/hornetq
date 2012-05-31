@@ -290,8 +290,12 @@
                 </jms-connection-factories>
                 <jms-destinations>
                     <jms-queue name="testQueue">
-                        <entry name="queue/test"/>
+                        <entry name="queue/testQueue"/>
                         <entry name="java:jboss/exported/jms/queues/testQueue"/>
+                    </jms-queue>
+                    <jms-queue name="replyQueue">
+                        <entry name="queue/replyQueue"/>
+                        <entry name="java:jboss/exported/jms/queues/replyQueue"/>
                     </jms-queue>
                 </jms-destinations>
             </hornetq-server>

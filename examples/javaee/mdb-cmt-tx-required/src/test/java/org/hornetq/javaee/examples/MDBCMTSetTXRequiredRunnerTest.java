@@ -21,7 +21,8 @@
 */
 package org.hornetq.javaee.examples;
 
-import org.hornetq.javaee.example.server.MDB_CMT_TxNotSupported;
+import org.hornetq.javaee.example.MDB_CMT_TxRequiredClientExample;
+import org.hornetq.javaee.example.server.MDB_CMT_TxRequiredExample;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -44,7 +45,7 @@ public class MDBCMTSetTXRequiredRunnerTest
    {
 
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
-      ejbJar.addClass(MDB_CMT_TxNotSupported.class);
+      ejbJar.addClass(MDB_CMT_TxRequiredExample.class);
       System.out.println(ejbJar.toString(true));
       return ejbJar;
    }
@@ -52,7 +53,9 @@ public class MDBCMTSetTXRequiredRunnerTest
    @Test
    public void runExample() throws Exception
    {
-      MDB_CMT_TxNotSupportedClientExample.main(null);
+      MDB_CMT_TxRequiredClientExample.main(null);
+      //give the example time to run
+      Thread.sleep(10000);
    }
 
 

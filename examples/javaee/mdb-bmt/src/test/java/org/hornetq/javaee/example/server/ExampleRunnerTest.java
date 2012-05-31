@@ -67,6 +67,8 @@ public class ExampleRunnerTest
    public void runExample() throws Exception
    {
       MDB_BMTClientExample.main(null);
+      //give the example time to run
+      Thread.sleep(1000);
    }
 
 

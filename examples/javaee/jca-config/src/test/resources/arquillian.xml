@@ -14,7 +14,7 @@ This feature can also be controlled using the system property arquillian.deploym
    <group qualifier="clustering-all">
       <container qualifier="node-0" mode="manual" default="true"  managed="false" >
            <configuration>
-               <property name="jbossHome">${basedir}/target/jbossas-node-0</property>
+               <property name="jbossHome">${basedir}/target/jbossas-node0</property>
                <property name="javaVmArguments">-Djboss.node.name=node-0</property>
                <property name="serverConfig">standalone-example.xml</property>
             <!-- -Djboss.inst is not necessarily needed, only in case the test case neeeds path to the instance it runs in.
@@ -30,7 +30,7 @@ This feature can also be controlled using the system property arquillian.deploym
        </container>
      <container qualifier="node-1" mode="manual" managed="false">
            <configuration>
-               <property name="jbossHome">${basedir}/target/jbossas-node-1</property>
+               <property name="jbossHome">${basedir}/target/jbossas-node1</property>
                <property name="javaVmArguments">-Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=100</property>
                <property name="serverConfig">standalone-example2.xml</property>
                <property name="allowConnectingToRunningServer">true</property>

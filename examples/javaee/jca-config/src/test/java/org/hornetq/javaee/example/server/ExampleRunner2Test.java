@@ -78,17 +78,17 @@ public class ExampleRunner2Test
      ejbJar.addClass(StatelessSenderService.class);
      ejbJar.addClass(StatelessSender.class);
      // Generate the manifest with it's dependencies
-        ejbJar.setManifest(new Asset()
+     ejbJar.setManifest(new Asset()
+     {
+        public InputStream openStream()
         {
-           public InputStream openStream()
-           {
-              ManifestBuilder builder = ManifestBuilder.newInstance();
-              StringBuffer dependencies = new StringBuffer();
-              dependencies.append("org.hornetq");
-              builder.addManifestHeader("Dependencies", dependencies.toString());
-              return builder.openStream();
-           }
-        });
+           ManifestBuilder builder = ManifestBuilder.newInstance();
+           StringBuffer dependencies = new StringBuffer();
+           dependencies.append("org.hornetq");
+           builder.addManifestHeader("Dependencies", dependencies.toString());
+           return builder.openStream();
+        }
+     });
      System.out.println(ejbJar.toString(true));
      return ejbJar;
   }
