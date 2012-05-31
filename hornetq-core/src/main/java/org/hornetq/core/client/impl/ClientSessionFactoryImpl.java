@@ -38,6 +38,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.protocol.core.Channel;
@@ -74,13 +75,8 @@ import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
 /**
- * A ClientSessionFactoryImpl
- *
- * Encapsulates a connection to a server
- *
+ * @see ClientSessionFactory
  * @author Tim Fox
- *
- *
  */
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
 {
@@ -461,34 +457,49 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       causeExit();
       synchronized (createSessionLock)
       {
-         synchronized (failoverLock)
+         if (close)
          {
-            HashSet<ClientSessionInternal> sessionsToClose;
-            synchronized (sessions)
+            synchronized (failoverLock)
             {
-               sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+               closeCleanSessions(close);
             }
-            // work on a copied set. the session will be removed from sessions when session.close() is called
-            for (ClientSessionInternal session : sessionsToClose)
-            {
-               try
-               {
-                  if (close)
-                     session.close();
-                  else
-                     session.cleanUp(false);
-               }
-               catch (Exception e)
-               {
-                  HornetQLogger.LOGGER.unableToCloseSession(e);
-               }
-            }
-
-            checkCloseConnection();
+         }
+         else
+         {
+            closeCleanSessions(close);
          }
       }
 
       closed = true;
+   }
+
+   /**
+    * @param close
+    */
+   private void closeCleanSessions(boolean close)
+   {
+      HashSet<ClientSessionInternal> sessionsToClose;
+      synchronized (sessions)
+      {
+         sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+      }
+      // work on a copied set. the session will be removed from sessions when session.close() is
+      // called
+      for (ClientSessionInternal session : sessionsToClose)
+      {
+         try
+         {
+            if (close)
+               session.close();
+            else
+               session.cleanUp(false);
+         }
+         catch (Exception e)
+         {
+            HornetQLogger.LOGGER.unableToCloseSession(e);
+         }
+      }
+      checkCloseConnection();
    }
 
    public void close()
@@ -581,81 +592,89 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          // Then release failoverLock
 
          // The other side of the bargain - during createSession:
-         // The calling thread must get the failoverLock and get its' connections when this is locked.
+         // The calling thread must get the failoverLock and get its' connections when this is
+         // locked.
          // While this is still locked it must then get the channel1 lock
          // It can then release the failoverLock
          // It should catch HornetQException.INTERRUPTED in the call to channel.sendBlocking
          // It should then return its connections, with channel 1 lock still held
-         // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
+         // It can then release the channel 1 lock, and retry (which will cause locking on
+         // failoverLock
          // until failover is complete
 
          if (reconnectAttempts != 0)
          {
-            lockChannel1();
-
-            final boolean needToInterrupt;
-
-            CountDownLatch exitLockLatch;
-            synchronized (inCreateSessionGuard)
+            if (lockChannel1())
             {
-               needToInterrupt = inCreateSession;
-               exitLockLatch = inCreateSessionLatch;
-            }
 
-            unlockChannel1();
+               final boolean needToInterrupt;
 
-            if (needToInterrupt)
-            {
-               // Forcing return all channels won't guarantee that any blocked thread will return immediately
-               // So we need to wait for it
-               forceReturnChannel1();
+               CountDownLatch exitLockLatch;
+               synchronized (inCreateSessionGuard)
+               {
+                  needToInterrupt = inCreateSession;
+                  exitLockLatch = inCreateSessionLatch;
+               }
 
-               // Now we need to make sure that the thread has actually exited and returned it's connections
-               // before failover occurs
+               unlockChannel1();
 
-               while (inCreateSession && !exitLoop)
+               if (needToInterrupt)
+               {
+                  // Forcing return all channels won't guarantee that any blocked thread will return
+                  // immediately
+                  // So we need to wait for it
+                  forceReturnChannel1();
+
+                  // Now we need to make sure that the thread has actually exited and returned it's
+                  // connections
+                  // before failover occurs
+
+                  while (inCreateSession && !exitLoop)
+                  {
+                     try
+                     {
+                        exitLockLatch.await(500, TimeUnit.MILLISECONDS);
+                     }
+                     catch (InterruptedException e)
+                     {
+                     }
+                  }
+               }
+
+               // Now we absolutely know that no threads are executing in or blocked in
+               // createSession,
+               // and no
+               // more will execute it until failover is complete
+
+               // So.. do failover / reconnection
+
+               CoreRemotingConnection oldConnection = connection;
+
+               connection = null;
+
+               Connector localConnector = connector;
+               if (localConnector != null)
                {
                   try
                   {
-                     exitLockLatch.await(500, TimeUnit.MILLISECONDS);
+                     localConnector.close();
                   }
-                  catch (InterruptedException e)
+                  catch (Exception ignore)
                   {
+                     // no-op
                   }
                }
-            }
 
-            // Now we absolutely know that no threads are executing in or blocked in createSession, and no
-            // more will execute it until failover is complete
+               cancelScheduledTasks();
 
-            // So.. do failover / reconnection
+               connector = null;
 
-            CoreRemotingConnection oldConnection = connection;
+               reconnectSessions(oldConnection, reconnectAttempts);
 
-            connection = null;
-
-            Connector localConnector = connector;
-            if (localConnector != null)
-            {
-               try
+               if (oldConnection != null)
                {
-                  localConnector.close();
+                  oldConnection.destroy();
                }
-               catch (Exception ignore)
-               {
-                  // no-op
-               }
-            }
-
-            cancelScheduledTasks();
-
-            connector = null;
-
-            reconnectSessions(oldConnection, reconnectAttempts);
-
-            if (oldConnection != null)
-            {
-               oldConnection.destroy();
             }
          }
          else
@@ -736,7 +755,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   channel1 = connection.getChannel(1, -1);
 
                   // Lock it - this must be done while the failoverLock is held
-                  channel1.getLock().lock();
+                  while (!channel1.getLock().tryLock(200, TimeUnit.MILLISECONDS))
+                  {
+                     if (exitLoop)
+                        throw HornetQMessageBundle.BUNDLE.clientSessionClosed();
+                  }
 
                   lock = channel1.getLock();
                } // We can now release the failoverLock
@@ -1343,21 +1366,30 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          public ConnectorFactory run()
          {
-            return (ConnectorFactory) ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
+            return (ConnectorFactory)ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
          }
       });
    }
 
-   private void lockChannel1()
+   private boolean lockChannel1()
    {
-      if (connection != null)
-      {
-         Channel channel1 = connection.getChannel(1, -1);
+      CoreRemotingConnection connection0 = connection;
+      if (connection0 == null)
+         return false;
 
-         if (channel1 != null)
+      Channel channel1 = connection0.getChannel(1, -1);
+      if (channel1 == null)
+         return false;
+      try
          {
-            channel1.getLock().lock();
+         while (!channel1.getLock().tryLock(200, TimeUnit.MILLISECONDS))
+            if (exitLoop)
+               return false;
+         return true;
          }
+      catch (InterruptedException e)
+      {
+         return false;
       }
    }
 
