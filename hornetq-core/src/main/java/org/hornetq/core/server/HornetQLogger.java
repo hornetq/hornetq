@@ -450,7 +450,10 @@ public interface HornetQLogger extends BasicLogger
    void errorStartingLocator(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112045, value = "I'm closing a Server Locator you left open. Please make sure you close all Server Locators explicitly before letting them go out of scope! {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 112045,
+            value = "Closing a Server Locator left open. Please make sure you close all Server Locators explicitly before letting them go out of scope! {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void serverLocatorNotClosed(@Cause Exception e, int identity);
 
    @LogMessage(level = Logger.Level.WARN)
