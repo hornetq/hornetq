@@ -109,6 +109,9 @@
             <configuration>
                <skipTests>${skipJoramTests}</skipTests>
                <argLine>-Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
+               <excludes>
+                  <exclude>org/objectweb/**</exclude>
+               </excludes>
             </configuration>
          </plugin>
       </plugins>
