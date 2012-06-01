@@ -209,7 +209,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       Assert.assertFalse(handler.failed);
 
@@ -297,7 +297,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       try
       {
@@ -412,7 +412,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       Thread.sleep(100);
 
@@ -514,7 +514,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
       consumer.setMessageHandler(handler);
 
-      latch.await();
+      waitForLatch(latch);
 
       Thread.sleep(100);
 

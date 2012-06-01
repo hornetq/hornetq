@@ -14,20 +14,14 @@
 package org.hornetq.tests.integration.cluster.distribution;
 
 
-import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A NettyOneWayTwoNodeClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 2 Feb 2009 20:53:33
- *
- *
  */
 public class NettyOneWayTwoNodeClusterTest extends OnewayTwoNodeClusterTest
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
    protected boolean isNetty()

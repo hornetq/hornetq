@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
@@ -87,7 +89,14 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -1717,4 +1726,16 @@ public abstract class UnitTestCase extends TestCase
       void run() throws Exception;
    }
 
+   /**
+    * Asserts that latch completes within a (rather large interval).
+    * <p>
+    * Use this instead of just calling {@code latch.await()}. Otherwise your test may hang the whole
+    * test run if it fails to count-down the latch.
+    * @param latch
+    * @throws InterruptedException
+    */
+   public static void waitForLatch(CountDownLatch latch) throws InterruptedException
+   {
+      assertTrue("Latch has got to return within a minute", latch.await(1, TimeUnit.MINUTES));
+   }
 }

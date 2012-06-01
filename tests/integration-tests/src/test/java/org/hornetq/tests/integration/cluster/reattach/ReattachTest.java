@@ -569,7 +569,7 @@ public class ReattachTest extends ServiceTestBase
             threads[i].start();
          }
 
-         alignLatch.await();
+         waitForLatch(alignLatch);
 
          timer.schedule(new TimerTask()
          {
@@ -691,7 +691,7 @@ public class ReattachTest extends ServiceTestBase
          }
       };
 
-      alignLatch.await();
+      waitForLatch(alignLatch);
 
       t.start();
 

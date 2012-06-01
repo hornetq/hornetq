@@ -120,9 +120,9 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
          }
       };
       Executors.defaultThreadFactory().newThread(r).start();
-      latch.await();
+      waitForLatch(latch);
       startBackupFinishSyncing();
-      latch2.await();
+      UnitTestCase.waitForLatch(latch2);
       crash(session);
       assertFalse("no exceptions while sending message", caughtException.get());
 

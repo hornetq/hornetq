@@ -87,7 +87,7 @@ public class AutogroupIdTest extends ServiceTestBase
          {
             producer.send(session.createMessage(false));
          }
-         latch.await();
+      waitForLatch(latch);
 
          session.close();
 
@@ -143,7 +143,7 @@ public class AutogroupIdTest extends ServiceTestBase
          {
             producer2.send(session.createMessage(false));
          }
-         latch.await();
+      waitForLatch(latch);
 
          session.close();
 
@@ -189,7 +189,7 @@ public class AutogroupIdTest extends ServiceTestBase
          {
             producer.send(session.createMessage(false));
          }
-         latch.await();
+      waitForLatch(latch);
 
          session.close();
 

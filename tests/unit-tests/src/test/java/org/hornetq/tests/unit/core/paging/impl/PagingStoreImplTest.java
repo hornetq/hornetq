@@ -554,7 +554,7 @@ public class PagingStoreImplTest extends UnitTestCase
             try
             {
                // Wait every producer to produce at least one message
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
 
                while (aliveProducers.get() > 0)
                {

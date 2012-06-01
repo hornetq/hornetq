@@ -52,6 +52,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       return suite;
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -64,7 +65,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       final String extension = "hq";
       final int maxIO = 500;
 
-      final String journalDir = getTestDir(); 
+      final String journalDir = getTestDir();
       final int bufferSize = 490 * 1024;
       final int bufferTimeout = (int)(1000000000d / 2000);
       final boolean logRates = true;
@@ -124,7 +125,7 @@ public class JournalPerfTuneTest extends UnitTestCase
 
    class TestCallback implements IOCompletion
    {
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
 
       TestCallback(final int counts)
       {
@@ -133,7 +134,7 @@ public class JournalPerfTuneTest extends UnitTestCase
 
       public void await() throws Exception
       {
-         latch.await();
+         waitForLatch(latch);
       }
 
       public void storeLineUp()
@@ -143,7 +144,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       public void done()
       {
          latch.countDown();
-         
+
          log.info(latch.getCount());
       }
 
@@ -153,6 +154,7 @@ public class JournalPerfTuneTest extends UnitTestCase
 
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       journal.stop();
@@ -186,7 +188,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       callback.await();
    }
 
-   private AtomicLong idGen = new AtomicLong(0);
+   private final AtomicLong idGen = new AtomicLong(0);
 
    private TestCallback callback;
 
@@ -199,6 +201,7 @@ public class JournalPerfTuneTest extends UnitTestCase
          this.iters = iters;
       }
 
+      @Override
       public void run()
       {
          try

@@ -43,7 +43,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    private final ReferenceQueue<V> refQueue = new ReferenceQueue<V>();
 
    private final Map<K, AggregatedSoftReference> mapDelegate = new HashMap<K, AggregatedSoftReference>();
-   
+
    private final AtomicLong usedCounter = new AtomicLong(0);
 
    private int maxElements;
@@ -80,7 +80,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#size()
     */
    public int size()
@@ -90,7 +89,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#isEmpty()
     */
    public boolean isEmpty()
@@ -101,7 +99,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    /**
     * @param key
-    * @return
     * @see java.util.Map#containsKey(java.lang.Object)
     */
    public boolean containsKey(final Object key)
@@ -112,7 +109,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    /**
     * @param value
-    * @return
     * @see java.util.Map#containsValue(java.lang.Object)
     */
    public boolean containsValue(final Object value)
@@ -132,7 +128,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    /**
     * @param key
-    * @return
     * @see java.util.Map#get(java.lang.Object)
     */
    public V get(final Object key)
@@ -153,7 +148,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    /**
     * @param key
     * @param value
-    * @return
     * @see java.util.Map#put(java.lang.Object, java.lang.Object)
     */
    public V put(final K key, final V value)
@@ -188,18 +182,18 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
                usedReferences.add(ref);
             }
          }
-         
+
          for (AggregatedSoftReference ref : usedReferences)
          {
             if (ref.used > 0)
             {
                Object removed = mapDelegate.remove(ref.key);
-               
+
                if (isTrace)
                {
                   HornetQLogger.LOGGER.trace("Removing " + removed + " with id = " + ref.key + " from SoftValueHashMap");
                }
-   
+
                if (mapDelegate.size() <= maxElements)
                {
                   break;
@@ -243,7 +237,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    /**
     * @param key
-    * @return
     * @see java.util.Map#remove(java.lang.Object)
     */
    public V remove(final Object key)
@@ -274,7 +267,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * 
     * @see java.util.Map#clear()
     */
    public void clear()
@@ -283,7 +275,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#keySet()
     */
    public Set<K> keySet()
@@ -293,7 +284,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#values()
     */
    public Collection<V> values()
@@ -314,7 +304,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#entrySet()
     */
    public Set<java.util.Map.Entry<K, V>> entrySet()
@@ -334,7 +323,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    /**
     * @param o
-    * @return
     * @see java.util.Map#equals(java.lang.Object)
     */
    @Override
@@ -345,7 +333,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * @return
     * @see java.util.Map#hashCode()
     */
    @Override
@@ -399,17 +386,12 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          super(referent, refQueue);
          this.key = key;
       }
-      
-      /* (non-Javadoc)
-       * @see java.lang.Object#toString()
-       */
+
       @Override
       public String toString()
       {
          return "AggregatedSoftReference [key=" + key + ", used=" + used + "]";
       }
-
-      
    }
 
    static final class EntryElement<K, V> implements Map.Entry<K, V>

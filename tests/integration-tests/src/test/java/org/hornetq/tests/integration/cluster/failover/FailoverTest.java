@@ -393,7 +393,6 @@ public class FailoverTest extends FailoverTestBase
          ClientMessage message = session.createMessage(true);
          message.putIntProperty("counter", i);
 
-         System.out.println("sending message: " + i);
          producer.send(message);
 
       }
@@ -441,7 +440,6 @@ public class FailoverTest extends FailoverTestBase
          ClientMessage message = session.createMessage(true);
          message.putIntProperty("counter", i);
 
-         System.out.println("sending message: " + i);
          producer.send(message);
       }
 

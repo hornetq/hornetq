@@ -421,7 +421,7 @@ public class SimpleStringTest extends TestCase
             x[i].start();
          }
 
-         latch.await();
+         UnitTestCase.waitForLatch(latch);
          start.countDown();
 
          for (T t : x)

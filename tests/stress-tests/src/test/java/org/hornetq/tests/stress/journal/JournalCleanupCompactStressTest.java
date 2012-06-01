@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -43,6 +42,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -60,7 +60,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
 
    private static final int MAX_WRITES = 20000;
-   
+
    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
    // We want to maximize the difference between appends and deles, or we could get out of memory
@@ -68,13 +68,13 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    private volatile boolean running;
 
-   private AtomicInteger errors = new AtomicInteger(0);
+   private final AtomicInteger errors = new AtomicInteger(0);
 
-   private AtomicInteger numberOfRecords = new AtomicInteger(0);
+   private final AtomicInteger numberOfRecords = new AtomicInteger(0);
 
-   private AtomicInteger numberOfUpdates = new AtomicInteger(0);
+   private final AtomicInteger numberOfUpdates = new AtomicInteger(0);
 
-   private AtomicInteger numberOfDeletes = new AtomicInteger(0);
+   private final AtomicInteger numberOfDeletes = new AtomicInteger(0);
 
    private JournalImpl journal;
 
@@ -126,17 +126,19 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       journal = new JournalImpl(50 * 1024,
                                 20,
-                                50, 
+                                50,
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
                                 factory,
                                 "hornetq-data",
                                 "hq",
                                 maxAIO)
       {
+         @Override
          protected void onCompactLockingTheJournal() throws Exception
          {
          }
 
+         @Override
          protected void onCompactStart() throws Exception
          {
             testExecutor.execute(new Runnable()
@@ -263,28 +265,28 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
          }
       });
 
-      latchExecutorDone.await();
+      UnitTestCase.waitForLatch(latchExecutorDone);
 
       journal.stop();
 
       journal.start();
 
       reloadJournal();
-      
+
       Collection<Long> records = journal.getRecords().keySet();
-      
+
       System.out.println("Deleting everything!");
       for (Long delInfo : records)
       {
          journal.appendDeleteRecord(delInfo, false);
       }
-      
+
       journal.forceMoveNextFile();
-      
+
       journal.checkReclaimStatus();
-      
+
       Thread.sleep(5000);
-      
+
       assertEquals(0, journal.getDataFilesCount());
 
       journal.stop();
@@ -296,7 +298,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    private void reloadJournal() throws Exception
    {
       assertEquals(0, errors.get());
-      
+
       ArrayList<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
       journal.load(committedRecords, preparedTransactions, new TransactionFailureCallback()
@@ -348,7 +350,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       public void run()
       {
          rwLock.readLock().lock();
-         
+
          try
          {
             while (running)
@@ -393,13 +395,13 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      }
                   }
                });
-               
+
                rwLock.readLock().unlock();
-               
+
                Thread.yield();
-             
+
                rwLock.readLock().lock();
-               
+
 
             }
          }
@@ -441,7 +443,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             long ids[] = new long[txSize];
 
             long txID = JournalCleanupCompactStressTest.idGen.generateID();
-            
+
             while (running)
             {
 
@@ -458,13 +460,13 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      journal.appendCommitRecord(txID, true, ctx);
                      ctx.executeOnCompletion(new DeleteTask(ids));
                   }
-                  
+
                   rwLock.readLock().unlock();
-                  
+
                   Thread.yield();
-                  
+
                   rwLock.readLock().lock();
-                  
+
                   txCount = 0;
                   txSize = RandomUtil.randomMax(100);
                   txID = JournalCleanupCompactStressTest.idGen.generateID();
@@ -564,9 +566,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                   numberOfRecords.incrementAndGet();
 
                   rwLock.readLock().unlock();
-                  
+
                   Thread.sleep(TimeUnit.SECONDS.toMillis(50));
-                  
+
                   rwLock.readLock().lock();
                }
                // Delete

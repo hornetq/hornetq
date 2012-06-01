@@ -41,6 +41,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A MultiThreadConsumerStressTest
@@ -234,7 +235,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          threads.add(cons[i]);
       }
 
-      latchReady.await();
+      UnitTestCase.waitForLatch(latchReady);
       latchStart.countDown();
 
       for (BaseThread t : threads)
@@ -447,7 +448,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          latchReady.countDown();
          try
          {
-            latchStart.await();
+            UnitTestCase.waitForLatch(latchStart);
             session = sf.createSession(!transactional, !transactional);
             ClientProducer prod = session.createProducer(ADDRESS);
             for (int i = 0; i < numberOfMessages; i++)
@@ -516,7 +517,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          latchReady.countDown();
          try
          {
-            latchStart.await();
+            UnitTestCase.waitForLatch(latchStart);
             session = sf.createSession(!transactional, !transactional);
             session.start();
             ClientConsumer cons = session.createConsumer(QUEUE);
