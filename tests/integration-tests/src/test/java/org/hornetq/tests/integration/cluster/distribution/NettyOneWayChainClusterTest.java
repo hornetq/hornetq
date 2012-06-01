@@ -14,7 +14,6 @@
 package org.hornetq.tests.integration.cluster.distribution;
 
 
-import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A NettyOneWayChainClusterTest
@@ -27,8 +26,6 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  */
 public class NettyOneWayChainClusterTest extends OneWayChainClusterTest
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
    @Override
    protected boolean isNetty()
    {

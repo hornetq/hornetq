@@ -18,17 +18,22 @@ import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A MeasurePagingMultiThreadTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Dec 1, 2008 1:02:39 PM
  *
  *
@@ -115,7 +120,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
                try
                {
                   latchAlign.countDown();
-                  latchStart.await();
+                  UnitTestCase.waitForLatch(latchStart);
 
                   long start = System.currentTimeMillis();
                   sendMessages(NUMBER_OF_MESSAGES, producer, msg);
@@ -142,7 +147,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
             senders[i].start();
          }
 
-         latchAlign.await();
+         UnitTestCase.waitForLatch(latchAlign);
 
          long timeStart = System.currentTimeMillis();
 

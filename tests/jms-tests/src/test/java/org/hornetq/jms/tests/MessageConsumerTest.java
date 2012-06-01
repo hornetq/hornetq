@@ -43,6 +43,7 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -4107,7 +4108,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       public void waitForMessages() throws InterruptedException
       {
-         latch.await();
+         UnitTestCase.waitForLatch(latch);
       }
 
       public ExceptionRedelMessageListenerImpl(final Session sess)
@@ -4231,7 +4232,7 @@ public class MessageConsumerTest extends JMSTestCase
        */
       public void waitForMessages() throws InterruptedException
       {
-         latch.await();
+         UnitTestCase.waitForLatch(latch);
       }
 
       public void onMessage(final Message m)
@@ -4329,7 +4330,7 @@ public class MessageConsumerTest extends JMSTestCase
        */
       public void waitForMessages() throws InterruptedException
       {
-         latch.await();
+         UnitTestCase.waitForLatch(latch);
       }
 
       public void onMessage(final Message m)

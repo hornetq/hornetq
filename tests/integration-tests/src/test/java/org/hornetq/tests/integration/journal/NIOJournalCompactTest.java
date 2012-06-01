@@ -48,6 +48,7 @@ import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -539,7 +540,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
             System.out.println("Waiting on Compact");
             try
             {
-               latchWait.await();
+               UnitTestCase.waitForLatch(latchWait);
             }
             catch (InterruptedException e)
             {
@@ -633,7 +634,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       t.start();
 
-      latchDone.await();
+      UnitTestCase.waitForLatch(latchDone);
 
       int nextID = NIOJournalCompactTest.NUMBER_OF_RECORDS;
 

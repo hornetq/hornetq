@@ -119,7 +119,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          }
 
          latchStart.countDown();
-         latchStart.await();
+         UnitTestCase.waitForLatch(latchStart);
 
          long startTime = System.currentTimeMillis();
 
@@ -204,7 +204,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
             buffer.put((byte)'\n');
 
             latchStart.countDown();
-            latchStart.await();
+            UnitTestCase.waitForLatch(latchStart);
 
             CountDownLatch latchFinishThread = null;
 
@@ -230,14 +230,14 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
                addData(libaio, buffer, callback);
                if (sync)
                {
-                  latchFinishThread.await();
+                  UnitTestCase.waitForLatch(latchFinishThread);
                   Assert.assertTrue(callback.doneCalled);
                   Assert.assertFalse(callback.errorCalled != 0);
                }
             }
             if (!sync)
             {
-               latchFinishThread.await();
+               UnitTestCase.waitForLatch(latchFinishThread);
             }
 
             for (CountDownCallback callback : list)

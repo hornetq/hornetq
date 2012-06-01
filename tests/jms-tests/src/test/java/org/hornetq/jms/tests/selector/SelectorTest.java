@@ -29,6 +29,7 @@ import javax.jms.TextMessage;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -625,8 +626,8 @@ public class SelectorTest extends HornetQServerTestCase
             }
          }, "consumer thread 2").start();
 
-         latch.await();
-         latch2.await();
+         UnitTestCase.waitForLatch(latch);
+         UnitTestCase.waitForLatch(latch2);
 
          ProxyAssertSupport.assertEquals(5, received.size());
          for (Message m : received)

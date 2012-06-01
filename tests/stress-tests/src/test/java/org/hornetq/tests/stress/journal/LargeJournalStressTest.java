@@ -19,12 +19,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A LargeJournalStressTest
@@ -99,7 +105,7 @@ public class LargeJournalStressTest extends ServiceTestBase
             latchReady.countDown();
             try
             {
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                session = sf.createSession(true, true);
                sessionSlow = sf.createSession(false, false);
                ClientProducer prod = session.createProducer(LargeJournalStressTest.AD2);
@@ -165,7 +171,7 @@ public class LargeJournalStressTest extends ServiceTestBase
             latchReady.countDown();
             try
             {
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                session = sf.createSession(true, true);
                session.start();
                ClientConsumer cons = session.createConsumer(LargeJournalStressTest.Q2);
@@ -201,7 +207,7 @@ public class LargeJournalStressTest extends ServiceTestBase
       FastProducer p1 = new FastProducer();
       p1.start();
 
-      latchReady.await();
+      UnitTestCase.waitForLatch(latchReady);
       latchStart.countDown();
 
       p1.join();
@@ -257,7 +263,7 @@ public class LargeJournalStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
-      
+
       locator.setBlockOnAcknowledge(false);
       locator.setBlockOnNonDurableSend(false);
       locator.setBlockOnDurableSend(false);
@@ -312,7 +318,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       if (sf != null)
       {
          sf.close();

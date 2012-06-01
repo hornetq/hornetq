@@ -32,6 +32,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A CompactingTest
@@ -234,7 +235,7 @@ public class CompactingStressTest extends ServiceTestBase
             latchReady.countDown();
             try
             {
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                session = sf.createSession(true, true);
                sessionSlow = sf.createSession(false, false);
                ClientProducer prod = session.createProducer(CompactingStressTest.AD2);
@@ -297,7 +298,7 @@ public class CompactingStressTest extends ServiceTestBase
             latchReady.countDown();
             try
             {
-               latchStart.await();
+               UnitTestCase.waitForLatch(latchStart);
                session = sf.createSession(true, true);
                session.start();
                ClientConsumer cons = session.createConsumer(CompactingStressTest.Q2);
@@ -333,7 +334,7 @@ public class CompactingStressTest extends ServiceTestBase
       FastProducer p1 = new FastProducer();
       p1.start();
 
-      latchReady.await();
+      UnitTestCase.waitForLatch(latchReady);
       latchStart.countDown();
 
       p1.join();

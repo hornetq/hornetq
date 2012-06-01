@@ -292,7 +292,7 @@ public class NIOvsOIOTest extends UnitTestCase
 
       void await() throws Exception
       {
-         latch.await();
+         waitForLatch(latch);
       }
 
       private int count;
