@@ -148,6 +148,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
       ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
+      setSessionFactory(factory);
 
       if (factory == null)
       {
