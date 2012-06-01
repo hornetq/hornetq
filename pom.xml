@@ -31,6 +31,7 @@
     </prerequisites>
 
    <properties>
+      <!-- Netty version must also be updated at "hornetq-core/src/main/resources/hornetq-version.properties" -->
       <netty.version>3.4.5.Final</netty.version>
       <netty.version.string>3.4.5.Final</netty.version.string>
       <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
