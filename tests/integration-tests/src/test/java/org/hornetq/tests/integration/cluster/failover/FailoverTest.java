@@ -113,7 +113,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
       final ClientSession session = createSession(sf, true, true);
 
@@ -183,7 +183,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
       final ClientSession session = createSession(sf, true, true);
 
@@ -259,7 +259,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
       final ClientSession session = createSession(sf, true, true);
 
@@ -376,7 +376,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
       final ClientSession session = createSession(sf, true, false, false);
 
@@ -424,7 +424,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
       final ClientSession session = createSession(sf, true, false, false);
 
