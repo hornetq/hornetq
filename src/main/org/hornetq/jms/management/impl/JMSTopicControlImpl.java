@@ -390,7 +390,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
             QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
 
             // Ignore the "special" subscription
-            if (!coreQueueControl.getName().equals(addressControl.getAddress()))
+            if (coreQueueControl != null && !coreQueueControl.getName().equals(addressControl.getAddress()))
             {
                if (durability == DurabilityType.ALL || durability == DurabilityType.DURABLE &&
                    coreQueueControl.isDurable() ||
