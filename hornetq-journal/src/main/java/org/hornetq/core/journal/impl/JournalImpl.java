@@ -620,7 +620,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             int checkSize = wholeFileBuffer.getInt();
 
             // VII - The checkSize at the end has to match with the size
-            // informed at the beggining.
+            // informed at the beginning.
             // This is like testing a hash for the record. (We could replace the
             // checkSize by some sort of calculated hash)
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
