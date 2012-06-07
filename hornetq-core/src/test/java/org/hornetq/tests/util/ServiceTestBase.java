@@ -64,6 +64,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Constants -----------------------------------------------------
 
    protected static final long WAIT_TIMEOUT = 10000;
+   private int sendMsgCount = 0;
 
    @Override
    protected void tearDown() throws Exception
@@ -693,11 +694,13 @@ public abstract class ServiceTestBase extends UnitTestCase
     */
    public final void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
    {
+      sendMsgCount++;
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(true);
          setBody(i, message);
          message.putIntProperty("counter", i);
+         message.putIntProperty("sendCallNumber", sendMsgCount);
          producer.send(message);
       }
    }
@@ -710,7 +713,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          ClientMessage message = consumer.receive(1000);
          Assert.assertNotNull("Expecting a message " + i, message);
-         Assert.assertEquals("property['counter']=" + i, i, message.getIntProperty("counter").intValue());
+         Assert.assertEquals("property['counter']=" + i + " sendNumber=" +
+                  message.getIntProperty("sendCallNumber").intValue(), i,
+                             message.getIntProperty("counter").intValue());
          assertMessageBody(i, message);
          if (ack)
             message.acknowledge();
@@ -718,8 +723,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Deleting a file on LargeDire is an asynchronous process. We need to keep looking for a while
-    * if the file hasn't been deleted yet.
+    * Deleting a file on LargeDir is an asynchronous process. We need to keep looking for a while if
+    * the file hasn't been deleted yet.
     */
    protected void validateNoFilesOnLargeDir(final int expect) throws Exception
    {
