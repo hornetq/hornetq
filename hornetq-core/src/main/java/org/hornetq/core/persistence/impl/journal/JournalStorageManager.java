@@ -316,7 +316,7 @@ public class JournalStorageManager implements StorageManager
          throw HornetQMessageBundle.BUNDLE.invalidJournalType2(config.getJournalType());
       }
 
-      idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
+      idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, this);
 
       Journal localMessage = new JournalImpl(config.getJournalFileSize(),
                                              config.getJournalMinFiles(),
@@ -1355,6 +1355,21 @@ public class JournalStorageManager implements StorageManager
               readUnLock();
           }
       }
+
+   @Override
+   public final void storeID(final long journalID, final long id) throws Exception
+   {
+      readLock();
+      try
+      {
+         bindingsJournal.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD,
+                                         BatchingIDGenerator.createIDEncodingSupport(id), true);
+      }
+      finally
+      {
+         readUnLock();
+      }
+   }
 
    public void deleteAddressSetting(SimpleString addressMatch) throws Exception
    {
@@ -3718,8 +3733,7 @@ public class JournalStorageManager implements StorageManager
             return newBindingEncoding(id, buffer);
 
          case JournalStorageManager.ID_COUNTER_RECORD:
-            IDCounterEncoding idReturn = new IDCounterEncoding();
-
+            EncodingSupport idReturn = new IDCounterEncoding();
             idReturn.decode(buffer);
 
             return idReturn;
@@ -4171,7 +4185,5 @@ public class JournalStorageManager implements StorageManager
       {
          return null;
       }
-
    }
-
 }

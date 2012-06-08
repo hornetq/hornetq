@@ -323,4 +323,12 @@ public interface StorageManager extends HornetQComponent
     * @param bytes
     */
    void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception;
+
+   /**
+    * Stores the given journalID in the bindingsJournal.
+    * @param journalID
+    * @param id
+    * @throws Exception
+    */
+   void storeID(long journalID, long id) throws Exception;
 }

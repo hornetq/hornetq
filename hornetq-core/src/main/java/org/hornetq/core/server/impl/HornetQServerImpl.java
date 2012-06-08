@@ -360,7 +360,6 @@ public class HornetQServerImpl implements HornetQServer
 
       try
       {
-
          checkJournalDirectory();
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());

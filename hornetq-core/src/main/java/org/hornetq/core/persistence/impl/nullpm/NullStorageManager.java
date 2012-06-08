@@ -614,5 +614,5 @@ public class NullStorageManager implements StorageManager
    public void storeID(long journalID, long id) throws Exception
    {
 
- }
+   }
  }

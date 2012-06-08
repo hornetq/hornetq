@@ -969,7 +969,7 @@ public class PagingStoreImplTest extends UnitTestCase
       super.tearDown();
    }
 
-   class FakeStorageManager implements StorageManager
+   static class FakeStorageManager implements StorageManager
    {
 
       public void setUniqueIDSequence(final long id)
@@ -1533,6 +1533,10 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
+      @Override
+      public void storeID(long journalID, long id) throws Exception
+      {
+      }
     }
 
    class FakeStoreFactory implements PagingStoreFactory

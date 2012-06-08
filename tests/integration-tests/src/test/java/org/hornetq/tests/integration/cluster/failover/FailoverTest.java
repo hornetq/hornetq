@@ -581,6 +581,50 @@ public class FailoverTest extends FailoverTestBase
       simpleReplication(doFailBack);
    }
 
+   public void testWithoutUsingTheBackup() throws Exception
+   {
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
+
+      ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+
+      backupServer.stop(); // Backup stops!
+      backupServer.start();
+
+      session.start();
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
+      receiveMessages(consumer);
+      assertNoMoreMessages(consumer);
+      consumer.close();
+      session.commit();
+
+      session.start();
+      producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+      backupServer.stop(); // Backup stops!
+      backupServer.start();
+      Thread.sleep(10000);
+      backupServer.stop(); // Backup stops!
+
+      liveServer.stop();
+      liveServer.start();
+      liveServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+
+      ClientSession session2 = createSession(sf, false, false);
+      session2.start();
+      ClientConsumer consumer2 = session2.createConsumer(FailoverTestBase.ADDRESS);
+      receiveMessages(consumer2, 0, NUM_MESSAGES, true);
+      assertNoMoreMessages(consumer2);
+      session2.commit();
+   }
+
    /**
     * @param doFailBack
     * @throws Exception
@@ -623,6 +667,13 @@ public class FailoverTest extends FailoverTestBase
             Thread.sleep(100);
          }
          assertFalse("Backup should stop!", backupServer.isStarted());
+      }
+      else
+      {
+         backupServer.stop();
+         backupServer.start();
+         backupServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+         Thread.sleep(1000);
       }
 
       ClientSession session2 = createSession(sf, false, false);
