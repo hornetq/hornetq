@@ -157,7 +157,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
       crash(session);
-      waitForServerInitialization(backupServer, 5);
+      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
    }
 
    public void testMessageSyncSimple() throws Exception
@@ -184,7 +184,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       backupServer.start();
       waitForBackup(sessionFactory, BACKUP_WAIT_TIME);
       crash(session);
-      waitForServerInitialization(backupServer, 5);
+      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
    }
 
    protected void createProducerSendSomeMessages() throws HornetQException, Exception
@@ -205,27 +205,6 @@ public class BackupSyncJournalTest extends FailoverTestBase
       receiveMessages(consumer, start, end, true);
       consumer.close();
       session.commit();
-   }
-
-   private static void waitForServerInitialization(TestableServer server, int seconds)
-   {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (!server.isInitialised())
-      {
-         try
-         {
-            Thread.sleep(50);
-         }
-         catch (InterruptedException e)
-         {
-            // ignore
-         }
-         if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("component did not start within timeout of " + seconds);
-         }
-      }
    }
 
    private Set<Pair<Long, Integer>> getFileIds(JournalImpl journal)

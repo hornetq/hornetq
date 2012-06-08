@@ -442,8 +442,7 @@ public class XaTimeoutTest extends UnitTestCase
                message.acknowledge();
                
                int msgInt = message.getIntProperty("msg");
-               System.out.println("msg = " + msgInt);
-               
+              
                ClientMessage msgOut = createTextMessage(outProducerSession, "outMsg=" + msgInt);
                msgOut.putIntProperty("msg", msgInt);
                outProducer.send(msgOut);

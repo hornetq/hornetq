@@ -123,4 +123,12 @@ public class ReplicationCommitMessage extends PacketImpl
          return false;
       return true;
    }
+
+   @Override
+   public String toString()
+   {
+      String txOperation = rollback ? "rollback" : "commmit";
+      return ReplicationCommitMessage.class.getSimpleName() + "[type=" + getType() + ", channel=" + getChannelID() +
+               ", journalID=" + journalID + ", txAction='" + txOperation + "']";
+   }
 }

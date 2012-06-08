@@ -1602,16 +1602,16 @@ public abstract class UnitTestCase extends TestCase
       return consumer;
    }
 
-   protected final ClientProducer addClientProducer(ClientProducer consumer)
+   protected final ClientProducer addClientProducer(ClientProducer producer)
    {
-      if (consumer != null)
+      if (producer != null)
       {
          synchronized (clientProducers)
          {
-            clientProducers.add(consumer);
+            clientProducers.add(producer);
          }
       }
-      return consumer;
+      return producer;
    }
 
    protected final void addHornetQComponent(HornetQComponent component)

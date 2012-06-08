@@ -174,7 +174,7 @@ public interface Journal extends HornetQComponent
 
    /**
     * Returns the {@link JournalFile}s in use.
-    * @return
+    * @return array with all {@link JournalFile}s in use
     */
    JournalFile[] getDataFiles();
 

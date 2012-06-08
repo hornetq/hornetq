@@ -190,7 +190,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       final TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
 
-      nodeManager = new InVMNodeManager();
       backupConfig = createDefaultConfig();
       liveConfig = createDefaultConfig();
 

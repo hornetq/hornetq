@@ -259,4 +259,11 @@ public final class ReplicationSyncFileMessage extends PacketImpl
       }
       return true;
    }
+
+   @Override
+   public String toString()
+   {
+      return ReplicationSyncFileMessage.class.getSimpleName() + "(" + fileType +
+               (journalType != null ? ", " + journalType : "") + ", id=" + fileId + ")";
+   }
 }

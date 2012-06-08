@@ -69,6 +69,12 @@ public abstract class NodeManager implements HornetQComponent
       return uuid;
    }
 
+   /**
+    * Sets the nodeID.
+    * <p>
+    * Only used by replicating backups.
+    * @param nodeID
+    */
    public void setNodeID(String nodeID)
    {
       this.nodeID = new SimpleString(nodeID);

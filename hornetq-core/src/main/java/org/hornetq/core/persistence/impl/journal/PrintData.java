@@ -16,27 +16,21 @@ package org.hornetq.core.persistence.impl.journal;
 import java.io.File;
 
 import org.hornetq.core.server.impl.FileLockNodeManager;
+
 /**
  * A PrintData
- *
+ * <p>
+ * To run this class with Maven, use:
+ * 
+ * <pre>
+ * cd hornetq-core
+ * mvn -q exec:java -Dexec.args="/foo/hornetq/bindings /foo/hornetq/journal" -Dexec.mainClass="org.hornetq.core.persistence.impl.journal.PrintData"
+ * </pre>
  * @author clebertsuconic
- *
- *
  */
 public class PrintData
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-   
-   
    public static void main(String arg[])
    {
       if (arg.length != 2)
@@ -44,9 +38,9 @@ public class PrintData
          System.out.println("Use: java -cp hornetq-core.jar <bindings directory> <message directory>");
          System.exit(-1);
       }
-      
+
       File serverLockFile = new File(arg[1], "server.lock");
-      
+
       if (serverLockFile.isFile())
       {
          try
@@ -63,11 +57,11 @@ public class PrintData
             e.printStackTrace();
          }
       }
-      
+
       System.out.println("********************************************");
       System.out.println("B I N D I N G S  J O U R N A L");
       System.out.println("********************************************");
-      
+
       try
       {
          JournalStorageManager.describeBindingJournal(arg[0]);
@@ -76,11 +70,11 @@ public class PrintData
       {
          e.printStackTrace();
       }
-      
+
       System.out.println("********************************************");
       System.out.println("M E S S A G E S   J O U R N A L");
       System.out.println("********************************************");
-      
+
       try
       {
          JournalStorageManager.describeMessagesJournal(arg[1]);
@@ -90,13 +84,4 @@ public class PrintData
          e.printStackTrace();
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
