@@ -194,9 +194,9 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
       assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().isBackup());
       int i = 0;
-      while (backupServer.isStarted() && i++ < 10)
+      while (backupServer.isStarted() && i++ < 100)
       {
-         Thread.sleep(1000);
+         Thread.sleep(100);
       }
       assertFalse("Backup should stop!", backupServer.getServer().isStarted());
       assertTrue(liveServer.getServer().isStarted());

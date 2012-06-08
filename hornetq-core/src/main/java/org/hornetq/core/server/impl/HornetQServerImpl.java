@@ -50,6 +50,7 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -436,6 +437,25 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       super.finalize();
+   }
+
+   private void stopTheServer() {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      executor.submit(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               stop();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      });
    }
 
    public void stop() throws Exception
@@ -2105,7 +2125,7 @@ public class HornetQServerImpl implements HornetQServer
                      try
                      {
                         if (state != SERVER_STATE.STOPPED)
-                           HornetQServerImpl.this.stop();
+                           stopTheServer();
                         return;
                      }
                      catch (Exception e1)
@@ -2295,6 +2315,12 @@ public class HornetQServerImpl implements HornetQServer
       {
          if (configuration.getFailBackConnectors().isEmpty())
             return false;
+         SimpleString nodeId0;
+         try {
+            nodeId0 = nodeManager.readNodeId();
+         } catch (org.hornetq.api.core.IllegalStateException e) {
+            nodeId0 = null;
+         }
          ServerLocatorInternal locator = null;
          try
          {
@@ -2305,8 +2331,22 @@ public class HornetQServerImpl implements HornetQServer
             locator.setReconnectAttempts(0);
             locator.connect();
             Thread.sleep(5000); // wait a little for the topology updates
-            TopologyMember node = locator.getTopology().getMember(nodeManager.getNodeId().toString());
-            return node != null;
+            // if the nodeID is null, then a node with that nodeID MUST be found:
+            Topology topology = locator.getTopology();
+            if (topology.isEmpty())
+               // no servers found: trigger normal start.
+               return false;
+            if (nodeId0 != null)
+            {
+               TopologyMember node = topology.getMember(nodeId0.toString());
+               if (node != null)
+                  // if nodeId found within running servers, try fail-back
+                  return true;
+               // Error! NodeId not found but fail-back servers running: cancel start-up.
+               stopTheServer();
+               throw new HornetQException("Fail-back servers found but node is different");
+            }
+            return !topology.isEmpty();
          }
          catch (HornetQException error)
          {
@@ -2315,7 +2355,6 @@ public class HornetQServerImpl implements HornetQServer
          finally
          {
             if (locator != null)
-
                locator.close();
          }
       }

@@ -18,8 +18,10 @@ import static org.hornetq.core.server.impl.InVMNodeManager.State.LIVE;
 import static org.hornetq.core.server.impl.InVMNodeManager.State.NOT_STARTED;
 import static org.hornetq.core.server.impl.InVMNodeManager.State.PAUSED;
 
+import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
+import org.hornetq.api.core.IllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
@@ -153,5 +155,11 @@ public final class InVMNodeManager extends NodeManager
       {
          backupLock.release();
       }
+   }
+
+   @Override
+   public SimpleString readNodeId() throws IllegalStateException, IOException
+   {
+      return getNodeId();
    }
 }
