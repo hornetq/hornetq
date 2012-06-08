@@ -713,8 +713,11 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          ClientMessage message = consumer.receive(1000);
          Assert.assertNotNull("Expecting a message " + i, message);
-         Assert.assertEquals("property['counter']=" + i + " sendNumber=" +
-                  message.getIntProperty("sendCallNumber").intValue(), i,
+         // sendCallNumber is just a debugging measure.
+         Object prop = message.getObjectProperty("sendCallNumber");
+         if (prop == null)
+            prop = Integer.valueOf(-1);
+         Assert.assertEquals("property['counter']=" + i + " sendNumber=" + prop, i,
                              message.getIntProperty("counter").intValue());
          assertMessageBody(i, message);
          if (ack)
