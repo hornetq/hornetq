@@ -2,6 +2,7 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
