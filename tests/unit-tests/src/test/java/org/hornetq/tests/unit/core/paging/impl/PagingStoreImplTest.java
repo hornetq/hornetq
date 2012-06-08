@@ -993,44 +993,26 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteDuplicateIDTransactional(long, long)
-       */
       public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteMessage(long)
-       */
       public void deleteMessage(final long messageID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteMessageTransactional(long, long, long)
-       */
       public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long, long)
-       */
       public void deletePageTransactional(final long txID, final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteQueueBinding(long)
-       */
       public void deleteQueueBinding(final long queueBindingID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#generateUniqueID()
-       */
       public long generateUniqueID()
       {
          return 0;
@@ -1141,16 +1123,10 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeReference(long, long)
-       */
       public void storeReference(final long queueID, final long messageID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeReferenceTransactional(long, long, long)
-       */
       public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
       {
       }
@@ -1259,26 +1235,17 @@ public class PagingStoreImplTest extends UnitTestCase
            return null;
        }
 
-       /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#isReplicated()
-       */
       public boolean isReplicated()
       {
 
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
-       */
       public JournalLoadInformation[] loadInternalOnly() throws Exception
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
-       */
       public void pageClosed(final SimpleString storeName, final int pageNumber)
       {
 
@@ -1395,9 +1362,6 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long)
-       */
       public void deletePageTransactional(long recordID) throws Exception
       {
       }
@@ -1414,88 +1378,52 @@ public class PagingStoreImplTest extends UnitTestCase
            return new JournalLoadInformation();
        }
 
-       /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo, int)
-       */
       public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledge(long, org.hornetq.core.paging.cursor.PagePosition)
-       */
       public void storeCursorAcknowledge(long queueID, PagePosition position)
       {
          // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
-       */
       public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position)
       {
          // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
-       */
       public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
       {
          // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(org.hornetq.core.paging.PageTransactionInfo, int)
-       */
       public void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception
       {
          // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storePageCounter(long, long, long)
-       */
       public long storePageCounter(long txID, long queueID, long value) throws Exception
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
-       */
       public void deleteIncrementRecord(long txID, long recordID) throws Exception
       {
-         // TODO Auto-generated method stub
-
+         //
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
-       */
       public void deletePageCounter(long txID, long recordID) throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, long, int)
-       */
       public long storePageCounterInc(long txID, long queueID, int add) throws Exception
       {
          // TODO Auto-generated method stub
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, int)
-       */
       public long storePageCounterInc(long queueID, int add) throws Exception
       {
          // TODO Auto-generated method stub
@@ -1512,35 +1440,23 @@ public class PagingStoreImplTest extends UnitTestCase
            return null;
        }
 
-       /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#newSingleThreadContext()
-       */
       public OperationContext newSingleThreadContext()
       {
          return getContext();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#commit(long, boolean)
-       */
       public void commit(long txID, boolean lineUpContext) throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
-       */
       public void lineUpContext()
       {
          // TODO Auto-generated method stub
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessageTX(org.hornetq.core.transaction.Transaction, long, long)
-       */
       public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
       {
       }
@@ -1634,41 +1550,21 @@ public class PagingStoreImplTest extends UnitTestCase
          this.factory = factory;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#getGlobalDepagerExecutor()
-       */
-      public Executor getGlobalDepagerExecutor()
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#newFileFactory(org.hornetq.utils.SimpleString)
-       */
       public SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
       {
          return factory;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#newStore(org.hornetq.utils.SimpleString, org.hornetq.core.settings.impl.AddressSettings)
-       */
       public PagingStore newStore(final SimpleString destinationName, final AddressSettings addressSettings)
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#reloadStores(org.hornetq.core.settings.HierarchicalRepository)
-       */
       public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#setPagingManager(org.hornetq.core.paging.PagingManager)
-       */
       public void setPagingManager(final PagingManager manager)
       {
       }
@@ -1694,35 +1590,19 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#startPageRead()
-       */
       public void beforePageRead() throws Exception
       {
-         // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
-       */
       public void afterPageRead() throws Exception
       {
-         // TODO Auto-generated method stub
-
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(int)
-       */
       public ByteBuffer allocateDirectBuffer(int size)
       {
          return ByteBuffer.allocateDirect(size);
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
-       */
       public void freeDirectuffer(ByteBuffer buffer)
       {
       }

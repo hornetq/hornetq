@@ -33,16 +33,6 @@ import org.hornetq.utils.IDGenerator;
 public class BatchingIDGenerator implements IDGenerator
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    private final AtomicLong counter;
 
    private final Journal journalStorage;
@@ -101,12 +91,6 @@ public class BatchingIDGenerator implements IDGenerator
       return counter.get();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private synchronized void saveCheckPoint(final long id)
    {
       if (id >= nextID)
@@ -137,9 +121,6 @@ public class BatchingIDGenerator implements IDGenerator
    {
       long id;
 
-      /* (non-Javadoc)
-       * @see java.lang.Object#toString()
-       */
       @Override
       public String toString()
       {
@@ -169,7 +150,5 @@ public class BatchingIDGenerator implements IDGenerator
       {
          return DataConstants.SIZE_LONG;
       }
-
    }
-
 }

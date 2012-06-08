@@ -102,15 +102,7 @@ public class PagingTest extends ServiceTestBase
 
    private static final int PAGE_SIZE = 10 * 1024;
 
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    @Override
    protected void setUp() throws Exception

@@ -39,16 +39,6 @@ import org.hornetq.tests.util.UnitTestCase;
 public class BatchIDGeneratorUnitTest extends UnitTestCase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testSequence() throws Exception
    {
       NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getTestDir());
@@ -126,7 +116,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       Assert.assertEquals("No Ids were generated, so the currentID was supposed to stay the same",
                           lastId,
                           batch.getCurrentID());
-      
+
       journal.stop();
 
    }
@@ -153,10 +143,6 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
@@ -168,15 +154,4 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       file.mkdir();
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

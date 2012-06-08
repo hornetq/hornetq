@@ -29,7 +29,6 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.replication.ReplicationManager;
 
 /**
  * Used by the {@link JournalStorageManager} to replicate journal calls.
@@ -175,9 +174,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendCommitRecord(txID, sync);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -188,9 +184,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendCommitRecord(txID, sync, callback);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion, boolean)
-    */
    public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -316,9 +309,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendPrepareRecord(txID, transactionData, sync, callback);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendPrepareRecord(final long txID,
                                    final byte[] transactionData,
                                    final boolean sync,
@@ -515,25 +505,17 @@ public class ReplicatedJournal implements Journal
       return localJournal.getAlignment();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#isStarted()
-    */
    public boolean isStarted()
    {
       return localJournal.isStarted();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#loadInternalOnly()
-    */
+   @Override
    public JournalLoadInformation loadInternalOnly() throws Exception
    {
       return localJournal.loadInternalOnly();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#getNumberOfRecords()
-    */
    public int getNumberOfRecords()
    {
       return localJournal.getNumberOfRecords();
@@ -544,17 +526,11 @@ public class ReplicatedJournal implements Journal
       localJournal.runDirectJournalBlast();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#getUserVersion()
-    */
    public int getUserVersion()
    {
       return localJournal.getUserVersion();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
-    */
    public void lineUpContex(IOCompletion callback)
    {
       ((OperationContext)callback).replicationLineUp();

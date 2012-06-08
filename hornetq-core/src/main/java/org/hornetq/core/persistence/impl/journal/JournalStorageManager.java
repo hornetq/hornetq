@@ -687,9 +687,7 @@ public class JournalStorageManager implements StorageManager
 
    public long generateUniqueID()
    {
-      long id = idGenerator.generateID();
-
-      return id;
+      return idGenerator.generateID();
    }
 
    public long getCurrentUniqueID()
@@ -1072,9 +1070,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
-       */
       public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception
       {
           readLock();
@@ -1093,9 +1088,6 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
-    */
       public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
       {
           readLock();
@@ -1338,9 +1330,6 @@ public class JournalStorageManager implements StorageManager
           return list;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
-       */
       public List<PersistedRoles> recoverPersistedRoles() throws Exception
       {
           ArrayList<PersistedRoles> list = new ArrayList<PersistedRoles>(mapPersistedRoles.size());
@@ -1349,9 +1338,6 @@ public class JournalStorageManager implements StorageManager
       }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
-    */
       public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
       {
 
@@ -1370,23 +1356,22 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   {
+      PersistedAddressSetting oldSetting = mapPersistedAddressSettings.remove(addressMatch);
+      if (oldSetting != null)
       {
-          PersistedAddressSetting oldSetting = mapPersistedAddressSettings.remove(addressMatch);
-          if (oldSetting != null)
-              {
-                  readLock();
+         readLock();
          try
-             {
-                 bindingsJournal.appendDeleteRecord(oldSetting.getStoreId(), false);
-             }
+         {
+            bindingsJournal.appendDeleteRecord(oldSetting.getStoreId(), false);
+         }
          finally
-             {
-                 readUnLock();
-             }
-              }
-
+         {
+            readUnLock();
+         }
       }
+   }
 
       public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
       {
@@ -1954,9 +1939,6 @@ public class JournalStorageManager implements StorageManager
           }
    }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
-     */
     public long storePageCounterInc(long txID, long queueID, int value) throws Exception
     {
         readLock();
@@ -1975,9 +1957,6 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
-    */
     public long storePageCounterInc(long queueID, int value) throws Exception
     {
         readLock();
@@ -2014,9 +1993,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
-     */
     public void deleteIncrementRecord(long txID, long recordID) throws Exception
     {
         readLock();
@@ -2030,9 +2006,6 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
-     */
     public void deletePageCounter(long txID, long recordID) throws Exception
     {
         readLock();
@@ -4154,35 +4127,22 @@ public class JournalStorageManager implements StorageManager
       txoper.confirmedMessages.add(recordID);
    }
 
-   class TXLargeMessageConfirmationOperation implements TransactionOperation
+   final class TXLargeMessageConfirmationOperation implements TransactionOperation
    {
-
       public List<Long> confirmedMessages = new LinkedList<Long>();
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-       */
       public void beforePrepare(Transaction tx) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
-       */
       public void afterPrepare(Transaction tx)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-       */
       public void beforeCommit(Transaction tx) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
-       */
       public void afterCommit(Transaction tx)
       {
       }
