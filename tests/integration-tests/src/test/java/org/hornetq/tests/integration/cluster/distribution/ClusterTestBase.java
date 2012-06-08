@@ -1098,8 +1098,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             consumers[consumerIDs[count]].session.commit();
 
-            System.out.println("Msg: " + message);
-
             Assert.assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
             Assert.assertEquals("consumer " + consumerIDs[count] + " message " + i,

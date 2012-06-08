@@ -1378,7 +1378,6 @@ public class QueueControlTest extends ManagementTestBase
       for (int i = 0; i < 10; i++)
       {
          ClientMessage msg = consumer.receive(5000);
-         System.out.println("msg = " + msg);
          assertNotNull(msg);
          msg.acknowledge();
       }
@@ -1464,7 +1463,6 @@ public class QueueControlTest extends ManagementTestBase
       for (int i = 0; i < NUMBER_OF_MSGS; i++)
       {
          ClientMessage msg = consumer.receive(5000);
-         System.out.println("msg = " + msg);
          assertNotNull(msg);
          msg.acknowledge();
       }
@@ -1476,9 +1474,6 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue("q2");
 
       session.close();
-
-      locator.close();
-
    }
 
    public void testPauseAndResume()
@@ -1528,7 +1523,7 @@ public class QueueControlTest extends ManagementTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
       locator.setConsumerWindowSize(0);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, false);
       session.start();
    }
@@ -1536,16 +1531,8 @@ public class QueueControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      session.close();
-
-      locator.close();
-
-      server.stop();
-
       session = null;
-
       locator = null;
-
       server = null;
 
       super.tearDown();
