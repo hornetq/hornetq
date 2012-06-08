@@ -1177,10 +1177,15 @@ public interface HornetQLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void groupHandlerSendTimeout();
 
-    @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112215, value = "Compressed large message tried to read {0} bytes from stream {1}",
          format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 112216, value = "Moving data directory {0} to {1}",
+            format = Message.Format.MESSAGE_FORMAT)
+   void backupMovingDataAway(String oldPath, String newPath);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114001, value = "Failed to call onMessage", format = Message.Format.MESSAGE_FORMAT)

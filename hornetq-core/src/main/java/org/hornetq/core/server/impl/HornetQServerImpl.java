@@ -2049,6 +2049,9 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
+            // move all data away:
+            moveServerData();
+
             nodeManager.startBackup();
 
             initialisePart1();
@@ -2159,6 +2162,51 @@ public class HornetQServerImpl implements HornetQServer
             e.printStackTrace();
          }
       }
+
+      /**
+       * Move data away before starting data synchronization for fail-back.
+       * <p>
+       * Use case is a server, upon restarting, finding a former backup running in its place. It
+       * will move any older data away and log a warning about it.
+       */
+      private void moveServerData()
+      {
+         String[] dataDirs =
+                  new String[] { configuration.getBindingsDirectory(),
+                                configuration.getJournalDirectory(),
+                                configuration.getPagingDirectory(),
+                                configuration.getLargeMessagesDirectory() };
+         boolean allEmpty = true;
+         int lowestSuffixForMovedData = 1;
+         for (String dir : dataDirs)
+         {
+            File fDir = new File(dir);
+            if (fDir.isDirectory())
+            {
+               if (fDir.list().length > 0)
+                  allEmpty = false;
+            }
+            String sanitizedPath = fDir.getPath();
+            while (new File(sanitizedPath + lowestSuffixForMovedData).exists())
+            {
+               lowestSuffixForMovedData++;
+            }
+         }
+         if (allEmpty)
+            return;
+
+         for (String dir0 : dataDirs)
+         {
+            File dir = new File(dir0);
+            File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
+            if (dir.exists() && dir.renameTo(newPath))
+            {
+               HornetQLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
+               dir.mkdir();
+            }
+         }
+      }
+
 
       public void close(final boolean permanently) throws Exception
       {
