@@ -147,13 +147,13 @@ public class FileLockNodeManager extends NodeManager
          return false;
       }
    }
-   
+
    public boolean isLiveLocked()
    {
       return liveLock != null;
    }
 
-   
+
    @Override
    public void interrupt()
    {
@@ -256,7 +256,7 @@ public class FileLockNodeManager extends NodeManager
          backupLock.release();
          backupLock = null;
       }
-      
+
    }
 
    public String getDirectory()
@@ -266,26 +266,27 @@ public class FileLockNodeManager extends NodeManager
 
    private void setLive() throws Exception
    {
-      ByteBuffer bb = ByteBuffer.allocateDirect(1);
-      bb.put(FileLockNodeManager.LIVE);
-      bb.position(0);
-      channel.write(bb, 0);
-      channel.force(true);
+      writeFileLockStatus(FileLockNodeManager.LIVE);
    }
 
    private void setFailingBack() throws Exception
    {
-      ByteBuffer bb = ByteBuffer.allocateDirect(1);
-      bb.put(FileLockNodeManager.FAILINGBACK);
-      bb.position(0);
-      channel.write(bb, 0);
-      channel.force(true);
+      writeFileLockStatus(FAILINGBACK);
    }
 
    private void setPaused() throws Exception
    {
+      writeFileLockStatus(PAUSED);
+   }
+
+   /**
+    * @param status
+    * @throws IOException
+    */
+   private void writeFileLockStatus(byte status) throws IOException
+   {
       ByteBuffer bb = ByteBuffer.allocateDirect(1);
-      bb.put(FileLockNodeManager.PAUSED);
+      bb.put(status);
       bb.position(0);
       channel.write(bb, 0);
       channel.force(true);
@@ -384,7 +385,7 @@ public class FileLockNodeManager extends NodeManager
          {
             // This just means that another object on the same JVM is holding the lock
          }
-         
+
          if (lock == null)
          {
             try
@@ -401,7 +402,7 @@ public class FileLockNodeManager extends NodeManager
             return lock;
          }
       }
-         
+
       // todo this is here because sometimes channel.lock throws a resource deadlock exception but trylock works,
       // need to investigate further and review
       FileLock lock;

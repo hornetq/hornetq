@@ -253,13 +253,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
 
-      backupServerLocator = clusterConnector.createServerLocator();
-
-      if (backupServerLocator != null)
-      {
-         backupServerLocator.setReconnectAttempts(-1);
-         backupServerLocator.setInitialConnectAttempts(-1);
-      }
+      setUpBackupLocator();
 
       if (tcConfigs != null && tcConfigs.length > 0)
       {
@@ -271,6 +265,18 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
       }
 
+   }
+
+   private void setUpBackupLocator()
+   {
+      backupServerLocator = clusterConnector.createServerLocator();
+
+      if (backupServerLocator != null)
+      {
+         backupServerLocator.setIdentity("backupLocatorFor='" + server + "'");
+         backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
+      }
    }
 
    public ClusterConnectionImpl(final ClusterManagerImpl manager,
@@ -366,14 +372,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       clusterConnector = new DiscoveryClusterConnector(dg);
 
-      backupServerLocator = clusterConnector.createServerLocator();
-
-      if (backupServerLocator != null)
-      {
-         backupServerLocator.setReconnectAttempts(-1);
-         backupServerLocator.setInitialConnectAttempts(-1);
-      }
-
+      setUpBackupLocator();
       this.manager = manager;
    }
 

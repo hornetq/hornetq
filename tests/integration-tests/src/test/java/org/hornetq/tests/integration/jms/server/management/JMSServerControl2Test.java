@@ -387,7 +387,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             receivedMsg = (TextMessage)consumer.receive(3000);
             assertNotNull(receivedMsg);
-            System.out.println("receiveMsg: " + receivedMsg);
          }
 
          assertEquals(msgSent.getJMSMessageID(), receivedMsg.getJMSMessageID());

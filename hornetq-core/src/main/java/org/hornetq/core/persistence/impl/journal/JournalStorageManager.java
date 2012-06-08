@@ -257,7 +257,6 @@ public class JournalStorageManager implements StorageManager
       }
 
       bindingsDir = config.getBindingsDirectory();
-
       if (bindingsDir == null)
       {
          throw new NullPointerException("bindings-dir is null");
@@ -2044,17 +2043,16 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-    static void describeBindingJournal(final String bindingsDir) throws Exception
+   static final void describeBindingJournal(final String bindingsDir) throws Exception
     {
 
         SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, null);
 
         JournalImpl bindings = new JournalImpl(1024 * 1024, 2, -1, 0, bindingsFF, "hornetq-bindings", "bindings", 1);
-
-        describeJournal(bindingsFF, bindings);
+      describeJournal(bindingsFF, bindings, bindingsDir);
     }
 
-   static void describeMessagesJournal(final String messagesDir) throws Exception
+   static final void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
@@ -2071,7 +2069,7 @@ public class JournalStorageManager implements StorageManager
                                                     "hq",
                                                     1);
 
-      describeJournal(messagesFF, messagesJournal);
+      describeJournal(messagesFF, messagesJournal, messagesDir);
    }
 
    public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
@@ -3900,7 +3898,7 @@ public class JournalStorageManager implements StorageManager
    {
       return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }
-   
+
    private static Xid toXid(final byte[] data)
    {
    try
@@ -3919,15 +3917,18 @@ public class JournalStorageManager implements StorageManager
     * @param journal
     * @throws Exception
     */
-   private static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
+   private static void
+            describeJournal(SequentialFileFactory fileFactory, JournalImpl journal, final String path) throws Exception
    {
       List<JournalFile> files = journal.orderFiles();
 
       final PrintStream out = System.out;
 
+      out.println("Journal path: " + path);
+
       for (JournalFile file : files)
       {
-         out.println("#" + file);
+         out.println("#" + file + " (size=" + file.getFile().size() + ")");
 
          JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
          {
@@ -3953,7 +3954,7 @@ public class JournalStorageManager implements StorageManager
                            ",numberOfRecords=" +
                            numberOfRecords +
                            ",extraData=" +
-                           encode(extraData) + 
+                           encode(extraData) +
                            ", xid=" + toXid(extraData));
             }
 
