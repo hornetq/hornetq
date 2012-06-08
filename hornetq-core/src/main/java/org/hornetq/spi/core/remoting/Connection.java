@@ -57,13 +57,12 @@ public interface Connection
    void write(HornetQBuffer buffer);
 
    /**
-    * closes this connection.
+    * Closes the connection.
     */
    void close();
 
    /**
-    * returns a string representation of the remote address this connection is connected to.
-    *
+    * Returns a string representation of the remote address this connection is connected to.
     * @return the remote address
     */
    String getRemoteAddress();
@@ -78,8 +77,8 @@ public interface Connection
    void removeReadyListener(ReadyListener listener);
 
    /**
-    * Generates a {@link TransportConfiguration} to be use to connect to the 
-    * same target this is connect to
+    * Generates a {@link TransportConfiguration} to be used to connect to the same target this is
+    * connected to.
     * @return
     */
    TransportConfiguration getConnectorConfig();
