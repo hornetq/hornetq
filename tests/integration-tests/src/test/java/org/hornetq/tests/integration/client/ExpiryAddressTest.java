@@ -163,7 +163,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
 
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);

@@ -121,7 +121,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session1 = sf.createSession(false, true, true);
 
@@ -153,7 +153,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session1 = sf.createSession(false, true, true);
 

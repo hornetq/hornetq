@@ -92,7 +92,7 @@ public class JournalCrashTest extends ServiceTestBase
 
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
    }
 
    protected void stopServer() throws Exception

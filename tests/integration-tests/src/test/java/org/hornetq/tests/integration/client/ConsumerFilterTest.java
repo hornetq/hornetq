@@ -223,7 +223,7 @@ public class ConsumerFilterTest extends ServiceTestBase
    {
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession();
 

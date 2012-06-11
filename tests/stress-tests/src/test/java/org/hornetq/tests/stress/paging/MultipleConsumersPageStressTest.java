@@ -92,7 +92,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
       sharedLocator = createInVMNonHALocator();
       sharedLocator.setConsumerWindowSize(0);
 
-      sharedSf = sharedLocator.createSessionFactory();
+      sharedSf = createSessionFactory(sharedLocator);
 
       internalMultipleConsumers();
    }
@@ -138,7 +138,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
 
       sharedLocator = createInVMNonHALocator();
 
-      sharedSf = sharedLocator.createSessionFactory();
+      sharedSf = createSessionFactory(sharedLocator);
 
       System.out.println(pagedServerQueue.debug());
 
@@ -156,7 +156,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
       sharedLocator = createInVMNonHALocator();
       sharedLocator.setConsumerWindowSize(0);
 
-      sharedSf = sharedLocator.createSessionFactory();
+      sharedSf = createSessionFactory(sharedLocator);
 
       try
       {
@@ -362,7 +362,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
             else
             {
                locator = createInVMNonHALocator();
-               sf = locator.createSessionFactory();
+               sf = createSessionFactory(locator);
                session = sf.createSession(false, false);
             }
 
@@ -471,7 +471,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
             else
             {
                locator = createInVMNonHALocator();
-               sf = locator.createSessionFactory();
+               sf = createSessionFactory(locator);
                session = sf.createSession(false, false);
             }
 

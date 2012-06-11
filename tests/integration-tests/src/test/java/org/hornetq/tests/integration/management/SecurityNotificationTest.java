@@ -76,7 +76,7 @@ public class SecurityNotificationTest extends UnitTestCase
       SecurityNotificationTest.flush(notifConsumer);
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       try
       {
@@ -109,7 +109,7 @@ public class SecurityNotificationTest extends UnitTestCase
       SecurityNotificationTest.flush(notifConsumer);
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession guestSession = sf.createSession("guest", "guest", false, true, true, false, 1);
 
       try
@@ -166,7 +166,7 @@ public class SecurityNotificationTest extends UnitTestCase
       securityManager.addRole("admin", "notif");
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       adminSession = sf.createSession("admin", "admin", false, true, true, false, 1);
       adminSession.start();
 

@@ -94,7 +94,7 @@ public class XaTimeoutTest extends UnitTestCase
       locator =
                addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
                                                                                                       InVMConnectorFactory.class.getName())));
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
       clientProducer = clientSession.createProducer(atestq);

@@ -33,7 +33,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       try
       {
-         locator.createSessionFactory();
+         createSessionFactory(locator);
          fail();
       }
       catch(NotConnectedException nce)

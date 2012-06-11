@@ -771,7 +771,7 @@ public class WildCardRoutingTest extends UnitTestCase
       server.getManagementService().enableNotifications(false);
       // then we create a client as normal
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(false, true, true);
    }
 

@@ -275,7 +275,7 @@ public class ReplicationTest extends ServiceTestBase
 
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       final ClientSession session = sf.createSession();
       final ClientSession session2 = sf.createSession();
       session.createQueue(ADDRESS, ADDRESS, null, true);

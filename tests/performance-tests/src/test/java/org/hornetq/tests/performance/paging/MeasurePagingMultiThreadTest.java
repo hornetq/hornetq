@@ -75,7 +75,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
       try
       {
 
-         final ClientSessionFactory factory = locator.createSessionFactory();
+         final ClientSessionFactory factory = createSessionFactory(locator);
          final SimpleString adr = new SimpleString("test-adr");
 
          createDestination(factory, adr);

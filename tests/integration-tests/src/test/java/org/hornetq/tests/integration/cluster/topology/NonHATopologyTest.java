@@ -83,7 +83,7 @@ public class NonHATopologyTest extends ServiceTestBase
 
          locator = (ServerLocatorInternal)createNonHALocator(isNetty);
 
-         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSessionFactory factory = createSessionFactory(locator);
 
          Topology topology = locator.getTopology();
 

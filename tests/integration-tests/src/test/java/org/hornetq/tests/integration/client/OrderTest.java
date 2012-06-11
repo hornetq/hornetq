@@ -232,7 +232,7 @@ public class OrderTest extends ServiceTestBase
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnAcknowledge(false);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, true, 0);
 
       int numberOfMessages = 500;

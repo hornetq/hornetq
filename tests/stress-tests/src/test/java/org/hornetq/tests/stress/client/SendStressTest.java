@@ -55,7 +55,7 @@ public class SendStressTest extends ServiceTestBase
       HornetQServer server = createServer(false, netty);
       server.start();
       ServerLocator locator = createNonHALocator(netty);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = null;
 

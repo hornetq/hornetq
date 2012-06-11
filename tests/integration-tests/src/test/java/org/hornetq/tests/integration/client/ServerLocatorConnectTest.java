@@ -49,7 +49,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testSingleConnectorSingleServer() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       csf.close();
       locator.close();
    }

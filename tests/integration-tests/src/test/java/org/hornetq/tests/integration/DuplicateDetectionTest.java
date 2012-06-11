@@ -60,7 +60,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -130,7 +130,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -200,7 +200,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -359,7 +359,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -411,7 +411,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -457,7 +457,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -526,7 +526,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -621,7 +621,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -700,7 +700,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -781,7 +781,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -861,7 +861,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -933,7 +933,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -964,7 +964,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(true, false, false);
 
@@ -1019,7 +1019,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -1127,7 +1127,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1165,7 +1165,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -1214,7 +1214,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1248,7 +1248,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -1296,7 +1296,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1332,7 +1332,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -1389,7 +1389,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1435,7 +1435,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -1491,7 +1491,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1529,7 +1529,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -1578,7 +1578,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -1618,7 +1618,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, false, false);
 
@@ -1667,7 +1667,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false, false);
 
@@ -1711,7 +1711,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, false, false);
 
@@ -1788,7 +1788,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -1830,7 +1830,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(true, false, false);
 
@@ -1891,7 +1891,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -1931,7 +1931,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(true, false, false);
 
@@ -1992,7 +1992,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, false, false);
 
@@ -2034,7 +2034,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(true, false, false);
 

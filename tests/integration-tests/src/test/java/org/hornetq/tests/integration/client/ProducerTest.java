@@ -66,7 +66,7 @@ public class ProducerTest extends ServiceTestBase
       });
       ServerLocator locator = createInVMNonHALocator();
       locator.setConfirmationWindowSize(100);
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession(false, true, true);
       ClientProducer producer = session.createProducer(QUEUE);
       ClientMessage message = session.createMessage(true);

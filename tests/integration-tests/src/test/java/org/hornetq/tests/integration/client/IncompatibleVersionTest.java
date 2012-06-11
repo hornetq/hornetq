@@ -252,13 +252,21 @@ public class IncompatibleVersionTest extends ServiceTestBase
    {
       public void perform() throws Exception
       {
-         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ServerLocator locator = null;
+         ClientSessionFactory sf = null;
+         try
+         {
+            locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+            sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
          log.info("### client: connected. server incrementingVersion = " + session.getVersion());
          session.close();
-         sf.close();
-         locator.close();
+         }
+         finally
+         {
+            closeSessionFactory(sf);
+            closeServerLocator(locator);
+         }
       }
    }
 

@@ -94,7 +94,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          ClientSession session = sf.createSession(true, true, 0);
 
@@ -139,7 +139,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
          Queue queueExpiry = server.locateQueue(EXPIRY);
          Queue myQueue = server.locateQueue(MY_QUEUE);
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          Thread.sleep(1500);
 
@@ -207,7 +207,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
                server.start();
             }
 
-            sf = locator.createSessionFactory();
+            sf = createSessionFactory(locator);
             session = sf.createSession(false, false);
             session.start();
          }
@@ -223,7 +223,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          for (int rep = 0; rep < 2; rep++)
          {
-            sf = locator.createSessionFactory();
+            sf = createSessionFactory(locator);
 
             session = sf.createSession(false, false);
 
@@ -304,7 +304,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          ClientSession session = sf.createSession(true, true, 0);
 
@@ -336,7 +336,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
          server.stop();
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(true, true, 0);
          session.start();
@@ -371,7 +371,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(true, true, 0);
          session.start();

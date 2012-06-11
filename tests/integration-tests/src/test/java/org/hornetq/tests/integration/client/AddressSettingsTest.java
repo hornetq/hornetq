@@ -74,7 +74,7 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch(addressB.toString(), addressSettings2);
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -130,7 +130,7 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("#", addressSettings2);
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -185,7 +185,7 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("*", addressSettings2);
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -244,7 +244,7 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA2, queueA, false);
          session.createQueue(addressB2, queueB, false);
@@ -317,7 +317,7 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA2, queueA, false);
          session.createQueue(addressB2, queueB, false);

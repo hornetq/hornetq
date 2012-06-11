@@ -83,7 +83,7 @@ public class NIOvsOIOTest extends UnitTestCase
       for (int i = 0; i < numReceivers; i++)
       {
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          factories.add(sf);
 
@@ -96,7 +96,7 @@ public class NIOvsOIOTest extends UnitTestCase
 
       for (int i = 0; i < numSenders; i++)
       {
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          factories.add(sf);
 
