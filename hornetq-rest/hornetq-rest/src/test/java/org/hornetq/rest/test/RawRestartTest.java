@@ -23,6 +23,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.JournalType;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -108,10 +109,9 @@ public class RawRestartTest
    }
 
    @Test
+   @Ignore
    public void testAck() throws Exception
    {
-      if (true) return;  // this test is disabled!
-
       ClientSession consumer_session = consumerSessionFactory.createSession(false, false);
       ClientConsumer consumer = consumer_session.createConsumer("testQueue");
       consumer.setMessageHandler(new MyListener());
