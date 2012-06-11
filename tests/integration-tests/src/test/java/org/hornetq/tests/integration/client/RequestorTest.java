@@ -18,24 +18,22 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientRequestor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -43,23 +41,12 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class RequestorTest extends UnitTestCase
+public class RequestorTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer service;
-
    private ClientSessionFactory sf;
    private ServerLocator locator;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testRequest() throws Exception
    {
@@ -93,20 +80,20 @@ public class RequestorTest extends UnitTestCase
    {
       final SimpleString key = RandomUtil.randomSimpleString();
       long value = RandomUtil.randomLong();
-      
+
       AddressSettings settings = new AddressSettings();
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
       settings.setMaxSizeBytes(1024);
       service.getAddressSettingsRepository().addMatch("#", settings);
 
       SimpleString requestAddress = new SimpleString("RequestAddress");
-      
+
       SimpleString requestQueue = new SimpleString("RequestAddress Queue");
 
       final ClientSession sessionRequest = sf.createSession(false, true, true);
-      
+
       sessionRequest.createQueue(requestAddress, requestQueue);
-       
+
       sessionRequest.start();
 
       ClientConsumer requestConsumer = sessionRequest.createConsumer(requestQueue);
@@ -120,13 +107,13 @@ public class RequestorTest extends UnitTestCase
             System.out.println(i);
          }
          final ClientSession session = sf.createSession(false, true, true);
-   
+
          session.start();
-   
+
          ClientRequestor requestor = new ClientRequestor(session, requestAddress);
          ClientMessage request = session.createMessage(false);
          request.putLongProperty(key, value);
-   
+
          ClientMessage reply = requestor.request(request, 5000);
          Assert.assertNotNull("reply was not received", reply);
          reply.acknowledge();
@@ -134,7 +121,7 @@ public class RequestorTest extends UnitTestCase
          requestor.close();
          session.close();
       }
-      
+
       sessionRequest.close();
 
    }
@@ -146,7 +133,7 @@ public class RequestorTest extends UnitTestCase
       SimpleString requestAddress = RandomUtil.randomSimpleString();
       SimpleString requestQueue = RandomUtil.randomSimpleString();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
@@ -179,7 +166,7 @@ public class RequestorTest extends UnitTestCase
       SimpleString requestAddress = RandomUtil.randomSimpleString();
       SimpleString requestQueue = RandomUtil.randomSimpleString();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
@@ -209,7 +196,7 @@ public class RequestorTest extends UnitTestCase
    {
       final SimpleString requestAddress = RandomUtil.randomSimpleString();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       final ClientSession session = sf.createSession(false, true, true);
 
       session.close();
@@ -232,7 +219,7 @@ public class RequestorTest extends UnitTestCase
       SimpleString requestAddress = RandomUtil.randomSimpleString();
       SimpleString requestQueue = RandomUtil.randomSimpleString();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
@@ -267,35 +254,24 @@ public class RequestorTest extends UnitTestCase
                                           });
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       Configuration conf = createDefaultConfig();
-      conf.setSecurityEnabled(false);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQServers.newHornetQServer(conf, false);
+      conf.getAcceptorConfigurations().add(TransportConfigurationUtils.getInVMAcceptor(true));
+      service = createServer(false, conf);
       service.start();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = createInVMNonHALocator();
       locator.setAckBatchSize(0);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
-
-      sf.close();
-
-      locator.close();
-
       locator = null;
 
       sf = null;
@@ -304,10 +280,6 @@ public class RequestorTest extends UnitTestCase
 
       super.tearDown();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
    private final class SimpleMessageHandler implements MessageHandler
    {
