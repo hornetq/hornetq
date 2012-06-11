@@ -135,7 +135,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    /**
     * Parse the topic node as a TopicConfiguration object
     * @param node
-    * @return
+    * @return topic configuration
     * @throws Exception
     */
    public TopicConfiguration parseTopicConfiguration(final Node node) throws Exception
@@ -163,7 +163,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    /**
     * Parse the Queue Configuration node as a QueueConfiguration object
     * @param node
-    * @return
+    * @return jms queue configuration
     * @throws Exception
     */
    public JMSQueueConfiguration parseQueueConfiguration(final Node node) throws Exception
@@ -196,36 +196,10 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       return newQueue(queueName, selectorString, durable, jndiArray);
    }
 
-   // private void lookupDiscovery(final String discoveryGroupName, final ConnectionFactoryConfiguration cfConfig)
-   // throws HornetQException
-   // {
-   // Configuration configuration = server.getConfiguration();
-   //
-   // DiscoveryGroupConfiguration discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations()
-   // .get(cfConfig.getDiscoveryGroupName());
-   //
-   // if (discoveryGroupConfiguration == null)
-   // {
-   // JMSServerManagerImpl.log.warn("There is no discovery group with name '" + cfConfig.getDiscoveryGroupName() +
-   // "' deployed.");
-   //
-   // throw new HornetQException(HornetQException.ILLEGAL_STATE,
-   // "There is no discovery group with name '" + cfConfig.getDiscoveryGroupName() +
-   // "' deployed.");
-   // }
-   //
-   // cfConfig.setLocalBindAddress(discoveryGroupConfiguration.getLocalBindAddress());
-   // cfConfig.setDiscoveryAddress(discoveryGroupConfiguration.getGroupAddress());
-   // cfConfig.setDiscoveryPort(discoveryGroupConfiguration.getGroupPort());
-   // cfConfig.setDiscoveryRefreshTimeout(discoveryGroupConfiguration.getRefreshTimeout());
-   //
-   //      
-   // }
-
    /**
     * Parse the Connection Configuration node as a ConnectionFactoryConfiguration object
     * @param node
-    * @return
+    * @return ConnectionFactoryConfiguration
     * @throws Exception
     */
    public ConnectionFactoryConfiguration parseConnectionFactoryConfiguration(final Node node) throws Exception
@@ -238,7 +212,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       Element e = (Element)node;
 
       String name = node.getAttributes().getNamedItem(JMSServerConfigParserImpl.NAME_ATTR).getNodeValue();
-      
+
       String fact = e.getAttribute("signature");
       boolean isXA = XMLConfigurationUtil.getBoolean(e,
                                                      "xa",
@@ -298,11 +272,11 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                 "min-large-message-size",
                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                 Validators.GT_ZERO);
-      
+
       boolean compressLargeMessages = XMLConfigurationUtil.getBoolean(e,
                                                                 "compress-large-messages",
                                                                 HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES);
-      
+
       boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                    "block-on-acknowledge",
                                                                    HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
@@ -494,7 +468,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    }
 
    /**
-    * hook for integration layers 
+    * hook for integration layers
     * @param topicName
     * @param strBindings
     * @return
@@ -505,7 +479,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    }
 
    /**
-    * hook for integration layers 
+    * hook for integration layers
     * @param queueName
     * @param selectorString
     * @param durable
@@ -521,7 +495,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
    }
 
    /**
-    * hook for integration layers 
+    * hook for integration layers
     * @param queues
     * @param topics
     * @param cfs

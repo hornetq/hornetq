@@ -21,8 +21,24 @@
 */
 package org.hornetq.core.server;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.ConnectionTimedOutException;
+import org.hornetq.api.core.DisconnectedException;
+import org.hornetq.api.core.DuplicateMetaDataException;
+import org.hornetq.api.core.IOErrorException;
+import org.hornetq.api.core.IncompatibleClientServerException;
+import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.InvalidFilterExpressionException;
+import org.hornetq.api.core.LargeMessageException;
+import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.ObjectClosedException;
+import org.hornetq.api.core.QueueExistsException;
 import org.hornetq.api.core.SecurityException;
+import org.hornetq.api.core.SessionCreationException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransactionOutcomeUnknownException;
+import org.hornetq.api.core.TransactionRolledBackException;
+import org.hornetq.api.core.UnBlockedException;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
@@ -34,8 +50,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.w3c.dom.Node;
-
-import java.lang.IllegalStateException;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

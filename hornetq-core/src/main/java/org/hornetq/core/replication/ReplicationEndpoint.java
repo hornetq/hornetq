@@ -223,12 +223,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       }
       catch (HornetQException e)
       {
-         HornetQLogger.LOGGER.errorHandlingReplciationPacket(e, packet);
+         HornetQLogger.LOGGER.errorHandlingReplicationPacket(e, packet);
          response = new HornetQExceptionMessage(e);
       }
       catch (Exception e)
       {
-         HornetQLogger.LOGGER.errorHandlingReplciationPacket(e, packet);
+         HornetQLogger.LOGGER.errorHandlingReplicationPacket(e, packet);
          response =
                   new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.replicationUnhandledError(e));
       }

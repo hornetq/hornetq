@@ -171,7 +171,7 @@ public interface HornetQJournalLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 142016, value = "Uncommitted transaction with id {0} found and discarded",
          format = Message.Format.MESSAGE_FORMAT)
-   void uncomittedTxFuund(Long id);
+   void uncomittedTxFound(Long id);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 142017, value = "Couldn't stop compactor executor after 120 seconds",

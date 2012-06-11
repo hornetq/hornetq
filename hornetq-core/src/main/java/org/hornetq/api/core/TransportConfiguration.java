@@ -206,14 +206,14 @@ public class TransportConfiguration implements Serializable
          return false;
       }
    }
-   
+
    /**
-    * There's a case on ClusterConnections that we need to find an equivalent Connector
-    * and we can't use a Netty Cluster Connection on an InVM ClusterConnection (inVM used on tests)
-    * for that reason I need to test if the two instances of the TransportConfiguration are equivalent
-    * while a test a connector against an acceptor 
+    * There's a case on ClusterConnections that we need to find an equivalent Connector and we can't
+    * use a Netty Cluster Connection on an InVM ClusterConnection (inVM used on tests) for that
+    * reason I need to test if the two instances of the TransportConfiguration are equivalent while
+    * a test a connector against an acceptor
     * @param otherConfig
-    * @return
+    * @return {@code true} if the factory class names are equivalents
     */
    public boolean isEquivalent(TransportConfiguration otherConfig)
    {

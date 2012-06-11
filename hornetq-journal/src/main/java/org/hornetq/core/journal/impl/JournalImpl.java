@@ -2018,7 +2018,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
          if (!transaction.prepared || transaction.invalid)
          {
-            HornetQJournalLogger.LOGGER.uncomittedTxFuund(transaction.transactionID);
+            HornetQJournalLogger.LOGGER.uncomittedTxFound(transaction.transactionID);
 
             if (changeData)
             {
