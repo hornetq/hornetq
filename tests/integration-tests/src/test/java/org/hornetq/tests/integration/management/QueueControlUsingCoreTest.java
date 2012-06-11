@@ -16,14 +16,11 @@ package org.hornetq.tests.integration.management;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -35,7 +32,6 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 {
 
    protected ClientSession session;
-
    private ServerLocator locator;
 
    @Override
@@ -264,41 +260,14 @@ public class QueueControlUsingCoreTest extends QueueControlTest
       };
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      locator = createInVMNonHALocator();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
       session.start();
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (session != null)
-      {
-         session.close();
-      }
-
-      if(locator != null)
-      {
-         locator.close();
-      }
-
-      session = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

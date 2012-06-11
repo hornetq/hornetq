@@ -809,7 +809,7 @@ public interface HornetQLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112130, value = "error handling packet {0} for replication", format = Message.Format.MESSAGE_FORMAT)
-   void errorHandlingReplciationPacket(@Cause Exception e, Packet packet);
+   void errorHandlingReplicationPacket(@Cause Exception e, Packet packet);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112131, value = "Replication Error while closing the page on backup", format = Message.Format.MESSAGE_FORMAT)

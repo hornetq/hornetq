@@ -13,14 +13,10 @@
 
 package org.hornetq.jms.transaction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
@@ -30,7 +26,6 @@ import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQObjectMessage;
 import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
-import org.hornetq.utils.TypedProperties;
 
 /**
  * A JMSTransactionDetail
