@@ -14,8 +14,10 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.IllegalStateException;
+import org.hornetq.api.core.ObjectClosedException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -51,7 +53,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testBasicReceive() throws Exception
    {
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientSession session = cf.createSession(false, true, true);
@@ -67,7 +69,7 @@ public class ReceiveTest extends ServiceTestBase
    public void testReceiveTimesoutCorrectly() throws Exception
    {
 
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -81,7 +83,7 @@ public class ReceiveTest extends ServiceTestBase
    public void testReceiveOnClosedException() throws Exception
    {
 
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -106,7 +108,7 @@ public class ReceiveTest extends ServiceTestBase
    public void testReceiveThrowsExceptionWhenHandlerSet() throws Exception
    {
 
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -138,7 +140,7 @@ public class ReceiveTest extends ServiceTestBase
 
          // forces perfect round robin
          locator.setConsumerWindowSize(1);
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientSession session = cf.createSession(false, true, true);

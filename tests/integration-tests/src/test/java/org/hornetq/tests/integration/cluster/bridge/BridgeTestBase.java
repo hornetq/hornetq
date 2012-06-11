@@ -97,9 +97,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
-      addServer(service);
-
-      return service;
+      return addServer(service);
    }
 
    protected HornetQServer createBackupHornetQServer(final int id,
@@ -143,9 +141,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          service = new InVMNodeManagerServer(serviceConf, nodeManager);
       }
-      addServer(service);
-
-      return service;
+      return addServer(service);
    }
 
 

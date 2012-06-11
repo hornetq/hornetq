@@ -140,8 +140,6 @@ public class QueueBrowserTest extends ServiceTestBase
       consumer.close();
 
       session.close();
-
-
    }
 
    public void testConsumerBrowserWithStringSelector() throws Exception
