@@ -26,7 +26,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
@@ -34,12 +33,10 @@ import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
 
 /**
@@ -51,10 +48,8 @@ import org.hornetq.utils.json.JSONArray;
 public class QueueControlTest extends ManagementTestBase
 {
 
-   protected HornetQServer server;
-
-   protected ClientSession session;
-
+   private HornetQServer server;
+   private ClientSession session;
    private ServerLocator locator;
 
    public void testAttributes() throws Exception
@@ -1331,7 +1326,7 @@ public class QueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1401,7 +1396,7 @@ public class QueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1515,11 +1510,11 @@ public class QueueControlTest extends ManagementTestBase
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, false));
       server.start();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = createInVMNonHALocator();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
       locator.setConsumerWindowSize(0);
@@ -1544,9 +1539,4 @@ public class QueueControlTest extends ManagementTestBase
 
       return queueControl;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

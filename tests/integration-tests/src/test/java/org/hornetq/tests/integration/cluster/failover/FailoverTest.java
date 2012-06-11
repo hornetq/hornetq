@@ -901,19 +901,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = session1.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
-
+      sendMessages(session1, producer, NUM_MESSAGES);
       session1.commit();
 
       ClientSession session2 = createSession(sf, false, false);
@@ -922,18 +910,7 @@ public class FailoverTest extends FailoverTestBase
 
       session2.start();
 
-      for (int i = 0; i < NUM_MESSAGES / 2; i++)
-      {
-         ClientMessage message = consumer.receive(1000);
-
-         Assert.assertNotNull(message);
-
-         assertMessageBody(i, message);
-
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
-
-         message.acknowledge();
-      }
+      receiveMessages(consumer, 0, NUM_MESSAGES / 2, true);
 
       session2.commit();
 
@@ -975,8 +952,6 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-
-
       session.start(xid, XAResource.TMNOFLAGS);
 
       sendMessagesSomeDurable(session, producer);
@@ -1014,8 +989,6 @@ public class FailoverTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-
-
 
       session.start(xid, XAResource.TMNOFLAGS);
 

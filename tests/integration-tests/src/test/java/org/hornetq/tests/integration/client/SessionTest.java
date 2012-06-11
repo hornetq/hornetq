@@ -13,7 +13,6 @@
 package org.hornetq.tests.integration.client;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
@@ -35,6 +34,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -66,22 +66,11 @@ public class SessionTest extends ServiceTestBase
 
       cf = createSessionFactory(locator);
       ClientSession clientSession = addClientSession(cf.createSession(false, true, true));
-         final CountDownLatch latch = new CountDownLatch(1);
-         clientSession.addFailureListener(new SessionFailureListener()
-         {
-            public void connectionFailed(final HornetQException me, boolean failedOver)
-            {
-               latch.countDown();
-            }
-
-            public void beforeReconnect(final HornetQException me)
-            {
-            }
-         });
-
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      clientSession.addFailureListener(listener);
          // Make sure failure listener is called if server is stopped without session being closed first
          server.stop();
-         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
    }
 
    public void testFailureListenerRemoved() throws Exception
@@ -115,6 +104,7 @@ public class SessionTest extends ServiceTestBase
       finally
       {
          ((ClientSessionFactoryInternal)cf).causeExit();
+         cf.close();
       }
    }
 

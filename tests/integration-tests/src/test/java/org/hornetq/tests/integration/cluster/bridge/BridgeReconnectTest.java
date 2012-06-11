@@ -36,8 +36,6 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.Bridge;
@@ -72,12 +70,9 @@ public class BridgeReconnectTest extends BridgeTestBase
    {
       if (isNetty())
       {
-         return NettyConnectorFactory.class.getName();
+         return NETTY_CONNECTOR_FACTORY;
       }
-      else
-      {
-         return InVMConnectorFactory.class.getName();
-      }
+      return INVM_CONNECTOR_FACTORY;
    }
 
    // Fail bridge and reconnecting immediately
