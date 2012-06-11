@@ -330,7 +330,10 @@ public class HornetQMessageHandler implements MessageHandler
          
          try
          {
-            endpoint.afterDelivery();
+            if (endpoint != null)
+            {
+               endpoint.afterDelivery();
+            }
          }
          catch (ResourceException e)
          {
@@ -384,7 +387,10 @@ public class HornetQMessageHandler implements MessageHandler
 
             try
             {
-               endpoint.afterDelivery();
+               if (endpoint != null)
+               {
+                  endpoint.afterDelivery();
+               }
             }
             catch (ResourceException e1)
             {
