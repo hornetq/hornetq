@@ -196,11 +196,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
                                                      liveConnector);
 
-      final String sufix = "_backup";
-      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + sufix);
-      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + sufix);
-      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + sufix);
-      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + sufix);
+      final String suffix = "_backup";
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + suffix);
+      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
+      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
       backupConfig.setSecurityEnabled(false);
 
       backupServer = createTestableServer(backupConfig);
