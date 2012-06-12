@@ -527,7 +527,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (HornetQLogger.LOGGER.isDebugEnabled())
             {
-               HornetQLogger.LOGGER.debug(this + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
+               HornetQLogger.LOGGER.debug(this + "::Ignoring reference on bridge as it is set to inactive ref=" + ref);
             }
             return HandleStatus.BUSY;
          }
