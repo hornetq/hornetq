@@ -906,12 +906,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       synchronized (this)
       {
          closing = true;
+
+         producerCreditManager.close();
       }
 
       try
       {
-         producerCreditManager.close();
-
          closeChildren();
 
          inClose = true;
@@ -1256,7 +1256,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       channel.send(new SessionRequestProducerCreditsMessage(credits, address));
    }
 
-   public ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
+   public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
       return producerCreditManager.getCredits(address, anon);
    }
