@@ -1672,6 +1672,7 @@ public abstract class UnitTestCase extends TestCase
          for (ClientSessionFactory sf : sessionFactories)
          {
             closeSessionFactory(sf);
+            assert sf.isClosed();
          }
          sessionFactories.clear();
       }

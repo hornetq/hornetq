@@ -87,7 +87,7 @@ import org.hornetq.utils.OrderedExecutorFactory;
  * A ReplicationTest
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ReplicationTest extends ServiceTestBase
+public final class ReplicationTest extends ServiceTestBase
 {
 
    private ThreadFactory tFactory;
@@ -105,22 +105,29 @@ public class ReplicationTest extends ServiceTestBase
    private static final SimpleString ADDRESS = new SimpleString("foobar123");
 
 
-   private void setupServer(boolean backup, boolean netty, String... interceptors) throws Exception
+   private void setupServer(boolean backup, String... interceptors) throws Exception
    {
 
-      Configuration backupConfig = createDefaultConfig(netty);
-      Configuration liveConfig = createDefaultConfig(netty);
+      final TransportConfiguration liveConnector = TransportConfigurationUtils.getInVMConnector(true);
+      final TransportConfiguration backupConnector = TransportConfigurationUtils.getInVMConnector(false);
+      final TransportConfiguration backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
+
+      Configuration backupConfig = createDefaultConfig();
+      Configuration liveConfig = createDefaultConfig();
 
       backupConfig.setBackup(backup);
+
+      final String suffix = "_backup";
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + suffix);
+      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
+      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
+
       if (interceptors.length > 0)
       {
          List<String> interceptorsList = Arrays.asList(interceptors);
          backupConfig.setInterceptorClassNames(interceptorsList);
       }
-
-      TransportConfiguration liveConnector = TransportConfigurationUtils.getInVMConnector(true);
-      TransportConfiguration backupConnector = TransportConfigurationUtils.getInVMConnector(false);
-      TransportConfiguration backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
 
       ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
                                                      liveConnector);
@@ -161,13 +168,13 @@ public class ReplicationTest extends ServiceTestBase
 
    public void testBasicConnection() throws Exception
    {
-      setupServer(true, false);
+      setupServer(true);
       waitForComponent(liveServer.getReplicationManager());
    }
 
    public void testConnectIntoNonBackup() throws Exception
    {
-      setupServer(false, false);
+      setupServer(false);
       try
       {
          ClientSessionFactory sf = createSessionFactory(locator);
@@ -178,7 +185,7 @@ public class ReplicationTest extends ServiceTestBase
       }
       catch(NotConnectedException nce)
       {
-         //ok
+         // ok
       }
       catch (HornetQException expected)
       {
@@ -188,7 +195,7 @@ public class ReplicationTest extends ServiceTestBase
 
    public void testSendPackets() throws Exception
    {
-      setupServer(true, false);
+      setupServer(true);
 
       StorageManager storage = getStorage();
 
@@ -271,7 +278,7 @@ public class ReplicationTest extends ServiceTestBase
    {
       final int nMsg = 100;
       final int stop = 37;
-      setupServer(true, false, TestInterceptor.class.getName());
+      setupServer(true, TestInterceptor.class.getName());
 
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
@@ -281,7 +288,6 @@ public class ReplicationTest extends ServiceTestBase
       session.createQueue(ADDRESS, ADDRESS, null, true);
 
       final ClientProducer producer = session.createProducer(ADDRESS);
-
 
       session.start();
       session2.start();
@@ -314,10 +320,7 @@ public class ReplicationTest extends ServiceTestBase
             session.close();
          if (!session2.isClosed())
             session2.close();
-         if (sf != null)
-            sf.close();
       }
-
    }
 
    public void testExceptionSettingActionBefore() throws Exception
@@ -435,7 +438,7 @@ public class ReplicationTest extends ServiceTestBase
    public void testNoActions() throws Exception
    {
 
-      setupServer(true, false);
+      setupServer(true);
       StorageManager storage = getStorage();
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
@@ -466,7 +469,7 @@ public class ReplicationTest extends ServiceTestBase
    public void testOrderOnNonPersistency() throws Exception
    {
 
-      setupServer(true, false);
+      setupServer(true);
 
       final ArrayList<Integer> executions = new ArrayList<Integer>();
 
@@ -498,7 +501,6 @@ public class ReplicationTest extends ServiceTestBase
 
             public void done()
             {
-               System.out.println("Add " + nAdd);
                executions.add(nAdd);
                latch.countDown();
             }
@@ -534,10 +536,6 @@ public class ReplicationTest extends ServiceTestBase
 
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
@@ -556,12 +554,11 @@ public class ReplicationTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       stopComponent(manager);
-      manager = null;
-      stopComponent(backupServer);
-      backupServer = null;
-      stopComponent(liveServer);
-      liveServer = null;
       closeServerLocator(locator);
+
+      manager = null;
+      backupServer = null;
+      liveServer = null;
 
       executor.shutdownNow();
       scheduledExecutor.shutdownNow();
