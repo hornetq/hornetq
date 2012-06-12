@@ -609,11 +609,13 @@ public class FailoverTest extends FailoverTestBase
       producer.close();
       session.commit();
       backupServer.stop(); // Backup stops!
+      beforeRestart(backupServer);
       backupServer.start();
       Thread.sleep(10000);
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
+      beforeRestart(liveServer);
       liveServer.start();
       liveServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
 
@@ -671,6 +673,7 @@ public class FailoverTest extends FailoverTestBase
       else
       {
          backupServer.stop();
+         beforeRestart(backupServer);
          backupServer.start();
          backupServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
          Thread.sleep(1000);
