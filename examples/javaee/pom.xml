@@ -34,6 +34,7 @@
       <module>mdb-cmt-tx-local</module>
       <module>mdb-cmt-tx-not-supported</module>
       <module>mdb-cmt-tx-required</module>
+      <module>mdb-remote-failover-static</module>
       <module>mdb-message-selector</module>
       <module>mdb-tx-send</module>
       <module>servlet-ssl</module>

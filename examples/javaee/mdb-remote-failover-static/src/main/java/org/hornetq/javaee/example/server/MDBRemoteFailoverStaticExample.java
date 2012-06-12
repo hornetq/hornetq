@@ -29,16 +29,16 @@ import javax.jms.*;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/inQueue")      ,
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "/queues/inQueue")      ,
                         @ActivationConfigProperty(propertyName = "hA", propertyValue = "true")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
+@ResourceAdapter("hornetq-remote-ra.rar")
 public class MDBRemoteFailoverStaticExample implements MessageListener
 {
 
-   @Resource(mappedName = "java:RemoteJmsXA")
+   @Resource(mappedName = "java:/RemoteJmsXA")
    ConnectionFactory connectionFactory;
    Queue replyQueue;
 
@@ -57,7 +57,7 @@ public class MDBRemoteFailoverStaticExample implements MessageListener
          System.out.println("message " + text);
 
          //Step 11. we create a JMS connection
-         conn = connectionFactory.createConnection();
+         conn = connectionFactory.createConnection("guest", "password");
 
          //Step 12. We create a JMS session
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

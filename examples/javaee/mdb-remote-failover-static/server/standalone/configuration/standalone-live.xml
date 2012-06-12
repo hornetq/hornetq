@@ -219,28 +219,31 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
+               <failover-on-shutdown>true</failover-on-shutdown>
+                <clustered>true</clustered>
+                <shared-store>true</shared-store>
                 <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
+                <journal-directory path="../../../journal"/>
+                <bindings-directory  path="../../../bindings"/>
+                <large-messages-directory path="../../../large-message"/>
+                <paging-directory path="../../../paging"/>
 
                 <connectors>
-                   <netty-connector name="netty-servlet" socket-binding="http">
-                      <param key="use-servlet" value="true"/>
-                      <param key="servlet-path" value="/hornetq/HornetQServlet"/>
-                      <!--<param key="ssl-enabled" value="true"/>
-                      <param key="key-store-path" value="server/hornetq.example.keystore"/>
-                      <param key="key-store-password" value="hornetqexample"/>-->
-                   </netty-connector>
+                    <netty-connector name="netty" socket-binding="messaging"/>
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                    </netty-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
                 </connectors>
 
                 <acceptors>
-                   <!--socket bindings are mandatory so we have to use a generic acceptor, this needs fixing-->
-                   <acceptor name="netty-servlet">
-                       <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-                       <param key="use-invm" value="true"/>
-                       <param key="host" value="org.hornetq"/>
-                   </acceptor>
+                    <netty-acceptor name="netty" socket-binding="messaging"/>
+                    <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                        <param key="direct-deliver" value="false"/>
+                    </netty-acceptor>
                     <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
 
@@ -264,6 +267,29 @@
                     </address-setting>
                 </address-settings>
 
+                <broadcast-groups>
+                    <broadcast-group name="bg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <broadcast-period>5000</broadcast-period>
+                        <connector-ref>netty</connector-ref>
+                    </broadcast-group>
+                </broadcast-groups>
+                <discovery-groups>
+                    <discovery-group name="dg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <refresh-timeout>10000</refresh-timeout>
+                    </discovery-group>
+                </discovery-groups>
+                <cluster-connections>
+                    <cluster-connection name="my-cluster">
+                        <address>jms</address>
+                        <connector-ref>netty</connector-ref>
+                        <discovery-group-ref discovery-group-name="dg-group1"/>
+                    </cluster-connection>
+                </cluster-connections>
+
                 <jms-connection-factories>
                     <connection-factory name="InVmConnectionFactory">
                         <connectors>
@@ -273,14 +299,16 @@
                             <entry name="java:/ConnectionFactory"/>
                         </entries>
                     </connection-factory>
-                    <connection-factory name="ServletConnectionFactory">
+                    <connection-factory name="RemoteConnectionFactory">
                         <connectors>
-                            <connector-ref connector-name="netty-servlet"/>
+                            <connector-ref connector-name="netty"/>
                         </connectors>
                         <entries>
-                            <entry name="ServletConnectionFactory"/>
-                            <entry name="java:jboss/exported/jms/ServletConnectionFactory"/>
+                            <entry name="RemoteConnectionFactory"/>
+                            <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                         </entries>
+                        <ha>true</ha>
+                        <reconnect-attempts>-1</reconnect-attempts>
                     </connection-factory>
                     <pooled-connection-factory name="hornetq-ra">
                         <transaction mode="xa"/>
@@ -293,13 +321,13 @@
                     </pooled-connection-factory>
                 </jms-connection-factories>
                 <jms-destinations>
-                    <jms-queue name="testQueue">
-                        <entry name="queue/testQueue"/>
-                        <entry name="java:jboss/exported/jms/queues/testQueue"/>
+                    <jms-queue name="inQueue">
+                        <entry name="queue/inQueue"/>
+                        <entry name="java:jboss/exported/queues/inQueue"/>
                     </jms-queue>
-                    <jms-queue name="replyQueue">
-                        <entry name="queue/replyQueue"/>
-                        <entry name="java:jboss/exported/jms/queues/replyQueue"/>
+                    <jms-queue name="outQueue">
+                        <entry name="queue/outQueue"/>
+                        <entry name="java:jboss/exported/queues/outQueue"/>
                     </jms-queue>
                 </jms-destinations>
             </hornetq-server>
