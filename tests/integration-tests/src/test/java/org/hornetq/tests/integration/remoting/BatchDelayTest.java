@@ -69,7 +69,7 @@ public class BatchDelayTest extends ServiceTestBase
       ServerLocator locator =
                HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(true, false, params));
       addServerLocator(locator);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       return addSessionFactory(sf);
    }
 

@@ -66,7 +66,7 @@ public class JournalRestartStressTest extends ServiceTestBase
          locator.setMinLargeMessageSize(1024 * 1024);
          locator.setBlockOnDurableSend(false);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(true, true);
 

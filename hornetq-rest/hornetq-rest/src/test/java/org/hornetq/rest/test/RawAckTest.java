@@ -2,6 +2,7 @@ package org.hornetq.rest.test;
 
 import java.util.HashMap;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -49,7 +50,7 @@ public class RawAckTest
       hornetqServer.start();
 
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
-      
+
       serverLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
       sessionFactory = serverLocator.createSessionFactory();
       consumerSessionFactory = serverLocator.createSessionFactory();
@@ -63,9 +64,8 @@ public class RawAckTest
    @AfterClass
    public static void shutdown() throws Exception
    {
-	  serverLocator.close();
+      serverLocator.close();
       hornetqServer.stop();
-
    }
 
    static boolean passed = false;
@@ -79,6 +79,7 @@ public class RawAckTest
          this.consumer = consumer;
       }
 
+      @Override
       public void run()
       {
          try
@@ -112,7 +113,7 @@ public class RawAckTest
 
       ClientMessage message;
 
-      message = session.createMessage(ClientMessage.OBJECT_TYPE, false);
+      message = session.createMessage(Message.OBJECT_TYPE, false);
       message.getBodyBuffer().writeInt("hello".getBytes().length);
       message.getBodyBuffer().writeBytes("hello".getBytes());
       producer.send(message);

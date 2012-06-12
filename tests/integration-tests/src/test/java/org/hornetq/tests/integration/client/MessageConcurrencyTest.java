@@ -71,7 +71,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    // Test that a created message can be sent via multiple producers on different sessions concurrently
    public void testMessageConcurrency() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession createSession = sf.createSession();
       
@@ -132,7 +132,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    // Test that a created message can be sent via multiple producers after being consumed from a single consumer
    public void testMessageConcurrencyAfterConsumption() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession consumeSession = sf.createSession();
       

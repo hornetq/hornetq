@@ -181,7 +181,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       locator = createInVMNonHALocator();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, false);
       session.start();
 

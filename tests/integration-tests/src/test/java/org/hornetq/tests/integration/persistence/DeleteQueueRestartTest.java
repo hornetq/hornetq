@@ -76,7 +76,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setMinLargeMessageSize(1024 * 1024);
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
 
       final ClientSession session = factory.createSession(false, true, true);
 

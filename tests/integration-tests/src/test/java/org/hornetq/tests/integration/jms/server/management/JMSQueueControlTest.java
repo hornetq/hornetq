@@ -782,7 +782,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -860,7 +860,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -945,7 +945,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1040,7 +1040,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 
@@ -1089,7 +1089,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true);
 

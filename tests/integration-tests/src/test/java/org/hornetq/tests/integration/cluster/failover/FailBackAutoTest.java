@@ -131,7 +131,7 @@ public class FailBackAutoTest extends FailoverTestBase
    private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception, HornetQException
    {
       ServerLocator backupLocator = createInVMLocator(server);
-      ClientSessionFactory factorybkp = addSessionFactory(backupLocator.createSessionFactory());
+      ClientSessionFactory factorybkp = addSessionFactory(createSessionFactory(backupLocator));
       ClientSession sessionbkp = factorybkp.createSession(false, false);
       sessionbkp.start();
       ClientConsumer consumerbkp = sessionbkp.createConsumer(ADDRESS);

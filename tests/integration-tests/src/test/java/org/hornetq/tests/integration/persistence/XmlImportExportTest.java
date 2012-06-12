@@ -98,7 +98,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
@@ -236,7 +236,7 @@ public class XmlImportExportTest extends ServiceTestBase
       clearData();
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
       session = factory.createSession(false, true, true);
 
       ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());

@@ -100,7 +100,7 @@ public class PingTest extends ServiceTestBase
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
 
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -160,7 +160,7 @@ public class PingTest extends ServiceTestBase
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(-1);
       locator.setConnectionTTL(-1);
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -218,7 +218,7 @@ public class PingTest extends ServiceTestBase
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
-      ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) locator.createSessionFactory();
+      ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) createSessionFactory(locator);
 
 
       Listener clientListener = new Listener();
@@ -313,7 +313,7 @@ public class PingTest extends ServiceTestBase
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
 
 
       ClientSession session = csf.createSession(false, true, true);

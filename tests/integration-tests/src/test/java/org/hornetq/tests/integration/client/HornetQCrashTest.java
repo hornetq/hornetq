@@ -57,7 +57,7 @@ public class HornetQCrashTest extends UnitTestCase
       // Force an ack at once - this means the send call will block
       locator.setConfirmationWindowSize(1);
 
-      ClientSessionFactory clientSessionFactory = locator.createSessionFactory();
+      ClientSessionFactory clientSessionFactory = createSessionFactory(locator);
 
       ClientSession session = clientSessionFactory.createSession();
 

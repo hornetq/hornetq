@@ -243,7 +243,7 @@ public class RandomReattachTest extends UnitTestCase
          locator.setReconnectAttempts(-1);
          locator.setConfirmationWindowSize(1024 * 1024);
 
-         ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
+         ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) createSessionFactory(locator);
 
 
          ClientSession session = sf.createSession(false, false, false);

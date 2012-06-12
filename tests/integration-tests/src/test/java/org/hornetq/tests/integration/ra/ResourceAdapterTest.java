@@ -55,7 +55,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
          server.start();
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSessionFactory factory = createSessionFactory(locator);
          ClientSession session = factory.createSession(false, false, false);
          HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue("test");
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);

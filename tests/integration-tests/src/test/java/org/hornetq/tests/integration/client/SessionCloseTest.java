@@ -257,7 +257,7 @@ public class SessionCloseTest extends UnitTestCase
       server.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
    }
 

@@ -93,7 +93,7 @@ public class SessionFactoryTest extends ServiceTestBase
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(liveTC);
 
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       csf.close();
    }
 
@@ -126,7 +126,7 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
 
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
@@ -167,7 +167,7 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
 
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();

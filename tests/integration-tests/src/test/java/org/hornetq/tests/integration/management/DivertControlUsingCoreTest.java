@@ -48,7 +48,7 @@ public class DivertControlUsingCoreTest extends DivertControlTest
    @Override
    protected DivertControl createManagementControl(final String name) throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
       session.start();
 

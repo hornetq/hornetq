@@ -642,7 +642,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       // check that a message sent to the address is diverted exclusively
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession();
 
       String divertQueue = RandomUtil.randomString();
@@ -706,7 +706,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(0, serverControl.getBridgeNames().length);
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession();
 
       session.createQueue(sourceAddress, sourceQueue);
@@ -788,7 +788,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Xid xid = newXID();
       
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
@@ -833,7 +833,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Xid xid = newXID();
       
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
@@ -875,7 +875,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Xid xid = new XidImpl("xa1".getBytes(), 1, globalTransactionId);
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, globalTransactionId);
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(recQueue, recQueue, null, true);
       clientSession.createQueue(sendQueue, sendQueue, null, true);
@@ -887,13 +887,13 @@ public class HornetQServerControlTest extends ManagementTestBase
 
 
       ServerLocator receiveLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory receiveCsf = receiveLocator.createSessionFactory();
+      ClientSessionFactory receiveCsf = createSessionFactory(receiveLocator);
       ClientSession receiveClientSession = receiveCsf.createSession(true, false, false);
       ClientConsumer consumer = receiveClientSession.createConsumer(recQueue);
 
 
       ServerLocator sendLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sendCsf = sendLocator.createSessionFactory();
+      ClientSessionFactory sendCsf = createSessionFactory(sendLocator);
       ClientSession sendClientSession = sendCsf.createSession(true, false, false);
       ClientProducer producer = sendClientSession.createProducer(sendQueue);
 

@@ -1144,7 +1144,7 @@ public class BridgeTest extends ServiceTestBase
                {
                   ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server1tc));
 
-                  ClientSessionFactory sf = locator.createSessionFactory();
+                  ClientSessionFactory sf = createSessionFactory(locator);
 
                   ClientSession session = sf.createSession(false, false);
 
@@ -1204,7 +1204,7 @@ public class BridgeTest extends ServiceTestBase
 
                try
                {
-                  sf = locator.createSessionFactory();
+                  sf = createSessionFactory(locator);
 
                   session = sf.createSession(false, true, true);
 

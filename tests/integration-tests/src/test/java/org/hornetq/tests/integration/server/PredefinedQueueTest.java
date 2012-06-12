@@ -83,7 +83,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -173,7 +173,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -241,7 +241,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -273,7 +273,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -358,7 +358,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -389,7 +389,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 
@@ -447,7 +447,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 

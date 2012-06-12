@@ -65,7 +65,7 @@ public class ReconnectTest extends ServiceTestBase
          locator.setRetryIntervalMultiplier(1d);
          locator.setReconnectAttempts(-1);
          locator.setConfirmationWindowSize(1024 * 1024);
-         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSessionFactory factory = createSessionFactory(locator);
 
 
          session = (ClientSessionInternal)factory.createSession();

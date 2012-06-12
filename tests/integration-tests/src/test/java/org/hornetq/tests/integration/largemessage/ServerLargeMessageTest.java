@@ -58,7 +58,7 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
       ServerLocator locator = createFactory(false);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false);
 

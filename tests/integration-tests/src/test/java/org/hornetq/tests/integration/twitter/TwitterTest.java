@@ -238,7 +238,7 @@ public class TwitterTest extends ServiceTestBase
 
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
          locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          session = sf.createSession(false, true, true);
          ClientConsumer consumer = session.createConsumer(queue);
          session.start();
@@ -407,7 +407,7 @@ public class TwitterTest extends ServiceTestBase
 
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
          locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(queue);
          ClientMessage msg = session.createMessage(false);
@@ -556,7 +556,7 @@ public class TwitterTest extends ServiceTestBase
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
          locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
          
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(queue);
          ClientMessage msg = session.createMessage(false);

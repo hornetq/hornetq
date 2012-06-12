@@ -222,7 +222,7 @@ public class LVQRecoveryTest extends ServiceTestBase
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(false, true, true);
       clientSessionXa = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(address, qName1, null, true);
@@ -246,7 +246,7 @@ public class LVQRecoveryTest extends ServiceTestBase
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(false, true, true);
       clientSessionXa = sessionFactory.createSession(true, false, false);
    }

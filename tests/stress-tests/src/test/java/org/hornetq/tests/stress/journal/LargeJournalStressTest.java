@@ -289,7 +289,7 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession sess = sf.createSession();
 
@@ -311,7 +311,7 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       sess.close();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
    }
 
    @Override

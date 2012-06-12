@@ -920,7 +920,7 @@ public class PageCursorStressTest extends ServiceTestBase
       int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession();
       session.deleteQueue(ADDRESS);
 

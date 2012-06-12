@@ -45,7 +45,7 @@ public class MessagePropertyTest extends ServiceTestBase
       server = createServer(true);
       server.start();
       locator = createInVMNonHALocator();
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
    }
 
    @Override
