@@ -316,10 +316,30 @@ public class ClusterConnectionBridge extends BridgeImpl
       setupNotificationConsumer();
    }
 
+   /**
+    * Notes on the locators:
+    * <p>
+    * {@link BridgeImpl} when directly initialized will have its {@link #serverLocator} closed at
+    * {@link ClusterManagerImpl}.
+    * <p>
+    * Locator {@link #discoveryLocator} is shared at {@link ClusterConnectionImpl}, and is therefore
+    * closed there.
+    * <p>
+    * When {@link ClusterConnectionImpl} initializes this class, {@link #serverLocator} is closed
+    * here.
+    */
    @Override
    public void stop() throws Exception
    {
-      super.stop();
+      try
+      {
+         if (serverLocator != null)
+            serverLocator.close();
+      }
+      finally
+      {
+         super.stop();
+      }
    }
 
    @Override
