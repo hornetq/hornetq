@@ -37,6 +37,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.AfterConnectInternalListener;
@@ -157,6 +158,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private volatile ServerLocatorInternal backupServerLocator;
 
    private boolean stopping = false;
+
+   private final Object backupConnectionGuard = new Object();
+   private boolean isBackupConnecting;
 
    public ClusterConnectionImpl(final ClusterManagerInternal manager,
                                 final TransportConfiguration[] tcConfigs,
@@ -412,7 +416,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          return;
       }
-      stopping = true;
+      synchronized (backupConnectionGuard)
+      {
+         stopping = true;
+      }
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug(this + "::stopping ClusterConnection");
@@ -453,29 +460,43 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          managementService.sendNotification(notification);
       }
 
+      boolean stopBackupLocatorNow;
+      synchronized (backupConnectionGuard)
+      {
+         /*
+          * the executor used in this class is 'ordered'. If the executor is blocked trying to
+          * announce the backup. The run below would never get to execute.
+          */
+         stopBackupLocatorNow = isBackupConnecting;
+      }
+      if (stopBackupLocatorNow)
+      {
+         closeLocator(backupServerLocator);
+      }
+
       executor.execute(new Runnable()
       {
          public void run()
          {
             synchronized (ClusterConnectionImpl.this)
             {
-               if (backupServerLocator != null)
-               {
-                  backupServerLocator.close();
-                  backupServerLocator = null;
-               }
+               closeLocator(backupServerLocator);
+               backupServerLocator = null;
 
-               if (serverLocator != null)
-               {
-                  serverLocator.close();
-                  serverLocator = null;
-               }
+               closeLocator(serverLocator);
+               serverLocator = null;
             }
 
          }
       });
 
       started = false;
+   }
+
+   private static void closeLocator(final ServerLocator locator)
+   {
+      if (locator != null)
+         locator.close();
    }
 
    public void announceBackup()
@@ -486,11 +507,23 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          {
             try
             {
+               ServerLocatorInternal localBackupLocator = backupServerLocator;
+               if (localBackupLocator == null)
+               {
+                  HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
+                  return;
+               }
                if (HornetQLogger.LOGGER.isDebugEnabled())
                {
                   HornetQLogger.LOGGER.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
                }
-               ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
+               synchronized (backupConnectionGuard)
+               {
+                  if (stopping)
+                     return;
+                  isBackupConnecting = true;
+               }
+               ClientSessionFactory backupSessionFactory = localBackupLocator.connect();
                if (backupSessionFactory != null)
                {
                   backupSessionFactory.getConnection()
@@ -502,6 +535,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                     null));
                   HornetQLogger.LOGGER.backupAnnounced();
                }
+
             }
             catch (RejectedExecutionException e)
             {
@@ -511,6 +545,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             {
                if (scheduledExecutor.isShutdown())
                   return;
+               if (stopping || !started)
+                  return;
+
                HornetQLogger.LOGGER.errorAnnouncingBackup(e);
 
                scheduledExecutor.schedule(new Runnable(){
@@ -520,6 +557,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                   }
 
                }, retryInterval, TimeUnit.MILLISECONDS);
+            }
+            finally
+            {
+               synchronized (backupConnectionGuard)
+               {
+                  isBackupConnecting = false;
+               }
             }
          }
       });
