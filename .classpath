@@ -102,7 +102,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-ejb-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/net/java/dev/javacc/lib/javacc.jar"/>
-	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar" sourcepath="/Users/jmesnil/Downloads/netty-3.2.0.BETA1-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/naming/lib/jnpserver.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jbosssx.jar"/>
@@ -134,5 +133,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-jms.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-tx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/msc/lib/jboss-msc.jar"/>
+	<classpathentry kind="lib" path="thirdparty/io/netty/lib/netty.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
