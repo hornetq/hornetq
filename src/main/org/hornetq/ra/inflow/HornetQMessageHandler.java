@@ -167,6 +167,7 @@ public class HornetQMessageHandler implements MessageHandler
             if (activation.getTopicTemporaryQueue() == null)
             {
                queueName = new SimpleString(UUID.randomUUID().toString());
+               session.createTemporaryQueue(activation.getAddress(), queueName, selectorString);
                activation.setTopicTemporaryQueue(queueName);
             }
             else
@@ -177,20 +178,6 @@ public class HornetQMessageHandler implements MessageHandler
          else
          {
             queueName = activation.getAddress();
-         }
-
-         QueueQuery subResponse = session.queueQuery(queueName);
-
-         if (!subResponse.isExists())
-         {
-            if (activation.isTopic())
-            {
-               session.createTemporaryQueue(activation.getAddress(), queueName, selectorString);
-            }
-            else
-            {
-               session.createQueue(activation.getAddress(), queueName, selectorString, true);
-            }
          }
          consumer = (ClientConsumerInternal)session.createConsumer(queueName, selectorString);
       }
