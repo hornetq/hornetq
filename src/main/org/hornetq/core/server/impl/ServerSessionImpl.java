@@ -377,6 +377,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
          }
+         
+         if (log.isDebugEnabled())
+         {
+            log.debug("Session with user=" + username + ", connection=" + this.remotingConnection + " created a consumer on queue " + queueName + ", filter = " + filterString);
+         }
 
          Notification notification = new Notification(null, CONSUMER_CREATED, props);
 
@@ -417,6 +422,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          tempQueueCleannerUppers.put(name, cleaner);
       }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("Queue " + name + " created on address " + name + 
+                   " with filter=" + filterString + " temporary = " + 
+                  temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
+      }
+
    }
 
    /**
