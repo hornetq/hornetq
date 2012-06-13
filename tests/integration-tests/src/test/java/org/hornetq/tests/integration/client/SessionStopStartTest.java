@@ -538,7 +538,7 @@ public class SessionStopStartTest extends ServiceTestBase
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly

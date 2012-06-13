@@ -1289,7 +1289,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    private void createClients(final boolean createQueue, final boolean commitACKs) throws Exception
    {
       locator = createInVMNonHALocator();
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(true, false, commitACKs);
       if (createQueue)
       {

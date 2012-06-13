@@ -131,7 +131,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
                                                                                                       ServiceTestBase.INVM_CONNECTOR_FACTORY)));
 
       locator.setGroupID("grp1");
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       clientSession = addClientSession(sessionFactory.createSession(false, true, true));
       clientSession.createQueue(qName, qName, null, false);
    }

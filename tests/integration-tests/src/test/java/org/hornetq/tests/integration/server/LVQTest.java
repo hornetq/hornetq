@@ -608,7 +608,7 @@ public class LVQTest extends UnitTestCase
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(false, true, true);
       clientSessionTxReceives = sessionFactory.createSession(false, true, false);
       clientSessionTxSends = sessionFactory.createSession(false, false, true);

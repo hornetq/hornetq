@@ -102,7 +102,7 @@ public class PingStressTest extends ServiceTestBase
       locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
       locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
       locator.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
-      final ClientSessionFactory csf1 = locator.createSessionFactory();
+      final ClientSessionFactory csf1 = createSessionFactory(locator);
 
 
       final int numberOfSessions = 1;

@@ -81,7 +81,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       locator =
                addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
                                                                                                       UnitTestCase.INVM_CONNECTOR_FACTORY)));
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(false, true, false);
    }
 

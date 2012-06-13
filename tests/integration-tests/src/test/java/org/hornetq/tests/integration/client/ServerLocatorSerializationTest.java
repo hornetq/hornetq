@@ -60,7 +60,7 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
       log.info("Starting Netty locator");
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
 
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession(false, false);
       session.close();
       csf.close();
@@ -76,7 +76,7 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
       ObjectInputStream in = new ObjectInputStream(bis);
       locatorImpl = (ServerLocatorImpl) in.readObject();
 
-      csf = locator.createSessionFactory();
+      csf = createSessionFactory(locator);
       session = csf.createSession(false, false);
       session.close();
       csf.close();

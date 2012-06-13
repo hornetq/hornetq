@@ -50,7 +50,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    @Override
    protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
       session.start();
 

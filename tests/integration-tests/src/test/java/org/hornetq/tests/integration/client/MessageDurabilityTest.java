@@ -210,7 +210,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       server.stop();
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
    }
    // Inner classes -------------------------------------------------

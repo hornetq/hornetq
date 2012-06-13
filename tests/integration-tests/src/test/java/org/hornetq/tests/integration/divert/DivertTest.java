@@ -74,7 +74,7 @@ public class DivertTest extends ServiceTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -170,7 +170,7 @@ public class DivertTest extends ServiceTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -303,7 +303,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -379,7 +379,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -497,7 +497,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -650,7 +650,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -792,7 +792,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -926,7 +926,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1111,7 +1111,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1274,7 +1274,7 @@ public class DivertTest extends ServiceTestBase
       // Only the first and third should be deployed
 
       ServerLocator locator = createInVMNonHALocator();;
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 

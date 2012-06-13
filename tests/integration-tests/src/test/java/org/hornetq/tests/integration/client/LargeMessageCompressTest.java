@@ -70,7 +70,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -129,7 +129,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -202,7 +202,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -276,7 +276,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -310,7 +310,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          locator = createFactory(isNetty());
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession();
 

@@ -53,7 +53,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
 
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -140,7 +140,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
             try
             {
             locator = createInVMNonHALocator();
-            ClientSessionFactory sf = locator.createSessionFactory();
+            ClientSessionFactory sf = createSessionFactory(locator);
                 session = sf.createSession(false, true, true);
                 final SimpleString QUEUE = new SimpleString(queueName);
                 session.createQueue(QUEUE, QUEUE, null, true);

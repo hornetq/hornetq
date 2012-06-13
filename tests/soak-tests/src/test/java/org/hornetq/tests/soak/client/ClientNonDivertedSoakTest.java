@@ -115,9 +115,9 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
       session.close();
       sf.close();
 
-      Receiver rec1 = new Receiver(locator.createSessionFactory(), ADDRESS.toString());
+      Receiver rec1 = new Receiver(createSessionFactory(locator), ADDRESS.toString());
 
-      Sender send = new Sender(locator.createSessionFactory(), ADDRESS.toString(), new Receiver[] { rec1 });
+      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[] { rec1 });
 
       send.start();
       rec1.start();

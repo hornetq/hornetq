@@ -125,7 +125,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = sf.createSession(false, false, false);
 
@@ -207,7 +207,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(false, false, false));
 
@@ -273,7 +273,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(!transacted, !transacted, 0));
 
@@ -333,7 +333,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(false, false, false));
 
@@ -386,7 +386,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -439,7 +439,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(false, false, false);
 
@@ -502,7 +502,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
@@ -618,7 +618,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
@@ -694,7 +694,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -742,7 +742,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(false, false, false);
 
@@ -784,7 +784,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, false);
 
@@ -843,7 +843,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(true, true, 0);
 
@@ -924,7 +924,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(false, false, false);
 
@@ -1008,7 +1008,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setCacheLargeMessagesClient(true);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(false, false, false);
 
@@ -1929,7 +1929,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1997,7 +1997,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2025,7 +2025,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
       }
@@ -2065,7 +2065,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = sf.createSession(isXA, false, false);
 
@@ -2095,7 +2095,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
          server.stop();
          server.start();
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
          session = sf.createSession(isXA, false, false);
 
          session.rollback(xid);
@@ -2128,7 +2128,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(isXA, false, false);
 
@@ -2253,7 +2253,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          locator.setMinLargeMessageSize(1024);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
@@ -2356,7 +2356,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          locator.setMinLargeMessageSize(1024);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
@@ -2467,7 +2467,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2514,7 +2514,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       for (int ad = 0; ad < 2; ad++)
       {
@@ -2606,7 +2606,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       locator.setBlockOnAcknowledge(true);
       locator.setCompressLargeMessage(true);
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -2716,7 +2716,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setMinLargeMessageSize(100 * 1024);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2788,7 +2788,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          locator.setMinLargeMessageSize(1024);
 
-         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -2845,7 +2845,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       ClientSession session = sf.createSession(false, false);
 
@@ -2925,7 +2925,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final int numberOfBytesBigMessage = 400000;
 
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       if (sendBlocking)
       {
@@ -2970,7 +2970,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
          server.start();
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
       }
 
       session = sf.createSession(null, null, false, true, true, false, 0);

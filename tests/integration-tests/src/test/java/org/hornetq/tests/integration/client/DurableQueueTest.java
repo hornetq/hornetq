@@ -87,7 +87,7 @@ public class DurableQueueTest extends ServiceTestBase
       server.stop();
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
 
       session.start();
@@ -112,7 +112,7 @@ public class DurableQueueTest extends ServiceTestBase
       server.stop();
       server.start();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true);
 

@@ -33,7 +33,7 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
    protected BroadcastGroupControl createManagementControl(final String name) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
       final ClientSession session = addClientSession(sf.createSession(false, true, true));
       session.start();
 

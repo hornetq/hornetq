@@ -112,7 +112,7 @@ public class PersistentDivertTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -314,7 +314,7 @@ public class PersistentDivertTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -365,7 +365,7 @@ public class PersistentDivertTest extends ServiceTestBase
       ServerLocator locator2 = createInVMNonHALocator();
       locator2.setBlockOnDurableSend(true);
 
-      sf = locator2.createSessionFactory();
+      sf = createSessionFactory(locator2);
       session = sf.createSession(false, true, true);
 
       session.start();
@@ -461,7 +461,7 @@ public class PersistentDivertTest extends ServiceTestBase
       ServerLocator locator3 = createInVMNonHALocator();
       locator3.setBlockOnDurableSend(true);
 
-      sf = locator3.createSessionFactory();
+      sf = createSessionFactory(locator3);
 
       session = sf.createSession(false, true, true);
 

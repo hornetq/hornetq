@@ -65,7 +65,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
@@ -90,7 +90,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       try
       {
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          addSessionFactory(sf);
          Assert.fail();
       }
@@ -111,7 +111,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       locator.setCallTimeout(2000);
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
       try
       {
          sf.createSession(false, true, true);

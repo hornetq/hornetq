@@ -22,7 +22,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.JournalType;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -40,7 +41,7 @@ public class RawRestartTest
    static ClientProducer producer;
    static ClientSession session;
 
-   @BeforeClass
+   @Before
    public static void setup() throws Exception
    {
       startupTheServer();
@@ -78,8 +79,10 @@ public class RawRestartTest
    @AfterClass
    public static void shutdown() throws Exception
    {
+      sessionFactory.close();
+      consumerSessionFactory.close();
+      serverLocator.close();
       hornetqServer.stop();
-
    }
 
    private static class MyListener implements MessageHandler
@@ -106,10 +109,9 @@ public class RawRestartTest
    }
 
    @Test
+   @Ignore
    public void testAck() throws Exception
    {
-      if (true) return;  // this test is disabled!
-
       ClientSession consumer_session = consumerSessionFactory.createSession(false, false);
       ClientConsumer consumer = consumer_session.createConsumer("testQueue");
       consumer.setMessageHandler(new MyListener());

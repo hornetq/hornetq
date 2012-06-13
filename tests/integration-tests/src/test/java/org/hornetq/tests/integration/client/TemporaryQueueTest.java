@@ -209,7 +209,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       Assert.assertTrue("connection close listeners not fired", latch.await(2 * TemporaryQueueTest.CONNECTION_TTL,
                                                                             TimeUnit.MILLISECONDS));
 
-      sf = addSessionFactory(locator.createSessionFactory());
+      sf = addSessionFactory(createSessionFactory(locator));
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -437,7 +437,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       // Will be using a single Session as this is how an issue was raised
       for (int i = 0 ; i < iterations; i++)
       {
-         ClientSessionFactory clientsConnecton = addSessionFactory(locator.createSessionFactory());
+         ClientSessionFactory clientsConnecton = addSessionFactory(createSessionFactory(locator));
          ClientSession localSession = clientsConnecton.createSession();
 
          ClientProducer prod = localSession.createProducer(address);
@@ -523,7 +523,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       ServerLocator locator = createInVMNonHALocator();
       locator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
-      sf = addSessionFactory(locator.createSessionFactory());
+      sf = addSessionFactory(createSessionFactory(locator));
       session = sf.createSession(false, true, true);
 
       session.createTemporaryQueue(address, queue);
@@ -556,7 +556,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       sf.close();
       ServerLocator locator2 = createInVMNonHALocator();
 
-      sf = addSessionFactory(locator2.createSessionFactory());
+      sf = addSessionFactory(createSessionFactory(locator2));
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -584,7 +584,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       server.getAddressSettingsRepository().addMatch("TestAD", setting);
 
-      ClientSessionFactory consumerCF = locator.createSessionFactory();
+      ClientSessionFactory consumerCF = createSessionFactory(locator);
       ClientSession consumerSession = consumerCF.createSession(true, true);
       consumerSession.addMetaData("consumer", "consumer");
       consumerSession.createTemporaryQueue("TestAD", "Q1");
@@ -638,7 +638,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       assertEquals(0, errors.get());
 
-      ClientSessionFactory newConsumerCF = locator.createSessionFactory();
+      ClientSessionFactory newConsumerCF = createSessionFactory(locator);
       ClientSession newConsumerSession = newConsumerCF.createSession(true, true);
       newConsumerSession.createTemporaryQueue("TestAD", "Q2");
       ClientConsumer newConsumer = newConsumerSession.createConsumer("Q2");

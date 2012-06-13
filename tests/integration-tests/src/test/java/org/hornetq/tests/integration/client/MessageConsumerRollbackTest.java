@@ -67,7 +67,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
       locator = createNettyNonHALocator();
 
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
 
       ClientSession session = factory.createTransactedSession();
 
@@ -225,7 +225,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       {
          consumerLocator = createNettyNonHALocator();
   
-         factoryLocator = consumerLocator.createSessionFactory();
+         factoryLocator = createSessionFactory(consumerLocator);
          
          session = factoryLocator.createTransactedSession();
 

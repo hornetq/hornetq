@@ -82,7 +82,7 @@ public class SecurityTest extends ServiceTestBase
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       try
       {
@@ -112,7 +112,7 @@ public class SecurityTest extends ServiceTestBase
    {
       HornetQServer server = createServer();
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       try
       {
          cf.createSession(false, true, true);
@@ -134,7 +134,7 @@ public class SecurityTest extends ServiceTestBase
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       try
       {
@@ -157,7 +157,7 @@ public class SecurityTest extends ServiceTestBase
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       try
       {
@@ -183,7 +183,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       session.close();
@@ -202,7 +202,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       try
       {
@@ -232,7 +232,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       session.deleteQueue(SecurityTest.queueA);
@@ -251,7 +251,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       try
@@ -283,7 +283,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
       session.close();
@@ -302,7 +302,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       try
       {
@@ -332,7 +332,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
       session.deleteQueue(SecurityTest.queueA);
@@ -351,7 +351,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
       try
@@ -394,7 +394,7 @@ public class SecurityTest extends ServiceTestBase
 
       locator.setBlockOnNonDurableSend(true);
 
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
 
@@ -450,7 +450,7 @@ public class SecurityTest extends ServiceTestBase
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
       locator.setBlockOnNonDurableSend(true);
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       ClientProducer cp = session.createProducer(SecurityTest.addressA);
@@ -482,7 +482,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       ClientProducer cp = session.createProducer(SecurityTest.addressA);
@@ -510,7 +510,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession senSession = cf.createSession(false, true, true);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
@@ -538,7 +538,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession senSession = cf.createSession(false, true, true);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
@@ -582,7 +582,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(receiveRole);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession senSession = cf.createSession(false, true, true);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
@@ -638,7 +638,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(receiveRole);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession senSession = cf.createSession(false, true, true);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
@@ -709,7 +709,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(receiveRole);
       securityRepository.addMatch(SecurityTest.addressA, roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       ClientSession senSession = cf.createSession(false, true, true);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
@@ -799,7 +799,7 @@ public class SecurityTest extends ServiceTestBase
       securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
       securityManager.addRole("auser", "arole");
       locator.setBlockOnNonDurableSend(true);
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       ClientProducer cp = session.createProducer(configuration.getManagementAddress());
       cp.send(session.createMessage(false));
@@ -819,7 +819,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
       ClientProducer cp = session.createProducer(configuration.getManagementAddress());
@@ -853,7 +853,7 @@ public class SecurityTest extends ServiceTestBase
       roles.add(role);
       securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
       securityManager.addRole("auser", "arole");
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
       ClientProducer cp = session.createProducer(configuration.getManagementAddress());
@@ -889,7 +889,7 @@ public class SecurityTest extends ServiceTestBase
       options.put("authenticated", Boolean.TRUE);
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       try
       {
@@ -924,7 +924,7 @@ public class SecurityTest extends ServiceTestBase
       options.put("authenticated", Boolean.FALSE);
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
       server.start();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       try
       {
@@ -985,7 +985,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession samConnection = null;
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
-         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSessionFactory factory = createSessionFactory(locator);
 
          ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
          String genericQueueName = "genericQueue";
@@ -1122,7 +1122,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession andrewConnection = null;
          ClientSession frankConnection = null;
          ClientSession samConnection = null;
-         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSessionFactory factory = createSessionFactory(locator);
          factory.getServerLocator().setBlockOnNonDurableSend(true);
          factory.getServerLocator().setBlockOnDurableSend(true);
 

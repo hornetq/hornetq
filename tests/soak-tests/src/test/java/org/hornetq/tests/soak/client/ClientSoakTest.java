@@ -100,7 +100,7 @@ public class ClientSoakTest extends ServiceTestBase
       
       ServerLocator locator = createFactory(IS_NETTY);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession();
 
@@ -128,7 +128,7 @@ public class ClientSoakTest extends ServiceTestBase
    public void testSoakClient() throws Exception
    {
       final ServerLocator locator = createFactory(IS_NETTY);
-      final ClientSessionFactory sf = locator.createSessionFactory();
+      final ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -153,10 +153,10 @@ public class ClientSoakTest extends ServiceTestBase
       session.close();
       sf.close();
 
-      Receiver rec1 = new Receiver(locator.createSessionFactory(), DIVERTED_AD1.toString());
-      Receiver rec2 = new Receiver(locator.createSessionFactory(), DIVERTED_AD2.toString());
+      Receiver rec1 = new Receiver(createSessionFactory(locator), DIVERTED_AD1.toString());
+      Receiver rec2 = new Receiver(createSessionFactory(locator), DIVERTED_AD2.toString());
 
-      Sender send = new Sender(locator.createSessionFactory(), ADDRESS.toString(), new Receiver[] { rec1, rec2 });
+      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[] { rec1, rec2 });
 
       send.start();
       rec1.start();
