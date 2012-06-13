@@ -406,7 +406,7 @@ public final class ReplicationTest extends ServiceTestBase
 
    /**
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    private JournalStorageManager getStorage() throws Exception
    {
@@ -838,6 +838,7 @@ public final class ReplicationTest extends ServiceTestBase
          return 0;
       }
 
+      @Override
       public
                void
                appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
@@ -845,13 +846,14 @@ public final class ReplicationTest extends ServiceTestBase
 
       }
 
+      @Override
       public void lineUpContex(IOCompletion callback)
       {
 
       }
 
       @Override
-      public JournalLoadInformation loadSyncOnly() throws Exception
+      public JournalLoadInformation loadSyncOnly(JournalState s) throws Exception
       {
          return null;
       }

@@ -538,9 +538,9 @@ public class ReplicatedJournal implements Journal
    }
 
    @Override
-   public JournalLoadInformation loadSyncOnly() throws Exception
+   public JournalLoadInformation loadSyncOnly(JournalState state) throws Exception
    {
-      return localJournal.loadSyncOnly();
+      return localJournal.loadSyncOnly(state);
    }
 
    @Override

@@ -30,11 +30,11 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.Journal.JournalState;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.FileWrapperJournal;
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.Page;
@@ -267,8 +267,8 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
          filesReservedForSync.put(jc, new HashMap<Long, JournalSyncFile>());
-      // We only need to load internal structures on the backup...
-         journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly();
+         // We only need to load internal structures on the backup...
+            journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly(JournalState.SYNCING);
       }
 
       pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
@@ -422,7 +422,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
-         JournalImpl journal = (JournalImpl)journalsHolder.remove(jc);
+         Journal journal = journalsHolder.remove(jc);
          journal.synchronizationLock();
          try
          {
@@ -435,7 +435,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             registerJournal(jc.typeByte, journal);
             journal.stop();
             journal.start();
-            journal.loadInternalOnly();
+            journal.loadSyncOnly(JournalState.SYNCING_UP_TO_DATE);
          }
          finally
          {

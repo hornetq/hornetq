@@ -31,6 +31,13 @@ import org.hornetq.core.server.HornetQComponent;
  */
 public interface Journal extends HornetQComponent
 {
+   enum JournalState
+   {
+      STOPPED, STARTED,
+      /** When a replicating server is still not synchronized with its live. */
+      SYNCING, LOADED, SYNCING_UP_TO_DATE;
+   }
+
    // Non transactional operations
 
    void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
@@ -123,7 +130,7 @@ public interface Journal extends HornetQComponent
    /**
     * Load internal data structures, and remain waiting for synchronization to complete.
     */
-   JournalLoadInformation loadSyncOnly() throws Exception;
+   JournalLoadInformation loadSyncOnly(JournalState state) throws Exception;
 
    void lineUpContex(IOCompletion callback);
 
