@@ -25,9 +25,13 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: Oct 13, 2010
- *         Time: 3:55:47 PM
+ * NodeManager used to run multiple servers in the same VM.
+ * <p>
+ * We use the {@link InVMNodeManager} instead of {@link FileLockNodeManager} because in the
+ * unit-tests multiple servers are run inside the same VM and File Locks can not be shared in the
+ * same VM (it would cause a shared lock violation).
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a> Date: Oct 13, 2010 Time: 3:55:47
+ *         PM
  */
 public final class InVMNodeManager extends NodeManager
 {
