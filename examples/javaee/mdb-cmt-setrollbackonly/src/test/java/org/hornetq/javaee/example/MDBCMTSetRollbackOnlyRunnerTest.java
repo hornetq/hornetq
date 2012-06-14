@@ -53,6 +53,8 @@ public class MDBCMTSetRollbackOnlyRunnerTest
    public void runExample() throws Exception
    {
       MDB_CMT_SetRollbackOnlyClientExample.main(null);
+      //give the example time to run
+      Thread.sleep(1000);
    }
 
 

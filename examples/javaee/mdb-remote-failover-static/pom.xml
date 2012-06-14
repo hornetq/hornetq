@@ -8,9 +8,9 @@
       <version>2.3.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>hornetq-jee-jca-config-example</artifactId>
+   <artifactId>hornetq-jee-mdb-remote-failover-static-example</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ JEE JCA Config Example</name>
+   <name>HornetQ JEE MDB Remote Failover Static Example</name>
 
 
    <build>
@@ -29,6 +29,32 @@
                   </goals>
                   <configuration>
                      <outputDirectory>${basedir}/target/jbossas-node1</outputDirectory>
+                     <overwrite>true</overwrite>
+                     <resources>
+                        <resource>
+                           <directory>${jboss.home}</directory>
+                           <excludes>
+                              <exclude>standalone/data</exclude>
+                              <exclude>standalone/log</exclude>
+                              <exclude>standalone/tmp</exclude>
+                           </excludes>
+                        </resource>
+                        <resource>
+                           <directory>${basedir}/server</directory>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
+               <!-- Copy the AS for the second node into current_submodule/target/as-node2.-->
+               <execution>
+                  <id>as-node2</id>
+                  <inherited>true</inherited>
+                  <phase>generate-test-resources</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${basedir}/target/jbossas-node2</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>

@@ -17,7 +17,7 @@ This feature can also be controlled using the system property arquillian.deploym
    <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas-node0</property>
-            <property name="javaVmArguments">-Djboss.inst=${basedir}/target/jbossas-node0-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</property>
+            <property name="javaVmArguments">-Djboss.inst=${basedir}/target/jbossas-node0-Xnoagent -Djava.compiler=NONE</property>
             <property name="serverConfig">standalone-example.xml</property>
 			<!-- -Djboss.inst is not necessarily needed, only in case the test case neeeds path to the instance it runs in.
 			     In the future, Arquillian should capable of injecting it into @ArquillianResource File or such. -->

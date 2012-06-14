@@ -19,12 +19,11 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.hornetq.javaee.example.server;
+package org.hornetq.javaee.examples;
 
-import org.hornetq.javaee.example.MDBRemoteClientExample;
-import org.hornetq.javaee.example.server2.MDBQueueB;
-import org.hornetq.javaee.example.server2.StatelessSender;
-import org.hornetq.javaee.example.server2.StatelessSenderService;
+import org.hornetq.javaee.example.MDBRemoteFailoverStaticClientExample;
+import org.hornetq.javaee.example.server.MDBRemoteFailoverStaticExample;
+import org.hornetq.javaee.example.server.ServerKiller;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,7 +49,7 @@ import java.io.InputStream;
 @RunAsClient
 @RunWith(Arquillian.class)
 //@ServerSetup({ExampleRunner2Test.JmsQueueSetup.class})
-public class ExampleRunner2Test
+public class FailoverStaticRunnerTest
 {
    @ArquillianResource
    private ContainerController controller;
@@ -63,41 +62,35 @@ public class ExampleRunner2Test
    {
 
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
-      ejbJar.addClass(MDBQueueA.class);
+      ejbJar.addClass(MDBRemoteFailoverStaticExample.class);
+      ejbJar.setManifest(new Asset()
+      {
+         public InputStream openStream()
+         {
+            ManifestBuilder builder = ManifestBuilder.newInstance();
+            StringBuffer dependencies = new StringBuffer();
+            dependencies.append("org.hornetq");
+            builder.addManifestHeader("Dependencies", dependencies.toString());
+            return builder.openStream();
+         }
+      });
       System.out.println(ejbJar.toString(true));
       return ejbJar;
    }
 
-  @Deployment(name = "deploy-1", managed = false)
-  @TargetsContainer("node-1")
-  public static Archive getDeployment2()
-  {
-
-     final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb2.jar");
-     ejbJar.addClass(MDBQueueB.class);
-     ejbJar.addClass(StatelessSenderService.class);
-     ejbJar.addClass(StatelessSender.class);
-     // Generate the manifest with it's dependencies
-     ejbJar.setManifest(new Asset()
-     {
-        public InputStream openStream()
-        {
-           ManifestBuilder builder = ManifestBuilder.newInstance();
-           StringBuffer dependencies = new StringBuffer();
-           dependencies.append("org.hornetq");
-           builder.addManifestHeader("Dependencies", dependencies.toString());
-           return builder.openStream();
-        }
-     });
-     System.out.println(ejbJar.toString(true));
-     return ejbJar;
-  }
-
-
    @Test
    public void runExample() throws Exception
    {
-      MDBRemoteClientExample.main(null);
+      MDBRemoteFailoverStaticClientExample.setKiller(new ServerKiller()
+            {
+               @Override
+               public void kill()
+               {
+                  controller.kill("node-1");
+               }
+            });
+
+      MDBRemoteFailoverStaticClientExample.main(null);
    }
 
    @Test
@@ -105,24 +98,22 @@ public class ExampleRunner2Test
    public void startServer()
    {
       System.out.println("*****************************************************************************************************************************************************************");
+      controller.start("node-1");
+      System.out.println("*****************************************************************************************************************************************************************");
+      controller.start("node-2");
+      System.out.println("*****************************************************************************************************************************************************************");
       controller.start("node-0");
       System.out.println("*****************************************************************************************************************************************************************");
       deployer.deploy("deploy-0");
-      System.out.println("*****************************************************************************************************************************************************************");
-      controller.start("node-1");
-      System.out.println("*****************************************************************************************************************************************************************");
-      deployer.deploy("deploy-1");
-      System.out.println("*****************************************************************************************************************************************************************");
    }
 
    @Test
    @InSequence(1)
    public void stopServer()
    {
-      deployer.undeploy("deploy-1");
-      controller.stop("node-1");
       deployer.undeploy("deploy-0");
       controller.stop("node-0");
+      controller.stop("node-2");
    }
 
 }
