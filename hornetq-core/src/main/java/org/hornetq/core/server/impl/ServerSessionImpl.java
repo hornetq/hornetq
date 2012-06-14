@@ -380,6 +380,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          Notification notification = new Notification(null, CONSUMER_CREATED, props);
 
+         if (HornetQLogger.LOGGER.isDebugEnabled())
+         {
+            HornetQLogger.LOGGER.debug("Session with user=" + username +
+                                       ", connection=" + this.remotingConnection +
+                                       " created a consumer on queue " + queueName +
+                                       ", filter = " + filterString);
+         }
+
          managementService.sendNotification(notification);
       }
    }
@@ -417,6 +425,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          tempQueueCleannerUppers.put(name, cleaner);
       }
+
+      if (HornetQLogger.LOGGER.isDebugEnabled())
+      {
+         HornetQLogger.LOGGER.debug("Queue " + name + " created on address " + name +
+                  " with filter=" + filterString + " temporary = " +
+                  temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
+      }
+
    }
 
    /**

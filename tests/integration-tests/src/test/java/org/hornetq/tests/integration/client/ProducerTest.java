@@ -20,14 +20,12 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -66,7 +64,7 @@ public class ProducerTest extends ServiceTestBase
       });
       ServerLocator locator = createInVMNonHALocator();
       locator.setConfirmationWindowSize(100);
-      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       ClientProducer producer = session.createProducer(QUEUE);
       ClientMessage message = session.createMessage(true);
@@ -76,6 +74,86 @@ public class ProducerTest extends ServiceTestBase
       Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       session.close();
       locator.close();
+   }
+
+
+   public void testProducerMultiThread() throws Exception
+   {
+      final ServerLocator locator = createInVMNonHALocator();
+      AddressSettings setting = new AddressSettings();
+      setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      setting.setMaxSizeBytes(10 * 1024);
+      server.stop();
+      server.getConfiguration().getAddressesSettings().clear();
+      server.getConfiguration().getAddressesSettings().put(QUEUE.toString(), setting);
+      server.start();
+
+      server.createQueue(QUEUE, QUEUE, null, true, false);
+
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         final CountDownLatch latch = new CountDownLatch(1);
+         System.out.println("Try " + i);
+         ClientSessionFactory cf = locator.createSessionFactory();
+         final ClientSession session = cf.createSession(false, true, true);
+
+         Thread t = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  ClientProducer producer = session.createProducer();
+
+                  for (int i = 0 ; i < 62; i++)
+                  {
+                     if (i == 61)
+                     {
+                        // the point where the send would block
+                        latch.countDown();
+                     }
+                     ClientMessage msg = session.createMessage(false);
+                     msg.getBodyBuffer().writeBytes(new byte[1024]);
+                     producer.send(QUEUE, msg);
+                  }
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         };
+
+         t.start();
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         session.close();
+
+         t.join(5000);
+
+         if (!t.isAlive())
+         {
+            t.interrupt();
+         }
+
+         assertFalse(t.isAlive());
+
+         ClientSession sessionConsumer = cf.createSession();
+         sessionConsumer.start();
+         ClientConsumer cons = sessionConsumer.createConsumer(QUEUE);
+         while (true)
+         {
+            ClientMessage msg = cons.receiveImmediate();
+            if (msg == null)
+            {
+               break;
+            }
+            msg.acknowledge();
+            sessionConsumer.commit();
+         }
+
+         cf.close();
+      }
    }
 
 }

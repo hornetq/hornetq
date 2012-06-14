@@ -161,7 +161,7 @@ public class HornetQMessageHandler implements MessageHandler
             if (activation.getTopicTemporaryQueue() == null)
             {
                queueName = new SimpleString(UUID.randomUUID().toString());
-               session.createQueue(activation.getAddress(), queueName, selectorString, false);
+               session.createTemporaryQueue(activation.getAddress(), queueName, selectorString);
                activation.setTopicTemporaryQueue(queueName);
             }
             else

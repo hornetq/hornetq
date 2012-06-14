@@ -36,16 +36,16 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
    private final ClientSessionInternal session;
 
-   private final int windowSize;
+   private int windowSize;
 
-   ClientProducerCreditManagerImpl(final ClientSessionInternal session, final int windowSize)
+   public ClientProducerCreditManagerImpl(final ClientSessionInternal session, final int windowSize)
    {
       this.session = session;
 
       this.windowSize = windowSize;
    }
 
-   public ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
+   public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
       if (windowSize == -1)
       {
@@ -124,6 +124,8 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
 
    public synchronized void close()
    {
+      windowSize = -1;
+
       for (ClientProducerCredits credits : producerCredits.values())
       {
          credits.close();
