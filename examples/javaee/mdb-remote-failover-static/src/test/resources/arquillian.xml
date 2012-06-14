@@ -32,12 +32,25 @@ This feature can also be controlled using the system property arquillian.deploym
            <configuration>
                <property name="jbossHome">${basedir}/target/jbossas-node1</property>
                <property name="javaVmArguments">-Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=100</property>
-               <property name="serverConfig">standalone-example2.xml</property>
+               <property name="serverConfig">standalone-live.xml</property>
                <property name="allowConnectingToRunningServer">true</property>
                <property name="managementAddress">${node0:127.0.0.1}</property>
                <property name="managementPort">${as.managementPort:10099}</property>
 
                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:10099}</property>
+               <property name="waitForPortsTimeoutInSeconds">8</property>
+           </configuration>
+       </container>
+     <container qualifier="node-2" mode="manual" managed="false">
+           <configuration>
+               <property name="jbossHome">${basedir}/target/jbossas-node2</property>
+               <property name="javaVmArguments">-Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=200</property>
+               <property name="serverConfig">standalone-backup.xml</property>
+               <property name="allowConnectingToRunningServer">true</property>
+               <property name="managementAddress">${node0:127.0.0.1}</property>
+               <property name="managementPort">${as.managementPort:10199}</property>
+
+               <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:10199}</property>
                <property name="waitForPortsTimeoutInSeconds">8</property>
            </configuration>
        </container>

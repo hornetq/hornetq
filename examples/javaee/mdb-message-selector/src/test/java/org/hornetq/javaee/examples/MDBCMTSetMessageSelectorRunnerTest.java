@@ -21,8 +21,8 @@
 */
 package org.hornetq.javaee.examples;
 
-import org.hornetq.javaee.example.MDB_CMT_TxRequiredClientExample;
-import org.hornetq.javaee.example.server.MDB_CMT_TxRequiredExample;
+import org.hornetq.javaee.example.MDBMessageSelectorClientExample;
+import org.hornetq.javaee.example.server.MDBMessageSelectorExample;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,7 +45,7 @@ public class MDBCMTSetMessageSelectorRunnerTest
    {
 
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
-      ejbJar.addClass(MDB_CMT_TxRequiredExample.class);
+      ejbJar.addClass(MDBMessageSelectorExample.class);
       System.out.println(ejbJar.toString(true));
       return ejbJar;
    }
@@ -53,9 +53,9 @@ public class MDBCMTSetMessageSelectorRunnerTest
    @Test
    public void runExample() throws Exception
    {
-      MDB_CMT_TxRequiredClientExample.main(null);
+      MDBMessageSelectorClientExample.main(null);
       //give the example time to run
-      Thread.sleep(10000);
+      Thread.sleep(1000);
    }
 
 

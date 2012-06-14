@@ -8,7 +8,7 @@
       <version>2.3.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>hornetq-jee-mdb-cmt-no-tx-example</artifactId>
+   <artifactId>hornetq-jee-mdb-cmt-tx-example</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ JEE MDB CMT Transaction Not Supported Example</name>
+   <name>HornetQ JEE MDB CMT Transaction Example</name>
 </project>

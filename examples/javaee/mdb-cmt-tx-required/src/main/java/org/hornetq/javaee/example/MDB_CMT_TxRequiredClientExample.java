@@ -18,7 +18,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -27,21 +29,32 @@ public class MDB_CMT_TxRequiredClientExample
 {
    public static void main(final String[] args) throws Exception
    {
+      Thread.sleep(5000);
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = new InitialContext();
+         final Properties env = new Properties();
+
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+
+         env.put(Context.SECURITY_PRINCIPAL, "guest");
+
+         env.put(Context.SECURITY_CREDENTIALS, "password");
+
+         initialContext = new InitialContext(env);
 
          // Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue)initialContext.lookup("/queue/testQueue");
+         Queue queue = (Queue)initialContext.lookup("jms/queues/testQueue");
 
          // Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("jms/RemoteConnectionFactory");
 
          // Step 4.Create a JMS Connection
-         connection = cf.createConnection();
+         connection = cf.createConnection("guest", "password");
 
          // Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -52,12 +65,12 @@ public class MDB_CMT_TxRequiredClientExample
 
          for (int i = 0; i < 100; i++)
          {
-// Step 7. Create a Text Message
+            // Step 7. Create a Text Message
             message = session.createTextMessage("This is a text message");
 
             System.out.println("Sent message: " + message.getText());
-         // Step 8. Send the Message
-         producer.send(message);
+            // Step 8. Send the Message
+            producer.send(message);
          }
 
 

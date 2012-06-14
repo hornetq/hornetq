@@ -45,10 +45,10 @@ import javax.jms.TextMessage;
 @ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSendTxExample implements MessageListener
 {
-   @Resource(mappedName = "java:JmsXA")
+   @Resource(mappedName = "java:/JmsXA")
    ConnectionFactory connectionFactory;
 
-   @Resource(mappedName = "queue/replyQueue")
+   @Resource(mappedName = "java:/queue/replyQueue")
    Queue replyQueue;
 
    public void onMessage(Message message)

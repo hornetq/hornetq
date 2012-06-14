@@ -222,25 +222,27 @@
                 <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
+                <journal-directory path="../../../journal2"/>
+                <bindings-directory  path="../../../bindings2"/>
+                <large-messages-directory path="../../../large-message2"/>
+                <paging-directory path="../../../paging2"/>
 
                 <connectors>
-                   <netty-connector name="netty-servlet" socket-binding="http">
-                      <param key="use-servlet" value="true"/>
-                      <param key="servlet-path" value="/hornetq/HornetQServlet"/>
-                      <!--<param key="ssl-enabled" value="true"/>
-                      <param key="key-store-path" value="server/hornetq.example.keystore"/>
-                      <param key="key-store-password" value="hornetqexample"/>-->
-                   </netty-connector>
+                    <netty-connector name="netty" socket-binding="messaging"/>
+                    <netty-connector name="remote-netty" socket-binding="remote-messaging"/>
+                    <netty-connector name="remote-netty-backup" socket-binding="remote-messaging-backup"/>
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                    </netty-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
                 </connectors>
 
                 <acceptors>
-                   <!--socket bindings are mandatory so we have to use a generic acceptor, this needs fixing-->
-                   <acceptor name="netty-servlet">
-                       <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-                       <param key="use-invm" value="true"/>
-                       <param key="host" value="org.hornetq"/>
-                   </acceptor>
+                    <netty-acceptor name="netty" socket-binding="messaging"/>
+                    <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                        <param key="direct-deliver" value="false"/>
+                    </netty-acceptor>
                     <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
 
@@ -273,33 +275,38 @@
                             <entry name="java:/ConnectionFactory"/>
                         </entries>
                     </connection-factory>
-                    <connection-factory name="ServletConnectionFactory">
+                    <connection-factory name="RemoteConnectionFactory">
                         <connectors>
-                            <connector-ref connector-name="netty-servlet"/>
+                            <connector-ref connector-name="netty"/>
                         </connectors>
                         <entries>
-                            <entry name="ServletConnectionFactory"/>
-                            <entry name="java:jboss/exported/jms/ServletConnectionFactory"/>
+                            <entry name="RemoteConnectionFactory"/>
+                            <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                         </entries>
                     </connection-factory>
-                    <pooled-connection-factory name="hornetq-ra">
+                    <pooled-connection-factory name="hornetq-remote-ra">
                         <transaction mode="xa"/>
+                        <user>guest</user>
+                        <password>password</password>
+                        <ha>true</ha>
+                        <reconnect-attempts>-1</reconnect-attempts>
                         <connectors>
-                            <connector-ref connector-name="in-vm"/>
+                            <connector-ref connector-name="remote-netty"/>
+                            <connector-ref connector-name="remote-netty-backup"/>
                         </connectors>
                         <entries>
-                            <entry name="java:/JmsXA"/>
+                            <entry name="java:/RemoteJmsXA"/>
                         </entries>
                     </pooled-connection-factory>
                 </jms-connection-factories>
                 <jms-destinations>
-                    <jms-queue name="testQueue">
-                        <entry name="queue/testQueue"/>
-                        <entry name="java:jboss/exported/jms/queues/testQueue"/>
+                    <jms-queue name="inQueue">
+                        <entry name="queue/inQueue"/>
+                        <entry name="java:jboss/exported/queues/inQueue"/>
                     </jms-queue>
-                    <jms-queue name="replyQueue">
-                        <entry name="queue/replyQueue"/>
-                        <entry name="java:jboss/exported/jms/queues/replyQueue"/>
+                    <jms-queue name="outQueue">
+                        <entry name="queue/outQueue"/>
+                        <entry name="java:jboss/exported/queues/outQueue"/>
                     </jms-queue>
                 </jms-destinations>
             </hornetq-server>
@@ -409,6 +416,8 @@
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
+        <socket-binding name="remote-messaging" port="5545" fixed-port="true"/>
+        <socket-binding name="remote-messaging-backup" port="5645" fixed-port="true"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
