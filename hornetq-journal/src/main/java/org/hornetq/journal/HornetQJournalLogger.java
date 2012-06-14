@@ -102,7 +102,8 @@ public interface HornetQJournalLogger extends BasicLogger
    void incompatibleNativeLibrary();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142002, value = "Couldn't get lock after 60 seconds on closing Asynchronous File: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142002, value = "Could not get lock after 60 seconds on closing Asynchronous File: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void couldNotGetLock(String fileName);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -124,12 +125,12 @@ public interface HornetQJournalLogger extends BasicLogger
    void inconsistencyDuringCompactingDelete(Long recordID);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142007, value = "Couldn't find add Record information for record {0} during compacting",
+   @Message(id = 142007, value = "Could not find add Record information for record {0} during compacting",
          format = Message.Format.MESSAGE_FORMAT)
    void compactingWithNoAddRecord(Long id);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142008, value = "Can't find record {0} during compact replay",
+   @Message(id = 142008, value = "Can not find record {0} during compact replay",
          format = Message.Format.MESSAGE_FORMAT)
    void noRecordDuringCompactReplay(Long id);
 
@@ -139,7 +140,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void couldNotRemoveFile(JournalFile file);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142010, value = "Deleting {0} as it doesn't have the configured size",
+   @Message(id = 142010, value = "Deleting {0} as it does not have the configured size",
          format = Message.Format.MESSAGE_FORMAT)
    void deletingFile(JournalFile file);
 
@@ -159,7 +160,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void compactMergeError(Long id);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142014, value = "Prepared transaction {0} wasn't considered completed, it will be ignored",
+   @Message(id = 142014, value = "Prepared transaction {0} was not considered completed, it will be ignored",
          format = Message.Format.MESSAGE_FORMAT)
    void preparedTXIncomplete(Long id);
 
@@ -233,7 +234,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void errorClosingFile(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142031, value =  "Couldn't open a file in 60 Seconds", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142031, value = "Could not open a file in 60 Seconds", format = Message.Format.MESSAGE_FORMAT)
    void errorOpeningFile(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)

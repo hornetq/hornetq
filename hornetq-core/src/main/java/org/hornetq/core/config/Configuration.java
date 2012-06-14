@@ -63,14 +63,14 @@ public interface Configuration extends Serializable
    void setClustered(boolean clustered);
 
    /**
-    * Returns whether a backup will auto die when a live server is failing back.
+    * Returns whether a backup will automatically stop when a live server is restarting (i.e.
+    * failing back).
     * @return {@code true} if the backup will stop when the live server restarts
     */
    public boolean isAllowAutoFailBack();
 
    /**
-    * Whether a backup will auto die when a live server is failing back
-    *
+    * whether a backup will automatically stop when a live server is restarting (i.e. failing back).
     * @param allowAutoFailBack true if allowed
     */
    public void setAllowAutoFailBack(boolean allowAutoFailBack);
@@ -778,7 +778,6 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the sample period to take message counter snapshot.
-    *
     * @param period value must be greater than 1000ms
     */
    void setMessageCounterSamplePeriod(long period);
@@ -865,9 +864,9 @@ public interface Configuration extends Serializable
     * @param
     */
    void setConnectorServiceConfigurations(List<ConnectorServiceConfiguration> configs);
+
    /**
-    *
-    * @return
+    * @return list of {@link ConnectorServiceConfiguration}
     */
    List<ConnectorServiceConfiguration> getConnectorServiceConfigurations();
 

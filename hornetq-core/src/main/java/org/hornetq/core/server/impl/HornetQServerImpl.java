@@ -152,11 +152,7 @@ import org.hornetq.utils.VersionLoader;
  */
 public class HornetQServerImpl implements HornetQServer
 {
-   // Constants
-   // ------------------------------------------------------------------------------------
-
-
-   /*
+   /**
     * JMS Topics (which are outside of the scope of the core API) will require a dumb subscription
     * with a dummy-filter at this current version as a way to keep its existence valid and TCK
     * tests. That subscription needs an invalid filter, however paging needs to ignore any
@@ -166,11 +162,6 @@ public class HornetQServerImpl implements HornetQServer
     */
    public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
-   // Static
-   // ---------------------------------------------------------------------------------------
-
-   // Attributes
-   // -----------------------------------------------------------------------------------
    enum SERVER_STATE
    {
       /** start() has been called but components are not initialized */
