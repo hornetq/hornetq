@@ -13,9 +13,6 @@
 
 package org.hornetq.tests.integration.replication;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -26,9 +23,9 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * A ReplicationOrderTest
@@ -41,16 +38,6 @@ public class ReplicationOrderTest extends FailoverTestBase
 {
 
    public static final int NUM = 300;
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
    {
@@ -135,23 +122,12 @@ public class ReplicationOrderTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return createTransportConfiguration(INVM_CONNECTOR_FACTORY, live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return createTransportConfiguration(INVM_ACCEPTOR_FACTORY, live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
-
-   private static TransportConfiguration createTransportConfiguration(String name, final boolean live)
-   {
-      Map<String, Object> serverParams = new HashMap<String, Object>();
-      if (!live)
-      {
-         serverParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      }
-      return new TransportConfiguration(name, serverParams);
-   }
-
 }

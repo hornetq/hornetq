@@ -553,22 +553,9 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                            final boolean realFiles,
                                                            final Map<String, Object> params) throws Exception
    {
-      if (isNetty)
-      {
-         return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
-                             -1,
-                             -1,
-                             new HashMap<String, AddressSettings>());
-      }
-      else
-      {
-         return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                             -1,
-                             -1,
-                             new HashMap<String, AddressSettings>());
-      }
+      String acceptor = isNetty ? NETTY_ACCEPTOR_FACTORY : INVM_ACCEPTOR_FACTORY;
+      return createServer(realFiles, createClusteredDefaultConfig(index, params, acceptor), -1, -1,
+                          new HashMap<String, AddressSettings>());
    }
 
    protected HornetQServer createClusteredServerWithParams(final boolean isNetty,
@@ -625,7 +612,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected ServerLocator createInVMLocator(final int serverID)
+   protected final ServerLocator createInVMLocator(final int serverID)
    {
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
 
@@ -637,7 +624,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param serverID
     * @return
     */
-   protected TransportConfiguration createInVMTransportConnectorConfig(final int serverID, String name)
+   protected final TransportConfiguration createInVMTransportConnectorConfig(final int serverID, String name)
    {
       Map<String, Object> server1Params = new HashMap<String, Object>();
 
