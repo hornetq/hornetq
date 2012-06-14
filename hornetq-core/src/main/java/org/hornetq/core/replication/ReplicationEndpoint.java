@@ -81,7 +81,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private static final boolean trace = HornetQLogger.LOGGER.isTraceEnabled();
 
    private final IOCriticalErrorListener criticalErrorListener;
-
    private final HornetQServerImpl server;
 
    private Channel channel;
@@ -415,12 +414,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
              "\n" +
              "**********************************************************";
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private void finishSynchronization(String liveID) throws Exception
    {
