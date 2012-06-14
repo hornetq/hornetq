@@ -976,31 +976,19 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#addQueueBinding(org.hornetq.core.postoffice.Binding)
-       */
       public void addQueueBinding(final Binding binding) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#commit(long)
-       */
       public void commit(final long txID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#createLargeMessage()
-       */
       public LargeServerMessage createLargeMessage()
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteDuplicateID(long)
-       */
       public void deleteDuplicateID(final long recordID) throws Exception
       {
       }
@@ -1599,9 +1587,6 @@ public class PagingStoreImplTest extends UnitTestCase
          return ByteBuffer.allocateDirect(size);
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
-       */
       public void freeDirectBuffer(ByteBuffer buffer)
       {
          // TODO Auto-generated method stub

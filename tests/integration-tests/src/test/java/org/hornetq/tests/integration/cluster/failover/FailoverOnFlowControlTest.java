@@ -133,10 +133,6 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
       return locator;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
@@ -148,10 +144,4 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
    {
       return TransportConfigurationUtils.getInVMConnector(live);
    }
-
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

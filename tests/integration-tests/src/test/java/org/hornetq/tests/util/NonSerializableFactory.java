@@ -91,7 +91,10 @@ public final class NonSerializableFactory implements ObjectFactory
       return NonSerializableFactory.getWrapperMap().get(name);
    }
 
-   public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable env) throws Exception
+   public
+            Object
+            getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> env)
+                                                                                                                  throws Exception
    {
       Reference ref = (Reference)obj;
       RefAddr addr = ref.get("nns");
@@ -99,10 +102,10 @@ public final class NonSerializableFactory implements ObjectFactory
       return NonSerializableFactory.getWrapperMap().get(key);
    }
 
-   public static Map getWrapperMap()
-   {
+   public static Map<String, Object> getWrapperMap()
+{
       return NonSerializableFactory.wrapperMap;
    }
 
-   private static Map wrapperMap = Collections.synchronizedMap(new HashMap());
+   private static Map<String, Object> wrapperMap = Collections.synchronizedMap(new HashMap<String, Object>());
 }
