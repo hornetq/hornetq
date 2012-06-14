@@ -8,9 +8,9 @@
       <version>2.3.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>hornetq-jee-jca-config-example</artifactId>
+   <artifactId>hornetq-jee-mdb-remote-failover-static-example</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ JEE JCA Config Example</name>
+   <name>HornetQ JEE MDB Remote Failover Static Example</name>
 
 
    <build>
