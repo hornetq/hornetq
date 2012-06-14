@@ -12,20 +12,25 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.Message;
-
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
+
+import javax.jms.Message;
+import javax.resource.spi.ActivationSpec;
+
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -349,6 +354,53 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
       qResourceAdapter.stop();
+   }
+
+   //https://issues.jboss.org/browse/JBPAPP-8017
+   public void testNonDurableSubscriptionDeleteAfterCrash() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("1");
+      clientProducer.send(message);
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "1");
+
+      Map<ActivationSpec, HornetQActivation> activations = qResourceAdapter.getActivations();
+      assertEquals(1,activations.size());
+
+      HornetQActivation activation = activations.values().iterator().next();
+      SimpleString tempQueueName = activation.getTopicTemporaryQueue();
+
+      QueueQuery query = session.queueQuery(tempQueueName);
+      assertTrue(query.isExists());
+
+      //this should be enough to simulate the crash
+      qResourceAdapter.getDefaultHornetQConnectionFactory().close();
+      qResourceAdapter.stop();
+
+      query = session.queueQuery(tempQueueName);
+
+      assertFalse(query.isExists());
    }
 
    public void testSelectorChangedWithTopic() throws Exception
