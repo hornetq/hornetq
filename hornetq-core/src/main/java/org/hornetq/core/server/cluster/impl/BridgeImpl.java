@@ -354,37 +354,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   public void pause() throws Exception
-   {
-      if (HornetQLogger.LOGGER.isDebugEnabled())
-      {
-         HornetQLogger.LOGGER.debug("Bridge " + this.name + " being paused");
-      }
-
-      executor.execute(new PauseRunnable());
-
-      if (notificationService != null)
-      {
-         TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STOPPED, props);
-         try
-         {
-            notificationService.sendNotification(notification);
-         }
-         catch (Exception e)
-         {
-            HornetQLogger.LOGGER.notificationBridgeStoppedError(e);
-         }
-      }
-   }
-
-   public void resume() throws Exception
-   {
-      queue.addConsumer(BridgeImpl.this);
-      queue.deliverAsync();
-   }
-
    public boolean isStarted()
    {
       return started;
