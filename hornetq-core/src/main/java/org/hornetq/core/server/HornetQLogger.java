@@ -1159,17 +1159,11 @@ public interface HornetQLogger extends BasicLogger
    void broadcastBridgeStoppedError(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112212, value = "unable to send notification when broadcast group is stopped",
-         format = Message.Format.MESSAGE_FORMAT)
-   void notificationBridgeStoppedError(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112213, value = "Could not bind to {0} ({1} address); " +
          "make sure your discovery group-address is of the same type as the IP stack (IPv4 or IPv6)." +
          "\nIgnoring discovery group-address, but this may lead to cross talking.",
          format = Message.Format.MESSAGE_FORMAT)
    void ioDiscoveryError(String hostAddress, String s);
-
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112214, value = "Group Handler timed-out waiting for sendCondition",
