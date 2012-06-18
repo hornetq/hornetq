@@ -20,6 +20,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
@@ -31,7 +32,7 @@ import org.hornetq.core.server.HornetQServer;
  * quorum will help a remote backup deciding whether to replace its 'live' server or to keep trying
  * to reconnect.
  */
-public final class QuorumManager implements FailureListener
+public final class QuorumManager implements FailureListener, CloseListener
 {
    private String targetServerID = "";
    private final ExecutorService executor;
@@ -61,11 +62,9 @@ public final class QuorumManager implements FailureListener
       targetServerID = liveID;
    }
 
-   public boolean isLiveDown()
+   private boolean isLiveDown()
    {
       Collection<TopologyMember> nodes = topology.getMembers();
-
-
       Collection<ServerLocator> locatorsList = new LinkedList<ServerLocator>();
       AtomicInteger pingCount = new AtomicInteger(0);
       int total = 0;
@@ -222,9 +221,13 @@ public final class QuorumManager implements FailureListener
    @Override
    public void connectionFailed(HornetQException exception, boolean failedOver)
    {
+      decideOnAction();
+   }
+
+   private void decideOnAction()
+   {
       if (signal != null)
          return;
-
       // Check if connection was reestablished by the sessionFactory:
       if (sessionFactory.numConnections() > 0)
       {
@@ -309,18 +312,17 @@ public final class QuorumManager implements FailureListener
     */
    public synchronized void causeExit()
    {
-      removeAsFailureListener();
+      removeListener();
       signal = BACKUP_ACTIVATION.STOP;
       latch.countDown();
    }
 
-   /**
-    *
-    */
-   private void removeAsFailureListener()
+   private void removeListener()
    {
-      if (connection != null)
-         connection.removeFailureListener(this);
+      if (connection == null)
+         return;
+      connection.removeFailureListener(this);
+      connection.removeCloseListener(this);
    }
 
    /**
@@ -328,7 +330,7 @@ public final class QuorumManager implements FailureListener
     */
    public synchronized void failOver()
    {
-      removeAsFailureListener();
+      removeListener();
       signal = BACKUP_ACTIVATION.FAIL_OVER;
       latch.countDown();
    }
@@ -348,5 +350,12 @@ public final class QuorumManager implements FailureListener
    {
       this.connection = liveConnection;
       connection.addFailureListener(this);
+      connection.addCloseListener(this);
+   }
+
+   @Override
+   public void connectionClosed()
+   {
+      decideOnAction();
    }
 }

@@ -13,7 +13,7 @@ import org.hornetq.core.config.Configuration;
 
 public final class ReplicatedBackupUtils
 {
-   private static final String LIVE_NODE_NAME = "hqLIVE";
+   public static final String LIVE_NODE_NAME = "hqLIVE";
    private ReplicatedBackupUtils()
    {
       // Utility class

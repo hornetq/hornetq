@@ -389,10 +389,10 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
   // XXX HORNETQ-720 + cluster fixes: needs review
    @Override
-   public void announceReplicatingBackup(Channel liveChannel)
+   public void announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
    {
       List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if(!configs.isEmpty())
+      if (!configs.isEmpty())
       {
          ClusterConnectionConfiguration config = configs.get(0);
 
@@ -404,10 +404,11 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             return;
          }
          liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector, configuration.getClusterUser(),
-                                                        configuration.getClusterPassword()));
+                                                        configuration.getClusterPassword(), attemptingFailBack));
       }
       else
       {
+         // XXX HORNETQ-720 must trigger error here
          HornetQLogger.LOGGER.announceBackupNoClusterConnections();
       }
    }

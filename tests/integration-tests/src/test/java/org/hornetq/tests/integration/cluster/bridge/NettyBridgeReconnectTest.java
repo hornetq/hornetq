@@ -17,34 +17,13 @@ package org.hornetq.tests.integration.cluster.bridge;
  * A NettyBridgeReconnectTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class NettyBridgeReconnectTest extends BridgeReconnectTest
 {
-
-   // Constants -----------------------------------------------------
 
    @Override
    protected boolean isNetty()
    {
       return true;
    }
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

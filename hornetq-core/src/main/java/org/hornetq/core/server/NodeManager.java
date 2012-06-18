@@ -13,6 +13,9 @@
 
 package org.hornetq.core.server;
 
+import java.io.IOException;
+
+import org.hornetq.api.core.IllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.UUID;
 
@@ -58,11 +61,12 @@ public abstract class NodeManager implements HornetQComponent
       return isStarted;
    }
 
-
    public SimpleString getNodeId()
    {
       return nodeID;
    }
+
+   public abstract SimpleString readNodeId() throws IllegalStateException, IOException;
 
    public UUID getUUID()
    {

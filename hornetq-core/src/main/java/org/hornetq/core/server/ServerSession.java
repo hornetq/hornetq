@@ -139,9 +139,7 @@ public interface ServerSession
 
    long getCreationTime();
    
-
    OperationContext getSessionContext();
    
    void setSessionContext(OperationContext context);
-
 }

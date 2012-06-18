@@ -486,11 +486,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          {
             try
             {
+               ServerLocatorInternal localBackupLocator = backupServerLocator;
+               if (localBackupLocator == null)
+               {
+                  HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
+                  return;
+               }
                if (HornetQLogger.LOGGER.isDebugEnabled())
                {
                   HornetQLogger.LOGGER.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
                }
-               ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
+               ClientSessionFactory backupSessionFactory = localBackupLocator.connect();
                if (backupSessionFactory != null)
                {
                   backupSessionFactory.getConnection()
@@ -1417,8 +1423,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
 
          SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         System.out.println("Removing clusterName=" + clusterName + " on " + ClusterConnectionImpl.this);
 
          removeBinding(clusterName);
       }

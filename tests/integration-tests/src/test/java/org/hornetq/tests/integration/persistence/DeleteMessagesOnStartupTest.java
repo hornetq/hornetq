@@ -37,19 +37,9 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    volatile boolean deleteMessages = false;
 
    ArrayList<Long> deletedMessage = new ArrayList<Long>();
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testDeleteMessagesOnStartup() throws Exception
    {
@@ -94,7 +84,6 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
          @Override
          public void deleteMessage(final long messageID) throws Exception
          {
-            System.out.println("message : " + messageID);
             deletedMessage.add(messageID);
             super.deleteMessage(messageID);
          }

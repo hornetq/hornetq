@@ -357,6 +357,8 @@ public class ConfigurationImpl implements Configuration
 
    private transient String passwordCodec;
 
+   private final Set<TransportConfiguration> failBackConnectors = new HashSet<TransportConfiguration>();
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -520,6 +522,12 @@ public class ConfigurationImpl implements Configuration
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
+   }
+
+   @Override
+   public Set<TransportConfiguration> getFailBackConnectors()
+   {
+      return failBackConnectors;
    }
 
    public String getLiveConnectorName()

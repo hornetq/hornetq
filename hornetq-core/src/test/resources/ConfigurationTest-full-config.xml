@@ -82,6 +82,22 @@
    	        <param key="e2" value="567"/>
    	     </acceptor>
       </acceptors>
+
+      <failback-connectors>
+         <failback-connector>
+            <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+            <param key="a7" value="v1"/>
+            <param key="a2" value="231"/>
+            <param key="a3" value="3456"/>
+            <param key="a4" value="v4"/>
+         </failback-connector>
+         <failback-connector>
+            <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
+            <param key="b9" value="w1"/>
+            <param key="b2" value="2348"/>
+         </failback-connector>
+      </failback-connectors>
+
       <broadcast-groups>
 	     <broadcast-group name="bg1">
 	        <local-bind-port>10999</local-bind-port>

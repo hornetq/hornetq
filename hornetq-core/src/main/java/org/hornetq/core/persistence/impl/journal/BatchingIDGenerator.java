@@ -17,41 +17,28 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.journal.Journal;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.IDGenerator;
 
 /**
  * A BatchingIDGenerator
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <mailto:tim.fox@jboss.org">Tim Fox</a>
- *
- *
  */
 public class BatchingIDGenerator implements IDGenerator
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    private final AtomicLong counter;
-
-   private final Journal journalStorage;
 
    private final long checkpointSize;
 
    private volatile long nextID;
 
-   public BatchingIDGenerator(final long start, final long checkpointSize, final Journal journalstorage)
+   private final StorageManager storageManager;
+
+   public BatchingIDGenerator(final long start, final long checkpointSize, final StorageManager storageManager)
    {
       counter = new AtomicLong(start);
 
@@ -60,7 +47,7 @@ public class BatchingIDGenerator implements IDGenerator
 
       this.checkpointSize = checkpointSize;
 
-      journalStorage = journalstorage;
+      this.storageManager = storageManager;
    }
 
    public void close()
@@ -87,25 +74,14 @@ public class BatchingIDGenerator implements IDGenerator
       if (id >= nextID)
       {
          saveCheckPoint(id);
-
-         return id;
       }
-      else
-      {
-         return id;
-      }
+      return id;
    }
 
    public long getCurrentID()
    {
       return counter.get();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private synchronized void saveCheckPoint(final long id)
    {
@@ -120,10 +96,7 @@ public class BatchingIDGenerator implements IDGenerator
    {
       try
       {
-         journalStorage.appendAddRecord(journalID,
-                                        JournalStorageManager.ID_COUNTER_RECORD,
-                                        new IDCounterEncoding(id),
-                                        true);
+         storageManager.storeID(journalID, id);
       }
       catch (Exception e)
       {
@@ -131,15 +104,17 @@ public class BatchingIDGenerator implements IDGenerator
       }
    }
 
+   public static EncodingSupport createIDEncodingSupport(final long id)
+   {
+      return new IDCounterEncoding(id);
+   }
+
    // Inner classes -------------------------------------------------
 
-   static final class IDCounterEncoding implements EncodingSupport
+   protected static final class IDCounterEncoding implements EncodingSupport
    {
       long id;
 
-      /* (non-Javadoc)
-       * @see java.lang.Object#toString()
-       */
       @Override
       public String toString()
       {
@@ -169,7 +144,5 @@ public class BatchingIDGenerator implements IDGenerator
       {
          return DataConstants.SIZE_LONG;
       }
-
    }
-
 }

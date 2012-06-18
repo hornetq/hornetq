@@ -266,7 +266,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    }
 
    @Override
-   public JournalLoadInformation loadSyncOnly() throws Exception
+   public JournalLoadInformation loadSyncOnly(JournalState state) throws Exception
    {
       throw new UnsupportedOperationException();
    }

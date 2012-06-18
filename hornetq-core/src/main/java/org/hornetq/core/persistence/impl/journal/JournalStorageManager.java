@@ -316,7 +316,7 @@ public class JournalStorageManager implements StorageManager
          throw HornetQMessageBundle.BUNDLE.invalidJournalType2(config.getJournalType());
       }
 
-      idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
+      idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, this);
 
       Journal localMessage = new JournalImpl(config.getJournalFileSize(),
                                              config.getJournalMinFiles(),
@@ -364,7 +364,8 @@ public class JournalStorageManager implements StorageManager
     */
    @Override
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+                             ClusterConnection clusterConnection,
+                             Pair<TransportConfiguration, TransportConfiguration> pair, final boolean autoFailBack)
       throws Exception
    {
       if (!started)
@@ -396,8 +397,10 @@ public class JournalStorageManager implements StorageManager
             pagingManager.lock();
             try
             {
-               messageFiles = prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID);
-               bindingsFiles = prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID);
+                  messageFiles =
+                           prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID, autoFailBack);
+                  bindingsFiles =
+                           prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID, autoFailBack);
                pageFilesToSync = getPageInformationForSync(pagingManager);
                   largeMessageFilesToSync = getLargeMessageInformation();
             }
@@ -430,9 +433,9 @@ public class JournalStorageManager implements StorageManager
          replicator.sendSynchronizationDone(nodeID);
          clusterConnection.nodeAnnounced(System.currentTimeMillis(), nodeID, pair, true);
          // XXX HORNETQ-720 SEND a compare journals message?
-      }
-      finally
-      {
+         }
+         finally
+         {
             storageManagerLock.writeLock().unlock();
          }
       }
@@ -567,12 +570,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private JournalFile[]
-            prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID) throws Exception
+   private JournalFile[] prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID,
+                                               boolean autoFailBack) throws Exception
     {
       journal.forceMoveNextFile();
       JournalFile[] datafiles = journal.getDataFiles();
-      replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
+      replicator.sendStartSyncMessage(datafiles, contentType, nodeID, autoFailBack);
       return datafiles;
     }
 
@@ -684,9 +687,7 @@ public class JournalStorageManager implements StorageManager
 
    public long generateUniqueID()
    {
-      long id = idGenerator.generateID();
-
-      return id;
+      return idGenerator.generateID();
    }
 
    public long getCurrentUniqueID()
@@ -1069,9 +1070,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
-       */
       public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception
       {
           readLock();
@@ -1090,9 +1088,6 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
-    */
       public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
       {
           readLock();
@@ -1335,9 +1330,6 @@ public class JournalStorageManager implements StorageManager
           return list;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
-       */
       public List<PersistedRoles> recoverPersistedRoles() throws Exception
       {
           ArrayList<PersistedRoles> list = new ArrayList<PersistedRoles>(mapPersistedRoles.size());
@@ -1346,9 +1338,6 @@ public class JournalStorageManager implements StorageManager
       }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
-    */
       public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
       {
 
@@ -1367,23 +1356,37 @@ public class JournalStorageManager implements StorageManager
           }
       }
 
-      public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   @Override
+   public final void storeID(final long journalID, final long id) throws Exception
+   {
+      readLock();
+      try
       {
-          PersistedAddressSetting oldSetting = mapPersistedAddressSettings.remove(addressMatch);
-          if (oldSetting != null)
-              {
-                  readLock();
-         try
-             {
-                 bindingsJournal.appendDeleteRecord(oldSetting.getStoreId(), false);
-             }
-         finally
-             {
-                 readUnLock();
-             }
-              }
-
+         bindingsJournal.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD,
+                                         BatchingIDGenerator.createIDEncodingSupport(id), true);
       }
+      finally
+      {
+         readUnLock();
+      }
+   }
+
+   public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+   {
+      PersistedAddressSetting oldSetting = mapPersistedAddressSettings.remove(addressMatch);
+      if (oldSetting != null)
+      {
+         readLock();
+         try
+         {
+            bindingsJournal.appendDeleteRecord(oldSetting.getStoreId(), false);
+         }
+         finally
+         {
+            readUnLock();
+         }
+      }
+   }
 
       public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
       {
@@ -1951,9 +1954,6 @@ public class JournalStorageManager implements StorageManager
           }
    }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
-     */
     public long storePageCounterInc(long txID, long queueID, int value) throws Exception
     {
         readLock();
@@ -1972,9 +1972,6 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
-    */
     public long storePageCounterInc(long queueID, int value) throws Exception
     {
         readLock();
@@ -2011,9 +2008,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
-     */
     public void deleteIncrementRecord(long txID, long recordID) throws Exception
     {
         readLock();
@@ -2027,9 +2021,6 @@ public class JournalStorageManager implements StorageManager
           }
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
-     */
     public void deletePageCounter(long txID, long recordID) throws Exception
     {
         readLock();
@@ -3742,8 +3733,7 @@ public class JournalStorageManager implements StorageManager
             return newBindingEncoding(id, buffer);
 
          case JournalStorageManager.ID_COUNTER_RECORD:
-            IDCounterEncoding idReturn = new IDCounterEncoding();
-
+            EncodingSupport idReturn = new IDCounterEncoding();
             idReturn.decode(buffer);
 
             return idReturn;
@@ -4151,35 +4141,22 @@ public class JournalStorageManager implements StorageManager
       txoper.confirmedMessages.add(recordID);
    }
 
-   class TXLargeMessageConfirmationOperation implements TransactionOperation
+   final class TXLargeMessageConfirmationOperation implements TransactionOperation
    {
-
       public List<Long> confirmedMessages = new LinkedList<Long>();
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-       */
       public void beforePrepare(Transaction tx) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
-       */
       public void afterPrepare(Transaction tx)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-       */
       public void beforeCommit(Transaction tx) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
-       */
       public void afterCommit(Transaction tx)
       {
       }
@@ -4208,7 +4185,5 @@ public class JournalStorageManager implements StorageManager
       {
          return null;
       }
-
    }
-
 }

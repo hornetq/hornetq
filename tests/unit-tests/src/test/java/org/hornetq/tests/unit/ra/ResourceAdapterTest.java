@@ -453,7 +453,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          HornetQResourceAdapter ra = new HornetQResourceAdapter();
 
-         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+         ra.setConnectorClassName(INVM_CONNECTOR_FACTORY);
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
          ra.setTransactionManagerLocatorClass("");
@@ -494,14 +494,6 @@ public class ResourceAdapterTest extends ServiceTestBase
          server.stop();
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
    class MockHornetQResourceAdapter extends HornetQResourceAdapter
    {

@@ -339,22 +339,21 @@ public class FileLockNodeManager extends NodeManager
       }
    }
 
-   private void readNodeId() throws Exception
+   @Override
+   public final SimpleString readNodeId() throws org.hornetq.api.core.IllegalStateException, IOException
    {
       ByteBuffer id = ByteBuffer.allocateDirect(16);
       int read = channel.read(id, 3);
       if (read != 16)
       {
-         throw new IllegalStateException("live server did not write id to file");
+         throw new org.hornetq.api.core.IllegalStateException("live server did not write id to file");
       }
-      else
-      {
-         byte[] bytes = new byte[16];
-         id.position(0);
-         id.get(bytes);
-         uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
-         nodeID = new SimpleString(uuid.toString());
-      }
+      byte[] bytes = new byte[16];
+      id.position(0);
+      id.get(bytes);
+      uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
+      nodeID = new SimpleString(uuid.toString());
+      return nodeID;
    }
 
    /**

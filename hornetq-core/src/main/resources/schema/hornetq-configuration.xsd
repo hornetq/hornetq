@@ -100,6 +100,13 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" name="failback-connectors">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element maxOccurs="unbounded" minOccurs="0" name="failback-connector" type="failBackConnectorType"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="broadcast-groups">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -300,6 +307,15 @@
 			</xsd:element>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="failBackConnectorType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="factory-class" type="xsd:string">
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType">
+			</xsd:element>
+		</xsd:sequence>
 	</xsd:complexType>
 
 	<xsd:complexType name="bridgeType">
