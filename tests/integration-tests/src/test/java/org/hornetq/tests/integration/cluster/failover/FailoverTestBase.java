@@ -33,6 +33,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -208,6 +209,22 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
       liveServer = createTestableServer(liveConfig);
+   }
+
+   protected final void adaptLiveConfigForReplicatedFailBack(Configuration configuration)
+   {
+      final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+      if (configuration.isSharedStore())
+      {
+         ClusterConnectionConfiguration cc = configuration.getClusterConfigurations().get(0);
+         cc.getStaticConnectors().add(backupConnector.getName());
+         // backupConnector is only necessary for fail-back tests
+         configuration.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
+         return;
+      }
+      configuration.getFailBackConnectors().add(backupConnector);
+
+      configuration.setLiveConnectorName(ReplicatedBackupUtils.LIVE_NODE_NAME);
    }
 
    @Override

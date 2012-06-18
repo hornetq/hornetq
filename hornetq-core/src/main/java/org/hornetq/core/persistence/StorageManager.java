@@ -294,7 +294,8 @@ public interface StorageManager extends HornetQComponent
    void
             startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
                              ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair) throws Exception;
+                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
+                                                                                                             throws Exception;
 
    /**
     *
@@ -322,4 +323,12 @@ public interface StorageManager extends HornetQComponent
     * @param bytes
     */
    void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception;
+
+   /**
+    * Stores the given journalID in the bindingsJournal.
+    * @param journalID
+    * @param id
+    * @throws Exception
+    */
+   void storeID(long journalID, long id) throws Exception;
 }

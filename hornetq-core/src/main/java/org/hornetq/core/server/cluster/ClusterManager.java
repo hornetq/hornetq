@@ -55,8 +55,14 @@ public interface ClusterManager extends HornetQComponent
 
    void deployBridge(BridgeConfiguration config, boolean start) throws Exception;
 
-   // HORNETQ-720
-   void announceReplicatingBackup(Channel liveChannel);
+   /**
+    * HORNETQ-720
+    * @param liveChannel channel for opening connection with live
+    * @param attemptingFailBack if {@code true} then this server wants to trigger a fail-back when
+    *           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
+    *           server.
+    */
+   void announceReplicatingBackupToLive(Channel liveChannel, boolean attemptingFailBack);
 
    void destroyBridge(String name) throws Exception;
 

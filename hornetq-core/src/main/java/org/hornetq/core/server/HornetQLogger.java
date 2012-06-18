@@ -39,6 +39,15 @@ package org.hornetq.core.server;
  * so an INFO message would be 101000 to 101999
  */
 
+import java.io.File;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.xa.Xid;
+
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
@@ -70,14 +79,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.netty.channel.Channel;
 import org.w3c.dom.Node;
-
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 @MessageLogger(projectCode = "HQ")
 public interface HornetQLogger extends BasicLogger
@@ -1176,10 +1177,15 @@ public interface HornetQLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void groupHandlerSendTimeout();
 
-    @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112215, value = "Compressed large message tried to read {0} bytes from stream {1}",
          format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 112216, value = "Moving data directory {0} to {1}",
+            format = Message.Format.MESSAGE_FORMAT)
+   void backupMovingDataAway(String oldPath, String newPath);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114001, value = "Failed to call onMessage", format = Message.Format.MESSAGE_FORMAT)
@@ -1492,4 +1498,8 @@ public interface HornetQLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114079, value = "Bridge Failed to ack", format = Message.Format.MESSAGE_FORMAT)
    void bridgeFailedToAck(@Cause Throwable t);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 114080, value = "Live server will not fail-back automatically", format = Message.Format.MESSAGE_FORMAT)
+            void autoFailBackDenied();
 }

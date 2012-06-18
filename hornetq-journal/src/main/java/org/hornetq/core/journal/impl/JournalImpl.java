@@ -81,12 +81,6 @@ import org.hornetq.utils.DataConstants;
 public class JournalImpl extends JournalBase implements TestableJournal, JournalRecordProvider
 {
 
-   private enum JournalState
-   {
-      STOPPED, STARTED,
-      /** When a replicating server is still not synchronized with its live. */
-      SYNCING, LOADED;
-   }
    // Constants -----------------------------------------------------
 
    public static final int FORMAT_VERSION = 2;
@@ -1002,7 +996,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private void checkJournalIsLoaded()
    {
-      if (state != JournalState.LOADED)
+      if (state != JournalState.LOADED && state != JournalState.SYNCING)
       {
          throw new IllegalStateException("Journal must be in state=" + JournalState.LOADED + ", was [" + state + "]");
       }
@@ -1295,12 +1289,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    public synchronized JournalLoadInformation loadInternalOnly() throws Exception
    {
-      return load(DummyLoader.INSTANCE, true, false);
+      return load(DummyLoader.INSTANCE, true, null);
    }
 
-   public synchronized JournalLoadInformation loadSyncOnly() throws Exception
+   public synchronized JournalLoadInformation loadSyncOnly(JournalState syncState) throws Exception
    {
-      return load(DummyLoader.INSTANCE, true, true);
+      assert syncState == JournalState.SYNCING || syncState == JournalState.SYNCING_UP_TO_DATE;
+      return load(DummyLoader.INSTANCE, true, syncState);
    }
 
    public JournalLoadInformation load(final List<RecordInfo> committedRecords,
@@ -1385,7 +1380,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                failureCallback.failedTransaction(transactionID, records, recordsToDelete);
             }
          }
-      }, fixBadTX, false);
+      }, fixBadTX, null);
 
       for (RecordInfo record : records)
       {
@@ -1699,19 +1694,27 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * */
    public JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
    {
-      return load(loadManager, true, false);
+      return load(loadManager, true, null);
    }
 
-   public synchronized JournalLoadInformation load(final LoaderCallback loadManager, final boolean changeData, final boolean replicationSync) throws Exception
+   /**
+    * @param loadManager
+    * @param changeData
+    * @param replicationSync {@code true} will place
+    * @return
+    * @throws Exception
+    */
+   private synchronized JournalLoadInformation load(final LoaderCallback loadManager, final boolean changeData,
+                                                    final JournalState replicationSync) throws Exception
    {
       if (state == JournalState.STOPPED || state == JournalState.LOADED)
-   {
+      {
          throw new IllegalStateException("Journal " + this + " must be in " + JournalState.STARTED + " state, was " +
                   state);
       }
-      if (state == JournalState.SYNCING && replicationSync)
+      if (state == replicationSync)
       {
-         throw new IllegalStateException("Journal must be state " + JournalState.STARTED);
+         throw new IllegalStateException("Journal cannot be in state " + JournalState.STARTED);
       }
 
       checkControlFile();
@@ -2003,7 +2006,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          }
       }
 
-      if (replicationSync)
+      if (replicationSync == JournalState.SYNCING)
       {
          assert filesRepository.getDataFiles().isEmpty();
          setJournalState(JournalState.SYNCING);
@@ -2016,7 +2019,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       for (TransactionHolder transaction : loadTransactions.values())
       {
-         if (!transaction.prepared || transaction.invalid)
+         if ((!transaction.prepared || transaction.invalid) && replicationSync != JournalState.SYNCING_UP_TO_DATE)
          {
             HornetQJournalLogger.LOGGER.uncomittedTxFound(transaction.transactionID);
 

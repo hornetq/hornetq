@@ -36,15 +36,12 @@ public class JournalDeleteRecord extends JournalInternalRecord
       this.id = id;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.buffers.HornetQBuffer)
-    */
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeByte(JournalImpl.DELETE_RECORD);
 
       buffer.writeInt(fileID);
-      
+
       buffer.writeByte(compactCount);
 
       buffer.writeLong(id);

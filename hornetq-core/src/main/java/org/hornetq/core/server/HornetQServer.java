@@ -205,5 +205,5 @@ public interface HornetQServer extends HornetQComponent
     * @throws HornetQException
     */
    void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-                         Pair<TransportConfiguration, TransportConfiguration> pair) throws HornetQException;
+                         Pair<TransportConfiguration, TransportConfiguration> pair, boolean failBackRequest) throws HornetQException;
 }

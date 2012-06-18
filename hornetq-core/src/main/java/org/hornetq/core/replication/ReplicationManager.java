@@ -564,13 +564,11 @@ public class ReplicationManager implements HornetQComponent
     * @param contentType
     * @throws HornetQException
     */
-   public
-            void
-            sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID)
-                                                                                                    throws HornetQException
+   public void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID,
+                                    boolean allowsAutoFailBack) throws HornetQException
    {
       if (enabled)
-         sendReplicatePacket(new ReplicationStartSyncMessage(datafiles, contentType, nodeID));
+         sendReplicatePacket(new ReplicationStartSyncMessage(datafiles, contentType, nodeID, allowsAutoFailBack));
    }
 
    /**

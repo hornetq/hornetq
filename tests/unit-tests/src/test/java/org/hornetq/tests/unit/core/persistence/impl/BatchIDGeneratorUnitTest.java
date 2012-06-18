@@ -25,8 +25,10 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -39,16 +41,6 @@ import org.hornetq.tests.util.UnitTestCase;
 public class BatchIDGeneratorUnitTest extends UnitTestCase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testSequence() throws Exception
    {
       NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getTestDir());
@@ -58,14 +50,14 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
 
-      BatchingIDGenerator batch = new BatchingIDGenerator(0, 1000, journal);
+      BatchingIDGenerator batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       long id1 = batch.generateID();
       long id2 = batch.generateID();
 
       Assert.assertTrue(id2 > id1);
 
       journal.stop();
-      batch = new BatchingIDGenerator(0, 1000, journal);
+      batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       loadIDs(journal, batch);
 
       long id3 = batch.generateID();
@@ -79,7 +71,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       batch.close();
 
       journal.stop();
-      batch = new BatchingIDGenerator(0, 1000, journal);
+      batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       loadIDs(journal, batch);
 
       long id5 = batch.generateID();
@@ -101,7 +93,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
             close = !close;
 
             journal.stop();
-            batch = new BatchingIDGenerator(0, 1000, journal);
+            batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
             loadIDs(journal, batch);
          }
 
@@ -114,19 +106,19 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       batch.close();
       journal.stop();
-      batch = new BatchingIDGenerator(0, 1000, journal);
+      batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       loadIDs(journal, batch);
 
       lastId = batch.getCurrentID();
 
       journal.stop();
-      batch = new BatchingIDGenerator(0, 1000, journal);
+      batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       loadIDs(journal, batch);
 
       Assert.assertEquals("No Ids were generated, so the currentID was supposed to stay the same",
                           lastId,
                           batch.getCurrentID());
-      
+
       journal.stop();
 
    }
@@ -153,30 +145,25 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-
       File file = new File(getTestDir());
-
       deleteDirectory(file);
-
       file.mkdir();
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   private StorageManager getJournalStorageManager(final Journal bindingsJournal)
    {
-      super.tearDown();
+      return new NullStorageManager()
+      {
+         @Override
+         public synchronized void storeID(long journalID, long id) throws Exception
+         {
+            bindingsJournal.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD,
+                                            BatchingIDGenerator.createIDEncodingSupport(id), true);
+         }
+      };
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

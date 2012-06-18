@@ -144,7 +144,8 @@ public class FailoverTest extends FailoverTestBase
                   // this is our retry
                   try
                   {
-                     producer.send(message);
+                     if (!producer.isClosed())
+                        producer.send(message);
                   }
                   catch (HornetQException e1)
                   {
@@ -563,6 +564,138 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numSessions());
 
       Assert.assertEquals(0, sf.numConnections());
+   }
+
+   /**
+    * Basic fail-back test.
+    * @throws Exception
+    */
+   public void testFailBack() throws Exception
+   {
+      boolean doFailBack = true;
+      simpleReplication(doFailBack);
+   }
+
+   public void testSimpleReplication() throws Exception
+   {
+      boolean doFailBack = false;
+      simpleReplication(doFailBack);
+   }
+
+   public void testWithoutUsingTheBackup() throws Exception
+   {
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
+
+      ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+
+      backupServer.stop(); // Backup stops!
+      backupServer.start();
+
+      session.start();
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
+      receiveMessages(consumer);
+      assertNoMoreMessages(consumer);
+      consumer.close();
+      session.commit();
+
+      session.start();
+      producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+      backupServer.stop(); // Backup stops!
+      beforeRestart(backupServer);
+      backupServer.start();
+      Thread.sleep(10000);
+      backupServer.stop(); // Backup stops!
+
+      liveServer.stop();
+      beforeRestart(liveServer);
+      liveServer.start();
+      liveServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+
+      ClientSession session2 = createSession(sf, false, false);
+      session2.start();
+      ClientConsumer consumer2 = session2.createConsumer(FailoverTestBase.ADDRESS);
+      receiveMessages(consumer2, 0, NUM_MESSAGES, true);
+      assertNoMoreMessages(consumer2);
+      session2.commit();
+   }
+
+   /**
+    * @param doFailBack
+    * @throws Exception
+    * @throws HornetQException
+    * @throws InterruptedException
+    */
+   private void simpleReplication(boolean doFailBack) throws Exception, HornetQException, InterruptedException
+   {
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
+
+      ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+      crash(session);
+
+      session.start();
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
+      receiveMessages(consumer);
+      assertNoMoreMessages(consumer);
+      consumer.close();
+
+      producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+
+      if (doFailBack)
+      {
+         assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+         adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+         liveServer.start();
+         assertTrue("live initialized...", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+         int i = 0;
+         while (backupServer.isStarted() && i++ < 100)
+         {
+            Thread.sleep(100);
+         }
+         assertFalse("Backup should stop!", backupServer.isStarted());
+      }
+      else
+      {
+         backupServer.stop();
+         beforeRestart(backupServer);
+         backupServer.start();
+         backupServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+         Thread.sleep(1000);
+      }
+
+      ClientSession session2 = createSession(sf, false, false);
+      session2.start();
+      ClientConsumer consumer2 = session2.createConsumer(FailoverTestBase.ADDRESS);
+      receiveMessages(consumer2, 0, NUM_MESSAGES, true);
+      assertNoMoreMessages(consumer2);
+      session2.commit();
+   }
+
+   /**
+    * @param consumer
+    * @throws HornetQException
+    */
+   private void assertNoMoreMessages(ClientConsumer consumer) throws HornetQException
+   {
+      ClientMessage msg = consumer.receiveImmediate();
+      assertNull("there should be no more messages to receive! " + msg, msg);
    }
 
    private void createSessionFactory() throws Exception

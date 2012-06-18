@@ -50,6 +50,8 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -358,7 +360,6 @@ public class HornetQServerImpl implements HornetQServer
 
       try
       {
-
          checkJournalDirectory();
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());
@@ -374,6 +375,7 @@ public class HornetQServerImpl implements HornetQServer
             test.run();
          }
 
+         final boolean wasLive = !configuration.isBackup();
          if (!configuration.isBackup())
          {
             if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
@@ -386,28 +388,31 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             activation.run();
-            state = SERVER_STATE.STARTED;
-            HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
-                                               identity != null ? identity : "");
          }
-         // The activation on fail-back may change the value of isBackup, for that reason we are not
-         // using else here
+         // The activation on fail-back may change the value of isBackup, for that reason we are
+         // checking again here
          if (configuration.isBackup())
          {
-             if (configuration.isSharedStore())
-             {
-                activation = new SharedStoreBackupActivation();
-             }
-             else
-             {
-                assert replicationEndpoint == null;
-                backupUpToDate = false;
-                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO);
-                activation = new SharedNothingBackupActivation();
-             }
+            if (configuration.isSharedStore())
+            {
+               activation = new SharedStoreBackupActivation();
+            }
+            else
+            {
+               assert replicationEndpoint == null;
+               backupUpToDate = false;
+               replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
+               activation = new SharedNothingBackupActivation(wasLive);
+            }
 
              backupActivationThread = new Thread(activation, HornetQMessageBundle.BUNDLE.activationForServer(this));
              backupActivationThread.start();
+         }
+         else
+         {
+            state = SERVER_STATE.STARTED;
+            HornetQLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
+                                               identity != null ? identity : "");
          }
          // start connector service
          connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
@@ -431,6 +436,25 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       super.finalize();
+   }
+
+   private void stopTheServer() {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      executor.submit(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               stop();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      });
    }
 
    public void stop() throws Exception
@@ -520,7 +544,8 @@ public class HornetQServerImpl implements HornetQServer
 
       // We stop remotingService before otherwise we may lock the system in case of a critical IO
       // error shutdown
-      remotingService.stop(criticalIOError);
+      if (remotingService != null)
+         remotingService.stop(criticalIOError);
 
       // We close all the exception in an attempt to let any pending IO to finish
       // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
@@ -610,7 +635,7 @@ public class HornetQServerImpl implements HornetQServer
             threadPool = null;
 
             if (securityStore != null)
-           securityStore.stop();
+               securityStore.stop();
 
          threadPool = null;
 
@@ -663,10 +688,16 @@ public class HornetQServerImpl implements HornetQServer
          addressSettingsRepository.clearListeners();
 
          addressSettingsRepository.clearCache();
-
-         HornetQLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
+         if (identity != null)
+         {
+            HornetQLogger.LOGGER.serverStopped("identity=" + identity + ",version=" + getVersion().getFullVersion(),
+                                               tempNodeID);
+         }
+         else
+         {
+            HornetQLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
+         }
       }
-
    }
 
    private static void stopComponent(HornetQComponent component) throws Exception
@@ -2029,23 +2060,36 @@ public class HornetQServerImpl implements HornetQServer
       private ServerLocatorInternal serverLocator0;
       private volatile boolean failedToConnect;
       private QuorumManager quorumManager;
+      private final boolean attemptFailBack;
+
+      public SharedNothingBackupActivation(boolean attemptFailBack)
+      {
+         this.attemptFailBack = attemptFailBack;
+      }
 
       public void run()
       {
          try
          {
+            // move all data away:
+            moveServerData();
+
             nodeManager.startBackup();
 
             initialisePart1();
-
-            final String liveConnectorName = configuration.getLiveConnectorName();
-            if (liveConnectorName == null)
-            {
-               throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
+            TransportConfiguration[] tp = null;
+            if (attemptFailBack) {
+               tp = configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
+            } else {
+               final String liveConnectorName = configuration.getLiveConnectorName();
+               if (liveConnectorName == null)
+               {
+                  throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
+               }
+               tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
             clusterManager.start();
 
-            final TransportConfiguration tp = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
@@ -2073,7 +2117,7 @@ public class HornetQServerImpl implements HornetQServer
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
                      connectToReplicationEndpoint(replicationChannel);
                      replicationEndpoint.start();
-                     clusterManager.announceReplicatingBackup(pingChannel);
+                     clusterManager.announceReplicatingBackupToLive(pingChannel, attemptFailBack);
                   }
                   catch (Exception e)
                   {
@@ -2083,7 +2127,7 @@ public class HornetQServerImpl implements HornetQServer
                      try
                      {
                         if (state != SERVER_STATE.STOPPED)
-                           HornetQServerImpl.this.stop();
+                           stopTheServer();
                         return;
                      }
                      catch (Exception e1)
@@ -2124,6 +2168,7 @@ public class HornetQServerImpl implements HornetQServer
                if (!isStarted())
                   return;
                HornetQLogger.LOGGER.becomingLive(HornetQServerImpl.this);
+               nodeManager.stopBackup();
                storageManager.start();
                initialisePart2();
                clusterManager.activate();
@@ -2139,6 +2184,51 @@ public class HornetQServerImpl implements HornetQServer
             e.printStackTrace();
          }
       }
+
+      /**
+       * Move data away before starting data synchronization for fail-back.
+       * <p>
+       * Use case is a server, upon restarting, finding a former backup running in its place. It
+       * will move any older data away and log a warning about it.
+       */
+      private void moveServerData()
+      {
+         String[] dataDirs =
+                  new String[] { configuration.getBindingsDirectory(),
+                                configuration.getJournalDirectory(),
+                                configuration.getPagingDirectory(),
+                                configuration.getLargeMessagesDirectory() };
+         boolean allEmpty = true;
+         int lowestSuffixForMovedData = 1;
+         for (String dir : dataDirs)
+         {
+            File fDir = new File(dir);
+            if (fDir.isDirectory())
+            {
+               if (fDir.list().length > 0)
+                  allEmpty = false;
+            }
+            String sanitizedPath = fDir.getPath();
+            while (new File(sanitizedPath + lowestSuffixForMovedData).exists())
+            {
+               lowestSuffixForMovedData++;
+            }
+         }
+         if (allEmpty)
+            return;
+
+         for (String dir0 : dataDirs)
+         {
+            File dir = new File(dir0);
+            File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
+            if (dir.exists() && dir.renameTo(newPath))
+            {
+               HornetQLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
+               dir.mkdir();
+            }
+         }
+      }
+
 
       public void close(final boolean permanently) throws Exception
       {
@@ -2190,6 +2280,13 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
+            if (isNodeIdUsed())
+            {
+
+               configuration.setBackup(true);
+               return;
+            }
+
             initialisePart1();
 
             initialisePart2();
@@ -2206,6 +2303,61 @@ public class HornetQServerImpl implements HornetQServer
          catch (Exception e)
          {
             HornetQLogger.LOGGER.initializationError(e);
+         }
+      }
+
+      /**
+       * Determines whether there is another server already running with this server's nodeID.
+       * <p>
+       * This can happen in case of a successful fail-over followed by the live's restart
+       * (attempting a fail-back).
+       * @throws Exception
+       */
+      private boolean isNodeIdUsed() throws Exception
+      {
+         if (configuration.getFailBackConnectors().isEmpty())
+            return false;
+         SimpleString nodeId0;
+         try {
+            nodeId0 = nodeManager.readNodeId();
+         } catch (org.hornetq.api.core.IllegalStateException e) {
+            nodeId0 = null;
+         }
+         ServerLocatorInternal locator = null;
+         try
+         {
+
+            TransportConfiguration[] tpArray =
+                     configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
+            locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
+            locator.setReconnectAttempts(0);
+            locator.connect();
+            Thread.sleep(5000); // wait a little for the topology updates
+            // if the nodeID is null, then a node with that nodeID MUST be found:
+            Topology topology = locator.getTopology();
+            if (topology.isEmpty())
+               // no servers found: trigger normal start.
+               return false;
+            if (nodeId0 != null)
+            {
+               TopologyMember node = topology.getMember(nodeId0.toString());
+               if (node != null)
+                  // if nodeId found within running servers, try fail-back
+                  return true;
+               // Error! NodeId not found but fail-back servers running: cancel start-up.
+               stopTheServer();
+               throw new HornetQException("Fail-back servers found but node is different");
+            }
+            return !topology.isEmpty();
+         }
+         catch (HornetQException error)
+         {
+            return false;
+         }
+         finally
+         {
+            if (locator != null)
+               locator.close();
          }
       }
 
@@ -2239,7 +2391,8 @@ public class HornetQServerImpl implements HornetQServer
 
    @Override
    public void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair) throws HornetQException
+                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean isFailBackRequest)
+                                                                                                                  throws HornetQException
    {
       if (replicationManager != null)
       {
@@ -2267,7 +2420,31 @@ public class HornetQServerImpl implements HornetQServer
          {
             replicationManager.start();
             storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-                                            clusterConnection, pair);
+                                            clusterConnection, pair,
+                                            isFailBackRequest && configuration.isAllowAutoFailBack());
+            if (isFailBackRequest && configuration.isAllowAutoFailBack())
+            {
+               new Thread(new Runnable()
+               {
+
+                  @Override
+                  public void run()
+                  {
+                     try
+                     {
+                        // we delay stopping the server in order to allow the backup to announce
+                        // itself.
+                        Thread.sleep(5000);
+                        stop();
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+
+               }).start();
+            }
          }
          catch (Exception e)
          {

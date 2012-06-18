@@ -283,6 +283,17 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    /**
+    * Returns set of connectors used to determine whether a server should start normally or if it
+    * will need to perform a fail-back.
+    * <p>
+    * Only applicable to live servers (not backups) configured with {@link #isSharedStore()} set to
+    * {@code false}.
+    * @return set of connectors used to determine whether there is a server running with this server
+    *         nodeID.
+    */
+   Set<TransportConfiguration> getFailBackConnectors();
+
+   /**
     * Returns the name of the connector used to connect to the live node.
     * <p>
     * This is only used when not sharing storage with the backup, that is when
