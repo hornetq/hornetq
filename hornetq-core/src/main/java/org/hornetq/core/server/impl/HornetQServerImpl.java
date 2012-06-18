@@ -483,13 +483,14 @@ public class HornetQServerImpl implements HornetQServer
          if (replicationManager!=null) {
             remotingService.freeze(replicationManager.getBackupTransportConnection());
             final ReplicationManager localReplicationManager = replicationManager;
+            final CountDownLatch latch = new CountDownLatch(1);
             threadPool.execute(new Runnable() {
                @Override
                public void run()
                {
                   try
                   {
-                     Thread.sleep(10000);
+                     latch.await(10, TimeUnit.SECONDS);
                      localReplicationManager.clearReplicationTokens();
                   }
                   catch (InterruptedException e)
@@ -501,6 +502,7 @@ public class HornetQServerImpl implements HornetQServer
             stopComponent(pagingManager);
             replicationManager.sendLiveIsStopping();
             stopComponent(replicationManager);
+            latch.countDown();
          }
 
          stopComponent(connectorsService);
