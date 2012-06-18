@@ -144,7 +144,8 @@ public class FailoverTest extends FailoverTestBase
                   // this is our retry
                   try
                   {
-                     producer.send(message);
+                     if (!producer.isClosed())
+                        producer.send(message);
                   }
                   catch (HornetQException e1)
                   {
