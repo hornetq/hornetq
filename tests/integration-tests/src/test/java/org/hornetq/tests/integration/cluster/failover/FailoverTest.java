@@ -180,7 +180,6 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      locator.setRetryInterval(500);
       locator.setAckBatchSize(0);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
@@ -256,7 +255,6 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      locator.setRetryInterval(500);
       locator.setAckBatchSize(0);
       ((InVMNodeManager)nodeManager).failoverPause = 5000l;
 
@@ -612,7 +610,6 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      Thread.sleep(10000);
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
@@ -1368,6 +1365,7 @@ public class FailoverTest extends FailoverTestBase
 
    public void testCreateNewFactoryAfterFailover() throws Exception
    {
+      this.disableCheckThread();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
@@ -1375,13 +1373,26 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      crash(session);
+      crash(true, session);
 
       session.close();
 
-      Thread.sleep(5000);
 
-      createClientSessionFactory();
+      long timeout;
+      timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis())
+      {
+         try
+         {
+            createClientSessionFactory();
+            break;
+         }
+         catch (Exception e)
+         {
+            // retrying
+            Thread.sleep(100);
+         }
+      }
 
       session = sendAndConsume(sf, true);
    }
