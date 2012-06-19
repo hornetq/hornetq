@@ -695,7 +695,7 @@ public class StompTest extends StompTestBase
       }
       else
       {
-         reconnect(1000);
+         reconnect(100);
          waitForFrameToTakeEffect();
       }
 
@@ -1079,7 +1079,7 @@ public class StompTest extends StompTestBase
       // send the message when the durable subscriber is disconnected
       sendMessage(getName(), topic);
 
-      reconnect(1000);
+      reconnect(100);
       sendFrame(connectFame);
       frame = receiveFrame(100000);
       Assert.assertTrue(frame.startsWith("CONNECTED"));
