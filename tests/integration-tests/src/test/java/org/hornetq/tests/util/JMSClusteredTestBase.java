@@ -228,6 +228,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       try
       {
+         MBeanServerFactory.releaseMBeanServer(mBeanServer2);
+
          jmsServer2.stop();
 
          server2.stop();
@@ -255,6 +257,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       try
       {
+         MBeanServerFactory.releaseMBeanServer(mBeanServer1);
+
          jmsServer1.stop();
 
          server1.stop();
