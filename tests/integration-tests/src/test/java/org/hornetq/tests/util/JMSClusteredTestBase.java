@@ -21,6 +21,8 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -50,9 +52,13 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
+   protected MBeanServer mBeanServer1;
+
    protected HornetQServer server1;
 
    protected JMSServerManagerImpl jmsServer1;
+
+   protected MBeanServer mBeanServer2;
 
    protected HornetQServer server2;
 
@@ -129,7 +135,6 @@ public class JMSClusteredTestBase extends ServiceTestBase
    }
 
    /**
-    * @param toOtherServerPair
     * @throws Exception
     */
    private void setupServer2() throws Exception
@@ -166,14 +171,14 @@ public class JMSClusteredTestBase extends ServiceTestBase
       //jmsconfig.getTopicConfigurations().add(new TopicConfigurationImpl("t1", "topic/t1"));
 
 
-      server2 = HornetQServers.newHornetQServer(conf2, false);
+      mBeanServer2 = MBeanServerFactory.createMBeanServer();
+      server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, false);
       jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
       context2 = new InVMContext();
       jmsServer2.setContext(context2);
    }
 
    /**
-    * @param toOtherServerPair
     * @throws Exception
     */
    private void setupServer1() throws Exception
@@ -210,7 +215,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
       //jmsconfig.getTopicConfigurations().add(new TopicConfigurationImpl("t1", "topic/t1"));
 
-      server1 = HornetQServers.newHornetQServer(conf1, false);
+      mBeanServer1 = MBeanServerFactory.createMBeanServer();
+      server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, false);
       jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
       context1 = new InVMContext();
       jmsServer1.setContext(context1);
