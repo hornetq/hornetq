@@ -66,6 +66,8 @@
       <module>queue-requestor</module>
       <module>queue-selector</module>
       <module>reattach-node</module>
+      <!--todo fix example-->
+      <!--<module>replicated-multiple-failover</module>-->
       <module>replicated-transaction-failover</module>
       <module>request-reply</module>
       <module>scheduled-message</module>
