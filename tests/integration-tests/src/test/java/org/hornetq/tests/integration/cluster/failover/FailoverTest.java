@@ -63,12 +63,12 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverTest extends FailoverTestBase
 {
-	private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-	   private static final int NUM_MESSAGES = 100;
+   private static final int NUM_MESSAGES = 100;
 
-	   private ServerLocator locator;
-	   private ClientSessionFactoryInternal sf;
+   private ServerLocator locator;
+   private ClientSessionFactoryInternal sf;
 
    @Override
    protected void setUp() throws Exception
@@ -77,23 +77,23 @@ public class FailoverTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-	protected ClientSession createSession(ClientSessionFactory sf,
-			boolean autoCommitSends,
-			boolean autoCommitAcks,
-			int ackBatchSize) throws Exception
-	{
-		return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
-	}
+   protected ClientSession createSession(ClientSessionFactory sf,
+                                         boolean autoCommitSends,
+                                         boolean autoCommitAcks,
+                                         int ackBatchSize) throws Exception
+   {
+      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
+   }
 
-	protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
-	{
-		return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks));
-	}
+   protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
+   {
+      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks));
+   }
 
-	protected ClientSession createSession(ClientSessionFactory sf) throws Exception
-	{
-		return addClientSession(sf.createSession());
-	}
+   protected ClientSession createSession(ClientSessionFactory sf) throws Exception
+   {
+      return addClientSession(sf.createSession());
+   }
 
    protected ClientSession createSession(ClientSessionFactory sf,
                                          boolean xa,
@@ -216,8 +216,8 @@ public class FailoverTest extends FailoverTestBase
             try
             {
                log.info("acking message = id = " + message.getMessageID() +
-                        ", counter = " +
-                        message.getIntProperty("counter"));
+                  ", counter = " +
+                  message.getIntProperty("counter"));
                message.acknowledge();
             }
             catch (HornetQException e)
@@ -297,8 +297,8 @@ public class FailoverTest extends FailoverTestBase
                   try
                   {
                      log.info("acking message = id = " + message.getMessageID() +
-                              ", counter = " +
-                              message.getIntProperty("counter"));
+                        ", counter = " +
+                        message.getIntProperty("counter"));
                      message.acknowledge();
                   }
                   catch (HornetQException e)
@@ -1137,7 +1137,7 @@ public class FailoverTest extends FailoverTestBase
       catch (XAException e)
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
-       // XXXX  session.rollback();
+         // XXXX  session.rollback();
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -1756,7 +1756,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch(TransactionRolledBackException trbe)
             {
-              // Ok - now we retry the commit after removing the interceptor
+               // Ok - now we retry the commit after removing the interceptor
 
                sf.getServerLocator().removeInterceptor(interceptor);
 
@@ -1773,7 +1773,7 @@ public class FailoverTest extends FailoverTestBase
             }
             catch(TransactionOutcomeUnknownException toue)
             {
-              // Ok - now we retry the commit after removing the interceptor
+               // Ok - now we retry the commit after removing the interceptor
 
                sf.getServerLocator().removeInterceptor(interceptor);
 
@@ -2110,7 +2110,7 @@ public class FailoverTest extends FailoverTestBase
 
       if (!backupServer.getServer().getConfiguration().isSharedStore())
       {
-    	  // XXX
+         // XXX
          // this test would not make sense in the remote replication use case, without the following
          backupServer.getServer().getConfiguration().setBackup(false);
       }
@@ -2182,10 +2182,10 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+            false,
+            0,
+            System.currentTimeMillis(),
+            (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
