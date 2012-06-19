@@ -157,7 +157,7 @@ public class FailoverTest extends FailoverTestBase
       };
       Thread t = new Thread(r);
       t.start();
-      latch.await(10, TimeUnit.SECONDS);
+      assertTrue("latch released", latch.await(10, TimeUnit.SECONDS));
       log.info("crashing session");
       crash(session);
       t.join(5000);
