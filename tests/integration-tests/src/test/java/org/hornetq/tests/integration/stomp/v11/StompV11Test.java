@@ -1259,7 +1259,7 @@ public class StompV11Test extends StompTestBase2
 
       abortTransaction(connV11, "tx1");
 
-      frame = connV11.receiveFrame();
+      frame = connV11.receiveFrame(500);
 
       assertNull(frame);
 

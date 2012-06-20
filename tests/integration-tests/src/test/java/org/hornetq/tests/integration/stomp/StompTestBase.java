@@ -91,8 +91,6 @@ public abstract class StompTestBase extends UnitTestCase
    {
       super.setUp();
 
-      forceGC();
-
       if (autoCreateServer)
       {
          server = createServer();
@@ -321,6 +319,6 @@ public abstract class StompTestBase extends UnitTestCase
       // bit of a dirty hack :)
       // another option would be to force some kind of receipt to be returned
       // from the frame
-      Thread.sleep(2000);
+      Thread.sleep(500);
    }
 }
