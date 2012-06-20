@@ -165,6 +165,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
       backupConfig.setClustered(true);
+      backupConfig.setFailoverOnServerShutdown(true);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -178,6 +179,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
+      liveConfig.setFailoverOnServerShutdown(true);
+
       ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
