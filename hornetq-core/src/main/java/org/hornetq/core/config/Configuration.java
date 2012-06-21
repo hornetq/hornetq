@@ -430,13 +430,19 @@ public interface Configuration extends Serializable
    String getClusterPassword();
 
    /**
-    * should we notify any clients on close that they should failover
+    * Should we notify any clients on close that they should failover.
+    * @see #setFailoverOnServerShutdown(boolean)
     * @return true if clients should failover
     */
    boolean isFailoverOnServerShutdown();
 
    /**
     * Sets whether to allow clients to failover on server shutdown.
+    * <p>
+    * When a live server is restarted after failover the backup will shutdown if
+    * {@link #isAllowAutoFailBack()} is true. This is not regarded as a normal shutdown. In this
+    * case {@code failoverOnServerShutdown} is ignored, and the server will behave as if it was set
+    * to {@code true}.
     */
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
 

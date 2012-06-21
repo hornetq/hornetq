@@ -2426,7 +2426,7 @@ public class HornetQServerImpl implements HornetQServer
                         // we delay stopping the server in order to allow the backup to announce
                         // itself.
                         Thread.sleep(5000);
-                        stop();
+                        stop(true);
                      }
                      catch (Exception e)
                      {
