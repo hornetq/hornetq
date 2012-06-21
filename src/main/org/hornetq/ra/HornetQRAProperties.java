@@ -76,7 +76,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private boolean initialized = false;
    
    private transient SensitiveDataCodec<String> codecInstance;
-
+   
    /**
     * Constructor
     */
@@ -308,5 +308,4 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       return codecInstance;
    }
-
 }

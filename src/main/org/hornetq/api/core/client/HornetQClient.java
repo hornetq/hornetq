@@ -72,6 +72,8 @@ public class HornetQClient
 
    public static final int DEFAULT_DISCOVERY_PORT = 9876;
 
+   public static final int DEFAULT_BROADCAST_PERIOD = 5000;
+
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;

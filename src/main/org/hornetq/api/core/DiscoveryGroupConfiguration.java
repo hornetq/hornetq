@@ -16,6 +16,7 @@ package org.hornetq.api.core;
 import java.io.Serializable;
 
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -34,9 +35,10 @@ public class DiscoveryGroupConfiguration implements Serializable
    
    private static final Logger log = Logger.getLogger(DiscoveryGroupConfiguration.class);
 
-
    private String name;
-   
+
+   private BroadcastEndpointConfiguration endpointConfig;
+
    private String localBindAddress;
 
    private String groupAddress;
@@ -67,6 +69,15 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this(UUIDGenerator.getInstance().generateStringUUID(), null, groupAddress, groupPort, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
    }
+
+   public DiscoveryGroupConfiguration(String name, long refreshTimeout, long discoveryInitialWaitTimeout,
+                                          BroadcastEndpointConfiguration endpointConfig)
+   {
+      this.name = name;
+      this.refreshTimeout = refreshTimeout;
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+      this.endpointConfig = endpointConfig;
+                                          }
 
    public String getName()
    {
@@ -149,6 +160,11 @@ public class DiscoveryGroupConfiguration implements Serializable
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
 
+   public BroadcastEndpointConfiguration getEndpoingConfig()
+   {
+      return this.endpointConfig;
+   }
+
    @Override
    public boolean equals(Object o)
    {
@@ -156,7 +172,26 @@ public class DiscoveryGroupConfiguration implements Serializable
       if (o == null || getClass() != o.getClass()) return false;
 
       DiscoveryGroupConfiguration that = (DiscoveryGroupConfiguration) o;
+      if (endpointConfig != null)
+      {
+         if (!endpointConfig.equals(that.endpointConfig))
+         {
+            return false;
+         }
+      }
+      else if (that.endpointConfig != null)
+      {
+         return false;
+      }
+      else
+      {
+         return compareOldConfig(that);
+      }
+      return true;
+   }
 
+   private boolean compareOldConfig(DiscoveryGroupConfiguration that)
+   {
       if (discoveryInitialWaitTimeout != that.discoveryInitialWaitTimeout) return false;
       if (groupPort != that.groupPort) return false;
       if (refreshTimeout != that.refreshTimeout) return false;
@@ -170,6 +205,14 @@ public class DiscoveryGroupConfiguration implements Serializable
 
    @Override
    public int hashCode()
+   {
+      if (endpointConfig == null) return oldHash();
+
+      int result = name != null ? name.hashCode() : 0;
+      return result;
+   }
+
+   private int oldHash()
    {
       int result = name != null ? name.hashCode() : 0;
       result = 31 * result + (localBindAddress != null ? localBindAddress.hashCode() : 0);
@@ -185,6 +228,17 @@ public class DiscoveryGroupConfiguration implements Serializable
     */
    @Override
    public String toString()
+   {
+      if (endpointConfig == null) return oldToString();
+
+      StringBuilder str = new StringBuilder().append("DiscoveryGroupConfiguration [endpointConfig=")
+                                             .append(endpointConfig.getName())
+                                             .append(", name=")
+                                             .append(name);
+      return str.append("]").toString();
+   }
+
+   private String oldToString()
    {
       return "DiscoveryGroupConfiguration [discoveryInitialWaitTimeout=" + discoveryInitialWaitTimeout +
              ", groupAddress=" +

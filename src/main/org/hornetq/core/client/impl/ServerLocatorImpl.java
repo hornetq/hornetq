@@ -21,8 +21,10 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
@@ -41,10 +43,15 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.cluster.BroadcastEndpoint;
+import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
+import org.hornetq.core.cluster.PluggableDiscoveryGroup;
+import org.hornetq.core.cluster.UDPBroadcastEndpoint;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -355,26 +362,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          if (discoveryGroupConfiguration != null)
          {
-            InetAddress groupAddress = InetAddress.getByName(discoveryGroupConfiguration.getGroupAddress());
-
-            InetAddress lbAddress;
-
-            if (discoveryGroupConfiguration.getLocalBindAddress() != null)
-            {
-               lbAddress = InetAddress.getByName(discoveryGroupConfiguration.getLocalBindAddress());
-            }
-            else
-            {
-               lbAddress = null;
-            }
-
-            discoveryGroup = new DiscoveryGroupImpl(nodeID,
-                                                    discoveryGroupConfiguration.getName(),
-                                                    lbAddress,
-                                                    groupAddress,
-                                                    discoveryGroupConfiguration.getGroupPort(),
-                                                    discoveryGroupConfiguration.getRefreshTimeout());
-
+            discoveryGroup = createDiscoveryGroup(nodeID, discoveryGroupConfiguration);
+            
             discoveryGroup.registerListener(this);
 
             discoveryGroup.start();
@@ -387,6 +376,36 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          state = null;
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
       }
+   }
+   private static DiscoveryGroup createDiscoveryGroup(String nodeID, DiscoveryGroupConfiguration config) throws Exception
+   {
+      DiscoveryGroup group = null;
+      BroadcastEndpointConfiguration endpointConfig = config.getEndpoingConfig();
+      
+      if (endpointConfig == null)
+      {
+         Map<String, Object> params = new HashMap<String, Object>();
+         params.put("group-address", config.getGroupAddress());
+         params.put("group-port", String.valueOf(config.getGroupPort()));
+         String lbAddress = config.getLocalBindAddress();
+
+         if (lbAddress != null)
+         {
+            params.put("local-bind-address", lbAddress);
+         }
+         
+         endpointConfig = new BroadcastEndpointConfiguration("hq_udp",
+                                                             UDPBroadcastEndpoint.class.getName(),
+                                                             params);         
+      }
+
+      BroadcastEndpoint endpoint = BroadcastEndpointFactory.createEndpoint(endpointConfig);
+
+      group = new PluggableDiscoveryGroup(nodeID,
+                                          config.getName(),
+                                          config.getRefreshTimeout(),
+                                          endpoint, null);
+      return group;
    }
 
    private ServerLocatorImpl(final Topology topology,

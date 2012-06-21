@@ -70,6 +70,19 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
 
    private static String commentedOutConfigs = "" +
          "      <config-property>\n" +
+         "        <description>The Broadcast Endpoint class. This must be fully qualified class name for the BroadcastEndpoint implementation. </description>\n" +
+         "        <config-property-name>BroadcastEndpointClassName</config-property-name>\n" +
+         "        <config-property-type>java.lang.String</config-property-type>\n" +
+         "        <config-property-value>org.hornetq.core.server.cluster.impl.UDPBroadcastEndpoint</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "        <description>The parameters used to initialize BroadcastEndpintClassName. " +
+         "                     These values must be in the form of key=val;key=val;,</description>\n" +
+         "        <config-property-name>BroadcastEndpointParameters</config-property-name>\n" +
+         "        <config-property-type>java.lang.String</config-property-type>\n" +
+         "        <config-property-value>group-address=231.7.7.7;group-port=9876</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
          "        <description>Does we support HA</description>\n" +
          "        <config-property-name>HA</config-property-name>\n" +
          "        <config-property-type>boolean</config-property-type>\n" +

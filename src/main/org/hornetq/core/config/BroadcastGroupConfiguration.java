@@ -34,6 +34,8 @@ public class BroadcastGroupConfiguration implements Serializable
 
    private String name;
 
+   private BroadcastEndpointConfiguration endpointConfig;
+
    private String localBindAddress;
 
    private int localBindPort;
@@ -62,6 +64,15 @@ public class BroadcastGroupConfiguration implements Serializable
       this.groupPort = groupPort;
       this.broadcastPeriod = broadcastPeriod;
       this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastGroupConfiguration(String name, long broadcastPeriod, List<String> connectorNames,
+                                      BroadcastEndpointConfiguration endpointConfig)
+   {
+      this.name = name;
+      this.broadcastPeriod = broadcastPeriod;
+      this.connectorInfos = connectorNames;
+      this.endpointConfig = endpointConfig;
    }
 
    public String getName()
@@ -153,6 +164,11 @@ public class BroadcastGroupConfiguration implements Serializable
    public void setConnectorInfos(final List<String> connectorInfos)
    {
       this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastEndpointConfiguration getBroadcastEndpoint()
+   {
+      return this.endpointConfig;
    }
 
 }

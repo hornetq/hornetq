@@ -1,21 +1,5 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
- */
-
 package org.hornetq.core.server.cluster.impl;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,6 +11,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
@@ -34,31 +19,13 @@ import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
-/**
- * A BroadcastGroupImpl
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 15 Nov 2008 09:45:32
- *
- */
-public class BroadcastGroupImpl implements BroadcastGroup, Runnable
+public class PluggableBroadcastGroup implements BroadcastGroup, Runnable
 {
-   private static final Logger log = Logger.getLogger(BroadcastGroupImpl.class);
+   private static final Logger log = Logger.getLogger(PluggableBroadcastGroup.class);
 
    private final String nodeID;
 
    private final String name;
-
-   private final InetAddress localAddress;
-
-   private final int localPort;
-
-   private final InetAddress groupAddress;
-
-   private final int groupPort;
-
-   private DatagramSocket socket;
 
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
@@ -75,36 +42,29 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private final String uniqueID;
 
    private NotificationService notificationService;
-
+   
    private long broadcastPeriod;
+
+   private BroadcastEndpoint endpoint;
 
    /**
     * Broadcast group is bound locally to the wildcard address
     */
-   public BroadcastGroupImpl(final String nodeID,
+   public PluggableBroadcastGroup(final String nodeID,
                              final String name,
-                             final InetAddress localAddress,
-                             final int localPort,
-                             final InetAddress groupAddress,
-                             final int groupPort,
                              final boolean active,
-                             final long broadcastPeriod) throws Exception
+                             final long broadcastPeriod,
+                             final BroadcastEndpoint endpoint) throws Exception
    {
       this.nodeID = nodeID;
 
       this.name = name;
 
-      this.localAddress = localAddress;
-
-      this.localPort = localPort;
-
-      this.groupAddress = groupAddress;
-
-      this.groupPort = groupPort;
-
       this.active = active;
-
+      
       this.broadcastPeriod = broadcastPeriod;
+      
+      this.endpoint = endpoint;
 
       uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
@@ -120,20 +80,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          return;
       }
-
-      if (localPort != -1)
-      {
-         socket = new DatagramSocket(localPort, localAddress);
-      }
-      else
-      {
-         if (localAddress != null)
-         {
-            log.warn("local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound " + 
-                     "to a local address/port");
-         }
-         socket = new DatagramSocket();
-      }
+      
+      endpoint.start(true);
 
       started = true;
 
@@ -157,8 +105,15 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          future.cancel(false);
       }
-
-      socket.close();
+      
+      try
+      {
+         endpoint.stop();
+      }
+      catch (Exception e1)
+      {
+         log.warn("Exception in stopping endpoint " + endpoint, e1);
+      }
 
       started = false;
 
@@ -173,7 +128,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          }
          catch (Exception e)
          {
-            BroadcastGroupImpl.log.warn("unable to send notification when broadcast group is stopped", e);
+            log.warn("Exception sending notification " + notification, e);
          }
       }
 
@@ -230,10 +185,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
 
       byte[] data = buff.toByteBuffer().array();
-
-      DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
-
-      socket.send(packet);
+      
+      endpoint.broadcast(data);
    }
 
    public void run()
@@ -253,12 +206,12 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          // only log the exception at ERROR level once, even if it fails multiple times in a row - HORNETQ-919
          if (!loggedBroadcastException)
          {
-            BroadcastGroupImpl.log.error("Failed to broadcast connector configs", e);
+            log.error("Failed to broadcast connector configs", e);
             loggedBroadcastException = true;
          }
          else
          {
-            BroadcastGroupImpl.log.debug("Failed to broadcast connector configs", e);
+            log.error("Failed to broadcast connector configs...again", e);
          }
       }
    }
