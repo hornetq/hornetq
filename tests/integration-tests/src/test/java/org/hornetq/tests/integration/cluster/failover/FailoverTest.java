@@ -667,6 +667,8 @@ public class FailoverTest extends FailoverTestBase
             Thread.sleep(100);
          }
          assertFalse("Backup should stop!", backupServer.isStarted());
+         // TODO: get rid of this, the activation has a race if we stop the server too soon
+         Thread.sleep(1000);
       }
       else
       {
