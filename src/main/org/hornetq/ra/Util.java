@@ -285,4 +285,25 @@ public class Util
          return null;
       }
    }
+
+   public static Map<String, Object> parseParameters(final String config)
+   {
+      HashMap<String, Object> result = new HashMap<String, Object>();
+   
+      String elements[] = config.split(";");
+   
+      for (String element : elements)
+      {
+         String expression[] = element.split("=");
+   
+         if (expression.length != 2)
+         {
+            throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
+         }
+
+         result.put(expression[0].trim(), expression[1].trim());
+      }
+   
+      return result;
+   }
 }

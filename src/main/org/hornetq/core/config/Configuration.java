@@ -908,4 +908,10 @@ public interface Configuration extends Serializable
     * Whether passwords are masked or not. True means the passwords are masked.
     */
    boolean isMaskPassword();
+
+   /**
+    * Returns the BroadcastEndpoints configured for this server.
+    */
+   Map<String, BroadcastEndpointConfiguration> getBroadcastEndpointConfigurations();
+
 }

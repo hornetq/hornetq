@@ -13,12 +13,9 @@
 
 package org.hornetq.core.server.cluster.impl;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,14 +26,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.cluster.BroadcastEndpoint;
+import org.hornetq.core.cluster.BroadcastEndpointFactory;
+import org.hornetq.core.cluster.UDPBroadcastEndpoint;
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -629,9 +629,11 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       ClusterConnectionImpl clusterConnection;
 
+      DiscoveryGroupConfiguration dg;
+
       if (config.getDiscoveryGroupName() != null)
       {
-         DiscoveryGroupConfiguration dg = configuration.getDiscoveryGroupConfigurations()
+         dg = configuration.getDiscoveryGroupConfigurations()
                                                        .get(config.getDiscoveryGroupName());
 
          if (dg == null)
@@ -763,46 +765,69 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          return;
       }
 
-      InetAddress localAddress = null;
-      if (config.getLocalBindAddress() != null)
-      {
-         localAddress = InetAddress.getByName(config.getLocalBindAddress());
-      }
-
-      InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
-
-      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
-                                                        config.getName(),
-                                                        localAddress,
-                                                        config.getLocalBindPort(),
-                                                        groupAddress,
-                                                        config.getGroupPort(),
-                                                        !backup);
-
-      for (String connectorInfo : config.getConnectorInfos())
-      {
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
-
-         if (connector == null)
-         {
-            logWarnNoConnector(config.getName(), connectorInfo);
-
-            return;
-         }
-
-         group.addConnector(connector);
-      }
-
-      ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
-                                                                           0L,
-                                                                           config.getBroadcastPeriod(),
-                                                                           MILLISECONDS);
-
-      group.setScheduledFuture(future);
-
-      broadcastGroups.put(config.getName(), group);
+      BroadcastGroup group = createBroadcastGroup(config);
 
       managementService.registerBroadcastGroup(group, config);
+   }
+
+   private BroadcastGroup createBroadcastGroup(BroadcastGroupConfiguration config) throws Exception
+   {
+       BroadcastGroup group = broadcastGroups.get(config.getName());
+
+       if (group == null)
+       {
+          BroadcastEndpointConfiguration endpointConfig = config.getBroadcastEndpoint();
+          
+          if (endpointConfig == null)
+          {
+             //old config
+             Map<String, Object> params = new HashMap<String, Object>();
+             params.put("group-address", config.getGroupAddress());
+             params.put("group-port", String.valueOf(config.getGroupPort()));
+             params.put("local-bind-port", String.valueOf(config.getLocalBindPort()));
+             
+             String lbAddress = config.getLocalBindAddress();
+
+             if (lbAddress != null)
+             {
+                params.put("local-bind-address", lbAddress);
+             }
+             
+             endpointConfig = new BroadcastEndpointConfiguration("hq_udp",
+                                                                 UDPBroadcastEndpoint.class.getName(),
+                                                                 params);         
+          }
+
+          BroadcastEndpoint endpoint = BroadcastEndpointFactory.createEndpoint(endpointConfig);
+          group = new PluggableBroadcastGroup(nodeUUID.toString(), config.getName(), !backup, 
+                                                 config.getBroadcastPeriod(), endpoint);
+          
+          for (String connectorInfo : config.getConnectorInfos())
+          {
+             TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
+
+             if (connector == null)
+             {
+                logWarnNoConnector(config.getName(), connectorInfo);
+
+                return null;
+             }
+
+             group.addConnector(connector);
+          }
+       }
+
+       if (group.size() == 0)
+       {
+          logWarnNoConnector(config.getConnectorInfos().toString(), group.getName());
+          return null;
+       }
+
+       group.schedule(scheduledExecutor);
+
+       broadcastGroups.put(config.getName(), group);
+       
+       return group;
    }
 
    private void logWarnNoConnector(final String connectorName, final String bgName)

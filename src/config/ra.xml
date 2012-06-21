@@ -52,6 +52,22 @@ Copyright 2009 Red Hat, Inc.
          <config-property-value>server-id=0</config-property-value>
       </config-property>
       <!--<config-property>
+         <description>
+            The Broadcast Endpoint classe. This must be fully qualified class name for the BroadcastEndpoint implementation.
+         </description>
+         <config-property-name>BroadcastEndpointClassName</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>org.hornetq.core.server.cluster.impl.UDPBroadcastEndpoint</config-property-value>
+      </config-property>
+      <config-property>
+         <description>The parameters used to initialize BroadcastEndpintClassName. 
+            These values must be in the form of key=val;key=val;,
+         </description>
+         <config-property-name>BroadcastEndpointParameters</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>group-address=231.7.7.7;group-port=9876</config-property-value>
+      </config-property>
+      <config-property>
         <description>Does we support HA</description>
         <config-property-name>HA</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>

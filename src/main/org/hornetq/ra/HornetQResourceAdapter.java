@@ -40,12 +40,14 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.ra.recovery.RecoveryManager;
 import org.hornetq.utils.SensitiveDataCodec;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * The resource adapter for HornetQ
@@ -1513,12 +1515,46 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
 
+      String endpointClass = overrideProperties.getBroadcastEndpointClassName() != null ? overrideProperties.getBroadcastEndpointClassName()
+                                                                                        : raProperties.getBroadcastEndpointClassName();
       if(ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (discoveryAddress != null)
+      if (endpointClass != null)
+      {
+         Map<String, Object> endpointParams = overrideProperties.getBroadcastEndpointParams() != null ? overrideProperties.getBroadcastEndpointParams()
+                                                                                   : raProperties.getBroadcastEndpointParams();
+         BroadcastEndpointConfiguration endpointConfig = new BroadcastEndpointConfiguration("hornetq-ra", endpointClass, endpointParams);
+
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
+
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(UUIDGenerator.getInstance().generateStringUUID(),
+                                                          refreshTimeout, initialTimeout, endpointConfig);
+         if (ha)
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+      }
+      else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
@@ -1929,6 +1965,23 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public SensitiveDataCodec<String> getPasswordCodec()
    {
       return this.raProperties.getCodecInstance();
+   }
+   
+   public void setBroadcastEndpointClassName(final String endpointClassName)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         log.trace("setBroadcastEndpointClassName(" + endpointClassName + ")");
+      }
+      raProperties.setBroadcastEndpointClassName(endpointClassName);      
+   }
+
+   public void setBroadcastEndpointParameters(final String endpointParams)
+   {
+      if (endpointParams != null)
+      {
+         raProperties.setBroadcastEndpointParams(Util.parseParameters(endpointParams));
+      }
    }
 
 }

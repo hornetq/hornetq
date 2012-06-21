@@ -1668,6 +1668,142 @@ public class MyNewDecoder implements SensitiveDataCodec&lt;String&gt;
              </section>
         </section>
     </section>
+
+        <section>
+           <title>Configuring Cluster Topology Discovery with Broadcasting Techniques Other Than UDP</title>
+           <para>HornetQ by default uses UDP broadcasting to establish the initial topology of a cluster. However,
+           UDP broadcasting is not always available in users' environment, in which case HornetQ has to use alternative
+           ways in order to successfully form a cluster.</para>
+           <para>HornetQ server supports 'pluggable' discovery configuration through which any broadcasting mechanism can
+           be used. If a user wants to use a specific broadcasting technique to replace HornetQ's default UDP, all he/she
+           needs to do is implement a simple interface (org.hornetq.core.cluster.BroadcastEndpoint) and add a few lines
+           in server configuration file.</para>
+
+           <section> 
+              <title>The BroadcastEndpoint Interface</title>
+              <para>The interface is defined as such:</para>
+              
+              <programlisting>
+public interface BroadcastEndpoint
+{
+   void init(Map&lt;String, Object&gt; params) throws Exception;
+
+   void start(boolean broadcasting) throws Exception;
+   
+   void stop() throws Exception;
+
+   void broadcast(byte[] data) throws Exception;
+
+   byte[] receiveBroadcast() throws Exception;
+}
+              </programlisting>
+              
+              <para>A BrocastEndpoint is simply a broadcasting utility. It can take in a byte array data and broadcast it
+              using whatever technique it supports. It should be able to receive it also using matching techniques. The
+              BroadcastEndpoint doesn't have to know any internals of HornetQ.</para>
+              
+              <section>
+                 <title>The <literal>init(Map&lt;String, Object&gt; params)</literal> method</title>
+                 <para>Before start working, HornetQ first initiates the class and then immediately calls this method. 
+                 The purpose of this method is to initialize the instance with the parameters passed in a Map object.
+                 All the parameters can be specified in the server configuration file.</para>
+              </section>
+
+              <section>
+                 <title>The <literal>start(boolean broadcasting)</literal> and <literal>stop()</literal> methods</title>
+                 <para>HornetQ calls <literal>start()</literal> method to tell the endpoint to start working. The parameter
+                 <literal>broadcasting</literal> indicates the intended working mode. If it is true, it is used for broadcasting
+                 data. If it is false, it is used for receiving data. Implementing class should make proper preparations 
+                 based on the value of parameter <literal>broadcasting</literal>.</para>
+                 <para>HornetQ calls <literal>stop()</literal> method to tell the endpoint to stop working. After this point,
+                 Neither broadcasting nor receiving of data will be used. The implementation class shall properly mark its state and
+                 clean up its resources.</para>
+              </section>
+
+              <section>
+                 <title>The <literal>broadcast(byte[] data)</literal> method</title>
+                 <para>This method is responsible for broadcasting the data passed in. HornetQ only calls this method when it uses
+                 this class in broadcasting working mode. It should throw an Exception in case of any internal error happens.</para>
+              </section>
+
+              <section>
+                 <title>The <literal>receiveBroadcast()</literal> method</title>
+                 <para>This method is responsible for receiving the broadcasted data. HornetQ only calls this method when it uses
+                 this class in receiving mode, i.e. by calling its <literal>start()</literal> with a <literal>true</literal>
+                 parameter.</para>
+                 <para>This method returns a byte array containing the received data. Note it must not return null in any case. 
+                 If no data arrived at the time of calling, this method must block until data arrives. It may throw an Exception
+                 if some internal error happens.</para>
+              </section>
+              
+              <section>
+                 <title>Lifecycle of a BroadcastEndpoint</title>
+                 <para>HornetQ manages a BroadcastEndpoint in the following order:</para>
+                 <para>1. Loading the endpoint class and instantiating it with its default constructor.</para>
+                 <para>2. Calling its init() method, passing in any parameters specified in the configuration file.</para>
+                 <para>3. Calling its start() method. If it is used in a broadcast group, passing in <literal>true</literal>.
+                 If it is used in a discovery group, passing in <literal>false</literal>.</para>
+                 <para>4. calling broadcast() and receiveBroadcast() accordingly for data broadcasting.</para>
+                 <para>5. When server is shut down, calling its stop() method to stop working.</para>
+              </section>
+
+           </section>
+           <section> 
+              <title>The Configuration</title>
+              <para>Once you have an implementation of BroadcastEndpoint interface, you need to add it to the configuration file
+              so that HornetQ knows how to load it instead of using its default UDP.</para>
+              <para>HornetQ provides a <literal>clustered-jgroups</literal> example that demonstrates how to implements a BroadcastEndpoint
+              that uses JGroups technique for broadcasting and how to configure it. Below is an extraction from its server configuration</para>
+
+              <programlisting>
+   &lt;broadcast-endpoints&gt;
+      &lt;broadcast-endpoint name="jgroups" class="org.hornetq.integration.discovery.jgroups.JGroupsBroadcastEndpoint"&gt;
+         &lt;param key="jgroups-configuration-file" value="test-jgroups.xml"/&gt;
+         &lt;param key="jgroups-channel-name" value="hornetq_broadcast_channel"/&gt;
+      &lt;/broadcast-endpoint&gt;
+   &lt;/broadcast-endpoints&gt;
+
+   &lt;broadcast-groups&gt;
+      &lt;broadcast-group name="my-broadcast-group" endpoint="jgroups"&gt;
+         &lt;broadcast-period&gt;5000&lt;/broadcast-period&gt;
+         &lt;connector-ref&gt;netty-connector&lt;/connector-ref&gt;
+      &lt;/broadcast-group&gt;
+   &lt;/broadcast-groups&gt;
+
+   &lt;discovery-groups&gt;
+      &lt;discovery-group name="my-discovery-group" endpoint="jgroups"&gt;
+         &lt;refresh-timeout&gt;10000&lt;/refresh-timeout&gt;
+      &lt;/discovery-group&gt;
+   &lt;/discovery-groups&gt;
+              </programlisting>
+              
+              <para>As shown in the above sample configuration, the first thing is that you need to define your
+              implementation inside the <literal>
+              broadcast-endpoints</literal> tag. There can be multiple implementations defined, each being represented as
+              a <literal>broadcast-endpoint</literal> element. The element has two attributes. The <literal>name</literal>
+              attribute is used to uniquely identify the implementation, by which it can be referenced in 
+              <literal>broadcast-groups</literal> and <literal>discovery-groups</literal>. The <literal>class</literal>
+              attribute gives the fully qualified name of the implementation class. Each <literal>broadcast-endpoint</literal>
+              also can contains any number of nested <literal>param</literal> elements, i.e. key-value pairs that can be 
+              used to initialize the endpoint. During initialization time HornetQ will pass those parameters to the endpoint by
+              calling its <literal>init()</literal> method. Here in the sample we defined two parameters. The 
+              <literal>jgroups-configuration-file</literal> gives the jgroups configuration file used to initialize JGroups
+              runtime. The <literal>jgroups-channel-name</literal> is the name of the channel the endpoint uses to form a group
+              to broadcasting/receiving data.</para>
+              
+              <para>After the "jgroups" BroadcastEndpoint is defined, we can use it in the broadcast groups and discovery groups.
+              This is done by using the <literal>endpoint</literal> attribute of <literal>broadcast-group</literal> and
+              <literal>discovery-group</literal> elements. The value of this attribute should be the name of the endpoint, in
+              this case <literal>"jgroups"</literal>.</para>
+           </section>
+           <section>
+              <title>Deploy the broadcast endpoint class</title>
+              <para>When you have your BroadcastEndpoint implemented and configured, the last thing before starting your server is
+              to deploy your endpoint class to a proper location so that the server can load it. For example if you are using
+              a standalone HornetQ, the best place could be the <literal>lib</literal> directory.</para>
+           </section>
+
+        </section> 
   </section>
 
 </chapter>

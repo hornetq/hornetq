@@ -102,6 +102,10 @@ public class ConnectionFactoryProperties
 
    private Integer threadPoolMaxSize;
 
+   private String broadcastEndpointClassName;
+
+   private Map<String, Object> broadcastEndpointParams;
+
    /**
     * @return the transportType
     */
@@ -679,5 +683,27 @@ public class ConnectionFactoryProperties
    public boolean isHasBeenUpdated()
    {
       return hasBeenUpdated;
+   }
+
+   public void setBroadcastEndpointClassName(String broadcastEndpointClassName)
+   {
+      this.broadcastEndpointClassName = broadcastEndpointClassName;
+      hasBeenUpdated = true;
+   }
+   
+   public String getBroadcastEndpointClassName()
+   {
+      return broadcastEndpointClassName;
+   }
+
+   public void setBroadcastEndpointParams(Map<String, Object> params)
+   {
+      this.broadcastEndpointParams = params;
+      hasBeenUpdated = true;
+   }
+   
+   public Map<String, Object> getBroadcastEndpointParams()
+   {
+      return broadcastEndpointParams;
    }
 }
