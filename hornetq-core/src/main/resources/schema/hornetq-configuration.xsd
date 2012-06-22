@@ -81,13 +81,6 @@
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="acceptors">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element maxOccurs="unbounded" minOccurs="1" name="acceptor" type="acceptorType"/>
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="failback-connectors">
 					<xsd:complexType>
 						<xsd:sequence>
