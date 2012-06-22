@@ -81,31 +81,10 @@
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="acceptors">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element maxOccurs="unbounded" minOccurs="1" name="acceptor" type="acceptorType"/>
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="failback-connectors">
 					<xsd:complexType>
 						<xsd:sequence>
 							<xsd:element maxOccurs="unbounded" minOccurs="0" name="failback-connector" type="failBackConnectorType"/>
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="broadcast-groups">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element maxOccurs="unbounded" minOccurs="0" ref="broadcast-group"/>
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="discovery-groups">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element maxOccurs="unbounded" minOccurs="0" ref="discovery-group"/>
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
@@ -128,16 +107,6 @@
 					<xsd:complexType>
 						<xsd:sequence>
 							<xsd:element maxOccurs="unbounded" minOccurs="0" name="cluster-connection" type="clusterConnectionType"/>
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType"/>
-				<xsd:element maxOccurs="1" minOccurs="0" name="paging-directory" type="xsd:string"/>
-				<xsd:element maxOccurs="1" minOccurs="0" name="queues"/>
-				<xsd:element maxOccurs="1" minOccurs="0" name="bridges">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element maxOccurs="unbounded" minOccurs="0" name="bridge" type="bridgeType"/>
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
