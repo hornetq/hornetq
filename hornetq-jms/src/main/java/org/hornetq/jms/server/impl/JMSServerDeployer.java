@@ -67,7 +67,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * the names of the elements to deploy
-    * 
+    *
     * @return the names of the elements todeploy
     */
    @Override
@@ -86,9 +86,8 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * deploy an element
-    * 
     * @param node the element to deploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public void deploy(final Node node) throws Exception
@@ -97,10 +96,10 @@ public class JMSServerDeployer extends XmlDeployer
    }
 
    /**
-    * creates the object to bind, this will either be a JBossConnectionFActory, HornetQQueue or HornetQTopic
-    * 
+    * Creates the object to bind, this will either be a JBossConnectionFActory, HornetQQueue or
+    * HornetQTopic.
     * @param node the config
-    * @throws Exception .
+    * @throws Exception
     */
    private void createAndBindObject(final Node node) throws Exception
    {
@@ -119,10 +118,9 @@ public class JMSServerDeployer extends XmlDeployer
    }
 
    /**
-    * undeploys an element
-    * 
+    * Undeploys an element.
     * @param node the element to undeploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public void undeploy(final Node node) throws Exception
@@ -150,9 +148,9 @@ public class JMSServerDeployer extends XmlDeployer
       return new String[] { "hornetq-jms.xml" };
    }
 
-   
-   
-   
+
+
+
    /**
     * @param node
     * @throws Exception
@@ -179,9 +177,9 @@ public class JMSServerDeployer extends XmlDeployer
     */
    private void deployConnectionFactory(final Node node) throws Exception
    {
-      ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);     
+      ConnectionFactoryConfiguration cfConfig = parser.parseConnectionFactoryConfiguration(node);
       jmsServerManager.createConnectionFactory(false, cfConfig, cfConfig.getBindings());
    }
 
-   
+
 }
