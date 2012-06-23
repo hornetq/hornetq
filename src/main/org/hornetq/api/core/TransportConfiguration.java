@@ -203,7 +203,7 @@ public class TransportConfiguration implements Serializable
          return false;
       }
    }
-   
+
    /**
     * There's a case on ClusterConnections that we need to find an equivalent Connector
     * and we can't use a Netty Cluster Connection on an InVM ClusterConnection (inVM used on tests)
