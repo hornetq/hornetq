@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.server.impl;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,6 +47,8 @@ import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.registry.JndiBindingRegistry;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
@@ -1318,6 +1322,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             {
                throw HornetQJMSBundle.BUNDLE.noConnectorNameConfiguredOnCF(name);
             }
+            correctInvalidNettyConnectorHost(connector);
             configs[count++] = connector;
          }
 
@@ -1807,6 +1812,27 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       public abstract void runException() throws Exception;
+   }
+
+   private void correctInvalidNettyConnectorHost(TransportConfiguration transportConfiguration)
+   {
+      Map<String, Object> params = transportConfiguration.getParams();
+
+      if (transportConfiguration.getFactoryClassName().equals(NettyConnectorFactory.class.getCanonicalName()) &&
+            params.containsKey(TransportConstants.HOST_PROP_NAME) &&
+            params.get(TransportConstants.HOST_PROP_NAME).equals("0.0.0.0"))
+      {
+         try
+         {
+            String newHost = InetAddress.getLocalHost().getHostName();
+            HornetQJMSLogger.LOGGER.invalidHostForConnector(transportConfiguration.getName(), newHost);
+            params.put(TransportConstants.HOST_PROP_NAME, newHost);
+         }
+         catch (UnknownHostException e)
+         {
+            HornetQJMSLogger.LOGGER.failedToCorrectHost(e, transportConfiguration.getName());
+         }
+      }
    }
 
 }

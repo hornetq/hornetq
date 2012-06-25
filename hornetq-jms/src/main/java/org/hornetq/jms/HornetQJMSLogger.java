@@ -80,6 +80,12 @@ public interface HornetQJMSLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void serverCachingCommand(Object runnable);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 121006, value = "Invalid \"host\" value \"0.0.0.0\" detected for \"{0}\" connector. Switching to \"{1}\"." +
+         " If this new address is incorrect please manually configure the connector to use the proper one." ,
+         format = Message.Format.MESSAGE_FORMAT)
+   void invalidHostForConnector(String name, String newHost);
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122001, value = "Attempt to start JMS Bridge, but is already started" , format = Message.Format.MESSAGE_FORMAT)
    void errorBridgeAlreadyStarted();
@@ -158,6 +164,11 @@ public interface HornetQJMSLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122019, value = "Error in XA Recovery" , format = Message.Format.MESSAGE_FORMAT)
    void xaRecoveryError(@Cause Exception e);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 122020, value = "Tried to correct invalid \"host\" value \"0.0.0.0\" for \"{0}\" connector, but received an exception.",
+         format = Message.Format.MESSAGE_FORMAT)
+   void failedToCorrectHost(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124001, value = "key attribute missing for JMS configuration {0}" , format = Message.Format.MESSAGE_FORMAT)
