@@ -514,12 +514,12 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-site-plugin</artifactId>
-               <version>3.0</version>
+               <version>3.1</version>
             </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-shade-plugin</artifactId>
-               <version>1.6</version>
+               <version>1.7</version>
             </plugin>
             <plugin>
                <groupId>org.mortbay.jetty</groupId>
@@ -601,7 +601,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.3.2</version>
+            <version>2.5.1</version>
             <configuration>
                <showWarnings>true</showWarnings>
                <source>1.6</source>
@@ -639,7 +639,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.4.0</version>
+            <version>2.5</version>
             <configuration>
               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
               <findbugsXmlOutput>true</findbugsXmlOutput>
