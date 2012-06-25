@@ -107,9 +107,9 @@ public final class FileConfigurationParser
    private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
 
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
-   
+
    private static final String REDELIVERY_DELAY_MULTIPLIER_NODE_NAME = "redelivery-delay-multiplier";
-   
+
    private static final String MAX_REDELIVERY_DELAY_NODE_NAME = "max-redelivery-delay";
 
    private static final String MAX_DELIVERY_ATTEMPTS = "max-delivery-attempts";
@@ -277,10 +277,10 @@ public final class FileConfigurationParser
                                                                                               config.getManagementNotificationAddress()
                                                                                                     .toString(),
                                                                                               Validators.NOT_NULL_OR_EMPTY)));
-            
+
       config.setMaskPassword(XMLConfigurationUtil.getBoolean(e, "mask-password", false));
 
-      config.setPasswordCodec(XMLConfigurationUtil.getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(), 
+      config.setPasswordCodec(XMLConfigurationUtil.getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(),
                                                                    Validators.NOT_NULL_OR_EMPTY));
 
       // parsing cluster password
@@ -690,7 +690,7 @@ public final class FileConfigurationParser
     * @param node
     * @return
     */
-   public Pair<String, Set<Role>> parseSecurityRoles(final Node node)
+   protected Pair<String, Set<Role>> parseSecurityRoles(final Node node)
    {
       String match = node.getAttributes().getNamedItem("match").getNodeValue();
 
@@ -784,7 +784,7 @@ public final class FileConfigurationParser
     * @param node
     * @return
     */
-   public Pair<String, AddressSettings> parseAddressSettings(final Node node)
+   protected Pair<String, AddressSettings> parseAddressSettings(final Node node)
    {
       String match = node.getAttributes().getNamedItem("match").getNodeValue();
 
@@ -876,7 +876,7 @@ public final class FileConfigurationParser
       return setting;
    }
 
-   public CoreQueueConfiguration parseQueueConfiguration(final Node node)
+   protected CoreQueueConfiguration parseQueueConfiguration(final Node node)
    {
       String name = node.getAttributes().getNamedItem("name").getNodeValue();
       String address = null;
@@ -905,12 +905,6 @@ public final class FileConfigurationParser
 
       return new CoreQueueConfiguration(address, name, filterString, durable);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private TransportConfiguration parseTransportConfiguration(final Element e, final Configuration mainConfig)
    {
