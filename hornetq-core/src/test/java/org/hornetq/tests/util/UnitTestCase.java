@@ -987,27 +987,15 @@ public abstract class UnitTestCase extends TestCase
 
       closeAllOtherComponents();
 
-      List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables =
-               new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
-      ArrayList<Exception> exceptions = new ArrayList<Exception>();
-      try
-      {
-         if (!closeRunnables.isEmpty())
+         ArrayList<Exception> exceptions;
+         try
          {
-         for (ClientSessionFactoryImpl.CloseRunnable closeRunnable : closeRunnables)
-         {
-               if (closeRunnable != null)
-               {
-                  exceptions.add(closeRunnable.stop().e);
-               }
-            }
+            exceptions = checkCsfStopped();
          }
-      }
-      finally
-      {
-         cleanupPools();
-      }
-
+         finally
+         {
+            cleanupPools();
+         }
       //clean up pools before failing
       if(!exceptions.isEmpty())
       {
@@ -1092,6 +1080,40 @@ public abstract class UnitTestCase extends TestCase
       clearData();
       super.tearDown();
    }
+   }
+
+   private ArrayList<Exception> checkCsfStopped()
+   {
+      long time = System.currentTimeMillis();
+      long waitUntil = time + 5000;
+      while(!ClientSessionFactoryImpl.CLOSE_RUNNABLES.isEmpty() && time < waitUntil)
+      {
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+         time = System.currentTimeMillis();
+      }
+      List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables =
+               new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
+      ArrayList<Exception> exceptions = new ArrayList<Exception>();
+
+      if (!closeRunnables.isEmpty())
+      {
+         for (ClientSessionFactoryImpl.CloseRunnable closeRunnable : closeRunnables)
+         {
+            if (closeRunnable != null)
+            {
+               exceptions.add(closeRunnable.stop().e);
+            }
+         }
+      }
+
+      return exceptions;
    }
 
    private void assertAllClientProducersAreClosed()
