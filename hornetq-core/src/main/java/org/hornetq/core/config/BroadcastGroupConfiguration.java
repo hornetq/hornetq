@@ -16,7 +16,6 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
-
 /**
  * A BroadcastGroupConfiguration
  *
@@ -30,6 +29,8 @@ public class BroadcastGroupConfiguration implements Serializable
    private static final long serialVersionUID = 1052413739064253955L;
 
    private String name;
+
+   private BroadcastEndpointConfiguration endpointConfig;
 
    private String localBindAddress;
 
@@ -59,6 +60,15 @@ public class BroadcastGroupConfiguration implements Serializable
       this.groupPort = groupPort;
       this.broadcastPeriod = broadcastPeriod;
       this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastGroupConfiguration(String name, long broadcastPeriod, List<String> connectorNames,
+                                      BroadcastEndpointConfiguration endpointConfig)
+   {
+      this.name = name;
+      this.broadcastPeriod = broadcastPeriod;
+      this.connectorInfos = connectorNames;
+      this.endpointConfig = endpointConfig;
    }
 
    public String getName()
@@ -150,6 +160,11 @@ public class BroadcastGroupConfiguration implements Serializable
    public void setConnectorInfos(final List<String> connectorInfos)
    {
       this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastEndpointConfiguration getBroadcastEndpoint()
+   {
+      return this.endpointConfig;
    }
 
 }

@@ -1,26 +1,5 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
- */
+package org.hornetq.core.cluster;
 
-package org.hornetq.core.cluster.impl;
-
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.DatagramPacket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,29 +12,14 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.cluster.DiscoveryEntry;
-import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.TypedProperties;
 
-/**
- * A DiscoveryGroupImpl
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 17 Nov 2008 13:21:45
- *
- */
-public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
+public class PluggableDiscoveryGroup implements DiscoveryGroup, Runnable
 {
    private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
-
-   private static final int SOCKET_TIMEOUT = 500;
-
-   private MulticastSocket socket;
 
    private final List<DiscoveryListener> listeners = new ArrayList<DiscoveryListener>();
 
@@ -75,33 +39,21 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final String nodeID;
 
-   private final InetAddress localBindAddress;
-
-   private final InetAddress groupAddress;
-
-   private final int groupPort;
-
    private final Map<String, String> uniqueIDMap = new HashMap<String, String>();
 
+   private final BroadcastEndpoint endpoint;
+   
    private final NotificationService notificationService;
 
-   public DiscoveryGroupImpl(final String nodeID, final String name, final InetAddress localBindAddress,
-                             final InetAddress groupAddress, final int groupPort, final long timeout,
-                             NotificationService notificationService) throws Exception
+   public PluggableDiscoveryGroup(final String nodeID, final String name, final long timeout,
+                                  BroadcastEndpoint endpoint,
+                                  NotificationService service) throws Exception
    {
       this.nodeID = nodeID;
       this.name = name;
       this.timeout = timeout;
-      this.localBindAddress = localBindAddress;
-      this.groupAddress = groupAddress;
-      this.groupPort = groupPort;
-      this.notificationService = notificationService;
-   }
-
-   public DiscoveryGroupImpl(final String nodeID, final String name, final InetAddress localBindAddress,
-                             final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
-   {
-      this(nodeID, name, localBindAddress, groupAddress, groupPort, timeout, null);
+      this.endpoint = endpoint;
+      this.notificationService = service;
    }
 
    public synchronized void start() throws Exception
@@ -110,41 +62,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {
          return;
       }
-
-      try
-      {
-
-         // HORNETQ-874
-         if (checkForLinux() || checkForSolaris() || checkForHp())
-         {
-            try {
-               socket = new MulticastSocket(new InetSocketAddress(groupAddress, groupPort));
-            } catch (IOException e) {
-               HornetQLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
-
-               socket = new MulticastSocket(groupPort);
-            }
-         }
-         else
-         {
-            socket = new MulticastSocket(groupPort);
-         }
-
-         if (localBindAddress != null)
-         {
-            socket.setInterface(localBindAddress);
-         }
-
-         socket.joinGroup(groupAddress);
-
-         socket.setSoTimeout(DiscoveryGroupImpl.SOCKET_TIMEOUT);
-      }
-      catch (IOException e)
-      {
-         HornetQLogger.LOGGER.failedToStartDiscovery(e);
-
-         return;
-      }
+      
+      endpoint.start(false);
 
       started = true;
 
@@ -182,16 +101,14 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {
          waitLock.notifyAll();
       }
-
+      
       try
       {
-         socket.close();
-
-         socket = null;
+         endpoint.stop();
       }
-      catch (Throwable ignored)
+      catch (Exception e1)
       {
-         HornetQLogger.LOGGER.failedToStopDiscovery(ignored);
+         HornetQLogger.LOGGER.warn("Exception stopping endpoint: " + endpoint, e1);
       }
 
       try
@@ -306,8 +223,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    {
       try
       {
-         // TODO - can we use a smaller buffer size?
-         final byte[] data = new byte[65535];
+         byte[] data = null;
 
          while (true)
          {
@@ -316,13 +232,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                return;
             }
 
-            final DatagramPacket packet = new DatagramPacket(data, data.length);
-
             try
             {
-               socket.receive(packet);
+               data = endpoint.receiveBroadcast();
             }
-            catch (SocketException e)
+            catch (Exception e)
             {
                if (!started)
                {
@@ -333,18 +247,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   HornetQLogger.LOGGER.errorReceivingPAcketInDiscovery(e);
                }
             }
-            catch (InterruptedIOException e)
-            {
-               if (!started)
-               {
-                  return;
-               }
-               else
-               {
-                  continue;
-               }
-            }
-            
+
             HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(data);
 
             String originatingNodeID = buffer.readString();
@@ -473,27 +376,4 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       return changed;
    }
-
-   private static boolean checkForLinux() {
-      return checkForPresence("os.name", "linux");
-   }
-
-   private static boolean checkForHp() {
-      return checkForPresence("os.name", "hp");
-   }
-
-   private static boolean checkForSolaris() {
-      return checkForPresence("os.name", "sun");
-   }
-
-   private static boolean checkForPresence(String key, String value) {
-      try {
-         String tmp=System.getProperty(key);
-         return tmp != null && tmp.trim().toLowerCase().startsWith(value);
-      }
-      catch(Throwable t) {
-         return false;
-      }
-   }
-
 }

@@ -29,6 +29,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -158,7 +159,6 @@ public final class FileConfigurationParser
 
    public Configuration parseMainConfig(final InputStream input) throws Exception
    {
-
       Reader reader = new InputStreamReader(input);
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
@@ -380,6 +380,14 @@ public final class FileConfigurationParser
          Element connectorNode = (Element)connectorNodes.item(i);
          TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode, config);
          config.getFailBackConnectors().add(connectorConfig);
+      }
+
+      NodeList bcNodes = e.getElementsByTagName("broadcast-endpoint");
+      
+      for (int i = 0; i < bcNodes.getLength(); i++)
+      {
+         Element bcNode = (Element)bcNodes.item(i);
+         parseBroadcastEndpointConfiguration(bcNode, config);
       }
 
       NodeList bgNodes = e.getElementsByTagName("broadcast-group");
@@ -624,6 +632,49 @@ public final class FileConfigurationParser
       }
 
       config.setConnectorServiceConfigurations(configs);
+   }
+
+   private void parseBroadcastEndpointConfiguration(Element bcNode, Configuration mainConfig)
+   {
+      String name = bcNode.getAttribute("name");
+
+      if (mainConfig.getBroadcastEndpointConfigurations().containsKey(name))
+      {
+         return;
+      }
+
+      String clazz = bcNode.getAttribute("class");
+      
+      BroadcastEndpointConfiguration config = null;
+      
+      if (clazz == null || "".equals(clazz.trim()))
+      {
+         HornetQLogger.LOGGER.warn("No class defined for broadcast endpoint: " + clazz);
+         return;
+      }
+
+      Map<String, Object> params = new HashMap<String, Object>();
+
+      NodeList paramsNodes = bcNode.getElementsByTagName("param");
+
+      for (int i = 0; i < paramsNodes.getLength(); i++)
+      {
+         Node paramNode = paramsNodes.item(i);
+
+         NamedNodeMap attributes = paramNode.getAttributes();
+
+         Node nkey = attributes.getNamedItem("key");
+
+         String key = nkey.getTextContent();
+
+         Node nValue = attributes.getNamedItem("value");
+
+         params.put(key, nValue.getTextContent());
+      }
+
+      config = new BroadcastEndpointConfiguration(name, clazz, params);
+
+      mainConfig.getBroadcastEndpointConfigurations().put(name, config);
    }
 
    /**
@@ -950,22 +1001,13 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
-
-      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
-
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
-
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
-
-      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
-                                                          "broadcast-period",
-                                                          ConfigurationImpl.DEFAULT_BROADCAST_PERIOD,
-                                                          Validators.GT_ZERO);
-
-      NodeList children = e.getChildNodes();
+      String endpoint = e.getAttribute("endpoint");
+      
+      BroadcastGroupConfiguration config = null;
 
       List<String> connectorNames = new ArrayList<String>();
+
+      NodeList children = e.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
       {
@@ -982,13 +1024,40 @@ public final class FileConfigurationParser
          }
       }
 
-      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name,
-                                                                           localAddress,
-                                                                           localBindPort,
-                                                                           groupAddress,
-                                                                           groupPort,
-                                                                           broadcastPeriod,
-                                                                           connectorNames);
+      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
+                                                          "broadcast-period",
+                                                          ConfigurationImpl.DEFAULT_BROADCAST_PERIOD,
+                                                          Validators.GT_ZERO);
+
+      if (endpoint == null || "".equals(endpoint.trim()))
+      {
+          //old configuration
+          String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+
+          int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+
+          String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
+
+          int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
+
+          config = new BroadcastGroupConfiguration(name,
+                                                   localAddress,
+                                                   localBindPort,
+                                                   groupAddress,
+                                                   groupPort,
+                                                   broadcastPeriod,
+                                                   connectorNames);
+      }
+      else
+      {
+         BroadcastEndpointConfiguration endpointConfig = mainConfig.getBroadcastEndpointConfigurations().get(endpoint);
+         if (endpointConfig == null)
+         {
+            HornetQLogger.LOGGER.warn("No such broadcast endpoint: " + endpoint);
+            return;
+         }
+         config = new BroadcastGroupConfiguration(name, broadcastPeriod, connectorNames, endpointConfig);
+      }
 
       mainConfig.getBroadcastGroupConfigurations().add(config);
    }
@@ -997,11 +1066,9 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
-
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
-
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      String endpoint = e.getAttribute("endpoint");
+      
+      DiscoveryGroupConfiguration config = null;
 
       long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
                                                                       "initial-wait-timeout",
@@ -1013,12 +1080,32 @@ public final class FileConfigurationParser
                                                          ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
                                                          Validators.GT_ZERO);
 
-      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
-                                                                           localBindAddress,
-                                                                           groupAddress,
-                                                                           groupPort,
-                                                                           refreshTimeout,
-                                                                           discoveryInitialWaitTimeout);
+      if (endpoint == null || "".equals(endpoint.trim()))
+      {
+          //old config
+          String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+
+          String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
+
+          int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+
+          config = new DiscoveryGroupConfiguration(name,
+                                                   localBindAddress,
+                                                   groupAddress,
+                                                   groupPort,
+                                                   refreshTimeout,
+                                                   discoveryInitialWaitTimeout);
+      }
+      else
+      {
+         BroadcastEndpointConfiguration endpointConfig = mainConfig.getBroadcastEndpointConfigurations().get(endpoint);
+         if (endpointConfig == null)
+         {
+            HornetQLogger.LOGGER.warn("No such broadcast endpoint: " + endpoint);
+            return;
+         }
+         config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, endpointConfig);
+      }
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {

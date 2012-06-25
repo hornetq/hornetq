@@ -305,5 +305,4 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       return codecInstance;
    }
-
 }

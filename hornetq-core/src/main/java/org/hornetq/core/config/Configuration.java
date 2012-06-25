@@ -914,4 +914,9 @@ public interface Configuration extends Serializable
     */
    boolean isMaskPassword();
 
+   /**
+    * Returns the BroadcastEndpoints configured for this server.
+    */
+   Map<String, BroadcastEndpointConfiguration> getBroadcastEndpointConfigurations();
+
 }
