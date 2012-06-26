@@ -2337,13 +2337,10 @@ public class HornetQServerImpl implements HornetQServer
                   return true;
                // Error! NodeId not found but fail-back servers running: cancel start-up.
                stopTheServer();
-               throw new HornetQException("Fail-back servers found but node is different");
+               throw new HornetQException("Fail-back servers found but node is different ('local nodeId'=" + nodeId0 +
+                        ")");
             }
             return !topology.isEmpty();
-         }
-         catch (HornetQException error)
-         {
-            return false;
          }
          finally
          {
