@@ -987,6 +987,20 @@ public abstract class UnitTestCase extends TestCase
 
       closeAllOtherComponents();
 
+      /*
+       * reason for waiting: CLOSE_RUNNABLES is added and removed by a separate thread.
+       * so when we in teardown() examine its members, some of them may still be in the process
+       * of being removed. So before copying the set, if we see the set is not empty, we don't
+       * know whether its members are in the process of being removed, or they will 
+       * be permanent remained in the set due to some potential bug. Therefore we give a slight time delay to 
+       * allow more chance for the set to be cleared. 
+       */
+      if (!ClientSessionFactoryImpl.CLOSE_RUNNABLES.isEmpty())
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+
       List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables =
                new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
       ArrayList<Exception> exceptions = new ArrayList<Exception>();
