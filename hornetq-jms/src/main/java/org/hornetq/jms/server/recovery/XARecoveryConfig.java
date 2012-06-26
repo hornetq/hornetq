@@ -21,9 +21,9 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 
 /**
- * 
+ *
  * This represents the configuration of a single connection factory.
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Clebert Suconic
  *
@@ -33,7 +33,7 @@ import org.hornetq.api.core.client.ServerLocator;
  */
 public class XARecoveryConfig
 {
-   
+
    private final boolean ha;
    private final TransportConfiguration[] transportConfiguration;
    private final DiscoveryGroupConfiguration discoveryConfiguration;
@@ -57,7 +57,7 @@ public class XARecoveryConfig
       this.password = password;
       this.ha = ha;
    }
-   
+
    public boolean isHA()
    {
       return ha;
@@ -67,7 +67,7 @@ public class XARecoveryConfig
    {
       return discoveryConfiguration;
    }
-   
+
    public TransportConfiguration[] getTransportConfig()
    {
       return transportConfiguration;
@@ -82,11 +82,11 @@ public class XARecoveryConfig
    {
       return password;
    }
-   
-   
+
+
    /**
     * Create a serverLocator using the configuration
-    * @return
+    * @return locator
     */
    public ServerLocator createServerLocator()
    {
@@ -100,10 +100,7 @@ public class XARecoveryConfig
       }
 
    }
-   
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
+
    @Override
    public int hashCode()
    {
@@ -114,7 +111,7 @@ public class XARecoveryConfig
       return result;
    }
 
-   /* 
+   /*
     * We don't use username and password on purpose.
     * Just having the connector is enough, as we don't want to duplicate resources just because of usernames
     */

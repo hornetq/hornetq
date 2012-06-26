@@ -3040,8 +3040,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
+    * Returns Map with a {@link JournalFile} for all existing files.
+    * <p>
+    * These are the files needed to be sent to a backup in order to synchronize it.
     * @param fileIds
-    * @return
+    * @return map with the IDs and corresponding {@link JournalFile}s
     * @throws Exception
     */
    @Override

@@ -617,8 +617,8 @@ public class BridgeReconnectTest extends BridgeTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage r1 = cons1.receive(30000);
-            Assert.assertNotNull(r1);
-            Assert.assertEquals(i, r1.getObjectProperty(propKey));
+            Assert.assertNotNull("received expected msg", r1);
+            Assert.assertEquals("property value matches", i, r1.getObjectProperty(propKey));
             BridgeReconnectTest.log.info("got message " + r1.getObjectProperty(propKey));
          }
 

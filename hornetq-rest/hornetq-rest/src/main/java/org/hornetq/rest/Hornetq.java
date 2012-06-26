@@ -76,10 +76,9 @@ public class Hornetq
 
    /**
     * Get an HTTP header value from a JMS Message
-    *
     * @param message
     * @param name
-    * @return
+    * @return the HTTP header String
     */
    public static String getHttpHeader(ClientMessage message, String name)
    {
