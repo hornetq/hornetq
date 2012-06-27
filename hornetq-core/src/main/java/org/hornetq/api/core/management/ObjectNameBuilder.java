@@ -24,7 +24,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ObjectNameBuilder
+public final class ObjectNameBuilder
 {
 
    // Constants -----------------------------------------------------
@@ -66,7 +66,7 @@ public class ObjectNameBuilder
    // Public --------------------------------------------------------
 
    /**
-    * Returns the ObjectName used by the single HornetQServerControl.
+    * Returns the ObjectName used by the single {@link HornetQServerControl}.
     */
    public ObjectName getHornetQServerObjectName() throws Exception
    {
@@ -160,8 +160,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by JMSServerControl.
-    *
-    * @see JMSServerControl
+    * @see org.hornetq.api.jms.management.JMSServerControl
     */
    public ObjectName getJMSServerObjectName() throws Exception
    {
@@ -170,8 +169,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by JMSQueueControl.
-    *
-    * @see JMSQueueControl
+    * @see org.hornetq.api.jms.management.JMSQueueControl
     */
    public ObjectName getJMSQueueObjectName(final String name) throws Exception
    {
@@ -190,19 +188,12 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by ConnectionFactoryControl.
-    *
-    * @see ConnectionFactoryControl
+    * @see org.hornetq.api.jms.management.ConnectionFactoryControl
     */
    public ObjectName getConnectionFactoryObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.JMS_MODULE, "ConnectionFactory", name);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private ObjectName createObjectName(final String module, final String type, final String name) throws Exception
    {
@@ -212,7 +203,4 @@ public class ObjectNameBuilder
                                                   type,
                                                   ObjectName.quote(name)));
    }
-
-   // Inner classes -------------------------------------------------
-
 }

@@ -15,6 +15,7 @@ package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
@@ -45,27 +46,32 @@ public interface ServerLocator
    void disableFinalizeCheck();
 
    /**
-    * Create a ClientSessionFactory using whatever load balancing policy is in force
+    * Creates a ClientSessionFactory using whatever load balancing policy is in force
     * @return The ClientSessionFactory
     * @throws Exception
     */
    ClientSessionFactory createSessionFactory() throws Exception;
 
    /**
-    * Create a ClientSessionFactory to a specific server. The server must already be known about by this ServerLocator.
-    * This method allows the user to make a connection to a specific server bypassing any load balancing policy in force
-    * @param transportConfiguration
-    * @return The ClientSesionFactory or null if the node is not present on the topology
-    * @throws Exception if a failure happened in creating the ClientSessionFactory or the ServerLocator does not know about the passed in transportConfiguration
+    * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
+    * about by this ServerLocator. This method allows the user to make a connection to a specific
+    * server bypassing any load balancing policy in force
+    * @param nodeID
+    * @return a ClientSessionFactory instance or {@code null} if the node is not present on the
+    *         topology
+    * @throws Exception if a failure happened in creating the ClientSessionFactory or the
+    *            ServerLocator does not know about the passed in transportConfiguration
     */
    ClientSessionFactory createSessionFactory(final String nodeID) throws Exception;
 
-  /**
-    * Create a ClientSessionFactory to a specific server. The server must already be known about by this ServerLocator.
-    * This method allows the user to make a connection to a specific server bypassing any load balancing policy in force
+   /**
+    * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
+    * about by this ServerLocator. This method allows the user to make a connection to a specific
+    * server bypassing any load balancing policy in force
     * @param transportConfiguration
-    * @return The ClientSesionFactory
-    * @throws Exception if a failure happened in creating the ClientSessionFactory or the ServerLocator does not know about the passed in transportConfiguration
+    * @return a {@link ClientSessionFactory} instance
+    * @throws Exception if a failure happened in creating the ClientSessionFactory or the
+    *            ServerLocator does not know about the passed in transportConfiguration
     */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception;
 
@@ -129,8 +135,8 @@ public interface ServerLocator
     * Returns the blocking calls timeout.
     * <p>
     * If client's blocking calls to the server take more than this timeout, the call will throw a
-    * {@link HornetQException} with the code {@link HornetQException#CONNECTION_TIMEDOUT}. Value is
-    * in milliseconds, default value is {@link HornetQClient#DEFAULT_CALL_TIMEOUT}.
+    * {@link HornetQException} with the code {@link HornetQExceptionType#CONNECTION_TIMEDOUT}. Value
+    * is in milliseconds, default value is {@link HornetQClient#DEFAULT_CALL_TIMEOUT}.
     * @return the blocking calls timeout
     */
    long getCallTimeout();
@@ -155,11 +161,12 @@ public interface ServerLocator
    long getCallFailoverTimeout();
 
    /**
-    * Sets the blocking call failover timeout. when the client is awaiting failover,
-    * this is over and above the normal call timeout.
+    * Sets the blocking call failover timeout.
+    * <p>
+    * When the client is awaiting failover, this is over and above the normal call timeout.
     * <p>
     * Value must be greater or equals to -1, -1 means forever
-    * @param callTimeout blocking call timeout in milliseconds
+    * @param callFailoverTimeout blocking call timeout in milliseconds
     */
    void setCallFailoverTimeout(long callFailoverTimeout);
    /**
