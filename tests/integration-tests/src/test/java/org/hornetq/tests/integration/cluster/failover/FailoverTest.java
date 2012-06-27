@@ -642,6 +642,7 @@ public class FailoverTest extends FailoverTestBase
       sendMessages(session, producer, NUM_MESSAGES);
       producer.close();
       session.commit();
+      SimpleString liveId = liveServer.getServer().getNodeID();
       crash(session);
 
       session.start();
@@ -655,6 +656,7 @@ public class FailoverTest extends FailoverTestBase
       producer.close();
       session.commit();
 
+      assertEquals("backup must be running with the same nodeID", liveId, backupServer.getServer().getNodeID());
       if (doFailBack)
       {
          assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());

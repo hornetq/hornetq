@@ -457,16 +457,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       causeExit();
       synchronized (createSessionLock)
       {
-         if (close)
-         {
+         closeCleanSessions(close);
+         if (close) {
             synchronized (failoverLock)
             {
-               closeCleanSessions(close);
+               closeCleanSessions(true);
             }
-         }
-         else
-         {
-            closeCleanSessions(close);
          }
       }
 
@@ -554,10 +550,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
       Set<ClientSessionInternal> sessionsToClose = null;
-
+      if (exitLoop)
+         return;
       synchronized (failoverLock)
       {
-         if (connection == null || connection.getID() != connectionID)
+         if (connection == null || connection.getID() != connectionID || exitLoop)
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
             // over then a async connection exception or disconnect
@@ -732,6 +729,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       synchronized (createSessionLock)
       {
+         if (exitLoop)
+            throw HornetQMessageBundle.BUNDLE.clientSessionClosed();
          String name = UUIDGenerator.getInstance().generateStringUUID();
 
          boolean retry = false;
@@ -755,7 +754,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   channel1 = connection.getChannel(1, -1);
 
                   // Lock it - this must be done while the failoverLock is held
-                  while (!channel1.getLock().tryLock(200, TimeUnit.MILLISECONDS))
+                  while (!channel1.getLock().tryLock(100, TimeUnit.MILLISECONDS))
                   {
                      if (exitLoop)
                         throw HornetQMessageBundle.BUNDLE.clientSessionClosed();
