@@ -377,6 +377,14 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, messageQueue.getConsumerCount());
 
+
+         // HORNETQ-946
+         props.putSimpleStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(session.getUsername()));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS, SimpleString.toSimpleString(((ServerSessionImpl) session).getRemotingConnection().getRemoteAddress()));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME, SimpleString.toSimpleString(session.getName()));
+
          Notification notification = new Notification(null, NotificationType.CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);
