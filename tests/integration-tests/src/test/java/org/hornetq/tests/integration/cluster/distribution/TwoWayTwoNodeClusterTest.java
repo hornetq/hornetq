@@ -91,10 +91,6 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       createQueue(0, "queues", "queue0", null, false);
       addConsumer(0, 0, "queue0", null);
 
-      // we let the discovery initial timeout expire,
-      // #0 will be alone in the cluster
-      Thread.sleep(12000);
-
       startServers(1);
       setupSessionFactory(1, isNetty());
       createQueue(1, "queues", "queue0", null, false);
@@ -129,6 +125,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
          {
             log.info("Sleep #test " + i);
             log.info("#stop #test #" + i);
+            Thread.sleep(500);
             stopServers(1);
 
             waitForTopology(servers[0], 1, -1, 2000);
@@ -174,13 +171,12 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
 
       stopServers(1);
 
-      Thread.sleep(12000);
+      //allow the topology to be propagated before restarting
+       waitForTopology(servers[0], 1, -1, 2000);
 
       System.out.println(clusterDescription(servers[0]));
 
       startServers(1);
-
-      Thread.sleep(3000);
 
       System.out.println(clusterDescription(servers[0]));
       System.out.println(clusterDescription(servers[1]));
