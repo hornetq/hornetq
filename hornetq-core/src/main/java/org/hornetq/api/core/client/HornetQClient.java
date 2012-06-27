@@ -19,11 +19,10 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 
 /**
  * Utility class for creating HornetQ {@link ClientSessionFactory} objects.
- *
- * Once a {@link ClientSessionFactory} has been created, it can be further configured
- * using its setter methods before creating the sessions. Once a session is created,
- * the factory can no longer be modified (its setter methods will throw a {@link IllegalStateException}.
- *
+ * <p>
+ * Once a {@link ClientSessionFactory} has been created, it can be further configured using its
+ * setter methods before creating the sessions. Once a session is created, the factory can no longer
+ * be modified (its setter methods will throw a {@link IllegalStateException}.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public final class HornetQClient
@@ -117,7 +116,7 @@ public final class HornetQClient
    /**
     * Create a ServerLocator which creates session factories using a static list of transportConfigurations, the ServerLocator is not updated automatically
     * as the cluster topology changes, and no HA backup information is propagated to the client
-    * 
+    *
     * @param ha The Locator will support topology updates and ha (this required the server to be clustered, otherwise the first connection will timeout)
     * @param transportConfigurations
     * @return the ServerLocator
@@ -126,14 +125,13 @@ public final class HornetQClient
    {
       return new ServerLocatorImpl(ha, transportConfigurations);
    }
-   
+
    /**
-    * Create a ServerLocator which creates session factories from a set of live servers, no HA backup information is propagated to the client
-    *
+    * Create a ServerLocator which creates session factories from a set of live servers, no HA
+    * backup information is propagated to the client
+    * <p>
     * The UDP address and port are used to listen for live servers in the cluster
-    *
-    * @param discoveryAddress The UDP group address to listen for updates
-    * @param discoveryPort the UDP port to listen for updates
+    * @param groupConfiguration
     * @return the ServerLocator
     */
    public static ServerLocator createServerLocatorWithoutHA(final DiscoveryGroupConfiguration groupConfiguration)
@@ -141,15 +139,14 @@ public final class HornetQClient
       return new ServerLocatorImpl(false, groupConfiguration);
    }
 
-   
+
    /**
-    * Create a ServerLocator which creates session factories from a set of live servers, no HA backup information is propagated to the client
-    *
-    * The UDP address and port are used to listen for live servers in the cluster
-    *
-    * @param ha The Locator will support topology updates and ha (this required the server to be clustered, otherwise the first connection will timeout)
-    * @param discoveryAddress The UDP group address to listen for updates
-    * @param discoveryPort the UDP port to listen for updates
+    * Create a ServerLocator which creates session factories from a set of live servers, no HA
+    * backup information is propagated to the client The UDP address and port are used to listen for
+    * live servers in the cluster
+    * @param ha The Locator will support topology updates and ha (this required the server to be
+    *           clustered, otherwise the first connection will timeout)
+    * @param groupConfiguration
     * @return the ServerLocator
     */
    public static ServerLocator createServerLocator(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
@@ -189,8 +186,7 @@ public final class HornetQClient
     * <p>
     * If the topology includes backup servers that information is also propagated to the client so
     * that it can know which server to failover onto in case of live server failure.
-    * @param discoveryAddress The UDP group address to listen for updates
-    * @param discoveryPort the UDP port to listen for updates
+    * @param groupConfiguration
     * @return the ServerLocator
     */
    public static ServerLocator createServerLocatorWithHA(final DiscoveryGroupConfiguration groupConfiguration)

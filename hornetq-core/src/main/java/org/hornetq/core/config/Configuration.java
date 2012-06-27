@@ -860,7 +860,8 @@ public interface Configuration extends Serializable
    Map<String, AddressSettings> getAddressesSettings();
 
    /**
-    * @param A list of AddressSettings per matching to be deployed to the address settings repository
+    * @param addressesSettings list of AddressSettings per matching to be deployed to the address
+    *           settings repository
     */
    void setAddressesSettings(Map<String, AddressSettings> addressesSettings);
 
@@ -876,10 +877,6 @@ public interface Configuration extends Serializable
     */
    Map<String, Set<Role>> getSecurityRoles();
 
-   /**
-    *
-    * @param
-    */
    void setConnectorServiceConfigurations(List<ConnectorServiceConfiguration> configs);
 
    /**
