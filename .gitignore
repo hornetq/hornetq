@@ -6,6 +6,7 @@ hornetq-pom.iws
 */*.iml
 */*/*.iml
 */*/*/*.iml
+.factorypath
 
 # compilation from native
 */bin
