@@ -2315,6 +2315,7 @@ public class HornetQServerImpl implements HornetQServer
             nodeId0 = null;
          }
          ServerLocatorInternal locator = null;
+         ClientSessionFactoryInternal factory = null;
          try
          {
 
@@ -2322,7 +2323,7 @@ public class HornetQServerImpl implements HornetQServer
                configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
             locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
             locator.setReconnectAttempts(0);
-            locator.connect();
+            factory = locator.connect();
             Thread.sleep(5000); // wait a little for the topology updates
             // if the nodeID is null, then a node with that nodeID MUST be found:
             Topology topology = locator.getTopology();
@@ -2344,6 +2345,8 @@ public class HornetQServerImpl implements HornetQServer
          }
          finally
          {
+            if (factory != null)
+               factory.close();
             if (locator != null)
                locator.close();
          }
