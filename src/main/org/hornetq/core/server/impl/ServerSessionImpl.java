@@ -373,6 +373,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 
+         // HORNETQ-946
+         props.putSimpleStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(username));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS, SimpleString.toSimpleString(this.remotingConnection.getRemoteAddress()));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME, SimpleString.toSimpleString(name));
+
          if (filterString != null)
          {
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);

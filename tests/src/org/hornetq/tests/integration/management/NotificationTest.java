@@ -17,13 +17,14 @@ import static org.hornetq.api.core.management.NotificationType.BINDING_ADDED;
 import static org.hornetq.api.core.management.NotificationType.BINDING_REMOVED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
-import junit.framework.Assert;
 
+import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.management.ManagementHelper;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -151,6 +152,17 @@ public class NotificationTest extends UnitTestCase
 
    public void testCONSUMER_CREATED() throws Exception
    {
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession mySession = sf.createSession("myUser",
+            "myPassword",
+            false,
+            true,
+            true,
+            locator.isPreAcknowledge(),
+            locator.getAckBatchSize());
+
+      mySession.start();
+      
       SimpleString queue = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       boolean durable = RandomUtil.randomBoolean();
@@ -159,7 +171,8 @@ public class NotificationTest extends UnitTestCase
 
       NotificationTest.flush(notifConsumer);
 
-      ClientConsumer consumer = session.createConsumer(queue);
+      ClientConsumer consumer = mySession.createConsumer(queue);
+      SimpleString consumerName = SimpleString.toSimpleString(((ClientSessionInternal) mySession).getName());
 
       ClientMessage[] notifications = NotificationTest.consumeMessages(1, notifConsumer);
       Assert.assertEquals(CONSUMER_CREATED.toString(),
@@ -169,6 +182,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
                                                               .toString());
       Assert.assertEquals(1, notifications[0].getObjectProperty(ManagementHelper.HDR_CONSUMER_COUNT));
+      Assert.assertEquals(SimpleString.toSimpleString("myUser"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_USER));
+      Assert.assertEquals(SimpleString.toSimpleString("invm:0"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS));
+      Assert.assertEquals(consumerName, notifications[0].getSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME));
 
       consumer.close();
       session.deleteQueue(queue);
@@ -176,12 +192,24 @@ public class NotificationTest extends UnitTestCase
 
    public void testCONSUMER_CLOSED() throws Exception
    {
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession mySession = sf.createSession("myUser",
+            "myPassword",
+            false,
+            true,
+            true,
+            locator.isPreAcknowledge(),
+            locator.getAckBatchSize());
+
+      mySession.start();
+
       SimpleString queue = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       boolean durable = RandomUtil.randomBoolean();
 
-      session.createQueue(address, queue, durable);
-      ClientConsumer consumer = session.createConsumer(queue);
+      mySession.createQueue(address, queue, durable);
+      ClientConsumer consumer = mySession.createConsumer(queue);
+      SimpleString sessionName = SimpleString.toSimpleString(((ClientSessionInternal) mySession).getName());
 
       NotificationTest.flush(notifConsumer);
 
@@ -195,6 +223,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
                                                               .toString());
       Assert.assertEquals(0, notifications[0].getObjectProperty(ManagementHelper.HDR_CONSUMER_COUNT));
+      Assert.assertEquals(SimpleString.toSimpleString("myUser"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_USER));
+      Assert.assertEquals(SimpleString.toSimpleString("invm:0"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS));
+      Assert.assertEquals(sessionName, notifications[0].getSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME));
 
       session.deleteQueue(queue);
    }

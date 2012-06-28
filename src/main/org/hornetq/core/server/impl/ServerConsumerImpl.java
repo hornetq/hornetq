@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -377,6 +378,14 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, messageQueue.getConsumerCount());
+
+
+         // HORNETQ-946
+         props.putSimpleStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(session.getUsername()));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS, SimpleString.toSimpleString(((ServerSessionImpl) session).getRemotingConnection().getRemoteAddress()));
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME, SimpleString.toSimpleString(session.getName()));
 
          Notification notification = new Notification(null, NotificationType.CONSUMER_CLOSED, props);
 
