@@ -610,6 +610,8 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
+      Thread.yield();
+      Thread.sleep(20);//https://community.jboss.org/message/744585
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
