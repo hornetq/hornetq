@@ -48,6 +48,20 @@ public abstract class HornetQExample
    protected void run(final String[] args)
    {
       this.args = args;
+      //if we have a cluster of servers wait a while for the cluster to form properly
+      if(args != null && args.length > 1)
+      {
+         System.out.println("****pausing to allow cluster to form****");
+         Thread.yield();
+         try
+         {
+            Thread.sleep(2000);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+      }
 
       try
       {
