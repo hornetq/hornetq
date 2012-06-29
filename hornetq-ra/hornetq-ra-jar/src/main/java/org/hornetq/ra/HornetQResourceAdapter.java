@@ -286,6 +286,26 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return this.useAutoRecovery;
    }
 
+   public Boolean isUseMaskedPassword()
+   {
+      return this.raProperties.isUseMaskedPassword();
+   }
+
+   public void setUseMaskedPassword(Boolean useMaskedPassword)
+   {
+      this.raProperties.setUseMaskedPassword(useMaskedPassword);
+   }
+
+   public void setPasswordCodec(String passwordCodec)
+   {
+      this.raProperties.setPasswordCodec(passwordCodec);
+   }
+
+   public String getPasswordCodec()
+   {
+      return this.raProperties.getPasswordCodec();
+   }
+
    public void setConnectorClassName(final String connectorClassName)
    {
       if (HornetQResourceAdapter.trace)
@@ -325,21 +345,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public void setHA(final Boolean ha)
    {
       this.raProperties.setHA(ha);
-   }
-
-   public boolean isUseMaskedPassword()
-   {
-      return this.raProperties.isUseMaskedPassword();
-   }
-
-   public void setUseMaskedPassword(Boolean useMaskedPassword)
-   {
-      this.raProperties.setUseMaskedPassword(useMaskedPassword);
-   }
-
-   public void setPasswordCodec(String passwordCodec)
-   {
-      this.raProperties.setPasswordCodec(passwordCodec);
    }
 
    /**
@@ -553,6 +558,96 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
+    * Get cacheLargeMessagesClient
+    *
+    * @return The value
+    */
+   public Boolean isCacheLargeMessagesClient()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isCacheLargeMessagesClient()");
+      }
+
+      return raProperties.isCacheLargeMessagesClient();
+   }
+
+   /**
+    * Set cacheLargeMessagesClient
+    *
+    * @param cacheLargeMessagesClient The value
+    */
+   public void setCacheLargeMessagesClient(final Boolean cacheLargeMessagesClient)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setCacheLargeMessagesClient(" + cacheLargeMessagesClient + ")");
+      }
+
+      raProperties.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+   }
+
+   /**
+    * Get compressLargeMessage
+    *
+    * @return The value
+    */
+   public Boolean isCompressLargeMessage()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isCompressLargeMessage()");
+      }
+
+      return raProperties.isCompressLargeMessage();
+   }
+
+   /**
+    * Set failoverOnInitialConnection
+    *
+    * @param failoverOnInitialConnection The value
+    */
+   public void setFailoverOnInitialConnection(final Boolean failoverOnInitialConnection)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setFailoverOnInitialConnection(" + failoverOnInitialConnection + ")");
+      }
+
+      raProperties.setFailoverOnInitialConnection(failoverOnInitialConnection);
+   }
+
+   /**
+    * Get isFailoverOnInitialConnection
+    *
+    * @return The value
+    */
+   public Boolean isFailoverOnInitialConnection()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isFailoverOnInitialConnection()");
+      }
+
+      return raProperties.isFailoverOnInitialConnection();
+   }
+
+   /**
+    * Set compressLargeMessage
+    *
+    * @param compressLargeMessage The value
+    */
+   public void setCompressLargeMessage(final Boolean compressLargeMessage)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setCompressLargeMessage(" + compressLargeMessage + ")");
+      }
+
+      raProperties.setCompressLargeMessage(compressLargeMessage);
+   }
+
+   /**
     * Get call timeout
     *
     * @return The value
@@ -580,6 +675,36 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setCallTimeout(callTimeout);
+   }
+
+   /**
+    * Get call failover timeout
+    *
+    * @return The value
+    */
+   public Long getCallFailoverTimeout()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getCallFailoverTimeout()");
+      }
+
+      return raProperties.getCallFailoverTimeout();
+   }
+
+   /**
+    * Set call failover timeout
+    *
+    * @param callFailoverTimeout The value
+    */
+   public void setCallFailoverTimeout(final Long callFailoverTimeout)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setCallFailoverTimeout(" + callFailoverTimeout + ")");
+      }
+
+      raProperties.setCallFailoverTimeout(callFailoverTimeout);
    }
 
    /**
@@ -763,6 +888,36 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
+    * Get producer window size
+    *
+    * @return The value
+    */
+   public Integer getProducerWindowSize()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getProducerWindowSize()");
+      }
+
+      return raProperties.getProducerWindowSize();
+   }
+
+   /**
+    * Set producer window size
+    *
+    * @param producerWindowSize The value
+    */
+   public void setProducerWindowSize(final Integer producerWindowSize)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setProducerWindowSize(" + producerWindowSize + ")");
+      }
+
+      raProperties.setProducerWindowSize(producerWindowSize);
+   }
+
+   /**
     * Get min large message size
     *
     * @return The value
@@ -943,6 +1098,66 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
+    * Get number of initial connect attempts
+    *
+    * @return The value
+    */
+   public Integer getInitialConnectAttempts()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getInitialConnectAttempts()");
+      }
+
+      return raProperties.getInitialConnectAttempts();
+   }
+
+   /**
+    * Set number of initial connect attempts
+    *
+    * @param initialConnectAttempts The value
+    */
+   public void setInitialConnectAttempts(final Integer initialConnectAttempts)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setInitialConnectionAttempts(" + initialConnectAttempts + ")");
+      }
+
+      raProperties.setInitialConnectAttempts(initialConnectAttempts);
+   }
+
+   /**
+    * Get initial message packet size
+    *
+    * @return The value
+    */
+   public Integer getInitialMessagePacketSize()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getInitialMessagePacketSize()");
+      }
+
+      return raProperties.getInitialMessagePacketSize();
+   }
+
+   /**
+    * Set initial message packet size
+    *
+    * @param initialMessagePacketSize The value
+    */
+   public void setInitialMessagePacketSize(final Integer initialMessagePacketSize)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setInitialMessagePacketSize(" + initialMessagePacketSize + ")");
+      }
+
+      raProperties.setInitialMessagePacketSize(initialMessagePacketSize);
+   }
+
+   /**
     * Get retry interval
     *
     * @return The value
@@ -1000,6 +1215,36 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setRetryIntervalMultiplier(retryIntervalMultiplier);
+   }
+
+   /**
+    * Get maximum time for retry interval
+    *
+    * @return The value
+    */
+   public Long getMaxRetryInterval()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getMaxRetryInterval()");
+      }
+
+      return raProperties.getMaxRetryInterval();
+   }
+
+   /**
+    * Set maximum time for retry interval
+    *
+    * @param setMaxRetryInterval The value
+    */
+   public void setMaxRetryInterval(final Long maxRetryInterval)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setMaxRetryInterval(" + maxRetryInterval + ")");
+      }
+
+      raProperties.setMaxRetryInterval(maxRetryInterval);
    }
 
    /**
@@ -1211,6 +1456,36 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setClientID(clientID);
+   }
+
+   /**
+    * Get the group ID
+    *
+    * @return The value
+    */
+   public String getGroupID()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getGroupID()");
+      }
+
+      return raProperties.getGroupID();
+   }
+
+   /**
+    * Set the group ID
+    *
+    * @param groupID The group id
+    */
+   public void setGroupID(final String groupID)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setGroupID(" + groupID + ")");
+      }
+
+      raProperties.setGroupID(groupID);
    }
 
    /**
@@ -1799,6 +2074,28 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setUseGlobalPools(val);
       }
+
+      val = overrideProperties.isCacheLargeMessagesClient() != null ? overrideProperties.isCacheLargeMessagesClient()
+                                                                    : raProperties.isCacheLargeMessagesClient();
+      if (val != null)
+      {
+         cf.setCacheLargeMessagesClient(val);
+      }
+
+      val = overrideProperties.isCompressLargeMessage() != null ? overrideProperties.isCompressLargeMessage()
+                                                                    : raProperties.isCompressLargeMessage();
+      if (val != null)
+      {
+         cf.setCompressLargeMessage(val);
+      }
+
+      val = overrideProperties.isFailoverOnInitialConnection() != null ? overrideProperties.isFailoverOnInitialConnection()
+                                                                : raProperties.isFailoverOnInitialConnection();
+      if (val != null)
+      {
+         cf.setFailoverOnInitialConnection(val);
+      }
+
       Integer val2 = overrideProperties.getConsumerMaxRate() != null ? overrideProperties.getConsumerMaxRate()
                                                                     : raProperties.getConsumerMaxRate();
       if (val2 != null)
@@ -1829,6 +2126,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val2 != null)
       {
          cf.setProducerMaxRate(val2);
+      }
+      val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize()
+                                                                : raProperties.getProducerWindowSize();
+      if (val2 != null)
+      {
+         cf.setProducerWindowSize(val2);
       }
       val2 = overrideProperties.getConfirmationWindowSize() != null ? overrideProperties.getConfirmationWindowSize()
                                                                    : raProperties.getConfirmationWindowSize();
@@ -1865,6 +2168,19 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setTransactionBatchSize(val2);
       }
+      val2 = overrideProperties.getInitialConnectAttempts() != null ? overrideProperties.getInitialConnectAttempts()
+                                                                    : raProperties.getInitialConnectAttempts();
+      if (val2 != null)
+      {
+         cf.setInitialConnectAttempts(val2);
+      }
+      val2 = overrideProperties.getInitialMessagePacketSize() != null ? overrideProperties.getInitialMessagePacketSize()
+                                                                      : raProperties.getInitialMessagePacketSize();
+      if (val2 != null)
+      {
+         cf.setInitialMessagePacketSize(val2);
+      }
+
       Long val3 = overrideProperties.getClientFailureCheckPeriod() != null ? overrideProperties.getClientFailureCheckPeriod()
                                                                           : raProperties.getClientFailureCheckPeriod();
       if (val3 != null)
@@ -1876,6 +2192,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val3 != null)
       {
          cf.setCallTimeout(val3);
+      }
+      val3 = overrideProperties.getCallFailoverTimeout() != null ? overrideProperties.getCallFailoverTimeout()
+                                                                : raProperties.getCallFailoverTimeout();
+      if (val3 != null)
+      {
+         cf.setCallFailoverTimeout(val3);
       }
       val3 = overrideProperties.getConnectionTTL() != null ? overrideProperties.getConnectionTTL()
                                                           : raProperties.getConnectionTTL();
@@ -1890,6 +2212,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setRetryInterval(val3);
       }
+
+      val3 = overrideProperties.getMaxRetryInterval() != null ? overrideProperties.getMaxRetryInterval()
+                                                           : raProperties.getMaxRetryInterval();
+      if (val3 != null)
+      {
+         cf.setMaxRetryInterval(val3);
+      }
+
       Double val4 = overrideProperties.getRetryIntervalMultiplier() != null ? overrideProperties.getRetryIntervalMultiplier()
                                                                            : raProperties.getRetryIntervalMultiplier();
       if (val4 != null)
@@ -1915,9 +2245,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       managedConnectionFactories.add(hornetQRAManagedConnectionFactory);
    }
 
-   public SensitiveDataCodec<String> getPasswordCodec()
+   public SensitiveDataCodec<String> getCodecInstance()
    {
-      return this.raProperties.getCodecInstance();
+      return raProperties.getCodecInstance();
    }
-
 }

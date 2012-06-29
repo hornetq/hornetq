@@ -62,13 +62,23 @@ public class ConnectionFactoryProperties
 
    private Long connectionTTL;
 
+   private Boolean cacheLargeMessagesClient;
+
    private Long callTimeout;
 
+   private Long callFailoverTimeout;
+
+   private Boolean compressLargeMessage;
+
    private Integer consumerWindowSize;
+
+   private Integer producerWindowSize;
 
    private Integer consumerMaxRate;
 
    private Integer confirmationWindowSize;
+
+   private Boolean failoverOnInitialConnection;
 
    private Integer producerMaxRate;
 
@@ -84,17 +94,25 @@ public class ConnectionFactoryProperties
 
    private Boolean preAcknowledge;
 
+   private Integer initialConnectAttempts;
+
    private Long retryInterval;
 
    private Double retryIntervalMultiplier;
+
+   private Long maxRetryInterval;
 
    private Integer reconnectAttempts;
 
    private Boolean useGlobalPools;
 
+   private Integer initialMessagePacketSize;
+
    private Integer scheduledThreadPoolMaxSize;
 
    private Integer threadPoolMaxSize;
+
+   private String groupID;
 
    /**
     * @return the transportType
@@ -132,6 +150,28 @@ public class ConnectionFactoryProperties
       this.ha = ha;
    }
    
+   public Boolean isCacheLargeMessagesClient()
+   {
+      return cacheLargeMessagesClient;
+   }
+
+   public void setCacheLargeMessagesClient(Boolean cacheLargeMessagesClient)
+   {
+      hasBeenUpdated = true;
+      this.cacheLargeMessagesClient = cacheLargeMessagesClient;
+   }
+
+   public Boolean isCompressLargeMessage()
+   {
+      return compressLargeMessage;
+   }
+
+   public void setCompressLargeMessage(Boolean compressLargeMessage)
+   {
+      hasBeenUpdated = true;
+      this.compressLargeMessage = compressLargeMessage;
+   }
+
    public String getConnectionLoadBalancingPolicyClassName()
    {
       if (ConnectionFactoryProperties.trace)
@@ -366,6 +406,25 @@ public class ConnectionFactoryProperties
       this.callTimeout = callTimeout;
    }
 
+   public Long getCallFailoverTimeout()
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getCallFailoverTimeout()");
+      }
+      return callFailoverTimeout;
+   }
+
+   public void setCallFailoverTimeout(final Long callFailoverTimeout)
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setCallFailoverTimeout(" + callFailoverTimeout + ")");
+      }
+      hasBeenUpdated = true;
+      this.callFailoverTimeout = callFailoverTimeout;
+   }
+
    public Integer getConsumerWindowSize()
    {
       if (ConnectionFactoryProperties.trace)
@@ -423,6 +482,17 @@ public class ConnectionFactoryProperties
       this.confirmationWindowSize = confirmationWindowSize;
    }
 
+   public Boolean isFailoverOnInitialConnection()
+   {
+      return failoverOnInitialConnection;
+   }
+
+   public void setFailoverOnInitialConnection(Boolean failoverOnInitialConnection)
+   {
+      hasBeenUpdated = true;
+      this.failoverOnInitialConnection = failoverOnInitialConnection;
+   }
+
    public Integer getProducerMaxRate()
    {
       if (ConnectionFactoryProperties.trace)
@@ -442,12 +512,32 @@ public class ConnectionFactoryProperties
       this.producerMaxRate = producerMaxRate;
    }
 
+   public Integer getProducerWindowSize()
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getProducerWindowSize()");
+      }
+      return producerWindowSize;
+   }
+
+   public void setProducerWindowSize(final Integer producerWindowSize)
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setProducerWindowSize(" + producerWindowSize + ")");
+      }
+      hasBeenUpdated = true;
+      this.producerWindowSize = producerWindowSize;
+   }
+
    public Integer getMinLargeMessageSize()
    {
       if (ConnectionFactoryProperties.trace)
       {
          HornetQRALogger.LOGGER.trace("getMinLargeMessageSize()");
       }
+      hasBeenUpdated = true;
       return minLargeMessageSize;
    }
 
@@ -594,6 +684,17 @@ public class ConnectionFactoryProperties
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
 
+   public Long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
+   }
+
+   public void setMaxRetryInterval(Long maxRetryInterval)
+   {
+      hasBeenUpdated = true;
+      this.maxRetryInterval = maxRetryInterval;
+   }
+
    public Integer getReconnectAttempts()
    {
       if (ConnectionFactoryProperties.trace)
@@ -669,6 +770,41 @@ public class ConnectionFactoryProperties
       hasBeenUpdated = true;
       this.threadPoolMaxSize = threadPoolMaxSize;
    }
+
+   public String getGroupID()
+   {
+      return groupID;
+   }
+
+   public void setGroupID(String groupID)
+   {
+      hasBeenUpdated = true;
+      this.groupID = groupID;
+   }
+
+   public Integer getInitialConnectAttempts()
+   {
+      hasBeenUpdated = true;
+      return initialConnectAttempts;
+   }
+
+   public void setInitialConnectAttempts(Integer initialConnectAttempts)
+   {
+      hasBeenUpdated = true;
+      this.initialConnectAttempts = initialConnectAttempts;
+   }
+
+   public Integer getInitialMessagePacketSize()
+   {
+      return initialMessagePacketSize;
+   }
+
+   public void setInitialMessagePacketSize(Integer initialMessagePacketSize)
+   {
+      hasBeenUpdated = true;
+      this.initialMessagePacketSize = initialMessagePacketSize;
+   }
+
 
    public boolean isHasBeenUpdated()
    {
