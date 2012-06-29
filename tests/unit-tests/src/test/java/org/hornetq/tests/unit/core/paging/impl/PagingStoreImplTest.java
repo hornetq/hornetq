@@ -1018,17 +1018,11 @@ public class PagingStoreImplTest extends UnitTestCase
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#getCurrentUniqueID()
-       */
       public long getCurrentUniqueID()
       {
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
-       */
       public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
                                                        final List<GroupingInfo> groupingInfos) throws Exception
       {
@@ -1049,16 +1043,10 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#prepare(long, javax.transaction.xa.Xid)
-       */
       public void prepare(final long txID, final Xid xid) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#rollback(long)
-       */
       public void rollback(final long txID) throws Exception
       {
       }
@@ -1071,30 +1059,18 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-       /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeAcknowledge(long, long)
-       */
       public void storeAcknowledge(final long queueID, final long messageID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeAcknowledgeTransactional(long, long, long)
-       */
       public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeDuplicateID(org.hornetq.utils.SimpleString, byte[], long)
-       */
       public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeDuplicateIDTransactional(long, org.hornetq.utils.SimpleString, byte[], long)
-       */
       public void storeDuplicateIDTransactional(final long txID,
                                                 final SimpleString address,
                                                 final byte[] duplID,
@@ -1102,23 +1078,14 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeMessage(org.hornetq.core.server.ServerMessage)
-       */
       public void storeMessage(final ServerMessage message) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeMessageTransactional(long, org.hornetq.core.server.ServerMessage)
-       */
       public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo)
-       */
       public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
       {
       }
@@ -1144,23 +1111,14 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-       /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updateDeliveryCount(org.hornetq.core.server.MessageReference)
-       */
       public void updateDeliveryCount(final MessageReference ref) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updateDuplicateID(org.hornetq.utils.SimpleString, byte[], long)
-       */
       public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updateDuplicateIDTransactional(long, org.hornetq.utils.SimpleString, byte[], long)
-       */
       public void updateDuplicateIDTransactional(final long txID,
                                                  final SimpleString address,
                                                  final byte[] duplID,
@@ -1270,39 +1228,24 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
-       */
       public void afterCompleteOperations(final IOAsyncTask run)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#waitOnOperations()
-       */
       public void waitOnOperations() throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#getContext()
-       */
       public OperationContext getContext()
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#newContext(java.util.concurrent.Executor)
-       */
       public OperationContext newContext(final Executor executor)
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#clearContext()
-       */
       public void clearContext()
       {
       }
@@ -1461,9 +1404,6 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
-       */
       public void confirmPendingLargeMessage(long recordID) throws Exception
       {
       }
@@ -1495,9 +1435,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(int)
-       */
       public ByteBuffer allocateDirectBuffer(int size)
       {
          return ByteBuffer.allocateDirect(size);

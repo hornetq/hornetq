@@ -3447,26 +3447,17 @@ public class JournalStorageManager implements StorageManager
 
       int value;
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-       */
       public int getEncodeSize()
       {
          return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-       */
       public void encode(HornetQBuffer buffer)
       {
          buffer.writeLong(queueID);
          buffer.writeInt(value);
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-       */
       public void decode(HornetQBuffer buffer)
       {
          queueID = buffer.readLong();
