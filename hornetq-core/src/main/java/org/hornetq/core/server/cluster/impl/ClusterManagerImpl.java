@@ -157,7 +157,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       return str.toString();
    }
-   
+
    public ClusterConnection getDefaultConnection(TransportConfiguration acceptorConfig)
    {
       if (acceptorConfig == null)
@@ -403,7 +403,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             HornetQLogger.LOGGER.announceBackupNoConnector(config.getConnectorName());
             return;
          }
-         liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector, configuration.getClusterUser(),
+         liveChannel.send(new BackupRegistrationMessage(connector, configuration.getClusterUser(),
                                                         configuration.getClusterPassword(), attemptingFailBack));
       }
       else
