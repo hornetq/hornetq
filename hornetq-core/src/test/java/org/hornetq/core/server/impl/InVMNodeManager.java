@@ -52,8 +52,7 @@ public final class InVMNodeManager extends NodeManager
    {
       liveLock = new Semaphore(1);
       backupLock = new Semaphore(1);
-      uuid = UUIDGenerator.getInstance().generateUUID();
-      nodeID = new SimpleString(uuid.toString());
+      setUUID(UUIDGenerator.getInstance().generateUUID());
    }
 
    @Override
