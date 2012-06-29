@@ -147,7 +147,7 @@ public class HornetQActivation
          String pass = spec.getOwnPassword();
          if (pass != null)
          {
-            SensitiveDataCodec<String> codec = ra.getPasswordCodec();
+            SensitiveDataCodec<String> codec = ra.getCodecInstance();
          
             try
             {
