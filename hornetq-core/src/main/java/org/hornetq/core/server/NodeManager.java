@@ -65,8 +65,8 @@ public abstract class NodeManager implements HornetQComponent
    {
       synchronized (nodeIDGuard)
       {
-      return nodeID;
-   }
+         return nodeID;
+      }
    }
 
    public abstract SimpleString readNodeId() throws IllegalStateException, IOException;

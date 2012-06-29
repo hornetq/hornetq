@@ -45,6 +45,7 @@ import org.hornetq.api.core.InternalErrorException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -1221,9 +1222,6 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   // Private
-   // --------------------------------------------------------------------------------------
-
    private void callActivateCallbacks()
    {
       for (ActivateCallback callback : activateCallbacks)
@@ -2046,12 +2044,16 @@ public class HornetQServerImpl implements HornetQServer
       void close(boolean permanently) throws Exception;
    }
 
-   private final class SharedNothingBackupActivation implements Activation
+   private final class SharedNothingBackupActivation implements Activation, ClusterTopologyListener
    {
       private ServerLocatorInternal serverLocator0;
       private volatile boolean failedToConnect;
       private QuorumManager quorumManager;
       private final boolean attemptFailBack;
+      private static final int MAX_TOPOLOGY_WAIT = 60;
+      private final CountDownLatch latch=new CountDownLatch(1);
+      private String nodeID;
+      private Object liveConnector;
 
       public SharedNothingBackupActivation(boolean attemptFailBack)
       {
@@ -2064,10 +2066,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             // move all data away:
             moveServerData();
-
-            nodeManager.startBackup();
-
-            initialisePart1();
             TransportConfiguration[] tp = null;
             if (attemptFailBack) {
                tp = configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
@@ -2079,14 +2077,36 @@ public class HornetQServerImpl implements HornetQServer
                }
                tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
+            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
+            serverLocator0.setReconnectAttempts(-1);
+            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
+
+            if (!attemptFailBack) {
+               serverLocator0.addClusterTopologyListener(this);
+            }
+            final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
+            if (liveServerSessionFactory == null)
+               throw new RuntimeException("Could not estabilish the connection");
+            if (!attemptFailBack)
+            {
+               final String liveConnectorName = configuration.getLiveConnectorName();
+               liveConnector = configuration.getConnectorConfigurations().get(liveConnectorName);
+               latch.await(MAX_TOPOLOGY_WAIT, TimeUnit.SECONDS);
+               if (nodeID == null)
+                  throw new RuntimeException("Could not estabilish the connection");
+               serverLocator0.removeClusterTopologyListener(this);
+               System.out.println("got this: " + nodeID);
+               nodeManager.setNodeID(nodeID);
+            }
+
+            nodeManager.startBackup();
+
+            initialisePart1();
             clusterManager.start();
 
-            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
             replicationEndpoint.setQuorumManager(quorumManager);
 
-            serverLocator0.setReconnectAttempts(-1);
-            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
             threadPool.execute(new Runnable()
             {
                @Override
@@ -2094,11 +2114,6 @@ public class HornetQServerImpl implements HornetQServer
                {
                   try
                   {
-                     final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
-                     if (liveServerSessionFactory == null)
-                     {
-                        throw new RuntimeException("Could not estabilish the connection");
-                     }
 
                      liveServerSessionFactory.setReconnectAttempts(1);
                      quorumManager.setSessionFactory(liveServerSessionFactory);
@@ -2141,7 +2156,7 @@ public class HornetQServerImpl implements HornetQServer
              * {@link QuorumManager}
              */
             QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
-
+            liveServerSessionFactory.close();
             serverLocator0.close();
             stopComponent(replicationEndpoint);
 
@@ -2173,6 +2188,11 @@ public class HornetQServerImpl implements HornetQServer
                return;
             HornetQLogger.LOGGER.initializationError(e);
             e.printStackTrace();
+         }
+         finally
+         {
+            if (serverLocator0 != null)
+               serverLocator0.close();
          }
       }
 
@@ -2261,6 +2281,23 @@ public class HornetQServerImpl implements HornetQServer
       public void failOver()
       {
          quorumManager.failOver();
+      }
+
+      @Override
+      public void nodeUP(long eventUID, String nodeID,
+                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      {
+         if (liveConnector.equals(connectorPair.getA()))
+         {
+            this.nodeID = nodeID;
+            latch.countDown();
+         }
+      }
+
+      @Override
+      public void nodeDown(long eventUID, String nodeID)
+      {
+         // ignore
       }
    }
 
@@ -2483,9 +2520,8 @@ public class HornetQServerImpl implements HornetQServer
       return backupUpToDate;
    }
 
-   public void setRemoteBackupUpToDate(String nodeID)
+   public void setRemoteBackupUpToDate()
    {
-      nodeManager.setNodeID(nodeID);
       clusterManager.announceBackup();
       backupUpToDate = true;
    }

@@ -210,8 +210,8 @@ public class FileLockNodeManager extends NodeManager
 
       backupLock = lock(FileLockNodeManager.BACKUP_LOCK_POS);
       HornetQLogger.LOGGER.gotBackupLock();
-
-      readNodeId();
+      if (getUUID() == null)
+         readNodeId();
    }
 
    @Override
