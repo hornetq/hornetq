@@ -316,12 +316,65 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=ssss</config-property-value>\n" +
          "      </config-property>" +
          "      <config-property>" +
-         "         <description>***add***</description>" +
-         "         <config-property-name>UseAutoRecovery</config-property-name>" +
-         "         <config-property-type>boolean</config-property-type>" +
-         "         <config-property-value></config-property-value>" +
-         "      </config-property>";
-
+         "         <description>Whether the resource adapter must use auto recovery</description>\n" +
+         "         <config-property-name>UseAutoRecovery</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value>true</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>The initial size for message packet</description>\n" +
+         "         <config-property-name>InitialMessagePacketSize</config-property-name>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
+         "         <config-property-value>1500</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>the Group ID</description>\n" +
+         "         <config-property-name>GroupID</config-property-name>\n" +
+         "         <config-property-type>java.lang.String</config-property-type>\n" +
+         "         <config-property-value></config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>Whether the resource adapter must failover on the initial connection</description>\n" +
+         "         <config-property-name>FailoverOnInitialConnection</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value>false</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>Whether the resource adapter must compress large messages</description>\n" +
+         "         <config-property-name>CompressLargeMessage</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value>false</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>The timeout in milliseconds for failover call (or -1 for infinite)</description>\n" +
+         "         <config-property-name>CallFailoverTimeout</config-property-name>\n" +
+         "         <config-property-type>long</config-property-type>\n" +
+         "         <config-property-value>-1</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>The maximum interval (in milliseconds) between reconnection attempts</description>\n" +
+         "         <config-property-name>MaxRetryInterval</config-property-name>\n" +
+         "         <config-property-type>long</config-property-type>\n" +
+         "         <config-property-value>2000</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>Whether the resource adapter must cache large messages</description>\n" +
+         "         <config-property-name>CacheLargeMessagesClient</config-property-name>\n" +
+         "         <config-property-type>boolean</config-property-type>\n" +
+         "         <config-property-value>false</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>The producer window size (in bytes)</description>\n" +
+         "         <config-property-name>ProducerWindowSize</config-property-name>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
+         "         <config-property-value>65536</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "         <description>The number of attempts for the initial connection</description>\n" +
+         "         <config-property-name>InitialConnectAttempts</config-property-name>\n" +
+         "         <config-property-type>int</config-property-type>\n" +
+         "         <config-property-value>1</config-property-value>\n" +
+         "      </config-property>\n";
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
