@@ -113,7 +113,8 @@ public interface HornetQLogger extends BasicLogger
    void dumpServerInfo(String serverInfo);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111007, value = "Deleting pending large message as it wasn't completed: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111007, value = "Deleting pending large message as it was not completed: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void deletingPendingMessage(Pair<Long, Long> msgToDelete);
 
    @LogMessage(level = Logger.Level.INFO)
@@ -162,19 +163,24 @@ public interface HornetQLogger extends BasicLogger
    void percentLoaded(Long percent);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111019, value = "Can't find queue {0} while reloading ACKNOWLEDGE_CURSOR, deleting record now", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111019, value = "Can not find queue {0} while reloading ACKNOWLEDGE_CURSOR, deleting record now",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalCannotFindQueueReloading(Long queueID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111020, value = "Can't find queue {0} while reloading PAGE_CURSOR_COUNTER_VALUE, deleting record now", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111020,
+            value = "Can not find queue {0} while reloading PAGE_CURSOR_COUNTER_VALUE, deleting record now",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalCannotFindQueueReloadingPage(Long queueID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111021, value = "Can't find queue {0} while reloading PAGE_CURSOR_COUNTER_INC, deleting record now", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111021, value = "Can not find queue {0} while reloading PAGE_CURSOR_COUNTER_INC, deleting record now",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalCannotFindQueueReloadingPageCursor(Long queueID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111022, value = "Large message: {0} didn't have any associated reference, file will be deleted", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111022, value = "Large message: {0} did not have any associated reference, file will be deleted",
+            format = Message.Format.MESSAGE_FORMAT)
    void largeMessageWithNoRef(Long messageID);
 
    @LogMessage(level = Logger.Level.INFO)
@@ -210,7 +216,10 @@ public interface HornetQLogger extends BasicLogger
    void journalSynch(JournalFile jf, Long size, SequentialFile file);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111031, value = "Bridge {0} connected to fowardingAddress={1}. {2} doesn't have any bindings what means messages will be ignored until a binding is created.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 111031,
+            value = "Bridge {0} connected to fowardingAddress={1}. {2} does not have any bindings what means messages will be ignored until a binding is created.",
+            format = Message.Format.MESSAGE_FORMAT)
    void bridgeNoBindings(SimpleString name, SimpleString forwardingAddress, SimpleString address);
 
    @LogMessage(level = Logger.Level.INFO)
@@ -264,7 +273,7 @@ public interface HornetQLogger extends BasicLogger
    void ignoringPrepare(Xid xid);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 111044, value =  "{0} to become 'live'", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 111044, value = "{0} to become \'live\'", format = Message.Format.MESSAGE_FORMAT)
    void becomingLive(HornetQServer server);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -361,12 +370,17 @@ public interface HornetQLogger extends BasicLogger
    void waitingForRetry(Long interval, Long retryInterval, Double multiplier);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112023, value =    "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway."
+   @Message(
+            id = 112023,
+            value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway."
                , format = Message.Format.MESSAGE_FORMAT)
    void createConnectorException(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112024, value = "I'm closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly " + "before letting them go out of scope! {0}"
+   @Message(
+            id = 112024,
+            value = "I am closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly "
+                     + "before letting them go out of scope! {0}"
                , format = Message.Format.MESSAGE_FORMAT)
    void factoryLeftOpen(@Cause Exception e, int i);
 
@@ -399,7 +413,10 @@ public interface HornetQLogger extends BasicLogger
    void errorDuringPrepare(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112032, value = "I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly before letting them go out of scope! {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 112032,
+            value = "I am closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly before letting them go out of scope! {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void clientSessionNotClosed(@Cause Exception e, int identity);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -495,7 +512,10 @@ public interface HornetQLogger extends BasicLogger
    void connectorAlreadyDeployed(String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112054, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal", format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 112054,
+            value = "AIO was not located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal",
+            format = Message.Format.MESSAGE_FORMAT)
    void AIONotFound();
 
    @LogMessage(level = Logger.Level.WARN)
@@ -523,7 +543,8 @@ public interface HornetQLogger extends BasicLogger
    void problemCleaningPageAddress(@Cause Exception e, SimpleString address);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112061, value = "Couldn't complete operations on IO context {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112061, value = "Could not complete operations on IO context {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void problemCompletingOperations(OperationContext e);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -535,7 +556,8 @@ public interface HornetQLogger extends BasicLogger
    void problemCleaningCursorPages(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112064, value = "Couldn't remove page {0} from consumed pages on cursor for address {1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112064, value = "Could not remove page {0} from consumed pages on cursor for address {1}",
+            format = Message.Format.MESSAGE_FORMAT)
    void problemRemovingCursorPages(Long pageId, SimpleString address);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -543,11 +565,13 @@ public interface HornetQLogger extends BasicLogger
    void timedOutFlushingExecutorsPagingCursor(PageSubscription pageSubscription);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112066, value = "Couldn't find page cache for page {0} removing it from the journal", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112066, value = "Could not find page cache for page {0} removing it from the journal",
+            format = Message.Format.MESSAGE_FORMAT)
    void pageNotFound(PagePosition pos);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112067, value = "Couldn't locate page transaction {0}, ignoring message on position {1} on address={2} queue={3}",
+   @Message(id = 112067,
+            value = "Could not locate page transaction {0}, ignoring message on position {1} on address={2} queue={3}",
          format = Message.Format.MESSAGE_FORMAT)
    void pageSubscriptionCouldntLoad(long transactionID, PagePosition position, SimpleString address, SimpleString name);
 
@@ -568,11 +592,12 @@ public interface HornetQLogger extends BasicLogger
    void pageSuspectFile(int position, int msgNumber);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112072, value = "Can't delete page transaction id={0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112072, value = "Can not delete page transaction id={0}", format = Message.Format.MESSAGE_FORMAT)
    void pageTxDeleteError(@Cause Exception e, long recordID);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112073, value = "Directory {0} didn't have an identification file {1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112073, value = "Directory {0} did not have an identification file {1}",
+            format = Message.Format.MESSAGE_FORMAT)
    void pageStoreFactoryNoIdFile(String s, String addressFile);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -608,7 +633,7 @@ public interface HornetQLogger extends BasicLogger
    void journalCannotFindQueueForMessage(Long queueID);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112082, value = "It wasn't possible to delete message {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112082, value = "It was not possible to delete message {0}", format = Message.Format.MESSAGE_FORMAT)
    void journalErrorDeletingMessage(@Cause Exception e, Long messageID);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -620,7 +645,8 @@ public interface HornetQLogger extends BasicLogger
    void journalErrorRemovingRef(Long messageID);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112085, value = "Can't find queue {0} while reloading ACKNOWLEDGE_CURSOR", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112085, value = "Can not find queue {0} while reloading ACKNOWLEDGE_CURSOR",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalCannotFindQueueReloadingACK(Long queueID);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -628,11 +654,15 @@ public interface HornetQLogger extends BasicLogger
    void journalPAGEOnPrepared();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112087, value = "InternalError: Record type {0} not recognized. Maybe you're using journal files created on a different version", format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 112087,
+            value = "InternalError: Record type {0} not recognized. Maybe you are using journal files created on a different version",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalInvalidRecordType(Byte recordType);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112088, value = "can't locate recordType={0} on loadPreparedTransaction//deleteRecords", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112088, value = "Can not locate recordType={0} on loadPreparedTransaction//deleteRecords",
+            format = Message.Format.MESSAGE_FORMAT)
    void journalInvalidRecordTypeOnPreparedTX(Byte recordType);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -666,7 +696,8 @@ public interface HornetQLogger extends BasicLogger
    void noDLA(SimpleString address);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112096, value = "It wasn't possible to add references due to an IO error code {0} message = {1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112096, value = "It was not possible to add references due to an IO error code {0} message = {1}",
+            format = Message.Format.MESSAGE_FORMAT)
    void ioErrorAddingReferences(Integer errorCode, String errorMessage);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -694,7 +725,8 @@ public interface HornetQLogger extends BasicLogger
    void errorProcessingIOCallback(Integer errorCode, String errorMessage);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112103, value = "Can't find packet to clear: {0} last received command id first stored command id {1}",
+   @Message(id = 112103,
+            value = "Can not find packet to clear: {0} last received command id first stored command id {1}",
          format = Message.Format.MESSAGE_FORMAT)
    void cannotFindPacketToClear(Integer lastReceivedCommandID, Integer firstStoredCommandID);
 
@@ -805,7 +837,8 @@ public interface HornetQLogger extends BasicLogger
    void connectorKeysMissing(String s);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112129, value = "Packet {0} can't be processed by the ReplicationEndpoint", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112129, value = "Packet {0} can not be processed by the ReplicationEndpoint",
+            format = Message.Format.MESSAGE_FORMAT)
    void invalidPacketForReplication(Packet packet);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -861,7 +894,8 @@ public interface HornetQLogger extends BasicLogger
    void errorQueryingBridge(@Cause Throwable t, SimpleString name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112143, value = "Address {0} doesn't have any bindings yet, retry #({1})", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112143, value = "Address {0} does not have any bindings yet, retry #({1})",
+            format = Message.Format.MESSAGE_FORMAT)
    void errorQueryingBridge(SimpleString address, Integer retryCount);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -873,7 +907,8 @@ public interface HornetQLogger extends BasicLogger
    void errorConnectingBridge(@Cause Exception e, Bridge bridge);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112146, value = "ServerLocator was shutdown, can't retry on opening connection for bridge", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112146, value = "ServerLocator was shutdown, can not retry on opening connection for bridge",
+            format = Message.Format.MESSAGE_FORMAT)
    void bridgeLocatorShutdown();
 
    @LogMessage(level = Logger.Level.WARN)
@@ -913,7 +948,8 @@ public interface HornetQLogger extends BasicLogger
    void jvmAllocatedMoreMemory(Long totalMemory1, Long totalMemory2);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112156, value = "Couldn't finish context execution in 10 seconds", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112156, value = "Could not finish context execution in 10 seconds",
+            format = Message.Format.MESSAGE_FORMAT)
    void errorCompletingContext(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1071,7 +1107,7 @@ public interface HornetQLogger extends BasicLogger
    void errorClosingBackupFactoryOnClusterConnection(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112193, value =   "Node Manager can't open file {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112193, value = "Node Manager can not open file {0}", format = Message.Format.MESSAGE_FORMAT)
    void nodeManagerCantOpenFile(@Cause Exception e, File file);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1083,7 +1119,8 @@ public interface HornetQLogger extends BasicLogger
    void errorTransferringConsumer();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 112196, value =   "Queue Couldn't finish waiting executors. Try increasing the thread pool size", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 112196, value = "Queue could not finish waiting executors. Try increasing the thread pool size",
+            format = Message.Format.MESSAGE_FORMAT)
    void errorFlushingExecutorsOnQueue();
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1376,7 +1413,7 @@ public interface HornetQLogger extends BasicLogger
    void largeMessageIncomatible();
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 114048, value = "Couldn't cancel reference {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 114048, value = "Could not cancel reference {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorCancellingRefOnBridge(@Cause Exception e, MessageReference ref2);
 
    @LogMessage(level = Logger.Level.ERROR)
