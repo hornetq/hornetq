@@ -661,6 +661,7 @@ public class FailoverTest extends FailoverTestBase
       {
          assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
          adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+         beforeRestart(liveServer);
          liveServer.start();
          assertTrue("live initialized...", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
          int i = 0;
@@ -2168,6 +2169,7 @@ public class FailoverTest extends FailoverTestBase
 
    protected void beforeRestart(TestableServer liveServer)
    {
+      // no-op
    }
 
    // Private -------------------------------------------------------

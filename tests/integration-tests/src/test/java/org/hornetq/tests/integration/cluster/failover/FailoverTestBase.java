@@ -222,6 +222,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       if (configuration.isSharedStore())
       {
          ClusterConnectionConfiguration cc = configuration.getClusterConfigurations().get(0);
+         assertNotNull("cluster connection configuration", cc);
+         assertNotNull("static connectors", cc.getStaticConnectors());
          cc.getStaticConnectors().add(backupConnector.getName());
          // backupConnector is only necessary for fail-back tests
          configuration.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
