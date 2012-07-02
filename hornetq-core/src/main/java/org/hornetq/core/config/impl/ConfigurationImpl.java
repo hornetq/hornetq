@@ -26,6 +26,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -358,6 +359,8 @@ public class ConfigurationImpl implements Configuration
    private transient String passwordCodec;
 
    private final Set<TransportConfiguration> failBackConnectors = new HashSet<TransportConfiguration>();
+
+   private Map<String, BroadcastEndpointConfiguration> broadcastEndpoints = new HashMap<String, BroadcastEndpointConfiguration>();
 
    // Public -------------------------------------------------------------------------
 
@@ -1460,6 +1463,11 @@ public class ConfigurationImpl implements Configuration
    public String getPasswordCodec()
    {
       return passwordCodec;
+   }
+
+   public Map<String, BroadcastEndpointConfiguration> getBroadcastEndpointConfigurations()
+   {
+      return this.broadcastEndpoints;
    }
 
 }

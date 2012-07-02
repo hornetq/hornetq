@@ -67,6 +67,13 @@
 						</xsd:sequence>
 					 </xsd:complexType>
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="broadcast-endpoints">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="unbounded" minOccurs="0" name="broadcast-endpoint" type="broadcastEndpointType"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="broadcast-groups">
 				 	<xsd:complexType>
 						<xsd:sequence>
@@ -159,12 +166,13 @@
 			<xsd:sequence>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-address"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-port"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-address"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-port"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-address"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-port"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="broadcast-period"/>
 				<xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xsd:string"/>
 			</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
+			<xsd:attribute name="endpoint" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="refresh-timeout" type="xsd:int"/>
@@ -173,12 +181,13 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-address"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-address"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-port"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-address"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-port"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="refresh-timeout"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout"/>
 			</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
+			<xsd:attribute name="endpoint" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -215,6 +224,14 @@
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType"/>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="broadcastEndpointType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType"/>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:ID" use="required"/>
+		<xsd:attribute name="class" type="xsd:string" use="required"/>
 	</xsd:complexType>
 
 	<xsd:complexType name="failBackConnectorType">

@@ -27,6 +27,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
  */
 public final class HornetQClient
 {
+
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = RoundRobinConnectionLoadBalancingPolicy.class.getCanonicalName();
 
    public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
@@ -72,6 +73,8 @@ public final class HornetQClient
    public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
 
    public static final int DEFAULT_DISCOVERY_PORT = 9876;
+
+   public static final int DEFAULT_BROADCAST_PERIOD = 5000;
 
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 

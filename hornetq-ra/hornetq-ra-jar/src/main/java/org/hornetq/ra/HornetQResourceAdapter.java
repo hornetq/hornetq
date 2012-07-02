@@ -13,7 +13,11 @@
 package org.hornetq.ra;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,11 +40,13 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.core.config.BroadcastEndpointConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.ra.recovery.RecoveryManager;
 import org.hornetq.utils.SensitiveDataCodec;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * The resource adapter for HornetQ
@@ -53,7 +59,7 @@ import org.hornetq.utils.SensitiveDataCodec;
 public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 {
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 4756893709825838770L;
 
@@ -71,7 +77,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties
     */
    private final HornetQRAProperties raProperties;
-   
+
    /**
     * The resource adapter properties before parsing
     */
@@ -208,7 +214,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQRALogger.LOGGER.trace("start(" + ctx + ")");
       }
-      
+
       locateTM();
 
       recoveryManager.start(useAutoRecovery);
@@ -335,7 +341,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          raProperties.setParsedConnectionParameters(HornetQRaUtils.parseConfig(config));
       }
    }
-
 
    public Boolean getHA()
    {
@@ -1561,6 +1566,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
+   @Override
    public boolean equals(final Object obj)
    {
       if (HornetQResourceAdapter.trace)
@@ -1588,6 +1594,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     *
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (HornetQResourceAdapter.trace)
@@ -1777,13 +1784,48 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                                 : getDiscoveryAddress();
       
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
+      
+      String endpointClass = overrideProperties.getBroadcastEndpointClassName() != null ? overrideProperties.getBroadcastEndpointClassName()
+                                                                            : raProperties.getBroadcastEndpointClassName();
 
       if(ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (discoveryAddress != null)
+      if (endpointClass != null)
+      {
+         Map<String, Object> endpointParams = overrideProperties.getBroadcastEndpointParams() != null ? overrideProperties.getBroadcastEndpointParams()
+                                                                                   : raProperties.getBroadcastEndpointParams();
+         BroadcastEndpointConfiguration endpointConfig = new BroadcastEndpointConfiguration("hornetq-ra", endpointClass, endpointParams);
+
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
+
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(UUIDGenerator.getInstance().generateStringUUID(),
+                                                          refreshTimeout, initialTimeout, endpointConfig);
+         if (ha)
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+      }
+      else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
@@ -1833,8 +1875,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
       }
-      else
-      if (connectorClassName != null)
+      else if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
@@ -2009,12 +2050,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       return map;
    }
-   
+
    private void locateTM()
    {
       String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
       String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
-      
+
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
          tm = HornetQRaUtils.locateTM(locatorClasses[i], locatorMethods[i]);
@@ -2023,7 +2064,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             break;
          }
       }
-      
+
       if (tm == null)
       {
          HornetQRALogger.LOGGER.noTXLocator();
@@ -2248,5 +2289,22 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public SensitiveDataCodec<String> getCodecInstance()
    {
       return raProperties.getCodecInstance();
+   }
+
+   public void setBroadcastEndpointClassName(final String endpointClassName)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setBroadcastEndpointClassName(" + endpointClassName + ")");
+      }
+      raProperties.setBroadcastEndpointClassName(endpointClassName);      
+   }
+
+   public void setBroadcastEndpointParameters(final String endpointParams)
+   {
+      if (endpointParams != null)
+      {
+         raProperties.setBroadcastEndpointParams(HornetQRaUtils.parseParameters(endpointParams));
+      }
    }
 }
