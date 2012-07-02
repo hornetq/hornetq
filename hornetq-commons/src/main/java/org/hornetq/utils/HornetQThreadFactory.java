@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class HornetQThreadFactory implements ThreadFactory
+public final class HornetQThreadFactory implements ThreadFactory
 {
    private final ThreadGroup group;
 
@@ -39,11 +39,11 @@ public class HornetQThreadFactory implements ThreadFactory
    public HornetQThreadFactory(final String groupName, final boolean daemon, final ClassLoader tccl)
    {
       group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
-      
+
       this.threadPriority = Thread.NORM_PRIORITY;
-      
+
       this.tccl = tccl;
-      
+
       this.daemon = daemon;
    }
 
