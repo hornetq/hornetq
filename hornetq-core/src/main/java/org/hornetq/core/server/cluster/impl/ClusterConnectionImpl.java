@@ -155,8 +155,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private final Topology topology = new Topology(this);
 
    private volatile ServerLocatorInternal backupServerLocator;
-
-   private boolean stopping = false;
+   private volatile boolean announcingBackup;
+   private volatile boolean stopping = false;
 
    public ClusterConnectionImpl(final ClusterManagerInternal manager,
                                 final TransportConfiguration[] tcConfigs,
@@ -453,23 +453,23 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          managementService.sendNotification(notification);
       }
 
+      if (announcingBackup)
+      {/*
+        * The executor used is ordered so if we are announcing the backup, scheduling the following
+        * Runnable would never execute.
+        */
+         closeLocator(backupServerLocator);
+      }
       executor.execute(new Runnable()
       {
          public void run()
          {
             synchronized (ClusterConnectionImpl.this)
             {
-               if (backupServerLocator != null)
-               {
-                  backupServerLocator.close();
-                  backupServerLocator = null;
-               }
-
-               if (serverLocator != null)
-               {
-                  serverLocator.close();
-                  serverLocator = null;
-               }
+               closeLocator(backupServerLocator);
+               backupServerLocator = null;
+               closeLocator(serverLocator);
+               serverLocator = null;
             }
 
          }
@@ -478,24 +478,38 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       started = false;
    }
 
+   /**
+    * @param locator
+    */
+   private void closeLocator(final ServerLocatorInternal locator)
+   {
+      if (locator != null)
+         locator.close();
+   }
+
    public void announceBackup()
    {
       executor.execute(new Runnable()
       {
+
          public void run()
          {
+            if (stopping)
+               return;
             try
             {
                ServerLocatorInternal localBackupLocator = backupServerLocator;
                if (localBackupLocator == null)
                {
-                  HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
+                  if (!stopping)
+                     HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
                   return;
                }
                if (HornetQLogger.LOGGER.isDebugEnabled())
                {
                   HornetQLogger.LOGGER.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
                }
+               announcingBackup = true;
                ClientSessionFactory backupSessionFactory = localBackupLocator.connect();
                if (backupSessionFactory != null)
                {
@@ -517,6 +531,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             {
                if (scheduledExecutor.isShutdown())
                   return;
+               if (stopping)
+                  return;
                HornetQLogger.LOGGER.errorAnnouncingBackup(e);
 
                scheduledExecutor.schedule(new Runnable(){
@@ -526,6 +542,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                   }
 
                }, retryInterval, TimeUnit.MILLISECONDS);
+            }
+            finally
+            {
+               announcingBackup = false;
             }
          }
       });
