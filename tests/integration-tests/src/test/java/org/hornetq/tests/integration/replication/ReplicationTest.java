@@ -550,14 +550,19 @@ public final class ReplicationTest extends ServiceTestBase
       factory = new OrderedExecutorFactory(executor);
    }
 
+   /**
+    * We need to shutdown the executors before calling {@link super#tearDown()} (which will check
+    * for leaking threads). Due to that, we need to close/stop all components here.
+    */
    @Override
    protected void tearDown() throws Exception
    {
       stopComponent(manager);
-      closeServerLocator(locator);
-
       manager = null;
+      closeServerLocator(locator);
+      stopComponent(backupServer);
       backupServer = null;
+      stopComponent(liveServer);
       liveServer = null;
 
       executor.shutdownNow();
