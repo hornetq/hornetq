@@ -19,6 +19,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -29,41 +30,39 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class UUIDTest extends UnitTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   static final int MANY_TIMES = 100000;
 
    public void testManyUUIDs() throws Exception
    {
-      final int MANY_TIMES = getTimes();
       Set<String> uuidsSet = new HashSet<String>();
 
       UUIDGenerator gen = UUIDGenerator.getInstance();
-      for (int i = 0; i < MANY_TIMES; i++)
+      for (int i = 0; i < getTimes(); i++)
       {
          uuidsSet.add(gen.generateStringUUID());
       }
 
       // we put them in a set to check duplicates
-      Assert.assertEquals(MANY_TIMES, uuidsSet.size());
+      Assert.assertEquals(getTimes(), uuidsSet.size());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    protected int getTimes()
    {
-      return 100000;
+      return MANY_TIMES;
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   public void testStringToUuidConversion()
+   {
+      UUIDGenerator gen = UUIDGenerator.getInstance();
+      for (int i = 0; i < MANY_TIMES; i++)
+      {
+         final UUID uuid = gen.generateUUID();
+         final String uuidString = uuid.toString();
+         byte[] data2 = UUID.stringToBytes(uuidString);
+         final UUID uuid2 = new UUID(UUID.TYPE_TIME_BASED, data2);
+         assertEqualsByteArrays(uuid.asBytes(), data2);
+         assertEquals(uuidString, uuid, uuid2);
+         assertEquals(uuidString, uuidString, uuid2.toString());
+      }
+   }
 }

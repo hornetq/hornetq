@@ -42,9 +42,9 @@ public abstract class NodeManager implements HornetQComponent
 
    private boolean isStarted = false;
 
-   protected volatile SimpleString nodeID;
-
-   protected volatile UUID uuid;
+   private final Object nodeIDGuard = new Object();
+   private SimpleString nodeID;
+   private UUID uuid;
 
    public void start() throws Exception
    {
@@ -63,14 +63,20 @@ public abstract class NodeManager implements HornetQComponent
 
    public SimpleString getNodeId()
    {
-      return nodeID;
+      synchronized (nodeIDGuard)
+      {
+         return nodeID;
+      }
    }
 
    public abstract SimpleString readNodeId() throws IllegalStateException, IOException;
 
    public UUID getUUID()
    {
-      return uuid;
+      synchronized (nodeIDGuard)
+      {
+         return uuid;
+      }
    }
 
    /**
@@ -81,7 +87,23 @@ public abstract class NodeManager implements HornetQComponent
     */
    public void setNodeID(String nodeID)
    {
-      this.nodeID = new SimpleString(nodeID);
+      synchronized (nodeIDGuard)
+      {
+         this.nodeID = new SimpleString(nodeID);
+         this.uuid = new UUID(UUID.TYPE_TIME_BASED, UUID.stringToBytes(nodeID));
+      }
+   }
+
+   /**
+    * @param generateUUID
+    */
+   protected void setUUID(UUID generateUUID)
+   {
+      synchronized (nodeIDGuard)
+      {
+         uuid = generateUUID;
+         nodeID = new SimpleString(uuid.toString());
+      }
    }
 
    public abstract boolean isAwaitingFailback() throws Exception;

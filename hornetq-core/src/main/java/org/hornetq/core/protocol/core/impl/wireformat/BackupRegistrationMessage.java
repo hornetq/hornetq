@@ -17,17 +17,14 @@ public final class BackupRegistrationMessage extends PacketImpl
 {
 
    private TransportConfiguration connector;
-   private String nodeID;
    private String clusterUser;
    private String clusterPassword;
    private boolean backupWantsFailBack;
 
-   public BackupRegistrationMessage(String nodeId, TransportConfiguration tc, String user, String password,
-                                    boolean backupWantsFailBack)
+   public BackupRegistrationMessage(TransportConfiguration tc, String user, String password, boolean backupWantsFailBack)
    {
       this();
       connector = tc;
-      nodeID = nodeId;
       clusterUser = user;
       clusterPassword = password;
       this.backupWantsFailBack = backupWantsFailBack;
@@ -38,11 +35,6 @@ public final class BackupRegistrationMessage extends PacketImpl
       super(BACKUP_REGISTRATION);
    }
 
-   public String getNodeID()
-   {
-      return nodeID;
-   }
-
    public TransportConfiguration getConnector()
    {
       return connector;
@@ -51,7 +43,6 @@ public final class BackupRegistrationMessage extends PacketImpl
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeString(nodeID);
       buffer.writeString(clusterUser);
       buffer.writeString(clusterPassword);
       buffer.writeBoolean(backupWantsFailBack);
@@ -61,7 +52,6 @@ public final class BackupRegistrationMessage extends PacketImpl
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      nodeID = buffer.readString();
       clusterUser = buffer.readString();
       clusterPassword = buffer.readString();
       backupWantsFailBack = buffer.readBoolean();
@@ -93,7 +83,6 @@ public final class BackupRegistrationMessage extends PacketImpl
       result = prime * result + ((clusterPassword == null) ? 0 : clusterPassword.hashCode());
       result = prime * result + ((clusterUser == null) ? 0 : clusterUser.hashCode());
       result = prime * result + ((connector == null) ? 0 : connector.hashCode());
-      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
       return result;
    }
 
@@ -129,13 +118,6 @@ public final class BackupRegistrationMessage extends PacketImpl
             return false;
       }
       else if (!connector.equals(other.connector))
-         return false;
-      if (nodeID == null)
-      {
-         if (other.nodeID != null)
-            return false;
-      }
-      else if (!nodeID.equals(other.nodeID))
          return false;
       return true;
    }
