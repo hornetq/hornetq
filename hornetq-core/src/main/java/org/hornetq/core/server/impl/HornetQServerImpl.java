@@ -271,6 +271,9 @@ public class HornetQServerImpl implements HornetQServer
 
    private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
+   private final Object failbackCheckerGuard = new Object();
+   private boolean cancelFailBackChecker;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -354,9 +357,13 @@ public class HornetQServerImpl implements HornetQServer
          HornetQLogger.LOGGER.debug("Server already started!");
          return;
       }
+      synchronized (failbackCheckerGuard)
+      {
+         cancelFailBackChecker = false;
+      }
       state = SERVER_STATE.INITIALIZING;
-
       HornetQLogger.LOGGER.debug("Starting server " + this);
+
       OperationContextImpl.clearContext();
 
       try
@@ -460,6 +467,10 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop() throws Exception
    {
+      synchronized (failbackCheckerGuard)
+      {
+         cancelFailBackChecker = true;
+      }
       stop(configuration.isFailoverOnServerShutdown());
    }
 
@@ -1826,9 +1837,15 @@ public class HornetQServerImpl implements HornetQServer
                         // We need to wait some time before we start the backup again
                         // otherwise we may eventually start before the live had a chance to get it
                         Thread.sleep(configuration.getFailbackDelay());
+                        synchronized (failbackCheckerGuard)
+                        {
+                           if (cancelFailBackChecker)
+                              return;
                         configuration.setBackup(true);
-                        HornetQLogger.LOGGER.debug(HornetQServerImpl.this + "::Starting backup node now after failback");
+                           HornetQLogger.LOGGER.debug(HornetQServerImpl.this +
+                                    "::Starting backup node now after failback");
                         start();
+                     }
                      }
                      catch (Exception e)
                      {
