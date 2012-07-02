@@ -489,7 +489,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                ServerLocatorInternal localBackupLocator = backupServerLocator;
                if (localBackupLocator == null)
                {
-                  HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
+                  if (!stopping)
+                     HornetQLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
                   return;
                }
                if (HornetQLogger.LOGGER.isDebugEnabled())
