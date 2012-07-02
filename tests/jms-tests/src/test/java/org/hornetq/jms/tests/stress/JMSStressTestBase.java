@@ -61,60 +61,12 @@ public class JMSStressTestBase extends HornetQServerTestCase
    protected Topic topic4;
 
    @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      // We test with small values for paging params to really stress it
-
-      final int fullSize = 2000;
-
-      final int pageSize = 300;
-
-      final int downCacheSize = 300;
-
-      // createQueue("Queue1", fullSize, pageSize, downCacheSize);
-      // createQueue("Queue2", fullSize, pageSize, downCacheSize);
-      // createQueue("Queue3", fullSize, pageSize, downCacheSize);
-      // createQueue("Queue4", fullSize, pageSize, downCacheSize);
-      //      
-      // deployTopic("Topic1", fullSize, pageSize, downCacheSize);
-      // deployTopic("Topic2", fullSize, pageSize, downCacheSize);
-      // deployTopic("Topic3", fullSize, pageSize, downCacheSize);
-      // deployTopic("Topic4", fullSize, pageSize, downCacheSize);
-      //            
-      // InitialContext ic = getInitialContext();
-      // cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      //      
-      // queue1 = (Destination)ic.lookup("/queue/Queue1");
-      // queue2 = (Destination)ic.lookup("/queue/Queue2");
-      // queue3 = (Destination)ic.lookup("/queue/Queue3");
-      // queue4 = (Destination)ic.lookup("/queue/Queue4");
-      //
-      // topic1 = (Topic)ic.lookup("/topic/Topic1");
-      // topic2 = (Topic)ic.lookup("/topic/Topic2");
-      // topic3 = (Topic)ic.lookup("/topic/Topic3");
-      // topic4 = (Topic)ic.lookup("/topic/Topic4");
-   }
-
-   @Override
    public void tearDown() throws Exception
    {
       if (checkNoMessageData())
       {
          ProxyAssertSupport.fail("Message data still exists");
       }
-
-      // undeployQueue("Queue1");
-      // undeployQueue("Queue2");
-      // undeployQueue("Queue3");
-      // undeployQueue("Queue4");
-      //
-      // undeployTopic("Topic1");
-      // undeployTopic("Topic2");
-      // undeployTopic("Topic3");
-      // undeployTopic("Topic4");
-
       super.tearDown();
    }
 
