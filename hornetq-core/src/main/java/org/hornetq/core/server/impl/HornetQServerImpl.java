@@ -2095,7 +2095,6 @@ public class HornetQServerImpl implements HornetQServer
                if (nodeID == null)
                   throw new RuntimeException("Could not estabilish the connection");
                serverLocator0.removeClusterTopologyListener(this);
-               System.out.println("got this: " + nodeID);
                nodeManager.setNodeID(nodeID);
             }
 
