@@ -16,7 +16,7 @@ package org.hornetq.tests.timing.util;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -42,22 +42,9 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
       System.out.println("getHardwareAddress() => " + 1.0 * (end - start) / count + " ms");
    }
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected int getTimes()
    {
       return 1000000;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

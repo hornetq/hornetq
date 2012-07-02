@@ -455,7 +455,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
       journalsHolder = null;
       quorumManager.setLiveID(liveID);
-      server.setRemoteBackupUpToDate(liveID);
+      server.setRemoteBackupUpToDate();
       HornetQLogger.LOGGER.backupServerSynched(server);
       return;
    }

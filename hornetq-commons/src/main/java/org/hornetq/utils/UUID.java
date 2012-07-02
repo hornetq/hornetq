@@ -15,22 +15,23 @@
 
 package org.hornetq.utils;
 
+
 /**
  * UUID represents Universally Unique Identifiers (aka Global UID in Windows
  * world). UUIDs are usually generated via UUIDGenerator (or in case of 'Null
  * UUID', 16 zero bytes, via static method getNullUUID()), or received from
  * external systems.
- * 
+ *
  * By default class caches the string presentations of UUIDs so that description
  * is only created the first time it's needed. For memory stingy applications
  * this caching can be turned off (note though that if uuid.toString() is never
  * called, desc is never calculated so only loss is the space allocated for the
  * desc pointer... which can of course be commented out to save memory).
- * 
+ *
  * Similarly, hash code is calculated when it's needed for the first time, and
  * from thereon that value is just returned. This means that using UUIDs as keys
  * should be reasonably efficient.
- * 
+ *
  * UUIDs can be compared for equality, serialized, cloned and even sorted.
  * Equality is a simple bit-wise comparison. Ordering (for sorting) is done by
  * first ordering based on type (in the order of numeric values of types),
@@ -93,8 +94,8 @@ public final class UUID
    private transient int mHashCode = 0;
 
    /**
-    * 
-    * 
+    *
+    *
     * @param type
     *           UUID type
     * @param data
@@ -211,7 +212,38 @@ public final class UUID
       }
       return mDesc;
    }
-   
+
+   /**
+    * Creates a 128bit number from the String representation of {@link UUID}.
+    * @param uuid
+    * @return byte array that can be used to recreate a UUID instance from the given String
+    *         reprentation
+    */
+   public static byte[] stringToBytes(String uuid)
+   {
+      byte[] data = new byte[16];
+      int dataIdx = 0;
+      try
+      {
+         for (int i = 0; i < uuid.length();)
+         {
+            while (uuid.charAt(i) == '-')
+               i++;
+            char c1 = uuid.charAt(i);
+            char c2 = uuid.charAt(i + 1);
+            i += 2;
+            int c1Bytes = Character.digit(c1, 16);
+            int c2Bytes = Character.digit(c2, 16);
+            data[dataIdx++] = (byte)((c1Bytes << 4) + c2Bytes);
+         }
+      }
+      catch (RuntimeException e)
+      {
+         throw new IllegalArgumentException(e);
+      }
+      return data;
+   }
+
    /**
     * Checking equality of UUIDs is easy; just compare the 128-bit number.
     */

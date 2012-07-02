@@ -210,8 +210,8 @@ public class FileLockNodeManager extends NodeManager
 
       backupLock = lock(FileLockNodeManager.BACKUP_LOCK_POS);
       HornetQLogger.LOGGER.gotBackupLock();
-
-      readNodeId();
+      if (getUUID() == null)
+         readNodeId();
    }
 
    @Override
@@ -322,9 +322,8 @@ public class FileLockNodeManager extends NodeManager
       int read = channel.read(id, 3);
       if (read != 16)
       {
-         uuid = UUIDGenerator.getInstance().generateUUID();
-         nodeID = new SimpleString(uuid.toString());
-         id.put(uuid.asBytes(), 0, 16);
+         setUUID(UUIDGenerator.getInstance().generateUUID());
+         id.put(getUUID().asBytes(), 0, 16);
          id.position(0);
          channel.write(id, 3);
          channel.force(true);
@@ -334,8 +333,7 @@ public class FileLockNodeManager extends NodeManager
          byte[] bytes = new byte[16];
          id.position(0);
          id.get(bytes);
-         uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
-         nodeID = new SimpleString(uuid.toString());
+         setUUID(new UUID(UUID.TYPE_TIME_BASED, bytes));
       }
    }
 
@@ -351,9 +349,8 @@ public class FileLockNodeManager extends NodeManager
       byte[] bytes = new byte[16];
       id.position(0);
       id.get(bytes);
-      uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
-      nodeID = new SimpleString(uuid.toString());
-      return nodeID;
+      setUUID(new UUID(UUID.TYPE_TIME_BASED, bytes));
+      return getNodeId();
    }
 
    /**
