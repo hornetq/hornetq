@@ -2168,6 +2168,7 @@ public class FailoverTest extends FailoverTestBase
 
    protected void beforeRestart(TestableServer liveServer)
    {
+      // no-op
    }
 
    // Private -------------------------------------------------------

@@ -163,9 +163,4 @@ public class SecurityFailoverTest extends FailoverTest
       securityManager.addRole("a", "arole");
       return securityManager;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
