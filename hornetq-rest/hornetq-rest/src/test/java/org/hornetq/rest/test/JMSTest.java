@@ -5,6 +5,17 @@ import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import junit.framework.Assert;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.rest.HttpHeaderProperty;
+import org.hornetq.rest.Jms;
+import org.hornetq.rest.queue.QueueDeployment;
+import org.jboss.resteasy.client.ClientRequest;
+import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.spi.Link;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -16,18 +27,6 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQJMSConnectionFactory;
-import org.hornetq.rest.HttpHeaderProperty;
-import org.hornetq.rest.Jms;
-import org.hornetq.rest.queue.QueueDeployment;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.spi.Link;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -73,13 +72,25 @@ public class JMSTest extends MessageTestBase
       @Override
       public boolean equals(Object o)
       {
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+         if (this == o)
+         {
+            return true;
+         }
+         if (o == null || getClass() != o.getClass())
+         {
+            return false;
+         }
 
          Order order = (Order) o;
 
-         if (!amount.equals(order.amount)) return false;
-         if (!name.equals(order.name)) return false;
+         if (!amount.equals(order.amount))
+         {
+            return false;
+         }
+         if (!name.equals(order.name))
+         {
+            return false;
+         }
 
          return true;
       }
@@ -128,6 +139,7 @@ public class JMSTest extends MessageTestBase
    public static class Listener implements MessageListener
    {
       public static Order order;
+      public static String messageID = null;
       public static CountDownLatch latch = new CountDownLatch(1);
 
       public void onMessage(Message message)
@@ -135,6 +147,7 @@ public class JMSTest extends MessageTestBase
          try
          {
             order = Jms.getEntity(message, Order.class);
+            messageID = message.getJMSMessageID();
          }
          catch (Exception e)
          {
@@ -183,6 +196,7 @@ public class JMSTest extends MessageTestBase
             Listener.latch.await(1, TimeUnit.SECONDS);
             Assert.assertNotNull(Listener.order);
             Assert.assertEquals(order, Listener.order);
+            Assert.assertNotNull(Listener.messageID);
          }
 
       }

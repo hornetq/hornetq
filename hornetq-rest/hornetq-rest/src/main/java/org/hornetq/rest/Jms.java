@@ -146,7 +146,7 @@ public class Jms
     	  byte[] body = new byte[(int)size];
     	  bytesMessage.readBytes(body);
 
-    	  String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE);
+    	  String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
     	  if (contentType == null)
     	  {
     		  throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
