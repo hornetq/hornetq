@@ -304,44 +304,42 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-	      /**
+   /**
     * @param sessionFactory
     * @param seconds
     * @param waitForSync
     * @param backup
     */
-	   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory,
-	                                    int seconds,
-	                                    boolean waitForSync,
-	                                    final HornetQServer backup)
-	   {
-	      final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
-	      final long toWait = seconds * 1000;
-	      final long time = System.currentTimeMillis();
-	      while (true)
-	      {
-	         if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
-	                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
-	         {
-	            break;
-	         }
-	         if (System.currentTimeMillis() > (time + toWait))
-	         {
-            fail("backup never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
-                     actualServer.isRemoteBackupUpToDate() + "), or sessionFactory!=null ? " +
+   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory, int seconds,
+                                          boolean waitForSync, final HornetQServer backup)
+   {
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
+      final long toWait = seconds * 1000;
+      final long time = System.currentTimeMillis();
+      while (true)
+      {
+         if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
+                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
+         {
+            break;
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup started? (" + actualServer.isStarted() + "). Finished synchronizing (" +
+                     actualServer.isRemoteBackupUpToDate() + "). SessionFactory!=null ? " +
                      (sessionFactory != null) + " || sessionFactory.getBackupConnector()==" +
                      (sessionFactory != null ? sessionFactory.getBackupConnector() : "not-applicable"));
-	         }
-	         try
-	         {
-	            Thread.sleep(100);
-	         }
-	         catch (InterruptedException e)
-	         {
-	            fail(e.getMessage());
-	         }
-	      }
-	   }
+         }
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            fail(e.getMessage());
+         }
+      }
+   }
 
    protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
 

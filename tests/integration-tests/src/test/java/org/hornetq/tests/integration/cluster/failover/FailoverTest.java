@@ -1453,11 +1453,6 @@ public class FailoverTest extends FailoverTestBase
             receiveMessages(consumer);
          }
       }
-
-      for (ClientSession session : sessionConsumerMap.keySet())
-      {
-         session.close();
-      }
    }
 
    /*
