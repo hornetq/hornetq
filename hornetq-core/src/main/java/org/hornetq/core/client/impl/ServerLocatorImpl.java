@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -110,8 +111,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private transient ConnectionLoadBalancingPolicy loadBalancingPolicy;
 
-   private transient boolean readOnly;
-
    // Settable attributes:
 
    private boolean cacheLargeMessagesClient;
@@ -170,7 +169,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private int initialMessagePacketSize;
 
-   private volatile STATE state;
+   /**
+    * As the class is Serializable, the guard field must be of a serializable type in order to be
+    * final.
+    */
+   private final String stateGuard = new String();
+   private transient STATE state;
+   private transient CountDownLatch latch;
 
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
@@ -332,14 +337,18 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private synchronized void initialise() throws HornetQException
    {
-      if (readOnly)
-      {
+      if (state == STATE.INITIALIZED)
          return;
-      }
+      synchronized (stateGuard)
+      {
+         if (state == STATE.CLOSING)
+            throw new org.hornetq.api.core.IllegalStateException();
 
       try
       {
          state = STATE.INITIALIZED;
+         latch = new CountDownLatch(1);
+
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -370,13 +379,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
             discoveryGroup.start();
          }
-
-         readOnly = true;
       }
       catch (Exception e)
       {
          state = null;
          throw HornetQMessageBundle.BUNDLE.failedToInitialiseSessionFactory(e);
+         }
       }
    }
 
@@ -529,9 +537,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       else
       {
          // Get from initialconnectors
-   
+
          int pos = loadBalancingPolicy.select(initialConnectors.length);
-   
+
          return initialConnectors[pos];
       }
    }
@@ -541,7 +549,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       initialise();
 
       this.startExecutor = executor;
-      
+
       if (executor != null)
       {
          executor.execute(new Runnable()
@@ -783,7 +791,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          while (retry);
 
-         // We always wait for the topology, as the server 
+         // We always wait for the topology, as the server
          // will send a single element if not cluster
          // so clients can know the id of the server they are connected to
          final long timeout = System.currentTimeMillis() + callTimeout;
@@ -1171,9 +1179,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private void checkWrite()
    {
-      if (readOnly)
+      synchronized (stateGuard)
       {
-         throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
+         if (state != null && state != STATE.CLOSED)
+         {
+            throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
+         }
       }
    }
 
@@ -1242,16 +1253,21 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private void doClose(final boolean sendClose)
    {
-      if (state == STATE.CLOSED)
+      synchronized (stateGuard)
       {
-         if (HornetQLogger.LOGGER.isDebugEnabled())
+         if (state == STATE.CLOSED)
          {
-            HornetQLogger.LOGGER.debug(this + " is already closed when calling closed");
+            if (HornetQLogger.LOGGER.isDebugEnabled())
+            {
+               HornetQLogger.LOGGER.debug(this + " is already closed when calling closed");
+            }
+            return;
          }
-         return;
-      }
 
-      state = STATE.CLOSING;
+         state = STATE.CLOSING;
+      }
+      if (latch != null)
+         latch.countDown();
 
       if (discoveryGroup != null)
       {
@@ -1335,10 +1351,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
          }
       }
-      readOnly = false;
-
-      state = STATE.CLOSED;
-
+      synchronized (stateGuard)
+      {
+         state = STATE.CLOSED;
+      }
    }
 
    /** This is directly called when the connection to the node is gone,
@@ -1658,10 +1674,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                   break;
                }
 
-               if (!isClosed())
-               {
-                  Thread.sleep(retryInterval);
-               }
+               if (latch.await(retryInterval, TimeUnit.MILLISECONDS))
+                  return null;
             }
 
          }
@@ -1812,14 +1826,20 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private void assertOpen()
    {
-      if (state != null && state != STATE.INITIALIZED)
+      synchronized (stateGuard)
       {
-         throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
+         if (state != null && state != STATE.INITIALIZED)
+         {
+            throw new IllegalStateException("Server locator is closed (maybe it was garbage collected)");
+         }
       }
    }
 
    public boolean isClosed()
    {
-      return state != STATE.INITIALIZED;
+      synchronized (stateGuard)
+      {
+         return state != STATE.INITIALIZED;
+      }
    }
 }
