@@ -5,7 +5,6 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 
 public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLargeMessageFailoverTest
 {
-
    private BackupSyncDelay syncDelay;
 
    @Override
@@ -20,9 +19,7 @@ public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLarge
    @Override
    protected void crash(ClientSession... sessions) throws Exception
    {
-      syncDelay.deliverUpToDateMsg();
-      waitForBackup(null, 5);
-      super.crash(sessions);
+      crash(true, sessions);
    }
 
    @Override

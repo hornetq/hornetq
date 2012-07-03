@@ -426,10 +426,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          journal.synchronizationLock();
          try
          {
-            if (journal.getDataFiles().length != 0)
-            {
-               throw new IllegalStateException("Journal should not have any data files at this point");
-            }
             // files should be already in place.
             filesReservedForSync.remove(jc);
             registerJournal(jc.typeByte, journal);
