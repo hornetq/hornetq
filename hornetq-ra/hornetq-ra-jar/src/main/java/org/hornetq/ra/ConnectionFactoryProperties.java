@@ -537,7 +537,6 @@ public class ConnectionFactoryProperties
       {
          HornetQRALogger.LOGGER.trace("getMinLargeMessageSize()");
       }
-      hasBeenUpdated = true;
       return minLargeMessageSize;
    }
 
@@ -784,7 +783,6 @@ public class ConnectionFactoryProperties
 
    public Integer getInitialConnectAttempts()
    {
-      hasBeenUpdated = true;
       return initialConnectAttempts;
    }
 
