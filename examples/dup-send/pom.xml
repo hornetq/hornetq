@@ -2,8 +2,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.hornetq.rest</groupId>
-        <artifactId>hornetq-rest-all</artifactId>
+        <groupId>org.hornetq.example</groupId>
+        <artifactId>examples</artifactId>
         <version>2.3.0-SNAPSHOT</version>
     </parent>
     <groupId>org.hornetq.rest.examples</groupId>
@@ -103,6 +103,7 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -111,6 +112,7 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
