@@ -7,6 +7,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.rest.util.HttpMessageHelper;
 import org.hornetq.api.core.Message;
+import org.hornetq.utils.UUID;
+import org.hornetq.utils.UUIDGenerator;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -247,6 +249,11 @@ public class PostMessage
                                                 ClientSession session) throws Exception
    {
       ClientMessage message = session.createMessage(Message.BYTES_TYPE, durable);
+
+      // HORNETQ-962
+      UUID uid = UUIDGenerator.getInstance().generateUUID();
+      message.setUserID(uid);
+
       if (expiration != null)
       {
          message.setExpiration(expiration.longValue());
