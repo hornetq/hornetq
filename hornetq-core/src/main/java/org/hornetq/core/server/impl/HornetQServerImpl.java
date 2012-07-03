@@ -516,7 +516,8 @@ public class HornetQServerImpl implements HornetQServer
             return;
          }
 
-         if (replicationManager!=null) {
+         if (replicationManager != null)
+         {
             remotingService.freeze(replicationManager.getBackupTransportConnection());
             final ReplicationManager localReplicationManager = replicationManager;
             // Schedule for 10 seconds
@@ -2093,8 +2094,11 @@ public class HornetQServerImpl implements HornetQServer
                }
                tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
+            state = SERVER_STATE.STARTED;
+
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             serverLocator0.setReconnectAttempts(-1);
+            serverLocator0.setInitialConnectAttempts(-1);
             serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
 
             if (!attemptFailBack) {
