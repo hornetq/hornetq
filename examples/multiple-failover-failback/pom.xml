@@ -38,6 +38,16 @@
                   </goals>
                   <configuration>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server0</hornetqConfigurationDir>
+                     <systemProperties>
+                        <property>
+                           <name>build.directory</name>
+                           <value>${basedir}/target/</value>
+                        </property>
+                        <property>
+                           <name>udp-address</name>
+                           <value>${udp-address}</value>
+                        </property>
+                     </systemProperties>
                   </configuration>
                </execution>
                <execution>
@@ -50,6 +60,16 @@
                      <jndiRmiPort>1198</jndiRmiPort>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server1</hornetqConfigurationDir>
                      <fork>true</fork>
+                     <systemProperties>
+                        <property>
+                           <name>build.directory</name>
+                           <value>${basedir}/target/</value>
+                        </property>
+                        <property>
+                           <name>udp-address</name>
+                           <value>${udp-address}</value>
+                        </property>
+                     </systemProperties>
                   </configuration>
                </execution>
                <execution>
@@ -62,6 +82,16 @@
                      <jndiRmiPort>1298</jndiRmiPort>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server2</hornetqConfigurationDir>
                      <fork>true</fork>
+                     <systemProperties>
+                        <property>
+                           <name>build.directory</name>
+                           <value>${basedir}/target/</value>
+                        </property>
+                        <property>
+                           <name>udp-address</name>
+                           <value>${udp-address}</value>
+                        </property>
+                     </systemProperties>
                   </configuration>
                </execution>
                <execution>
