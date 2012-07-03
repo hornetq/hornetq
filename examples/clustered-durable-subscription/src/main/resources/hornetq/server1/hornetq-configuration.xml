@@ -31,7 +31,7 @@
    <!-- Clustering configuration -->
    <broadcast-groups>
       <broadcast-group name="my-broacast-group">
-         <group-address>231.7.7.7</group-address>
+         <group-address>${udp-address:231.7.7.7}</group-address>
          <group-port>9876</group-port>
          <broadcast-period>100</broadcast-period>
          <connector-ref>netty-connector</connector-ref>
@@ -40,7 +40,7 @@
 
    <discovery-groups>
       <discovery-group name="my-discovery-group">
-         <group-address>231.7.7.7</group-address>
+         <group-address>${udp-address:231.7.7.7}</group-address>
          <group-port>9876</group-port>
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>

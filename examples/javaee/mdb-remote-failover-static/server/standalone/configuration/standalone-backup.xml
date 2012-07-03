@@ -270,7 +270,7 @@
 
                 <broadcast-groups>
                     <broadcast-group name="bg-group1">
-                        <group-address>231.7.7.7</group-address>
+                        <group-address>${udp-address:231.7.7.7}</group-address>
                         <group-port>9876</group-port>
                         <broadcast-period>5000</broadcast-period>
                         <connector-ref>netty</connector-ref>
@@ -278,7 +278,7 @@
                 </broadcast-groups>
                 <discovery-groups>
                     <discovery-group name="dg-group1">
-                        <group-address>231.7.7.7</group-address>
+                        <group-address>${udp-address:231.7.7.7}</group-address>
                         <group-port>9876</group-port>
                         <refresh-timeout>10000</refresh-timeout>
                     </discovery-group>
