@@ -101,189 +101,7 @@ class CoreProtocolManager implements ProtocolManager
 
       final Channel channel0 = rc.getChannel(0, -1);
 
-      channel0.setHandler(new ChannelHandler()
-      {
-         public void handlePacket(final Packet packet)
-         {
-            if (packet.getType() == PacketImpl.PING)
-            {
-               Ping ping = (Ping)packet;
-
-               if (config.getConnectionTTLOverride() == -1)
-               {
-                  // Allow clients to specify connection ttl
-                  entry.ttl = ping.getConnectionTTL();
-               }
-
-               // Just send a ping back
-               channel0.send(packet);
-            }
-            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
-            {
-               SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-
-               if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
-               {
-                  channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
-               }
-
-               final ClusterTopologyListener listener = new ClusterTopologyListener()
-               {
-                  public void nodeUP(final long uniqueEventID,
-                                     final String nodeID,
-                                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                     final boolean last)
-                  {
-                     // Using an executor as most of the notifications on the Topology
-                     // may come from a channel itself
-                     // What could cause deadlocks
-                     entry.connectionExecutor.execute(new Runnable()
-                     {
-                        public void run()
-                        {
-                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
-                           {
-                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
-                           }
-                           else
-                           {
-                              channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
-                           }
-                        }
-                     });
-                   }
-
-                  public void nodeDown(final long uniqueEventID, final String nodeID)
-                  {
-                     // Using an executor as most of the notifications on the Topology
-                     // may come from a channel itself
-                     // What could cause deadlocks
-                     entry.connectionExecutor.execute(new Runnable()
-                     {
-                        public void run()
-                        {
-                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
-                           {
-                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
-                           }
-                           else
-                           {
-                              channel0.send(new ClusterTopologyChangeMessage(nodeID));
-                           }
-                        }
-                     });
-                  }
-
-                  @Override
-                  public String toString()
-                  {
-                     return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
-                  }
-               };
-
-               if (acceptorUsed.getClusterConnection() != null)
-               {
-                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
-
-                  rc.addCloseListener(new CloseListener()
-                  {
-                     public void connectionClosed()
-                     {
-                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener);
-                     }
-                  });
-               }
-               else
-               {
-                  // if not clustered, we send a single notification to the client containing the node-id where the server is connected to
-                  // This is done this way so Recovery discovery could also use the node-id for non-clustered setups
-                  entry.connectionExecutor.execute(new Runnable()
-                  {
-                     public void run()
-                     {
-                        String nodeId = server.getNodeID().toString();
-                        Pair<TransportConfiguration, TransportConfiguration> emptyConfig = new Pair<TransportConfiguration, TransportConfiguration>(null, null);
-                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
-                        {
-                           channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, emptyConfig, true));
-                        }
-                        else
-                        {
-                           channel0.send(new ClusterTopologyChangeMessage(nodeId, emptyConfig, true));
-                        }
-                     }
-                  });
-                  
-               }
-            }
-            else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
-            {
-               NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
-
-               Pair<TransportConfiguration, TransportConfiguration> pair;
-               if (msg.isBackup())
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
-               }
-               else
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
-               }
-               if (isTrace)
-               {
-                  HornetQLogger.LOGGER.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
-               }
-
-               if (acceptorUsed != null)
-               {
-                  ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
-                  if (clusterConn != null)
-                  {
-                     clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
-                  }
-                  else
-                  {
-                     HornetQLogger.LOGGER.debug("Cluster connection is null on acceptor = " + acceptorUsed);
-                  }
-               }
-               else
-               {
-                  HornetQLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
-               }
-            } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
-            {
-               BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-               ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
-
-               if (clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
-               {
-                  try
-                  {
-                     server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
-                                             msg.isFailBackRequest());
-                  }
-                  catch (HornetQException e)
-                  {
-                     channel0.send(new BackupRegistrationFailedMessage(e));
-                  }
-               }
-               else
-               {
-                  channel0.send(new BackupRegistrationFailedMessage(null));
-               }
-            }
-         }
-
-         private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
-                                                                              boolean isBackup)
-         {
-            if (isBackup)
-            {
-               return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
-            }
-            return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
-         }
-      });
+      channel0.setHandler(new LocalChannelHandler(config, entry, channel0, acceptorUsed, rc));
 
       return entry;
    }
@@ -320,5 +138,205 @@ class CoreProtocolManager implements ProtocolManager
    public String toString()
    {
       return "CoreProtocolManager(server=" + server + ")";
+   }
+
+   private class LocalChannelHandler implements ChannelHandler
+   {
+      private final Configuration config;
+      private final ConnectionEntry entry;
+      private final Channel channel0;
+      private final Acceptor acceptorUsed;
+      private final CoreRemotingConnection rc;
+
+      public LocalChannelHandler(final Configuration config, final ConnectionEntry entry,
+             final Channel channel0, final Acceptor acceptorUsed, final CoreRemotingConnection rc)
+      {
+         this.config = config;
+         this.entry = entry;
+         this.channel0 = channel0;
+         this.acceptorUsed = acceptorUsed;
+         this.rc = rc;
+      }
+
+      public void handlePacket(final Packet packet)
+      {
+         if (packet.getType() == PacketImpl.PING)
+         {
+            Ping ping = (Ping)packet;
+
+            if (config.getConnectionTTLOverride() == -1)
+            {
+               // Allow clients to specify connection ttl
+               entry.ttl = ping.getConnectionTTL();
+            }
+
+            // Just send a ping back
+            channel0.send(packet);
+         }
+         else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
+         {
+            SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
+
+            if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
+            {
+               channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
+            }
+
+            final ClusterTopologyListener listener = new ClusterTopologyListener()
+            {
+               public void nodeUP(final long uniqueEventID,
+                                  final String nodeID,
+                                  final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                                  final boolean last)
+               {
+                  // Using an executor as most of the notifications on the Topology
+                  // may come from a channel itself
+                  // What could cause deadlocks
+                  entry.connectionExecutor.execute(new Runnable()
+                  {
+                     public void run()
+                     {
+                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                        }
+                        else
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                        }
+                     }
+                  });
+                }
+
+               public void nodeDown(final long uniqueEventID, final String nodeID)
+               {
+                  // Using an executor as most of the notifications on the Topology
+                  // may come from a channel itself
+                  // What could cause deadlocks
+                  entry.connectionExecutor.execute(new Runnable()
+                  {
+                     public void run()
+                     {
+                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
+                        }
+                        else
+                        {
+                           channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                        }
+                     }
+                  });
+               }
+
+               @Override
+               public String toString()
+               {
+                  return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
+               }
+            };
+
+            if (acceptorUsed.getClusterConnection() != null)
+            {
+               acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
+
+               rc.addCloseListener(new CloseListener()
+               {
+                  public void connectionClosed()
+                  {
+                     acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener);
+                  }
+               });
+            }
+            else
+            {
+               // if not clustered, we send a single notification to the client containing the node-id where the server is connected to
+               // This is done this way so Recovery discovery could also use the node-id for non-clustered setups
+               entry.connectionExecutor.execute(new Runnable()
+               {
+                  public void run()
+                  {
+                     String nodeId = server.getNodeID().toString();
+                     Pair<TransportConfiguration, TransportConfiguration> emptyConfig = new Pair<TransportConfiguration, TransportConfiguration>(null, null);
+                     if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                     {
+                        channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, emptyConfig, true));
+                     }
+                     else
+                     {
+                        channel0.send(new ClusterTopologyChangeMessage(nodeId, emptyConfig, true));
+                     }
+                  }
+               });
+
+            }
+         }
+         else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
+         {
+            NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
+
+            Pair<TransportConfiguration, TransportConfiguration> pair;
+            if (msg.isBackup())
+            {
+               pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
+            }
+            else
+            {
+               pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
+            }
+            if (isTrace)
+            {
+               HornetQLogger.LOGGER.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
+            }
+
+            if (acceptorUsed != null)
+            {
+               ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
+               if (clusterConn != null)
+               {
+                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+               }
+               else
+               {
+                  HornetQLogger.LOGGER.debug("Cluster connection is null on acceptor = " + acceptorUsed);
+               }
+            }
+            else
+            {
+               HornetQLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
+            }
+         } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
+         {
+            BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
+            ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
+
+            if (clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
+            {
+               try
+               {
+                  server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
+                                          msg.isFailBackRequest());
+               }
+               catch (HornetQException e)
+               {
+                  channel0.send(new BackupRegistrationFailedMessage(e));
+               }
+            }
+            else
+            {
+               channel0.send(new BackupRegistrationFailedMessage(null));
+            }
+         }
+      }
+
+      private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
+                                                                           boolean isBackup)
+      {
+         if (isBackup)
+         {
+            return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
+         }
+         return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
+      }
    }
 }
