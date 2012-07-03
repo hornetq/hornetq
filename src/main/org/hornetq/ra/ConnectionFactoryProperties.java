@@ -522,7 +522,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getMinLargeMessageSize()");
       }
-      hasBeenUpdated = true;
       return minLargeMessageSize;
    }
 
@@ -769,7 +768,6 @@ public class ConnectionFactoryProperties
 
    public Integer getInitialConnectAttempts()
    {
-      hasBeenUpdated = true;
       return initialConnectAttempts;
    }
 
