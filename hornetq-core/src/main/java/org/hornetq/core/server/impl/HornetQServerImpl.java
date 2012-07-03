@@ -527,7 +527,6 @@ public class HornetQServerImpl implements HornetQServer
                   localReplicationManager.clearReplicationTokens();
                }
             }, 10, TimeUnit.SECONDS);
-            stopComponent(pagingManager);
             replicationManager.sendLiveIsStopping();
             stopComponent(replicationManager);
          }
