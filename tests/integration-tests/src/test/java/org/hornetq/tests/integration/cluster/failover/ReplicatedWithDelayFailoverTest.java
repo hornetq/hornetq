@@ -15,6 +15,7 @@ public class ReplicatedWithDelayFailoverTest extends ReplicatedFailoverTest
       super.setUp();
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
       backupServer.start();
+      waitForServer(backupServer.getServer());
    }
 
    @Override
