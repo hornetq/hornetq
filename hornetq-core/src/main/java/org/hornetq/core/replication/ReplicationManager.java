@@ -61,8 +61,7 @@ import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * A ReplicationManagerImpl
- *
+ * A ReplicationManager
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class ReplicationManager implements HornetQComponent
@@ -258,7 +257,7 @@ public class ReplicationManager implements HornetQComponent
    }
 
    @Override
-   public synchronized void start() throws Exception
+   public synchronized void start() throws HornetQException
    {
       if (started)
       {
@@ -316,7 +315,7 @@ public class ReplicationManager implements HornetQComponent
             }
             catch (Throwable e)
             {
-               HornetQLogger.LOGGER.errorCompletingCAllbackOnRepicationManager(e);
+               HornetQLogger.LOGGER.errorCompletingCallbackOnReplicationManager(e);
             }
          }
       }

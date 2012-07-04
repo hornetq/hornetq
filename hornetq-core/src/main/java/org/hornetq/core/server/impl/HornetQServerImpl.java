@@ -516,7 +516,8 @@ public class HornetQServerImpl implements HornetQServer
             return;
          }
 
-         if (replicationManager!=null) {
+         if (replicationManager != null)
+         {
             remotingService.freeze(replicationManager.getBackupTransportConnection());
             final ReplicationManager localReplicationManager = replicationManager;
             // Schedule for 10 seconds
@@ -527,7 +528,6 @@ public class HornetQServerImpl implements HornetQServer
                   localReplicationManager.clearReplicationTokens();
                }
             }, 10, TimeUnit.SECONDS);
-            stopComponent(pagingManager);
             replicationManager.sendLiveIsStopping();
             stopComponent(replicationManager);
          }
@@ -2063,9 +2063,9 @@ public class HornetQServerImpl implements HornetQServer
 
    private final class SharedNothingBackupActivation implements Activation, ClusterTopologyListener
    {
-      private ServerLocatorInternal serverLocator0;
+      private volatile ServerLocatorInternal serverLocator0;
       private volatile boolean failedToConnect;
-      private QuorumManager quorumManager;
+      private volatile QuorumManager quorumManager;
       private final boolean attemptFailBack;
       private static final int MAX_TOPOLOGY_WAIT = 60;
       private final CountDownLatch latch=new CountDownLatch(1);
@@ -2094,8 +2094,11 @@ public class HornetQServerImpl implements HornetQServer
                }
                tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
+            state = SERVER_STATE.STARTED;
+
             serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
             serverLocator0.setReconnectAttempts(-1);
+            serverLocator0.setInitialConnectAttempts(-1);
             serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
 
             if (!attemptFailBack) {

@@ -1681,11 +1681,15 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          catch (RejectedExecutionException e)
          {
+            if (isClosed())
+               return null;
             HornetQLogger.LOGGER.debug("Rejected execution", e);
             throw e;
          }
          catch (Exception e)
          {
+            if (isClosed())
+               return null;
             HornetQLogger.LOGGER.errorConnectingToNodes(e);
             throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors(e);
          }
