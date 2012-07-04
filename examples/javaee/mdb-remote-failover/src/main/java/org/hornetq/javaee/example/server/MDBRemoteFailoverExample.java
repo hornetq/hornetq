@@ -39,11 +39,11 @@ import javax.jms.*;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
+@ResourceAdapter("hornetq-remote-ra.rar")
 public class MDBRemoteFailoverExample implements MessageListener
 {
 
-   @Resource(mappedName = "java:RemoteJmsXA")
+   @Resource(mappedName = "java:/RemoteJmsXA")
    ConnectionFactory connectionFactory;
    Queue replyQueue;
 
@@ -72,6 +72,8 @@ public class MDBRemoteFailoverExample implements MessageListener
 
          //Step 14. we create a message and send it
          producer.send(sess.createTextMessage("this is a reply"));
+
+         System.out.println("reply sent:");
 
       }
       catch (Exception e)
