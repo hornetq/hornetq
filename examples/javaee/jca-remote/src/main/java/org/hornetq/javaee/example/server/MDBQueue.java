@@ -35,16 +35,16 @@ import javax.jms.*;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/mdbQueue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queues/mdbQueue"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
                      })
-@ResourceAdapter("hornetq-ra.rar")
+@ResourceAdapter("hornetq-remote-ra.rar")
 public class MDBQueue implements MessageListener
 {
    /**
     *  Resource to be deployed by jms-remote-ds.xml
     *  */
-   @Resource(mappedName="java:RemoteJmsXA")
+   @Resource(mappedName="java:/RemoteJmsXA")
    private ConnectionFactory connectionFactory;
 
    public void onMessage(Message message)

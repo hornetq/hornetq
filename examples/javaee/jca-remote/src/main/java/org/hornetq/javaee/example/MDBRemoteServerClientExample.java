@@ -14,9 +14,17 @@
 package org.hornetq.javaee.example;
 
 
-import org.hornetq.common.example.HornetQExample;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.Properties;
 
 /**
  *
@@ -24,34 +32,37 @@ import javax.naming.InitialContext;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class MDBRemoteServerClientExample extends HornetQExample
+public class MDBRemoteServerClientExample
 {
    public static void main(String[] args) throws Exception
-   {
-      new MDBRemoteServerClientExample().run(args);
-   }
-
-   @Override
-   public boolean runExample() throws Exception
    {
       InitialContext initialContext = null;
       Connection connection = null;
       try
       {
-         System.out.println("Please start the Application Server by running './build.sh deploy' (build.bat on windows)");
-         System.in.read();
+         //Step 1. Create an initial context to perform the JNDI lookup.
+         final Properties env = new Properties();
 
-         // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext(0);
+         env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+         env.put(Context.PROVIDER_URL, "remote://localhost:4547");
+
+         env.put(Context.SECURITY_PRINCIPAL, "guest");
+
+         env.put(Context.SECURITY_CREDENTIALS, "password");
+
+         initialContext = new InitialContext(env);
 
          // Step 2. Look up the MDB's queue
-         Queue queue = (Queue) initialContext.lookup("queue/mdbQueue");
+         Queue queue = (Queue) initialContext.lookup("/queues/mdbQueue");
 
          // Step 3. Look up a Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("jms/RemoteConnectionFactory");
 
          //Step 4. Create a connection
-         connection = cf.createConnection();
+         connection = cf.createConnection("guest", "password");
 
          //Step 5. Create a Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -63,7 +74,7 @@ public class MDBRemoteServerClientExample extends HornetQExample
          producer.send(session.createTextMessage("a message"));
 
          // Step 15. Look up the reply queue
-         Queue replyQueue = (Queue) initialContext.lookup("queue/mdbReplyQueue");
+         Queue replyQueue = (Queue) initialContext.lookup("/queues/mdbReplyQueue");
 
          // Step 16. Create a message consumer to receive the message
          MessageConsumer consumer = session.createConsumer(replyQueue);
@@ -76,11 +87,6 @@ public class MDBRemoteServerClientExample extends HornetQExample
 
          System.out.println("Message received from reply queue. Message = \"" + textMessage.getText() + "\"" );
 
-         System.out.println("stop the Application Server and press enter");
-
-         System.in.read();
-
-         return true;
       }
       finally
       {
