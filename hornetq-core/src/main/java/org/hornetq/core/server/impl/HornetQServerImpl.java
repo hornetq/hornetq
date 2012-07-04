@@ -2476,6 +2476,9 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      try
                      {
+                        //TODO: this needs review...
+                        //      First there's a hard coded sleep here
+                        //      The server probably needs to loop until the backup has announced itself with a timeout before giving up
                         // we delay stopping the server in order to allow the backup to announce
                         // itself.
                         Thread.sleep(5000);
