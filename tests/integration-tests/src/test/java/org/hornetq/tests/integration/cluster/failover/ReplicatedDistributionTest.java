@@ -40,21 +40,12 @@ import org.hornetq.tests.util.CountDownSessionFailureListener;
  */
 public class ReplicatedDistributionTest extends ClusterTestBase
 {
-   // Constants -----------------------------------------------------
 
    private static final SimpleString ADDRESS = new SimpleString("test.SomeAddress");
    private ClientSession sessionOne;
    private ClientSession sessionThree;
    private ClientConsumer consThree;
    private ClientProducer producer;
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testRedistribution() throws Exception
    {

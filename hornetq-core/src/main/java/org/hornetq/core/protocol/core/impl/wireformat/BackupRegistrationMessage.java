@@ -11,7 +11,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * If it succeeds the backup will start synchronization of its state with the new backup node, and
  * replicating any new data. If it fails the backup server will receive a message indicating
  * failure, and should shutdown.
- * @see BackupRegistrationFailedMessage
+ * @see BackupReplicationStartFailedMessage
  */
 public final class BackupRegistrationMessage extends PacketImpl
 {
