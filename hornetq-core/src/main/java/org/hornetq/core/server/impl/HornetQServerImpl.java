@@ -2063,9 +2063,9 @@ public class HornetQServerImpl implements HornetQServer
 
    private final class SharedNothingBackupActivation implements Activation, ClusterTopologyListener
    {
-      private ServerLocatorInternal serverLocator0;
+      private volatile ServerLocatorInternal serverLocator0;
       private volatile boolean failedToConnect;
-      private QuorumManager quorumManager;
+      private volatile QuorumManager quorumManager;
       private final boolean attemptFailBack;
       private static final int MAX_TOPOLOGY_WAIT = 60;
       private final CountDownLatch latch=new CountDownLatch(1);
