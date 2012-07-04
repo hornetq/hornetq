@@ -315,7 +315,7 @@ public class ReplicationManager implements HornetQComponent
             }
             catch (Throwable e)
             {
-               HornetQLogger.LOGGER.errorCompletingCAllbackOnRepicationManager(e);
+               HornetQLogger.LOGGER.errorCompletingCallbackOnReplicationManager(e);
             }
          }
       }

@@ -1184,7 +1184,7 @@ public interface HornetQLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112209, value = "Error completing callback on replication manager"  ,
          format = Message.Format.MESSAGE_FORMAT)
-   void errorCompletingCAllbackOnRepicationManager(@Cause Throwable e);
+   void errorCompletingCallbackOnReplicationManager(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112210, value = "{0} backup activation thread did not finish." ,
