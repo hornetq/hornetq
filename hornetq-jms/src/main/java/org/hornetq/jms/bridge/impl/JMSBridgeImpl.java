@@ -364,36 +364,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       if (ok)
       {
-         // start the source connection
-
-         sourceConn.start();
-
-         started = true;
-
-         if (maxBatchTime != -1)
-         {
-            if (JMSBridgeImpl.trace)
-            {
-               HornetQJMSLogger.LOGGER.trace("Starting time checker thread");
-            }
-
-            timeChecker = new BatchTimeChecker();
-
-            executor.execute(timeChecker);
-            batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
-
-            if (JMSBridgeImpl.trace)
-            {
-               HornetQJMSLogger.LOGGER.trace("Started time checker thread");
-            }
-         }
-
-         executor.execute(new SourceReceiver());
-
-         if (JMSBridgeImpl.trace)
-         {
-            HornetQJMSLogger.LOGGER.trace("Started " + this);
-         }
+         startSource();
       }
       else
       {
@@ -401,6 +372,40 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          handleFailureOnStartup();
       }
 
+   }
+
+   private void startSource() throws JMSException
+   {
+      // start the source connection
+
+      sourceConn.start();
+
+      started = true;
+
+      if (maxBatchTime != -1)
+      {
+         if (JMSBridgeImpl.trace)
+         {
+            HornetQJMSLogger.LOGGER.trace("Starting time checker thread");
+         }
+
+         timeChecker = new BatchTimeChecker();
+
+         executor.execute(timeChecker);
+         batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
+
+         if (JMSBridgeImpl.trace)
+         {
+            HornetQJMSLogger.LOGGER.trace("Started time checker thread");
+         }
+      }
+
+      executor.execute(new SourceReceiver());
+
+      if (JMSBridgeImpl.trace)
+      {
+         HornetQJMSLogger.LOGGER.trace("Started " + this);
+      }
    }
 
    private void initPasswords() throws HornetQException
@@ -1943,7 +1948,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
             try
             {
-               sourceConn.start();
+               startSource();
             }
             catch (JMSException e)
             {
