@@ -510,20 +510,20 @@ public class JournalStorageManager implements StorageManager
       return info;
     }
 
-    private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
-    {
-        for (Entry<String, Long> entry : largeMessageFilesToSync.entrySet())
-            {
-                String fileName = entry.getKey();
-                long size = entry.getValue();
-                SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
-                if (!seqFile.exists())
-                    continue;
-                if (!started)
-                    return;
-                replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
-            }
-    }
+   private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
+   {
+      for (Entry<String, Long> entry : largeMessageFilesToSync.entrySet())
+      {
+         String fileName = entry.getKey();
+         long size = entry.getValue();
+         SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
+         if (!seqFile.exists())
+            continue;
+         if (!started)
+            return;
+         replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
+      }
+   }
 
     private long getLargeMessageIdFromFilename(String filename)
     {
@@ -556,9 +556,9 @@ public class JournalStorageManager implements StorageManager
       return largeMessages;
     }
 
-    /**
-     * Send an entire journal file to a replicating backup server.
-     */
+   /**
+    * Send an entire journal file to a replicating backup server.
+    */
    private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws Exception
    {
       for (JournalFile jf : journalFiles)
@@ -566,7 +566,6 @@ public class JournalStorageManager implements StorageManager
          if (!started)
             return;
          replicator.syncJournalFile(jf, type);
-         jf.setCanReclaim(true);
       }
    }
 

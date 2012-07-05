@@ -16,9 +16,9 @@ package org.hornetq.core.journal.impl;
 import org.hornetq.core.journal.SequentialFile;
 
 /**
- * 
+ *
  * A JournalFile
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -49,8 +49,17 @@ public interface JournalFile
    /** The total number of deletes this file has */
    int getTotalNegativeToOthers();
 
+   /**
+    * Whether this file's contents can deleted and the file reused.
+    * @param canDelete if {@code true} then this file's contents are unimportant and may be deleted
+    *           at any time.
+    */
    void setCanReclaim(boolean canDelete);
 
+   /**
+    * Whether this file's contents can deleted and the file reused.
+    * @return {@code true} if the file can already be deleted.
+    */
    boolean isCanReclaim();
 
    long getOffset();

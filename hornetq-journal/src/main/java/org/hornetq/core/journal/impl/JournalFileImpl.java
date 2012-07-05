@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.core.journal.SequentialFile;
 
 /**
- * 
+ *
  * A JournalFileImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -74,11 +74,13 @@ public class JournalFileImpl implements JournalFile
       return posCount.intValue();
    }
 
+   @Override
    public boolean isCanReclaim()
    {
       return canReclaim;
    }
 
+   @Override
    public void setCanReclaim(final boolean canReclaim)
    {
       this.canReclaim = canReclaim;
