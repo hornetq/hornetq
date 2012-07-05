@@ -19,7 +19,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.Properties;
 
 /**
  * An example which sends a message to a source queue and consume from a target queue.
@@ -37,16 +39,26 @@ public class JMSBridgeExample
       try
       {
          // Step 1. Obtain an Initial Context
-         initialContext = new InitialContext();
+         final Properties env = new Properties();
+
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+
+         env.put(Context.SECURITY_PRINCIPAL, "guest");
+
+         env.put(Context.SECURITY_CREDENTIALS, "password");
+
+         initialContext = new InitialContext(env);
 
          // Step 2. Lookup the JMS connection factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/jms/RemoteConnectionFactory");
 
          // Step 3. Lookup the source queue
-         Queue sourceQueue = (Queue)initialContext.lookup("/queue/source");
+         Queue sourceQueue = (Queue)initialContext.lookup("jms/queues/sourceQueue");
 
          // Step 4. Create a connection, a session and a message producer for the *source* queue
-         sourceConnection = cf.createConnection();
+         sourceConnection = cf.createConnection("guest", "password");
          Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer sourceProducer = sourceSession.createProducer(sourceQueue);
 
@@ -62,10 +74,10 @@ public class JMSBridgeExample
          sourceConnection.close();
 
          // Step 7. Lookup the *target* queue
-         Queue targetQueue = (Queue)initialContext.lookup("/queue/target");
+         Queue targetQueue = (Queue)initialContext.lookup("jms/queues/targetQueue");
 
          // Step 8. Create a connection, a session and a message consumer for the *target* queue
-         targetConnection = cf.createConnection();
+         targetConnection = cf.createConnection("guest", "password");
          Session targetSession = targetConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer targetConsumer = targetSession.createConsumer(targetQueue);
 
@@ -73,7 +85,11 @@ public class JMSBridgeExample
          targetConnection.start();
 
          // Step 10. Receive a message from the *target* queue
-         TextMessage messageReceived = (TextMessage)targetConsumer.receive(5000);
+         TextMessage messageReceived = (TextMessage)targetConsumer.receive(15000);
+         if(messageReceived == null)
+         {
+            Thread.sleep(1000000);
+         }
          System.out.format("\nReceived from %s: %s\n",
                            ((Queue)messageReceived.getJMSDestination()).getQueueName(),
                            messageReceived.getText());
