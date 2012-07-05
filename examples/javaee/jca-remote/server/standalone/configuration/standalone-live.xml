@@ -321,13 +321,13 @@
                     </pooled-connection-factory>
                 </jms-connection-factories>
                 <jms-destinations>
-                    <jms-queue name="inQueue">
-                        <entry name="queue/inQueue"/>
-                        <entry name="java:jboss/exported/queues/inQueue"/>
+                    <jms-queue name="mdbQueue">
+                        <entry name="queue/mdbQueue"/>
+                        <entry name="java:jboss/exported/queues/mdbQueue"/>
                     </jms-queue>
-                    <jms-queue name="outQueue">
-                        <entry name="queue/outQueue"/>
-                        <entry name="java:jboss/exported/queues/outQueue"/>
+                    <jms-queue name="mdbReplyQueue">
+                        <entry name="queue/mdbReplyQueue"/>
+                        <entry name="java:jboss/exported/queues/mdbReplyQueue"/>
                     </jms-queue>
                 </jms-destinations>
             </hornetq-server>

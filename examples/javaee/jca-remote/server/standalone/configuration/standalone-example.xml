@@ -219,19 +219,17 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
-               <failover-on-shutdown>true</failover-on-shutdown>
-                <clustered>true</clustered>
-                <shared-store>true</shared-store>
                 <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
-                <journal-directory path="../../../journal"/>
-                <bindings-directory  path="../../../bindings"/>
-                <large-messages-directory path="../../../large-message"/>
-                <paging-directory path="../../../paging"/>
+                <journal-directory path="../../../journal2"/>
+                <bindings-directory  path="../../../bindings2"/>
+                <large-messages-directory path="../../../large-message2"/>
+                <paging-directory path="../../../paging2"/>
 
                 <connectors>
                     <netty-connector name="netty" socket-binding="messaging"/>
+                    <netty-connector name="remote-netty" socket-binding="remote-messaging"/>
                     <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                         <param key="batch-delay" value="50"/>
                     </netty-connector>
@@ -267,29 +265,6 @@
                     </address-setting>
                 </address-settings>
 
-                <broadcast-groups>
-                    <broadcast-group name="bg-group1">
-                        <group-address>231.8.8.8</group-address>
-                        <group-port>9876</group-port>
-                        <broadcast-period>5000</broadcast-period>
-                        <connector-ref>netty</connector-ref>
-                    </broadcast-group>
-                </broadcast-groups>
-                <discovery-groups>
-                    <discovery-group name="dg-group1">
-                        <group-address>231.8.8.8</group-address>
-                        <group-port>9876</group-port>
-                        <refresh-timeout>10000</refresh-timeout>
-                    </discovery-group>
-                </discovery-groups>
-                <cluster-connections>
-                    <cluster-connection name="my-cluster">
-                        <address>jms</address>
-                        <connector-ref>netty</connector-ref>
-                        <discovery-group-ref discovery-group-name="dg-group1"/>
-                    </cluster-connection>
-                </cluster-connections>
-
                 <jms-connection-factories>
                     <connection-factory name="InVmConnectionFactory">
                         <connectors>
@@ -307,23 +282,23 @@
                             <entry name="RemoteConnectionFactory"/>
                             <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                         </entries>
-                        <ha>true</ha>
-                        <reconnect-attempts>-1</reconnect-attempts>
                     </connection-factory>
-                    <pooled-connection-factory name="hornetq-ra">
+                    <pooled-connection-factory name="hornetq-remote-ra">
                         <transaction mode="xa"/>
+                        <user>guest</user>
+                        <password>password</password>
                         <connectors>
-                            <connector-ref connector-name="in-vm"/>
+                            <connector-ref connector-name="remote-netty"/>
                         </connectors>
                         <entries>
-                            <entry name="java:/JmsXA"/>
+                            <entry name="java:/RemoteJmsXA"/>
                         </entries>
                     </pooled-connection-factory>
                 </jms-connection-factories>
                 <jms-destinations>
-                    <jms-queue name="inQueue">
-                        <entry name="queue/inQueue"/>
-                        <entry name="java:jboss/exported/queues/inQueue"/>
+                    <jms-queue name="mdbQueue">
+                        <entry name="queue/mdbQueue"/>
+                        <entry name="java:jboss/exported/queues/mdbQueue"/>
                     </jms-queue>
                     <jms-queue name="outQueue">
                         <entry name="queue/outQueue"/>
@@ -437,6 +412,7 @@
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
+        <socket-binding name="remote-messaging" port="5545" fixed-port="true"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>

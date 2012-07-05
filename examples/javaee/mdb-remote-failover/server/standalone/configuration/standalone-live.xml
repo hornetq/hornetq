@@ -271,7 +271,7 @@
                     <broadcast-group name="bg-group1">
                         <group-address>231.8.8.8</group-address>
                         <group-port>9876</group-port>
-                        <broadcast-period>5000</broadcast-period>
+                        <broadcast-period>1000</broadcast-period>
                         <connector-ref>netty</connector-ref>
                     </broadcast-group>
                 </broadcast-groups>
