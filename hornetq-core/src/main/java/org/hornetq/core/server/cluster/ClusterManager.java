@@ -16,6 +16,7 @@ package org.hornetq.core.server.cluster;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.protocol.core.Channel;
@@ -61,8 +62,9 @@ public interface ClusterManager extends HornetQComponent
     * @param attemptingFailBack if {@code true} then this server wants to trigger a fail-back when
     *           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
     *           server.
+    * @throws HornetQException
     */
-   void announceReplicatingBackupToLive(Channel liveChannel, boolean attemptingFailBack);
+   void announceReplicatingBackupToLive(Channel liveChannel, boolean attemptingFailBack) throws HornetQException;
 
    void destroyBridge(String name) throws Exception;
 
