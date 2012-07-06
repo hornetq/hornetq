@@ -401,6 +401,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          HornetQLogger.LOGGER.announceBackupNoClusterConnections();
          throw new HornetQException("lacking cluster connection");
       }
+      // XXX HORNETQ-970
       ClusterConnectionConfiguration config = configs.get(0);
 
       TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
