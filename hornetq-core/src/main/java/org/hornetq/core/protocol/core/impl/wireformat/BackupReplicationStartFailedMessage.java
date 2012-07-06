@@ -10,8 +10,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * Informs the Backup trying to start replicating of an error.
+ * @see org.hornetq.core.server.impl.ReplicationError
  */
-public final class BackupRegistrationFailedMessage extends PacketImpl
+public final class BackupReplicationStartFailedMessage extends PacketImpl
 {
 
    enum BackupRegistrationProblem
@@ -25,14 +26,16 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
       }
    }
 
-   HornetQExceptionType errorCode = null;
-   BackupRegistrationProblem problem;
+   private HornetQExceptionType errorCode;
+   private BackupRegistrationProblem problem;
+   private String msg;
 
-   public BackupRegistrationFailedMessage(HornetQException e)
+   public BackupReplicationStartFailedMessage(HornetQException e)
    {
       super(BACKUP_REGISTRATION_FAILED);
       if (e != null)
       {
+         msg = e.getMessage();
          errorCode = e.getType();
          problem = BackupRegistrationProblem.EXCEPTION;
       }
@@ -42,7 +45,7 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
       }
    }
 
-   public BackupRegistrationFailedMessage()
+   public BackupReplicationStartFailedMessage()
    {
       super(BACKUP_REGISTRATION_FAILED);
    }
@@ -50,6 +53,12 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
    public HornetQExceptionType getCause()
    {
       return errorCode;
+   }
+
+   public HornetQException getException() {
+      if (errorCode == null)
+         return null;
+      return HornetQExceptionType.createException(errorCode.getCode(), msg);
    }
 
    public BackupRegistrationProblem getRegistrationProblem()
@@ -64,6 +73,7 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
       if (problem == BackupRegistrationProblem.EXCEPTION)
       {
          buffer.writeInt(errorCode != null?errorCode.getCode():-1);
+         buffer.writeNullableString(msg);
       }
    }
 
@@ -78,6 +88,7 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
       {
          problem = BackupRegistrationProblem.EXCEPTION;
          errorCode = HornetQExceptionType.getType(buffer.readInt());
+         msg = buffer.readNullableString();
       }
    }
 
@@ -86,7 +97,8 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + (errorCode != null?errorCode.getCode():-1);
+      result = prime * result + ((errorCode == null) ? 0 : errorCode.hashCode());
+      result = prime * result + ((msg == null) ? 0 : msg.hashCode());
       result = prime * result + ((problem == null) ? 0 : problem.hashCode());
       return result;
    }
@@ -95,26 +107,23 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
    public boolean equals(Object obj)
    {
       if (this == obj)
-      {
          return true;
-      }
       if (!super.equals(obj))
-      {
          return false;
-      }
-      if (!(obj instanceof BackupRegistrationFailedMessage))
-      {
+      if (!(obj instanceof BackupReplicationStartFailedMessage))
          return false;
-      }
-      BackupRegistrationFailedMessage other = (BackupRegistrationFailedMessage)obj;
+      BackupReplicationStartFailedMessage other = (BackupReplicationStartFailedMessage)obj;
       if (errorCode != other.errorCode)
-      {
          return false;
+      if (msg == null)
+      {
+         if (other.msg != null)
+            return false;
       }
+      else if (!msg.equals(other.msg))
+         return false;
       if (problem != other.problem)
-      {
          return false;
-      }
       return true;
    }
 }

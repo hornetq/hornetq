@@ -32,7 +32,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationFailedMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
@@ -319,12 +319,12 @@ class CoreProtocolManager implements ProtocolManager
                }
                catch (HornetQException e)
                {
-                  channel0.send(new BackupRegistrationFailedMessage(e));
+                  channel0.send(new BackupReplicationStartFailedMessage(e));
                }
             }
             else
             {
-               channel0.send(new BackupRegistrationFailedMessage(null));
+               channel0.send(new BackupReplicationStartFailedMessage(null));
             }
          }
       }
