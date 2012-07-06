@@ -16,9 +16,9 @@ package org.hornetq.core.journal;
 import org.hornetq.core.journal.impl.JournalFile;
 
 /**
- * 
+ *
  * A TestableJournal
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -54,12 +54,17 @@ public interface TestableJournal extends Journal
    boolean isAutoReclaim();
 
    void testCompact() throws Exception;
-   
-   JournalFile getCurrentFile();
-   
 
-   /** This method is called automatically when a new file is opened.
-    * @return true if it needs to re-check due to cleanup or other factors  */
+   JournalFile getCurrentFile();
+
+   /**
+    * This method is called automatically when a new file is opened.
+    * <p>
+    * It will among other things, remove stale files and make them available for reuse.
+    * <p>
+    * This method locks the journal.
+    * @return true if it needs to re-check due to cleanup or other factors
+    */
    boolean checkReclaimStatus() throws Exception;
 
    JournalFile[] getDataFiles();

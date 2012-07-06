@@ -33,9 +33,27 @@ public interface Journal extends HornetQComponent
 {
    enum JournalState
    {
-      STOPPED, STARTED,
-      /** When a replicating server is still not synchronized with its live. */
-      SYNCING, LOADED, SYNCING_UP_TO_DATE;
+      STOPPED,
+      /**
+       * The journal has some fields initialized and services running. But it is not fully
+       * operational. See {@link JournalState#LOADED}.
+       */
+      STARTED,
+      /**
+       * When a replicating server is still not synchronized with its live. So if the live stops,
+       * the backup may not fail-over and will stop as well.
+       */
+      SYNCING,
+      /**
+       * Journal is being used by a replicating server which is up-to-date with its live. That means
+       * that if the live stops, the backup can fail-over.
+       */
+      SYNCING_UP_TO_DATE,
+      /**
+       * The journal is fully operational. This is the state the journal should be when its server
+       * is live.
+       */
+      LOADED;
    }
 
    // Non transactional operations

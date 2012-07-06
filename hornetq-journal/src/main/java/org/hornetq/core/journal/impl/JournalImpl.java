@@ -2188,6 +2188,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return autoReclaim;
    }
 
+   /* Only meant to be used in tests. */
+   @Override
    public String debug() throws Exception
    {
       reclaimer.scan(getDataFiles());
