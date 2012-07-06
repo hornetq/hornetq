@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -387,30 +388,30 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
    }
 
-  // XXX HORNETQ-720 + cluster fixes: needs review
+   // XXX HORNETQ-720 + cluster fixes: needs review
    @Override
-   public void announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
+   public
+            void
+            announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
+                                                                                                        throws HornetQException
    {
       List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if (!configs.isEmpty())
+      if (configs.isEmpty())
       {
-         ClusterConnectionConfiguration config = configs.get(0);
-
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
-
-         if (connector == null)
-         {
-            HornetQLogger.LOGGER.announceBackupNoConnector(config.getConnectorName());
-            return;
-         }
-         liveChannel.send(new BackupRegistrationMessage(connector, configuration.getClusterUser(),
-                                                        configuration.getClusterPassword(), attemptingFailBack));
-      }
-      else
-      {
-         // XXX HORNETQ-720 must trigger error here
          HornetQLogger.LOGGER.announceBackupNoClusterConnections();
+         throw new HornetQException("lacking cluster connection");
       }
+      ClusterConnectionConfiguration config = configs.get(0);
+
+      TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
+
+      if (connector == null)
+      {
+         HornetQLogger.LOGGER.announceBackupNoConnector(config.getConnectorName());
+         throw new HornetQException("lacking cluster connection");
+      }
+      liveChannel.send(new BackupRegistrationMessage(connector, configuration.getClusterUser(),
+                                                     configuration.getClusterPassword(), attemptingFailBack));
    }
 
    public void addClusterLocator(final ServerLocatorInternal serverLocator)
