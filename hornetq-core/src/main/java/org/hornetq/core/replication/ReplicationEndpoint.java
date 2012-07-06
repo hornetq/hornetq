@@ -47,6 +47,7 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
@@ -218,6 +219,10 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          {
             handleLiveStopping();
          }
+         else if (type == PacketImpl.BACKUP_REGISTRATION_FAILED)
+         {
+            handleFatalError((BackupReplicationStartFailedMessage)packet);
+         }
          else
          {
             HornetQLogger.LOGGER.invalidPacketForReplication(packet);
@@ -236,6 +241,15 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       }
 
       channel.send(response);
+   }
+
+   /**
+    * @param packet
+    */
+   private void handleFatalError(BackupReplicationStartFailedMessage packet)
+   {
+      HornetQLogger.LOGGER.errorStartingReplication(packet.getException());
+      server.stopTheServer();
    }
 
    /**

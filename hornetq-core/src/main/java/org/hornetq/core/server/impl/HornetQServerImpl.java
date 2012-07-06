@@ -446,7 +446,11 @@ public class HornetQServerImpl implements HornetQServer
       super.finalize();
    }
 
-   private void stopTheServer() {
+   /**
+    * Stops the server in a different thread.
+    */
+   public void stopTheServer()
+   {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.submit(new Runnable()
       {
@@ -2437,8 +2441,8 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-                                Pair<TransportConfiguration, TransportConfiguration> pair, boolean isFailBackRequest)
+   public void startReplication(CoreRemotingConnection rc, final ClusterConnection clusterConnection,
+                               final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean isFailBackRequest)
       throws HornetQException
    {
       if (replicationManager != null)
@@ -2462,70 +2466,76 @@ public class HornetQServerImpl implements HornetQServer
          rc.addCloseListener(listener);
          rc.addFailureListener(listener);
          replicationManager = new ReplicationManager(rc, executorFactory);
-
-         try
+         replicationManager.start();
+         Thread t = new Thread(new Runnable()
          {
-            replicationManager.start();
-            storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-               clusterConnection, pair,
-               isFailBackRequest && configuration.isAllowAutoFailBack());
-            if (isFailBackRequest && configuration.isAllowAutoFailBack())
+            public void run()
             {
-               new Thread(new Runnable()
+               try
                {
-
-                  @Override
-                  public void run()
+                  storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
+                                                  clusterConnection, pair,
+                                                  isFailBackRequest && configuration.isAllowAutoFailBack());
+                  if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
-                     try
+                     new Thread(new Runnable()
                      {
-                        //TODO: this needs review...
-                        //      First there's a hard coded sleep here
-                        //      The server probably needs to loop until the backup has announced itself with a timeout before giving up
-                        // we delay stopping the server in order to allow the backup to announce
-                        // itself.
-                        Thread.sleep(5000);
-                        stop(true);
-                     }
-                     catch (Exception e)
+
+                        @Override
+                        public void run()
+                        {
+                           try
+                           {
+                              // TODO: this needs review...
+                              // First there's a hard coded sleep here
+                              // The server probably needs to loop until the backup has announced
+                              // itself with a timeout before giving up
+                              // we delay stopping the server in order to allow the backup to
+                              // announce
+                              // itself.
+                              Thread.sleep(5000);
+                              stop(true);
+                           }
+                           catch (Exception e)
+                           {
+                              e.printStackTrace();
+                           }
+                        }
+
+                     }).start();
+                  }
+               }
+               catch (Exception e)
+               {
+                  /*
+                   * The reasoning here is that the exception was either caused by (1) the
+                   * (interaction with) the backup, or (2) by an IO Error at the storage. If (1), we
+                   * can swallow the exception and ignore the replication request. If (2) the live
+                   * will crash shortly.
+                   */
+                  HornetQLogger.LOGGER.errorStartingReplication(e);
+
+                  try
+                  {
+                     if (replicationManager != null)
+                        replicationManager.stop();
+                  }
+                  catch (Exception hqe)
+                  {
+                     HornetQLogger.LOGGER.errorStoppingReplication(hqe);
+                  }
+                  finally
+                  {
+                     synchronized (replicationLock)
                      {
-                        e.printStackTrace();
+                        replicationManager = null;
                      }
                   }
+               }
+            }
+         });
 
-               }).start();
-            }
-         }
-         catch (Exception e)
-         {
-            /*
-             * The reasoning here is that the exception was either caused by (1) the (interaction
-             * with) the backup, or (2) by an IO Error at the storage. If (1), we can swallow the
-             * exception and ignore the replication request. If (2) the live will crash shortly.
-             */
-            HornetQLogger.LOGGER.errorStartingReplication(e);
-
-            try
-            {
-               if (replicationManager != null)
-                  replicationManager.stop();
-            }
-            catch (Exception hqe)
-            {
-               HornetQLogger.LOGGER.errorStoppingReplication(hqe);
-            }
-            finally
-            {
-               replicationManager = null;
-            }
-
-            if (e instanceof HornetQException)
-            {
-               throw (HornetQException)e;
-            }
-
-            throw HornetQMessageBundle.BUNDLE.replicationStartError(e);
-         }
+         t.start();
       }
    }
 
