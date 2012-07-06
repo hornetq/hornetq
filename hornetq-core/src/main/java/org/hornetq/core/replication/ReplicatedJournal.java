@@ -32,9 +32,10 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 
 /**
  * Used by the {@link JournalStorageManager} to replicate journal calls.
- *
+ * <p>
+ * This class wraps a {@link ReplicationManager} and the local {@link Journal}. Every call will be
+ * relayed to both instances.
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
  * @see JournalStorageManager
  */
 public class ReplicatedJournal implements Journal
@@ -333,9 +334,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendRollbackRecord(txID, sync);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendRollbackRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -377,9 +375,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendUpdateRecord(id, recordType, record, sync);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, byte[], boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendUpdateRecord(final long id,
                                   final byte recordType,
                                   final byte[] record,
@@ -389,9 +384,6 @@ public class ReplicatedJournal implements Journal
       this.appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync, completionCallback);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendUpdateRecord(final long id,
                                   final byte recordType,
                                   final EncodingSupport record,
@@ -497,9 +489,6 @@ public class ReplicatedJournal implements Journal
       localJournal.stop();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#getAlignment()
-    */
    public int getAlignment() throws Exception
    {
       return localJournal.getAlignment();

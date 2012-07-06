@@ -358,6 +358,12 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
+    * Starts replication. In practice that means 2 things:<br/>
+    * (1) every persistent piece of data is also replicated (sent) to the backup.<br/>
+    * (2) all currently existing data must be sent to the backup.
+    * <p>
+    * To achieve this we lock the entire journal while collecting the list of files to send to the
+    * backup. The journal does not remain locked during actual synchronization.
     * @param replicationManager
     * @param pagingManager
     * @throws HornetQException
