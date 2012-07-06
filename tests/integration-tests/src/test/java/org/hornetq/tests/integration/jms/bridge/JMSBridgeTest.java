@@ -328,6 +328,86 @@ public class JMSBridgeTest extends BridgeTestBase
       testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 1);
    }
 
+   public void testStartBridgeFirst() throws Exception
+   {
+      //stop the source server, we want to start the bridge first
+      jmsServer0.stop();
+      JMSBridgeImpl bridge = null;
+
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      try
+      {
+         final int NUM_MESSAGES = 10;
+
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    5000,
+                                    10,
+                                    QualityOfServiceMode.AT_MOST_ONCE,
+                                    NUM_MESSAGES,
+                                    -1,
+                                    null,
+                                    null,
+                                    false);
+         bridge.setTransactionManager(newTransactionManager());
+
+         bridge.start();
+
+         //now start the server
+         jmsServer0.start();
+         createQueue("sourceQueue", 0);
+         createQueue("localTargetQueue", 0);
+         jmsServer0.createTopic(false, "sourceTopic", "/topic/sourceTopic");
+         // Send half the messges
+
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, false, false);
+
+         // Verify none are received
+
+         checkEmpty(targetQueue, 1);
+
+         // Send the other half
+
+         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, false, false);
+
+         // This should now be receivable
+
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
+
+         // Send another batch with one more than batch size
+
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, false, false);
+
+         // Make sure only batch size are received
+
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
+
+         // Final batch
+
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, false, false);
+
+         checkAllMessageReceivedInOrder(cf1, targetQueue, NUM_MESSAGES, 1, false);
+
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES - 1, false);
+      }
+      finally
+      {
+         if (bridge != null)
+         {
+            JMSBridgeTest.log.info("Stopping bridge");
+            bridge.stop();
+         }
+      }
+   }
+
    public void testParams() throws Exception
    {
       JMSBridgeImpl bridge = null;
