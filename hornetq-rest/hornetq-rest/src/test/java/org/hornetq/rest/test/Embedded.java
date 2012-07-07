@@ -64,6 +64,7 @@ public class Embedded
 
    public void start() throws Exception
    {
+      System.out.println("Starting Embedded");
       if (hornetqServer == null)
       {
          Configuration configuration = new ConfigurationImpl();
@@ -84,6 +85,7 @@ public class Embedded
 
    public void stop() throws Exception
    {
+      System.out.println("Stopping Embedded");
       manager.stop();
       tjws.stop();
       hornetqServer.stop();

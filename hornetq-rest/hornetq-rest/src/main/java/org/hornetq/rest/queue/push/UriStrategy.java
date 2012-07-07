@@ -67,15 +67,19 @@ public class UriStrategy implements PushStrategy
 
    public boolean push(ClientMessage message)
    {
+      HornetQRestLogger.LOGGER.debug("Pushing " + message);
       String uri = createUri(message);
       for (int i = 0; i < registration.getMaxRetries(); i++)
       {
          long wait = registration.getRetryWaitMillis();
+         HornetQRestLogger.LOGGER.debug("Creating request from " + uri);
          ClientRequest request = executor.createRequest(uri);
          request.followRedirects(false);
+         HornetQRestLogger.LOGGER.debug("Created request " + request);
 
          for (XmlHttpHeader header : registration.getHeaders())
          {
+            HornetQRestLogger.LOGGER.debug("Setting XmlHttpHeader: " + header.getName() + "=" + header.getValue());
             request.header(header.getName(), header.getValue());
          }
          HttpMessageHelper.buildMessage(message, request, contentType);
@@ -85,6 +89,7 @@ public class UriStrategy implements PushStrategy
             HornetQRestLogger.LOGGER.debug(method + " " + uri);
             res = request.httpMethod(method);
             int status = res.getStatus();
+            HornetQRestLogger.LOGGER.debug("Status of push: " + status);
             if (status == 503)
             {
                String retryAfter = (String) res.getHeaders().getFirst("Retry-After");
@@ -136,7 +141,7 @@ public class UriStrategy implements PushStrategy
          }
          catch (Exception e)
          {
-            //throw new RuntimeException(e);
+            throw new RuntimeException(e);
          }
          try
          {

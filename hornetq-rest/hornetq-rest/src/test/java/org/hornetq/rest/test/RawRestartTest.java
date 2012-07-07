@@ -42,7 +42,7 @@ public class RawRestartTest
    static ClientSession session;
 
    @Before
-   public static void setup() throws Exception
+   public void setup() throws Exception
    {
       startupTheServer();
 

@@ -134,7 +134,7 @@ public class Hornetq
       msg.getBodyBuffer().readBytes(body);
 
 
-      String contentType = msg.getStringProperty(HttpHeaderProperty.CONTENT_TYPE);
+      String contentType = msg.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
       if (contentType == null)
       {
          throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");

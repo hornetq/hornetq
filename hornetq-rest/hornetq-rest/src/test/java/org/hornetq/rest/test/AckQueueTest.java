@@ -30,6 +30,7 @@ public class AckQueueTest extends MessageTestBase
    @Test
    public void testAckTimeoutX2() throws Exception
    {
+      System.out.println("\ntestAckTimeoutX2");
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
       deployment.setDuplicatesAllowed(true);
@@ -45,6 +46,7 @@ public class AckQueueTest extends MessageTestBase
 
    public void testAckTimeout() throws Exception
    {
+      System.out.println("testAckTimeout");
       ClientRequest request = new ClientRequest(generateURL("/queues/testAck"));
 
       ClientResponse response = request.head();
@@ -109,32 +111,39 @@ public class AckQueueTest extends MessageTestBase
    @Test
    public void testSuccessFirstX2() throws Exception
    {
+      String testName = "testSuccessFirstX2";
+      System.out.println("\n" + testName);
+
+      QueueDeployment queueDeployment = new QueueDeployment(testName, true);
+      manager.getQueueManager().deploy(queueDeployment);
+
       manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
-      testSuccessFirst(1);
+      testSuccessFirst(1, testName);
       manager.getQueueManager().setLinkStrategy(new CustomHeaderLinkStrategy());
-      testSuccessFirst(3);
+      testSuccessFirst(3, testName);
    }
 
-   public void testSuccessFirst(int start) throws Exception
+   public void testSuccessFirst(int start, String queueName) throws Exception
    {
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      System.out.println("testSuccessFirst");
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
-      System.out.println("pull: " + consumers);
+      System.out.println("pull-consumers: " + consumers);
       response = consumers.request().formParameter("autoAck", "false").post();
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "acknowledge-next");
-      System.out.println("poller: " + consumeNext);
+      System.out.println("acknowledge-next: " + consumeNext);
 
       String data = Integer.toString(start);
       System.out.println("Sending: " + data);
       ClientResponse res = sender.request().body("text/plain", data).post();
       Assert.assertEquals(201, res.getStatus());
 
-      System.out.println("call ack next");
+      System.out.println("call acknowledge-next");
       res = consumeNext.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals(Integer.toString(start++), res.getEntity());
@@ -178,15 +187,22 @@ public class AckQueueTest extends MessageTestBase
    @Test
    public void testPullX2() throws Exception
    {
+      String testName = "testPullX2";
+      System.out.println("\n" + testName);
+
+      QueueDeployment queueDeployment = new QueueDeployment(testName, true);
+      manager.getQueueManager().deploy(queueDeployment);
+
       manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
-      testPull(1);
+      testPull(1, testName);
       manager.getQueueManager().setLinkStrategy(new CustomHeaderLinkStrategy());
-      testPull(4);
+      testPull(4, testName);
    }
 
-   public void testPull(int start) throws Exception
+   public void testPull(int start, String queueName) throws Exception
    {
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      System.out.println("testPull");
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());
@@ -240,15 +256,22 @@ public class AckQueueTest extends MessageTestBase
    @Test
    public void testReconnectX2() throws Exception
    {
+      String testName = "testReconnectX2";
+      System.out.println("\n" + testName);
+
+      QueueDeployment queueDeployment = new QueueDeployment(testName, true);
+      manager.getQueueManager().deploy(queueDeployment);
+
       manager.getQueueManager().setLinkStrategy(new LinkHeaderLinkStrategy());
-      testReconnect();
+      testReconnect(testName);
       manager.getQueueManager().setLinkStrategy(new CustomHeaderLinkStrategy());
-      testReconnect();
+      testReconnect(testName);
    }
 
-   public void testReconnect() throws Exception
+   public void testReconnect(String queueName) throws Exception
    {
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      System.out.println("testReconnect");
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());

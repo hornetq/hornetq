@@ -19,13 +19,14 @@ public class AutoAckQueueTest extends MessageTestBase
    @Test
    public void testSuccessFirst() throws Exception
    {
+      String testName = "testSuccessFirst";
       QueueDeployment deployment = new QueueDeployment();
       deployment.setDuplicatesAllowed(true);
       deployment.setDurableSend(false);
-      deployment.setName("testQueue");
+      deployment.setName(testName);
       manager.getQueueManager().deploy(deployment);
 
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());

@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.HttpHeaderProperty;
 import org.jboss.resteasy.client.ClientRequest;
 
@@ -73,11 +74,17 @@ public class HttpMessageHelper
          String headerName = HttpHeaderProperty.fromPropertyName(k);
          if (headerName == null) continue;
          String value = message.getStringProperty(k);
+         if (value.startsWith(","))
+         {
+            value = value.substring(1);
+         }
          request.header(headerName, value);
+         HornetQRestLogger.LOGGER.debug("Examining " + headerName + ": " + value);
          // override default content type if it is set as a message property
          if (headerName.equalsIgnoreCase("content-type"))
          {
             contentType = value;
+            HornetQRestLogger.LOGGER.debug("Using contentType: " + contentType);
          }
       }
       int size = message.getBodySize();
@@ -88,7 +95,7 @@ public class HttpMessageHelper
          {
             byte[] body = new byte[size];
             message.getBodyBuffer().readBytes(body);
-            //System.out.println("Building Message from HTTP message");
+            HornetQRestLogger.LOGGER.debug("Building Message from HTTP message");
             request.body(contentType, body);
          }
          else
@@ -103,7 +110,7 @@ public class HttpMessageHelper
             {
                ObjectInputStream ois = new ObjectInputStream(bais);
                obj = ois.readObject();
-               //System.out.println("**** Building Message from object: " + obj.toString());
+               HornetQRestLogger.LOGGER.debug("**** Building Message from object: " + obj.toString());
                request.body(contentType, obj);
             }
             catch (Exception e)

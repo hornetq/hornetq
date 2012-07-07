@@ -18,9 +18,10 @@ public class FindDestinationTest extends MessageTestBase
    @Test
    public void testFindQueue() throws Exception
    {
-      server.getHornetqServer().createQueue(new SimpleString("testQueue"), new SimpleString("testQueue"), null, false, false);
+      String testName = "testFindQueue";
+      server.getHornetqServer().createQueue(new SimpleString(testName), new SimpleString(testName), null, false, false);
 
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());

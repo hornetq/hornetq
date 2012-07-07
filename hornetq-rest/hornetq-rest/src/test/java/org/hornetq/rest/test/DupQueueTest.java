@@ -19,13 +19,14 @@ public class DupQueueTest extends MessageTestBase
    @Test
    public void testDup() throws Exception
    {
+      String testName = "testDup";
       QueueDeployment deployment = new QueueDeployment();
       deployment.setDuplicatesAllowed(false);
       deployment.setDurableSend(false);
-      deployment.setName("testQueue");
+      deployment.setName(testName);
       manager.getQueueManager().deploy(deployment);
 
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());
@@ -74,13 +75,14 @@ public class DupQueueTest extends MessageTestBase
    @Test
    public void testDupWithId() throws Exception
    {
+      String testName = "testDupWithId";
       QueueDeployment deployment = new QueueDeployment();
-      deployment.setDuplicatesAllowed(true);
+      deployment.setDuplicatesAllowed(false);
       deployment.setDurableSend(false);
-      deployment.setName("testQueue2");
+      deployment.setName(testName);
       manager.getQueueManager().deploy(deployment);
 
-      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue2"));
+      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
       ClientResponse response = request.head();
       Assert.assertEquals(200, response.getStatus());

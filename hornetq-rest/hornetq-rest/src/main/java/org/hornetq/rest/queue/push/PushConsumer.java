@@ -1,11 +1,7 @@
 package org.hornetq.rest.queue.push;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
@@ -87,14 +83,20 @@ public class PushConsumer implements MessageHandler
    {
       try
       {
-         if (consumer != null) consumer.close();
+         if (consumer != null)
+         {
+            consumer.close();
+         }
       }
       catch (HornetQException e)
       {
       }
       try
       {
-         if (session != null) session.close();
+         if (session != null)
+         {
+            session.close();
+         }
       }
       catch (HornetQException e)
       {
@@ -102,7 +104,10 @@ public class PushConsumer implements MessageHandler
       }
       try
       {
-         if (strategy != null) strategy.stop();
+         if (strategy != null)
+         {
+            strategy.stop();
+         }
       }
       catch (Exception e)
       {
@@ -114,7 +119,10 @@ public class PushConsumer implements MessageHandler
       registration.setEnabled(false);
       try
       {
-         if (registration.isDurable()) store.update(registration);
+         if (registration.isDurable())
+         {
+            store.update(registration);
+         }
       }
       catch (Exception e)
       {
@@ -126,16 +134,19 @@ public class PushConsumer implements MessageHandler
    @Override
    public void onMessage(ClientMessage clientMessage)
    {
+      HornetQRestLogger.LOGGER.debug(this + ": receiving " + clientMessage);
 
       try
       {
-           clientMessage.acknowledge();
+         clientMessage.acknowledge();
+         HornetQRestLogger.LOGGER.debug(this + ": acknowledged " + clientMessage);
       }
       catch (HornetQException e)
       {
-           throw new RuntimeException(e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
       }
 
+      HornetQRestLogger.LOGGER.debug(this + ": pushing " + clientMessage + " via " + strategy);
       boolean acknowledge = strategy.push(clientMessage);
 
       if (acknowledge)
@@ -153,15 +164,15 @@ public class PushConsumer implements MessageHandler
       }
       else
       {
-          try
-          {
-              session.rollback();
-          }
-          catch (HornetQException e)
-          {
-              throw new RuntimeException(e.getMessage(), e);
-          }
-          if (registration.isDisableOnFailure())
+         try
+         {
+            session.rollback();
+         }
+         catch (HornetQException e)
+         {
+            throw new RuntimeException(e.getMessage(), e);
+         }
+         if (registration.isDisableOnFailure())
          {
             HornetQRestLogger.LOGGER.errorPushingMessage(registration.getTarget());
             disableFromFailure();
