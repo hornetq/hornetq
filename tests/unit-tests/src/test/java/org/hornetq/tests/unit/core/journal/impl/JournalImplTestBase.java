@@ -112,7 +112,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected void checkAndReclaimFiles() throws Exception
    {
       journal.debugWait();
+      boolean isReclaim = journal.isAutoReclaim();
+      journal.setAutoReclaim(true);
       journal.checkReclaimStatus();
+      journal.setAutoReclaim(isReclaim);
       journal.debugWait();
    }
 
