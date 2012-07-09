@@ -41,10 +41,9 @@ public class Jms
 
    /**
     * Get an HTTP header value from a JMS Message
-    *
     * @param message
     * @param name
-    * @return
+    * @return the header or {@code null} if not present
     */
    public static String getHttpHeader(Message message, String name)
    {

@@ -161,12 +161,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    /**
     * @param session
-    * @param latch
     * @throws InterruptedException
     */
    private void fail(final ClientSession session) throws InterruptedException
@@ -201,6 +197,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       // notice the abuse of the method call, '3' is not a backup for '1'
       setupClusterConnectionWithBackups("test", address, false, 1, true, 1, new int[] { 3 });
       setupClusterConnectionWithBackups("test", address, false, 1, true, 3, new int[] { 2, 1 });
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 2, new int[] { 3 });
 
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(0);

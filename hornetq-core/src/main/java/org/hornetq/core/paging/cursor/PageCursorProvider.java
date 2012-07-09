@@ -27,59 +27,50 @@ import org.hornetq.core.paging.PagingStore;
 public interface PageCursorProvider
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    PageCache getPageCache(PagePosition pos);
-   
+
    PagedReference newReference(final PagePosition pos, final PagedMessage msg, PageSubscription sub);
-   
+
    void addPageCache(PageCache cache);
 
    PagingStore getAssociatedStore();
 
    /**
-    * 
-    * @param queueId The cursorID should be the same as the queueId associated for persistance
+    * @param queueId The cursorID should be the same as the queueId associated for persistence
     * @return
     */
    PageSubscription getSubscription(long queueId);
-   
+
    PageSubscription createSubscription(long queueId, Filter filter, boolean durable);
-   
+
    PagedMessage getMessage(PagePosition pos) throws Exception;
 
    void processReload() throws Exception;
 
    void stop();
-   
+
    void flushExecutors();
 
    void scheduleCleanup();
-   
-   // Perform the cleanup at the caller's thread (for startup and recovery)
+
+   /**
+    * Perform the cleanup at the caller's thread (for startup and recovery)
+    */
    void cleanup();
-   
+
    int getCacheMaxSize();
-   
+
    void setCacheMaxSize(int size);
 
    /**
     * @param pageCursorImpl
     */
    void close(PageSubscription pageCursorImpl);
-   
+
    // to be used on tests -------------------------------------------
-   
+
    int getCacheSize();
-   
+
    void printDebug();
 
    // Package protected ---------------------------------------------

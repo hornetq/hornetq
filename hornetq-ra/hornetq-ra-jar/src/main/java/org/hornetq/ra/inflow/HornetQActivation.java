@@ -40,8 +40,8 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQRALogger;
-import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.HornetQRaUtils;
+import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.SensitiveDataCodec;
 
 /**
@@ -104,7 +104,7 @@ public class HornetQActivation
    private HornetQConnectionFactory factory;
 
    // Whether we are in the failure recovery loop
-   private AtomicBoolean inFailure = new AtomicBoolean(false);
+   private final AtomicBoolean inFailure = new AtomicBoolean(false);
    private XARecoveryConfig resourceRecovery;
 
    static
@@ -320,7 +320,7 @@ public class HornetQActivation
             {
                session.close();
             }
-            
+
             throw e;
          }
       }
@@ -371,9 +371,9 @@ public class HornetQActivation
 
    /**
     * Setup a session
+    * @param cf
     * @return The connection
     * @throws Exception Thrown if an error occurs
-    * @param cf
     */
    protected ClientSession setupSession(ClientSessionFactory cf) throws Exception
    {
@@ -546,7 +546,7 @@ public class HornetQActivation
 
    /**
     * Handles any failure by trying to reconnect
-    * 
+    *
     * @param failure the reason for the failure
     */
    public void handleFailure(Throwable failure)
@@ -562,7 +562,7 @@ public class HornetQActivation
       int reconnectCount = 0;
       int setupAttempts = spec.getSetupAttempts();
       long setupInterval = spec.getSetupInterval();
-      
+
       // Only enter the failure loop once
       if (inFailure.getAndSet(true))
          return;
