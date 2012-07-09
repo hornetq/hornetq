@@ -27,7 +27,7 @@ import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple example that demonstrates failover of the JMS connection from one node to another
- * when the live server crashes using a JMS <em>transacted</em> session.
+ * when the live server crashes using a JMS <em>transacted</em> session and replication.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
