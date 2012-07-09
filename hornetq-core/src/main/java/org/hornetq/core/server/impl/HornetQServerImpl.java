@@ -1257,7 +1257,7 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * Starts everything apart from RemotingService and loading the data.
     */
-   private void initialisePart1() throws Exception
+   private synchronized void initialisePart1() throws Exception
    {
       if (state == SERVER_STATE.STOPPED)
          return;
@@ -1415,7 +1415,7 @@ public class HornetQServerImpl implements HornetQServer
    /*
     * Load the data, and start remoting service so clients can connect
     */
-   private void initialisePart2() throws Exception
+   private synchronized void initialisePart2() throws Exception
    {
       // Load the journal and populate queues, transactions and caches in memory
 
