@@ -61,8 +61,8 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultChannelPipeline;
-import org.jboss.netty.channel.StaticChannelPipeline;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
@@ -422,7 +422,7 @@ public class NettyAcceptor implements Acceptor
             }
             else
             {
-               pipeline = new StaticChannelPipeline(handlers.values().toArray(new ChannelHandler[handlers.size()]));
+               pipeline = Channels.pipeline(handlers.values().toArray(new ChannelHandler[handlers.size()]));
             }
 
             return pipeline;
