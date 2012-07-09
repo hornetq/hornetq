@@ -3112,7 +3112,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       System.out.println("*****************************************");
 
       journal.forceMoveNextFile();
-      journal.checkReclaimStatus();
+      checkAndReclaimFiles();
 
       Assert.assertEquals(0, journal.getDataFilesCount());
 
