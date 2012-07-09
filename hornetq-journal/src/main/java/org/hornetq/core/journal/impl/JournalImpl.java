@@ -2061,7 +2061,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    /**
     * @return true if cleanup was called
     */
-   public boolean checkReclaimStatus() throws Exception
+   public final boolean checkReclaimStatus() throws Exception
    {
 
       if (compactorRunning.get())
@@ -2073,6 +2073,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       while (true)
       {
          if (state != JournalImpl.JournalState.LOADED)
+            return false;
+         if (!isAutoReclaim())
             return false;
          if (journalLock.readLock().tryLock(250, TimeUnit.MILLISECONDS))
             break;
@@ -2178,12 +2180,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // TestableJournal implementation
    // --------------------------------------------------------------
 
-   public void setAutoReclaim(final boolean autoReclaim)
+   public final void setAutoReclaim(final boolean autoReclaim)
    {
       this.autoReclaim = autoReclaim;
    }
 
-   public boolean isAutoReclaim()
+   public final boolean isAutoReclaim()
    {
       return autoReclaim;
    }
@@ -3023,14 +3025,16 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   public void synchronizationLock()
+   public final void synchronizationLock()
    {
       compactorLock.writeLock().lock();
       journalLock.writeLock().lock();
+      setAutoReclaim(false);
    }
 
-   public void synchronizationUnlock()
+   public final void synchronizationUnlock()
    {
+      setAutoReclaim(true);
       try
       {
          compactorLock.writeLock().unlock();
