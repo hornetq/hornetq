@@ -20,38 +20,18 @@
    <includeBaseDirectory>false</includeBaseDirectory>
    <fileSets>
       <fileSet>
-         <directory>${project.basedir}/bin</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/common</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/core</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/javaee</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/jms</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/soak</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
-         <directory>${project.basedir}/tools</directory>
-         <useDefaultExcludes>true</useDefaultExcludes>
-      </fileSet>
-      <fileSet>
          <directory>${project.basedir}</directory>
-         <includes>
-            <include>build.xml</include>
-         </includes>
+         <excludes>
+            <exclude>**/target</exclude>
+            <exclude>**/target/**</exclude>
+            <exclude>**/**/target</exclude>
+            <exclude>**/**/target/**</exclude>
+            <exclude>target</exclude>
+            <exclude>target/**</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>**/*.dat</exclude>
+            <exclude>src/**</exclude>
+         </excludes>
          <useDefaultExcludes>true</useDefaultExcludes>
       </fileSet>
    </fileSets>
