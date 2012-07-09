@@ -32,7 +32,7 @@ import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.SoftValueHashMap;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A PageProviderIMpl

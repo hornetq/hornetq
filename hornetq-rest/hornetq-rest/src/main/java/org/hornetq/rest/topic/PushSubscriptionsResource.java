@@ -5,7 +5,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.rest.queue.push.PushConsumer;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
