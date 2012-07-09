@@ -161,12 +161,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    /**
     * @param session
-    * @param latch
     * @throws InterruptedException
     */
    private void fail(final ClientSession session) throws InterruptedException

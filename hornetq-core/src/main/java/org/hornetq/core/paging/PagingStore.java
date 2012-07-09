@@ -137,8 +137,8 @@ public interface PagingStore extends HornetQComponent
     void flushExecutors();
 
    /**
-    * Files to synchronize with backup.
-    * @return
+    * Files to synchronize with a remote backup.
+    * @return a collection of page IDs which must be synchronized with a replicating backup
     * @throws Exception
     */
    Collection<Integer> getCurrentIds() throws Exception;
