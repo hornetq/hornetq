@@ -2,7 +2,7 @@ package org.hornetq.rest.queue.push;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
