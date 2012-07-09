@@ -1588,6 +1588,20 @@ public abstract class ClusterTestBase extends ServiceTestBase
       servers[node] = server;
    }
 
+   /**
+    * Server lacks a {@link ClusterConnectionConfiguration} necessary for the remote (replicating)
+    * backup case.
+    * <p>
+    * Use
+    * {@link #setupClusterConnectionWithBackups(String, String, boolean, int, boolean, int, int[])}
+    * to add it.
+    * @param node
+    * @param liveNode
+    * @param fileStorage
+    * @param sharedStorage
+    * @param netty
+    * @throws Exception
+    */
    protected void setupBackupServer(final int node,
                                     final int liveNode,
                                     final boolean fileStorage,
