@@ -2072,9 +2072,10 @@ public class HornetQServerImpl implements HornetQServer
       private volatile QuorumManager quorumManager;
       private final boolean attemptFailBack;
       private static final int MAX_TOPOLOGY_WAIT = 60;
-      private final CountDownLatch latch=new CountDownLatch(1);
+      private final CountDownLatch latch = new CountDownLatch(1);
       private String nodeID;
       private Object liveConnector;
+      private boolean closed;
 
       public SharedNothingBackupActivation(boolean attemptFailBack)
       {
@@ -2098,9 +2099,16 @@ public class HornetQServerImpl implements HornetQServer
                }
                tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
             }
-            state = SERVER_STATE.STARTED;
-
-            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
+            synchronized (HornetQServerImpl.this)
+            {
+               state = SERVER_STATE.STARTED;
+            }
+            synchronized (this)
+            {
+               if (closed)
+                  return;
+               serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
+            }
             serverLocator0.setReconnectAttempts(-1);
             serverLocator0.setInitialConnectAttempts(-1);
             serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
@@ -2127,7 +2135,12 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart1();
             clusterManager.start();
 
-            quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
+            synchronized (this)
+            {
+               if (closed)
+                  return;
+               quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
+            }
             replicationEndpoint.setQuorumManager(quorumManager);
 
             threadPool.execute(new Runnable()
@@ -2266,12 +2279,15 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(final boolean permanently) throws Exception
       {
-         if (quorumManager != null)
-            quorumManager.causeExit();
-
-         if (serverLocator0 != null)
+         synchronized (this)
          {
-            serverLocator0.close();
+            if (quorumManager != null)
+            quorumManager.causeExit();
+            if (serverLocator0 != null)
+            {
+               serverLocator0.close();
+            }
+            closed = true;
          }
 
          if (configuration.isBackup())
