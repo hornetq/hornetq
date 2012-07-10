@@ -102,9 +102,9 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <skipTests>${skipRestTests}</skipTests>
-                <includes>
+                <!--includes>
                     <include>**/PushQueueConsumerTest.java</include>
-                </includes>
+                </includes-->
             </configuration>
          </plugin>
         </plugins>
