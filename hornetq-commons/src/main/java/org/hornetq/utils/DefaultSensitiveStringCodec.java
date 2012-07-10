@@ -41,7 +41,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class DefaultSensitiveStringCodec implements SensitiveDataCodec<String>
 {
-   private byte[] KEY_BYTES = "clusterpassword".getBytes();
+   private byte[] internalKey = "clusterpassword".getBytes();
 
    public String decode(Object secret) throws NoSuchPaddingException,
                                       NoSuchAlgorithmException,
@@ -49,7 +49,7 @@ public class DefaultSensitiveStringCodec implements SensitiveDataCodec<String>
                                       BadPaddingException,
                                       IllegalBlockSizeException
    {
-      SecretKeySpec key = new SecretKeySpec(KEY_BYTES, "Blowfish");
+      SecretKeySpec key = new SecretKeySpec(internalKey, "Blowfish");
 
       BigInteger n = new BigInteger((String)secret, 16);
       byte[] encoding = n.toByteArray();
@@ -81,20 +81,13 @@ public class DefaultSensitiveStringCodec implements SensitiveDataCodec<String>
                                       BadPaddingException,
                                       IllegalBlockSizeException
    {
-      SecretKeySpec key = new SecretKeySpec(KEY_BYTES, "Blowfish");
+      SecretKeySpec key = new SecretKeySpec(internalKey, "Blowfish");
 
       Cipher cipher = Cipher.getInstance("Blowfish");
       cipher.init(Cipher.ENCRYPT_MODE, key);
       byte[] encoding = cipher.doFinal(secret.getBytes());
       BigInteger n = new BigInteger(encoding);
       return n.toString(16);
-   }
-   
-   public static void main(String[] args) throws Exception
-   {
-      DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
-      Object encode = codec.encode(args[0]);
-      System.out.println("Encoded password: " + encode);
    }
 
    public void init(Map<String, String> params)
@@ -108,7 +101,7 @@ public class DefaultSensitiveStringCodec implements SensitiveDataCodec<String>
 
    private void updateKey(String key)
    {
-      KEY_BYTES = key.getBytes();
+      this.internalKey = key.getBytes();
    }
 
    
