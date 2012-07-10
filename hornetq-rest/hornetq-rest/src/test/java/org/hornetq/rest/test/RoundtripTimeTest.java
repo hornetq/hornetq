@@ -27,12 +27,13 @@ public class RoundtripTimeTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consume-next: " + consumeNext);
 
@@ -41,17 +42,19 @@ public class RoundtripTimeTest extends MessageTestBase
       int num = 100;
       for (int i = 0; i < num; i++)
       {
-         sender.request().body("text/plain", Integer.toString(i + 1)).post();
+         response = sender.request().body("text/plain", Integer.toString(i + 1)).post();
+         response.releaseConnection();
       }
       long end = System.currentTimeMillis() - start;
       System.out.println(num + " iterations took " + end + "ms");
 
       for (int i = 0; i < num; i++)
       {
-         ClientResponse res = consumeNext.request().post(String.class);
-         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
-         Assert.assertEquals(200, res.getStatus());
-         Assert.assertEquals(Integer.toString(i + 1), res.getEntity(String.class));
+         response = consumeNext.request().post(String.class);
+         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
+         Assert.assertEquals(200, response.getStatus());
+         Assert.assertEquals(Integer.toString(i + 1), response.getEntity(String.class));
+         response.releaseConnection();
       }
    }
 

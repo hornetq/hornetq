@@ -9,6 +9,7 @@ import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
 import org.hornetq.rest.queue.push.PushConsumerResource;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
+import org.hornetq.rest.util.Constants;
 import org.w3c.dom.Document;
 
 import javax.ws.rs.Consumes;
@@ -29,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-@Path("/queues")
+@Path(Constants.PATH_FOR_QUEUES)
 public class QueueDestinationsResource
 {
    private Map<String, QueueResource> queues = new ConcurrentHashMap<String, QueueResource>();

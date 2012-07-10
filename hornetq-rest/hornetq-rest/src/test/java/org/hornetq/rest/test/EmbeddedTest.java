@@ -80,12 +80,13 @@ public class EmbeddedTest
       ClientRequest request = new ClientRequest(generateURL("/queues/jms.queue.exampleQueue"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = response.getLinkHeader().getLinkByTitle("create");
       System.out.println("create: " + sender);
       Link consumers = response.getLinkHeader().getLinkByTitle("pull-consumers");
       System.out.println("pull: " + consumers);
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = response.getLinkHeader().getLinkByTitle("consume-next");
       System.out.println("consume-next: " + consumeNext);
 
@@ -96,13 +97,13 @@ public class EmbeddedTest
          order.setAmount("$5.00");
          publish("/queue/exampleQueue", order, null);
 
-
          ClientResponse res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
+         res.releaseConnection();
          Assert.assertNotNull(consumeNext);
       }
 
@@ -119,6 +120,7 @@ public class EmbeddedTest
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
+         res.releaseConnection();
          Assert.assertNotNull(consumeNext);
       }
 
@@ -135,6 +137,7 @@ public class EmbeddedTest
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
+         res.releaseConnection();
          Assert.assertNotNull(consumeNext);
       }
    }
