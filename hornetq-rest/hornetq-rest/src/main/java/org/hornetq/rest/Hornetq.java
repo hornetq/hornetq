@@ -12,6 +12,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.util.HttpMessageHelper;
+import org.jboss.resteasy.core.Headers;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.GenericType;
 
@@ -134,7 +135,7 @@ public class Hornetq
       msg.getBodyBuffer().readBytes(body);
 
 
-      String contentType = msg.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
+      String contentType = msg.getStringProperty(HttpHeaderProperty.CONTENT_TYPE);
       if (contentType == null)
       {
          throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
@@ -147,7 +148,7 @@ public class Hornetq
       }
       try
       {
-         return reader.readFrom(type, genericType, null, ct, null, new ByteArrayInputStream(body));
+         return reader.readFrom(type, genericType, null, ct, new Headers<String>(), new ByteArrayInputStream(body));
       }
       catch (IOException e)
       {

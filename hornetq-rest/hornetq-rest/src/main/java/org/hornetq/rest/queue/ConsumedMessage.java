@@ -2,6 +2,7 @@ package org.hornetq.rest.queue;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.HttpHeaderProperty;
 
 import javax.ws.rs.core.Response;
@@ -33,8 +34,12 @@ public abstract class ConsumedMessage
       {
          String k = key.toString();
          String headerName = HttpHeaderProperty.fromPropertyName(k);
-         if (headerName == null) continue;
+         if (headerName == null)
+         {
+            continue;
+         }
          builder.header(headerName, message.getStringProperty(k));
+         HornetQRestLogger.LOGGER.debug("Adding " + headerName + "=" + message.getStringProperty(k));
       }
    }
 

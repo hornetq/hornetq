@@ -22,66 +22,66 @@ import static org.jboss.resteasy.test.TestPortProvider.generateURL;
  */
 public class PushQueueConsumerTest extends MessageTestBase
 {
-   //   @Test
-   public void testBridge() throws Exception
+   enum PushRegistrationType
    {
-      Link consumeNext = null;
-      ClientResponse consumeNextResponse = null;
-      Link pushSubscription = null;
-
-      try
-      {
-         String testName = "testBridge";
-         System.out.println("\n" + testName);
-         deployQueue(testName);
-         deployQueue(testName + "forwardQueue");
-
-         ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
-         ClientResponse response = request.head();
-         Assert.assertEquals(200, response.getStatus());
-         Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
-         System.out.println("create: " + sender);
-         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-consumers");
-         System.out.println("push subscriptions: " + pushSubscriptions);
-
-         request = new ClientRequest(generateURL("/queues/" + testName + "forwardQueue"));
-         response = request.head();
-         Assert.assertEquals(200, response.getStatus());
-         Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
-         response = consumers.request().formParameter("autoAck", "true").post();
-         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
-
-         PushRegistration reg = new PushRegistration();
-         reg.setDurable(false);
-         XmlLink target = new XmlLink();
-         target.setHref(generateURL("/queues/" + testName + "forwardQueue"));
-         target.setRelationship("destination");
-         reg.setTarget(target);
-         response = pushSubscriptions.request().body("application/xml", reg).post();
-         Assert.assertEquals(201, response.getStatus());
-         pushSubscription = response.getLocation();
-
-         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-         Assert.assertEquals(201, res.getStatus());
-
-         consumeNextResponse = consumeNext.request().header("Accept-Wait", "1").post(String.class);
-         Assert.assertEquals(200, res.getStatus());
-         Assert.assertEquals("1", res.getEntity(String.class));
-      }
-      finally
-      {
-         Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), consumeNextResponse, "consumer");
-         Assert.assertEquals(204, session.request().delete().getStatus());
-         Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
-      }
+      CLASS, BRIDGE, URI, TEMPLATE
    }
 
    @Test
+   public void testBridge() throws Exception
+   {
+      Link destinationForConsumption = null;
+      ClientResponse consumerResponse = null;
+      Link pushSubscription = null;
+      String messageContent = "1";
+
+      try
+      {
+         // The name of the queue used for the test should match the name of the test
+         String queue = "testBridge";
+         String queueToPushTo = "pushedFrom-" + queue;
+         System.out.println("\n" + queue);
+         deployQueue(queue);
+         deployQueue(queueToPushTo);
+
+         ClientResponse queueResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queue))));
+         Link destination = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "push-consumers");
+
+         ClientResponse queueToPushToResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queueToPushTo))));
+         ClientResponse autoAckResponse = setAutoAck(queueToPushToResponse, true);
+         destinationForConsumption = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), autoAckResponse, "consume-next");
+
+         pushSubscription = createPushRegistration(queueToPushTo, pushSubscriptions, PushRegistrationType.BRIDGE);
+
+         sendMessage(destination, messageContent);
+
+         consumerResponse = consume(destinationForConsumption, messageContent);
+      }
+      finally
+      {
+         cleanupConsumer(consumerResponse);
+         cleanupSubscription(pushSubscription);
+      }
+   }
+
+   private void cleanupSubscription(Link pushSubscription) throws Exception
+   {
+      if (pushSubscription != null)
+      {
+         ClientResponse response = pushSubscription.request().delete();
+         response.releaseConnection();
+         Assert.assertEquals(204, response.getStatus());
+      }
+   }
+
+//   @Test
    public void testClass() throws Exception
    {
-      Link consumePushedMessage = null;
-      ClientResponse consumePushedMessageResponse = null;
+      Link destinationForConsumption = null;
+      ClientResponse consumerResponse = null;
       Link pushSubscription = null;
+      String messageContent = "1";
 
       try
       {
@@ -93,78 +93,114 @@ public class PushQueueConsumerTest extends MessageTestBase
          deployQueue(queue);
          deployQueue(queueToPushTo);
 
-         ClientRequest queueRequest = new ClientRequest(generateURL(getUrlPath(queue)));
-
-         ClientResponse queueResponse = queueRequest.head();
-         queueResponse.releaseConnection();
-         Assert.assertEquals(200, queueResponse.getStatus());
-         Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
-//         System.out.println("create: " + sender);
+         ClientResponse queueResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queue))));
+         Link destinationForSend = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
          Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "push-consumers");
-//         System.out.println("push subscriptions: " + pushSubscriptions);
 
-         ClientRequest queueToPushToRequest = new ClientRequest(generateURL(getUrlPath(queueToPushTo)));
-         ClientResponse queueToPushToResponse = queueToPushToRequest.head();
-         queueToPushToResponse.releaseConnection();
-         Assert.assertEquals(200, queueToPushToResponse.getStatus());
-         Link pullConsumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueToPushToResponse, "pull-consumers");
-//         System.out.println("pull-consumers: " + pullConsumers);
-//         System.out.println("setting autoAck on " + pullConsumers);
-         ClientResponse autoAckResponse = pullConsumers.request().formParameter("autoAck", "true").post();
-         autoAckResponse.releaseConnection();
-         consumePushedMessage = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), autoAckResponse, "consume-next");
-//         System.out.println("consume-next: " + consumePushedMessage);
+         ClientResponse queueToPushToResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queueToPushTo))));
+         ClientResponse autoAckResponse = setAutoAck(queueToPushToResponse, true);
+         destinationForConsumption = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), autoAckResponse, "consume-next");
 
-         PushRegistration reg = new PushRegistration();
-         reg.setDurable(false);
-         XmlLink target = new XmlLink();
-         target.setHref(generateURL(getUrlPath(queueToPushTo)));
-         target.setClassName(HornetQPushStrategy.class.getName());
-         reg.setTarget(target);
-//         System.out.println("push registration: " + reg);
-         ClientResponse pushRegistrationResponse = pushSubscriptions.request().body("application/xml", reg).post();
-         pushRegistrationResponse.releaseConnection();
-         Assert.assertEquals(201, pushRegistrationResponse.getStatus());
-         pushSubscription = pushRegistrationResponse.getLocation();
-//         System.out.println("push subscription: " + pushSubscription);
+         pushSubscription = createPushRegistration(queueToPushTo, pushSubscriptions, PushRegistrationType.CLASS);
 
-//         System.out.println("sending: 1 to " + sender);
-         ClientResponse sendMessageResponse = sender.request().body("text/plain", "1").post();
-         sendMessageResponse.releaseConnection();
-         Assert.assertEquals(201, sendMessageResponse.getStatus());
-//         System.out.println("sent: 1 to " + sender);
+         sendMessage(destinationForSend, messageContent);
 
-//         System.out.println("Getting message from " + consumePushedMessage);
-         consumePushedMessageResponse = consumePushedMessage.request().header(Constants.WAIT_HEADER, "1").post(String.class);
-         consumePushedMessageResponse.releaseConnection();
-         Assert.assertEquals(200, consumePushedMessageResponse.getStatus());
-         Assert.assertEquals("1", consumePushedMessageResponse.getEntity(String.class));
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
+         consumerResponse = consume(destinationForConsumption, messageContent);
       }
       finally
       {
-         if (consumePushedMessageResponse != null)
-         {
-            Link consumer = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), consumePushedMessageResponse, "consumer");
-            ClientResponse response = consumer.request().delete();
-            response.releaseConnection();
-            Assert.assertEquals(204, response.getStatus());
-         }
-         if (pushSubscription != null)
-         {
-            ClientResponse response = pushSubscription.request().delete();
-            response.releaseConnection();
-            Assert.assertEquals(204, response.getStatus());
-         }
+         cleanupConsumer(consumerResponse);
+         cleanupSubscription(pushSubscription);
       }
    }
 
-   private String getUrlPath(String queueName)
+//   @Test
+   public void testTemplate() throws Exception
    {
-      return Constants.PATH_FOR_QUEUES + "/" + queueName;
+      Link destinationForConsumption = null;
+      ClientResponse consumerResponse = null;
+      Link pushSubscription = null;
+      String messageContent = "1";
+
+      try
+      {
+         // The name of the queue used for the test should match the name of the test
+         String queue = "testTemplate";
+         String queueToPushTo = "pushedFrom-" + queue;
+         System.out.println("\n" + queue);
+
+         deployQueue(queue);
+         deployQueue(queueToPushTo);
+
+         ClientResponse queueResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queue))));
+         Link destinationForSend = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "push-consumers");
+
+         ClientResponse queueToPushToResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queueToPushTo))));
+         Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueToPushToResponse, "pull-consumers");
+         Link createWithId = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueToPushToResponse, "create-with-id");
+         ClientResponse autoAckResponse = Util.setAutoAck(consumers, true);
+         destinationForConsumption = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), autoAckResponse, "consume-next");
+
+         pushSubscription = createPushRegistration(createWithId.getHref(), pushSubscriptions, PushRegistrationType.TEMPLATE);
+
+         sendMessage(destinationForSend, messageContent);
+
+         consumerResponse = consume(destinationForConsumption, messageContent);
+      }
+      finally
+      {
+         cleanupConsumer(consumerResponse);
+         cleanupSubscription(pushSubscription);
+      }
+   }
+
+   @Path("/my")
+   public static class MyResource
+   {
+      public static String got_it;
+
+      @PUT
+      public void put(String str)
+      {
+         got_it = str;
+      }
+
+   }
+
+//   @Test
+   public void testUri() throws Exception
+   {
+      Link pushSubscription = null;
+      String messageContent = "1";
+
+      try
+      {
+         // The name of the queue used for the test should match the name of the test
+         String queue = "testUri";
+         String queueToPushTo = "pushedFrom-" + queue;
+         System.out.println("\n" + queue);
+
+         deployQueue(queue);
+         deployQueue(queueToPushTo);
+         server.getJaxrsServer().getDeployment().getRegistry().addPerRequestResource(MyResource.class);
+
+         ClientResponse queueResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queue))));
+         Link destinationForSend = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "push-consumers");
+
+         pushSubscription = createPushRegistration(generateURL("/my"), pushSubscriptions, PushRegistrationType.URI);
+
+         sendMessage(destinationForSend, messageContent);
+
+         Thread.sleep(100);
+
+         Assert.assertEquals(messageContent, MyResource.got_it);
+      }
+      finally
+      {
+         cleanupSubscription(pushSubscription);
+      }
    }
 
    private void deployQueue(String queueName) throws Exception
@@ -176,100 +212,73 @@ public class PushQueueConsumerTest extends MessageTestBase
       manager.getQueueManager().deploy(deployment);
    }
 
-   //   @Test
-   public void testTemplate() throws Exception
+   private ClientResponse consume(Link destination, String expectedContent) throws Exception
    {
-      String testName = "testTemplate";
-      System.out.println("\n" + testName);
-      deployQueue(testName);
-      deployQueue(testName + "forwardQueue");
-
-      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
-
-      ClientResponse response = request.head();
+      ClientResponse response;
+      response = destination.request().header(Constants.WAIT_HEADER, "1").post(String.class);
       Assert.assertEquals(200, response.getStatus());
-      Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
-      System.out.println("create: " + sender);
-      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-consumers");
-      System.out.println("push subscriptions: " + pushSubscriptions);
-
-      request = new ClientRequest(generateURL("/queues/" + testName + "forwardQueue"));
-      response = request.head();
-      Assert.assertEquals(200, response.getStatus());
-      Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
-      Link createWithId = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create-with-id");
-      response = consumers.request().formParameter("autoAck", "true").post();
-      Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
-
-      PushRegistration reg = new PushRegistration();
-      reg.setDurable(false);
-      XmlLink target = new XmlLink();
-      target.setRelationship("template");
-      target.setHref(createWithId.getHref());
-      reg.setTarget(target);
-      response = pushSubscriptions.request().body("application/xml", reg).post();
-      Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
-
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
-
-      res = consumeNext.request().header("Accept-Wait", "1").post(String.class);
-      Assert.assertEquals(200, res.getStatus());
-      Assert.assertEquals("1", res.getEntity(String.class));
-      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
-      Assert.assertEquals(204, session.request().delete().getStatus());
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      Assert.assertEquals(expectedContent, response.getEntity(String.class));
+      response.releaseConnection();
+      return response;
    }
 
-   @Path("/my")
-   public static class MyResource
+   private void sendMessage(Link sender, String content) throws Exception
    {
-      public static String gotit;
+      ClientResponse sendMessageResponse = sender.request().body("text/plain", content).post();
+      sendMessageResponse.releaseConnection();
+      Assert.assertEquals(201, sendMessageResponse.getStatus());
+   }
 
-      @PUT
-      public void put(String str)
+   private ClientResponse setAutoAck(ClientResponse response, boolean ack) throws Exception
+   {
+      Link pullConsumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
+      ClientResponse autoAckResponse = pullConsumers.request().formParameter("autoAck", Boolean.toString(ack)).post();
+      autoAckResponse.releaseConnection();
+      Assert.assertEquals(201, autoAckResponse.getStatus());
+      return autoAckResponse;
+   }
+
+   private void cleanupConsumer(ClientResponse consumerResponse) throws Exception
+   {
+      if (consumerResponse != null)
       {
-         gotit = str;
+         Link consumer = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), consumerResponse, "consumer");
+         ClientResponse response = consumer.request().delete();
+         response.releaseConnection();
+         Assert.assertEquals(204, response.getStatus());
       }
-
    }
 
-   //   @Test
-   public void testUri() throws Exception
+   private Link createPushRegistration(String queueToPushTo, Link pushSubscriptions, PushRegistrationType pushRegistrationType) throws Exception
    {
-      String testName = "testUri";
-      System.out.println("\n" + testName);
-      deployQueue(testName);
-      deployQueue(testName + "forwardQueue");
-
-      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
-      server.getJaxrsServer().getDeployment().getRegistry().addPerRequestResource(MyResource.class);
-
-      ClientResponse response = request.head();
-      Assert.assertEquals(200, response.getStatus());
-      Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
-      System.out.println("create: " + sender);
-      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-consumers");
-      System.out.println("push subscriptions: " + pushSubscriptions);
-
       PushRegistration reg = new PushRegistration();
       reg.setDurable(false);
       XmlLink target = new XmlLink();
-      target.setMethod("put");
-      target.setHref(generateURL("/my"));
+      if (pushRegistrationType == PushRegistrationType.CLASS)
+      {
+         target.setHref(generateURL(Util.getUrlPath(queueToPushTo)));
+         target.setClassName(HornetQPushStrategy.class.getName());
+      }
+      else if (pushRegistrationType == PushRegistrationType.BRIDGE)
+      {
+         target.setHref(generateURL(Util.getUrlPath(queueToPushTo)));
+         target.setRelationship("destination");
+      }
+      else if (pushRegistrationType == PushRegistrationType.TEMPLATE)
+      {
+         target.setHref(queueToPushTo);
+         target.setRelationship("template");
+      }
+      else if (pushRegistrationType == PushRegistrationType.URI)
+      {
+         target.setMethod("put");
+         target.setHref(queueToPushTo);
+      }
       reg.setTarget(target);
-      response = pushSubscriptions.request().body("application/xml", reg).post();
-      Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
-
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
-
-      Thread.sleep(100);
-
-      Assert.assertEquals("1", MyResource.gotit);
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      ClientResponse pushRegistrationResponse = pushSubscriptions.request().body("application/xml", reg).post();
+      pushRegistrationResponse.releaseConnection();
+      Assert.assertEquals(201, pushRegistrationResponse.getStatus());
+      Link pushSubscription = pushRegistrationResponse.getLocation();
+      return pushSubscription;
    }
-
 }

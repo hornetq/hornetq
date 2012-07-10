@@ -1,19 +1,18 @@
 package org.hornetq.rest.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.util.List;
-import java.util.Map.Entry;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.HttpHeaderProperty;
 import org.jboss.resteasy.client.ClientRequest;
+
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -35,7 +34,10 @@ public class HttpMessageHelper
       {
          String k = key.toString();
          String headerName = HttpHeaderProperty.fromPropertyName(k);
-         if (headerName == null) continue;
+         if (headerName == null)
+         {
+            continue;
+         }
          builder.header(headerName, message.getStringProperty(k));
       }
       int size = message.getBodySize();
@@ -72,12 +74,12 @@ public class HttpMessageHelper
       {
          String k = key.toString();
          String headerName = HttpHeaderProperty.fromPropertyName(k);
-         if (headerName == null) continue;
-         String value = message.getStringProperty(k);
-         if (value.startsWith(","))
+         if (headerName == null)
          {
-            value = value.substring(1);
+            continue;
          }
+         String value = message.getStringProperty(k);
+
          request.header(headerName, value);
          HornetQRestLogger.LOGGER.debug("Examining " + headerName + ": " + value);
          // override default content type if it is set as a message property
@@ -141,13 +143,19 @@ public class HttpMessageHelper
 
    public static String concatenateHeaderValue(List<String> vals)
    {
-      if (vals == null) return "";
+      if (vals == null)
+      {
+         return "";
+      }
       StringBuilder val = new StringBuilder();
       for (String v : vals)
       {
-            val.append(",").append(v);
+         if (val.length() > 0)
+         {
+            val.append(",");
+         }
+         val.append(v);
       }
       return val.toString();
    }
-
 }

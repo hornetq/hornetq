@@ -72,7 +72,6 @@ public class PersistentPushTopicConsumerTest
       deployment.getRegistry().addSingletonResource(manager.getTopicManager().getDestination());
 
       deployment.getRegistry().addPerRequestResource(Receiver.class);
-
    }
 
    public static void shutdown() throws Exception
@@ -95,6 +94,7 @@ public class PersistentPushTopicConsumerTest
          ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
          ClientResponse<?> response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -113,23 +113,26 @@ public class PersistentPushTopicConsumerTest
          response = pushSubscriptions.request().body("application/xml", reg).post();
          Assert.assertEquals(201, response.getStatus());
          Link pushSubscription = response.getLocation();
+         response.releaseConnection();
 
          ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
          Thread.sleep(1000);
 
          response = pushSubscription.request().get();
          PushTopicRegistration reg2 = response.getEntity(PushTopicRegistration.class);
+         response.releaseConnection();
          Assert.assertEquals(reg.isDurable(), reg2.isDurable());
          Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
          Assert.assertFalse(reg2.isEnabled());
+         response.releaseConnection();
 
          String destination = reg2.getDestination();
          ClientSession session = manager.getQueueManager().getSessionFactory().createSession(false, false, false);
          ClientSession.QueueQuery query = session.queueQuery(new SimpleString(destination));
          Assert.assertFalse(query.isExists());
-
 
          manager.getQueueManager().getPushStore().removeAll();
       }
@@ -152,6 +155,7 @@ public class PersistentPushTopicConsumerTest
          ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
          ClientResponse response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -167,6 +171,7 @@ public class PersistentPushTopicConsumerTest
          target.setHref(sub1);
          reg.setTarget(target);
          response = pushSubscriptions.request().body("application/xml", reg).post();
+         response.releaseConnection();
          Assert.assertEquals(201, response.getStatus());
 
          reg = new PushTopicRegistration();
@@ -175,6 +180,7 @@ public class PersistentPushTopicConsumerTest
          target.setHref(sub2);
          reg.setTarget(target);
          response = pushSubscriptions.request().body("application/xml", reg).post();
+         response.releaseConnection();
          Assert.assertEquals(201, response.getStatus());
 
          shutdown();
@@ -182,6 +188,7 @@ public class PersistentPushTopicConsumerTest
          deployTopic(testName);
 
          ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
          Receiver.latch.await(1, TimeUnit.SECONDS);

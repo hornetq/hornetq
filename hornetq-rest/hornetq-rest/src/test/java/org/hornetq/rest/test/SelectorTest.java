@@ -1,19 +1,5 @@
 package org.hornetq.rest.test;
 
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
-import java.io.Serializable;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.rest.HttpHeaderProperty;
@@ -26,6 +12,14 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.jms.*;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -78,13 +72,25 @@ public class SelectorTest extends MessageTestBase
       @Override
       public boolean equals(Object o)
       {
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+         if (this == o)
+         {
+            return true;
+         }
+         if (o == null || getClass() != o.getClass())
+         {
+            return false;
+         }
 
          Order order = (Order) o;
 
-         if (!amount.equals(order.amount)) return false;
-         if (!name.equals(order.name)) return false;
+         if (!amount.equals(order.amount))
+         {
+            return false;
+         }
+         if (!name.equals(order.name))
+         {
+            return false;
+         }
 
          return true;
       }
@@ -93,8 +99,8 @@ public class SelectorTest extends MessageTestBase
       public String toString()
       {
          return "Order{" +
-                 "name='" + name + '\'' +
-                 '}';
+               "name='" + name + '\'' +
+               '}';
       }
 
       @Override
@@ -171,6 +177,7 @@ public class SelectorTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/" + topicName));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-subscriptions");
       System.out.println("push: " + consumers);
@@ -184,6 +191,7 @@ public class SelectorTest extends MessageTestBase
       oneReg.setTarget(target);
       oneReg.setSelector("MyTag = '1'");
       response = consumers.request().body("application/xml", oneReg).post();
+      response.releaseConnection();
       Link oneSubscription = response.getLocation();
 
       PushTopicRegistration twoReg = new PushTopicRegistration();
@@ -195,6 +203,7 @@ public class SelectorTest extends MessageTestBase
       twoReg.setTarget(target);
       twoReg.setSelector("MyTag = '2'");
       response = consumers.request().body("application/xml", twoReg).post();
+      response.releaseConnection();
       Link twoSubscription = response.getLocation();
 
       Order order = new Order();
@@ -229,10 +238,10 @@ public class SelectorTest extends MessageTestBase
       Thread.sleep(200);
       Assert.assertEquals(order, PushReceiver.oneOrder);
 
-      oneSubscription.request().delete();
-      twoSubscription.request().delete();
-
-
+      response = oneSubscription.request().delete();
+      response.releaseConnection();
+      response = twoSubscription.request().delete();
+      response.releaseConnection();
    }
 
 
@@ -242,16 +251,19 @@ public class SelectorTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/" + topicName));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-subscriptions");
       System.out.println("pull: " + consumers);
       response = consumers.request().formParameter("autoAck", "true")
-              .formParameter("selector", "MyTag = '1'").post();
+            .formParameter("selector", "MyTag = '1'").post();
+      response.releaseConnection();
 
       Link consumeOne = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consumeOne: " + consumeOne);
       response = consumers.request().formParameter("autoAck", "true")
-              .formParameter("selector", "MyTag = '2'").post();
+            .formParameter("selector", "MyTag = '2'").post();
+      response.releaseConnection();
       Link consumeTwo = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consumeTwo: " + consumeTwo);
 
@@ -291,15 +303,16 @@ public class SelectorTest extends MessageTestBase
    }
 
    private Link consumeOrder(Order order, Link consumeNext)
-           throws Exception
+         throws Exception
    {
-      ClientResponse res = consumeNext.request().header("Accept-Wait", "4").accept("application/xml").post(String.class);
-      Assert.assertEquals(200, res.getStatus());
-      Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-      Order order2 = (Order) res.getEntity(Order.class);
+      ClientResponse response = consumeNext.request().header("Accept-Wait", "4").accept("application/xml").post(String.class);
+      Assert.assertEquals(200, response.getStatus());
+      Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
+      Order order2 = (Order) response.getEntity(Order.class);
       Assert.assertEquals(order, order2);
-      consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+      consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       Assert.assertNotNull(consumeNext);
+      response.releaseConnection();
       return consumeNext;
    }
 }

@@ -47,8 +47,6 @@ public class PersistentPushQueueConsumerTest
       manager.start();
       deployment.getRegistry().addSingletonResource(manager.getQueueManager().getDestination());
       deployment.getRegistry().addSingletonResource(manager.getTopicManager().getDestination());
-
-
    }
 
    public static void shutdown() throws Exception
@@ -74,6 +72,7 @@ public class PersistentPushQueueConsumerTest
          ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
          ClientResponse response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -82,10 +81,11 @@ public class PersistentPushQueueConsumerTest
 
          request = new ClientRequest(generateURL("/queues/" + testName + "forwardQueue"));
          response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
          System.out.println("pull: " + consumers);
-         response = consumers.request().formParameter("autoAck", "true").post();
+         response = Util.setAutoAck(consumers, true);
          Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
          System.out.println("poller: " + consumeNext);
 
@@ -97,6 +97,7 @@ public class PersistentPushQueueConsumerTest
          target.setRelationship("destination");
          reg.setTarget(target);
          response = pushSubscriptions.request().body("application/xml", reg).post();
+         response.releaseConnection();
          Assert.assertEquals(201, response.getStatus());
 
          shutdown();
@@ -104,14 +105,18 @@ public class PersistentPushQueueConsumerTest
          deployBridgeQueues(testName);
 
          ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
          res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
 
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("1", res.getEntity(String.class));
+         res.releaseConnection();
          Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
-         Assert.assertEquals(204, session.request().delete().getStatus());
+         res = session.request().delete();
+         res.releaseConnection();
+         Assert.assertEquals(204, res.getStatus());
 
          manager.getQueueManager().getPushStore().removeAll();
       }
@@ -152,6 +157,7 @@ public class PersistentPushQueueConsumerTest
          ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
          ClientResponse<?> response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -170,8 +176,10 @@ public class PersistentPushQueueConsumerTest
          response = pushSubscriptions.request().body("application/xml", reg).post();
          Assert.assertEquals(201, response.getStatus());
          Link pushSubscription = response.getLocation();
+         response.releaseConnection();
 
          ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
          Thread.sleep(1000);
@@ -180,7 +188,8 @@ public class PersistentPushQueueConsumerTest
          PushRegistration reg2 = response.getEntity(PushRegistration.class);
          Assert.assertEquals(reg.isDurable(), reg2.isDurable());
          Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
-         Assert.assertFalse(reg2.isEnabled());
+         Assert.assertFalse(reg2.isEnabled()); // make sure the failure disables the PushRegistration
+         response.releaseConnection();
 
          manager.getQueueManager().getPushStore().removeAll();
       }

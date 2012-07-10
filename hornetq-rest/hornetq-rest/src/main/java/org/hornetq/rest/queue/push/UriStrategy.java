@@ -141,7 +141,8 @@ public class UriStrategy implements PushStrategy
          }
          catch (Exception e)
          {
-            throw new RuntimeException(e);
+            HornetQRestLogger.LOGGER.debug("failed to push message to " + uri, e);
+            return false;
          }
          try
          {

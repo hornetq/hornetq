@@ -24,21 +24,24 @@ public class FindDestinationTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
       ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+      res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
       res = consumeNext.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals("1", res.getEntity(String.class));
+      res.releaseConnection();
       Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
       System.out.println("session: " + session);
       Assert.assertEquals(204, session.request().delete().getStatus());
@@ -51,55 +54,63 @@ public class FindDestinationTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
-
       ClientResponse res = subscriptions.request().post();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocation();
+      res.releaseConnection();
       Assert.assertNotNull(sub1);
       Link consumeNext1 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
       Assert.assertNotNull(consumeNext1);
       System.out.println("consumeNext1: " + consumeNext1);
 
-
       res = subscriptions.request().post();
       Assert.assertEquals(201, res.getStatus());
       Link sub2 = res.getLocation();
+      res.releaseConnection();
       Assert.assertNotNull(sub2);
       Link consumeNext2 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
       Assert.assertNotNull(consumeNext1);
 
-
       res = sender.request().body("text/plain", Integer.toString(1)).post();
+      res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       res = sender.request().body("text/plain", Integer.toString(2)).post();
+      res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
       res = consumeNext1.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals("1", res.getEntity(String.class));
+      res.releaseConnection();
       consumeNext1 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
 
       res = consumeNext1.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals("2", res.getEntity(String.class));
-      consumeNext1 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
+      res.releaseConnection();
 
       res = consumeNext2.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals("1", res.getEntity(String.class));
+      res.releaseConnection();
       consumeNext2 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
 
       res = consumeNext2.request().post(String.class);
       Assert.assertEquals(200, res.getStatus());
       Assert.assertEquals("2", res.getEntity(String.class));
-      consumeNext2 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
-      Assert.assertEquals(204, sub1.request().delete().getStatus());
-      Assert.assertEquals(204, sub2.request().delete().getStatus());
+      res.releaseConnection();
+
+      res = sub1.request().delete();
+      res.releaseConnection();
+      Assert.assertEquals(204, res.getStatus());
+
+      res = sub2.request().delete();
+      res.releaseConnection();
+      Assert.assertEquals(204, res.getStatus());
    }
-
-
 }
