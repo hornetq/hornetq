@@ -44,6 +44,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -52,9 +53,10 @@ public class PushTopicConsumerTest extends MessageTestBase
 
       request = new ClientRequest(generateURL("/queues/forwardQueue"));
       response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
 
       PushTopicRegistration reg = new PushTopicRegistration();
@@ -64,18 +66,25 @@ public class PushTopicConsumerTest extends MessageTestBase
       target.setRelationship("destination");
       reg.setTarget(target);
       response = pushSubscriptions.request().body("application/xml", reg).post();
+      response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
       Link pushSubscription = response.getLocation();
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+      response = sender.request().body("text/plain", Integer.toString(1)).post();
+      response.releaseConnection();
+      Assert.assertEquals(201, response.getStatus());
 
-      res = consumeNext.request().header("Accept-Wait", "1").post(String.class);
-      Assert.assertEquals(200, res.getStatus());
-      Assert.assertEquals("1", res.getEntity(String.class));
-      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
-      Assert.assertEquals(204, session.request().delete().getStatus());
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      response = consumeNext.request().header("Accept-Wait", "1").post(String.class);
+      Assert.assertEquals(200, response.getStatus());
+      Assert.assertEquals("1", response.getEntity(String.class));
+      response.releaseConnection();
+      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consumer");
+      response = session.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
+      response = pushSubscription.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
    }
 
    @Test
@@ -84,6 +93,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -92,9 +102,10 @@ public class PushTopicConsumerTest extends MessageTestBase
 
       request = new ClientRequest(generateURL("/queues/forwardQueue"));
       response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
 
       PushTopicRegistration reg = new PushTopicRegistration();
@@ -106,16 +117,23 @@ public class PushTopicConsumerTest extends MessageTestBase
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
       Link pushSubscription = response.getLocation();
+      response.releaseConnection();
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+      response = sender.request().body("text/plain", Integer.toString(1)).post();
+      response.releaseConnection();
+      Assert.assertEquals(201, response.getStatus());
 
-      res = consumeNext.request().header("Accept-Wait", "1").post(String.class);
-      Assert.assertEquals(200, res.getStatus());
-      Assert.assertEquals("1", res.getEntity(String.class));
-      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
-      Assert.assertEquals(204, session.request().delete().getStatus());
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      response = consumeNext.request().header("Accept-Wait", "1").post(String.class);
+      Assert.assertEquals(200, response.getStatus());
+      Assert.assertEquals("1", response.getEntity(String.class));
+      response.releaseConnection();
+      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consumer");
+      response = session.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
+      response = pushSubscription.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
    }
 
    @Test
@@ -124,6 +142,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -132,10 +151,11 @@ public class PushTopicConsumerTest extends MessageTestBase
 
       request = new ClientRequest(generateURL("/queues/forwardQueue"));
       response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       Link createWithId = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create-with-id");
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
 
       PushTopicRegistration reg = new PushTopicRegistration();
@@ -147,16 +167,23 @@ public class PushTopicConsumerTest extends MessageTestBase
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
       Link pushSubscription = response.getLocation();
+      response.releaseConnection();
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+      response = sender.request().body("text/plain", Integer.toString(1)).post();
+      response.releaseConnection();
+      Assert.assertEquals(201, response.getStatus());
 
-      res = consumeNext.request().header("Accept-Wait", "1").post(String.class);
-      Assert.assertEquals(200, res.getStatus());
-      Assert.assertEquals("1", res.getEntity(String.class));
-      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
-      Assert.assertEquals(204, session.request().delete().getStatus());
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      response = consumeNext.request().header("Accept-Wait", "1").post(String.class);
+      Assert.assertEquals(200, response.getStatus());
+      Assert.assertEquals("1", response.getEntity(String.class));
+      response.releaseConnection();
+      Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consumer");
+      response = session.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
+      response = pushSubscription.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
    }
 
    @Path("/my")
@@ -179,6 +206,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       server.getJaxrsServer().getDeployment().getRegistry().addPerRequestResource(MyResource.class);
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -194,13 +222,17 @@ public class PushTopicConsumerTest extends MessageTestBase
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
       Link pushSubscription = response.getLocation();
+      response.releaseConnection();
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+      response = sender.request().body("text/plain", Integer.toString(1)).post();
+      response.releaseConnection();
+      Assert.assertEquals(201, response.getStatus());
 
       Thread.sleep(100);
 
       Assert.assertEquals("1", MyResource.gotit);
-      Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
+      response = pushSubscription.request().delete();
+      response.releaseConnection();
+      Assert.assertEquals(204, response.getStatus());
    }
 }

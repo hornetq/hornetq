@@ -15,7 +15,7 @@
 
 
     <properties>
-        <resteasy.version>2.1.0.GA</resteasy.version>
+        <resteasy.version>2.3.4.Final</resteasy.version>
         <!--- test -->
         <hornetq.version>${project.version}</hornetq.version>
     </properties>
@@ -32,7 +32,7 @@
         <repository>
             <id>jboss-releases-repository</id>
             <name>JBoss Releases Repository</name>
-            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public</url>
         </repository>
     </distributionManagement>
 

@@ -1,14 +1,5 @@
 package org.hornetq.rest.test;
 
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -30,6 +21,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * Test durable queue push consumers
@@ -73,7 +72,6 @@ public class PersistentPushTopicConsumerTest
       deployment.getRegistry().addSingletonResource(manager.getTopicManager().getDestination());
 
       deployment.getRegistry().addPerRequestResource(Receiver.class);
-
    }
 
    public static void shutdown() throws Exception
@@ -87,102 +85,123 @@ public class PersistentPushTopicConsumerTest
    @Test
    public void testFailure() throws Exception
    {
-      startup();
-      deployTopic();
+      try
+      {
+         String testName = "testFailure";
+         startup();
+         deployTopic(testName);
 
-      ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
+         ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
-      ClientResponse<?> response = request.head();
-      Assert.assertEquals(200, response.getStatus());
-      Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
-      System.out.println("create: " + sender);
-      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-subscriptions");
-      System.out.println("push subscriptions: " + pushSubscriptions);
+         ClientResponse<?> response = request.head();
+         response.releaseConnection();
+         Assert.assertEquals(200, response.getStatus());
+         Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
+         System.out.println("create: " + sender);
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-subscriptions");
+         System.out.println("push subscriptions: " + pushSubscriptions);
 
-      PushTopicRegistration reg = new PushTopicRegistration();
-      reg.setDurable(true);
-      XmlLink target = new XmlLink();
-      target.setHref("http://localhost:3333/error");
-      target.setRelationship("uri");
-      reg.setTarget(target);
-      reg.setDisableOnFailure(true);
-      reg.setMaxRetries(3);
-      reg.setRetryWaitMillis(10);
-      response = pushSubscriptions.request().body("application/xml", reg).post();
-      Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+         PushTopicRegistration reg = new PushTopicRegistration();
+         reg.setDurable(true);
+         XmlLink target = new XmlLink();
+         target.setHref("http://localhost:3333/error");
+         target.setRelationship("uri");
+         reg.setTarget(target);
+         reg.setDisableOnFailure(true);
+         reg.setMaxRetries(3);
+         reg.setRetryWaitMillis(10);
+         response = pushSubscriptions.request().body("application/xml", reg).post();
+         Assert.assertEquals(201, response.getStatus());
+         Link pushSubscription = response.getLocation();
+         response.releaseConnection();
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
+         Assert.assertEquals(201, res.getStatus());
 
-      Thread.sleep(1000);
+         Thread.sleep(1000);
 
-      response = pushSubscription.request().get();
-      PushTopicRegistration reg2 = response.getEntity(PushTopicRegistration.class);
-      Assert.assertEquals(reg.isDurable(), reg2.isDurable());
-      Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
-      Assert.assertFalse(reg2.isEnabled());
+         response = pushSubscription.request().get();
+         PushTopicRegistration reg2 = response.getEntity(PushTopicRegistration.class);
+         response.releaseConnection();
+         Assert.assertEquals(reg.isDurable(), reg2.isDurable());
+         Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
+         Assert.assertFalse(reg2.isEnabled());
+         response.releaseConnection();
 
-      String destination = reg2.getDestination();
-      ClientSession session = manager.getQueueManager().getSessionFactory().createSession(false, false, false);
-      ClientSession.QueueQuery query = session.queueQuery(new SimpleString(destination));
-      Assert.assertFalse(query.isExists());
+         String destination = reg2.getDestination();
+         ClientSession session = manager.getQueueManager().getSessionFactory().createSession(false, false, false);
+         ClientSession.QueueQuery query = session.queueQuery(new SimpleString(destination));
+         Assert.assertFalse(query.isExists());
 
-
-      manager.getQueueManager().getPushStore().removeAll();
-      shutdown();
+         manager.getQueueManager().getPushStore().removeAll();
+      }
+      finally
+      {
+         shutdown();
+      }
    }
 
 
    @Test
    public void testSuccessFirst() throws Exception
    {
-      startup();
-      deployTopic();
+      try
+      {
+         String testName = "testSuccessFirst";
+         startup();
+         deployTopic(testName);
 
-      ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
+         ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
-      ClientResponse response = request.head();
-      Assert.assertEquals(200, response.getStatus());
-      Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
-      System.out.println("create: " + sender);
-      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "push-subscriptions");
-      System.out.println("push subscriptions: " + pushSubscriptions);
+         ClientResponse response = request.head();
+         response.releaseConnection();
+         Assert.assertEquals(200, response.getStatus());
+         Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
+         System.out.println("create: " + sender);
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "push-subscriptions");
+         System.out.println("push subscriptions: " + pushSubscriptions);
 
-      String sub1 = generateURL("/subscribers/1");
-      String sub2 = generateURL("/subscribers/2");
+         String sub1 = generateURL("/subscribers/1");
+         String sub2 = generateURL("/subscribers/2");
 
-      PushTopicRegistration reg = new PushTopicRegistration();
-      reg.setDurable(true);
-      XmlLink target = new XmlLink();
-      target.setHref(sub1);
-      reg.setTarget(target);
-      response = pushSubscriptions.request().body("application/xml", reg).post();
-      Assert.assertEquals(201, response.getStatus());
+         PushTopicRegistration reg = new PushTopicRegistration();
+         reg.setDurable(true);
+         XmlLink target = new XmlLink();
+         target.setHref(sub1);
+         reg.setTarget(target);
+         response = pushSubscriptions.request().body("application/xml", reg).post();
+         response.releaseConnection();
+         Assert.assertEquals(201, response.getStatus());
 
-      reg = new PushTopicRegistration();
-      reg.setDurable(true);
-      target = new XmlLink();
-      target.setHref(sub2);
-      reg.setTarget(target);
-      response = pushSubscriptions.request().body("application/xml", reg).post();
-      Assert.assertEquals(201, response.getStatus());
+         reg = new PushTopicRegistration();
+         reg.setDurable(true);
+         target = new XmlLink();
+         target.setHref(sub2);
+         reg.setTarget(target);
+         response = pushSubscriptions.request().body("application/xml", reg).post();
+         response.releaseConnection();
+         Assert.assertEquals(201, response.getStatus());
 
-      shutdown();
-      startup();
-      deployTopic();
+         shutdown();
+         startup();
+         deployTopic(testName);
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
-      Assert.assertEquals(201, res.getStatus());
+         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+         res.releaseConnection();
+         Assert.assertEquals(201, res.getStatus());
 
-      Receiver.latch.await(1, TimeUnit.SECONDS);
+         Receiver.latch.await(1, TimeUnit.SECONDS);
 
-      Assert.assertEquals("1", Receiver.subscriber1);
-      Assert.assertEquals("1", Receiver.subscriber2);
+         Assert.assertEquals("1", Receiver.subscriber1);
+         Assert.assertEquals("1", Receiver.subscriber2);
 
-      manager.getTopicManager().getPushStore().removeAll();
-
-      shutdown();
+         manager.getTopicManager().getPushStore().removeAll();
+      }
+      finally
+      {
+         shutdown();
+      }
    }
 
    @Path("/subscribers")
@@ -213,13 +232,13 @@ public class PersistentPushTopicConsumerTest
       }
    }
 
-   private void deployTopic()
-           throws Exception
+   private void deployTopic(String topicName)
+         throws Exception
    {
       TopicDeployment deployment = new TopicDeployment();
       deployment.setDuplicatesAllowed(true);
       deployment.setDurableSend(false);
-      deployment.setName("testTopic");
+      deployment.setName(topicName);
       manager.getTopicManager().deploy(deployment);
 
 

@@ -12,7 +12,7 @@
     <name>HornetQ REST Interface Implementation</name>
 
    <properties>
-      <skipRestTests>true</skipRestTests>
+      <skipRestTests>false</skipRestTests>
    </properties>
 
     <dependencies>
@@ -42,12 +42,12 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
             <scope>provided</scope>
-            <exclusions>
+            <!--exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
@@ -102,6 +102,9 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <skipTests>${skipRestTests}</skipTests>
+                <!--includes>
+                    <include>**/PushQueueConsumerTest.java</include>
+                </includes-->
             </configuration>
          </plugin>
         </plugins>
