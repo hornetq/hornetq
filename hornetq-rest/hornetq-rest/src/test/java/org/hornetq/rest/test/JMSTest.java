@@ -176,9 +176,10 @@ public class JMSTest extends MessageTestBase
          consumer.setMessageListener(new Listener());
          conn.start();
 
-         ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
+         ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
          ClientResponse<?> response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
@@ -191,6 +192,7 @@ public class JMSTest extends MessageTestBase
             order.setName("1");
             order.setAmount("$5.00");
             response = sender.request().body("application/xml", order).post();
+            response.releaseConnection();
             Assert.assertEquals(201, response.getStatus());
 
             Listener.latch.await(1, TimeUnit.SECONDS);
@@ -198,7 +200,6 @@ public class JMSTest extends MessageTestBase
             Assert.assertEquals(order, Listener.order);
             Assert.assertNotNull(Listener.messageID);
          }
-
       }
       finally
       {
@@ -217,15 +218,16 @@ public class JMSTest extends MessageTestBase
       deployment.setDurableSend(false);
       deployment.setName(queueName);
       manager.getQueueManager().deploy(deployment);
-      ClientRequest request = new ClientRequest(generateURL("/queues/" + queueName));
+      ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
       ClientResponse<?> response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consume-next: " + consumeNext);
 
@@ -241,6 +243,7 @@ public class JMSTest extends MessageTestBase
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = res.getEntity(Order.class);
+         res.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
          Assert.assertNotNull(consumeNext);
@@ -257,6 +260,7 @@ public class JMSTest extends MessageTestBase
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);
+         res.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
          Assert.assertNotNull(consumeNext);
@@ -273,6 +277,7 @@ public class JMSTest extends MessageTestBase
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);
+         res.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
          Assert.assertNotNull(consumeNext);

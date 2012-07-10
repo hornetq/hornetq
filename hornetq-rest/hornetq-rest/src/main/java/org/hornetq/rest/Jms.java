@@ -1,7 +1,9 @@
 package org.hornetq.rest;
 
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Type;
+import org.hornetq.rest.util.HttpMessageHelper;
+import org.jboss.resteasy.core.Headers;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.jboss.resteasy.util.GenericType;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -9,10 +11,8 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
-
-import org.hornetq.rest.util.HttpMessageHelper;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.util.GenericType;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Type;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -102,12 +102,15 @@ public class Jms
 
    public static boolean isHttpMessage(Message message)
    {
-	   try {
-		   Boolean aBoolean = message.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
-		   return aBoolean != null && aBoolean.booleanValue() == true;
-	   } catch (JMSException e) {
-		   return false;
-	   }
+      try
+      {
+         Boolean aBoolean = message.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
+         return aBoolean != null && aBoolean.booleanValue() == true;
+      }
+      catch (JMSException e)
+      {
+         return false;
+      }
    }
 
    /**
@@ -135,32 +138,36 @@ public class Jms
             throw new RuntimeException(e);
          }
       }
-      BytesMessage bytesMessage = (BytesMessage)message;
+      BytesMessage bytesMessage = (BytesMessage) message;
 
       try
       {
-    	  long size = bytesMessage.getBodyLength();
-    	  if (size <= 0) return null;
+         long size = bytesMessage.getBodyLength();
+         if (size <= 0)
+         {
+            return null;
+         }
 
-    	  byte[] body = new byte[(int)size];
-    	  bytesMessage.readBytes(body);
+         byte[] body = new byte[(int) size];
+         bytesMessage.readBytes(body);
 
-    	  String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
-    	  if (contentType == null)
-    	  {
-    		  throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
-    	  }
-    	  MediaType ct = MediaType.valueOf(contentType);
-    	  MessageBodyReader<T> reader = factory.getMessageBodyReader(type, genericType, null, ct);
-    	  if (reader == null)
-    	  {
-    		  throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
-    	  }
-    	  return reader.readFrom(type, genericType, null, ct, null, new ByteArrayInputStream(body));
+         String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE);
+         if (contentType == null)
+         {
+            throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
+         }
+         MediaType ct = MediaType.valueOf(contentType);
+         MessageBodyReader<T> reader = factory.getMessageBodyReader(type, genericType, null, ct);
+         if (reader == null)
+         {
+            throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
+         }
+
+         return reader.readFrom(type, genericType, null, ct, new Headers<String>(), new ByteArrayInputStream(body));
       }
       catch (Exception e)
       {
-    	  throw new RuntimeException(e);
+         throw new RuntimeException(e);
       }
    }
 

@@ -119,12 +119,13 @@ public class TransformTest extends MessageTestBase
       ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
 
       ClientResponse response = request.head();
+      response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
-      response = consumers.request().formParameter("autoAck", "true").post();
+      response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consume-next: " + consumeNext);
 
@@ -136,12 +137,13 @@ public class TransformTest extends MessageTestBase
          publish("testQueue", order, null);
 
 
-         ClientResponse res = consumeNext.request().accept("application/xml").post(String.class);
-         Assert.assertEquals(200, res.getStatus());
-         Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         response = consumeNext.request().accept("application/xml").post(String.class);
+         Assert.assertEquals(200, response.getStatus());
+         Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
+         Order order2 = (Order) response.getEntity(Order.class);
+         response.releaseConnection();
          Assert.assertEquals(order, order2);
-         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
          Assert.assertNotNull(consumeNext);
       }
 
@@ -152,12 +154,13 @@ public class TransformTest extends MessageTestBase
          order.setAmount("$5.00");
          publish("testQueue", order, null);
 
-         ClientResponse res = consumeNext.request().accept("application/json").post(String.class);
-         Assert.assertEquals(200, res.getStatus());
-         Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         response = consumeNext.request().accept("application/json").post(String.class);
+         Assert.assertEquals(200, response.getStatus());
+         Assert.assertEquals("application/json", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
+         Order order2 = (Order) response.getEntity(Order.class);
+         response.releaseConnection();
          Assert.assertEquals(order, order2);
-         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
          Assert.assertNotNull(consumeNext);
       }
 
@@ -168,12 +171,13 @@ public class TransformTest extends MessageTestBase
          order.setAmount("$15.00");
          publish("testQueue", order, "application/xml");
 
-         ClientResponse res = consumeNext.request().post(String.class);
-         Assert.assertEquals(200, res.getStatus());
-         Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         response = consumeNext.request().post(String.class);
+         Assert.assertEquals(200, response.getStatus());
+         Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
+         Order order2 = (Order) response.getEntity(Order.class);
+         response.releaseConnection();
          Assert.assertEquals(order, order2);
-         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
+         consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
          Assert.assertNotNull(consumeNext);
       }
    }
@@ -204,24 +208,25 @@ public class TransformTest extends MessageTestBase
       QueueDeployment deployment = new QueueDeployment();
       deployment.setDuplicatesAllowed(true);
       deployment.setDurableSend(false);
-      deployment.setName("testQueue2");
+      final String queueName = "testJmsConsumer";
+      deployment.setName(queueName);
       manager.getQueueManager().deploy(deployment);
       ClientSession session = manager.getQueueManager().getSessionFactory().createSession();
       try
       {
-         session.createConsumer("testQueue2").setMessageHandler(new Listener());
+         session.createConsumer(queueName).setMessageHandler(new Listener());
          session.start();
 
-
-         ClientRequest request = new ClientRequest(generateURL("/queues/testQueue2"));
+         ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
          ClientResponse response = request.head();
+         response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
          System.out.println("create: " + sender);
          Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
          System.out.println("pull: " + consumers);
-         response = consumers.request().formParameter("autoAck", "true").post();
+         response = Util.setAutoAck(consumers, true);
          Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
          System.out.println("consume-next: " + consumeNext);
 
@@ -231,13 +236,13 @@ public class TransformTest extends MessageTestBase
             order.setName("1");
             order.setAmount("$5.00");
             response = sender.request().body("application/xml", order).post();
+            response.releaseConnection();
             Assert.assertEquals(201, response.getStatus());
 
             Listener.latch.await(2, TimeUnit.SECONDS);
             Assert.assertNotNull(Listener.order);
             Assert.assertEquals(order, Listener.order);
          }
-
       }
       finally
       {
