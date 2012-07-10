@@ -577,6 +577,7 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
+      if (storageManager != null)
       storageManager.clearContext();
 
       synchronized (this)
@@ -594,6 +595,7 @@ public class HornetQServerImpl implements HornetQServer
                stopComponent(deploymentManager);
             }
 
+            if (managementService != null)
             managementService.unregisterServer();
 
             stopComponent(managementService);
