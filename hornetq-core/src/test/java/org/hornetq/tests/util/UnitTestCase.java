@@ -959,33 +959,33 @@ public abstract class UnitTestCase extends TestCase
       }
       finally
       {
-      synchronized (servers)
-      {
-         for (HornetQServer server : servers)
+         synchronized (servers)
          {
-            if (server == null)
-               continue;
-            try
+            for (HornetQServer server : servers)
             {
-               final ClusterManager clusterManager = server.getClusterManager();
-               if (clusterManager != null)
+               if (server == null)
+                  continue;
+               try
                {
-                  for (ClusterConnection cc : clusterManager.getClusterConnections())
+                  final ClusterManager clusterManager = server.getClusterManager();
+                  if (clusterManager != null)
                   {
-                     stopComponent(cc);
+                     for (ClusterConnection cc : clusterManager.getClusterConnections())
+                     {
+                        stopComponent(cc);
+                     }
                   }
                }
+               catch (Exception e)
+               {
+                  // no-op
+               }
+               stopComponentOutputExceptions(server);
             }
-            catch (Exception e)
-            {
-               // no-op
-            }
-            stopComponent(server);
+            servers.clear();
          }
-         servers.clear();
-      }
 
-      closeAllOtherComponents();
+         closeAllOtherComponents();
 
          ArrayList<Exception> exceptions;
          try
@@ -1565,6 +1565,21 @@ public abstract class UnitTestCase extends TestCase
       catch (Exception e)
       {
          // no-op
+      }
+   }
+
+   protected static final void stopComponentOutputExceptions(HornetQComponent component)
+   {
+      if (component == null)
+         return;
+      try
+      {
+         component.stop();
+      }
+      catch (Exception e)
+      {
+         System.err.println("Exception closing " + component);
+         e.printStackTrace();
       }
    }
 
