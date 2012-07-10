@@ -388,7 +388,9 @@ public class JournalStorageManager implements StorageManager
       Map<SimpleString, Collection<Integer>> pageFilesToSync;
       storageManagerLock.writeLock().lock();
       try
-      {
+         {
+            if (isReplicated())
+               throw new org.hornetq.api.core.IllegalStateException("already replicating");
          replicator = replicationManager;
          originalMessageJournal.synchronizationLock();
          originalBindingsJournal.synchronizationLock();
@@ -609,7 +611,8 @@ public class JournalStorageManager implements StorageManager
          readLock();
          try
          {
-            replicator.pageClosed(storeName, pageNumber);
+            if (isReplicated())
+               replicator.pageClosed(storeName, pageNumber);
          }
          finally
          {
@@ -626,7 +629,8 @@ public class JournalStorageManager implements StorageManager
          readLock();
          try
          {
-            replicator.pageDeleted(storeName, pageNumber);
+            if (isReplicated())
+               replicator.pageDeleted(storeName, pageNumber);
          }
          finally
          {
@@ -645,6 +649,7 @@ public class JournalStorageManager implements StorageManager
          readLock();
          try
          {
+            if (isReplicated())
             replicator.pageWrite(message, pageNumber);
          }
          finally
