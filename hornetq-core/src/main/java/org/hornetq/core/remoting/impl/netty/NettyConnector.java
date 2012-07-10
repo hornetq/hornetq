@@ -59,7 +59,6 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.StaticChannelPipeline;
 import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
@@ -174,7 +173,7 @@ public class NettyConnector implements Connector
       {
          throw HornetQMessageBundle.BUNDLE.nullHandler();
       }
-      
+
       this.configuration = configuration;
 
       this.listener = listener;
@@ -390,7 +389,7 @@ public class NettyConnector implements Connector
 
             handlers.add(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
 
-            ChannelPipeline pipeline = new StaticChannelPipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
+            ChannelPipeline pipeline = Channels.pipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
 
             return pipeline;
          }
