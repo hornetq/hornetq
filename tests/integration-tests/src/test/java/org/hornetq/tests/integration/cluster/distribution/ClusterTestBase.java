@@ -103,7 +103,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    }
 
 
-   private static final long TIMEOUT_START_SERVER = 400;
+   private static final long TIMEOUT_START_SERVER = 10;
 
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
 
