@@ -55,4 +55,14 @@
     </affiliation>
     <email>ghoward@redhat.com</email>
   </author>
+  <author>
+    <firstname>Francisco</firstname>
+    <surname>Borges</surname>
+    <affiliation>
+      <shortaffil>Red Hat, Inc.</shortaffil>
+      <jobtitle>Core Developer</jobtitle>
+      <orgdiv>JBoss</orgdiv>
+    </affiliation>
+    <email>francisco.borges@redhat.com</email>
+  </author>
 </authorgroup>
