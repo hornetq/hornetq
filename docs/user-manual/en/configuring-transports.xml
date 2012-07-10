@@ -274,16 +274,15 @@ etc
                 </listitem>
                 <listitem>
                     <para><literal>direct-deliver</literal>. When a message arrives on the server
-                        and is delivered to waiting consumers, by default, the delivery is done on a
-                        different thread to that which the message arrived on. This gives the best
-                        overall throughput and scalability, especially on multi-core machines.
-                        However it also introduces some extra latency due to the extra context
-                        switch required. If you want the lowest latency and the possible expense of
-                        some reduction in throughput then you can make sure <literal
-                            >direct-deliver</literal> to true. The default value for this parameter
-                        is <literal>true</literal>. If you are willing to take some small extra hit
-                        on latency but want the highest throughput set this parameter to <literal
-                            >false</literal>.</para>
+                        and is delivered to waiting consumers, by default, the delivery is done on
+                        the same thread as that on which the message arrived. This gives good latency
+                        in environments with relatively small messages and a small number of consumers,
+                        but at the cost of overall throughput and scalability - especially on multi-core
+                        machines. If you want the lowest latency and a possible reduction in throughput
+                        then you can use the default value for <literal>direct-deliver</literal> (i.e.
+                        true). If you are willing to take some small extra hit on latency but want the
+                        highest throughput set <literal>direct-deliver</literal> to <literal>false
+                        </literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>nio-remoting-threads</literal>. When configured to use NIO,
