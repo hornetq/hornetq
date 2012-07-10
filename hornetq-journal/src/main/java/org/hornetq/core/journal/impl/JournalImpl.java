@@ -1465,7 +1465,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
       ArrayList<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>(filesRepository.getDataFilesCount());
 
-      boolean previousReclaimValue = autoReclaim;
+         boolean previousReclaimValue = isAutoReclaim();
 
       try
       {
@@ -2805,7 +2805,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return;
       }
 
-      if (autoReclaim && !compactorRunning.get())
+      if (isAutoReclaim() && !compactorRunning.get())
       {
          compactorExecutor.execute(new Runnable()
          {
