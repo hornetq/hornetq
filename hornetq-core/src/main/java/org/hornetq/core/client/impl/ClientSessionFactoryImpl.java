@@ -947,7 +947,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (connection == null)
       {
          if (!exitLoop)
-         HornetQLogger.LOGGER.failedToConnectToServer();
+            HornetQLogger.LOGGER.failedToConnectToServer();
 
          return;
       }
@@ -1028,7 +1028,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   try
                   {
-                     waitLatch.await(interval, TimeUnit.MILLISECONDS);
+                  if (waitLatch.await(interval, TimeUnit.MILLISECONDS))
+                     return;
                   }
                   catch (InterruptedException ignore)
                   {
