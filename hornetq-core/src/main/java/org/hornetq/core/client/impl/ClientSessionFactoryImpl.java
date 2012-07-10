@@ -946,6 +946,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       if (connection == null)
       {
+         if (!exitLoop)
          HornetQLogger.LOGGER.failedToConnectToServer();
 
          return;
