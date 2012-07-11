@@ -6,6 +6,10 @@ hornetq-pom.iws
 */*.iml
 */*/*.iml
 */*/*/*.iml
+dependency-reduced-pom.xml
+*/dependency-reduced-pom.xml
+*/*/dependency-reduced-pom.xml
+*/*/*dependency-reduced-pom.xml
 .factorypath
 
 # compilation from native

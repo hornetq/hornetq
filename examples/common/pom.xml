@@ -20,6 +20,11 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-commons</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-core-client</artifactId>
          <version>${project.version}</version>
       </dependency>
