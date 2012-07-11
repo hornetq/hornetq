@@ -44,7 +44,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.filter.Filter;
@@ -95,7 +94,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.ResourceManager;
@@ -370,9 +368,7 @@ public class JournalStorageManager implements StorageManager
     */
    @Override
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-                             ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair, final boolean autoFailBack)
-      throws Exception
+                                final boolean autoFailBack) throws Exception
    {
       if (!started)
       {
@@ -439,8 +435,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          replicator.sendSynchronizationDone(nodeID);
-         clusterConnection.nodeAnnounced(System.currentTimeMillis(), nodeID, pair, true);
-         // XXX HORNETQ-720 SEND a compare journals message?
+            // XXX HORNETQ-720 SEND a compare journals message?
          }
          finally
          {
