@@ -302,7 +302,7 @@
       </dependencySet>
       <dependencySet>
          <includes>
-            <include>org.jboss.netty:netty</include>
+            <include>io.netty:netty</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
