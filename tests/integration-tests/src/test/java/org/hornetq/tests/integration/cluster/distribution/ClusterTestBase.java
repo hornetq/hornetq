@@ -264,6 +264,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       long start = System.currentTimeMillis();
 
+      final int waitMillis = 2000;
+      final int sleepTime = 50;
+      int nWaits = 0;
+      while (server.getClusterManager() == null && nWaits++ < waitMillis / sleepTime)
+      {
+         Thread.sleep(sleepTime);
+      }
       Set<ClusterConnection> ccs = server.getClusterManager().getClusterConnections();
 
       if (ccs.size() != 1)
