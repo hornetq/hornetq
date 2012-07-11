@@ -36,7 +36,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
@@ -68,7 +67,6 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -1408,27 +1406,21 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
-       */
+      @Override
       public void stop(boolean ioCriticalError) throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#beforePageRead()
-       */
+      @Override
       public void beforePageRead() throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#afterPageRead()
-       */
+      @Override
       public void afterPageRead() throws Exception
       {
          // TODO Auto-generated method stub
@@ -1442,14 +1434,12 @@ public class PagingStoreImplTest extends UnitTestCase
 
       public void freeDirectBuffer(ByteBuffer buffer)
       {
-         // TODO Auto-generated method stub
 
       }
 
+      @Override
       public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-                                ClusterConnection clusterConnection,
-                                Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
-         throws Exception
+                                   boolean autoFailBack) throws Exception
       {
       }
 

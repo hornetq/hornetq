@@ -23,7 +23,6 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
@@ -35,6 +34,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -45,7 +45,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -282,20 +281,11 @@ public interface StorageManager extends HornetQComponent
    Journal getMessageJournal();
 
    /**
-    * TODO: Find a way to not depend on ClusterConnection and TransportConfiguration here
-    *
-    * @param replicationManager
-    * @param pagingManager
-    * @param nodeID
-    * @param clusterConnection
-    * @param pair
-    * @throws Exception
+    * @see JournalStorageManager#startReplication(ReplicationManager, PagingManager, String,
+    *      boolean)
     */
-   void
-            startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-                             ClusterConnection clusterConnection,
-                             Pair<TransportConfiguration, TransportConfiguration> pair, boolean autoFailBack)
-                                                                                                             throws Exception;
+   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+                         boolean autoFailBack) throws Exception;
 
    /**
     *
