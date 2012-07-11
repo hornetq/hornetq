@@ -2528,8 +2528,10 @@ public class HornetQServerImpl implements HornetQServer
                try
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-                                                  clusterConnection, pair,
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
+                  // HORNETQ-967 XXX do we really need this:
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), pair, true);
+
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
                      new Thread(new Runnable()
@@ -2540,7 +2542,7 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            try
                            {
-                              // TODO: this needs review...
+                              // HORNETQ-967 TODO: this needs review...
                               // First there's a hard coded sleep here
                               // The server probably needs to loop until the backup has announced
                               // itself with a timeout before giving up
