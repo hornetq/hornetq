@@ -374,7 +374,19 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>InitialConnectAttempts</config-property-name>\n" +
          "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value>1</config-property-value>\n" +
-         "      </config-property>\n";
+         "      </config-property>\n"  +
+         "      <config-property>" +
+         "         <description>my-channel</description>" +
+         "         <config-property-name>JgroupsChannelName</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>my-file</description>" +
+         "         <config-property-name>JgroupsFile</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>";
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
@@ -422,12 +434,12 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          newConfig.append("\n");
          for (Method method : methodList.values())
          {
-            newConfig.append("\"      <config-property>\" + \n");
-            newConfig.append("\"         <description>***add***</description>\" + \n");
-            newConfig.append("\"         <config-property-name>").append(method.getName().substring(3)).append("</config-property-name>\" + \n");
-            newConfig.append("\"         <config-property-type>").append(lookupType(method).getName()).append("</config-property-type>\" + \n");
-            newConfig.append("\"         <config-property-value></config-property-value>\" + \n");
-            newConfig.append("\"      </config-property>\" + \n");
+            newConfig.append("         \"      <config-property>\" + \n");
+            newConfig.append("         \"         <description>***add***</description>\" + \n");
+            newConfig.append("         \"         <config-property-name>").append(method.getName().substring(3)).append("</config-property-name>\" + \n");
+            newConfig.append("         \"         <config-property-type>").append(lookupType(method).getName()).append("</config-property-type>\" + \n");
+            newConfig.append("         \"         <config-property-value></config-property-value>\" + \n");
+            newConfig.append("         \"      </config-property>\" + \n");
          }
          System.out.println(newConfig);
          fail("methods not shown please see previous and add");

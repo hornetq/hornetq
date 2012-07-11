@@ -15,7 +15,6 @@ package org.hornetq.core.client.impl;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -44,10 +43,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.cluster.BroadcastEndpoint;
+import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
@@ -56,7 +56,8 @@ import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A ServerLocatorImpl
+ * This is the implementation of {@link org.hornetq.api.core.client.ServerLocator} and all
+ * the proper javadoc is located on that interface.
  *
  * @author Tim Fox
  */
@@ -355,25 +356,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          if (discoveryGroupConfiguration != null)
          {
-            InetAddress groupAddress = InetAddress.getByName(discoveryGroupConfiguration.getGroupAddress());
-
-            InetAddress lbAddress;
-
-            if (discoveryGroupConfiguration.getLocalBindAddress() != null)
-            {
-               lbAddress = InetAddress.getByName(discoveryGroupConfiguration.getLocalBindAddress());
-            }
-            else
-            {
-               lbAddress = null;
-            }
-
-            discoveryGroup = new DiscoveryGroupImpl(nodeID,
-                                                    discoveryGroupConfiguration.getName(),
-                                                    lbAddress,
-                                                    groupAddress,
-                                                    discoveryGroupConfiguration.getGroupPort(),
-                                                    discoveryGroupConfiguration.getRefreshTimeout());
+            discoveryGroup = createDiscoveryGroup(nodeID, discoveryGroupConfiguration);
 
             discoveryGroup.registerListener(this);
 
@@ -386,6 +369,29 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          throw HornetQMessageBundle.BUNDLE.failedToInitialiseSessionFactory(e);
          }
       }
+   }
+
+   private static DiscoveryGroup createDiscoveryGroup(String nodeID, DiscoveryGroupConfiguration config) throws Exception
+   {
+      DiscoveryGroup group = null;
+
+      BroadcastEndpoint endpoint;
+
+      if (config.getJgroupsFile() != null)
+      {
+         endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getJgroupsFile(), config.getJgroupsChannelName());
+      }
+      else
+      {
+         endpoint = BroadcastEndpointFactory.createUDPEndpoint(config.getGroupAddress(), config.getGroupPort(),
+            config.getLocalBindAddress(), config.getLocalBindPort());
+      }
+
+      group = new DiscoveryGroup(nodeID,
+         config.getName(),
+         config.getRefreshTimeout(),
+         endpoint, null);
+      return group;
    }
 
    private ServerLocatorImpl(final Topology topology,
@@ -506,7 +512,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                             final DiscoveryGroupConfiguration groupConfiguration)
    {
       this(topology, useHA, groupConfiguration, null);
-
    }
 
    /**
@@ -577,7 +582,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       return startExecutor;
    }
 
-   @Override
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
@@ -599,7 +603,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       return (ClientSessionFactoryInternal)createSessionFactory();
    }
 
-   @Override
    public void setAfterConnectionInternalListener(AfterConnectInternalListener listener)
    {
       this.afterConnectListener = listener;
@@ -990,7 +993,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       this.autoGroup = autoGroup;
    }
 
-   @Override
    public boolean isPreAcknowledge()
    {
       return preAcknowledge;
@@ -1165,13 +1167,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       return groupID;
    }
 
-   @Override
    public boolean isCompressLargeMessage()
    {
       return compressLargeMessage;
    }
 
-   @Override
    public void setCompressLargeMessage(boolean compress)
    {
       this.compressLargeMessage = compress;
@@ -1188,13 +1188,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
-   @Override
    public String getIdentity()
    {
       return identity;
    }
 
-   @Override
    public void setIdentity(String identity)
    {
       this.identity = identity;
@@ -1482,11 +1480,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
-   public synchronized void connectorsChanged()
+   public synchronized void connectorsChanged(List<DiscoveryEntry> newConnectors)
    {
-      List<DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntries();
-
-
       TransportConfiguration[] newInitialconnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
                                                                            newConnectors.size());
 

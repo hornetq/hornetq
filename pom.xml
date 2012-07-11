@@ -245,6 +245,11 @@
                </exclusion>
             </exclusions>
          </dependency>
+         <dependency>
+             <groupId>org.jgroups</groupId>
+             <artifactId>jgroups</artifactId>
+             <version>3.0.10.Final</version>
+         </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
             <groupId>org.jboss.microcontainer</groupId>

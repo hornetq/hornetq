@@ -136,7 +136,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
                                                                                          250,
                                                                                          connectorInfos);
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryName,
-                                                                                         null,
+                                                                                         null, -1,
                                                                                          groupAddress,
                                                                                          groupPort,
                                                                                          0,

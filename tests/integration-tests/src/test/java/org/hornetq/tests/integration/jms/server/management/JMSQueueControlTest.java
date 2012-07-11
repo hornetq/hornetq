@@ -57,6 +57,8 @@ import org.hornetq.utils.json.JSONArray;
 /**
  * A QueueControlTest
  *
+ * on this testContaining WithRealData will use real data on the journals
+ *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * Created 14 nov. 2008 13:35:10
@@ -1171,7 +1173,11 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
    }
 
-   public void testQueueAddJndi() throws Exception
+   /**
+    * on this testContaining WithRealData will use real data on the journals
+    * @throws Exception
+    */
+   public void testQueueAddJndiWithRealData() throws Exception
    {
       String testQueueName = "testQueueAddJndi";
       serverManager.createQueue(true, testQueueName, null, true, testQueueName);
@@ -1233,7 +1239,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       conf.setFileDeploymentEnabled(false);
-      server = createServer(true, conf, mbeanServer);
+      server = createServer(this.getName().contains("WithRealData"), conf, mbeanServer);
 
       serverManager = new JMSServerManagerImpl(server);
       context = new InVMContext();

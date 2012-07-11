@@ -524,7 +524,6 @@ public class ConfigurationImpl implements Configuration
       connectorConfigs = infos;
    }
 
-   @Override
    public Set<TransportConfiguration> getFailBackConnectors()
    {
       return failBackConnectors;
