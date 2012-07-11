@@ -125,17 +125,6 @@
             <unpack>false</unpack>
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
-      </moduleSet> <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-logging</include>
-         </includes>
-         <binaries>
-            <includeDependencies>false</includeDependencies>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
-         </binaries>
       </moduleSet>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -149,17 +138,6 @@
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
-      <!--
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-rest</include>
-         </includes>
-         <binaries>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-         </binaries>
-      </moduleSet>-->
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
