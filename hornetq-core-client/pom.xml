@@ -34,9 +34,9 @@
                   </goals>
                   <configuration>
                      <artifactSet>
-                        <excludes>
-                           <exclude>org.jboss.netty:netty</exclude>
-                        </excludes>
+                        <includes>
+                            <include>org.hornetq:hornetq-core</include>
+                        </includes>
                      </artifactSet>
                      <filters>
                         <filter>
@@ -69,11 +69,9 @@
                               <include>org/hornetq/core/journal/EncodingSupport.class</include>
                               <!--loggers-->
                               <include>org/hornetq/core/server/HornetQLogger*</include>
-                              <include>org/hornetq/jms/HornetQJMSLogger*</include>
                               <include>org/hornetq/utils/HornetQUtilLogger*</include>
                               <!--bundles-->
                               <include>org/hornetq/core/server/HornetQMessageBundle*</include>
-                              <include>org/hornetq/jms/HornetQJMSBundle*</include>
                               <include>org/hornetq/utils/HornetQUtilBundle*</include>
                            </includes>
                         </filter>

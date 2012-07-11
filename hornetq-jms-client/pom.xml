@@ -33,10 +33,9 @@
                   </goals>
                   <configuration>
                      <artifactSet>
-                        <excludes>
-                           <exclude>org.jboss.netty:netty</exclude>
-                           <exclude>org.hornetq:hornetq-core</exclude>
-                        </excludes>
+                        <includes>
+                            <include>org.hornetq:hornetq-jms</include>
+                        </includes>
                      </artifactSet>
                      <filters>
                         <filter>
@@ -45,6 +44,8 @@
                               <include>org/hornetq/api/jms/**/*.class</include>
                               <include>org/hornetq/jms/client/**/*.*</include>
                               <include>org/hornetq/jms/referenceable/**/*.*</include>
+                              <include>org/hornetq/jms/HornetQJMSBundle*</include>
+                              <include>org/hornetq/jms/HornetQJMSLogger*</include>
                            </includes>
                         </filter>
                      </filters>

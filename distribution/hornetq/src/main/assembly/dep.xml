@@ -25,6 +25,30 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq:hornetq-commons</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-journal</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:hornetq-bootstrap</include>
          </includes>
          <binaries>
@@ -125,17 +149,6 @@
             <unpack>false</unpack>
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
-      </moduleSet> <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-logging</include>
-         </includes>
-         <binaries>
-            <includeDependencies>false</includeDependencies>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
-         </binaries>
       </moduleSet>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -149,17 +162,6 @@
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
-      <!--
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-rest</include>
-         </includes>
-         <binaries>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-         </binaries>
-      </moduleSet>-->
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
@@ -286,7 +288,7 @@
    <dependencySets>
       <dependencySet>
          <includes>
-            <include>org.jboss.javaee:jboss-jms-api</include>
+            <include>org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
@@ -302,7 +304,7 @@
       </dependencySet>
       <dependencySet>
          <includes>
-            <include>org.jboss.netty:netty</include>
+            <include>io.netty:netty</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
