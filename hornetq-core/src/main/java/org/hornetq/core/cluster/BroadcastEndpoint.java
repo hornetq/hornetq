@@ -13,7 +13,7 @@
 
 package org.hornetq.core.cluster;
 
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Tomohisa
@@ -30,4 +30,6 @@ public interface BroadcastEndpoint
    void broadcast(byte[] data) throws Exception;
 
    byte[] receiveBroadcast() throws Exception;
+
+   byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception;
 }

@@ -154,20 +154,20 @@
 	<xsd:element name="group-address" type="xsd:string"/>
 	<xsd:element name="group-port" type="xsd:int"/>
 	<xsd:element name="broadcast-period" type="xsd:long"/>
-   <xsd:element name="jgroups-file" type="xsd:string"/>
-   <xsd:element name="jgroups-channel" type="xsd:string"/>
+	<xsd:element name="jgroups-file" type="xsd:string"/>
+	<xsd:element name="jgroups-channel" type="xsd:string"/>
 	<xsd:element name="broadcast-group">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-address"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-port"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-address"/>
-				<xsd:element maxOccurs="1" minOccurs="1" ref="group-port"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-address"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="group-port"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="broadcast-period"/>
-            <xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-file"/>
-            <xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-channel"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-file"/>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-channel"/>
 				<xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xsd:string"/>
-			</xsd:sequence>
+				</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -175,7 +175,7 @@
 	<xsd:element name="initial-wait-timeout" type="xsd:int"/>
 	<xsd:element name="discovery-group">
 		<xsd:complexType>
-			<xsd:sequence>
+			<xsd:all>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-address"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="local-bind-port"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="group-address"/>
@@ -184,7 +184,7 @@
 				<xsd:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-file"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="jgroups-channel"/>
-			</xsd:sequence>
+			</xsd:all>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
 		</xsd:complexType>
 	</xsd:element>

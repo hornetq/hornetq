@@ -1538,5 +1538,10 @@ public interface HornetQLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114080, value = "Live server will not fail-back automatically", format = Message.Format.MESSAGE_FORMAT)
-            void autoFailBackDenied();
+   void autoFailBackDenied();
+
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 114081, value = "Exception happened while stopping Discovery BroadcastEndpoint {0}", format = Message.Format.MESSAGE_FORMAT)
+   void errorStoppingDiscoveryBroadcastEndpoint(Object endpoint, @Cause Throwable t);
 }

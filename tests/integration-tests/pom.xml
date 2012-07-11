@@ -119,6 +119,18 @@
                   <goals>
                      <goal>test-jar</goal>
                   </goals>
+
+                  <configuration>
+                     <systemProperties>
+                        <!-- This is to make sure that any test using JGroups 
+                             e.g org.hornetq.tests.integration.discovery.DiscoveryTest
+                             will use a valid address regardless of the settings you have -->
+                        <property>
+                           <name>jgroups.bind_addr</name>
+                           <value>::1</value>
+                        </property>
+                     </systemProperties>
+                   </configuration>
                </execution>
             </executions>
          </plugin>
@@ -131,7 +143,7 @@
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
                </excludes>
-               <argLine>-Djava.library.path=${project.build.directory}/../../../distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${project.build.directory}/../../../distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
+               <argLine>-Djgroups.bind_addr=::1 -Djava.library.path=${project.build.directory}/../../../distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${project.build.directory}/../../../distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>

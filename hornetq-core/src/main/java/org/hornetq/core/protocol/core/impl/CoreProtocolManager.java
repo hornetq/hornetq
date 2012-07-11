@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -189,44 +190,61 @@ class CoreProtocolManager implements ProtocolManager
                                   final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                   final boolean last)
                {
-                  // Using an executor as most of the notifications on the Topology
-                  // may come from a channel itself
-                  // What could cause deadlocks
-                  entry.connectionExecutor.execute(new Runnable()
+                  try
                   {
-                     public void run()
+                     // Using an executor as most of the notifications on the Topology
+                     // may come from a channel itself
+                     // What could cause deadlocks
+                     entry.connectionExecutor.execute(new Runnable()
                      {
-                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                        public void run()
                         {
-                           channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                           }
                         }
-                        else
-                        {
-                           channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
-                        }
-                     }
-                  });
-                }
+                     });
+                  }
+                  catch (RejectedExecutionException ignored)
+                  {
+                     // this could happen during a shutdown and we don't care, if we lost a nodeDown during a shutdown
+                     // what can we do anyways?
+                  }
+
+               }
 
                public void nodeDown(final long uniqueEventID, final String nodeID)
                {
                   // Using an executor as most of the notifications on the Topology
                   // may come from a channel itself
                   // What could cause deadlocks
-                  entry.connectionExecutor.execute(new Runnable()
+                  try
                   {
-                     public void run()
+                     entry.connectionExecutor.execute(new Runnable()
                      {
-                        if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                        public void run()
                         {
-                           channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                           }
                         }
-                        else
-                        {
-                           channel0.send(new ClusterTopologyChangeMessage(nodeID));
-                        }
-                     }
-                  });
+                     });
+                  }
+                  catch (RejectedExecutionException ignored)
+                  {
+                     // this could happen during a shutdown and we don't care, if we lost a nodeDown during a shutdown
+                     // what can we do anyways?
+                  }
                }
 
                @Override
