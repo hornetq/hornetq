@@ -2528,8 +2528,10 @@ public class HornetQServerImpl implements HornetQServer
                try
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-                                                  clusterConnection, pair,
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
+                  // XXX do we really need this:
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), pair, true);
+
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
                      new Thread(new Runnable()
