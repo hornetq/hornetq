@@ -18,7 +18,8 @@ import java.util.List;
 
 
 /**
- * A BroadcastGroupConfiguration
+ * The configuration used to determine how the server will broadcast members
+ * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -41,6 +42,10 @@ public class BroadcastGroupConfiguration implements Serializable
 
    private long broadcastPeriod;
 
+   private String jgroupsFile;
+
+   private String jgroupsChannel;
+
    private List<String> connectorInfos;
 
    public BroadcastGroupConfiguration(final String name,
@@ -59,6 +64,27 @@ public class BroadcastGroupConfiguration implements Serializable
       this.groupPort = groupPort;
       this.broadcastPeriod = broadcastPeriod;
       this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastGroupConfiguration(final String name,
+                                      final String jgroupsFile,
+                                      final String jgropusChannel,
+                                      final long broadcastPeriod,
+                                      final List<String> connectorInfos)
+   {
+      super();
+      this.name = name;
+      this.jgroupsFile = jgroupsFile;
+      this.jgroupsChannel = jgropusChannel;
+      this.broadcastPeriod = broadcastPeriod;
+      this.connectorInfos = connectorInfos;
+   }
+
+   public BroadcastGroupConfiguration(String name, long broadcastPeriod, List<String> connectorNames)
+   {
+      this.name = name;
+      this.broadcastPeriod = broadcastPeriod;
+      this.connectorInfos = connectorNames;
    }
 
    public String getName()
@@ -152,4 +178,23 @@ public class BroadcastGroupConfiguration implements Serializable
       this.connectorInfos = connectorInfos;
    }
 
+   public String getJgroupsFile()
+   {
+      return jgroupsFile;
+   }
+
+   public void setJgroupsFile(String jgroupsFile)
+   {
+      this.jgroupsFile = jgroupsFile;
+   }
+
+   public String getJgroupsChannel()
+   {
+      return jgroupsChannel;
+   }
+
+   public void setJgroupsChannel(String jgroupsChannel)
+   {
+      this.jgroupsChannel = jgroupsChannel;
+   }
 }

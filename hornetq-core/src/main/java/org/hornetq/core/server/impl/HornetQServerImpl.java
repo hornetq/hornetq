@@ -1847,7 +1847,7 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            if (cancelFailBackChecker)
                               return;
-                        configuration.setBackup(true);
+                           configuration.setBackup(true);
                            HornetQLogger.LOGGER.debug(HornetQServerImpl.this +
                                     "::Starting backup node now after failback");
                         start();
@@ -1920,13 +1920,19 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(boolean permanently) throws Exception
       {
-         if (permanently)
+         // TO avoid a NPE from stop
+         NodeManager nodeManagerInUse = nodeManager;
+
+         if (nodeManagerInUse != null)
          {
-            nodeManager.crashLiveServer();
-         }
-         else
-         {
-            nodeManager.pauseLiveServer();
+            if (permanently)
+            {
+               nodeManagerInUse.crashLiveServer();
+            }
+            else
+            {
+               nodeManagerInUse.pauseLiveServer();
+            }
          }
       }
    }
@@ -1991,6 +1997,10 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(boolean permanently) throws Exception
       {
+
+         // To avoid a NPE cause by the stop
+         NodeManager nodeManagerInUse = nodeManager;
+
          if (configuration.isBackup())
          {
             long timeout = 30000;
@@ -1999,7 +2009,10 @@ public class HornetQServerImpl implements HornetQServer
 
             while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
             {
-               nodeManager.interrupt();
+               if (nodeManagerInUse != null)
+               {
+                  nodeManagerInUse.interrupt();
+               }
 
                backupActivationThread.interrupt();
 
@@ -2012,20 +2025,27 @@ public class HornetQServerImpl implements HornetQServer
                threadDump("Timed out waiting for backup activation to exit");
             }
 
-            nodeManager.stopBackup();
+            if (nodeManagerInUse != null)
+            {
+               nodeManagerInUse.stopBackup();
+            }
          }
          else
          {
-            // if we are now live, behave as live
-            // We need to delete the file too, otherwise the backup will failover when we shutdown or if the backup is
-            // started before the live
-            if (permanently)
+
+            if (nodeManagerInUse != null)
             {
-               nodeManager.crashLiveServer();
-            }
-            else
-            {
-               nodeManager.pauseLiveServer();
+               // if we are now live, behave as live
+               // We need to delete the file too, otherwise the backup will failover when we shutdown or if the backup is
+               // started before the live
+               if (permanently)
+               {
+                  nodeManagerInUse.crashLiveServer();
+               }
+               else
+               {
+                  nodeManagerInUse.pauseLiveServer();
+               }
             }
          }
       }
@@ -2298,9 +2318,16 @@ public class HornetQServerImpl implements HornetQServer
 
             long start = System.currentTimeMillis();
 
+            // To avoid a NPE cause by the stop
+            NodeManager nodeManagerInUse = nodeManager;
+
             while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
             {
-               nodeManager.interrupt();
+
+               if (nodeManagerInUse != null)
+               {
+                  nodeManagerInUse.interrupt();
+               }
 
                backupActivationThread.interrupt();
 
@@ -2312,7 +2339,10 @@ public class HornetQServerImpl implements HornetQServer
                HornetQLogger.LOGGER.backupActivationProblem();
             }
 
-            nodeManager.stopBackup();
+            if (nodeManagerInUse != null)
+            {
+               nodeManagerInUse.stopBackup();
+            }
          }
       }
 
@@ -2432,13 +2462,19 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(boolean permanently) throws Exception
       {
-         if (permanently)
+         // To avoid a NPE cause by the stop
+         NodeManager nodeManagerInUse = nodeManager;
+
+         if (nodeManagerInUse != null)
          {
-            nodeManager.crashLiveServer();
-         }
-         else
-         {
-            nodeManager.pauseLiveServer();
+            if (permanently)
+            {
+               nodeManagerInUse.crashLiveServer();
+            }
+            else
+            {
+               nodeManagerInUse.pauseLiveServer();
+            }
          }
       }
    }

@@ -103,7 +103,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    }
 
 
-   private static final long TIMEOUT_START_SERVER = 400;
+   private static final long TIMEOUT_START_SERVER = 10;
 
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
 
@@ -1688,7 +1688,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
       DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1",
-                                                                             null,
+                                                                             null, -1,
                                                                              groupAddress,
                                                                              port,
                                                                              1000,
@@ -1766,7 +1766,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
       DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1",
-                                                                             null,
+                                                                             null, -1,
                                                                              groupAddress,
                                                                              port,
                                                                              5000,

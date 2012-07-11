@@ -458,7 +458,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    /**
-    * @see https://jira.jboss.org/browse/HORNETQ-522
+    * see http://jira.jboss.org/browse/HORNETQ-522
     * @throws Exception
     */
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception
@@ -498,14 +498,6 @@ public class FailoverTest extends FailoverTestBase
          public void onMessage(ClientMessage message)
          {
             received.add(message);
-            try
-            {
-               Thread.sleep(20);
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
          }
 
       });
@@ -517,9 +509,9 @@ public class FailoverTest extends FailoverTestBase
       int retry = 0;
       while (received.size() < NUM_MESSAGES)
       {
-         Thread.sleep(1000);
+         Thread.sleep(100);
          retry++;
-         if (retry > 5)
+         if (retry > 50)
          {
             break;
          }
@@ -1690,8 +1682,6 @@ public class FailoverTest extends FailoverTestBase
 
       sender.start();
 
-      Thread.sleep(500);
-
       crash(session);
 
       sender.join();
@@ -1803,8 +1793,6 @@ public class FailoverTest extends FailoverTestBase
 
       // Wait for the commit to occur and the response to be discarded
       assertTrue(committer.interceptor.await());
-
-      Thread.sleep(500);
 
       crash(session);
 
@@ -1937,8 +1925,6 @@ public class FailoverTest extends FailoverTestBase
       Committer committer = new Committer();
 
       committer.start();
-
-      Thread.sleep(500);
 
       crash(session);
 

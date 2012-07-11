@@ -19,9 +19,15 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A DiscoveryGroupConfiguration
+ * This file represents how we are using Discovery.
+ * The discovery configuration could either use plain UDP, or JGroups.
+ * If using UDP, all the UDP properties will be filled and the jgroups properties will be null
+ * If using JGroups, all the UDP properties will be -1 or null and the jgroups properties will be filled.
+ * If by any reason, on an user misconfiguration both properties are filled, the JGroups takes precedence,
+ * that means. if jgroupsFile != null the Grouping method used will be JGroups
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author Clebert Suconic
  * 
  * Created 18 Nov 2008 08:47:30
  *
@@ -32,8 +38,10 @@ public class DiscoveryGroupConfiguration implements Serializable
    private static final long serialVersionUID = 8657206421727863400L;
    
    private String name;
-   
+
    private String localBindAddress;
+
+   private int localBindPort;
 
    private String groupAddress;
 
@@ -43,14 +51,20 @@ public class DiscoveryGroupConfiguration implements Serializable
    
    private long discoveryInitialWaitTimeout;
 
+   private String jgroupsFile;
+
+   private String jgroupsChannelName;
+
    public DiscoveryGroupConfiguration(final String name,
                                       final String localBindAddress,
+                                      final int localBindPort,
                                       final String groupAddress,
                                       final int groupPort,
                                       final long refreshTimeout,
                                       final long discoveryInitialWaitTimeout)
    {
       this.name = name;
+      this.localBindPort = localBindPort;
       this.groupAddress = groupAddress;
       this.localBindAddress = localBindAddress;
       this.groupPort = groupPort;
@@ -58,10 +72,39 @@ public class DiscoveryGroupConfiguration implements Serializable
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
 
+   /**
+    * @deprecated  use the other constructors
+    * @param name
+    * @param localBindAddress
+    * @param groupAddress
+    * @param groupPort
+    * @param refreshTimeout
+    * @param discoveryInitialWaitTimeout
+    */
+   public DiscoveryGroupConfiguration(final String name,
+                                      final String localBindAddress,
+                                      final String groupAddress,
+                                      final int groupPort,
+                                      final long refreshTimeout,
+                                      final long discoveryInitialWaitTimeout)
+   {
+      this(name, localBindAddress, -1, groupAddress, groupPort, refreshTimeout, discoveryInitialWaitTimeout);
+   }
+
    public DiscoveryGroupConfiguration(final String groupAddress,
                                       final int groupPort)
    {
-      this(UUIDGenerator.getInstance().generateStringUUID(), null, groupAddress, groupPort, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+      this(UUIDGenerator.getInstance().generateStringUUID(), null, -1,  groupAddress, groupPort, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+   }
+
+   public DiscoveryGroupConfiguration(String name, long refreshTimeout, long discoveryInitialWaitTimeout,
+                                      String jgroupsFile, String channelName)
+   {
+      this.name = name;
+      this.refreshTimeout = refreshTimeout;
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+      this.jgroupsFile = jgroupsFile;
+      this.jgroupsChannelName = channelName;
    }
 
    public String getName()
@@ -136,13 +179,43 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return discoveryInitialWaitTimeout;
    }
-
+   
    /**
     * @param discoveryInitialWaitTimeout the discoveryInitialWaitTimeout to set
     */
    public void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
    {
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+   }
+
+   public int getLocalBindPort()
+   {
+      return localBindPort;
+   }
+
+   public void setLocalBindPort(int localBindPort)
+   {
+      this.localBindPort = localBindPort;
+   }
+
+   public String getJgroupsFile()
+   {
+      return jgroupsFile;
+   }
+
+   public void setJgroupsFile(String jgroupsFile)
+   {
+      this.jgroupsFile = jgroupsFile;
+   }
+
+   public String getJgroupsChannelName()
+   {
+      return jgroupsChannelName;
+   }
+
+   public void setJgroupsChannelName(String jgroupsChannelName)
+   {
+      this.jgroupsChannelName = jgroupsChannelName;
    }
 
    @Override
@@ -155,8 +228,12 @@ public class DiscoveryGroupConfiguration implements Serializable
 
       if (discoveryInitialWaitTimeout != that.discoveryInitialWaitTimeout) return false;
       if (groupPort != that.groupPort) return false;
+      if (localBindPort != that.localBindPort) return false;
       if (refreshTimeout != that.refreshTimeout) return false;
       if (groupAddress != null ? !groupAddress.equals(that.groupAddress) : that.groupAddress != null) return false;
+      if (jgroupsChannelName != null ? !jgroupsChannelName.equals(that.jgroupsChannelName) : that.jgroupsChannelName != null)
+         return false;
+      if (jgroupsFile != null ? !jgroupsFile.equals(that.jgroupsFile) : that.jgroupsFile != null) return false;
       if (localBindAddress != null ? !localBindAddress.equals(that.localBindAddress) : that.localBindAddress != null)
          return false;
       if (name != null ? !name.equals(that.name) : that.name != null) return false;
@@ -169,29 +246,29 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       int result = name != null ? name.hashCode() : 0;
       result = 31 * result + (localBindAddress != null ? localBindAddress.hashCode() : 0);
+      result = 31 * result + localBindPort;
       result = 31 * result + (groupAddress != null ? groupAddress.hashCode() : 0);
       result = 31 * result + groupPort;
       result = 31 * result + (int) (refreshTimeout ^ (refreshTimeout >>> 32));
       result = 31 * result + (int) (discoveryInitialWaitTimeout ^ (discoveryInitialWaitTimeout >>> 32));
+      result = 31 * result + (jgroupsFile != null ? jgroupsFile.hashCode() : 0);
+      result = 31 * result + (jgroupsChannelName != null ? jgroupsChannelName.hashCode() : 0);
       return result;
    }
 
    @Override
    public String toString()
    {
-      return "DiscoveryGroupConfiguration [discoveryInitialWaitTimeout=" + discoveryInitialWaitTimeout +
-             ", groupAddress=" +
-             groupAddress +
-             ", groupPort=" +
-             groupPort +
-             ", localBindAddress=" +
-             localBindAddress +
-             ", name=" +
-             name +
-             ", refreshTimeout=" +
-             refreshTimeout +
-             "]";
+      return "DiscoveryGroupConfiguration{" +
+         "name='" + name + '\'' +
+         ", localBindAddress='" + localBindAddress + '\'' +
+         ", localBindPort=" + localBindPort +
+         ", groupAddress='" + groupAddress + '\'' +
+         ", groupPort=" + groupPort +
+         ", refreshTimeout=" + refreshTimeout +
+         ", discoveryInitialWaitTimeout=" + discoveryInitialWaitTimeout +
+         ", jgroupsFile='" + jgroupsFile + '\'' +
+         ", jgroupsChannelName='" + jgroupsChannelName + '\'' +
+         '}';
    }
-   
-   
 }

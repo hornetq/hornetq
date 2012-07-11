@@ -22,7 +22,14 @@ import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
 import org.hornetq.core.client.impl.Topology;
 
 /**
- * A ServerLocator
+ * As the name says, the serverLocator locates a server, but beyond that it locates a server based on a list.
+ * If you are using straight TCP on the configuration, and if you configure your serverLocator to be HA,
+ * the locator will always get an updated list of members to the server, the server will send the updated list to
+ * the client.
+ *
+ * If you use UDP or JGroups (exclusively JGropus or UDP), the intial discovery is done by the grouping finder,
+ * after the initial connection is made the server will always send updates to the client. But the listeners will
+ * listen for updates on grouping.
  *
  * @author Tim Fox
  */

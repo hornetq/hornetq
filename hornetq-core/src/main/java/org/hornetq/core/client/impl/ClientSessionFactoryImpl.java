@@ -142,7 +142,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    /** Flag that signals that the factory is closing. Causes many processes to exit. */
    private volatile boolean exitLoop;
-   /** Guards assignments to {@link #inCreateSession} and {@link #inCreateSessionLatche} */
+   /** Guards assignments to {@link #inCreateSession} and {@link #inCreateSessionLatch} */
    private final Object inCreateSessionGuard = new Object();
    /** Flag that tells whether we are trying to create a session. */
    private boolean inCreateSession;
@@ -1707,7 +1707,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
              "]";
    }
 
-   @Override
    public void setReconnectAttempts(final int attempts)
    {
       reconnectAttempts = attempts;

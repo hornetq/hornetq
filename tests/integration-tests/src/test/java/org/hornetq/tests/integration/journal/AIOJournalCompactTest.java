@@ -61,7 +61,7 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
 
       return new AIOSequentialFileFactory(getTestDir(),
                                           JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-                                          1000000,
+                                          100000,
                                           false);
    }
 

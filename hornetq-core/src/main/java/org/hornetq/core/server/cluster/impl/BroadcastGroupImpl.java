@@ -13,18 +13,20 @@
 
 package org.hornetq.core.server.cluster.impl;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.cluster.BroadcastEndpoint;
+import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
@@ -33,29 +35,23 @@ import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A BroadcastGroupImpl
+ * <p>This class will use the {@link BroadcastEndpoint} to send periodical updates on the list for connections
+ *    used by this server. </p>
+ *
+ * <p>This is totally generic to the mechanism used on the transmission. It originally only had UDP but this got refactored
+ * into sub classes of {@link BroadcastEndpoint}</p>
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ * @author Clebert Suconic
+ *
  * Created 15 Nov 2008 09:45:32
  *
  */
 public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 {
-
    private final String nodeID;
 
    private final String name;
-
-   private final InetAddress localAddress;
-
-   private final int localPort;
-
-   private final InetAddress groupAddress;
-
-   private final int groupPort;
-
-   private DatagramSocket socket;
 
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
@@ -73,30 +69,45 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private NotificationService notificationService;
 
+   private long broadcastPeriod;
+
+   private BroadcastEndpoint endpoint;
+
+   /**
+    * @deprecated  use the other constructors
+    * Broadcast group is bound locally to the wildcard address
+    */
+   public BroadcastGroupImpl(final String nodeID,
+                                  final String name,
+                                  final InetAddress localAddress,
+                                  final int localPort,
+                                  final InetAddress groupAddress,
+                                  final int groupPort,
+                                  final boolean active,
+                                  final long broadcastPeriod) throws Exception
+   {
+      this(nodeID, name, active, broadcastPeriod,
+           BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
+   }
+
    /**
     * Broadcast group is bound locally to the wildcard address
     */
    public BroadcastGroupImpl(final String nodeID,
-                             final String name,
-                             final InetAddress localAddress,
-                             final int localPort,
-                             final InetAddress groupAddress,
-                             final int groupPort,
-                             final boolean active) throws Exception
+                                  final String name,
+                                  final boolean active,
+                                  final long broadcastPeriod,
+                                  final BroadcastEndpoint endpoint) throws Exception
    {
       this.nodeID = nodeID;
 
       this.name = name;
 
-      this.localAddress = localAddress;
-
-      this.localPort = localPort;
-
-      this.groupAddress = groupAddress;
-
-      this.groupPort = groupPort;
-
       this.active = active;
+
+      this.broadcastPeriod = broadcastPeriod;
+
+      this.endpoint = endpoint;
 
       uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
@@ -113,18 +124,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
 
-      if (localPort != -1)
-      {
-         socket = new DatagramSocket(localPort, localAddress);
-      }
-      else
-      {
-         if (localAddress != null)
-         {
-            HornetQLogger.LOGGER.broadcastGroupBindError();
-         }
-         socket = new DatagramSocket();
-      }
+      endpoint.openBroadcaster();
 
       started = true;
 
@@ -149,7 +149,14 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          future.cancel(false);
       }
 
-      socket.close();
+      try
+      {
+         endpoint.close();
+      }
+      catch (Exception e1)
+      {
+         HornetQLogger.LOGGER.broadcastGroupClosed(e1);
+      }
 
       started = false;
 
@@ -222,9 +229,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       byte[] data = buff.toByteBuffer().array();
 
-      DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
-
-      socket.send(packet);
+      endpoint.broadcast(data);
    }
 
    public void run()
@@ -254,9 +259,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
    }
 
-   public synchronized void setScheduledFuture(final ScheduledFuture<?> future)
+   public void schedule(ScheduledExecutorService scheduledExecutor)
    {
-      this.future = future;
+      future = scheduledExecutor.scheduleWithFixedDelay(this, 0, broadcastPeriod, TimeUnit.MILLISECONDS);
    }
 
 }

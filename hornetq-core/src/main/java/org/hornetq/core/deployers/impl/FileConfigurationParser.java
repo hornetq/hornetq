@@ -950,22 +950,9 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
-
-      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
-
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
-
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
-
-      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
-                                                          "broadcast-period",
-                                                          ConfigurationImpl.DEFAULT_BROADCAST_PERIOD,
-                                                          Validators.GT_ZERO);
+      List<String> connectorNames = new ArrayList<String>();
 
       NodeList children = e.getChildNodes();
-
-      List<String> connectorNames = new ArrayList<String>();
 
       for (int j = 0; j < children.getLength(); j++)
       {
@@ -974,21 +961,51 @@ public final class FileConfigurationParser
          if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = XMLConfigurationUtil.getString(e,
-                                                                  "connector-ref",
-                                                                  null,
-                                                                  Validators.NOT_NULL_OR_EMPTY);
+               "connector-ref",
+               null,
+               Validators.NOT_NULL_OR_EMPTY);
 
             connectorNames.add(connectorName);
          }
       }
 
-      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name,
-                                                                           localAddress,
-                                                                           localBindPort,
-                                                                           groupAddress,
-                                                                           groupPort,
-                                                                           broadcastPeriod,
-                                                                           connectorNames);
+      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
+         "broadcast-period",
+         ConfigurationImpl.DEFAULT_BROADCAST_PERIOD,
+         Validators.GT_ZERO);
+
+      String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+
+      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+
+      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
+
+      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
+
+      String jgroupsFile = XMLConfigurationUtil.getString(e, "jgroups-file", null, Validators.NO_CHECK);
+
+      String jgroupsChannel = XMLConfigurationUtil.getString(e, "jgroups-channel", null, Validators.NO_CHECK);
+
+
+      // TODO: validate if either jgroups or UDP is being filled
+
+      BroadcastGroupConfiguration config;
+
+      if (jgroupsFile != null)
+      {
+         config = new BroadcastGroupConfiguration(name,
+            jgroupsFile, jgroupsChannel, broadcastPeriod, connectorNames);
+      }
+      else
+      {
+         config = new BroadcastGroupConfiguration(name,
+            localAddress,
+            localBindPort,
+            groupAddress,
+            groupPort,
+            broadcastPeriod,
+            connectorNames);
+      }
 
       mainConfig.getBroadcastGroupConfigurations().add(config);
    }
@@ -997,28 +1014,46 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
+      DiscoveryGroupConfiguration config = null;
+
+      long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
+         "initial-wait-timeout",
+         HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+         Validators.GT_ZERO);
+
+      long refreshTimeout = XMLConfigurationUtil.getLong(e,
+         "refresh-timeout",
+         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+         Validators.GT_ZERO);
+
       String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+
+      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
       String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
-                                                                      "initial-wait-timeout",
-                                                                      HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                                                                      Validators.GT_ZERO);
+      String jgroupsFile = XMLConfigurationUtil.getString(e, "jgroups-file", null, Validators.NO_CHECK);
 
-      long refreshTimeout = XMLConfigurationUtil.getLong(e,
-                                                         "refresh-timeout",
-                                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-                                                         Validators.GT_ZERO);
+      String jgroupsChannel = XMLConfigurationUtil.getString(e, "jgroups-channel", null, Validators.NO_CHECK);
 
-      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
-                                                                           localBindAddress,
-                                                                           groupAddress,
-                                                                           groupPort,
-                                                                           refreshTimeout,
-                                                                           discoveryInitialWaitTimeout);
+      // TODO: validate if either jgroups or UDP is being filled
+
+      if (jgroupsFile != null)
+      {
+         config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, jgroupsFile, jgroupsChannel);
+      }
+      else
+      {
+         config = new DiscoveryGroupConfiguration(name,
+            localBindAddress,
+            localBindPort,
+            groupAddress,
+            groupPort,
+            refreshTimeout,
+            discoveryInitialWaitTimeout);
+      }
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {

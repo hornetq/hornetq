@@ -89,6 +89,18 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory;java.naming.provider.url=jnp://localhost:1199;java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</config-property-value>
       </config-property>
       <config-property>
+        <description>The jGroups File name</description>
+        <config-property-name>JgroupsFile</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>jgroups.xml</config-property-value>
+      </config-property>
+      <config-property>
+        <description>The name of the channel used on this configuration</description>
+        <config-property-name>JgroupsChannelName</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value>my-channel</config-property-value>
+      </config-property>
+      <config-property>
         <description>The discovery group address</description>
         <config-property-name>DiscoveryAddress</config-property-name>
         <config-property-type>java.lang.String</config-property-type>

@@ -44,6 +44,8 @@ public class ConnectionFactoryPropertiesTest extends UnitTestCase {
 
        UNSUPPORTED_RA_PROPERTIES = new TreeSet<String>();
        UNSUPPORTED_RA_PROPERTIES.add("HA");
+       UNSUPPORTED_RA_PROPERTIES.add("jgroupsChannelName");
+       UNSUPPORTED_RA_PROPERTIES.add("jgroupsFile");
        UNSUPPORTED_RA_PROPERTIES.add("discoveryAddress");
        UNSUPPORTED_RA_PROPERTIES.add("discoveryPort");
        UNSUPPORTED_RA_PROPERTIES.add("discoveryLocalBindAddress");

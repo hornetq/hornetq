@@ -362,6 +362,26 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return raProperties.getDiscoveryAddress();
    }
 
+   public void setJgroupsFile(String jgroupsFile)
+   {
+      raProperties.setJgroupsFile(jgroupsFile);
+   }
+
+   public String getJgroupsFile()
+   {
+      return raProperties.getJgroupsFile();
+   }
+
+   public String getJgroupsChannelName()
+   {
+      return raProperties.getJgroupsChannelName();
+   }
+
+   public void setJgroupsChannelName(String jgroupsChannelName)
+   {
+      raProperties.setJgroupsChannelName(jgroupsChannelName);
+   }
+
    /**
     * Set the discovery group name
     *
@@ -1235,7 +1255,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    /**
     * Set maximum time for retry interval
     *
-    * @param setMaxRetryInterval The value
+    * @param maxRetryInterval The value
     */
    public void setMaxRetryInterval(final Long maxRetryInterval)
    {
@@ -1775,15 +1795,22 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
                                                                                 : getDiscoveryAddress();
-      
+
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
+
+      String jgropusFileName = overrideProperties.getJgroupsFile() != null ? overrideProperties.getJgroupsFile()
+         : getJgroupsFile();
+
+      String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName()
+         : getJgroupsChannelName();
+
 
       if(ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (discoveryAddress != null)
+      if (discoveryAddress != null || jgropusFileName != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
@@ -1794,6 +1821,9 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
 
          DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
+
+         groupConfiguration.setJgroupsChannelName(jgroupsChannel);
+         groupConfiguration.setJgroupsFile(jgropusFileName);
 
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {

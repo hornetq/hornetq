@@ -42,6 +42,10 @@ public class ConnectionFactoryProperties
 
    private String connectionLoadBalancingPolicyClassName;
 
+   private String jgroupsFile;
+
+   private String jgroupsChannelName;
+
    private String discoveryAddress;
 
    private Integer discoveryPort;
@@ -803,6 +807,27 @@ public class ConnectionFactoryProperties
       this.initialMessagePacketSize = initialMessagePacketSize;
    }
 
+   public String getJgroupsFile()
+   {
+      return jgroupsFile;
+   }
+
+   public void setJgroupsFile(String jgroupsFile)
+   {
+      this.jgroupsFile = jgroupsFile;
+      hasBeenUpdated = true;
+   }
+
+   public String getJgroupsChannelName()
+   {
+      return jgroupsChannelName;
+   }
+
+   public void setJgroupsChannelName(String jgroupsChannelName)
+   {
+      this.jgroupsChannelName = jgroupsChannelName;
+      hasBeenUpdated = true;
+   }
 
    public boolean isHasBeenUpdated()
    {
