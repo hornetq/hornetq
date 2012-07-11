@@ -25,6 +25,30 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq:hornetq-commons</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-journal</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:hornetq-bootstrap</include>
          </includes>
          <binaries>
@@ -264,7 +288,7 @@
    <dependencySets>
       <dependencySet>
          <includes>
-            <include>org.jboss.javaee:jboss-jms-api</include>
+            <include>org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
