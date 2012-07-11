@@ -61,8 +61,12 @@ import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * A ReplicationManager
+ * Manages replication tasks on the live server (that is the live server side of a "remote backup"
+ * use case).
+ * <p>
+ * Its equivalent in the backup server is {@link ReplicationEndpoint}.
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @see ReplicationEndpoint
  */
 public class ReplicationManager implements HornetQComponent
 {
