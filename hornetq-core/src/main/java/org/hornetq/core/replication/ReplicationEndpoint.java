@@ -74,6 +74,8 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
 
 /**
+ * Handles all the synchronization necessary for replication on the backup side (that is the
+ * backup's side of the "remote backup" use case).
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
