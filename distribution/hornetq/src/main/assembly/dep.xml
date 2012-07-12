@@ -16,9 +16,9 @@
 
   <id>bin</id>
   <formats>
-    <format>tar.gz</format>
+    <format>dir</format>
     <format>zip</format>
-     <format>dir</format>
+    <format>tar.gz</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
    <moduleSets>
@@ -249,33 +249,6 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-examples</include>
-         </includes> <sources>
-        <includeModuleDirectory>false</includeModuleDirectory>
-        <fileSets>
-          <fileSet>
-            <outputDirectory>examples</outputDirectory>
-            <includes>
-              <include>bin/**</include>
-              <include>common/**</include>
-              <include>core/**</include>
-              <include>javaee/**</include>
-              <include>jms/**</include>
-              <include>soak/**</include>
-              <include>tools/**</include>
-              <include>build.xml</include>
-            </includes>
-             <excludes>
-                <exclude>common/config/ant.properties</exclude>
-                <exclude>javaee/common/config/ant.properties</exclude>
-             </excludes>
-          </fileSet>
-        </fileSets>
-      </sources>
-      </moduleSet>
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
             <include>org.hornetq:hornetq-core</include>
          </includes>
          <binaries>
@@ -331,6 +304,15 @@
     <fileSet>
       <directory>src/main/resources/examples</directory>
       <outputDirectory>examples</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>../../examples</directory>
+      <outputDirectory>examples</outputDirectory>
+      <excludes>
+         <exclude>**/target/**</exclude>
+         <exclude>**/**/*.iml</exclude>
+         <exclude>**/**/*.dat</exclude>
+      </excludes>
     </fileSet>
      <!--todo, this is crap, there must be better jdocbook assembly integration-->
       <fileSet>
