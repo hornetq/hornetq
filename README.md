@@ -84,3 +84,9 @@ Processor Toolkit_ [m2e-apt].
 
 [JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
 [m2e-apt]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out
+
+
+
+## To build the release bundle
+
+mvn -P release package
