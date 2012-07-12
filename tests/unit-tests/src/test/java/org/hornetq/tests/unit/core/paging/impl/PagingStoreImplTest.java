@@ -82,9 +82,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class PagingStoreImplTest extends UnitTestCase
 {
@@ -141,17 +139,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      PagingStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                  null,
-                                                  100,
-                                                  createMockManager(),
-                                                  createStorageManagerMock(),
-                                                  factory,
-                                                  null,
-                                                  PagingStoreImplTest.destinationTestName,
-                                                  addressSettings,
-                                                  getExecutorFactory().getExecutor(),
-                                                  true);
+      PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
+                                   addressSettings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -166,8 +157,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
    public void testPageWithNIO() throws Exception
    {
-      recreateDirectory(getTestDir());
-      testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
+      UnitTestCase.recreateDirectory(UnitTestCase.getTestDir());
+      testConcurrentPaging(new NIOSequentialFileFactory(UnitTestCase.getTestDir()), 1);
    }
 
    public void testStore() throws Exception
@@ -179,17 +170,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                           null,
-                                                           100,
-                                                           createMockManager(),
-                                                           createStorageManagerMock(),
-                                                           factory,
-                                                           storeFactory,
-                                                           PagingStoreImplTest.destinationTestName,
-                                                           addressSettings,
-                                                           getExecutorFactory().getExecutor(),
-                                                           true);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory,
+                                   PagingStoreImplTest.destinationTestName, addressSettings,
+                                   getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -216,17 +200,10 @@ public class PagingStoreImplTest extends UnitTestCase
 
       storeImpl.sync();
 
-      storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                      null,
-                                      100,
-                                      createMockManager(),
-                                      createStorageManagerMock(),
-                                      factory,
-                                      null,
-                                      PagingStoreImplTest.destinationTestName,
-                                      addressSettings,
-                                      getExecutorFactory().getExecutor(),
-                                      true);
+      storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
+                                   addressSettings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -245,17 +222,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStoreImpl storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                           null,
-                                                           100,
-                                                           createMockManager(),
-                                                           createStorageManagerMock(),
-                                                           factory,
-                                                           storeFactory,
-                                                           PagingStoreImplTest.destinationTestName,
-                                                           addressSettings,
-                                                           getExecutorFactory().getExecutor(),
-                                                           true);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory,
+                                   PagingStoreImplTest.destinationTestName, addressSettings,
+                                   getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -321,17 +291,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      PagingStoreImpl storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                           null,
-                                                           100,
-                                                           createMockManager(),
-                                                           createStorageManagerMock(),
-                                                           factory,
-                                                           storeFactory,
-                                                           PagingStoreImplTest.destinationTestName,
-                                                           addressSettings,
-                                                           getExecutorFactory().getExecutor(),
-                                                           true);
+      PagingStoreImpl storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory,
+                                   PagingStoreImplTest.destinationTestName, addressSettings,
+                                   getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -448,7 +412,8 @@ public class PagingStoreImplTest extends UnitTestCase
       testConcurrentPaging(factory, 10);
    }
 
-   protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
+   protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads)
+                                                                                                      throws Exception,
                                                                                                       InterruptedException
    {
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
@@ -470,17 +435,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                                 null,
-                                                                 100,
-                                                                 createMockManager(),
-                                                                 createStorageManagerMock(),
-                                                                 factory,
-                                                                 storeFactory,
-                                                                 new SimpleString("test"),
-                                                                 settings,
-                                                                 getExecutorFactory().getExecutor(),
-                                                                 true);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                                   settings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -635,17 +592,9 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       PagingStore storeImpl2 =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                            null,
-                                                            100,
-                                                            createMockManager(),
-                                                            createStorageManagerMock(),
-                                                            factory,
-                                                            storeFactory,
-                                                            new SimpleString("test"),
-                                                            settings,
-                                                            getExecutorFactory().getExecutor(),
-                                                            true);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                                   settings, getExecutorFactory().getExecutor(), true);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();
@@ -658,7 +607,8 @@ public class PagingStoreImplTest extends UnitTestCase
       Assert.assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
-      ServerMessage lastMsg = createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
+      ServerMessage lastMsg =
+               createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
 
       storeImpl2.forceAnotherPage();
 
@@ -689,8 +639,9 @@ public class PagingStoreImplTest extends UnitTestCase
             ServerMessage msgWritten = buffers2.remove(id);
             Assert.assertNotNull(msgWritten);
             Assert.assertEquals(msg.getMessage().getAddress(), msgWritten.getAddress());
-            UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().writerIndex(),
-                                                msgWritten.getBodyBuffer().toByteBuffer().array(),
+            UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().writerIndex(), msgWritten.getBodyBuffer()
+                                                                                                    .toByteBuffer()
+                                                                                                    .array(),
                                                 msg.getMessage().getBodyBuffer().toByteBuffer().array());
          }
       }
@@ -722,17 +673,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                                 null,
-                                                                 100,
-                                                                 createMockManager(),
-                                                                 createStorageManagerMock(),
-                                                                 factory,
-                                                                 storeFactory,
-                                                                 new SimpleString("test"),
-                                                                 settings,
-                                                                 getExecutorFactory().getExecutor(),
-                                                                 true);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                                   settings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -743,11 +686,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       storeImpl.depage();
 
-      assertNull(storeImpl.getCurrentPage());
+      Assert.assertNull(storeImpl.getCurrentPage());
 
       storeImpl.startPaging();
 
-      assertNotNull(storeImpl.getCurrentPage());
+      Assert.assertNotNull(storeImpl.getCurrentPage());
 
       storeImpl.stop();
    }
@@ -766,17 +709,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
-                                                                 null,
-                                                                 100,
-                                                                 createMockManager(),
-                                                                 createStorageManagerMock(),
-                                                                 factory,
-                                                                 storeFactory,
-                                                                 new SimpleString("test"),
-                                                                 settings,
-                                                                 getExecutorFactory().getExecutor(),
-                                                                 false);
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                                   settings, getExecutorFactory().getExecutor(), false);
 
       storeImpl.start();
 
@@ -862,9 +797,9 @@ public class PagingStoreImplTest extends UnitTestCase
                      {
                         ServerMessage msg = pgmsg.getMessage();
 
-                        assertEquals(msgsRead++, msg.getMessageID());
+                        Assert.assertEquals(msgsRead++, msg.getMessageID());
 
-                        assertEquals(msg.getMessageID(), msg.getLongProperty("count").longValue());
+                        Assert.assertEquals(msg.getMessageID(), msg.getLongProperty("count").longValue());
                      }
 
                      page.close();
@@ -903,8 +838,8 @@ public class PagingStoreImplTest extends UnitTestCase
    }
 
    /**
-   * @return
-   */
+    * @return
+    */
    protected PagingManager createMockManager()
    {
       return new FakePagingManager();
@@ -920,6 +855,7 @@ public class PagingStoreImplTest extends UnitTestCase
       return new ExecutorFactory()
       {
 
+         @Override
          public Executor getExecutor()
          {
             return executor;
@@ -927,9 +863,7 @@ public class PagingStoreImplTest extends UnitTestCase
       };
    }
 
-   private ServerMessage createMessage(final long id,
-                                       final PagingStore store,
-                                       final SimpleString destination,
+   private ServerMessage createMessage(final long id, final PagingStore store, final SimpleString destination,
                                        final HornetQBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl(id, 50 + buffer.capacity());
@@ -970,501 +904,495 @@ public class PagingStoreImplTest extends UnitTestCase
    static class FakeStorageManager implements StorageManager
    {
 
-      public void setUniqueIDSequence(final long id)
-      {
-      }
-
-      public void addQueueBinding(final Binding binding) throws Exception
-      {
-      }
-
+      @Override
       public void commit(final long txID) throws Exception
       {
       }
 
+      @Override
       public LargeServerMessage createLargeMessage()
       {
          return null;
       }
 
+      @Override
       public void deleteDuplicateID(final long recordID) throws Exception
       {
       }
 
+      @Override
       public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
       {
       }
 
+      @Override
       public void deleteMessage(final long messageID) throws Exception
       {
       }
 
-      public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
-      {
-      }
 
-      public void deletePageTransactional(final long txID, final long recordID) throws Exception
-      {
-      }
-
+      @Override
       public void deleteQueueBinding(final long queueBindingID) throws Exception
       {
       }
 
+      @Override
       public long generateUniqueID()
       {
          return 0;
       }
 
+      @Override
       public long getCurrentUniqueID()
       {
          return 0;
       }
 
+      @Override
       public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
                                                        final List<GroupingInfo> groupingInfos) throws Exception
       {
          return new JournalLoadInformation();
       }
 
+      @Override
       public void addGrouping(final GroupBinding groupBinding) throws Exception
       {
-         // To change body of implemented methods use File | Settings | File Templates.
       }
 
+      @Override
       public void deleteGrouping(final GroupBinding groupBinding) throws Exception
       {
-         // To change body of implemented methods use File | Settings | File Templates.
       }
 
-      public void sync()
-      {
-      }
-
+      @Override
       public void prepare(final long txID, final Xid xid) throws Exception
       {
       }
 
+      @Override
       public void rollback(final long txID) throws Exception
       {
       }
 
-      public void rollbackBindings(long txID) throws Exception
+      @Override
+      public void rollbackBindings(final long txID) throws Exception
       {
       }
 
-      public void commitBindings(long txID) throws Exception
+      @Override
+      public void commitBindings(final long txID) throws Exception
       {
       }
 
+      @Override
       public void storeAcknowledge(final long queueID, final long messageID) throws Exception
       {
       }
 
-      public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      @Override
+      public void
+               storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID)
+                                                                                                       throws Exception
       {
       }
 
-      public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      @Override
+      public void
+               storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
       {
       }
 
-      public void storeDuplicateIDTransactional(final long txID,
-                                                final SimpleString address,
-                                                final byte[] duplID,
+      @Override
+      public void storeDuplicateIDTransactional(final long txID, final SimpleString address, final byte[] duplID,
                                                 final long recordID) throws Exception
       {
       }
 
+      @Override
       public void storeMessage(final ServerMessage message) throws Exception
       {
       }
 
+      @Override
       public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
       {
       }
 
+      @Override
       public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
       {
       }
 
-      public void storeReference(final long queueID, final long messageID) throws Exception
+      @Override
+      public void
+               storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
       {
       }
 
-      public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
-      {
-      }
-
+      @Override
       public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
       {
          return -1;
       }
 
+      @Override
       public void deleteHeuristicCompletion(final long txID) throws Exception
       {
       }
 
-      public void addQueueBinding(long tx, Binding binding) throws Exception
+      @Override
+      public void addQueueBinding(final long tx, final Binding binding) throws Exception
       {
       }
 
+      @Override
       public void updateDeliveryCount(final MessageReference ref) throws Exception
       {
       }
 
-      public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      public void
+               updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
       {
       }
 
-      public void updateDuplicateIDTransactional(final long txID,
-                                                 final SimpleString address,
-                                                 final byte[] duplID,
+      @Override
+      public void updateDuplicateIDTransactional(final long txID, final SimpleString address, final byte[] duplID,
                                                  final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updateScheduledDeliveryTime(org.hornetq.core.server.MessageReference)
-       */
+      @Override
       public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#updateScheduledDeliveryTimeTransactional(long, org.hornetq.core.server.MessageReference)
-       */
-      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
+      @Override
+      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref)
+                                                                                                       throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.HornetQComponent#isStarted()
-       */
+      @Override
       public boolean isStarted()
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.HornetQComponent#start()
-       */
+      @Override
       public void start() throws Exception
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.HornetQComponent#stop()
-       */
+      @Override
       public void stop() throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
-       */
-      public void afterCompleteOperations(final Runnable run)
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#completeReplication()
-       */
-      public void completeOperations()
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#createLargeMessage(byte[])
-       */
+      @Override
       public LargeServerMessage createLargeMessage(final long messageId, final MessageInternal msg)
       {
 
          return null;
       }
 
-       @Override
-       public SequentialFile createFileForLargeMessage(long messageID, String extension) {
-           return null;
-       }
-
-      public boolean isReplicated()
-      {
-
-         return false;
-      }
-
-      public JournalLoadInformation[] loadInternalOnly() throws Exception
+      @Override
+      public SequentialFile createFileForLargeMessage(final long messageID, final String extension)
       {
          return null;
       }
 
+      @Override
       public void pageClosed(final SimpleString storeName, final int pageNumber)
       {
 
       }
 
+      @Override
       public void pageDeleted(final SimpleString storeName, final int pageNumber)
       {
 
       }
 
+      @Override
       public void pageWrite(final PagedMessage message, final int pageNumber)
       {
 
       }
 
+      @Override
       public boolean waitOnOperations(final long timeout) throws Exception
       {
          return true;
       }
 
-      public void setReplicator(final ReplicationManager replicator)
-      {
-      }
-
+      @Override
       public void afterCompleteOperations(final IOAsyncTask run)
       {
       }
 
+      @Override
       public void waitOnOperations() throws Exception
       {
       }
 
+      @Override
       public OperationContext getContext()
       {
          return null;
       }
 
+      @Override
       public OperationContext newContext(final Executor executor)
       {
          return null;
       }
 
+      @Override
       public void clearContext()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
-       */
+      @Override
       public void setContext(final OperationContext context)
       {
       }
 
+      @Override
       public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#recoverAddressSettings()
-       */
+      @Override
       public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
       {
          return Collections.emptyList();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
-       */
+      @Override
       public List<PersistedRoles> recoverPersistedRoles() throws Exception
       {
          return Collections.emptyList();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeAddressSetting(org.hornetq.core.persistconfig.PersistedAddressSetting)
+      @Override
+      public void storeAddressSetting(final PersistedAddressSetting addressSetting) throws Exception
+      {
+      }
+
+      @Override
+      public void storeSecurityRoles(final PersistedRoles persistedRoles) throws Exception
+      {
+      }
+
+      /*
+       * (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteAddressSetting(org.hornetq.api.core.
+       * SimpleString)
        */
-      public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
+      @Override
+      public void deleteAddressSetting(final SimpleString addressMatch) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
+      /*
+       * (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.
+       * SimpleString)
        */
-      public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
+      @Override
+      public void deleteSecurityRoles(final SimpleString addressMatch) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteAddressSetting(org.hornetq.api.core.SimpleString)
-       */
-      public void deleteAddressSetting(SimpleString addressMatch) throws Exception
+      @Override
+      public void deletePageTransactional(final long recordID) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.SimpleString)
-       */
-      public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
+      @Override
+      public JournalLoadInformation
+               loadMessageJournal(final PostOffice postOffice, final PagingManager pagingManager,
+                                  final ResourceManager resourceManager,
+                                  final Map<Long, org.hornetq.core.server.Queue> queues,
+                                  final Map<Long, QueueBindingInfo> queueInfos,
+                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                  final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+      {
+         return new JournalLoadInformation();
+      }
+
+      @Override
+      public
+               void
+               updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depage)
+                                                                                                                  throws Exception
       {
       }
 
-      public void deletePageTransactional(long recordID) throws Exception
-      {
-      }
-
-       @Override
-       public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
-                                                        PagingManager pagingManager,
-                                                        ResourceManager resourceManager,
-                                                        Map<Long, org.hornetq.core.server.Queue> queues,
-                                                        Map<Long, QueueBindingInfo> queueInfos,
-                                                        Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                        Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
-       {
-           return new JournalLoadInformation();
-       }
-
-      public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
-      {
-      }
-
-      public void storeCursorAcknowledge(long queueID, PagePosition position)
+      @Override
+      public void storeCursorAcknowledge(final long queueID, final PagePosition position)
       {
          // TODO Auto-generated method stub
       }
 
-      public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position)
+      @Override
+      public void storeCursorAcknowledgeTransactional(final long txID, final long queueID, final PagePosition position)
       {
          // TODO Auto-generated method stub
       }
 
-      public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
+      @Override
+      public void deleteCursorAcknowledgeTransactional(final long txID, final long ackID) throws Exception
       {
          // TODO Auto-generated method stub
       }
 
-      public void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception
+      @Override
+      public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depage) throws Exception
       {
          // TODO Auto-generated method stub
       }
 
-      public long storePageCounter(long txID, long queueID, long value) throws Exception
+      @Override
+      public long storePageCounter(final long txID, final long queueID, final long value) throws Exception
       {
          return 0;
       }
 
-      public void deleteIncrementRecord(long txID, long recordID) throws Exception
+      @Override
+      public void deleteIncrementRecord(final long txID, final long recordID) throws Exception
       {
          //
       }
 
-      public void deletePageCounter(long txID, long recordID) throws Exception
+      @Override
+      public void deletePageCounter(final long txID, final long recordID) throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
-      public long storePageCounterInc(long txID, long queueID, int add) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return 0;
-      }
-
-      public long storePageCounterInc(long queueID, int add) throws Exception
+      @Override
+      public long storePageCounterInc(final long txID, final long queueID, final int add) throws Exception
       {
          // TODO Auto-generated method stub
          return 0;
       }
 
-       @Override
-       public Journal getBindingsJournal() {
-           return null;
-       }
+      @Override
+      public long storePageCounterInc(final long queueID, final int add) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
 
-       @Override
-       public Journal getMessageJournal() {
-           return null;
-       }
+      @Override
+      public Journal getBindingsJournal()
+      {
+         return null;
+      }
 
+      @Override
+      public Journal getMessageJournal()
+      {
+         return null;
+      }
+
+      @Override
       public OperationContext newSingleThreadContext()
       {
          return getContext();
       }
 
-      public void commit(long txID, boolean lineUpContext) throws Exception
+      @Override
+      public void commit(final long txID, final boolean lineUpContext) throws Exception
       {
          // TODO Auto-generated method stub
 
       }
 
+      @Override
       public void lineUpContext()
-      {
-         // TODO Auto-generated method stub
-
-      }
-
-      public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
-      {
-      }
-
-      public void confirmPendingLargeMessage(long recordID) throws Exception
       {
       }
 
       @Override
-      public void stop(boolean ioCriticalError) throws Exception
+      public
+               void
+               confirmPendingLargeMessageTX(final Transaction transaction, final long messageID, final long recordID)
+                                                                                                                     throws Exception
       {
-         // TODO Auto-generated method stub
+      }
+
+      @Override
+      public void confirmPendingLargeMessage(final long recordID) throws Exception
+      {
+      }
+
+      @Override
+      public void stop(final boolean ioCriticalError) throws Exception
+      {
 
       }
 
       @Override
       public void beforePageRead() throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
       @Override
       public void afterPageRead() throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
-      public ByteBuffer allocateDirectBuffer(int size)
+      @Override
+      public ByteBuffer allocateDirectBuffer(final int size)
       {
          return ByteBuffer.allocateDirect(size);
       }
 
-      public void freeDirectBuffer(ByteBuffer buffer)
+      @Override
+      public void freeDirectBuffer(final ByteBuffer buffer)
       {
 
       }
 
       @Override
-      public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
-                                   boolean autoFailBack) throws Exception
+      public void startReplication(final ReplicationManager replicationManager, final PagingManager pagingManager,
+                                   final String nodeID, final boolean autoFailBack) throws Exception
       {
       }
 
-      public boolean addToPage(PagingManager pagingManager,
-         SimpleString address,
-         ServerMessage message,
-         RoutingContext ctx,
-         RouteContextList listCtx) throws Exception
+      @Override
+      public boolean
+               addToPage(final PagingManager pagingManager, final SimpleString address, final ServerMessage message,
+                         final RoutingContext ctx, final RouteContextList listCtx) throws Exception
       {
          return true;
       }
 
+      @Override
       public void stopReplication()
       {
       }
 
-      public void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception
+      @Override
+      public
+               void
+               addBytesToLargeMessage(final SequentialFile appendFile, final long messageID, final byte[] bytes)
+                                                                                                                throws Exception
       {
       }
 
       @Override
-      public void storeID(long journalID, long id) throws Exception
+      public void storeID(final long journalID, final long id) throws Exception
       {
       }
-    }
+   }
 
    class FakeStoreFactory implements PagingStoreFactory
    {
@@ -1481,42 +1409,57 @@ public class PagingStoreImplTest extends UnitTestCase
          this.factory = factory;
       }
 
+      @Override
       public SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
       {
          return factory;
       }
 
+      @Override
       public PagingStore newStore(final SimpleString destinationName, final AddressSettings addressSettings)
       {
          return null;
       }
 
-      public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+      @Override
+      public List<PagingStore>
+               reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
       {
          return null;
       }
 
+      @Override
       public void setPagingManager(final PagingManager manager)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#setPostOffice(org.hornetq.core.postoffice.PostOffice)
+      /*
+       * (non-Javadoc)
+       * @see
+       * org.hornetq.core.paging.PagingStoreFactory#setPostOffice(org.hornetq.core.postoffice.PostOffice
+       * )
        */
+      @Override
       public void setPostOffice(final PostOffice office)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#setStorageManager(org.hornetq.core.persistence.StorageManager)
+      /*
+       * (non-Javadoc)
+       * @see
+       * org.hornetq.core.paging.PagingStoreFactory#setStorageManager(org.hornetq.core.persistence
+       * .StorageManager)
        */
+      @Override
       public void setStorageManager(final StorageManager storageManager)
       {
       }
 
-      /* (non-Javadoc)
+      /*
+       * (non-Javadoc)
        * @see org.hornetq.core.paging.PagingStoreFactory#stop()
        */
+      @Override
       public void stop() throws InterruptedException
       {
       }
@@ -1529,12 +1472,12 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      public ByteBuffer allocateDirectBuffer(int size)
+      public ByteBuffer allocateDirectBuffer(final int size)
       {
          return ByteBuffer.allocateDirect(size);
       }
 
-      public void freeDirectuffer(ByteBuffer buffer)
+      public void freeDirectuffer(final ByteBuffer buffer)
       {
       }
 
