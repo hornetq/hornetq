@@ -54,6 +54,7 @@
             <version>2.2</version>
             <configuration>
                <descriptor>src/main/assembly/dep.xml</descriptor>
+               <tarLongFileMode>gnu</tarLongFileMode>
             </configuration>
             <executions>
                <execution>
