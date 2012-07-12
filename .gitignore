@@ -711,13 +711,10 @@ examples/pom-template.xml
 /hornetq-ra/hornetq-ra-rar/target
 /hornetq-ra/hornetq-ra-rar/.project
 
-# /hornetq-rest/docbook/
-/hornetq-rest/docbook/target
-
 # /hornetq-rest/hornetq-rest/
-/hornetq-rest/hornetq-rest/target
-/hornetq-rest/hornetq-rest/.project
-/hornetq-rest/hornetq-rest/data/
+/hornetq-rest/target
+/hornetq-rest/.project
+/hornetq-rest/data/
 
 # /hornetq-rest/
 /hornetq-*/.project
