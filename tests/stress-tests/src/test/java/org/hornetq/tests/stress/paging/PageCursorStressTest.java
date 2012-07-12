@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import junit.framework.Assert;
 
@@ -75,15 +77,11 @@ public class PageCursorStressTest extends ServiceTestBase
 
    private List<Queue> queueList;
 
+   private ReadLock lock;
+
    private static final int PAGE_MAX = -1;
 
    private static final int PAGE_SIZE = 10 * 1024 * 1024;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    // Read more cache than what would fit on the memory, and validate if the memory would be cleared through soft-caches
    public void testReadCache() throws Exception
@@ -514,7 +512,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
          msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
 
-         Assert.assertTrue(pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS)));
+         Assert.assertTrue(pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock));
 
          PagedReference readMessage = iterator.next();
 
@@ -549,7 +547,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
             msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
 
-            Assert.assertTrue(pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS)));
+            Assert.assertTrue(pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock));
          }
 
          PagedReference readMessage = iterator.next();
@@ -581,7 +579,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
             msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
 
-            Assert.assertTrue(pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS)));
+            Assert.assertTrue(pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock));
          }
 
          PagedReference readMessage = iterator.next();
@@ -676,7 +674,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
                      msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
 
-                     Assert.assertTrue(pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS)));
+                     Assert.assertTrue(pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock));
                   }
 
                   if (tx != null)
@@ -1099,7 +1097,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
          msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
 
-         Assert.assertTrue(pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS)));
+         Assert.assertTrue(pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock));
       }
 
       return pageStore.getNumberOfPages();
@@ -1134,6 +1132,7 @@ public class PageCursorStressTest extends ServiceTestBase
       queueList = new ArrayList<Queue>();
 
       createServer();
+      lock = new ReentrantReadWriteLock().readLock();
    }
 
    /**
@@ -1216,15 +1215,10 @@ public class PageCursorStressTest extends ServiceTestBase
          ServerMessage msg = new ServerMessageImpl(storage.generateUniqueID(), buffer.writerIndex());
          msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
          msg.putIntProperty("key", i);
-         pageStore.page(msg, ctx, ctx.getContextListing(ADDRESS));
+         pageStore.page(msg, ctx.getTransaction(), ctx.getContextListing(ADDRESS), lock);
       }
 
       return txImpl;
 
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

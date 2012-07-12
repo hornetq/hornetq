@@ -49,7 +49,16 @@ import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.server.management.ManagementService;
@@ -467,7 +476,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-      
+
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
@@ -620,7 +629,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     	    HornetQLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
     	 }
       }
-      
+
       if (HornetQLogger.LOGGER.isTraceEnabled())
       {
          HornetQLogger.LOGGER.trace("Message after routed=" + message);
@@ -639,7 +648,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             // Send to the DLA for the address
 
             SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-            
+
             if (HornetQLogger.LOGGER.isDebugEnabled())
             {
                HornetQLogger.LOGGER.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
@@ -719,7 +728,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
       ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
-      
+
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       if (bindings != null)
@@ -777,7 +786,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
-      
+
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
@@ -952,7 +961,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          PagingStore store = pagingManager.getPageStore(entry.getKey());
 
-         if (store.page(message, context, entry.getValue()))
+         if (storageManager.addToPage(store, message, context.getTransaction(), entry.getValue()))
          {
             if (message.isLargeMessage())
             {
@@ -1085,9 +1094,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
          else
          {
-
-            storageManager.confirmPendingLargeMessageTX(tx,
-                                                        largeServerMessage.getMessageID(),
+            storageManager.confirmPendingLargeMessageTX(tx, largeServerMessage.getMessageID(),
                                                         largeServerMessage.getPendingRecordID());
          }
          largeServerMessage.setPendingRecordID(-1);
@@ -1162,7 +1169,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          if (cacheBridge.contains(bridgeDupBytes))
          {
             HornetQLogger.LOGGER.duplicateMessageDetectedThruBridge(message);
-            
+
             if (context.getTransaction() != null)
             {
                context.getTransaction().markAsRollbackOnly(new DuplicateIdException());

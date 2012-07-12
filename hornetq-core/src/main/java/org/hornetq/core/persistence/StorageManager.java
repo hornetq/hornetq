@@ -31,6 +31,7 @@ import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
@@ -43,7 +44,6 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
@@ -288,17 +288,17 @@ public interface StorageManager extends HornetQComponent
                          boolean autoFailBack) throws Exception;
 
    /**
-    *
-    * TODO: RoutingContext should only be used on PostOffice
-    *
-    * Adds message to page if we are paging.
-    * @return whether we added the message to a page or not.
+    * Write message to page if we are paging.
+    * <p>
+    * This is primarily a {@link PagingStore} call, but as with any other call writing persistent
+    * data, it must go through here. Both for the sake of replication, and also to ensure that it
+    * takes the locks (storage manager and pagingStore) in the right order. Avoiding thus the
+    * creation of dead-locks.
+    * @return {@code true} if we are paging and have handled the data, {@code false} if the data
+    *         needs to be sent to the journal
+    * @throws Exception
     */
-   boolean addToPage(PagingManager pagingManager,
-      SimpleString address,
-      ServerMessage message,
-      RoutingContext ctx,
-      RouteContextList listCtx) throws Exception;
+   boolean addToPage(PagingStore store, ServerMessage msg, Transaction tx, RouteContextList listCtx) throws Exception;
 
    /**
     * Stops the replication of data from the live to the backup.

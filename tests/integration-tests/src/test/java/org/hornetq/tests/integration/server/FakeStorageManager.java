@@ -40,12 +40,6 @@ public class FakeStorageManager extends NullStorageManager
    }
 
    @Override
-   public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
-   {
-      messageIds.remove(messageID);
-   }
-
-   @Override
    public void deleteMessage(final long messageID) throws Exception
    {
       messageIds.remove(messageID);

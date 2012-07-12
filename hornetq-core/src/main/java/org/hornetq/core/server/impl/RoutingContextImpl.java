@@ -26,12 +26,9 @@ import org.hornetq.core.transaction.Transaction;
 
 /**
  * A RoutingContextImpl
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
-public class RoutingContextImpl implements RoutingContext
+public final class RoutingContextImpl implements RoutingContext
 {
 
    // The pair here is Durable and NonDurable
@@ -108,9 +105,6 @@ public class RoutingContextImpl implements RoutingContext
       return queueCount;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.RoutingContext#getAddresses()
-    */
    public Map<SimpleString, RouteContextList> getContexListing()
    {
       return this.map;
