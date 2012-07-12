@@ -206,6 +206,10 @@ tests/**/server.lock
 /examples/clustered-queue/build
 /examples/clustered-queue/logs
 
+# /examples/clustered-jgroups/
+/examples/clustered-jgroups/server0
+/examples/clustered-jgroups/server1
+
 # /examples/clustered-queue/server0/
 /examples/clustered-queue/server0/data
 /examples/clustered-queue/server0/logs
