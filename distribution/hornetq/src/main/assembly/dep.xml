@@ -16,11 +16,11 @@
 
   <id>bin</id>
   <formats>
-    <format>tar.gz</format>
+    <format>dir</format>
     <format>zip</format>
-     <format>dir</format>
+    <format>tar.gz</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
+  <includeBaseDirectory>true</includeBaseDirectory>
    <moduleSets>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -249,33 +249,6 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-examples</include>
-         </includes> <sources>
-        <includeModuleDirectory>false</includeModuleDirectory>
-        <fileSets>
-          <fileSet>
-            <outputDirectory>examples</outputDirectory>
-            <includes>
-              <include>bin/**</include>
-              <include>common/**</include>
-              <include>core/**</include>
-              <include>javaee/**</include>
-              <include>jms/**</include>
-              <include>soak/**</include>
-              <include>tools/**</include>
-              <include>build.xml</include>
-            </includes>
-             <excludes>
-                <exclude>common/config/ant.properties</exclude>
-                <exclude>javaee/common/config/ant.properties</exclude>
-             </excludes>
-          </fileSet>
-        </fileSets>
-      </sources>
-      </moduleSet>
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
             <include>org.hornetq:hornetq-core</include>
          </includes>
          <binaries>
@@ -315,6 +288,7 @@
     <fileSet>
       <directory>src/main/resources/config</directory>
       <outputDirectory>config</outputDirectory>
+      <lineEnding>keep</lineEnding>
       <excludes>
          <exclude>**/trunk/**</exclude>
          <exclude>*.properties</exclude>
@@ -323,27 +297,43 @@
     <fileSet>
       <directory>src/main/resources/bin</directory>
       <outputDirectory>bin</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>src/main/resources/licenses</directory>
       <outputDirectory>licenses</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>src/main/resources/examples</directory>
       <outputDirectory>examples</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../../examples</directory>
+      <outputDirectory>examples</outputDirectory>
+      <lineEnding>keep</lineEnding>
+      <excludes>
+         <exclude>**/target/**</exclude>
+         <exclude>**/**/*.iml</exclude>
+         <exclude>**/**/*.dat</exclude>
+      </excludes>
     </fileSet>
      <!--todo, this is crap, there must be better jdocbook assembly integration-->
       <fileSet>
          <directory>../../docs/user-manual/target/docbook/publish/en</directory>
          <outputDirectory>docs/user-manual</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
       <fileSet>
          <directory>../../docs/quickstart-guide/target/docbook/publish/en</directory>
          <outputDirectory>docs/quickstart-guide</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
       <fileSet>
          <directory>../../docs/rest-manual/target/docbook/publish/en</directory>
          <outputDirectory>docs/rest-manual</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
   </fileSets>
 </assembly>
