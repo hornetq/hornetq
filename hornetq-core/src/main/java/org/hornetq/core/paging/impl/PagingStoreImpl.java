@@ -44,7 +44,12 @@ import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -107,7 +112,7 @@ public class PagingStoreImpl implements PagingStore
 
    private volatile Page currentPage;
 
-    private final Object pagingGuard = new Object();
+   private final Object pagingGuard = new Object();
    private volatile boolean paging = false;
 
    private final PageCursorProvider cursorProvider;
@@ -294,8 +299,8 @@ public class PagingStoreImpl implements PagingStore
             return isFull();
          }
          return paging;
-        }
-    }
+      }
+   }
 
    public int getNumberOfPages()
    {
@@ -310,16 +315,6 @@ public class PagingStoreImpl implements PagingStore
    public SimpleString getStoreName()
    {
       return storeName;
-   }
-
-   public boolean page(final ServerMessage message, final RoutingContext ctx) throws Exception
-   {
-      return page(message, ctx, ctx.getContextListing(storeName));
-   }
-
-   public boolean page(final ServerMessage message, final RoutingContext ctx, RouteContextList listCtx) throws Exception
-   {
-      return page(message, ctx, listCtx, syncNonTransactional && ctx.getTransaction() == null);
    }
 
    public void sync() throws Exception
@@ -796,9 +791,19 @@ public class PagingStoreImpl implements PagingStore
 
    }
 
-    private boolean page(ServerMessage message, final RoutingContext ctx, RouteContextList listCtx, final boolean sync)
-                                                                                                               throws Exception
+   /**
+    * Used only in tests.
+    */
+   @Deprecated
+   public boolean page(final ServerMessage message, final RoutingContext ctx) throws Exception
    {
+      return page(message, ctx, ctx.getContextListing(storeName));
+   }
+
+   @Override
+   public boolean page(ServerMessage message, final RoutingContext ctx, RouteContextList listCtx) throws Exception
+   {
+      final boolean sync = syncNonTransactional && ctx.getTransaction() == null;
       if (!running)
       {
          throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
@@ -836,13 +841,15 @@ public class PagingStoreImpl implements PagingStore
       }
 
       // We need to ensure a read lock, as depage could change the paging state
-        synchronized (pagingGuard) {
+      synchronized (pagingGuard)
+      {
 
          // First check done concurrently, to avoid synchronization and increase throughput
-            if (!paging) {
+         if (!paging)
+         {
             return false;
          }
-        }
+      }
 
       Transaction tx = ctx.getTransaction();
 
@@ -850,12 +857,9 @@ public class PagingStoreImpl implements PagingStore
 
       try
       {
-         synchronized (pagingGuard)
+         if (!isPaging())
          {
-            if (!paging)
-            {
-               return false;
-            }
+            return false;
          }
 
          if (!message.isDurable())
