@@ -17,6 +17,8 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import junit.framework.Assert;
 
@@ -46,16 +48,7 @@ import org.hornetq.utils.OrderedExecutorFactory;
  */
 public class PagingManagerImplTest extends UnitTestCase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   private final ReadLock lock = new ReentrantReadWriteLock().readLock();
 
    public void testPagingManager() throws Exception
    {
@@ -83,11 +76,11 @@ public class PagingManagerImplTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null)));
+      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null), lock));
 
       store.startPaging();
 
-      Assert.assertTrue(store.page(msg, new RoutingContextImpl(null)));
+      Assert.assertTrue(store.page(msg, new RoutingContextImpl(null), lock));
 
       Page page = store.depage();
 
@@ -109,12 +102,9 @@ public class PagingManagerImplTest extends UnitTestCase
 
       Assert.assertNull(store.depage());
 
-      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null)));
+      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null), lock));
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    @Override
    protected void setUp() throws Exception
    {

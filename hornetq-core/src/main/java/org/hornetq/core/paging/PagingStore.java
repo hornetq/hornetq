@@ -14,6 +14,7 @@
 package org.hornetq.core.paging;
 
 import java.util.Collection;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
@@ -26,6 +27,7 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * <p>
@@ -73,14 +75,19 @@ public interface PagingStore extends HornetQComponent
    // It will perform a real sync on the current IO file
    void ioSync() throws Exception;
 
-   boolean page(ServerMessage message, RoutingContext ctx) throws Exception;
+   @Deprecated
+   boolean page(ServerMessage message, RoutingContext ctx, ReadLock readLock) throws Exception;
 
    /**
     * Write message to page if we are paging.
+    * @param readLock a read lock from the storage manager. This is an encapsulation violation made
+    *           to keep the code less complex. If give {@code null} the method will throw a
+    *           {@link NullPointerException}
     * @return {@code true} if we are paging and have handled the data, {@code false} if the data
     *         needs to be sent to the journal
+    * @throws NullPointerException if {@code readLock} is null
     */
-   boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
+   boolean page(ServerMessage message, Transaction tx, RouteContextList listCtx, ReadLock readLock) throws Exception;
 
    Page createPage(final int page) throws Exception;
 
@@ -152,5 +159,4 @@ public interface PagingStore extends HornetQComponent
     * @throws Exception
     */
    void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception;
-
 }

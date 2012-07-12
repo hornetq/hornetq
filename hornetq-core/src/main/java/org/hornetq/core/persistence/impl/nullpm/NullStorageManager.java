@@ -33,6 +33,7 @@ import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
@@ -47,7 +48,6 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
@@ -539,8 +539,8 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public boolean addToPage(final PagingManager manager, final SimpleString address, final ServerMessage message,
-                            final RoutingContext ctx, final RouteContextList listCtx) throws Exception
+   public boolean addToPage(PagingStore s, ServerMessage msg, Transaction tx, RouteContextList listCtx)
+                                                                                                       throws Exception
    {
       return false;
    }
@@ -558,10 +558,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public
-            void
-            addBytesToLargeMessage(final SequentialFile appendFile, final long messageID, final byte[] bytes)
-                                                                                                             throws Exception
+   public void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception
    {
       // no-op
    }
@@ -593,4 +590,4 @@ public class NullStorageManager implements StorageManager
    {
 
    }
- }
+}
