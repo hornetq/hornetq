@@ -92,7 +92,6 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -112,6 +111,8 @@ import org.hornetq.utils.XidCodecSupport;
  * Controls access to the journals and other storage files such as the ones used to store pages and
  * large messages. This class must control writing of any non-transient data, as it is the key point
  * for synchronizing a replicating backup server.
+ * <p>
+ * Using this class also ensures that locks are acquired in the right order, avoiding dead-locks.
  * <p>
  * Notice that, turning on and off replication (on the live server side) is _mostly_ a matter of
  * using {@link ReplicatedJournal}s instead of regular {@link JournalImpl}, and sync the existing
@@ -386,42 +387,42 @@ public class JournalStorageManager implements StorageManager
       try
       {
 
-      Map<String, Long> largeMessageFilesToSync;
-      Map<SimpleString, Collection<Integer>> pageFilesToSync;
-      storageManagerLock.writeLock().lock();
-      try
+         Map<String, Long> largeMessageFilesToSync;
+         Map<SimpleString, Collection<Integer>> pageFilesToSync;
+         storageManagerLock.writeLock().lock();
+         try
          {
             if (isReplicated())
                throw new org.hornetq.api.core.IllegalStateException("already replicating");
-         replicator = replicationManager;
-         originalMessageJournal.synchronizationLock();
-         originalBindingsJournal.synchronizationLock();
-         try
-         {
-            pagingManager.lock();
+            replicator = replicationManager;
+            originalMessageJournal.synchronizationLock();
+            originalBindingsJournal.synchronizationLock();
             try
             {
+               pagingManager.lock();
+               try
+               {
                   messageFiles =
                            prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID, autoFailBack);
                   bindingsFiles =
                            prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID, autoFailBack);
-               pageFilesToSync = getPageInformationForSync(pagingManager);
+                  pageFilesToSync = getPageInformationForSync(pagingManager);
                   largeMessageFilesToSync = getLargeMessageInformation();
+               }
+               finally
+               {
+                  pagingManager.unlock();
+               }
             }
             finally
             {
-               pagingManager.unlock();
+               originalMessageJournal.synchronizationUnlock();
+               originalBindingsJournal.synchronizationUnlock();
             }
+            bindingsJournal = new ReplicatedJournal(((byte)0), originalBindingsJournal, replicator);
+            messageJournal = new ReplicatedJournal((byte)1, originalMessageJournal, replicator);
          }
          finally
-         {
-            originalMessageJournal.synchronizationUnlock();
-            originalBindingsJournal.synchronizationUnlock();
-         }
-         bindingsJournal = new ReplicatedJournal(((byte)0), originalBindingsJournal, replicator);
-         messageJournal = new ReplicatedJournal((byte)1, originalMessageJournal, replicator);
-      }
-      finally
       {
          storageManagerLock.writeLock().unlock();
       }
@@ -4111,19 +4112,22 @@ public class JournalStorageManager implements StorageManager
    }
 
    @Override
-   public boolean addToPage(PagingManager pagingManager, SimpleString address, ServerMessage message,
-      RoutingContext ctx, RouteContextList listCtx) throws Exception
+   public
+            boolean
+            addToPage(PagingStore store, ServerMessage msg, Transaction tx, RouteContextList listCtx)
+                                                                                                         throws Exception
    {
-      readLock();
-      try
-      {
-         PagingStore store = pagingManager.getPageStore(address);
-         return store.page(message, ctx, listCtx);
-      }
-      finally
-      {
-         readUnLock();
-      }
+      /**
+       * Exposing the read-lock here is an encapsulation violation done in order to keep the code
+       * simpler. The alternative would be to add a second method, say 'verifyPaging', to
+       * PagingStore.
+       * <p>
+       * Adding this second method would also be more surprise prone as it would require a certain
+       * calling order.
+       * <p>
+       * The reasoning is that exposing the lock is more explicit and therefore `less bad`.
+       */
+      return store.page(msg, tx, listCtx, storageManagerLock.readLock());
    }
 
    private void installLargeMessageConfirmationOnTX(Transaction tx, long recordID)
