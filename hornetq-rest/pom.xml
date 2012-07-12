@@ -96,6 +96,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>-Djava.util.logging.config.file=${project.build.directory}/../../../distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
                     <skipTests>${skipRestTests}</skipTests>
                     <!--includes>
                         <include>**/PushQueueConsumerTest.java</include>
