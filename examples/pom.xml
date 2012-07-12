@@ -114,30 +114,4 @@
       </profile>
    </profiles>
 
-   <build>
-      <resources>
-         <resource>
-            <directory>src/main/resources</directory>
-            <filtering>true</filtering>
-         </resource>
-      </resources>
-      <plugins>
-         <plugin>
-            <inherited>false</inherited>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <configuration>
-               <descriptor>src/main/assembly/dep.xml</descriptor>
-            </configuration>
-            <executions>
-               <execution>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>single</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
-
 </project>
