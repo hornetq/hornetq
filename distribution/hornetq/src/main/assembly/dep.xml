@@ -20,7 +20,7 @@
     <format>zip</format>
     <format>tar.gz</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
+  <includeBaseDirectory>true</includeBaseDirectory>
    <moduleSets>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -288,6 +288,7 @@
     <fileSet>
       <directory>src/main/resources/config</directory>
       <outputDirectory>config</outputDirectory>
+      <lineEnding>keep</lineEnding>
       <excludes>
          <exclude>**/trunk/**</exclude>
          <exclude>*.properties</exclude>
@@ -296,18 +297,22 @@
     <fileSet>
       <directory>src/main/resources/bin</directory>
       <outputDirectory>bin</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>src/main/resources/licenses</directory>
       <outputDirectory>licenses</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>src/main/resources/examples</directory>
       <outputDirectory>examples</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>../../examples</directory>
       <outputDirectory>examples</outputDirectory>
+      <lineEnding>keep</lineEnding>
       <excludes>
          <exclude>**/target/**</exclude>
          <exclude>**/**/*.iml</exclude>
@@ -318,14 +323,17 @@
       <fileSet>
          <directory>../../docs/user-manual/target/docbook/publish/en</directory>
          <outputDirectory>docs/user-manual</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
       <fileSet>
          <directory>../../docs/quickstart-guide/target/docbook/publish/en</directory>
          <outputDirectory>docs/quickstart-guide</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
       <fileSet>
          <directory>../../docs/rest-manual/target/docbook/publish/en</directory>
          <outputDirectory>docs/rest-manual</outputDirectory>
+         <lineEnding>keep</lineEnding>
       </fileSet>
   </fileSets>
 </assembly>
