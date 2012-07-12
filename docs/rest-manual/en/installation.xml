@@ -19,20 +19,21 @@
 <chapter>
     <title>Installation and Configuration</title>
 
-    <para>HornetQ's REST interface is installed as a Web archive (WAR). It
+     <para>HornetQ's REST interface is installed as a Web archive (WAR). It
     depends on the <ulink url="http://jboss.org/resteasy">RESTEasy</ulink>
     project and can currently only run within a servlet container. Installing
     the HornetQ REST interface is a little bit different depending whether
-    HornetQ is already installed and configured for your environment (i.e.
-    you're deploying within JBoss 6 AppServer) or you want the HornetQ REST
-    WAR to startup and manage the HornetQ server.</para>
+    HornetQ is already installed and configured for your environment (e.g.
+    you're deploying within JBoss AS 7) or you want the HornetQ REST
+    WAR to startup and manage the HornetQ server (e.g. you're deploying
+    within Tomcat).</para>
 
     <sect1>
       <title>Installing Within Pre-configured Environment</title>
 
       <para>The section should be used when you want to use the HornetQ REST
       interface in an environment that already has HornetQ installed and
-      running, i.e. JBoss 6 Application Server. You must create a Web archive
+      running, e.g. JBoss AS 7. You must create a Web archive
       (.WAR) file with the following web.xml settings:</para>
 
       <programlisting>&lt;web-app&gt;
@@ -55,7 +56,6 @@
         &lt;filter-name&gt;Rest-Messaging&lt;/filter-name&gt;
         &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
     &lt;/filter-mapping&gt;
-
 &lt;/web-app</programlisting>
 
       <para>Within your WEB-INF/lib directory you must have the
@@ -64,13 +64,15 @@
       directory as well. Here's a sample Maven pom.xml that can build your WAR
       for this case.</para>
 
-      <programlisting>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <programlisting>
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
     &lt;groupId&gt;org.somebody&lt;/groupId&gt;
     &lt;artifactId&gt;myapp&lt;/artifactId&gt;
     &lt;packaging&gt;war&lt;/packaging&gt;
     &lt;name&gt;My App&lt;/name&gt;
+    &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
     &lt;repositories&gt;
         &lt;repository&gt;
             &lt;id&gt;jboss&lt;/id&gt;
@@ -78,8 +80,8 @@
         &lt;/repository&gt;
     &lt;/repositories&gt;
 
-
-     &lt;build&gt;
+    &lt;build&gt;
+        &lt;plugins&gt;
             &lt;plugin&gt;
                 &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
                 &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
@@ -94,13 +96,28 @@
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq.rest&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-rest&lt;/artifactId&gt;
-            &lt;version&gt;2.2.0&lt;/version&gt;
+            &lt;version&gt;2.3.0-SNAPSHOT&lt;/version&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
-&lt;/project&gt;
-</programlisting>
+&lt;/project&gt;</programlisting>
 
-      <para></para>
+      <note><para>JBoss AS 7 loads classes differently than previous versions.
+      To work properly in AS 7 the the WAR will need this in its MANIFEST.MF:</para>
+      <programlisting>Dependencies: org.hornetq, org.jboss.netty</programlisting>
+      <para>You can add this to the <literal>&lt;plugins&gt;</literal> section of the
+       pom.xml to create this entry automatically:</para><programlisting>
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;archive&gt;
+            &lt;manifestEntries&gt;
+                &lt;Dependencies&gt;org.hornetq, org.jboss.netty&lt;/Dependencies&gt;
+            &lt;/manifestEntries&gt;
+        &lt;/archive&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</programlisting>
+      </note>
     </sect1>
 
     <sect1>
@@ -118,7 +135,6 @@
     &lt;listener&gt;
         &lt;listener-class&gt;org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap&lt;/listener-class&gt;
     &lt;/listener&gt;
-
 
     &lt;listener&gt;
         &lt;listener-class&gt;org.hornetq.rest.integration.HornetqBootstrapListener&lt;/listener-class&gt;
@@ -139,7 +155,6 @@
         &lt;filter-name&gt;Rest-Messaging&lt;/filter-name&gt;
         &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
     &lt;/filter-mapping&gt;
-
 &lt;/web-app&gt;</programlisting>
 
       <para>Here's a Maven pom.xml file for creating a WAR for this
@@ -147,13 +162,14 @@
       src/main/resources directory so that they are stuffed within the WAR's
       WEB-INF/classes directory!</para>
 
-      <programlisting>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       <programlisting>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
     &lt;groupId&gt;org.somebody&lt;/groupId&gt;
     &lt;artifactId&gt;myapp&lt;/artifactId&gt;
     &lt;packaging&gt;war&lt;/packaging&gt;
     &lt;name&gt;My App&lt;/name&gt;
+    &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
     &lt;repositories&gt;
         &lt;repository&gt;
             &lt;id&gt;jboss&lt;/id&gt;
@@ -161,6 +177,7 @@
         &lt;/repository&gt;
     &lt;/repositories&gt;
     &lt;build&gt;
+        &lt;plugins&gt;
             &lt;plugin&gt;
                 &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
                 &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
@@ -175,36 +192,37 @@
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
-            &lt;version&gt;2.1.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.0-SNAPSHOT&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
-            &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
+            &lt;groupId&gt;io.netty&lt;/groupId&gt;
             &lt;artifactId&gt;netty&lt;/artifactId&gt;
+            &lt;version&gt;3.4.5.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-jms&lt;/artifactId&gt;
-            &lt;version&gt;2.1.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.0-SNAPSHOT&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.spec.javax.jms&lt;/groupId&gt;
             &lt;artifactId&gt;jboss-jms-api_1.1_spec&lt;/artifactId&gt;
-            &lt;version&gt;1.0.0.Beta1&lt;/version&gt;
+            &lt;version&gt;1.0.0.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq.rest&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-rest&lt;/artifactId&gt;
-            &lt;version&gt;2.2.0&lt;/version&gt;
+            &lt;version&gt;2.3.0-SNAPSHOT&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.resteasy&lt;/groupId&gt;
             &lt;artifactId&gt;resteasy-jaxrs&lt;/artifactId&gt;
-            &lt;version&gt;2.0.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.4.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.resteasy&lt;/groupId&gt;
             &lt;artifactId&gt;resteasy-jaxb-provider&lt;/artifactId&gt;
-            &lt;version&gt;2.0.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.4.Final&lt;/version&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
 &lt;/project&gt;</programlisting>
