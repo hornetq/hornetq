@@ -46,7 +46,7 @@
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
       </HornetQ-Version>
       <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
-      <resteasy.version>2.1.0.GA</resteasy.version>
+      <resteasy.version>2.3.4.Final</resteasy.version>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
       <skipIntegrationTests>true</skipIntegrationTests>
@@ -342,11 +342,16 @@
             <artifactId>resteasy-atom-provider</artifactId>
             <version>${resteasy.version}</version>
          </dependency>
+          <dependency>
+              <groupId>org.jboss.resteasy</groupId>
+              <artifactId>tjws</artifactId>
+              <version>${resteasy.version}</version>
+          </dependency>
          <!-- needed to compile the tests -->
          <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!-- There are newer versions of the JUnit but thet break our tests -->
+            <!-- There are newer versions of the JUnit but they break our tests -->
             <version>3.8.2</version>
          </dependency>
          <!--needed to compile the jms tests -->
