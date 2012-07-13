@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.IllegalStateException;
-import org.hornetq.api.core.ObjectClosedException;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -94,7 +94,7 @@ public class ReceiveTest extends ServiceTestBase
             cc.receive();
             Assert.fail("should throw exception");
          }
-         catch(ObjectClosedException oce)
+         catch(HornetQObjectClosedException oce)
          {
             //ok
          }
@@ -124,7 +124,7 @@ public class ReceiveTest extends ServiceTestBase
             cc.receive();
             Assert.fail("should throw exception");
          }
-         catch(IllegalStateException ise)
+         catch(HornetQIllegalStateException ise)
          {
             //ok
          }

@@ -21,22 +21,25 @@
 */
 package org.hornetq.api.core;
 
+import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_METADATA;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/4/12
+ *         5/2/12
+ *
+ * A Session Metadata was set in duplication
  */
-public class NativeIOError extends HornetQException
+public class HornetQDuplicateMetaDataException extends HornetQException
 {
-   private static final long serialVersionUID = 2355120980683293085L;
+   private static final long serialVersionUID = 7877182872143004058L;
 
-   public NativeIOError()
+   public HornetQDuplicateMetaDataException()
    {
-      super(HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO);
+      super(DUPLICATE_METADATA);
    }
 
-   public NativeIOError(String msg)
+   public HornetQDuplicateMetaDataException(String msg)
    {
-      super(HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO, msg);
+      super(DUPLICATE_METADATA, msg);
    }
 }

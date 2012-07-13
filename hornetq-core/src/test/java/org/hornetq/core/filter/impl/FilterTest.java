@@ -17,7 +17,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.InvalidFilterExpressionException;
+import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.ServerMessage;
@@ -701,7 +701,7 @@ public class FilterTest extends TestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(InvalidFilterExpressionException ife)
+      catch(HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }
@@ -718,7 +718,7 @@ public class FilterTest extends TestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(InvalidFilterExpressionException ife)
+      catch(HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }

@@ -344,14 +344,14 @@ public interface Message
     * @param key property name
     * @param value property value
     * 
-    * @throws PropertyConversionException if the value is not one of the accepted property types.
+    * @throws HornetQPropertyConversionException if the value is not one of the accepted property types.
     */
-   void putObjectProperty(SimpleString key, Object value) throws PropertyConversionException;
+   void putObjectProperty(SimpleString key, Object value) throws HornetQPropertyConversionException;
 
    /**
     * @see #putObjectProperty(SimpleString, Object)
     */
-   void putObjectProperty(String key, Object value) throws PropertyConversionException;
+   void putObjectProperty(String key, Object value) throws HornetQPropertyConversionException;
 
    /**
     * Removes the property corresponding to the specified key.
@@ -381,62 +381,62 @@ public interface Message
    /**
     * Returns the property corresponding to the specified key as a Boolean.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Boolean
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Boolean
     */
-   Boolean getBooleanProperty(SimpleString key) throws PropertyConversionException;
+   Boolean getBooleanProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getBooleanProperty(SimpleString)
     */
-   Boolean getBooleanProperty(String key) throws PropertyConversionException;
+   Boolean getBooleanProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a Byte.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Byte
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Byte
     */
-   Byte getByteProperty(SimpleString key) throws PropertyConversionException;
+   Byte getByteProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getByteProperty(SimpleString)
     */
-   Byte getByteProperty(String key) throws PropertyConversionException;
+   Byte getByteProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a Double.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Double
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Double
     */
-   Double getDoubleProperty(SimpleString key) throws PropertyConversionException;
+   Double getDoubleProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getDoubleProperty(SimpleString)
     */
-   Double getDoubleProperty(String key) throws PropertyConversionException;
+   Double getDoubleProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as an Integer.
     * 
-    * @throws PropertyConversionException if the value can not be converted to an Integer
+    * @throws HornetQPropertyConversionException if the value can not be converted to an Integer
     */
-   Integer getIntProperty(SimpleString key) throws PropertyConversionException;
+   Integer getIntProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getIntProperty(SimpleString)
     */
-   Integer getIntProperty(String key) throws PropertyConversionException;
+   Integer getIntProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a Long.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Long
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Long
     */
-   Long getLongProperty(SimpleString key) throws PropertyConversionException;
+   Long getLongProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getLongProperty(SimpleString)
     */
-   Long getLongProperty(String key) throws PropertyConversionException;
+   Long getLongProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key
@@ -451,62 +451,62 @@ public interface Message
    /**
     * Returns the property corresponding to the specified key as a Short.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Short
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Short
     */
-   Short getShortProperty(SimpleString key) throws PropertyConversionException;
+   Short getShortProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getShortProperty(SimpleString)
     */
-   Short getShortProperty(String key) throws PropertyConversionException;
+   Short getShortProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a Float.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a Float
+    * @throws HornetQPropertyConversionException if the value can not be converted to a Float
     */
-   Float getFloatProperty(SimpleString key) throws PropertyConversionException;
+   Float getFloatProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getFloatProperty(SimpleString)
     */
-   Float getFloatProperty(String key) throws PropertyConversionException;
+   Float getFloatProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a String.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a String
+    * @throws HornetQPropertyConversionException if the value can not be converted to a String
     */
-   String getStringProperty(SimpleString key) throws PropertyConversionException;
+   String getStringProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getStringProperty(SimpleString)
     */
-   String getStringProperty(String key) throws PropertyConversionException;
+   String getStringProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a SimpleString.
     * 
-    * @throws PropertyConversionException if the value can not be converted to a SimpleString
+    * @throws HornetQPropertyConversionException if the value can not be converted to a SimpleString
     */
-   SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException;
+   SimpleString getSimpleStringProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getSimpleStringProperty(SimpleString)
     */
-   SimpleString getSimpleStringProperty(String key) throws PropertyConversionException;
+   SimpleString getSimpleStringProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns the property corresponding to the specified key as a byte[].
     * 
-    * @throws PropertyConversionException if the value can not be converted to a byte[]
+    * @throws HornetQPropertyConversionException if the value can not be converted to a byte[]
     */
-   byte[] getBytesProperty(SimpleString key) throws PropertyConversionException;
+   byte[] getBytesProperty(SimpleString key) throws HornetQPropertyConversionException;
 
    /**
     * @see #getBytesProperty(SimpleString)
     */
-   byte[] getBytesProperty(String key) throws PropertyConversionException;
+   byte[] getBytesProperty(String key) throws HornetQPropertyConversionException;
 
    /**
     * Returns all the names of the properties for this message.

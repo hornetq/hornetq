@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_OUTCOME_UNKNOWN;
+import static org.hornetq.api.core.HornetQExceptionType.NOT_CONNECTED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
+ *         4/30/12
  *
- * The outcome of a tx is unknown
+ * A client is not able to connect to HornetQ server.
  */
-public class TransactionOutcomeUnknownException extends HornetQException
+public class HornetQNotConnectedException extends HornetQException
 {
-   private static final long serialVersionUID = 7940794286427650558L;
+   private static final long serialVersionUID = -3489189971813613325L;
 
-   public TransactionOutcomeUnknownException()
+   public HornetQNotConnectedException(String message)
    {
-      super(TRANSACTION_OUTCOME_UNKNOWN);
+      super(NOT_CONNECTED, message);
    }
 
-   public TransactionOutcomeUnknownException(String msg)
+   public HornetQNotConnectedException()
    {
-      super(TRANSACTION_OUTCOME_UNKNOWN, msg);
+      super(NOT_CONNECTED);
    }
 }

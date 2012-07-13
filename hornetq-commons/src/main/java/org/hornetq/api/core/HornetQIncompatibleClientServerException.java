@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.IO_ERROR;
+import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
+ *         5/2/12
  *
- * Unexpected I/O error occurred on the server.
+ * A incompatibility between HornetQ versions on the client and the server has been detected
  */
-public class IOErrorException extends HornetQException
+public class HornetQIncompatibleClientServerException extends HornetQException
 {
-   private static final long serialVersionUID = 797277117077787396L;
+   private static final long serialVersionUID = -1662999230291452298L;
 
-   public IOErrorException()
+   public HornetQIncompatibleClientServerException()
    {
-      super(IO_ERROR);
+      super(INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
    }
 
-   public IOErrorException(String msg)
+   public HornetQIncompatibleClientServerException(String msg)
    {
-      super(IO_ERROR, msg);
+      super(INCOMPATIBLE_CLIENT_SERVER_VERSIONS, msg);
    }
 }

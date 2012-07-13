@@ -22,7 +22,7 @@ import javax.jms.Session;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -116,7 +116,7 @@ public class ExceptionListenerTest extends UnitTestCase
 
       ClientSessionInternal coreSession = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
 
-      coreSession.getConnection().fail(new InternalErrorException("blah"));
+      coreSession.getConnection().fail(new HornetQInternalErrorException("blah"));
 
       latch.await(5, TimeUnit.SECONDS);
 
@@ -148,13 +148,13 @@ public class ExceptionListenerTest extends UnitTestCase
 
       ClientSessionInternal coreSession3 = (ClientSessionInternal)((HornetQSession)sess3).getCoreSession();
 
-      coreSession0.getConnection().fail(new InternalErrorException("blah"));
+      coreSession0.getConnection().fail(new HornetQInternalErrorException("blah"));
 
-      coreSession1.getConnection().fail(new InternalErrorException("blah"));
+      coreSession1.getConnection().fail(new HornetQInternalErrorException("blah"));
 
-      coreSession2.getConnection().fail(new InternalErrorException("blah"));
+      coreSession2.getConnection().fail(new HornetQInternalErrorException("blah"));
 
-      coreSession3.getConnection().fail(new InternalErrorException("blah"));
+      coreSession3.getConnection().fail(new HornetQInternalErrorException("blah"));
 
       latch.await(5, TimeUnit.SECONDS);
       // Listener should only be called once even if all sessions connections die

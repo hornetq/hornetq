@@ -1,7 +1,7 @@
 package org.hornetq.journal;
 
 
-import org.hornetq.api.core.IOErrorException;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -22,15 +22,15 @@ public interface HornetQJournalBundle
    HornetQJournalBundle BUNDLE = Messages.getBundle(HornetQJournalBundle.class);
 
    @Message(id = 149001, value =  "failed to rename file {0} to {1}", format = Message.Format.MESSAGE_FORMAT)
-   IOErrorException ioRenameFileError(String name, String newFileName);
+   HornetQIOErrorException ioRenameFileError(String name, String newFileName);
 
    @Message(id = 149002, value =  "Journal data belong to a different version", format = Message.Format.MESSAGE_FORMAT)
-   IOErrorException journalDifferentVersion();
+   HornetQIOErrorException journalDifferentVersion();
 
    @Message(id = 149003, value =  "Journal files version mismatch. You should export the data from the previous version and import it as explained on the user's manual",
          format = Message.Format.MESSAGE_FORMAT)
-   IOErrorException journalFileMisMatch();
+   HornetQIOErrorException journalFileMisMatch();
 
    @Message(id = 149004, value =   "File not opened", format = Message.Format.MESSAGE_FORMAT)
-   IOErrorException fileNotOpened();
+   HornetQIOErrorException fileNotOpened();
 }

@@ -17,7 +17,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -76,7 +76,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       {
          session.createConsumer(queue);
       }
-      catch(NonExistentQueueException neqe)
+      catch(HornetQNonExistentQueueException neqe)
       {
          //ok
       }

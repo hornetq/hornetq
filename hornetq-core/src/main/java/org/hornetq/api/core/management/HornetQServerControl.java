@@ -15,7 +15,6 @@ package org.hornetq.api.core.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.QueueExistsException;
 import org.hornetq.api.core.Interceptor;
 
 /**
@@ -310,7 +309,7 @@ public interface HornetQServerControl
    /**
     * Create a durable queue.
     * <br>
-    * This method throws a {@link QueueExistsException}) exception if the queue already exits.
+    * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     * 
     * @param address address to bind the queue to
     * @param name name of the queue
@@ -322,7 +321,7 @@ public interface HornetQServerControl
    /**
     * Create a queue.
     * <br>
-    * This method throws a {@link QueueExistsException}) exception if the queue already exits.
+    * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     * 
     * @param address address to bind the queue to
     * @param name name of the queue
@@ -338,7 +337,7 @@ public interface HornetQServerControl
    /**
     * Create a queue.
     * <br>
-    * This method throws a {@link QueueExistsException}) exception if the queue already exits.
+    * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     * 
     * @param address address to bind the queue to
     * @param name name of the queue

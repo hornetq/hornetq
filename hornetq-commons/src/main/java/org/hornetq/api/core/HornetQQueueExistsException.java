@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY;
+import static org.hornetq.api.core.HornetQExceptionType.QUEUE_EXISTS;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
+ *         4/30/12
  *
- * An problem occurred while manipulating the body of a large message.
+ * An operation failed because a queue exists on the server.
  */
-public class LargeMessageException extends HornetQException
+public class HornetQQueueExistsException extends HornetQException
 {
-   private static final long serialVersionUID = 1087867463974768491L;
+   private static final long serialVersionUID = -405552292451883063L;
 
-   public LargeMessageException()
+   public HornetQQueueExistsException()
    {
-      super(LARGE_MESSAGE_ERROR_BODY);
+      super(QUEUE_EXISTS);
    }
 
-   public LargeMessageException(String msg)
+   public HornetQQueueExistsException(String msg)
    {
-      super(LARGE_MESSAGE_ERROR_BODY, msg);
+      super(QUEUE_EXISTS, msg);
    }
 }

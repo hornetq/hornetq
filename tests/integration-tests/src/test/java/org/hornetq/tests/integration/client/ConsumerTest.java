@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.*;
-import org.hornetq.api.core.IllegalStateException;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -344,7 +344,7 @@ public class ConsumerTest extends ServiceTestBase
          consumer.receiveImmediate();
          Assert.fail("Should throw exception");
       }
-      catch(IllegalStateException ise)
+      catch(HornetQIllegalStateException ise)
       {
          //ok
       }

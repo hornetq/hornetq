@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.NodeManager;
@@ -338,13 +339,13 @@ public class FileLockNodeManager extends NodeManager
    }
 
    @Override
-   public final SimpleString readNodeId() throws org.hornetq.api.core.IllegalStateException, IOException
+   public final SimpleString readNodeId() throws HornetQIllegalStateException, IOException
    {
       ByteBuffer id = ByteBuffer.allocateDirect(16);
       int read = channel.read(id, 3);
       if (read != 16)
       {
-         throw new org.hornetq.api.core.IllegalStateException("live server did not write id to file");
+         throw new HornetQIllegalStateException("live server did not write id to file");
       }
       byte[] bytes = new byte[16];
       id.position(0);

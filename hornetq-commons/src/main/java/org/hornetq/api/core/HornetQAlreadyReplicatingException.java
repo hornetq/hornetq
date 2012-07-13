@@ -21,35 +21,23 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.INTERNAL_ERROR;
+import static org.hornetq.api.core.HornetQExceptionType.ALREADY_REPLICATING;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
- * Internal error which prevented HornetQ from performing an important operation.
+ *         5/2/12
  */
-public class InternalErrorException extends HornetQException
+public class HornetQAlreadyReplicatingException extends HornetQException
 {
-   private static final long serialVersionUID = -5987814047521530695L;
+   private static final long serialVersionUID = -7352538521961996152L;
 
-   public InternalErrorException()
+   public HornetQAlreadyReplicatingException()
    {
-      super(INTERNAL_ERROR);
+      super(ALREADY_REPLICATING);
    }
 
-   public InternalErrorException(String msg)
+   public HornetQAlreadyReplicatingException(String msg)
    {
-      super(INTERNAL_ERROR, msg);
-   }
-
-   public InternalErrorException(String message, Exception e)
-   {
-      super(INTERNAL_ERROR, message, e);
-   }
-
-   public InternalErrorException(String message, Throwable t)
-   {
-      super(INTERNAL_ERROR, message, t);
+      super(ALREADY_REPLICATING, msg);
    }
 }

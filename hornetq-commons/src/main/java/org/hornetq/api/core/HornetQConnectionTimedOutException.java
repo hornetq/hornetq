@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.DISCONNECTED;
+import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/30/12
  *
- * A client was disconnected from HornetQ server when the server has shut down.
+ * A client timed out will connecting to HornetQ server.
  */
-public class DisconnectedException extends HornetQException
+public class HornetQConnectionTimedOutException extends HornetQException
 {
-   private static final long serialVersionUID = 7414966383933311627L;
+   private static final long serialVersionUID = 3244233758084830372L;
 
-   public DisconnectedException()
+   public HornetQConnectionTimedOutException()
    {
-      super(DISCONNECTED);
+      super(CONNECTION_TIMEDOUT);
    }
 
-   public DisconnectedException(String message)
+   public HornetQConnectionTimedOutException(String msg)
    {
-      super(DISCONNECTED, message);
+      super(CONNECTION_TIMEDOUT, msg);
    }
 }

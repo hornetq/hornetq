@@ -28,9 +28,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hornetq.api.core.DuplicateIdException;
+import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -494,7 +494,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (binding == null)
       {
-         throw new NonExistentQueueException();
+         throw new HornetQNonExistentQueueException();
       }
 
       if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
@@ -1172,7 +1172,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new DuplicateIdException());
+               context.getTransaction().markAsRollbackOnly(new HornetQDuplicateIdException());
             }
 
             message.decrementRefCount();
@@ -1214,7 +1214,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new DuplicateIdException(warnMessage));
+               context.getTransaction().markAsRollbackOnly(new HornetQDuplicateIdException(warnMessage));
             }
 
             message.decrementRefCount();

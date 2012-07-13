@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_ID_REJECTED;
+import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_ROLLED_BACK;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  *
- * A DuplicateID was rejected.
+ * A transaction was rolled back.
  */
-public class DuplicateIdException extends HornetQException
+public class HornetQTransactionRolledBackException extends HornetQException
 {
-   private static final long serialVersionUID = -4302979339865777119L;
+   private static final long serialVersionUID = 5823412198677126300L;
 
-   public DuplicateIdException()
+   public HornetQTransactionRolledBackException()
    {
-      super(DUPLICATE_ID_REJECTED);
+      super(TRANSACTION_ROLLED_BACK);
    }
 
-   public DuplicateIdException(String message)
+   public HornetQTransactionRolledBackException(String msg)
    {
-      super(DUPLICATE_ID_REJECTED, message);
+      super(TRANSACTION_ROLLED_BACK, msg);
    }
 }

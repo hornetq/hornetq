@@ -19,12 +19,12 @@ package org.hornetq.api.core;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @see org.hornetq.api.core.Message
  */
-public class PropertyConversionException extends RuntimeException
+public class HornetQPropertyConversionException extends RuntimeException
 {
 
    private static final long serialVersionUID = -3010008708334904332L;
 
-   public PropertyConversionException(final String message)
+   public HornetQPropertyConversionException(final String message)
    {
       super(message);
    }
