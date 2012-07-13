@@ -1044,11 +1044,6 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      public void
-               updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
-      {
-      }
-
       @Override
       public void updateDuplicateIDTransactional(final long txID, final SimpleString address, final byte[] duplID,
                                                  final long recordID) throws Exception
@@ -1179,21 +1174,11 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /*
-       * (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteAddressSetting(org.hornetq.api.core.
-       * SimpleString)
-       */
       @Override
       public void deleteAddressSetting(final SimpleString addressMatch) throws Exception
       {
       }
 
-      /*
-       * (non-Javadoc)
-       * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.
-       * SimpleString)
-       */
       @Override
       public void deleteSecurityRoles(final SimpleString addressMatch) throws Exception
       {
@@ -1227,25 +1212,25 @@ public class PagingStoreImplTest extends UnitTestCase
       @Override
       public void storeCursorAcknowledge(final long queueID, final PagePosition position)
       {
-         // TODO Auto-generated method stub
+         //
       }
 
       @Override
       public void storeCursorAcknowledgeTransactional(final long txID, final long queueID, final PagePosition position)
       {
-         // TODO Auto-generated method stub
+         //
       }
 
       @Override
       public void deleteCursorAcknowledgeTransactional(final long txID, final long ackID) throws Exception
       {
-         // TODO Auto-generated method stub
+         //
       }
 
       @Override
       public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depage) throws Exception
       {
-         // TODO Auto-generated method stub
+         //
       }
 
       @Override
@@ -1263,21 +1248,18 @@ public class PagingStoreImplTest extends UnitTestCase
       @Override
       public void deletePageCounter(final long txID, final long recordID) throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
       @Override
       public long storePageCounterInc(final long txID, final long queueID, final int add) throws Exception
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
       @Override
       public long storePageCounterInc(final long queueID, final int add) throws Exception
       {
-         // TODO Auto-generated method stub
          return 0;
       }
 
@@ -1302,7 +1284,6 @@ public class PagingStoreImplTest extends UnitTestCase
       @Override
       public void commit(final long txID, final boolean lineUpContext) throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
@@ -1425,32 +1406,16 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      /*
-       * (non-Javadoc)
-       * @see
-       * org.hornetq.core.paging.PagingStoreFactory#setPostOffice(org.hornetq.core.postoffice.PostOffice
-       * )
-       */
       @Override
       public void setPostOffice(final PostOffice office)
       {
       }
 
-      /*
-       * (non-Javadoc)
-       * @see
-       * org.hornetq.core.paging.PagingStoreFactory#setStorageManager(org.hornetq.core.persistence
-       * .StorageManager)
-       */
       @Override
       public void setStorageManager(final StorageManager storageManager)
       {
       }
 
-      /*
-       * (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingStoreFactory#stop()
-       */
       @Override
       public void stop() throws InterruptedException
       {
@@ -1472,7 +1437,5 @@ public class PagingStoreImplTest extends UnitTestCase
       public void freeDirectuffer(final ByteBuffer buffer)
       {
       }
-
    }
-
 }
