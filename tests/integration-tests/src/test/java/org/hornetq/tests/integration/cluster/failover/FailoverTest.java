@@ -30,12 +30,12 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.HornetQObjectClosedException;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.HornetQTransactionRolledBackException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -59,7 +59,6 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  * A FailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class FailoverTest extends FailoverTestBase
 {
@@ -215,9 +214,8 @@ public class FailoverTest extends FailoverTestBase
             received.put(counter, message);
             try
             {
-               log.info("acking message = id = " + message.getMessageID() +
-                  ", counter = " +
-                  message.getIntProperty("counter"));
+               log.debug("acking message = id = " + message.getMessageID() + ", counter = " +
+                        message.getIntProperty("counter"));
                message.acknowledge();
             }
             catch (HornetQException e)
@@ -225,7 +223,7 @@ public class FailoverTest extends FailoverTestBase
                e.printStackTrace();
                return;
             }
-            log.info("Acked counter = " + counter);
+            log.debug("Acked counter = " + counter);
             if (counter.equals(10))
             {
                latch.countDown();
@@ -397,7 +395,6 @@ public class FailoverTest extends FailoverTestBase
       }
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
-      System.out.println("crashing session");
       crash(false, session);
 
       session.commit(xid, false);
@@ -444,7 +441,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
-      System.out.println("crashing session");
       crash(false, session);
 
       session.rollback(xid);
@@ -516,7 +512,6 @@ public class FailoverTest extends FailoverTestBase
             break;
          }
       }
-      System.out.println("received.size() = " + received.size());
       session.close();
       final int retryLimit = 5;
       Assert.assertTrue("Number of retries (" + retry + ") should be <= " + retryLimit, retry <= retryLimit);
@@ -564,6 +559,52 @@ public class FailoverTest extends FailoverTestBase
    {
       boolean doFailBack = true;
       simpleReplication(doFailBack);
+   }
+
+   public void testFailBackLiveRestartsBackupIsGone() throws Exception
+   {
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
+
+      ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+
+      sendMessages(session, producer, NUM_MESSAGES);
+      producer.close();
+      session.commit();
+      SimpleString liveId = liveServer.getServer().getNodeID();
+      crash(session);
+
+      session.start();
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
+      receiveMessages(consumer);
+      assertNoMoreMessages(consumer);
+      consumer.close();
+      session.commit();
+
+      assertEquals("backup must be running with the same nodeID", liveId, backupServer.getServer().getNodeID());
+      sf.close();
+
+      backupServer.crash();
+      Thread.sleep(100);
+      assertFalse("backup is not running", backupServer.isStarted());
+
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+      beforeRestart(liveServer);
+      liveServer.start();
+      assertTrue("live initialized...", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+
+      sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
+
+      ClientSession session2 = createSession(sf, false, false);
+      session2.start();
+      ClientConsumer consumer2 = session2.createConsumer(FailoverTestBase.ADDRESS);
+      boolean replication = !liveServer.getServer().getConfiguration().isSharedStore();
+      if (replication)
+         receiveMessages(consumer2, 0, NUM_MESSAGES, true);
+      assertNoMoreMessages(consumer2);
+      session2.commit();
    }
 
    public void testSimpleReplication() throws Exception
