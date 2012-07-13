@@ -14,6 +14,9 @@
 package org.hornetq.core.cluster.impl;
 
 import java.net.URL;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.jgroups.JChannel;
@@ -36,6 +39,8 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
 
    private JChannel channel;
 
+   private BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
+
    private Message broadcastMsg;
 
    private boolean opened;
@@ -48,34 +53,41 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
 
    public void broadcast(byte[] data) throws Exception
    {
-      Message msg = new Message();
-      msg.setBuffer(data);
-      channel.send(msg);
+      if (opened)
+      {
+         Message msg = new Message();
+         msg.setBuffer(data);
+         channel.send(msg);
+      }
    }
 
-   public synchronized byte[] receiveBroadcast() throws Exception
+   public byte[] receiveBroadcast() throws Exception
    {
-      byte[] data = null;
-      while (opened)
+      if (opened)
       {
-         if (broadcastMsg == null)
-         {
-            try
-            {
-               wait();
-            } catch (InterruptedException e)
-            {
-               return null;
-            }
-         } else
-         {
-            data = broadcastMsg.getBuffer();
-            broadcastMsg = null;
-            break;
-         }
+         byte[] msg = dequeue.take();
+         return msg;
       }
-      return data;
+      else
+      {
+         return null;
+      }
    }
+
+
+   public byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception
+   {
+      if (opened)
+      {
+         byte[] msg = dequeue.poll(time, unit);
+         return msg;
+      }
+      else
+      {
+         return null;
+      }
+   }
+
 
 
    public void openClient() throws Exception
@@ -107,6 +119,10 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    private void internalOpen() throws Exception
    {
       URL configURL = Thread.currentThread().getContextClassLoader().getResource(this.fileName);
+      if (configURL == null)
+      {
+         throw new RuntimeException("couldn't find JGroups configuration " + fileName);
+      }
       channel = new JChannel(configURL);
       channel.connect(this.channelName);
    }
@@ -125,13 +141,7 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    {
       public void receive(org.jgroups.Message msg)
       {
-         synchronized (JGroupsBroadcastEndpoint.this)
-         {
-            //we simply update the message, regardless of whether it has been
-            //received or not, which is fine for discovery.
-            JGroupsBroadcastEndpoint.this.broadcastMsg = msg;
-            JGroupsBroadcastEndpoint.this.notifyAll();
-         }
+         dequeue.add(msg.getBuffer());
       }
 
    }

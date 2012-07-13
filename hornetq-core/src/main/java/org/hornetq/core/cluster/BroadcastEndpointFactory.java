@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint;
 import org.hornetq.core.cluster.impl.UDPBroadcastEndpoint;
 import org.hornetq.utils.ClassloadingUtil;
 
@@ -28,14 +29,15 @@ public class BroadcastEndpointFactory
 
    public static BroadcastEndpoint createJGropusEndpoint(final String fileName, final String channelName) throws Exception
    {
-      // Todo: I don't want any possible hard coded dependency on JGropus,
+      //  I don't want any possible hard coded dependency on JGropus,
       //       for that reason we use reflection here, to avoid the compiler to bring any dependency here
       return AccessController.doPrivileged(new PrivilegedAction<BroadcastEndpoint>()
       {
          public BroadcastEndpoint run()
          {
-            return (BroadcastEndpoint) ClassloadingUtil.
-                    newInstanceFromClassLoader("org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint");
+            BroadcastEndpoint endpoint = (BroadcastEndpoint) ClassloadingUtil.
+                    newInstanceFromClassLoader("org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint", fileName, channelName);
+            return endpoint;
          }
       });
    }
