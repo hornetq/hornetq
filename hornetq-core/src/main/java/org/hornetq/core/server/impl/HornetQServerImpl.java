@@ -2381,9 +2381,8 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            if (isNodeIdUsed())
+            if (configuration.isClustered() && isNodeIdUsed())
             {
-
                configuration.setBackup(true);
                return;
             }
@@ -2424,11 +2423,11 @@ public class HornetQServerImpl implements HornetQServer
          } catch (HornetQIllegalStateException e) {
             nodeId0 = null;
          }
+
          ServerLocatorInternal locator = null;
          ClientSessionFactoryInternal factory = null;
          try
          {
-
             TransportConfiguration[] tpArray =
                configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
             locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
