@@ -3,12 +3,12 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.hornetq.example</groupId>
-      <artifactId>examples</artifactId>
+      <groupId>org.hornetq.examples</groupId>
+      <artifactId>hornetq-examples</artifactId>
       <version>2.3.0.Alpha</version>
    </parent>
 
-   <groupId>org.hornetq.example.javaee</groupId>
+   <groupId>org.hornetq.examples.jms</groupId>
    <artifactId>jms-examples</artifactId>
    <packaging>pom</packaging>
    <name>HornetQ JMS Examples</name>
@@ -18,6 +18,12 @@
    </properties>
 
    <profiles>
+      <profile>
+         <id>maven-release</id>
+         <modules>
+            <module>common</module>
+         </modules>
+      </profile>
       <profile>
          <id>examples</id>
          <activation>

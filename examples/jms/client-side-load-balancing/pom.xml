@@ -3,8 +3,8 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.hornetq.example</groupId>
-      <artifactId>examples</artifactId>
+      <groupId>org.hornetq.examples.jms</groupId>
+      <artifactId>jms-examples</artifactId>
       <version>2.3.0.Alpha</version>
    </parent>
 
@@ -14,7 +14,7 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.hornetq.example</groupId>
+         <groupId>org.hornetq.examples.jms</groupId>
          <artifactId>common</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -143,7 +143,7 @@
             </executions>
             <dependencies>
                <dependency>
-                  <groupId>org.hornetq.example</groupId>
+                  <groupId>org.hornetq.examples.jms</groupId>
                   <artifactId>hornetq-jms-client-side-load-balancing-example</artifactId>
                   <version>${project.version}</version>
                </dependency>

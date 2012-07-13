@@ -8,8 +8,8 @@
       <version>2.3.0.Alpha</version>
    </parent>
 
-   <groupId>org.hornetq.example</groupId>
-   <artifactId>examples</artifactId>
+   <groupId>org.hornetq.examples</groupId>
+   <artifactId>hornetq-examples</artifactId>
    <packaging>pom</packaging>
    <name>HornetQ Examples</name>
 
