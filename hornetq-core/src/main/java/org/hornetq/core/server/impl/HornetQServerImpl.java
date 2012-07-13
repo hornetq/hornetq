@@ -43,6 +43,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -2380,9 +2381,8 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            if (isNodeIdUsed())
+            if (configuration.isClustered() && isNodeIdUsed())
             {
-
                configuration.setBackup(true);
                return;
             }
@@ -2423,16 +2423,23 @@ public class HornetQServerImpl implements HornetQServer
          } catch (HornetQIllegalStateException e) {
             nodeId0 = null;
          }
+
          ServerLocatorInternal locator = null;
          ClientSessionFactoryInternal factory = null;
          try
          {
-
             TransportConfiguration[] tpArray =
                configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
             locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
             locator.setReconnectAttempts(0);
-            factory = locator.connect();
+            try
+            {
+               factory = locator.connect();
+            }
+            catch (HornetQNotConnectedException notConnected)
+            {
+               return false;
+            }
             Thread.sleep(5000); // wait a little for the topology updates
             // if the nodeID is null, then a node with that nodeID MUST be found:
             Topology topology = locator.getTopology();
