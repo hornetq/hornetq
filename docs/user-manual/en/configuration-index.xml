@@ -569,6 +569,22 @@
                         </row>
                         <row>
                             <entry>
+                               <link linkend="clusters">broadcast-group.jgroups-file</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of JGroups configuration file. If specified, the server uses JGroups for broadcasting. - Optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters">broadcast-group.jgroups-channel</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of JGroups Channel. If specified, the server uses the named channel for broadcasting. - Optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
                                <link linkend="clusters">broadcast-group.connector-ref</link>
                             </entry>
                             <entry>A pair of connector</entry>
@@ -639,6 +655,22 @@
                                   waits after receiving the last broadcast from a particular server before
                                   removing that servers connector pair entry from its list.</entry>
                             <entry>5000 (in milliseconds)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters">discovery-group.jgroups-file</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of JGroups configuration file. If specified, the server uses JGroups for discovery. - Optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters">discovery-group.jgroups-channel</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of JGroups Channel. If specified, the server uses the named channel for discovery. - Optional</entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">diverts</link></entry>
