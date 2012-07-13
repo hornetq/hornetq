@@ -32,6 +32,7 @@
                      <goal>shade</goal>
                   </goals>
                   <configuration>
+                     <createSourcesJar>true</createSourcesJar>
                      <artifactSet>
                         <includes>
                             <include>org.hornetq:hornetq-jms</include>
@@ -46,6 +47,8 @@
                               <include>org/hornetq/jms/referenceable/**/*.*</include>
                               <include>org/hornetq/jms/HornetQJMSBundle*</include>
                               <include>org/hornetq/jms/HornetQJMSLogger*</include>
+                              <!--src-->
+                              <include>org/hornetq/api/jms/**/*.java</include>
                            </includes>
                         </filter>
                      </filters>
