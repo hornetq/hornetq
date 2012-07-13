@@ -33,6 +33,7 @@
                      <goal>shade</goal>
                   </goals>
                   <configuration>
+                     <createSourcesJar>true</createSourcesJar>
                      <artifactSet>
                         <includes>
                             <include>org.hornetq:hornetq-core</include>
@@ -73,6 +74,33 @@
                               <!--bundles-->
                               <include>org/hornetq/core/server/HornetQMessageBundle*</include>
                               <include>org/hornetq/utils/HornetQUtilBundle*</include>
+
+                              <!--src-->
+
+                              <include>org/hornetq/api/**/*.java</include>
+                              <include>org/hornetq/*.java</include>
+                              <include>org/hornetq/core/buffers/**/*.java</include>
+                              <include>org/hornetq/core/client/**/*.java</include>
+                              <include>org/hornetq/core/filter/**/*.java</include>
+                              <include>org/hornetq/core/exception/**/*.java</include>
+                              <include>org/hornetq/core/remoting/impl/**/*.java</include>
+                              <include>org/hornetq/utils/**/*.java</include>
+                              <include>org/hornetq/core/cluster/**/*.java</include>
+                              <include>org/hornetq/core/list/**/*.java</include>
+                              <include>org/hornetq/core/logging/**/*.java</include>
+                              <include>org/hornetq/core/message/**/*.java</include>
+                              <include>org/hornetq/core/protocol/core/**/*.java</include>
+                              <include>org/hornetq/core/remoting/**/*.java</include>
+                              <include>org/hornetq/core/version/**/*.java</include>
+                              <include>org/hornetq/core/management/*.java</include>
+                              <include>org/hornetq/core/transaction/impl/XidImpl.java</include>
+                              <include>org/hornetq/spi/core/logging/*.java</include>
+                              <include>org/hornetq/spi/core/protocol/*.java</include>
+                              <include>org/hornetq/spi/core/remoting/*.java</include>
+
+                              <!-- required by SessionSendMessage -->
+                              <include>org/hornetq/core/server/ServerMessage.java</include>
+                              <include>org/hornetq/core/journal/EncodingSupport.java</include>
                            </includes>
                         </filter>
                      </filters>
