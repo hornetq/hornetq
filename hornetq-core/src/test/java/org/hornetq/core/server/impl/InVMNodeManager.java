@@ -21,7 +21,7 @@ import static org.hornetq.core.server.impl.InVMNodeManager.State.PAUSED;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
-import org.hornetq.api.core.IllegalStateException;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
@@ -157,7 +157,7 @@ public final class InVMNodeManager extends NodeManager
    }
 
    @Override
-   public SimpleString readNodeId() throws IllegalStateException, IOException
+   public SimpleString readNodeId() throws HornetQIllegalStateException, IOException
    {
       return getNodeId();
    }

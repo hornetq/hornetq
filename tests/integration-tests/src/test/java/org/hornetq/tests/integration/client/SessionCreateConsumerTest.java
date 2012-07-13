@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.InvalidFilterExpressionException;
-import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
@@ -65,7 +65,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
             clientSession.createConsumer(queueName);
             Assert.fail("should throw exception");
          }
-         catch(NonExistentQueueException neqe)
+         catch(HornetQNonExistentQueueException neqe)
          {
             //ok
          }
@@ -90,7 +90,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
             clientSession.createConsumer(queueName, "this is not valid filter");
             Assert.fail("should throw exception");
          }
-         catch(InvalidFilterExpressionException ifee)
+         catch(HornetQInvalidFilterExpressionException ifee)
          {
             //ok
          }

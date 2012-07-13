@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.IncompatibleClientServerException;
+import org.hornetq.api.core.HornetQIncompatibleClientServerException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -168,7 +168,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
             channel1.sendBlocking(request);
             fail();
          }
-         catch(IncompatibleClientServerException icsv)
+         catch(HornetQIncompatibleClientServerException icsv)
          {
             //ok
          }

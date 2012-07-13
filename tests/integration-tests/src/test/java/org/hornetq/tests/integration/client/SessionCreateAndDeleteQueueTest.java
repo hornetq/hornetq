@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ServerLocator;
@@ -130,7 +130,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
          session.deleteQueue(queueName);
          Assert.fail("should throw exception");
       }
-      catch(NonExistentQueueException neqe)
+      catch(HornetQNonExistentQueueException neqe)
       {
          //ok
       }

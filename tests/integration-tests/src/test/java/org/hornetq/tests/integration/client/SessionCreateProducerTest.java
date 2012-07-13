@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.ObjectClosedException;
+import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
@@ -74,7 +74,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
          clientSession.createProducer();
          Assert.fail("should throw exception");
       }
-      catch(ObjectClosedException oce)
+      catch(HornetQObjectClosedException oce)
       {
          //ok
       }

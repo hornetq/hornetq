@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.QueueExistsException;
+import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -64,7 +64,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
          session.createQueue(QUEUE, QUEUE, null, true);
          fail("Expected exception, queue already exists");
       }
-      catch(QueueExistsException qee)
+      catch(HornetQQueueExistsException qee)
       {
          //ok
       }
@@ -146,7 +146,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
                 session.createQueue(QUEUE, QUEUE, null, true);
                 queuesCreated.incrementAndGet();
             }
-            catch(QueueExistsException qne)
+            catch(HornetQQueueExistsException qne)
             {
                failedAttempts.incrementAndGet();
             }

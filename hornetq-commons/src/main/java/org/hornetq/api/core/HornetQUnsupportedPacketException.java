@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.UNBLOCKED;
+import static org.hornetq.api.core.HornetQExceptionType.UNSUPPORTED_PACKET;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/30/12
  *
- * A blocking call from a client was unblocked during failover.
+ * A packet of unsupported type was received by HornetQ PacketHandler.
  */
-public class UnBlockedException extends HornetQException
+public class HornetQUnsupportedPacketException extends HornetQException
 {
-   private static final long serialVersionUID = -4507889261891160608L;
+   private static final long serialVersionUID = -7074681529482463675L;
 
-   public UnBlockedException()
+   public HornetQUnsupportedPacketException()
    {
-      super(UNBLOCKED);
+      super(UNSUPPORTED_PACKET);
    }
 
-   public UnBlockedException(String msg)
+   public HornetQUnsupportedPacketException(String msg)
    {
-      super(UNBLOCKED, msg);
+      super(UNSUPPORTED_PACKET, msg);
    }
 }

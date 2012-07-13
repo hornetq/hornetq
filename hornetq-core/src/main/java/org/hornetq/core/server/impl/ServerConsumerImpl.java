@@ -661,7 +661,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       catch (Throwable e)
       {
          HornetQLogger.LOGGER.errorAckingMessage((Exception) e);
-         HornetQException hqex = new org.hornetq.api.core.IllegalStateException(e.getMessage());
+         HornetQException hqex = new HornetQIllegalStateException(e.getMessage());
          if (startedTransaction)
          {
             tx.rollback();

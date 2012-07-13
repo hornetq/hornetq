@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -37,7 +37,7 @@ public class NettyAsynchronousReattachTest extends NettyAsynchronousFailoverTest
       {
          log.debug("Crashing session " + session);
          ClientSessionInternal internalSession = (ClientSessionInternal) session;
-         internalSession.getConnection().fail(new NotConnectedException("oops"));
+         internalSession.getConnection().fail(new HornetQNotConnectedException("oops"));
       }
    }
 }

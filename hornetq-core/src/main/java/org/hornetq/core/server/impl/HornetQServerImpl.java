@@ -38,10 +38,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.api.core.AlreadyReplicatingException;
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -2419,7 +2420,7 @@ public class HornetQServerImpl implements HornetQServer
          SimpleString nodeId0;
          try {
             nodeId0 = nodeManager.readNodeId();
-         } catch (org.hornetq.api.core.IllegalStateException e) {
+         } catch (HornetQIllegalStateException e) {
             nodeId0 = null;
          }
          ServerLocatorInternal locator = null;
@@ -2501,7 +2502,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (replicationManager != null)
       {
-         throw new AlreadyReplicatingException();
+         throw new HornetQAlreadyReplicatingException();
       }
 
       if (!isStarted())
@@ -2514,7 +2515,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (replicationManager != null)
          {
-            throw new AlreadyReplicatingException();
+            throw new HornetQAlreadyReplicatingException();
          }
          ReplicationFailureListener listener = new ReplicationFailureListener();
          rc.addCloseListener(listener);
@@ -2650,7 +2651,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (!configuration.isBackup() || configuration.isSharedStore())
       {
-         throw new InternalErrorException();
+         throw new HornetQInternalErrorException();
       }
       if (!backupUpToDate) return;
       if (activation instanceof SharedNothingBackupActivation)

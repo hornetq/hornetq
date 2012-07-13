@@ -29,7 +29,7 @@ import javax.jms.Topic;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -135,7 +135,7 @@ public class JMSReconnectTest extends UnitTestCase
 
       Thread.sleep(2000);
 
-      HornetQException me = new NotConnectedException();
+      HornetQException me = new HornetQNotConnectedException();
 
       coreConn.fail(me);
 

@@ -21,25 +21,22 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_ROLLED_BACK;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
- * A transaction was rolled back.
+ *         5/4/12
  */
-public class TransactionRolledBackException extends HornetQException
+public class HornetQNativeIOError extends HornetQException
 {
-   private static final long serialVersionUID = 5823412198677126300L;
+   private static final long serialVersionUID = 2355120980683293085L;
 
-   public TransactionRolledBackException()
+   public HornetQNativeIOError()
    {
-      super(TRANSACTION_ROLLED_BACK);
+      super(HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO);
    }
 
-   public TransactionRolledBackException(String msg)
+   public HornetQNativeIOError(String msg)
    {
-      super(TRANSACTION_ROLLED_BACK, msg);
+      super(HornetQExceptionType.NATIVE_ERROR_CANT_INITIALIZE_AIO, msg);
    }
 }

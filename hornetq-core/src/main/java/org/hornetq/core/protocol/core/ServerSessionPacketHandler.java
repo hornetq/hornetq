@@ -52,7 +52,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.StorageManager;
@@ -534,7 +534,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             if (requiresResponse)
             {
                HornetQLogger.LOGGER.warn("Sending unexpected exception to the client", t);
-               HornetQException hqe = new InternalErrorException();
+               HornetQException hqe = new HornetQInternalErrorException();
                hqe.initCause(t);
                response = new HornetQExceptionMessage(hqe);
             }

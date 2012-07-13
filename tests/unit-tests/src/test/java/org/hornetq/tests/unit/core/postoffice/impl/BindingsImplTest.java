@@ -23,7 +23,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.message.BodyEncoder;
@@ -530,37 +530,37 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public Boolean getBooleanProperty(final SimpleString key) throws PropertyConversionException
+      public Boolean getBooleanProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Boolean getBooleanProperty(final String key) throws PropertyConversionException
+      public Boolean getBooleanProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
+      public Byte getByteProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Byte getByteProperty(final String key) throws PropertyConversionException
+      public Byte getByteProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
+      public byte[] getBytesProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public byte[] getBytesProperty(final String key) throws PropertyConversionException
+      public byte[] getBytesProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
@@ -572,13 +572,13 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
+      public Double getDoubleProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Double getDoubleProperty(final String key) throws PropertyConversionException
+      public Double getDoubleProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
@@ -614,13 +614,13 @@ public class BindingsImplTest extends UnitTestCase
          return 0;
       }
 
-      public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
+      public Float getFloatProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Float getFloatProperty(final String key) throws PropertyConversionException
+      public Float getFloatProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
@@ -632,25 +632,25 @@ public class BindingsImplTest extends UnitTestCase
          return 0;
       }
 
-      public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
+      public Integer getIntProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Integer getIntProperty(final String key) throws PropertyConversionException
+      public Integer getIntProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Long getLongProperty(final SimpleString key) throws PropertyConversionException
+      public Long getLongProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Long getLongProperty(final String key) throws PropertyConversionException
+      public Long getLongProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
@@ -692,37 +692,37 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public Short getShortProperty(final SimpleString key) throws PropertyConversionException
+      public Short getShortProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public Short getShortProperty(final String key) throws PropertyConversionException
+      public Short getShortProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
+      public SimpleString getSimpleStringProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public SimpleString getSimpleStringProperty(final String key) throws PropertyConversionException
+      public SimpleString getSimpleStringProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public String getStringProperty(final SimpleString key) throws PropertyConversionException
+      public String getStringProperty(final SimpleString key) throws HornetQPropertyConversionException
       {
 
          return null;
       }
 
-      public String getStringProperty(final String key) throws PropertyConversionException
+      public String getStringProperty(final String key) throws HornetQPropertyConversionException
       {
 
          return null;
@@ -844,12 +844,12 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
+      public void putObjectProperty(final SimpleString key, final Object value) throws HornetQPropertyConversionException
       {
 
       }
 
-      public void putObjectProperty(final String key, final Object value) throws PropertyConversionException
+      public void putObjectProperty(final String key, final Object value) throws HornetQPropertyConversionException
       {
 
       }

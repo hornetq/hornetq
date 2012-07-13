@@ -21,24 +21,25 @@
 */
 package org.hornetq.core.server;
 
-import org.hornetq.api.core.ConnectionTimedOutException;
-import org.hornetq.api.core.DisconnectedException;
-import org.hornetq.api.core.DuplicateMetaDataException;
-import org.hornetq.api.core.IOErrorException;
-import org.hornetq.api.core.IncompatibleClientServerException;
-import org.hornetq.api.core.InternalErrorException;
-import org.hornetq.api.core.InvalidFilterExpressionException;
-import org.hornetq.api.core.LargeMessageException;
-import org.hornetq.api.core.NonExistentQueueException;
-import org.hornetq.api.core.NotConnectedException;
-import org.hornetq.api.core.ObjectClosedException;
-import org.hornetq.api.core.QueueExistsException;
-import org.hornetq.api.core.SecurityException;
-import org.hornetq.api.core.SessionCreationException;
+import org.hornetq.api.core.HornetQConnectionTimedOutException;
+import org.hornetq.api.core.HornetQDisconnectedException;
+import org.hornetq.api.core.HornetQDuplicateMetaDataException;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQIOErrorException;
+import org.hornetq.api.core.HornetQIncompatibleClientServerException;
+import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
+import org.hornetq.api.core.HornetQLargeMessageException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
+import org.hornetq.api.core.HornetQNotConnectedException;
+import org.hornetq.api.core.HornetQObjectClosedException;
+import org.hornetq.api.core.HornetQQueueExistsException;
+import org.hornetq.api.core.HornetQSecurityException;
+import org.hornetq.api.core.HornetQSessionCreationException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransactionOutcomeUnknownException;
-import org.hornetq.api.core.TransactionRolledBackException;
-import org.hornetq.api.core.UnBlockedException;
+import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
+import org.hornetq.api.core.HornetQTransactionRolledBackException;
+import org.hornetq.api.core.HornetQUnBlockedException;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
@@ -82,215 +83,215 @@ public interface HornetQMessageBundle
    String serverDescribe(String identity, String describe);
 
    @Message(id = 119006, value = "ClientSession closed while creating session", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException clientSessionClosed();
+   HornetQInternalErrorException clientSessionClosed();
 
    @Message(id = 119007, value = "Failed to create session", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException failedToCreateSession(@Cause Throwable t);
+   HornetQInternalErrorException failedToCreateSession(@Cause Throwable t);
 
    @Message(id = 119008, value = "Internal Error! ClientSessionFactoryImpl::createSessionInternal "
                                           + "just reached a condition that was not supposed to happen. "
                                       + "Please inform this condition to the HornetQ team", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException clietSessionInternal();
+   HornetQInternalErrorException clietSessionInternal();
 
    @Message(id = 119009, value = "Queue can not be both durable and temporary", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException queueMisConfigured();
+   HornetQInternalErrorException queueMisConfigured();
 
    @Message(id = 119010, value = "Interrupted awaiting completion in large message controller", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException largeMessageControllerInterrupted(@Cause Exception e);
+   HornetQInternalErrorException largeMessageControllerInterrupted(@Cause Exception e);
 
    @Message(id = 119011, value = "Failed to initialise session factory", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException failedToInitialiseSessionFactory(@Cause Exception e);
+   HornetQInternalErrorException failedToInitialiseSessionFactory(@Cause Exception e);
 
    @Message(id = 119012, value = "connections for {0} closed by management" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException connectionsClosedByManagement(String ipAddress);
+   HornetQInternalErrorException connectionsClosedByManagement(String ipAddress);
 
    @Message(id = 119013, value = "journals are not JournalImpl. You can't set a replicator!" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException notJournalImpl();
+   HornetQInternalErrorException notJournalImpl();
 
    @Message(id = 119014, value = "Unable to complete IO operation - {0}" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException unableToCompleteIOOperation(String message);
+   HornetQInternalErrorException unableToCompleteIOOperation(String message);
 
    @Message(id = 119015, value = "Exception in Netty transport" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException nettyError();
+   HornetQInternalErrorException nettyError();
 
    @Message(id = 119016, value = "unhandled error during replication" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationUnhandledError(@Cause Exception e);
+   HornetQInternalErrorException replicationUnhandledError(@Cause Exception e);
 
    @Message(id = 119017, value = "Live Node contains more journals than the backup node. Probably a version match error", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationTooManyJournals();
+   HornetQInternalErrorException replicationTooManyJournals();
 
    @Message(id = 119018, value = "Unhandled file type {0}", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationUnhandledFileType(ReplicationSyncFileMessage.FileType fileType);
+   HornetQInternalErrorException replicationUnhandledFileType(ReplicationSyncFileMessage.FileType fileType);
 
    @Message(id = 119019, value = "Remote Backup can not be up-to-date!", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationBackupUpToDate();
+   HornetQInternalErrorException replicationBackupUpToDate();
 
    @Message(id = 119020, value = "unhandled data type!", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationUnhandledDataType();
+   HornetQInternalErrorException replicationUnhandledDataType();
 
    @Message(id = 119021, value = "No binding for divert {0}", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException noBindingForDivert(SimpleString name);
+   HornetQInternalErrorException noBindingForDivert(SimpleString name);
 
    @Message(id = 119022, value = "Binding {0} is not a divert", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException bindingNotDivert(SimpleString name);
+   HornetQInternalErrorException bindingNotDivert(SimpleString name);
 
    @Message(id = 119023, value = "Error trying to start replication", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException replicationStartError(@Cause Exception e);
+   HornetQInternalErrorException replicationStartError(@Cause Exception e);
 
    @Message(id = 119024, value = "error trying to stop {0}", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException errorStoppingServer(@Cause Exception e, HornetQServer server);
+   HornetQInternalErrorException errorStoppingServer(@Cause Exception e, HornetQServer server);
 
    @Message(id = 119025, value =  "Channel disconnected", format = Message.Format.MESSAGE_FORMAT)
-   NotConnectedException channelDisconnected();
+   HornetQNotConnectedException channelDisconnected();
 
    @Message(id = 119026, value =  "Cannot connect to server(s). Tried with all available servers.", format = Message.Format.MESSAGE_FORMAT)
-   NotConnectedException cannotConnectToServers();
+   HornetQNotConnectedException cannotConnectToServers();
 
    @Message(id = 119027, value =  "Failed to connect to any static connectors", format = Message.Format.MESSAGE_FORMAT)
-   NotConnectedException cannotConnectToStaticConnectors(@Cause Exception e);
+   HornetQNotConnectedException cannotConnectToStaticConnectors(@Cause Exception e);
 
    @Message(id = 119028, value =  "Failed to connect to any static connectors", format = Message.Format.MESSAGE_FORMAT)
-   NotConnectedException cannotConnectToStaticConnectors2();
+   HornetQNotConnectedException cannotConnectToStaticConnectors2();
 
    @Message(id = 119029, value =  "Connection is destroyed", format = Message.Format.MESSAGE_FORMAT)
-   NotConnectedException connectionDestroyed();
+   HornetQNotConnectedException connectionDestroyed();
 
    @Message(id = 119030, value =  "Did not receive data from server for {0}", format = Message.Format.MESSAGE_FORMAT)
-   ConnectionTimedOutException connectionTimedOut(Connection transportConnection);
+   HornetQConnectionTimedOutException connectionTimedOut(Connection transportConnection);
 
    @Message(id = 119031, value =  "Timed out waiting to receive initial broadcast from cluster", format = Message.Format.MESSAGE_FORMAT)
-   ConnectionTimedOutException connectionTimedOutInInitialBroadcast();
+   HornetQConnectionTimedOutException connectionTimedOutInInitialBroadcast();
 
    @Message(id = 119032, value =  "Timed out waiting to receive cluster topology. Group:{0}", format = Message.Format.MESSAGE_FORMAT)
-   ConnectionTimedOutException connectionTimedOutOnReceiveTopology(DiscoveryGroup discoveryGroup);
+   HornetQConnectionTimedOutException connectionTimedOutOnReceiveTopology(DiscoveryGroup discoveryGroup);
 
    @Message(id = 119033, value =  "Timed out waiting for response when sending packet {0}", format = Message.Format.MESSAGE_FORMAT)
-   ConnectionTimedOutException timedOutSendingPacket(Byte type);
+   HornetQConnectionTimedOutException timedOutSendingPacket(Byte type);
 
    @Message(id = 119034, value =  "Did not receive data from {0}. It is likely the client has exited or crashed without " +
                                   "closing its connection, or the network between the server and client has failed. " +
                                   "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
                                   "Please check user manual for more information." +
                                   " The connection will now be closed.", format = Message.Format.MESSAGE_FORMAT)
-   ConnectionTimedOutException clientExited(String remoteAddress);
+   HornetQConnectionTimedOutException clientExited(String remoteAddress);
 
    @Message(id = 119035, value =  "The connection was disconnected because of server shutdown", format = Message.Format.MESSAGE_FORMAT)
-   DisconnectedException disconnected();
+   HornetQDisconnectedException disconnected();
 
    @Message(id = 119036, value =  "Connection failure detected. Unblocking a blocking call that will never get a response", format = Message.Format.MESSAGE_FORMAT)
-   UnBlockedException unblockingACall();
+   HornetQUnBlockedException unblockingACall();
 
    @Message(id = 119037, value =  "Timeout on waiting I/O completion", format = Message.Format.MESSAGE_FORMAT)
-   IOErrorException ioTimeout();
+   HornetQIOErrorException ioTimeout();
 
    @Message(id = 119038, value =  "queue {0} has been removed cannot deliver message, queues should not be removed when grouping is used", format = Message.Format.MESSAGE_FORMAT)
-   NonExistentQueueException groupingQueueRemoved(SimpleString chosenClusterName);
+   HornetQNonExistentQueueException groupingQueueRemoved(SimpleString chosenClusterName);
 
    @Message(id = 119039, value =  "Queue {0}does not exist", format = Message.Format.MESSAGE_FORMAT)
-   NonExistentQueueException noSuchQueue(SimpleString queueName);
+   HornetQNonExistentQueueException noSuchQueue(SimpleString queueName);
 
    @Message(id = 119040, value =  "Binding already exists {0}", format = Message.Format.MESSAGE_FORMAT)
-   QueueExistsException bindingAlreadyExists(Binding binding);
+   HornetQQueueExistsException bindingAlreadyExists(Binding binding);
 
    @Message(id = 119041, value =  "Queue already exists {0}", format = Message.Format.MESSAGE_FORMAT)
-   QueueExistsException queueAlreadyExists(SimpleString queueName);
+   HornetQQueueExistsException queueAlreadyExists(SimpleString queueName);
 
    @Message(id = 119042, value =  "Consumer is closed", format = Message.Format.MESSAGE_FORMAT)
-   ObjectClosedException consumerClosed();
+   HornetQObjectClosedException consumerClosed();
 
    @Message(id = 119043, value =  "Producer is closed", format = Message.Format.MESSAGE_FORMAT)
-   ObjectClosedException producerClosed();
+   HornetQObjectClosedException producerClosed();
 
    @Message(id = 119044, value =  "Session is closed", format = Message.Format.MESSAGE_FORMAT)
-   ObjectClosedException sessionClosed();
+   HornetQObjectClosedException sessionClosed();
 
    @Message(id = 119045, value =  "Invalid filter: {0}", format = Message.Format.MESSAGE_FORMAT)
-   InvalidFilterExpressionException invalidFilter(@Cause Throwable e, SimpleString filter);
+   HornetQInvalidFilterExpressionException invalidFilter(@Cause Throwable e, SimpleString filter);
 
    @Message(id = 119046, value =  "Cannot call receive(...) - a MessageHandler is set", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException messageHandlerSet();
+   HornetQIllegalStateException messageHandlerSet();
 
    @Message(id = 119047, value =  "Cannot set MessageHandler - consumer is in receive(...)", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException inReceive();
+   HornetQIllegalStateException inReceive();
 
    @Message(id = 119048, value =  "Header size ({0}) is too big, use the messageBody for large data, or increase minLargeMessageSize",
          format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException headerSizeTooBig(Integer headerSize);
+   HornetQIllegalStateException headerSizeTooBig(Integer headerSize);
 
    @Message(id = 119049, value =  "The large message lost connection with its session, either because of a rollback or a closed session", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException largeMessageLostSession();
+   HornetQIllegalStateException largeMessageLostSession();
 
    @Message(id = 119050, value =  "Couldn't select a TransportConfiguration to create SessionFactory", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException noTCForSessionFactory();
+   HornetQIllegalStateException noTCForSessionFactory();
 
    @Message(id = 119051, value =  "MessageId was not assigned to Message", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException messageIdNotAssigned();
+   HornetQIllegalStateException messageIdNotAssigned();
 
    @Message(id = 119052, value =  "Cannot compare journals if not in sync!", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException journalsNotInSync();
+   HornetQIllegalStateException journalsNotInSync();
 
    @Message(id = 119053, value =  "Connected server is not a backup server", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException serverNotBackupServer();
+   HornetQIllegalStateException serverNotBackupServer();
 
    @Message(id = 119054, value =  "Backup replication server is already connected to another server", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException alreadyHaveReplicationServer();
+   HornetQIllegalStateException alreadyHaveReplicationServer();
 
    @Message(id = 119055, value =  "Cannot delete queue {0} on binding {1} - it has consumers = {2}", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException cannotDeleteQueue(SimpleString name, SimpleString queueName, String s);
+   HornetQIllegalStateException cannotDeleteQueue(SimpleString name, SimpleString queueName, String s);
 
    @Message(id = 119056, value =  "Backup Server was not yet in sync with live", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException backupServerNotInSync();
+   HornetQIllegalStateException backupServerNotInSync();
 
    @Message(id = 119057, value =  "Could not find reference on consumer ID={0}, messageId = {1} queue = {2}", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException consumerNoReference(Long id, Long messageID, SimpleString name);
+   HornetQIllegalStateException consumerNoReference(Long id, Long messageID, SimpleString name);
 
    @Message(id = 119058, value =  "Consumer {0} doesn't exist on the server" , format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException consumerDoesntExist(long consumerID);
+   HornetQIllegalStateException consumerDoesntExist(long consumerID);
 
    @Message(id = 119059, value =  "No address configured on the Server's Session" , format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException noAddress();
+   HornetQIllegalStateException noAddress();
 
    @Message(id = 119060, value =  "large-message not initialized on server", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException largeMessageNotInitialised();
+   HornetQIllegalStateException largeMessageNotInitialised();
 
    @Message(id = 119061, value =  "Unable to validate user: {0}", format = Message.Format.MESSAGE_FORMAT)
-   SecurityException unableToValidateUser(String user);
+   HornetQSecurityException unableToValidateUser(String user);
 
    @Message(id = 119062, value =  "User: {0} doesn't have permission='{1}' on address {2}", format = Message.Format.MESSAGE_FORMAT)
-   SecurityException userNoPermissions(String username, CheckType checkType, String saddress);
+   HornetQSecurityException userNoPermissions(String username, CheckType checkType, String saddress);
 
    @Message(id = 119063, value =  "Server and client versions incompatible", format = Message.Format.MESSAGE_FORMAT)
-   IncompatibleClientServerException incompatibleCLientServer();
+   HornetQIncompatibleClientServerException incompatibleCLientServer();
 
    @Message(id = 119064, value =  "Error saving the message body", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException errorSavingBody(@Cause Exception e);
+   HornetQLargeMessageException errorSavingBody(@Cause Exception e);
 
    @Message(id = 119065, value =  "Error reading the LargeMessageBody", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException errorReadingBody(@Cause Exception e);
+   HornetQLargeMessageException errorReadingBody(@Cause Exception e);
 
    @Message(id = 119066, value =  "Error closing stream from LargeMessageBody", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException errorClosingLargeMessage(@Cause Exception e);
+   HornetQLargeMessageException errorClosingLargeMessage(@Cause Exception e);
 
    @Message(id = 119067, value =  "Timeout waiting for LargeMessage Body", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException timeoutOnLargeMessage();
+   HornetQLargeMessageException timeoutOnLargeMessage();
 
    @Message(id = 119068, value =  "Error on saving Large Message Buffer", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException errorSavingLargeMessageBuffer(@Cause Exception handledException);
+   HornetQLargeMessageException errorSavingLargeMessageBuffer(@Cause Exception handledException);
 
    @Message(id = 119069, value =  "Error writing body of message", format = Message.Format.MESSAGE_FORMAT)
-   LargeMessageException errorWritingLargeMessage(@Cause Exception e);
+   HornetQLargeMessageException errorWritingLargeMessage(@Cause Exception e);
 
    @Message(id = 119070, value =  "The transaction was rolled back on failover to a backup server", format = Message.Format.MESSAGE_FORMAT)
-   TransactionRolledBackException txRolledBack();
+   HornetQTransactionRolledBackException txRolledBack();
 
    @Message(id = 119071, value =  "Server not started", format = Message.Format.MESSAGE_FORMAT)
-   SessionCreationException serverNotStarted();
+   HornetQSessionCreationException serverNotStarted();
 
    @Message(id = 119072, value =  "Metadata {0}={1} had been set already", format = Message.Format.MESSAGE_FORMAT)
-   DuplicateMetaDataException duplicateMetadata(String key, String data);
+   HornetQDuplicateMetaDataException duplicateMetadata(String key, String data);
 
    @Message(id = 119073, value =  "The transaction was rolled back on failover however commit may have been succesful", format = Message.Format.MESSAGE_FORMAT)
-   TransactionOutcomeUnknownException txOutcomeUnknown();
+   HornetQTransactionOutcomeUnknownException txOutcomeUnknown();
 
    @Message(id = 119074, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException invalidType(Object type);

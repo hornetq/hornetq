@@ -21,25 +21,26 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS;
+import static org.hornetq.api.core.HornetQExceptionType.ILLEGAL_STATE;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  *
- * A incompatibility between HornetQ versions on the client and the server has been detected
+ * A HornetQ resource is not in a legal state (e.g. calling
+ * ClientConsumer.receive() if a MessageHandler is set)
  */
-public class IncompatibleClientServerException extends HornetQException
+public class HornetQIllegalStateException extends HornetQException
 {
-   private static final long serialVersionUID = -1662999230291452298L;
+   private static final long serialVersionUID = -4480125401057788511L;
 
-   public IncompatibleClientServerException()
+   public HornetQIllegalStateException()
    {
-      super(INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
+      super(ILLEGAL_STATE);
    }
 
-   public IncompatibleClientServerException(String msg)
+   public HornetQIllegalStateException(String message)
    {
-      super(INCOMPATIBLE_CLIENT_SERVER_VERSIONS, msg);
+      super(ILLEGAL_STATE, message);
    }
 }

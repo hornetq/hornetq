@@ -21,26 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.SESSION_CREATION_REJECTED;
+import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_EXISTS;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  *
- * The creation of a session was rejected by the server (e.g. if the
- * server is starting and has not finish to be initialized.
+ * An operation failed because an address exists on the server.
  */
-public class SessionCreationException extends HornetQException
+public class HornetQAddressExistsException extends HornetQException
 {
-   private static final long serialVersionUID = -4486139158452585895L;
+   private static final long serialVersionUID = 3032730450033992367L;
 
-   public SessionCreationException()
+   public HornetQAddressExistsException()
    {
-      super(SESSION_CREATION_REJECTED);
+      super(ADDRESS_EXISTS);
    }
 
-   public SessionCreationException(String msg)
+   public HornetQAddressExistsException(String msg)
    {
-      super(SESSION_CREATION_REJECTED, msg);
+      super(ADDRESS_EXISTS, msg);
    }
 }

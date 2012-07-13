@@ -41,6 +41,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -393,7 +394,7 @@ public class JournalStorageManager implements StorageManager
          try
          {
             if (isReplicated())
-               throw new org.hornetq.api.core.IllegalStateException("already replicating");
+               throw new HornetQIllegalStateException("already replicating");
             replicator = replicationManager;
             originalMessageJournal.synchronizationLock();
             originalBindingsJournal.synchronizationLock();

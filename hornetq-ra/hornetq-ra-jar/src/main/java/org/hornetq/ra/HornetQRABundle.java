@@ -1,6 +1,7 @@
 package org.hornetq.ra;
 
 
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -22,7 +23,7 @@ public interface HornetQRABundle
    HornetQRABundle BUNDLE = Messages.getBundle(HornetQRABundle.class);
 
    @Message(id = 159001, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException errorDecodingPassword(@Cause Exception e);
+   HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
 
 
 }

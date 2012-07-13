@@ -22,7 +22,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -446,10 +446,10 @@ public class BridgeReconnectTest extends BridgeTestBase
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new NotConnectedException());
+         forwardingConnection.fail(new HornetQNotConnectedException());
 
          forwardingConnection = getForwardingConnection(bridge);
-         forwardingConnection.fail(new NotConnectedException());
+         forwardingConnection.fail(new HornetQNotConnectedException());
 
          final int numMessages = NUM_MESSAGES;
 
@@ -729,7 +729,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new NotConnectedException());
+         forwardingConnection.fail(new HornetQNotConnectedException());
 
          final int numMessages = NUM_MESSAGES;
 

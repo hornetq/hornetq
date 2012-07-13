@@ -21,7 +21,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -390,7 +390,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
          return delegate;
       }
       HornetQJMSLogger.LOGGER.recoveryConnectFailed(Arrays.toString(xaRecoveryConfigs));
-      throw new NotConnectedException();
+      throw new HornetQNotConnectedException();
    }
 
    /* (non-Javadoc)

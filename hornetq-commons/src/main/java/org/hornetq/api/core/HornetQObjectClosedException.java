@@ -21,23 +21,26 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.ALREADY_REPLICATING;
+import static org.hornetq.api.core.HornetQExceptionType.OBJECT_CLOSED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
+ *         4/30/12
+ *
+ * A client operation failed because the calling resource
+ * (ClientSession, ClientProducer, etc.) is closed.
  */
-public class AlreadyReplicatingException extends HornetQException
+public class HornetQObjectClosedException extends HornetQException
 {
-   private static final long serialVersionUID = -7352538521961996152L;
+   private static final long serialVersionUID = 809024052184914812L;
 
-   public AlreadyReplicatingException()
+   public HornetQObjectClosedException()
    {
-      super(ALREADY_REPLICATING);
+      super(OBJECT_CLOSED);
    }
 
-   public AlreadyReplicatingException(String msg)
+   public HornetQObjectClosedException(String msg)
    {
-      super(ALREADY_REPLICATING, msg);
+      super(OBJECT_CLOSED, msg);
    }
 }

@@ -35,7 +35,7 @@ import javax.jms.MessageNotWriteableException;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -404,7 +404,7 @@ public class HornetQMessage implements javax.jms.Message
          {
             jmsCorrelationID = message.getStringProperty(HornetQMessage.CORRELATIONID_HEADER_NAME);
          }
-         catch (PropertyConversionException e)
+         catch (HornetQPropertyConversionException e)
          {
             jmsCorrelationID = null;
          }
@@ -597,7 +597,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getBooleanProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -609,7 +609,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getByteProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -621,7 +621,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getShortProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -638,7 +638,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getIntProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -655,7 +655,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getLongProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -667,7 +667,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getFloatProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -679,7 +679,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.getDoubleProperty(new SimpleString(name));
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -703,7 +703,7 @@ public class HornetQMessage implements javax.jms.Message
             return message.getStringProperty(new SimpleString(name));
          }
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }
@@ -833,7 +833,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          message.putObjectProperty(new SimpleString(name), value);
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
          throw new MessageFormatException(e.getMessage());
       }

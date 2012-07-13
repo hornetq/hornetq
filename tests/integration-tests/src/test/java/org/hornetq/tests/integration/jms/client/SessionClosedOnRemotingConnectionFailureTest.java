@@ -26,7 +26,7 @@ import javax.jms.Session;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -124,7 +124,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
 
          RemotingConnection connection = ((ClientSessionInternal)((HornetQSession)session).getCoreSession()).getConnection();
 
-         connection.fail(new NotConnectedException());
+         connection.fail(new HornetQNotConnectedException());
 
          // Now try and use the producer
 

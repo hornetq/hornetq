@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -175,7 +175,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new NotConnectedException());
+      conn.fail(new HornetQNotConnectedException());
 
       // Wait to be informed of failure
 

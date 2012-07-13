@@ -27,15 +27,15 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.DuplicateIdException;
+import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.ObjectClosedException;
+import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransactionOutcomeUnknownException;
-import org.hornetq.api.core.TransactionRolledBackException;
+import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
+import org.hornetq.api.core.HornetQTransactionRolledBackException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -342,7 +342,7 @@ public class FailoverTest extends FailoverTestBase
                   }
                   return msg;
                }
-               catch(ObjectClosedException oce)
+               catch(HornetQObjectClosedException oce)
                {
                   throw new RuntimeException(oce);
                }
@@ -737,7 +737,7 @@ public class FailoverTest extends FailoverTestBase
          session.commit();
          fail("session must have rolled back on failover");
       }
-      catch(TransactionRolledBackException trbe)
+      catch(HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -830,7 +830,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(TransactionRolledBackException trbe)
+      catch(HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -874,7 +874,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(TransactionRolledBackException trbe)
+      catch(HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -1007,7 +1007,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(TransactionRolledBackException trbe)
+      catch(HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -1741,7 +1741,7 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
-            catch(TransactionRolledBackException trbe)
+            catch(HornetQTransactionRolledBackException trbe)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -1758,7 +1758,7 @@ public class FailoverTest extends FailoverTestBase
                   throw new RuntimeException(e2);
                }
             }
-            catch(TransactionOutcomeUnknownException toue)
+            catch(HornetQTransactionOutcomeUnknownException toue)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -1831,7 +1831,7 @@ public class FailoverTest extends FailoverTestBase
          session2.commit();
          fail("expecting DUPLICATE_ID_REJECTED exception");
       }
-      catch(DuplicateIdException dide)
+      catch(HornetQDuplicateIdException dide)
       {
          //ok
       }
@@ -1881,7 +1881,7 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
-            catch(TransactionRolledBackException trbe)
+            catch(HornetQTransactionRolledBackException trbe)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -1897,7 +1897,7 @@ public class FailoverTest extends FailoverTestBase
                {
                }
             }
-            catch(TransactionOutcomeUnknownException toue)
+            catch(HornetQTransactionOutcomeUnknownException toue)
             {
                // Ok - now we retry the commit after removing the interceptor
 

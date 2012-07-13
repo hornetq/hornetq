@@ -18,14 +18,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.DuplicateIdException;
+import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransactionOutcomeUnknownException;
-import org.hornetq.api.core.TransactionRolledBackException;
+import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
+import org.hornetq.api.core.HornetQTransactionRolledBackException;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.UnBlockedException;
+import org.hornetq.api.core.HornetQUnBlockedException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -287,7 +287,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                   retry = false;
                }
-               catch (UnBlockedException ube)
+               catch (HornetQUnBlockedException ube)
                {
                   AsynchronousFailoverTest.log.info("exception when sending message with counter " + i);
 
@@ -315,7 +315,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                retry = false;
             }
-            catch (UnBlockedException ube)
+            catch (HornetQUnBlockedException ube)
             {
                AsynchronousFailoverTest.log.info("exception when creating consumer");
 
@@ -433,24 +433,24 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                   retry = false;
                }
-               catch(DuplicateIdException die)
+               catch(HornetQDuplicateIdException die)
                {
                   logAndSystemOut("#test duplicate id rejected on sending");
                   break;
                }
-               catch(TransactionRolledBackException trbe)
+               catch(HornetQTransactionRolledBackException trbe)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
                   retry = true;
                }
-               catch(UnBlockedException ube)
+               catch(HornetQUnBlockedException ube)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
                   retry = true;
                }
-               catch(TransactionOutcomeUnknownException toue)
+               catch(HornetQTransactionOutcomeUnknownException toue)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
@@ -556,7 +556,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   retry = false;
                   blocked = false;
                }
-               catch(TransactionRolledBackException trbe)
+               catch(HornetQTransactionRolledBackException trbe)
                {
                   logAndSystemOut("Transaction rolled back with " + msgs.size(), trbe);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
@@ -565,7 +565,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   blocked = true;
                   retry = true;
                }
-               catch(TransactionOutcomeUnknownException tou)
+               catch(HornetQTransactionOutcomeUnknownException tou)
                {
                   logAndSystemOut("Transaction rolled back with " + msgs.size(), tou);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
@@ -574,7 +574,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   blocked = true;
                   retry = true;
                }
-               catch(UnBlockedException ube)
+               catch(HornetQUnBlockedException ube)
                {
                   logAndSystemOut("Unblocked with " + msgs.size(), ube);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
