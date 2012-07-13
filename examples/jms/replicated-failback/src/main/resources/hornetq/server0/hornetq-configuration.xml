@@ -16,8 +16,15 @@
    <failover-on-shutdown>false</failover-on-shutdown>
 
    <shared-store>false</shared-store>
-    
+
+   <allow-failback>true</allow-failback>
    <!-- Connectors -->
+   <failback-connectors>
+      <failback-connector>
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <param key="port" value="5446"/>
+      </failback-connector>
+   </failback-connectors>
 
    <connectors>
       <connector name="netty-connector">
@@ -34,7 +41,7 @@
       </acceptor>
    </acceptors>
 
-    <broadcast-groups>
+	<broadcast-groups>
 		<broadcast-group name="bg-group1">
 			<group-address>${udp-address:231.7.7.7}</group-address>
 			<group-port>9876</group-port>

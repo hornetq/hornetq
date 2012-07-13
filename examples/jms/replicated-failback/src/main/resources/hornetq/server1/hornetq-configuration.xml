@@ -1,36 +1,45 @@
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+         xsi:schemaLocation="urn:hornetq ../../../../../../../hornetq-core/src/main/resources/schema/hornetq-configuration.xsd">
+
+   <live-connector-ref connector-name="netty-live-connector"/>
 
    <clustered>true</clustered>
 
-   <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
+   <bindings-directory>${build.directory}/server1/data/messaging/bindings</bindings-directory>
 
-   <journal-directory>${build.directory}/server0/data/messaging/journal</journal-directory>
+   <journal-directory>${build.directory}/server1/data/messaging/journal</journal-directory>
 
-   <large-messages-directory>${build.directory}/server0/data/messaging/largemessages</large-messages-directory>
+   <large-messages-directory>${build.directory}/server1/data/messaging/largemessages</large-messages-directory>
 
-   <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
+   <paging-directory>${build.directory}/server1/data/messaging/paging</paging-directory>
 
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
+    <!--we kill the server process so don't need this set to true-->
+    <failover-on-shutdown>false</failover-on-shutdown>
 
-   <shared-store>false</shared-store>
-    
-   <!-- Connectors -->
+    <backup>true</backup>
+
+    <shared-store>false</shared-store>
+
+    <allow-failback>true</allow-failback>
+    <!-- Connectors -->
 
    <connectors>
-      <connector name="netty-connector">
+      <connector name="netty-live-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="port" value="5445"/>
       </connector>
-   </connectors>      
-
+      <connector name="netty-connector">
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <param key="port" value="5446"/>
+      </connector>
+   </connectors>
+   
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-         <param key="port" value="5445"/>
+         <param key="port" value="5446"/>
       </acceptor>
    </acceptors>
 
@@ -59,7 +68,7 @@
 		</cluster-connection>
 	</cluster-connections>
    <!-- Other config -->
-
+    
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.exampleQueue">
@@ -71,5 +80,5 @@
          <permission type="send" roles="guest"/>
       </security-setting>
    </security-settings>
-
+   
 </configuration>
