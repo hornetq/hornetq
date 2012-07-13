@@ -63,6 +63,7 @@
    <scm>
       <connection>scm:svn:http://anonsvn.jboss.org/repos/hornetq/trunk</connection>
       <developerConnection>scm:svn:https://svn.jboss.org/repos/hornetq/trunk</developerConnection>
+      <url>https://github.com/hornetq/hornetq</url>
    </scm>
 
    <distributionManagement>
