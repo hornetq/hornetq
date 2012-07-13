@@ -123,6 +123,15 @@ public class DiscoveryGroup
    }
 
 
+   /**
+    * This is the main constructor, intended to be used
+    * @param nodeID
+    * @param name
+    * @param timeout
+    * @param endpoint
+    * @param service
+    * @throws Exception
+    */
    public DiscoveryGroup(final String nodeID, final String name, final long timeout,
                          BroadcastEndpoint endpoint,
                          NotificationService service) throws Exception
@@ -186,7 +195,7 @@ public class DiscoveryGroup
       }
       catch (Exception e1)
       {
-         HornetQLogger.LOGGER.warn("Exception stopping endpoint: " + endpoint, e1);
+         HornetQLogger.LOGGER.errorStoppingDiscoveryBroadcastEndpoint(endpoint, e1);
       }
 
       try
@@ -305,16 +314,22 @@ public class DiscoveryGroup
          {
             byte[] data = null;
 
-            while (true)
+            while (started)
             {
-               if (!started)
-               {
-                  return;
-               }
-
                try
                {
+
                   data = endpoint.receiveBroadcast();
+                  if (data == null)
+                  {
+                     if (started)
+                     {
+                        // This is totally unexpected, so I'm not even bothering on creating
+                        // a log entry for that
+                        HornetQLogger.LOGGER.warn("Unexpected null data received from DiscoveryEndpoint");
+                     }
+                     break;
+                  }
                }
                catch (Exception e)
                {

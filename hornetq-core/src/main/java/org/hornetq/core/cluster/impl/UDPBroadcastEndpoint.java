@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.server.HornetQLogger;
@@ -94,6 +95,13 @@ public class UDPBroadcastEndpoint implements BroadcastEndpoint
          break;
       }
       return data;
+   }
+
+   public byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception
+   {
+      // We just use the regular method on UDP, there's no timeout support
+      // and this is basically for tests only
+      return receiveBroadcast();
    }
 
    public void openBroadcaster() throws Exception

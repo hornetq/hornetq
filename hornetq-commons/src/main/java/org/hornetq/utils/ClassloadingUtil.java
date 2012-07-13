@@ -53,6 +53,48 @@ public class ClassloadingUtil
       }
    }
 
+   public static Object newInstanceFromClassLoader(final String className, Object... objs)
+   {
+      ClassLoader loader = ClassloadingUtil.class.getClassLoader();
+      try
+      {
+         Class<?>[] parametersType  = new Class<?>[objs.length];
+         for (int i = 0 ; i < objs.length; i++)
+         {
+            parametersType[i] = objs[i].getClass();
+         }
+         Class<?> clazz = loader.loadClass(className);
+         return clazz.getConstructor(parametersType).newInstance(objs);
+      }
+      catch (Throwable t)
+      {
+         if (t instanceof InstantiationException)
+         {
+            System.out.println(INSTANTIATION_EXCEPTION_MESSAGE);
+         }
+         loader = Thread.currentThread().getContextClassLoader();
+         if (loader == null)
+            throw new RuntimeException("No local context classloader", t);
+
+         try
+         {
+            return loader.loadClass(className).newInstance();
+         }
+         catch (InstantiationException e)
+         {
+            throw new RuntimeException(INSTANTIATION_EXCEPTION_MESSAGE + " " + className, e);
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+         catch (IllegalAccessException e)
+         {
+            throw new RuntimeException(e);
+         }
+      }
+   }
+
    public static URL findResource(final String resourceName)
    {
       ClassLoader loader = ClassloadingUtil.class.getClassLoader();

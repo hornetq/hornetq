@@ -978,9 +978,9 @@ public final class FileConfigurationParser
 
       int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
+      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NO_CHECK);
 
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.GT_ZERO);
+      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
       String jgroupsFile = XMLConfigurationUtil.getString(e, "jgroups-file", null, Validators.NO_CHECK);
 
@@ -1030,7 +1030,7 @@ public final class FileConfigurationParser
 
       int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
+      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NO_CHECK);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
