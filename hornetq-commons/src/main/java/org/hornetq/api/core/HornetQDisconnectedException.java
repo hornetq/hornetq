@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.UNSUPPORTED_PACKET;
+import static org.hornetq.api.core.HornetQExceptionType.DISCONNECTED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/30/12
  *
- * A packet of unsupported type was received by HornetQ PacketHandler.
+ * A client was disconnected from HornetQ server when the server has shut down.
  */
-public class UnsupportedPacketException extends HornetQException
+public class HornetQDisconnectedException extends HornetQException
 {
-   private static final long serialVersionUID = -7074681529482463675L;
+   private static final long serialVersionUID = 7414966383933311627L;
 
-   public UnsupportedPacketException()
+   public HornetQDisconnectedException()
    {
-      super(UNSUPPORTED_PACKET);
+      super(DISCONNECTED);
    }
 
-   public UnsupportedPacketException(String msg)
+   public HornetQDisconnectedException(String message)
    {
-      super(UNSUPPORTED_PACKET, msg);
+      super(DISCONNECTED, message);
    }
 }

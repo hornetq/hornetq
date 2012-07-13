@@ -20,7 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -94,7 +94,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
          addSessionFactory(sf);
          Assert.fail();
       }
-      catch(NotConnectedException se)
+      catch(HornetQNotConnectedException se)
       {
          //ok
       }
@@ -117,7 +117,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
          sf.createSession(false, true, true);
          Assert.fail();
       }
-      catch(NotConnectedException se)
+      catch(HornetQNotConnectedException se)
       {
          //ok
       }

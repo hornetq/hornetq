@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.NOT_CONNECTED;
+import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
+ *         5/2/12
  *
- * A client is not able to connect to HornetQ server.
+ * An problem occurred while manipulating the body of a large message.
  */
-public class NotConnectedException extends HornetQException
+public class HornetQLargeMessageException extends HornetQException
 {
-   private static final long serialVersionUID = -3489189971813613325L;
+   private static final long serialVersionUID = 1087867463974768491L;
 
-   public NotConnectedException(String message)
+   public HornetQLargeMessageException()
    {
-      super(NOT_CONNECTED, message);
+      super(LARGE_MESSAGE_ERROR_BODY);
    }
 
-   public NotConnectedException()
+   public HornetQLargeMessageException(String msg)
    {
-      super(NOT_CONNECTED);
+      super(LARGE_MESSAGE_ERROR_BODY, msg);
    }
 }

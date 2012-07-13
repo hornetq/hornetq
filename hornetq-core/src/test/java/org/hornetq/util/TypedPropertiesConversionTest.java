@@ -16,7 +16,7 @@ package org.hornetq.util;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -83,7 +83,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getBooleanProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -104,7 +104,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getCharProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -135,7 +135,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getByteProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -170,7 +170,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getIntProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -213,7 +213,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getLongProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -244,7 +244,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getDoubleProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -276,7 +276,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getFloatProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -312,7 +312,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getShortProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 
@@ -346,7 +346,7 @@ public class TypedPropertiesConversionTest extends TestCase
          props.getBytesProperty(key);
          Assert.fail();
       }
-      catch (PropertyConversionException e)
+      catch (HornetQPropertyConversionException e)
       {
       }
 

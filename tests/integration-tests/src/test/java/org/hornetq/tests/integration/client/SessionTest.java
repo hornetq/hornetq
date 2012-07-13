@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -130,7 +130,7 @@ public class SessionTest extends ServiceTestBase
 
          RemotingConnection rc = clientSession.getConnection();
 
-         rc.fail(new InternalErrorException());
+         rc.fail(new HornetQInternalErrorException());
 
          clientSession.close();
 

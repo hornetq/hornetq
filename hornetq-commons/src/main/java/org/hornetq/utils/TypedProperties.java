@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 
 /**
@@ -167,7 +167,7 @@ public final class TypedProperties
       return doGetProperty(key);
    }
 
-   public Boolean getBooleanProperty(final SimpleString key) throws PropertyConversionException
+   public Boolean getBooleanProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -184,11 +184,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
+   public Byte getByteProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -205,11 +205,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Character getCharProperty(final SimpleString key) throws PropertyConversionException
+   public Character getCharProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -223,11 +223,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
+   public byte[] getBytesProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -240,11 +240,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
+   public Double getDoubleProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -265,11 +265,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
+   public Integer getIntProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -294,11 +294,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Long getLongProperty(final SimpleString key) throws PropertyConversionException
+   public Long getLongProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -327,11 +327,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new HornetQPropertyConversionException("Invalid conversion");
       }
    }
 
-   public Short getShortProperty(final SimpleString key) throws PropertyConversionException
+   public Short getShortProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -352,11 +352,11 @@ public final class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid Conversion.");
+         throw new HornetQPropertyConversionException("Invalid Conversion.");
       }
    }
 
-   public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
+   public Float getFloatProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
       if (value == null)
@@ -369,10 +369,10 @@ public final class TypedProperties
       {
          return Float.parseFloat(((SimpleString)value).toString());
       }
-      throw new PropertyConversionException("Invalid conversion: " + key);
+      throw new HornetQPropertyConversionException("Invalid conversion: " + key);
    }
 
-   public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
+   public SimpleString getSimpleStringProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       Object value = doGetProperty(key);
 
@@ -417,7 +417,7 @@ public final class TypedProperties
       {
          return new SimpleString(value.toString());
       }
-      throw new PropertyConversionException("Invalid conversion");
+      throw new HornetQPropertyConversionException("Invalid conversion");
    }
 
    public Object removeProperty(final SimpleString key)

@@ -20,7 +20,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -181,7 +181,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
          public void run()
          {
             System.out.println("failing...");
-            forwardingConnection.fail(new NotConnectedException());
+            forwardingConnection.fail(new HornetQNotConnectedException());
             System.out.println("reconnected!!!");
          }
       };

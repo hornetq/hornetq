@@ -19,7 +19,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.IOErrorException;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
@@ -249,7 +249,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          load();
       }
-      catch(IOErrorException ioe)
+      catch(HornetQIOErrorException ioe)
       {
          exceptionHappened = true;
       }

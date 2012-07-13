@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_EXISTS;
+import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_OUTCOME_UNKNOWN;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  *
- * An operation failed because an address exists on the server.
+ * The outcome of a tx is unknown
  */
-public class AddressExistsException extends HornetQException
+public class HornetQTransactionOutcomeUnknownException extends HornetQException
 {
-   private static final long serialVersionUID = 3032730450033992367L;
+   private static final long serialVersionUID = 7940794286427650558L;
 
-   public AddressExistsException()
+   public HornetQTransactionOutcomeUnknownException()
    {
-      super(ADDRESS_EXISTS);
+      super(TRANSACTION_OUTCOME_UNKNOWN);
    }
 
-   public AddressExistsException(String msg)
+   public HornetQTransactionOutcomeUnknownException(String msg)
    {
-      super(ADDRESS_EXISTS, msg);
+      super(TRANSACTION_OUTCOME_UNKNOWN, msg);
    }
 }

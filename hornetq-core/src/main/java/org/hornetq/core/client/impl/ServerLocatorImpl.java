@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -343,7 +344,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       synchronized (stateGuard)
       {
          if (state == STATE.CLOSING)
-            throw new org.hornetq.api.core.IllegalStateException();
+            throw new HornetQIllegalStateException();
 
       try
       {

@@ -21,25 +21,26 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_METADATA;
+import static org.hornetq.api.core.HornetQExceptionType.SESSION_CREATION_REJECTED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  *
- * A Session Metadata was set in duplication
+ * The creation of a session was rejected by the server (e.g. if the
+ * server is starting and has not finish to be initialized.
  */
-public class DuplicateMetaDataException extends HornetQException
+public class HornetQSessionCreationException extends HornetQException
 {
-   private static final long serialVersionUID = 7877182872143004058L;
+   private static final long serialVersionUID = -4486139158452585895L;
 
-   public DuplicateMetaDataException()
+   public HornetQSessionCreationException()
    {
-      super(DUPLICATE_METADATA);
+      super(SESSION_CREATION_REJECTED);
    }
 
-   public DuplicateMetaDataException(String msg)
+   public HornetQSessionCreationException(String msg)
    {
-      super(DUPLICATE_METADATA, msg);
+      super(SESSION_CREATION_REJECTED, msg);
    }
 }

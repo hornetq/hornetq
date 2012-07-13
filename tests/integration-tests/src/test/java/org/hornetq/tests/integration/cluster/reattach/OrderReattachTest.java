@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.NotConnectedException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -115,7 +115,7 @@ public class OrderReattachTest extends ServiceTestBase
                   // True means... fail session
                   if (poll)
                   {
-                     conn.fail(new NotConnectedException("poop"));
+                     conn.fail(new HornetQNotConnectedException("poop"));
                   }
                   else
                   {

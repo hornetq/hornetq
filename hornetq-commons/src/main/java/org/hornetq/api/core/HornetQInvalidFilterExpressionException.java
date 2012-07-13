@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.SECURITY_EXCEPTION;
+import static org.hornetq.api.core.HornetQExceptionType.INVALID_FILTER_EXPRESSION;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
+ *         4/30/12
  *
- * A security problem occurred (authentication issues, permission issues,...)
+ * An filter expression has not been validated
  */
-public class SecurityException extends HornetQException
+public class HornetQInvalidFilterExpressionException extends HornetQException
 {
-   private static final long serialVersionUID = 3291210307590756881L;
+   private static final long serialVersionUID = 7188625553939665128L;
 
-   public SecurityException()
+   public HornetQInvalidFilterExpressionException()
    {
-      super(SECURITY_EXCEPTION);
+      super(INVALID_FILTER_EXPRESSION);
    }
 
-   public SecurityException(String msg)
+   public HornetQInvalidFilterExpressionException(String msg)
    {
-      super(SECURITY_EXCEPTION, msg);
+      super(INVALID_FILTER_EXPRESSION, msg);
    }
 }

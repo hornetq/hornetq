@@ -21,7 +21,7 @@ import java.util.Set;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.PropertyConversionException;
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.message.BodyEncoder;
@@ -581,7 +581,7 @@ public abstract class MessageImpl implements MessageInternal
       bufferValid = false;
    }
 
-   public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
+   public void putObjectProperty(final SimpleString key, final Object value) throws HornetQPropertyConversionException
    {
       if (value == null)
       {
@@ -625,13 +625,13 @@ public abstract class MessageImpl implements MessageInternal
       }
       else
       {
-         throw new PropertyConversionException(value.getClass() + " is not a valid property type");
+         throw new HornetQPropertyConversionException(value.getClass() + " is not a valid property type");
       }
 
       bufferValid = false;
    }
 
-   public void putObjectProperty(final String key, final Object value) throws PropertyConversionException
+   public void putObjectProperty(final String key, final Object value) throws HornetQPropertyConversionException
    {
       putObjectProperty(new SimpleString(key), value);
 
@@ -713,87 +713,87 @@ public abstract class MessageImpl implements MessageInternal
       return properties.getProperty(key);
    }
 
-   public Boolean getBooleanProperty(final SimpleString key) throws PropertyConversionException
+   public Boolean getBooleanProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getBooleanProperty(key);
    }
 
-   public Boolean getBooleanProperty(final String key) throws PropertyConversionException
+   public Boolean getBooleanProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getBooleanProperty(new SimpleString(key));
    }
 
-   public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
+   public Byte getByteProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getByteProperty(key);
    }
 
-   public Byte getByteProperty(final String key) throws PropertyConversionException
+   public Byte getByteProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getByteProperty(new SimpleString(key));
    }
 
-   public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
+   public byte[] getBytesProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getBytesProperty(key);
    }
 
-   public byte[] getBytesProperty(final String key) throws PropertyConversionException
+   public byte[] getBytesProperty(final String key) throws HornetQPropertyConversionException
    {
       return getBytesProperty(new SimpleString(key));
    }
 
-   public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
+   public Double getDoubleProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getDoubleProperty(key);
    }
 
-   public Double getDoubleProperty(final String key) throws PropertyConversionException
+   public Double getDoubleProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getDoubleProperty(new SimpleString(key));
    }
 
-   public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
+   public Integer getIntProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getIntProperty(key);
    }
 
-   public Integer getIntProperty(final String key) throws PropertyConversionException
+   public Integer getIntProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getIntProperty(new SimpleString(key));
    }
 
-   public Long getLongProperty(final SimpleString key) throws PropertyConversionException
+   public Long getLongProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getLongProperty(key);
    }
 
-   public Long getLongProperty(final String key) throws PropertyConversionException
+   public Long getLongProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getLongProperty(new SimpleString(key));
    }
 
-   public Short getShortProperty(final SimpleString key) throws PropertyConversionException
+   public Short getShortProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getShortProperty(key);
    }
 
-   public Short getShortProperty(final String key) throws PropertyConversionException
+   public Short getShortProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getShortProperty(new SimpleString(key));
    }
 
-   public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
+   public Float getFloatProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getFloatProperty(key);
    }
 
-   public Float getFloatProperty(final String key) throws PropertyConversionException
+   public Float getFloatProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getFloatProperty(new SimpleString(key));
    }
 
-   public String getStringProperty(final SimpleString key) throws PropertyConversionException
+   public String getStringProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       SimpleString str = getSimpleStringProperty(key);
 
@@ -807,17 +807,17 @@ public abstract class MessageImpl implements MessageInternal
       }
    }
 
-   public String getStringProperty(final String key) throws PropertyConversionException
+   public String getStringProperty(final String key) throws HornetQPropertyConversionException
    {
       return getStringProperty(new SimpleString(key));
    }
 
-   public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
+   public SimpleString getSimpleStringProperty(final SimpleString key) throws HornetQPropertyConversionException
    {
       return properties.getSimpleStringProperty(key);
    }
 
-   public SimpleString getSimpleStringProperty(final String key) throws PropertyConversionException
+   public SimpleString getSimpleStringProperty(final String key) throws HornetQPropertyConversionException
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }

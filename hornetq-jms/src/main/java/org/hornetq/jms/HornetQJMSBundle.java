@@ -23,26 +23,26 @@ public interface HornetQJMSBundle
    HornetQJMSBundle BUNDLE = Messages.getBundle(HornetQJMSBundle.class);
 
    @Message(id = 129001, value =  "Connection Factory {0} doesn't exist" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException cfDoesntExist(String name);
+   HornetQInternalErrorException cfDoesntExist(String name);
 
    @Message(id = 129002, value =  "Invalid signature {0} parsing Connection Factory" , format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException invalidSignatureParsingCF(String sig);
+   HornetQInternalErrorException invalidSignatureParsingCF(String sig);
 
    @Message(id = 129003, value = "Invalid node {0} parsing Connection Factory", format = Message.Format.MESSAGE_FORMAT)
-   InternalErrorException invalidNodeParsingCF(String name);
+   HornetQInternalErrorException invalidNodeParsingCF(String name);
 
    @Message(id = 129004, value = "Discovery Group '{0}' doesn't exist on maing config", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException discoveryGroupDoesntExist(String name);
+   HornetQIllegalStateException discoveryGroupDoesntExist(String name);
 
    @Message(id = 129005, value = "No Connector name configured on create ConnectionFactory", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException noConnectorNameOnCF();
+   HornetQIllegalStateException noConnectorNameOnCF();
 
    @Message(id = 129006, value = "Connector '{0}' not found on the main configuration file" , format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException noConnectorNameConfiguredOnCF(String name);
+   HornetQIllegalStateException noConnectorNameConfiguredOnCF(String name);
 
    @Message(id = 129007, value =  "JNDI {0} is already being used by another connection factory", format = Message.Format.MESSAGE_FORMAT)
-   AddressExistsException cfJndiExists(String name);
+   HornetQAddressExistsException cfJndiExists(String name);
 
    @Message(id = 129008, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException errorDecodingPassword(@Cause Exception e);
+   HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
 }

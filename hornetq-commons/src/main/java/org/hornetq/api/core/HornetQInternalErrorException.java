@@ -21,26 +21,35 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.ILLEGAL_STATE;
+import static org.hornetq.api.core.HornetQExceptionType.INTERNAL_ERROR;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
+ *         4/30/12
  *
- * A HornetQ resource is not in a legal state (e.g. calling
- * ClientConsumer.receive() if a MessageHandler is set)
+ * Internal error which prevented HornetQ from performing an important operation.
  */
-public class IllegalStateException extends HornetQException
+public class HornetQInternalErrorException extends HornetQException
 {
-   private static final long serialVersionUID = -4480125401057788511L;
+   private static final long serialVersionUID = -5987814047521530695L;
 
-   public IllegalStateException()
+   public HornetQInternalErrorException()
    {
-      super(ILLEGAL_STATE);
+      super(INTERNAL_ERROR);
    }
 
-   public IllegalStateException(String message)
+   public HornetQInternalErrorException(String msg)
    {
-      super(ILLEGAL_STATE, message);
+      super(INTERNAL_ERROR, msg);
+   }
+
+   public HornetQInternalErrorException(String message, Exception e)
+   {
+      super(INTERNAL_ERROR, message, e);
+   }
+
+   public HornetQInternalErrorException(String message, Throwable t)
+   {
+      super(INTERNAL_ERROR, message, t);
    }
 }

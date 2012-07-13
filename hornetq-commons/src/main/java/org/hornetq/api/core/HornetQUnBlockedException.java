@@ -21,26 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.OBJECT_CLOSED;
+import static org.hornetq.api.core.HornetQExceptionType.UNBLOCKED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/30/12
  *
- * A client operation failed because the calling resource
- * (ClientSession, ClientProducer, etc.) is closed.
+ * A blocking call from a client was unblocked during failover.
  */
-public class ObjectClosedException extends HornetQException
+public class HornetQUnBlockedException extends HornetQException
 {
-   private static final long serialVersionUID = 809024052184914812L;
+   private static final long serialVersionUID = -4507889261891160608L;
 
-   public ObjectClosedException()
+   public HornetQUnBlockedException()
    {
-      super(OBJECT_CLOSED);
+      super(UNBLOCKED);
    }
 
-   public ObjectClosedException(String msg)
+   public HornetQUnBlockedException(String msg)
    {
-      super(OBJECT_CLOSED, msg);
+      super(UNBLOCKED, msg);
    }
 }

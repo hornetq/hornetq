@@ -19,7 +19,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -203,7 +203,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          HornetQLogger.LOGGER.failedToCreateSession(e);
 
-         response = new HornetQExceptionMessage(new InternalErrorException());
+         response = new HornetQExceptionMessage(new HornetQInternalErrorException());
       }
 
       // send the exception to the client and destroy
@@ -270,7 +270,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          HornetQLogger.LOGGER.failedToReattachSession(e);
 
-         response = new HornetQExceptionMessage(new InternalErrorException());
+         response = new HornetQExceptionMessage(new HornetQInternalErrorException());
       }
 
       channel1.send(response);

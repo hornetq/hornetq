@@ -16,7 +16,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new InternalErrorException(msg);
+         return new HornetQInternalErrorException(msg);
       }
    },
    UNSUPPORTED_PACKET(001)
@@ -24,7 +24,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new UnsupportedPacketException(msg);
+         return new HornetQUnsupportedPacketException(msg);
       }
    },
    NOT_CONNECTED(002)
@@ -32,7 +32,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new NotConnectedException(msg);
+         return new HornetQNotConnectedException(msg);
       }
    },
    CONNECTION_TIMEDOUT(003)
@@ -40,7 +40,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new ConnectionTimedOutException(msg);
+         return new HornetQConnectionTimedOutException(msg);
       }
    },
    DISCONNECTED(004)
@@ -48,7 +48,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new DisconnectedException(msg);
+         return new HornetQDisconnectedException(msg);
       }
    },
    UNBLOCKED(005)
@@ -56,7 +56,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new UnBlockedException(msg);
+         return new HornetQUnBlockedException(msg);
       }
    },
    IO_ERROR(006)
@@ -64,7 +64,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new IOErrorException(msg);
+         return new HornetQIOErrorException(msg);
       }
    },
    QUEUE_DOES_NOT_EXIST(100)
@@ -72,7 +72,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new NonExistentQueueException(msg);
+         return new HornetQNonExistentQueueException(msg);
       }
    },
    QUEUE_EXISTS(101)
@@ -80,7 +80,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new QueueExistsException(msg);
+         return new HornetQQueueExistsException(msg);
       }
    },
    OBJECT_CLOSED(102)
@@ -88,7 +88,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new ObjectClosedException(msg);
+         return new HornetQObjectClosedException(msg);
       }
    },
    INVALID_FILTER_EXPRESSION(103)
@@ -96,7 +96,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new InvalidFilterExpressionException(msg);
+         return new HornetQInvalidFilterExpressionException(msg);
       }
    },
    ILLEGAL_STATE(104)
@@ -104,7 +104,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new IllegalStateException(msg);
+         return new HornetQIllegalStateException(msg);
       }
    },
    SECURITY_EXCEPTION(105)
@@ -112,7 +112,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new SecurityException(msg);
+         return new HornetQSecurityException(msg);
       }
    },
    ADDRESS_EXISTS(107)
@@ -120,7 +120,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new AddressExistsException(msg);
+         return new HornetQAddressExistsException(msg);
       }
    },
    INCOMPATIBLE_CLIENT_SERVER_VERSIONS(108)
@@ -128,7 +128,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new IncompatibleClientServerException(msg);
+         return new HornetQIncompatibleClientServerException(msg);
       }
    },
    LARGE_MESSAGE_ERROR_BODY(110)
@@ -136,7 +136,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new LargeMessageException(msg);
+         return new HornetQLargeMessageException(msg);
       }
    },
    TRANSACTION_ROLLED_BACK(111)
@@ -144,7 +144,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new TransactionRolledBackException(msg);
+         return new HornetQTransactionRolledBackException(msg);
       }
    },
    SESSION_CREATION_REJECTED(112)
@@ -152,7 +152,7 @@ public enum HornetQExceptionType implements Serializable
          @Override
       HornetQException createException(String msg)
       {
-         return new SessionCreationException(msg);
+         return new HornetQSessionCreationException(msg);
       }
    },
    DUPLICATE_ID_REJECTED(113)
@@ -160,7 +160,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new DuplicateIdException(msg);
+         return new HornetQDuplicateIdException(msg);
       }
    },
    DUPLICATE_METADATA(114)
@@ -168,7 +168,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new DuplicateMetaDataException(msg);
+         return new HornetQDuplicateMetaDataException(msg);
       }
    },
    TRANSACTION_OUTCOME_UNKNOWN(115)
@@ -176,7 +176,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new TransactionOutcomeUnknownException(msg);
+         return new HornetQTransactionOutcomeUnknownException(msg);
       }
    },
    ALREADY_REPLICATING(116)
@@ -184,7 +184,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new AlreadyReplicatingException(msg);
+         return new HornetQAlreadyReplicatingException(msg);
       }
    },
    GENERIC_EXCEPTION(999)
@@ -224,7 +224,7 @@ public enum HornetQExceptionType implements Serializable
       @Override
       HornetQException createException(String msg)
       {
-         return new NativeIOError(msg);
+         return new HornetQNativeIOError(msg);
       }
    },
    NATIVE_ERROR_CANT_RELEASE_AIO(204)

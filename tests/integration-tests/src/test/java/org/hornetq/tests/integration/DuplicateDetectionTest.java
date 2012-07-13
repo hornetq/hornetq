@@ -19,7 +19,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.DuplicateIdException;
+import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -585,7 +585,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(DuplicateIdException die)
+      catch(HornetQDuplicateIdException die)
       {
          session.rollback();
       }
@@ -1731,7 +1731,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(DuplicateIdException die)
+      catch(HornetQDuplicateIdException die)
       {
          session.rollback();
       }
@@ -1751,7 +1751,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(DuplicateIdException die)
+      catch(HornetQDuplicateIdException die)
       {
          session.rollback();
       }

@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.QUEUE_EXISTS;
+import static org.hornetq.api.core.HornetQExceptionType.IO_ERROR;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/30/12
  *
- * An operation failed because a queue exists on the server.
+ * Unexpected I/O error occurred on the server.
  */
-public class QueueExistsException extends HornetQException
+public class HornetQIOErrorException extends HornetQException
 {
-   private static final long serialVersionUID = -405552292451883063L;
+   private static final long serialVersionUID = 797277117077787396L;
 
-   public QueueExistsException()
+   public HornetQIOErrorException()
    {
-      super(QUEUE_EXISTS);
+      super(IO_ERROR);
    }
 
-   public QueueExistsException(String msg)
+   public HornetQIOErrorException(String msg)
    {
-      super(QUEUE_EXISTS, msg);
+      super(IO_ERROR, msg);
    }
 }

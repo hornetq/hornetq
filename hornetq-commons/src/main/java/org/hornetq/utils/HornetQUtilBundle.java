@@ -1,6 +1,7 @@
 package org.hornetq.utils;
 
 
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -22,7 +23,7 @@ public interface HornetQUtilBundle
    HornetQUtilBundle BUNDLE = Messages.getBundle(HornetQUtilBundle.class);
 
    @Message(id = 209001, value = "invalid property: {0}" , format = Message.Format.MESSAGE_FORMAT)
-   org.hornetq.api.core.IllegalStateException invalidProperty(String part);
+   HornetQIllegalStateException invalidProperty(String part);
 
    @Message(id = 209002, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException invalidType(Byte type);

@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.InternalErrorException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Message;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.message.BodyEncoder;
@@ -422,7 +422,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       catch (Exception e)
       {
          // TODO: There is an IO_ERROR on trunk now, this should be used here instead
-         throw new InternalErrorException(e.getMessage(), e);
+         throw new HornetQInternalErrorException(e.getMessage(), e);
       }
    }
 
@@ -486,7 +486,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            throw new InternalErrorException(e.getMessage(), e);
+            throw new HornetQInternalErrorException(e.getMessage(), e);
          }
       }
 
@@ -498,7 +498,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
          catch (Exception e)
          {
-            throw new InternalErrorException(e.getMessage(), e);
+            throw new HornetQInternalErrorException(e.getMessage(), e);
          }
       }
 

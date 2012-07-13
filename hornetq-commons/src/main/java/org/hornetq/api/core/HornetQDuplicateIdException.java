@@ -21,25 +21,25 @@
 */
 package org.hornetq.api.core;
 
-import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
+import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_ID_REJECTED;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
+ *         5/2/12
  *
- * A client timed out will connecting to HornetQ server.
+ * A DuplicateID was rejected.
  */
-public class ConnectionTimedOutException extends HornetQException
+public class HornetQDuplicateIdException extends HornetQException
 {
-   private static final long serialVersionUID = 3244233758084830372L;
+   private static final long serialVersionUID = -4302979339865777119L;
 
-   public ConnectionTimedOutException()
+   public HornetQDuplicateIdException()
    {
-      super(CONNECTION_TIMEDOUT);
+      super(DUPLICATE_ID_REJECTED);
    }
 
-   public ConnectionTimedOutException(String msg)
+   public HornetQDuplicateIdException(String message)
    {
-      super(CONNECTION_TIMEDOUT, msg);
+      super(DUPLICATE_ID_REJECTED, message);
    }
 }

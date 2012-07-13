@@ -30,7 +30,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.NonExistentQueueException;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -513,7 +513,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
-         throw new NonExistentQueueException();
+         throw new HornetQNonExistentQueueException();
       }
 
       server.destroyQueue(name, this);
