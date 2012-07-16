@@ -12,6 +12,13 @@
  */
 package org.hornetq.jms.example;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.hornetq.jms.bridge.JMSBridge;
+import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
+import org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory;
+import org.hornetq.jms.bridge.impl.JNDIDestinationFactory;
+
 import java.util.Hashtable;
 
 import javax.jms.Connection;
@@ -50,20 +57,45 @@ public class JMSBridgeExample
       InitialContext sourceContext = JMSBridgeExample.createContext(sourceServer);
       InitialContext targetContext = JMSBridgeExample.createContext(targetServer);
 
+      Hashtable<String, String> sourceJndiParams = createJndiParams(sourceServer);
+      Hashtable<String, String> targetJndiParams = createJndiParams(targetServer);
+      // Step 2. Create and start a JMS Bridge
+      // Note, the Bridge needs a transaction manager, in this instance we will use the JBoss TM
+      JMSBridge jmsBridge = new JMSBridgeImpl(
+               new JNDIConnectionFactoryFactory(sourceJndiParams, "/source/ConnectionFactory"),
+               new JNDIConnectionFactoryFactory(targetJndiParams, "/target/ConnectionFactory"),
+               new JNDIDestinationFactory(sourceJndiParams, "/source/topic"),
+               new JNDIDestinationFactory(targetJndiParams, "/target/queue"),
+               null,
+               null,
+               null,
+               null,
+               null,
+               5000,
+               10,
+               QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
+               1,
+               -1,
+               null,
+               null,
+               true);
+      jmsBridge.setTransactionManager(new TransactionManagerImple());
+
       Connection sourceConnection = null;
       Connection targetConnection = null;
       try
       {
-         // Step 2. Lookup the *source* JMS resources
+         jmsBridge.start();
+         // Step 3. Lookup the *source* JMS resources
          ConnectionFactory sourceConnectionFactory = (ConnectionFactory)sourceContext.lookup("/client/ConnectionFactory");
          Topic sourceTopic = (Topic)sourceContext.lookup("/source/topic");
 
-         // Step 3. Create a connection, a session and a message producer for the *source* topic
+         // Step 4. Create a connection, a session and a message producer for the *source* topic
          sourceConnection = sourceConnectionFactory.createConnection();
          Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer sourceProducer = sourceSession.createProducer(sourceTopic);
 
-         // Step 4. Create and send a text message to the *source* queue
+         // Step 5. Create and send a text message to the *source* queue
          TextMessage message = sourceSession.createTextMessage("this is a text message sent at " + System.currentTimeMillis());
          sourceProducer.send(message);
          System.out.format("Sent message to %s: %s\n",
@@ -71,34 +103,38 @@ public class JMSBridgeExample
                            message.getText());
          System.out.format("Message ID : %s\n", message.getJMSMessageID());
 
-         // Step 5. Close the *source* connection
+         // Step 6. Close the *source* connection
          sourceConnection.close();
 
-         // Step 6. Lookup the *target* JMS resources
+         // Step 7. Lookup the *target* JMS resources
          ConnectionFactory targetConnectionFactory = (ConnectionFactory)targetContext.lookup("/client/ConnectionFactory");
          Queue targetQueue = (Queue)targetContext.lookup("/target/queue");
 
-         // Step 7. Create a connection, a session and a message consumer for the *target* queue
+         // Step 8. Create a connection, a session and a message consumer for the *target* queue
          targetConnection = targetConnectionFactory.createConnection();
          Session targetSession = targetConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer targetConsumer = targetSession.createConsumer(targetQueue);
 
-         // Step 8. Start the connection to receive messages from the *target* queue
+         // Step 9. Start the connection to receive messages from the *target* queue
          targetConnection.start();
 
-         // Step 9. Receive a message from the *target* queue
+         // Step 10. Receive a message from the *target* queue
          TextMessage messageReceived = (TextMessage)targetConsumer.receive(5000);
          System.out.format("\nReceived from %s: %s\n",
                            ((Queue)messageReceived.getJMSDestination()).getQueueName(),
                            messageReceived.getText());
 
-         // Step 10. Display the received message's ID and this "bridged" message ID
+         // Step 11. Display the received message's ID and this "bridged" message ID
          System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
          System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));
       }
       finally
       {
-         // Step 11. Be sure to close the resources!
+         // Step 12. Be sure to close the resources!
+         if(jmsBridge != null)
+         {
+             jmsBridge.stop();
+         }
          if (sourceContext != null)
          {
             sourceContext.close();
@@ -120,11 +156,16 @@ public class JMSBridgeExample
 
    private static InitialContext createContext(final String server) throws Exception
    {
-      String jndiURL = "jnp://" + server + ":1099";
+      Hashtable<String, String> jndiProps = createJndiParams(server);
+      return new InitialContext(jndiProps);
+   }
+
+   private static Hashtable<String, String> createJndiParams(String server)
+   {
       Hashtable<String, String> jndiProps = new Hashtable<String, String>();
-      jndiProps.put("java.naming.provider.url", jndiURL);
+      jndiProps.put("java.naming.provider.url", server);
       jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
       jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-      return new InitialContext(jndiProps);
+      return jndiProps;
    }
 }

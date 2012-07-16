@@ -59,7 +59,7 @@
             <module>instantiate-connection-factory</module>
             <!--todo fix-->
             <!--<module>jaas</module>-->
-            <!--<module>jms-bridge</module>-->
+            <module>jms-bridge</module>
             <module>jmx</module>
             <module>large-message</module>
             <module>last-value-queue</module>

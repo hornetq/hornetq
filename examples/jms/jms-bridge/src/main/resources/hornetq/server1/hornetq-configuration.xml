@@ -16,7 +16,8 @@
          <!-- **************************************** -->
          <!-- Replace with the *target* server address -->
          <!-- **************************************** -->
-         <param key="host" value="@TARGET_SERVER@"/>
+         <param key="host" value="localhost"/>
+         <param key="port" value="5455"/>
       </connector>
    </connectors>
 
@@ -24,7 +25,8 @@
       <acceptor name="netty">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <!-- the server accepts connections on all the server addresses -->
-         <param key="host" value="0.0.0.0"/>
+         <param key="host" value="localhost"/>
+         <param key="port" value="5455"/>
       </acceptor>
    </acceptors>
 
