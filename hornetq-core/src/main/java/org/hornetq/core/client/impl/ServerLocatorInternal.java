@@ -55,7 +55,14 @@ public interface ServerLocatorInternal extends ServerLocator
 
    ClientSessionFactoryInternal connect() throws HornetQException;
 
-   void notifyNodeUp(long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   /**
+    * Like {@link #connect()} but it does not log warnings if it fails to connect.
+    * @throws Exception
+    */
+   ClientSessionFactoryInternal connectNoWarnings() throws HornetQException;
+
+   void notifyNodeUp(long uniqueEventID, String nodeID,
+                     Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
    /**
     *
