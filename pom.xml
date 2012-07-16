@@ -45,7 +45,6 @@
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
       </HornetQ-Version>
-      <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
       <resteasy.version>2.3.4.Final</resteasy.version>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
@@ -61,8 +60,8 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/hornetq/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/hornetq/trunk</developerConnection>
+      <connection>scm:git:git://github.com/hornetq/hornetq.git</connection>
+      <developerConnection>scm:git://github.com/hornetq/hornetq.git</developerConnection>
       <url>https://github.com/hornetq/hornetq</url>
    </scm>
 
