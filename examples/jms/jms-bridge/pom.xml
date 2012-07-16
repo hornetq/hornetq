@@ -19,6 +19,24 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jboss-as-integration</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-transaction-spi</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.jbossts</groupId>
+          <artifactId>jbossjts</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.spec.javax.jms</groupId>
          <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
