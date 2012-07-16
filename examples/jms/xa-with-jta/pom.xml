@@ -22,6 +22,16 @@
          <groupId>org.jboss.spec.javax.jms</groupId>
          <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.jboss.spec.javax.transaction</groupId>
+         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+         <version>1.0.0.Final</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.jbossts</groupId>
+         <artifactId>jbossjta</artifactId>
+         <version>4.16.4.Final</version>
+      </dependency>
    </dependencies>
 
       <build>
