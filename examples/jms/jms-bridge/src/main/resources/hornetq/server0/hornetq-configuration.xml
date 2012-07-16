@@ -13,18 +13,13 @@
    <connectors>
       <connector name="netty">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-         <!-- **************************************** -->
-         <!-- Replace with the *source* server address -->
-         <!-- **************************************** -->
-         <param key="host" value="@SOURCE_SERVER@"/>
+         <param key="host" value="localhost"/>
       </connector>
    </connectors>
 
    <acceptors>
       <acceptor name="netty">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-         <!-- the server accepts connections on all the server addresses -->
-         <param key="host" value="0.0.0.0"/>
       </acceptor>
    </acceptors>
 
