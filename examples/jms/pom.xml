@@ -108,8 +108,7 @@
             <module>xa-heuristic</module>
             <module>xa-receive</module>
             <module>xa-send</module>
-            <!--todo fix-->
-            <!--<module>xa-with-jta</module>-->
+            <module>xa-with-jta</module>
          </modules>
       </profile>
       <profile>
