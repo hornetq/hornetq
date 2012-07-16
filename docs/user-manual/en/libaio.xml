@@ -88,7 +88,7 @@
             </itemizedlist>
             <para>To perform this installation on RHEL or Fedora, you can simply type this at a
                 command line:</para>
-            <programlisting>sudo yum install automake libtool autoconf gcc-g++ gcc libaio libaio-dev make</programlisting>
+            <programlisting>sudo yum install automake libtool autoconf gcc-c++ gcc libaio libaio-devel make</programlisting>
             <para>Or on debian systems:</para>
             <programlisting>sudo apt-get install automake libtool autoconf gcc-g++ gcc libaio libaio-dev make</programlisting>
             <note>

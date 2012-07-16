@@ -105,7 +105,7 @@ public class ReplicatedFailbackExample extends HornetQExample
          }
          catch (JMSException e)
          {
-            System.err.println("Got exception while acknowledging message: " + e.getMessage());
+            System.out.println("Got (the expected) exception while acknowledging message: " + e.getMessage());
          }
 
          // Step 12. Consume again the 2nd third of the messages again. Note that they are not considered as redelivered.

@@ -26,6 +26,8 @@ org.eclipse.jdt.ui.prefs
 org.eclipse.m2e.core.prefs
 */.settings/org.eclipse.*
 */*/.settings/org.eclipse.*
+examples/*/*/.settings/org.eclipse.*
+examples/*/*/.project
 !etc/org.eclipse.jdt.ui.prefs
 !etc/org.eclipse.jdt.core.prefs
 org.maven.ide.eclipse.prefs
