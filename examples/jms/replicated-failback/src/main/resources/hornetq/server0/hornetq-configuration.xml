@@ -15,6 +15,9 @@
    <!--we kill the server process so don't need this set to true-->
    <failover-on-shutdown>false</failover-on-shutdown>
 
+   <cluster-user>exampleUser</cluster-user>
+   <cluster-password>secret</cluster-password>
+
    <shared-store>false</shared-store>
 
    <allow-failback>true</allow-failback>
@@ -31,7 +34,7 @@
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="port" value="5445"/>
       </connector>
-   </connectors>      
+   </connectors>
 
    <!-- Acceptors -->
    <acceptors>
