@@ -2434,7 +2434,7 @@ public class HornetQServerImpl implements HornetQServer
             locator.setReconnectAttempts(0);
             try
             {
-               factory = locator.connect();
+               factory = locator.connectNoWarnings();
             }
             catch (HornetQNotConnectedException notConnected)
             {

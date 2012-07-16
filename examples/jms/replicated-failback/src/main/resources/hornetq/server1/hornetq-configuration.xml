@@ -19,6 +19,9 @@
 
     <backup>true</backup>
 
+    <cluster-user>exampleUser</cluster-user>
+    <cluster-password>secret</cluster-password>
+
     <shared-store>false</shared-store>
 
     <allow-failback>true</allow-failback>
@@ -34,7 +37,7 @@
          <param key="port" value="5446"/>
       </connector>
    </connectors>
-   
+
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty-acceptor">
@@ -68,7 +71,7 @@
 		</cluster-connection>
 	</cluster-connections>
    <!-- Other config -->
-    
+
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.exampleQueue">
@@ -80,5 +83,5 @@
          <permission type="send" roles="guest"/>
       </security-setting>
    </security-settings>
-   
+
 </configuration>

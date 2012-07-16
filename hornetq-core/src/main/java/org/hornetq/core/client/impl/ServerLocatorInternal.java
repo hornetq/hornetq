@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -52,9 +53,16 @@ public interface ServerLocatorInternal extends ServerLocator
 
    void cleanup();
 
-   ClientSessionFactoryInternal connect() throws  Exception;
+   ClientSessionFactoryInternal connect() throws HornetQException;
 
-   void notifyNodeUp(long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   /**
+    * Like {@link #connect()} but it does not log warnings if it fails to connect.
+    * @throws Exception
+    */
+   ClientSessionFactoryInternal connectNoWarnings() throws HornetQException;
+
+   void notifyNodeUp(long uniqueEventID, String nodeID,
+                     Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
    /**
     *

@@ -588,20 +588,32 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       finalizeCheck = false;
    }
 
+   @Override
    public ClientSessionFactoryInternal connect() throws HornetQException
+   {
+      return connect(false);
+   }
+
+   private ClientSessionFactoryInternal connect(final boolean skipWarnings) throws HornetQException
    {
       synchronized (this)
       {
          // static list of initial connectors
          if (initialConnectors != null && discoveryGroup == null)
          {
-            ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect();
+            ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect(skipWarnings);
             addFactory(sf);
             return sf;
          }
       }
       // wait for discovery group to get the list of initial connectors
       return (ClientSessionFactoryInternal)createSessionFactory();
+   }
+
+   @Override
+   public ClientSessionFactoryInternal connectNoWarnings() throws HornetQException
+   {
+      return connect(true);
    }
 
    public void setAfterConnectionInternalListener(AfterConnectInternalListener listener)
@@ -1597,7 +1609,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
       private List<Connector> connectors;
 
-      public ClientSessionFactory connect() throws HornetQException
+      public ClientSessionFactory connect(boolean skipWarnings) throws HornetQException
       {
          assertOpen();
 
@@ -1677,25 +1689,26 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          catch (RejectedExecutionException e)
          {
-            if (isClosed())
+            if (isClosed() || skipWarnings)
                return null;
             HornetQLogger.LOGGER.debug("Rejected execution", e);
             throw e;
          }
          catch (Exception e)
          {
-            if (isClosed())
+            if (isClosed() || skipWarnings)
                return null;
             HornetQLogger.LOGGER.errorConnectingToNodes(e);
             throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors(e);
          }
 
-         if (!isClosed())
+         if (isClosed() || skipWarnings)
          {
-            HornetQLogger.LOGGER.errorConnectingToNodes(e);
-            throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors2();
+            return null;
          }
-         return null;
+
+         HornetQLogger.LOGGER.errorConnectingToNodes(e);
+         throw HornetQMessageBundle.BUNDLE.cannotConnectToStaticConnectors2();
       }
 
       private synchronized void createConnectors()
