@@ -26,9 +26,12 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
+ * Example of live and replicating backup pair.
+ * <p>
+ * After both servers are started, the live server is killed and the backup becomes active ("fails-over").
+ * <p> 
+ * Later the live server is restarted and takes back its position by asking the backup to stop ("fail-back"). 
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: Nov 4, 2010
- *         Time: 10:51:45 AM
  */
 public class ReplicatedFailbackExample extends HornetQExample
 {

@@ -85,7 +85,7 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
 
    /**
     * Unlock the manager.
-    * @see #lockAll()
+    * @see #lock()
     */
    void unlock();
 }

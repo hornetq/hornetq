@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -134,7 +135,7 @@ public interface HornetQServer extends HornetQComponent
 
    List<ServerSession> getSessions(String connectionID);
 
-   /** will return true if there is any session wth this key */
+   /** @return {@code true} if there is any session with this key */
    boolean lookupSession(String metakey, String metavalue);
 
    ClusterManager getClusterManager();
@@ -148,8 +149,8 @@ public interface HornetQServer extends HornetQComponent
     * @param timeout
     * @param unit
     * @see CountDownLatch#await(long, TimeUnit)
-    * @returns {@code true} if the server was already initialized or if it was initialized within
-    *          the timeout period, {@code false} otherwise.
+    * @return {@code true} if the server was already initialized or if it was initialized within the
+    *         timeout period, {@code false} otherwise.
     * @throws InterruptedException
     */
    boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException;
@@ -199,9 +200,15 @@ public interface HornetQServer extends HornetQComponent
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
    /**
+    * Starts replication.
+    * <p>
+    * This will spawn a new thread that will sync all persistent data with the new backup. This
+    * method may also trigger fail-back if the backup asks for it and the server configuration
+    * allows.
     * @param rc
     * @param pair
     * @param clusterConnection
+    * @throws HornetQAlreadyReplicatingException if replication is already taking place
     * @throws HornetQException
     */
    void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
