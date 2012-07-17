@@ -74,7 +74,7 @@
             <module>no-consumer-buffering</module>
             <module>non-transaction-failover</module>
             <module>paging</module>
-            <!--todo fix-->
+            <!--run this standalone-->
             <!--<module>perf</module>-->
             <module>producer-rate-limit</module>
             <module>queue</module>
