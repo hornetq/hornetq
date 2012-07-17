@@ -12,6 +12,7 @@
  */
 package org.hornetq.jms.example;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -34,7 +35,11 @@ public class PerfSender extends PerfBase
 
          PerfParams params = PerfBase.getParams(fileName);
 
-         new PerfSender(params).run();
+         fileName = PerfBase.getJndiFileName(args);
+
+         Properties properties = PerfBase.getJndiProps(fileName);
+
+         new PerfSender(params, properties).run();
       }
       catch (Exception e)
       {
@@ -42,9 +47,9 @@ public class PerfSender extends PerfBase
       }
    }
 
-   private PerfSender(final PerfParams perfParams)
+   private PerfSender(final PerfParams perfParams, Properties properties)
    {
-      super(perfParams);
+      super(perfParams, properties);
    }
 
    public void run() throws Exception
