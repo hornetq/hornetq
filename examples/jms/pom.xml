@@ -74,7 +74,7 @@
             <module>no-consumer-buffering</module>
             <module>non-transaction-failover</module>
             <module>paging</module>
-            <!--todo fix-->
+            <!--run this standalone-->
             <!--<module>perf</module>-->
             <module>producer-rate-limit</module>
             <module>queue</module>
@@ -82,8 +82,7 @@
             <module>queue-requestor</module>
             <module>queue-selector</module>
             <module>reattach-node</module>
-            <!--todo fix example-->
-            <!--<module>replicated-multiple-failover</module>-->
+            <module>replicated-multiple-failover</module>
             <module>replicated-transaction-failover</module>
             <module>request-reply</module>
             <module>scheduled-message</module>
