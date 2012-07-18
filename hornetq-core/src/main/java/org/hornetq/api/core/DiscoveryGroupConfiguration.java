@@ -34,7 +34,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
-   
+
    private String name;
 
    private String localBindAddress;
@@ -46,7 +46,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    private int groupPort;
 
    private long refreshTimeout;
-   
+
    private long discoveryInitialWaitTimeout;
 
    private String jgroupsFile;
@@ -79,6 +79,7 @@ public class DiscoveryGroupConfiguration implements Serializable
     * @param refreshTimeout
     * @param discoveryInitialWaitTimeout
     */
+   @Deprecated
    public DiscoveryGroupConfiguration(final String name,
                                       final String localBindAddress,
                                       final String groupAddress,
@@ -109,7 +110,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return name;
    }
-   
+
    public String getLocalBindAddress()
    {
       return localBindAddress;
@@ -137,7 +138,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this.name = name;
    }
-   
+
    /**
     * @param localBindAddress the localBindAddress to set
     */
@@ -177,7 +178,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return discoveryInitialWaitTimeout;
    }
-   
+
    /**
     * @param discoveryInitialWaitTimeout the discoveryInitialWaitTimeout to set
     */
