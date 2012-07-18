@@ -128,7 +128,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    // Public --------------------------------------------------------
 
-   public void registerJournal(final byte id, final Journal journal)
+   public synchronized void registerJournal(final byte id, final Journal journal)
    {
       if (journals == null || id >= journals.length)
       {
