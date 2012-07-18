@@ -49,6 +49,7 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
@@ -389,10 +390,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       server.start();
 
-      if (server.getReplicationEndpoint() != null)
+      ReplicationEndpoint replicationEndPoint = server.getReplicationEndpoint();
+      if (replicationEndPoint != null)
       {
          createJournal();
-         storage.installReplication(server.getReplicationEndpoint());
+         storage.installReplication(replicationEndPoint);
       }
    }
 
