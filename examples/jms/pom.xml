@@ -41,8 +41,7 @@
             <module>clustered-durable-subscription</module>
             <module>clustered-grouping</module>
             <module>clustered-queue</module>
-            <!--todo this needs to be automated-->
-            <!--<module>clustered-standalone</module>-->
+            <module>clustered-standalone</module>
             <module>clustered-static-oneway</module>
             <module>clustered-static-discovery</module>
             <module>clustered-topic</module>
