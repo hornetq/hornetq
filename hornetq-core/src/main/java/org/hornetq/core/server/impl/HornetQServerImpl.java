@@ -2144,12 +2144,12 @@ public class HornetQServerImpl implements HornetQServer
             }
             final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
             if (liveServerSessionFactory == null)
-               throw new RuntimeException("Could not estabilish the connection");
+               throw new RuntimeException("Could not establish the connection");
             if (!attemptFailBack)
             {
                latch.await(MAX_TOPOLOGY_WAIT, TimeUnit.SECONDS);
                if (nodeID == null)
-                  throw new RuntimeException("Could not estabilish the connection");
+                  throw new RuntimeException("Could not establish the connection");
                serverLocator0.removeClusterTopologyListener(this);
                nodeManager.setNodeID(nodeID);
             }
