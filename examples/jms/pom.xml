@@ -41,8 +41,7 @@
             <module>clustered-durable-subscription</module>
             <module>clustered-grouping</module>
             <module>clustered-queue</module>
-            <!--todo this needs to be automated-->
-            <!--<module>clustered-standalone</module>-->
+            <module>clustered-standalone</module>
             <module>clustered-static-oneway</module>
             <module>clustered-static-discovery</module>
             <module>clustered-topic</module>
@@ -57,7 +56,7 @@
             <module>http-transport</module>
             <module>interceptor</module>
             <module>instantiate-connection-factory</module>
-            <!--todo fix-->
+            <!--todo reenable once the HQ plugin v1.1.0 is available-->
             <!--<module>jaas</module>-->
             <module>jms-bridge</module>
             <module>jmx</module>
