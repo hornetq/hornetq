@@ -46,7 +46,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnection;
@@ -890,12 +889,6 @@ public class JMSServerControlTest extends ManagementTestBase
       public boolean isStarted()
       {
          return delegate.isStarted();
-      }
-
-      @Override
-      public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
-      {
-         delegate.installReplication(replicationEndpoint);
       }
 
       public void load() throws Exception
