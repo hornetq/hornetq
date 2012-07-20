@@ -20,23 +20,21 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * This file represents how we are using Discovery.
- * The discovery configuration could either use plain UDP, or JGroups.
- * If using UDP, all the UDP properties will be filled and the jgroups properties will be null
- * If using JGroups, all the UDP properties will be -1 or null and the jgroups properties will be filled.
- * If by any reason, on an user misconfiguration both properties are filled, the JGroups takes precedence,
- * that means. if jgroupsFile != null the Grouping method used will be JGroups
- *
+ * <p>
+ * The discovery configuration could either use plain UDP, or JGroups.<br/>
+ * If using UDP, all the UDP properties will be filled and the jgroups properties will be
+ * {@code null}.<br/>
+ * If using JGroups, all the UDP properties will be -1 or {@code null} and the jgroups properties
+ * will be filled.<br/>
+ * If by any reason, on an user misconfiguration both properties are filled, the JGroups takes
+ * precedence, that means. if jgroupsFile != null the Grouping method used will be JGroups
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
- * Created 18 Nov 2008 08:47:30
- *
- *
  */
 public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
-   
+
    private String name;
 
    private String localBindAddress;
@@ -48,7 +46,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    private int groupPort;
 
    private long refreshTimeout;
-   
+
    private long discoveryInitialWaitTimeout;
 
    private String jgroupsFile;
@@ -81,6 +79,7 @@ public class DiscoveryGroupConfiguration implements Serializable
     * @param refreshTimeout
     * @param discoveryInitialWaitTimeout
     */
+   @Deprecated
    public DiscoveryGroupConfiguration(final String name,
                                       final String localBindAddress,
                                       final String groupAddress,
@@ -111,7 +110,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return name;
    }
-   
+
    public String getLocalBindAddress()
    {
       return localBindAddress;
@@ -139,7 +138,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this.name = name;
    }
-   
+
    /**
     * @param localBindAddress the localBindAddress to set
     */
@@ -179,7 +178,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return discoveryInitialWaitTimeout;
    }
-   
+
    /**
     * @param discoveryInitialWaitTimeout the discoveryInitialWaitTimeout to set
     */

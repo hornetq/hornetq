@@ -32,7 +32,6 @@ import org.hornetq.core.transaction.Transaction;
 /**
  * <p>
  * The implementation will take care of details such as PageSize.
- * </p>
  * <p>
  * The producers will write directly to PagingStore, and the store will decide what Page file should
  * be used based on configured size.
@@ -46,7 +45,7 @@ public interface PagingStore extends HornetQComponent
 
    int getNumberOfPages();
 
-   // The current page in which the system is writing files
+   /** Returns the page id of the current page in which the system is writing files. */
    int getCurrentWritingPage();
 
    SimpleString getStoreName();
@@ -69,10 +68,10 @@ public interface PagingStore extends HornetQComponent
 
    boolean isPaging();
 
-   // It will schedule sync to the file storage
+   /** Schedules sync to the file storage. */
    void sync() throws Exception;
 
-   // It will perform a real sync on the current IO file
+   /** Performs a real sync on the current IO file. */
    void ioSync() throws Exception;
 
    @Deprecated
@@ -115,7 +114,6 @@ public interface PagingStore extends HornetQComponent
 
    Page getCurrentPage();
 
-
    /** @return true if paging was started, or false if paging was already started before this call */
    boolean startPaging() throws Exception;
 
@@ -134,8 +132,7 @@ public interface PagingStore extends HornetQComponent
    boolean lock(long timeout);
 
    /**
-    * Call this method using the same thread used by the last call of {@link PagingStore#lock(long)}
-    * .
+    * Releases locks acquired with {@link PagingStore#lock(long)}.
     */
     void unlock();
 

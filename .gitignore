@@ -733,6 +733,8 @@ examples/pom-template.xml
 /docs/quickstart-guide/.project
 
 native/autom4te.cache
+native/src/.libs
+native/src/.deps
 .settings/org.eclipse.core.resources.prefs
 
 *.iml
