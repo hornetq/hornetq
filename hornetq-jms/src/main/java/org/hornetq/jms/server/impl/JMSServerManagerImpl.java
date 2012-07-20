@@ -190,6 +190,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       config = configuration;
    }
 
+   /** Unused */
+   @Deprecated
    public JMSServerManagerImpl(HornetQServer server, String configFilename, JMSStorageManager storageManager)
    {
       this.server = server;
