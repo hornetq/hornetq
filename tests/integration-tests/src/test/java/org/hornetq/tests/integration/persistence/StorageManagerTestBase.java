@@ -43,9 +43,6 @@ import org.hornetq.utils.TimeAndCounterIDGenerator;
 public abstract class StorageManagerTestBase extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
    protected ExecutorService executor;
 
    protected ExecutorFactory execFactory;
@@ -54,14 +51,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
    protected JMSStorageManager jmsJournal;
 
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
    @Override
    protected void setUp() throws Exception
    {
@@ -79,6 +68,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      Exception exception = null;
       executor.shutdown();
 
       if (journal != null)
@@ -87,9 +77,9 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
          {
             journal.stop();
          }
-         catch (Throwable e)
+         catch (Exception e)
          {
-            e.printStackTrace(); // >> junit report
+            exception = e;
          }
 
          journal = null;
@@ -101,15 +91,18 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
          {
             jmsJournal.stop();
          }
-         catch (Throwable e)
+         catch (Exception e)
          {
-            e.printStackTrace(); // >> junit report
+            if (exception != null)
+               exception = e;
          }
 
          jmsJournal = null;
       }
 
       super.tearDown();
+      if (exception != null)
+         throw exception;
    }
 
    /**
