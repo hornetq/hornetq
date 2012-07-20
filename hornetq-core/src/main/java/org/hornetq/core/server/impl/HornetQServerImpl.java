@@ -43,7 +43,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
-import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -54,7 +53,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -2426,6 +2424,7 @@ public class HornetQServerImpl implements HornetQServer
 
          ServerLocatorInternal locator = null;
          ClientSessionFactoryInternal factory = null;
+         NodeIdListener listener=new NodeIdListener(nodeId0);
          try
          {
             TransportConfiguration[] tpArray =
@@ -2436,21 +2435,18 @@ public class HornetQServerImpl implements HornetQServer
             {
                factory = locator.connectNoWarnings();
             }
-            catch (HornetQNotConnectedException notConnected)
+            catch (Exception notConnected)
             {
                return false;
             }
-            Thread.sleep(5000); // wait a little for the topology updates
-            // if the nodeID is null, then a node with that nodeID MUST be found:
             Topology topology = locator.getTopology();
-            if (topology.isEmpty())
-               // no servers found: trigger normal start.
-               return false;
+
+            listener.latch.await(5, TimeUnit.SECONDS);
+
             if (nodeId0 != null)
             {
-               TopologyMember node = topology.getMember(nodeId0.toString());
-               if (node != null)
-                  // if nodeId found within running servers, try fail-back
+               // if the nodeID is not null, then a node with that nodeID MUST be found:
+               if (listener.isLivePresent)
                   return true;
                // Error! NodeId not found but fail-back servers running: cancel start-up.
                stopTheServer();
@@ -2485,6 +2481,41 @@ public class HornetQServerImpl implements HornetQServer
             }
          }
       }
+
+      final class NodeIdListener implements ClusterTopologyListener
+      {
+         volatile boolean isLivePresent = false;
+
+         private final SimpleString nodeId;
+         private final CountDownLatch latch = new CountDownLatch(1);
+
+         public NodeIdListener(SimpleString nodeId)
+         {
+            this.nodeId = nodeId;
+         }
+
+         @Override
+         public void nodeUP(long eventUID, String nodeID,
+                            Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+         {
+            boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
+            if (isOurNodeId)
+            {
+               isLivePresent = true;
+            }
+            if (isOurNodeId||last)
+            {
+               latch.countDown();
+            }
+         }
+
+         @Override
+         public void nodeDown(long eventUID, String nodeID)
+         {
+            // no-op
+         }
+      }
+
    }
 
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
