@@ -25,9 +25,13 @@ import javax.security.auth.login.Configuration;
  */
 public class ExampleConfiguration extends Configuration
 {
-   private final Map<String, ?> options;
+   private Map<String, ?> options;
 
-   private final String loginModuleName;
+   private String loginModuleName;
+
+   public ExampleConfiguration()
+   {
+   }
 
    public ExampleConfiguration(final String loginModuleName, final Map<String, ?> options)
    {

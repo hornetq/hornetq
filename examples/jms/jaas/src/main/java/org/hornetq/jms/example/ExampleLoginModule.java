@@ -72,6 +72,7 @@ public class ExampleLoginModule implements LoginModule
       char[] passwordChars = iterator.next();
       String password = new String(passwordChars);
       Iterator<Principal> iterator2 = subject.getPrincipals().iterator();
+      System.out.println("subject = " + subject);
       String user = iterator2.next().getName();
 
       boolean authenticated = user.equals(options.get("user")) && password.equals(options.get("pass"));
@@ -83,6 +84,7 @@ public class ExampleLoginModule implements LoginModule
          subject.getPrincipals().add(roles);
       }
       System.out.format("JAAS authentication >>> user=%s, password=%s\n", user, password);
+      System.out.println("authenticated = " + authenticated);
       return authenticated;
 
    }
