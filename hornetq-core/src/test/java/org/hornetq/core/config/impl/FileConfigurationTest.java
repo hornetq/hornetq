@@ -13,6 +13,8 @@
 
 package org.hornetq.core.config.impl;
 
+import java.util.Collections;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -260,7 +262,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(false, ccc.isDuplicateDetection());
             Assert.assertEquals(true, ccc.isForwardWhenNoConsumers());
             Assert.assertEquals(2, ccc.getMaxHops());
-            Assert.assertEquals(null, ccc.getStaticConnectors());
+            Assert.assertEquals(Collections.emptyList(), ccc.getStaticConnectors());
             Assert.assertEquals("dg1", ccc.getDiscoveryGroupName());
          }
       }

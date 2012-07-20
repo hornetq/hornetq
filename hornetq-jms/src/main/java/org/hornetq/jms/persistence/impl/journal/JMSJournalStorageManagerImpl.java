@@ -272,18 +272,14 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#isStarted()
-    */
+   @Override
    public boolean isStarted()
    {
       return started;
    }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#start()
-    */
+   @Override
    public void start() throws Exception
    {
 
@@ -293,8 +289,6 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
 
       started = true;
    }
-
-
 
    @Override
    public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception

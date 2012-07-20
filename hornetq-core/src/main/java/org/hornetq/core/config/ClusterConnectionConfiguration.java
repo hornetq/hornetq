@@ -14,7 +14,7 @@
 package org.hornetq.core.config;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hornetq.api.core.client.HornetQClient;
@@ -130,7 +130,14 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;
       this.reconnectAttempts = reconnectAttempts;
-      this.staticConnectors = staticConnectors != null ? staticConnectors : new ArrayList<String>();
+      if (staticConnectors != null)
+      {
+         this.staticConnectors = staticConnectors;
+      }
+      else
+      {
+         this.staticConnectors = Collections.emptyList();
+      }
       this.duplicateDetection = duplicateDetection;
       this.callTimeout = callTimeout;
       this.callFailoverTimeout = callFAiloverTimeout;
@@ -205,7 +212,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
-      this.staticConnectors = null;
+      this.staticConnectors = Collections.emptyList();
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
       this.minLargeMessageSize = minLargeMessageSize;

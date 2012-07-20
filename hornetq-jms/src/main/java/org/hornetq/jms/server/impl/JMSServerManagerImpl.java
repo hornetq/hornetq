@@ -49,6 +49,7 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
@@ -108,9 +109,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private BindingRegistry registry;
 
-   private Map<String, HornetQQueue> queues = new HashMap<String, HornetQQueue>();
+   private final Map<String, HornetQQueue> queues = new HashMap<String, HornetQQueue>();
 
-   private Map<String, HornetQTopic> topics = new HashMap<String, HornetQTopic>();
+   private final Map<String, HornetQTopic> topics = new HashMap<String, HornetQTopic>();
 
    private final Map<String, HornetQConnectionFactory> connectionFactories = new HashMap<String, HornetQConnectionFactory>();
 
@@ -145,7 +146,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private JMSStorageManager storage;
 
-   private Map<String, List<String>> unRecoveredJndi = new HashMap<String, List<String>>();
+   private final Map<String, List<String>> unRecoveredJndi = new HashMap<String, List<String>>();
 
    public JMSServerManagerImpl(final HornetQServer server) throws Exception
    {
@@ -156,6 +157,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       configFileName = null;
    }
 
+   /** Unused */
+   @Deprecated
    public JMSServerManagerImpl(final HornetQServer server, final BindingRegistry registry) throws Exception
    {
       this.server = server;
@@ -209,7 +212,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return;
       }
-      
+
       active = true;
 
       jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
@@ -249,7 +252,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
 
          cachedCommands.clear();
-         
+
          recoverJndiBindings();
 
       }
@@ -258,7 +261,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          HornetQJMSLogger.LOGGER.jmsDeployerStartError(e);
       }
    }
-      
+
    public void recoverJndiBindings(String name, PersistedType type)
          throws NamingException
    {
@@ -314,7 +317,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       //now its time to add journal recovered stuff
       List<PersistedJNDI> jndiSpace = storage.recoverPersistedJNDI();
-      
+
       for (PersistedJNDI record : jndiSpace)
       {
          Map<String, List<String>> mapJNDI;
@@ -387,10 +390,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       server.start();
 
-      if (server.getReplicationEndpoint() != null)
+      ReplicationEndpoint replicationEndPoint = server.getReplicationEndpoint();
+      if (replicationEndPoint != null)
       {
          createJournal();
-         storage.installReplication(server.getReplicationEndpoint());
+         storage.installReplication(replicationEndPoint);
       }
    }
 
@@ -402,56 +406,56 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             return;
          }
-   
+
          if (jmsDeployer != null)
          {
             jmsDeployer.stop();
          }
-   
+
          if (deploymentManager != null)
          {
             deploymentManager.stop();
          }
-   
+
          // Storage could be null on a shared store backup server before initialization
          if (storage != null)
          {
             storage.stop();
          }
-   
+
          unbindJNDI(queueJNDI);
-   
+
          unbindJNDI(topicJNDI);
-   
+
          unbindJNDI(connectionFactoryJNDI);
-   
+
          for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
          {
             shutdownConnectionFactory(connectionFactory);
          }
-   
+
          connectionFactories.clear();
          connectionFactoryJNDI.clear();
-   
+
          queueJNDI.clear();
          queues.clear();
-   
+
          topicJNDI.clear();
          topics.clear();
-   
+
          if (registry != null)
          {
             registry.close();
          }
-   
+
          // it could be null if a backup
          if (jmsManagementService != null)
          {
             jmsManagementService.unregisterJMSServer();
-   
+
             jmsManagementService.stop();
          }
-         
+
          started = false;
       }
 
@@ -532,15 +536,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       runAfterActive(new WrappedRunnable()
       {
+         @Override
          public String toString()
          {
             return "createQueue for " + queueName;
          }
 
+         @Override
          public void runException() throws Exception
          {
             checkJNDI(jndi);
-            
+
             if (internalCreateQueue(queueName, selectorString, durable))
             {
 
@@ -588,15 +594,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       runAfterActive(new WrappedRunnable()
       {
+         @Override
          public String toString()
          {
             return "createTopic for " + topicName;
          }
 
+         @Override
          public void runException() throws Exception
          {
             checkJNDI(jndi);
-            
+
             if (internalCreateTopic(topicName))
             {
                HornetQDestination destination = topics.get(topicName);
@@ -636,7 +644,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public boolean addTopicToJndi(final String topicName, final String jndiBinding) throws Exception
    {
       checkInitialised();
-    
+
       checkJNDI(jndiBinding);
 
       HornetQTopic destination = topics.get(topicName);
@@ -700,7 +708,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception
    {
       checkInitialised();
-      
+
       checkJNDI(jndiBinding);
 
       HornetQConnectionFactory factory = connectionFactories.get(name);
@@ -749,11 +757,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // HORNETQ-911 - make this runAfterActive to prevent WARN messages on shutdown/undeployment when the backup was never activated
       runAfterActive(new WrappedRunnable()
       {
+         @Override
          public String toString()
          {
             return "removeQueueFromJNDI for " + name;
          }
 
+         @Override
          public void runException() throws Exception
          {
             checkInitialised();
@@ -798,11 +808,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // HORNETQ-911 - make this runAfterActive to prevent WARN messages on shutdown/undeployment when the backup was never activated
       runAfterActive(new WrappedRunnable()
       {
+         @Override
          public String toString()
          {
             return "removeTopicFromJNDI for " + name;
          }
 
+         @Override
          public void runException() throws Exception
          {
             checkInitialised();
@@ -1095,7 +1107,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       String[] usedJNDI = jndi.toArray(new String[jndi.size()]);
-      
+
       HornetQConnectionFactory realCF = internalCreateCFPOJO(cf);
 
       if (cf.isPersisted())
@@ -1118,12 +1130,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       runAfterActive(new WrappedRunnable()
       {
-  
+
+         @Override
          public String toString()
          {
             return "createConnectionFactory for " + cfConfig.getName();
          }
 
+         @Override
          public void runException() throws Exception
          {
             checkJNDI(jndi);
@@ -1148,7 +1162,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                storage.storeConnectionFactory(new PersistedConnectionFactory(cfConfig));
                storage.addJNDI(PersistedType.ConnectionFactory, cfConfig.getName(), usedJNDI);
             }
-            
+
             JMSServerManagerImpl.this.recoverJndiBindings(cfConfig.getName(), PersistedType.ConnectionFactory);
          }
       });
@@ -1377,11 +1391,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       runAfterActive(new WrappedRunnable()
       {
 
+         @Override
          public String toString()
          {
             return "destroyConnectionFactory for " + name;
          }
 
+         @Override
          public void runException() throws Exception
          {
             shutdownConnectionFactory(name);
@@ -1591,10 +1607,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          list.add(jndiItem);
       }
    }
-   
+
    private void checkJNDI(final String ... jndiNames) throws NamingException
    {
-      
+
       for (String jndiName : jndiNames)
       {
          if (registry.lookup(jndiName) != null)

@@ -892,17 +892,12 @@ public class JMSServerControlTest extends ManagementTestBase
          return delegate.isStarted();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.jms.persistence.JMSStorageManager#installReplication(org.hornetq.core.replication.ReplicationEndpoint)
-       */
+      @Override
       public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
       {
          delegate.installReplication(replicationEndpoint);
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.jms.persistence.JMSStorageManager#load()
-       */
       public void load() throws Exception
       {
          delegate.load();

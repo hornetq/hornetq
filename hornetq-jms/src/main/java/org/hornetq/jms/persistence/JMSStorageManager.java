@@ -32,16 +32,6 @@ import org.hornetq.jms.persistence.config.PersistedType;
 public interface JMSStorageManager extends HornetQComponent
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    void load() throws Exception;
 
    void storeDestination(PersistedDestination destination) throws Exception;
@@ -55,14 +45,6 @@ public interface JMSStorageManager extends HornetQComponent
    void storeConnectionFactory(PersistedConnectionFactory connectionFactory) throws Exception;
 
    List<PersistedConnectionFactory> recoverConnectionFactories();
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
    void addJNDI(PersistedType type, String name, String ... address) throws Exception;
 

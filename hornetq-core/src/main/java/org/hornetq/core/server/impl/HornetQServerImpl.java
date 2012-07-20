@@ -2138,18 +2138,18 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
 
             if (!attemptFailBack) {
+               final String liveConnectorName = configuration.getLiveConnectorName();
+               liveConnector = configuration.getConnectorConfigurations().get(liveConnectorName);
                serverLocator0.addClusterTopologyListener(this);
             }
             final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
             if (liveServerSessionFactory == null)
-               throw new RuntimeException("Could not estabilish the connection");
+               throw new RuntimeException("Could not establish the connection");
             if (!attemptFailBack)
             {
-               final String liveConnectorName = configuration.getLiveConnectorName();
-               liveConnector = configuration.getConnectorConfigurations().get(liveConnectorName);
                latch.await(MAX_TOPOLOGY_WAIT, TimeUnit.SECONDS);
                if (nodeID == null)
-                  throw new RuntimeException("Could not estabilish the connection");
+                  throw new RuntimeException("Could not establish the connection");
                serverLocator0.removeClusterTopologyListener(this);
                nodeManager.setNodeID(nodeID);
             }

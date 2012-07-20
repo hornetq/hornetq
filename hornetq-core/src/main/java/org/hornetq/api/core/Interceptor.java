@@ -20,8 +20,8 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 /**
  * This is class is a simple way to intercepting calls on HornetQ client and servers.
  * <p/>
- * To add an interceptor to HornetQ server, you have to modify hornetq-configuration.xml. To add it
- * to a client, use {@link ServerLocator#addInterceptor(Interceptor)}
+ * To add an interceptor to HornetQ server, you have to modify {@literal hornetq-configuration.xml}.
+ * To add it to a client, use {@link ServerLocator#addInterceptor(Interceptor)}
  * @author clebert.suconic@jboss.com
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
