@@ -195,6 +195,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
 
+   public static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
+
    public static final boolean DEFAULT_MASK_PASSWORD = false;
 
    // Attributes -----------------------------------------------------------------------------
@@ -353,11 +355,11 @@ public class ConfigurationImpl implements Configuration
 
    private long failbackDelay = ConfigurationImpl.DEFAULT_FAILBACK_DELAY;
 
+   private boolean checkForLiveServer = ConfigurationImpl.DEFAULT_CHECK_FOR_LIVE_SERVER;
+
    private boolean maskPassword = ConfigurationImpl.DEFAULT_MASK_PASSWORD;
 
    private transient String passwordCodec;
-
-   private final Set<TransportConfiguration> failBackConnectors = new HashSet<TransportConfiguration>();
 
    // Public -------------------------------------------------------------------------
 
@@ -522,11 +524,6 @@ public class ConfigurationImpl implements Configuration
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
-   }
-
-   public Set<TransportConfiguration> getFailBackConnectors()
-   {
-      return failBackConnectors;
    }
 
    public String getLiveConnectorName()
@@ -1403,6 +1400,16 @@ public class ConfigurationImpl implements Configuration
    public void setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
+   }
+
+   public boolean isCheckForLiveServer()
+   {
+      return checkForLiveServer;
+   }
+
+   public void setCheckForLiveServer(boolean checkForLiveServer)
+   {
+      this.checkForLiveServer = checkForLiveServer;
    }
 
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)

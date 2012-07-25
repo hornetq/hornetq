@@ -14,6 +14,7 @@ import org.hornetq.core.config.Configuration;
 public final class ReplicatedBackupUtils
 {
    public static final String LIVE_NODE_NAME = "hqLIVE";
+   public static final String BACKUP_NODE_NAME = "hqBackup";
    private ReplicatedBackupUtils()
    {
       // Utility class
@@ -51,9 +52,9 @@ public final class ReplicatedBackupUtils
       }
 
       final String backupConnectorName = backupConnector.getName();
-      backupConfig.getConnectorConfigurations().put(backupConnectorName, backupConnector);
+      backupConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
       backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
-      ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnectorName, backupConnectorName);
+      ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, BACKUP_NODE_NAME, LIVE_NODE_NAME);
 
       backupConfig.setSharedStore(false);
       backupConfig.setBackup(true);
@@ -62,9 +63,10 @@ public final class ReplicatedBackupUtils
 
       liveConfig.setName(LIVE_NODE_NAME);
       liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
+      liveConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(false);
       liveConfig.setClustered(true);
-      ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, LIVE_NODE_NAME, LIVE_NODE_NAME);
+      ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, LIVE_NODE_NAME, BACKUP_NODE_NAME);
    }
 }

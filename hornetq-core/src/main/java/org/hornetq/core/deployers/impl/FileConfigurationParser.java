@@ -374,14 +374,6 @@ public final class FileConfigurationParser
          config.getAcceptorConfigurations().add(acceptorConfig);
       }
 
-      NodeList failBackConnectorNodes = e.getElementsByTagName("failback-connector");
-      for (int i = 0; i < failBackConnectorNodes.getLength(); i++)
-      {
-         Element connectorNode = (Element)connectorNodes.item(i);
-         TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode, config);
-         config.getFailBackConnectors().add(connectorConfig);
-      }
-
       NodeList bgNodes = e.getElementsByTagName("broadcast-group");
 
       for (int i = 0; i < bgNodes.getLength(); i++)

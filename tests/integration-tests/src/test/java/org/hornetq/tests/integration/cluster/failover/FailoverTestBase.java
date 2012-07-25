@@ -229,8 +229,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          configuration.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
          return;
       }
-      configuration.getFailBackConnectors().add(backupConnector);
-
+      configuration.setCheckForLiveServer(true);
       configuration.setLiveConnectorName(ReplicatedBackupUtils.LIVE_NODE_NAME);
    }
 
