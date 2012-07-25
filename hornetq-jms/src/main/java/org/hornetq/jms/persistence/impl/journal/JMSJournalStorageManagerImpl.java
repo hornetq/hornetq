@@ -291,14 +291,6 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
    }
 
    @Override
-   public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
-   {
-      jmsJournal.loadInternalOnly();
-      replicationEndpoint.registerJournal((byte)2, this.jmsJournal);
-   }
-
-
-   @Override
    public void stop() throws Exception
    {
       this.started = false;
