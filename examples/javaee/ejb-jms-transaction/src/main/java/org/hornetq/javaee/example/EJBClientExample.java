@@ -18,9 +18,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.hornetq.javaee.example.server.SendMessageService;
+
+import java.util.Properties;
 
 /**
  * An example showing how to invoke a EJB which sends a JMS message and update a JDBC table in the same transaction.
@@ -36,11 +39,23 @@ public class EJBClientExample
       Connection connection = null;
       try
       {
-         // Step 1. Obtain an Initial Context
-         initialContext = new InitialContext();
+         // Step 1. Create an initial context to perform the JNDI lookup.
+         final Properties env = new Properties();
+
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+
+         env.put(Context.SECURITY_PRINCIPAL, "guest");
+
+         env.put(Context.SECURITY_CREDENTIALS, "password");
+
+         env.put("jboss.naming.client.ejb.context", true);
+
+         initialContext = new InitialContext(env);
 
          // Step 2. Lookup the EJB
-         SendMessageService service = (SendMessageService)initialContext.lookup("ejb-jms-transaction-example/SendMessageBean/remote");
+         SendMessageService service = (SendMessageService)initialContext.lookup("java:ejb/SendMessageBean!org.hornetq.javaee.example.server.SendMessageService");
 
          // Step 3. Create the DB table which will be updated
          service.createTable();
@@ -50,13 +65,13 @@ public class EJBClientExample
          System.out.println("invoked the EJB service");
 
          // Step 5. Lookup the JMS connection factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("jms/RemoteConnectionFactory");
 
          // Step 6. Lookup the queue
-         Queue queue = (Queue)initialContext.lookup("queue/testQueue");
+         Queue queue = (Queue)initialContext.lookup("jms/queues/testQueue");
 
          // Step 7. Create a connection, a session and a message consumer for the queue
-         connection = cf.createConnection();
+         connection = cf.createConnection("guest", "password");
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer consumer = session.createConsumer(queue);
 
