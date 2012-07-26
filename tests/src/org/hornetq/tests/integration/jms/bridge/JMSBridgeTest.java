@@ -31,7 +31,6 @@ import javax.management.ObjectName;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import com.sun.java.browser.plugin2.liveconnect.v1.Bridge;
 import junit.framework.Assert;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
