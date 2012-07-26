@@ -41,7 +41,7 @@ public class SendMessageBean implements SendMessageService
    public void createTable() throws Exception
    {
       InitialContext ic = new InitialContext();
-      DataSource ds = (DataSource)ic.lookup("java:/DefaultDS");
+      DataSource ds = (DataSource)ic.lookup("java:jboss/datasources/ExampleDS");
       java.sql.Connection con = ds.getConnection();
 
       // check if the table exists:
@@ -60,7 +60,7 @@ public class SendMessageBean implements SendMessageService
       if (createTable)
       {
          PreparedStatement pr = con.prepareStatement("CREATE TABLE " + SendMessageBean.TABLE +
-                                                     "(id VARCHAR(100), text VARCHAR(100)) TYPE=innodb;");
+                                                     "(id VARCHAR(100), text VARCHAR(100));");
          pr.execute();
          pr.close();
          System.out.println("Table " + SendMessageBean.TABLE + " created");
@@ -103,7 +103,7 @@ public class SendMessageBean implements SendMessageService
          // DB operations
 
          // Step 7. Look up the XA Data Source
-         DataSource ds = (DataSource)ic.lookup("java:/XADS");
+         DataSource ds = (DataSource)ic.lookup("java:jboss/datasources/XADS");
 
          // Step 8. Retrieve the JDBC connection
          jdbcConnection = ds.getConnection();
