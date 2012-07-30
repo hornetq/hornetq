@@ -19,7 +19,10 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import java.util.Properties;
 
 /**
  * A simple JMS Queue example that uses servlet protocol.
@@ -35,16 +38,28 @@ public class ServletTransportExample
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = new InitialContext();
+         final Properties env = new Properties();
+
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+
+         env.put(Context.SECURITY_PRINCIPAL, "guest");
+
+         env.put(Context.SECURITY_CREDENTIALS, "password");
+
+         env.put("jboss.naming.client.ejb.context", true);
+
+         initialContext = new InitialContext(env);
 
          // Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue)initialContext.lookup("/queue/testQueue");
+         Queue queue = (Queue)initialContext.lookup("jms/queues/testQueue");
 
          // Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ServletConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("jms/ServletConnectionFactory");
 
          // Step 4.Create a JMS Connection
-         connection = cf.createConnection();
+         connection = cf.createConnection("guest", "password");
 
          System.out.println("connection created: " + connection);
 
