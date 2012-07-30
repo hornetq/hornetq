@@ -24,7 +24,7 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="spring.integration">
-  <title>Spring Integration<parameter></parameter></title>
+  <title>Spring Integration</title>
 
   <para>HornetQ provides a simple bootstrap class,
   <literal>org.hornetq.integration.spring.SpringJmsBootstrap</literal>, for
