@@ -218,7 +218,7 @@
         <para>To configure the JAAS security manager to work with your pre-built JAAS infrastructure
             you need to specify the security manager as a <literal>JAASSecurityManager</literal> in
             the beans file. Here's an example:</para>
-        <programlisting><![CDATA[
+        <programlisting>
 &lt;bean name="HornetQSecurityManager"
       class="org.hornetq.integration.jboss.security.JAASSecurityManager"&gt;
     &lt;start ignored="true"/&gt;
@@ -232,7 +232,7 @@
        &lt;inject bean="ExampleCallbackHandler"/&gt;
     &lt;/property&gt;
 &lt;/bean&gt;
-        ]]></programlisting>
+        </programlisting>
         <para>Note that you need to feed the JAAS security manager with three properties:</para>
         <itemizedlist>
             <listitem>

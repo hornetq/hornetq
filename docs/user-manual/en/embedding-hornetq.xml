@@ -265,8 +265,4 @@ jmsServer.start();</programlisting>
         new HornetQBootstrapServer(new String[] {"hornetq-beans.xml"});
         bootStrap.run(</programlisting>
   </section>
-
-  <section>
-    <para />
-  </section>
 </chapter>
