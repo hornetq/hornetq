@@ -1727,8 +1727,21 @@ public class HornetQServerImpl implements HornetQServer
          {
             storageManager.rollbackBindings(txID);
          }
-         queue.close();
-         pageSubscription.close();
+         try
+         {
+            if (queue!= null)
+            {
+               queue.close();
+            }
+            if (pageSubscription != null)
+            {
+               pageSubscription.close();
+            }
+         }
+         catch (Throwable ignored)
+         {
+            log.error(ignored);
+         }
          throw e;
       }
       
