@@ -1721,12 +1721,25 @@ public class HornetQServerImpl implements HornetQServer
       }
       catch (Exception e)
       {
-         if (durable)
+         try
          {
-            storageManager.rollbackBindings(txID);
+            if (durable)
+            {
+               storageManager.rollbackBindings(txID);
+            }
+            if (queue != null)
+            {
+               queue.close();
+            }
+            if (pageSubscription != null)
+            {
+               pageSubscription.close();
+            }
          }
-         queue.close();
-         pageSubscription.close();
+         catch (Throwable ignored)
+         {
+            HornetQLogger.LOGGER.debug(ignored.getMessage(), ignored);
+         }
          throw e;
       }
 
