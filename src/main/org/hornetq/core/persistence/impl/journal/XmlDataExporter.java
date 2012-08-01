@@ -503,7 +503,11 @@ public class XmlDataExporter
       }
       else
       {
-         xmlWriter.writeCData(encode(message.getBodyBuffer().toByteBuffer().array()));
+         int size = message.getEndOfBodyPosition() - message.getBodyBuffer().readerIndex();
+         byte[] buffer = new byte[size];
+         message.getBodyBuffer().readBytes(buffer);
+
+         xmlWriter.writeCData(encode(buffer));
       }
       xmlWriter.writeEndElement(); // end MESSAGE_BODY
    }
