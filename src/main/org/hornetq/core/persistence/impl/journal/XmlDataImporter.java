@@ -13,7 +13,6 @@
 
 package org.hornetq.core.persistence.impl.journal;
 
-
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -87,7 +86,7 @@ public class XmlDataImporter
     * constructor which takes 2 sessions.
     *
     * @param inputStream the stream from which to read the XML for import
-    * @param session used for sending messages, must use auto-commit for sends
+    * @param session     used for sending messages, must use auto-commit for sends
     */
    public XmlDataImporter(InputStream inputStream, ClientSession session)
    {
@@ -98,8 +97,8 @@ public class XmlDataImporter
     * This is the constructor to use if you wish to import all messages transactionally.  Pass in a session which doesn't
     * use auto-commit for sends, and one that does (for management operations necessary during import).
     *
-    * @param inputStream the stream from which to read the XML for import
-    * @param session used for sending messages, doesn't need to auto-commit sends
+    * @param inputStream       the stream from which to read the XML for import
+    * @param session           used for sending messages, doesn't need to auto-commit sends
     * @param managementSession used for management queries, must use auto-commit for sends
     */
    public XmlDataImporter(InputStream inputStream, ClientSession session, ClientSession managementSession)
@@ -134,9 +133,7 @@ public class XmlDataImporter
          ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), connectionParams));
          ClientSessionFactory sf = serverLocator.createSessionFactory();
          session = sf.createSession(false, !transactional, true);
-         if (transactional) {
-            managementSession = sf.createSession(false, true, true);
-         }
+         managementSession = sf.createSession(false, true, true);
          localSession = true;
       }
       catch (Exception e)
@@ -250,7 +247,8 @@ public class XmlDataImporter
       // loop through the XML and gather up all the message's data (i.e. body, properties, queues, etc.)
       while (reader.hasNext())
       {
-         switch (reader.getEventType())
+         int eventType = reader.getEventType();
+         switch (eventType)
          {
             case XMLStreamConstants.START_ELEMENT:
                if (XmlDataConstants.MESSAGE_BODY.equals(reader.getLocalName()))
@@ -434,9 +432,13 @@ public class XmlDataImporter
    {
       boolean isLarge = false;
 
-      if (reader.getAttributeCount() > 0)
+      for (int i = 0; i < reader.getAttributeCount(); i++)
       {
-         isLarge = Boolean.parseBoolean(reader.getAttributeValue(0));
+         String attributeName = reader.getAttributeLocalName(i);
+         if (XmlDataConstants.MESSAGE_IS_LARGE.equals(attributeName))
+         {
+            isLarge = Boolean.parseBoolean(reader.getAttributeValue(i));
+         }
       }
       reader.next();
       if (isLarge)
