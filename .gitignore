@@ -101,6 +101,7 @@ examples/jms/topic-hierarchies/Topic-hierarchies.iml
 examples/jms/topic-selector-example1/Topic-selector-example1.iml
 examples/jms/topic-selector-example2/Topic-selector-example2.iml
 examples/jms/topic/Topic.iml
+examples/jms/topic/build
 examples/jms/transaction-failover/Transaction-failover.iml
 examples/jms/transactional/Transactional.iml
 examples/jms/xa-heuristic/Xa-heuristic.iml

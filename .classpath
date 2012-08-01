@@ -131,6 +131,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-expression.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-jms.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-tx.jar"/>
-	<classpathentry kind="lib" path="thirdparty/io/netty/lib/netty.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
