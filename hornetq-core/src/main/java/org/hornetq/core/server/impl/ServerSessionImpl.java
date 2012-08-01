@@ -415,7 +415,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
       }
 
-      Queue queue = server.createQueue(address, name, filterString, durable, temporary);
+      server.createQueue(address, name, filterString, durable, temporary);
 
       if (temporary)
       {
@@ -425,7 +425,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // session is closed.
          // It is up to the user to delete the queue when finished with it
 
-         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name, queue);
+         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(server, name);
 
          remotingConnection.addCloseListener(cleaner);
          remotingConnection.addFailureListener(cleaner);
@@ -436,8 +436,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          HornetQLogger.LOGGER.debug("Queue " + name + " created on address " + name +
-                  " with filter=" + filterString + " temporary = " +
-                  temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
+            " with filter=" + filterString + " temporary = " +
+            temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
       }
 
    }
@@ -453,19 +453,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private static class TempQueueCleanerUpper implements CloseListener, FailureListener
    {
-      private final PostOffice postOffice;
-
       private final SimpleString bindingName;
 
-      private final Queue queue;
+      private final HornetQServer server;
 
-      TempQueueCleanerUpper(final PostOffice postOffice, final SimpleString bindingName, final Queue queue)
+      TempQueueCleanerUpper(final HornetQServer server, final SimpleString bindingName)
       {
-         this.postOffice = postOffice;
+         this.server = server;
 
          this.bindingName = bindingName;
-
-         this.queue = queue;
       }
 
       private void run()
@@ -476,12 +472,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             {
                HornetQLogger.LOGGER.debug("deleting temporary queue " + bindingName);
             }
-            if (postOffice.getBinding(bindingName) != null)
+            try
             {
-               postOffice.removeBinding(bindingName);
+               server.destroyQueue(bindingName);
             }
-
-            queue.deleteAllReferences();
+            catch (HornetQException e)
+            {
+               // that's fine.. it can happen due to queue already been deleted
+               HornetQLogger.LOGGER.debug(e.getMessage(), e);
+            }
          }
          catch (Exception e)
          {

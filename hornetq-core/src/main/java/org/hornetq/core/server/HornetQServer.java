@@ -169,6 +169,8 @@ public interface HornetQServer extends HornetQComponent
 
    Queue locateQueue(SimpleString queueName) throws Exception;
 
+   void destroyQueue(SimpleString queueName) throws Exception;
+
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    ScheduledExecutorService getScheduledPool();

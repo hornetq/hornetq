@@ -1002,6 +1002,15 @@ public class HornetQServerImpl implements HornetQServer
       return createQueue(address, queueName, filterString, durable, temporary, true);
    }
 
+   public void destroyQueue(final SimpleString queueName) throws Exception
+   {
+      // The session is passed as an argument to verify if the user has authorization to delete the queue
+      // in some cases (such as temporary queues) this should happen regardless of the authorization
+      // since that will only happen during a session close, which will be used to cleanup on temporary queues
+      destroyQueue(queueName, null);
+   }
+
+
    public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
    {
       addressSettingsRepository.clearCache();
@@ -1015,13 +1024,16 @@ public class HornetQServerImpl implements HornetQServer
 
       Queue queue = (Queue)binding.getBindable();
 
-      if (queue.getConsumerCount() != 0)
-      {
-         HornetQMessageBundle.BUNDLE.cannotDeleteQueue(queue.getName(), queueName, binding.getClass().getName());
-      }
-
       if (session != null)
       {
+         // This check is only valid if session != null
+         // When sessio = null, this check is being done outside of session usage, through temp queues for instance
+         // and this check is out of context.
+         if (queue.getConsumerCount() != 0)
+         {
+            HornetQMessageBundle.BUNDLE.cannotDeleteQueue(queue.getName(), queueName, binding.getClass().getName());
+         }
+
          if (queue.isDurable())
          {
             // make sure the user has privileges to delete this queue
@@ -1709,12 +1721,25 @@ public class HornetQServerImpl implements HornetQServer
       }
       catch (Exception e)
       {
-         if (durable)
+         try
          {
-            storageManager.rollbackBindings(txID);
+            if (durable)
+            {
+               storageManager.rollbackBindings(txID);
+            }
+            if (queue != null)
+            {
+               queue.close();
+            }
+            if (pageSubscription != null)
+            {
+               pageSubscription.close();
+            }
          }
-         queue.close();
-         pageSubscription.close();
+         catch (Throwable ignored)
+         {
+            HornetQLogger.LOGGER.debug(ignored.getMessage(), ignored);
+         }
          throw e;
       }
 
