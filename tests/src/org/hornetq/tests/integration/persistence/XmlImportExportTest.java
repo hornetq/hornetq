@@ -16,13 +16,7 @@ package org.hornetq.tests.integration.persistence;
 import junit.framework.Assert;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
@@ -565,6 +559,111 @@ public class XmlImportExportTest extends ServiceTestBase
 
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertNotNull(msg);
+
+      session.close();
+      locator.close();
+      server.stop();
+   }
+
+   public void testBody() throws Exception
+   {
+      final String QUEUE_NAME = "A1";
+      HornetQServer server = createServer(true);
+      server.start();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession(false, true, true);
+
+      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+
+      ClientProducer producer = session.createProducer(QUEUE_NAME);
+
+      ClientMessage msg = session.createMessage(Message.TEXT_TYPE, true);
+      msg.getBodyBuffer().writeString("bob123");
+      producer.send(msg);
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearData();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
+      session = factory.createSession(false, false, true);
+      ClientSession managementSession = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session, managementSession);
+      xmlDataImporter.processXml();
+      ClientConsumer consumer = session.createConsumer(QUEUE_NAME);
+      session.start();
+
+      msg = consumer.receive(CONSUMER_TIMEOUT);
+      Assert.assertNotNull(msg);
+      Assert.assertEquals("bob123", msg.getBodyBuffer().readString());
+
+      session.close();
+      locator.close();
+      server.stop();
+   }
+
+   public void testBody2() throws Exception
+   {
+      final String QUEUE_NAME = "A1";
+      HornetQServer server = createServer(true);
+      server.start();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession(false, true, true);
+
+      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+
+      ClientProducer producer = session.createProducer(QUEUE_NAME);
+
+      ClientMessage msg = session.createMessage(true);
+      byte bodyTst[] = new byte[10];
+      for (int i = 0; i < 10; i++)
+      {
+         bodyTst[i] = (byte)(i + 1);
+      }
+      msg.getBodyBuffer().writeBytes(bodyTst);
+      assertEquals(bodyTst.length, msg.getBodySize());
+      producer.send(msg);
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearData();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
+      session = factory.createSession(false, false, true);
+      ClientSession managementSession = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session, managementSession);
+      xmlDataImporter.processXml();
+      ClientConsumer consumer = session.createConsumer(QUEUE_NAME);
+      session.start();
+
+      msg = consumer.receive(CONSUMER_TIMEOUT);
+      Assert.assertNotNull(msg);
+      assertEquals(msg.getBodySize(), bodyTst.length);
+      byte bodyRead[] = new byte[bodyTst.length];
+      msg.getBodyBuffer().readBytes(bodyRead);
+      assertEqualsByteArrays(bodyTst, bodyRead);
 
       session.close();
       locator.close();
