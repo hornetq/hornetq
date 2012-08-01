@@ -314,8 +314,55 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>PasswordCodec</config-property-name>\n" +
          "         <config-property-type>java.lang.String</config-property-type>\n" +
          "         <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=ssss</config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>" + 
+         "         <description>some description</description>" + 
+         "         <config-property-name>InitialMessagePacketSize</config-property-name>" + 
+         "         <config-property-type>int</config-property-type>" + 
+         "         <config-property-value>1</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desc</description>" + 
+         "         <config-property-name>GroupID</config-property-name>" + 
+         "         <config-property-type>java.lang.String</config-property-type>" + 
+         "         <config-property-value>xx</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desc</description>" + 
+         "         <config-property-name>FailoverOnInitialConnection</config-property-name>" + 
+         "         <config-property-type>boolean</config-property-type>" + 
+         "         <config-property-value>true</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desk</description>" + 
+         "         <config-property-name>CompressLargeMessage</config-property-name>" + 
+         "         <config-property-type>boolean</config-property-type>" + 
+         "         <config-property-value>true</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desk</description>" + 
+         "         <config-property-name>MaxRetryInterval</config-property-name>" + 
+         "         <config-property-type>long</config-property-type>" + 
+         "         <config-property-value>1</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desc</description>" + 
+         "         <config-property-name>CacheLargeMessagesClient</config-property-name>" + 
+         "         <config-property-type>boolean</config-property-type>" + 
+         "         <config-property-value>true</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>1</description>" + 
+         "         <config-property-name>ProducerWindowSize</config-property-name>" + 
+         "         <config-property-type>int</config-property-type>" + 
+         "         <config-property-value>1</config-property-value>" + 
+         "      </config-property>" + 
+         "      <config-property>" + 
+         "         <description>some desc</description>" + 
+         "         <config-property-name>InitialConnectAttempts</config-property-name>" + 
+         "         <config-property-type>int</config-property-type>" + 
+         "         <config-property-value>1</config-property-value>" + 
          "      </config-property>";
-
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
