@@ -27,6 +27,14 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.JMSTestBase;
 
+/**
+ * 
+ * This will perform cleanup tests on paging while using JMS topics
+ *
+ * @author clebertsuconic
+ *
+ *
+ */
 public class JMSPagingFileDeleteTest extends JMSTestBase
 {
    static Logger log = Logger.getLogger(JMSPagingFileDeleteTest.class);
@@ -82,6 +90,72 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
       super.tearDown();
    }
    
+   /**
+    * Test replicating issue JBPAPP-9603
+    * @throws Exception
+    */
+   public void testTopicsWithNonDurableSubscription() throws Exception
+   {
+      connection = null;
+
+      try
+      {
+         for (int repeat = 0 ; repeat < 2; repeat++)
+         {
+            connection = cf.createConnection();
+            connection.setClientID("cid");
+
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            MessageProducer producer = session.createProducer(topic1);
+
+            subscriber1 = session.createConsumer(topic1);
+
+            // -----------------(Step1) Publish Messages to make Paging Files. --------------------
+            System.out.println("---------- Send messages. ----------");
+            BytesMessage bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(new byte[JMSPagingFileDeleteTest.MESSAGE_SIZE]);
+            for (int i = 0; i < JMSPagingFileDeleteTest.MESSAGE_NUM; i++)
+            {
+               producer.send(bytesMessage);
+            }
+            System.out.println("Sent " + JMSPagingFileDeleteTest.MESSAGE_NUM + " messages.");
+   
+            pagingStore = server.getPagingManager().getPageStore(new SimpleString("jms.topic.topic1"));
+            printPageStoreInfo(pagingStore);
+   
+            assertTrue(pagingStore.isPaging());
+   
+            // -----------------(Step2) Closing the connection alone should cleanup pages -------
+            connection.close();
+            
+            // note that if we closed subscriber or session the bug wouldn't happen
+            // as they were already deleting the page-subscription properly
+            // So, you can't close subscriber1 or session as that would change the test
+            //subscriber1.close(); // << you can't call this on this test
+            //session.close(); // << can't call this on this test
+
+            
+            long timeout = System.currentTimeMillis() + 5000;
+            while (timeout > System.currentTimeMillis() && pagingStore.isPaging())
+            {
+               Thread.sleep(100);
+            }
+            printPageStoreInfo(pagingStore);
+            assertFalse(pagingStore.isPaging());
+         }
+
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
+
    public void testTopics() throws Exception
    {
       connection = null;

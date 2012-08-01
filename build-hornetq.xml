@@ -2188,7 +2188,7 @@
    <!-- Server execution targets                                                                 -->
    <!-- ======================================================================================== -->
 
-   <target name="runServer" depends="jar">
+   <target name="runServer">
       <mkdir dir="logs"/>
    	  <property name="server.config" value="${src.config.trunk.non-clustered.dir}"/>
       <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
