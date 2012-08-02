@@ -43,7 +43,7 @@ public class ConnectionFactoryProperties
     * The transport config, changing the default configured from the RA
     */
    private List<Map<String, Object>> connectionParameters;
-   
+
    private Boolean ha;
 
    private String connectionLoadBalancingPolicyClassName;
@@ -68,13 +68,21 @@ public class ConnectionFactoryProperties
 
    private Long connectionTTL;
 
+   private Boolean cacheLargeMessagesClient;
+
    private Long callTimeout;
 
+   private Boolean compressLargeMessage;
+
    private Integer consumerWindowSize;
+
+   private Integer producerWindowSize;
 
    private Integer consumerMaxRate;
 
    private Integer confirmationWindowSize;
+
+   private Boolean failoverOnInitialConnection;
 
    private Integer producerMaxRate;
 
@@ -90,17 +98,25 @@ public class ConnectionFactoryProperties
 
    private Boolean preAcknowledge;
 
+   private Integer initialConnectAttempts;
+
    private Long retryInterval;
 
    private Double retryIntervalMultiplier;
+
+   private Long maxRetryInterval;
 
    private Integer reconnectAttempts;
 
    private Boolean useGlobalPools;
 
+   private Integer initialMessagePacketSize;
+
    private Integer scheduledThreadPoolMaxSize;
 
    private Integer threadPoolMaxSize;
+
+   private String groupID;
 
    /**
     * @return the transportType
@@ -131,13 +147,35 @@ public class ConnectionFactoryProperties
    {
       return ha;
    }
-   
+
    public void setHA(final Boolean ha)
    {
       hasBeenUpdated = true;
       this.ha = ha;
    }
-   
+
+   public Boolean isCacheLargeMessagesClient()
+   {
+      return cacheLargeMessagesClient;
+   }
+
+   public void setCacheLargeMessagesClient(Boolean cacheLargeMessagesClient)
+   {
+      hasBeenUpdated = true;
+      this.cacheLargeMessagesClient = cacheLargeMessagesClient;
+   }
+
+   public Boolean isCompressLargeMessage()
+   {
+      return compressLargeMessage;
+   }
+
+   public void setCompressLargeMessage(Boolean compressLargeMessage)
+   {
+      hasBeenUpdated = true;
+      this.compressLargeMessage = compressLargeMessage;
+   }
+
    public String getConnectionLoadBalancingPolicyClassName()
    {
       if (ConnectionFactoryProperties.trace)
@@ -429,6 +467,17 @@ public class ConnectionFactoryProperties
       this.confirmationWindowSize = confirmationWindowSize;
    }
 
+   public Boolean isFailoverOnInitialConnection()
+   {
+      return failoverOnInitialConnection;
+   }
+
+   public void setFailoverOnInitialConnection(Boolean failoverOnInitialConnection)
+   {
+      hasBeenUpdated = true;
+      this.failoverOnInitialConnection = failoverOnInitialConnection;
+   }
+
    public Integer getProducerMaxRate()
    {
       if (ConnectionFactoryProperties.trace)
@@ -446,6 +495,25 @@ public class ConnectionFactoryProperties
       }
       hasBeenUpdated = true;
       this.producerMaxRate = producerMaxRate;
+   }
+
+   public Integer getProducerWindowSize()
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         ConnectionFactoryProperties.log.trace("getProducerWindowSize()");
+      }
+      return producerWindowSize;
+   }
+
+   public void setProducerWindowSize(final Integer producerWindowSize)
+   {
+      if (ConnectionFactoryProperties.trace)
+      {
+         ConnectionFactoryProperties.log.trace("setProducerWindowSize(" + producerWindowSize + ")");
+      }
+      hasBeenUpdated = true;
+      this.producerWindowSize = producerWindowSize;
    }
 
    public Integer getMinLargeMessageSize()
@@ -600,6 +668,17 @@ public class ConnectionFactoryProperties
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
 
+   public Long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
+   }
+
+   public void setMaxRetryInterval(Long maxRetryInterval)
+   {
+      hasBeenUpdated = true;
+      this.maxRetryInterval = maxRetryInterval;
+   }
+
    public Integer getReconnectAttempts()
    {
       if (ConnectionFactoryProperties.trace)
@@ -675,6 +754,40 @@ public class ConnectionFactoryProperties
       hasBeenUpdated = true;
       this.threadPoolMaxSize = threadPoolMaxSize;
    }
+
+   public String getGroupID()
+   {
+      return groupID;
+   }
+
+   public void setGroupID(String groupID)
+   {
+      hasBeenUpdated = true;
+      this.groupID = groupID;
+   }
+
+   public Integer getInitialConnectAttempts()
+   {
+      return initialConnectAttempts;
+   }
+
+   public void setInitialConnectAttempts(Integer initialConnectAttempts)
+   {
+      hasBeenUpdated = true;
+      this.initialConnectAttempts = initialConnectAttempts;
+   }
+
+   public Integer getInitialMessagePacketSize()
+   {
+      return initialMessagePacketSize;
+   }
+
+   public void setInitialMessagePacketSize(Integer initialMessagePacketSize)
+   {
+      hasBeenUpdated = true;
+      this.initialMessagePacketSize = initialMessagePacketSize;
+   }
+
 
    public boolean isHasBeenUpdated()
    {
