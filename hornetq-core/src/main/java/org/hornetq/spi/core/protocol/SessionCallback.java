@@ -28,6 +28,8 @@ public interface SessionCallback
 {
    void sendProducerCreditsMessage(int credits, SimpleString address);
 
+   void sendProducerCreditsFailMessage(int credits, SimpleString address);
+
    int sendMessage(ServerMessage message, long consumerID, int deliveryCount);
 
    int sendLargeMessage(ServerMessage message, long consumerID, long bodySize, int deliveryCount);

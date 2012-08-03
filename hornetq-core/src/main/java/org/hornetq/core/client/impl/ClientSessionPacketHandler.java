@@ -18,11 +18,13 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTIN
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsFailMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
@@ -85,8 +87,15 @@ public class ClientSessionPacketHandler implements ChannelHandler
             {
                SessionProducerCreditsMessage message = (SessionProducerCreditsMessage)packet;
 
-               clientSession.handleReceiveProducerCredits(message.getAddress(),
-                                                          message.getCredits());
+               clientSession.handleReceiveProducerCredits(message.getAddress(), message.getCredits());
+
+               break;
+            }
+            case PacketImpl.SESS_PRODUCER_FAIL_CREDITS:
+            {
+               SessionProducerCreditsFailMessage message = (SessionProducerCreditsFailMessage)packet;
+
+               clientSession.handleReceiveProducerFailCredits(message.getAddress(), message.getCredits());
 
                break;
             }
