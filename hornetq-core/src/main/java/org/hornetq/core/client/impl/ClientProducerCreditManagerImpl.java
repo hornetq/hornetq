@@ -114,6 +114,16 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       }
    }
 
+   public synchronized void receiveFailCredits(final SimpleString address, int credits)
+   {
+      ClientProducerCredits cr = producerCredits.get(address);
+
+      if (cr != null)
+      {
+         cr.receiveFailCredits(credits);
+      }
+   }
+
    public synchronized void reset()
    {
       for (ClientProducerCredits credits : producerCredits.values())
@@ -183,6 +193,10 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       }
 
       public void receiveCredits(int credits)
+      {
+      }
+
+      public void receiveFailCredits(int credits)
       {
       }
 

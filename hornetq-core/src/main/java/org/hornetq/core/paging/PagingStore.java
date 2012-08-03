@@ -121,7 +121,7 @@ public interface PagingStore extends HornetQComponent
 
    void addSize(int size);
 
-   void executeRunnableWhenMemoryAvailable(Runnable runnable);
+   boolean checkMemory(Runnable runnable);
 
    /**
     * Write lock the PagingStore.

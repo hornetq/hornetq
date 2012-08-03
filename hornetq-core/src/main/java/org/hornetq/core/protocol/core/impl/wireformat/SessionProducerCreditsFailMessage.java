@@ -18,27 +18,27 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * @author Justin Bertram
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SessionProducerCreditsMessage extends PacketImpl
+public class SessionProducerCreditsFailMessage extends PacketImpl
 {
    private int credits;
 
    private SimpleString address;
 
-   public SessionProducerCreditsMessage(final int credits, final SimpleString address)
+   public SessionProducerCreditsFailMessage(final int credits, final SimpleString address)
    {
-      super(PacketImpl.SESS_PRODUCER_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_FAIL_CREDITS);
 
       this.credits = credits;
 
       this.address = address;
    }
 
-   public SessionProducerCreditsMessage()
+   public SessionProducerCreditsFailMessage()
    {
-      super(PacketImpl.SESS_PRODUCER_CREDITS);
+      super(PacketImpl.SESS_PRODUCER_FAIL_CREDITS);
    }
 
    public int getCredits()
@@ -82,9 +82,9 @@ public class SessionProducerCreditsMessage extends PacketImpl
          return true;
       if (!super.equals(obj))
          return false;
-      if (!(obj instanceof SessionProducerCreditsMessage))
+      if (!(obj instanceof SessionProducerCreditsFailMessage))
          return false;
-      SessionProducerCreditsMessage other = (SessionProducerCreditsMessage)obj;
+      SessionProducerCreditsFailMessage other = (SessionProducerCreditsFailMessage)obj;
       if (address == null)
       {
          if (other.address != null)
