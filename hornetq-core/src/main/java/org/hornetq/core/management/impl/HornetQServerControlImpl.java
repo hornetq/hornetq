@@ -1561,6 +1561,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
       }
+      else if (addressFullMessagePolicy.equalsIgnoreCase("FAIL"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.FAIL);
+      }
       server.getAddressSettingsRepository().addMatch(address, addressSettings);
 
       storageManager.storeAddressSetting(new PersistedAddressSetting(new SimpleString(address), addressSettings));

@@ -13,16 +13,16 @@
 
 package org.hornetq.core.client.impl;
 
-import java.util.concurrent.Semaphore;
-
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQMessageBundle;
+
+import java.util.concurrent.Semaphore;
 
 /**
  * A ClientProducerCreditsImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class ClientProducerCreditsImpl implements ClientProducerCredits
 {
@@ -31,7 +31,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final int windowSize;
 
    private volatile boolean closed;
-   
+
    private boolean blocked;
 
    private final SimpleString address;
@@ -41,6 +41,8 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private int arriving;
 
    private int refCount;
+
+   private boolean serverRespondedWithFail;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
@@ -56,7 +58,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore = new Semaphore(0, false);
    }
-   
+
    public void init()
    {
       // We initial request twice as many credits as we request in subsequent requests
@@ -64,7 +66,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       checkCredits(windowSize);
    }
 
-   public void acquireCredits(final int credits) throws InterruptedException
+   public void acquireCredits(final int credits) throws InterruptedException, HornetQException
    {
       checkCredits(credits);
 
@@ -82,6 +84,12 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
                this.blocked = false;
             }
          }
+      }
+
+      // check to see if the blocking mode is FAIL on the server
+      if (serverRespondedWithFail)
+      {
+         throw HornetQMessageBundle.BUNDLE.addressIsFull(address.toString(), credits);
       }
    }
 
@@ -103,6 +111,13 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       }
 
       semaphore.release(credits);
+   }
+
+   public void receiveFailCredits(final int credits)
+   {
+      serverRespondedWithFail = true;
+      // receive credits like normal to keep the sender from blocking
+      receiveCredits(credits);
    }
 
    public synchronized void reset()
@@ -169,5 +184,4 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    {
       session.sendProducerCreditsMessage(credits, address);
    }
-
 }
