@@ -77,7 +77,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
          HornetQRAMetaData.log.trace("getEISProductVersion()");
       }
 
-      return "2.0";
+      return "2.2";
    }
 
    /**
