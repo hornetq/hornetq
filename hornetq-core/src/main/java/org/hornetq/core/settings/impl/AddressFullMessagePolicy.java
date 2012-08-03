@@ -22,5 +22,5 @@ package org.hornetq.core.settings.impl;
  */
 public enum AddressFullMessagePolicy
 {
-   DROP, PAGE, BLOCK;
+   DROP, PAGE, BLOCK, FAIL;
 }

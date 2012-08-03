@@ -54,6 +54,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_CREDITS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_FAIL_CREDITS;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_REQUEST_CREDITS;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY_RESP;
@@ -88,8 +89,8 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -134,6 +135,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionExpireMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionIndividualAcknowledgeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsFailMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -433,6 +435,11 @@ public final class PacketDecoder
          case SESS_PRODUCER_CREDITS:
          {
             packet = new SessionProducerCreditsMessage();
+            break;
+         }
+         case SESS_PRODUCER_FAIL_CREDITS:
+         {
+            packet = new SessionProducerCreditsFailMessage();
             break;
          }
          case REPLICATION_APPEND:

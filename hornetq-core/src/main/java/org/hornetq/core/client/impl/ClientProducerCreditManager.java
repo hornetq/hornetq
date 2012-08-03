@@ -30,6 +30,8 @@ public interface ClientProducerCreditManager
 
    void receiveCredits(SimpleString address, int credits);
 
+   void receiveFailCredits(SimpleString address, int credits);
+
    void reset();
 
    void close();

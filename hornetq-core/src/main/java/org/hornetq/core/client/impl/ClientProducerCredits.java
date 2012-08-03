@@ -13,6 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
+import org.hornetq.api.core.HornetQException;
+
 /**
  * A ClientProducerCredits
  *
@@ -22,10 +24,12 @@ package org.hornetq.core.client.impl;
  */
 public interface ClientProducerCredits
 {
-   void acquireCredits(int credits) throws InterruptedException;
+   void acquireCredits(int credits) throws InterruptedException, HornetQException;
 
    void receiveCredits(int credits);
-   
+
+   void receiveFailCredits(int credits);
+
    boolean isBlocked();
    
    void init();

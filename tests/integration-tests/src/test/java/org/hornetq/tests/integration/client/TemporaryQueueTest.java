@@ -319,9 +319,6 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.deleteQueue("queue2");
    }
 
-   /**
-    * @see org.hornetq.core.server.impl.ServerSessionImpl#doHandleCreateQueue(org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage)
-    */
    public void testDeleteTemporaryQueueAfterConnectionIsClosed_2() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -644,7 +641,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       ClientConsumer newConsumer = newConsumerSession.createConsumer("Q2");
       newConsumerSession.start();
 
-      int toReceive = TOTAL_MSG - msgs.get() - 1;
+      int toReceive = TOTAL_MSG - msgs.get();
 
       for (ServerSession sessionIterator: server.getSessions())
       {
