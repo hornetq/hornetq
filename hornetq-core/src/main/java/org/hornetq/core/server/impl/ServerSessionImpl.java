@@ -1332,13 +1332,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       PagingStore store = postOffice.getPagingManager().getPageStore(address);
 
-      store.executeRunnableWhenMemoryAvailable(new Runnable()
+      if (!store.checkMemory(new Runnable()
       {
          public void run()
          {
             callback.sendProducerCreditsMessage(credits, address);
          }
-      });
+      })) {
+         callback.sendProducerCreditsFailMessage(credits, address);
+      }
    }
 
    public void setTransferring(final boolean transferring)
