@@ -157,7 +157,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
 
-   public static final int DEFAULT_ID_CACHE_SIZE = 2000;
+   public static final int DEFAULT_ID_CACHE_SIZE = 20000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
 
