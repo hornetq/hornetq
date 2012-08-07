@@ -9,8 +9,8 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.LiveNodeLocator;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -23,10 +23,12 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 final class ReplicationError implements Interceptor
 {
    private final HornetQServer server;
+   private LiveNodeLocator nodeLocator;
 
-   public ReplicationError(HornetQServer server)
+   public ReplicationError(HornetQServer server, LiveNodeLocator nodeLocator)
    {
       this.server = server;
+      this.nodeLocator = nodeLocator;
    }
 
    @Override
@@ -35,15 +37,15 @@ final class ReplicationError implements Interceptor
       if (packet.getType() != PacketImpl.BACKUP_REGISTRATION_FAILED)
          return true;
       HornetQLogger.LOGGER.errorRegisteringBackup();
-      try
+      /*try
       {
          server.stop();
       }
       catch (Exception e)
       {
          throw HornetQMessageBundle.BUNDLE.errorStoppingServer(e, server);
-      }
-
+      }*/
+      nodeLocator.notifyRegistrationFailed();
       return false;
    }
 

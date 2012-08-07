@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Red Hat, Inc.
+ * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,26 +11,15 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.server.cluster.impl;
+package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.server.cluster.ClusterManager;
-
-/**
- * A ClusterManagerInternal
- *
- * @author clebert
- *
- *
- */
-public interface ClusterManagerInternal extends ClusterManager
+public class ReplicatedFailoverUsingNodeGroupNameTest extends ReplicatedFailoverTest
 {
-   void addClusterLocator(ServerLocatorInternal locator);
-   
-   void removeClusterLocator(ServerLocatorInternal locator);
-   
-   String getNodeId();
-
-   String getNodeGroupName();
+   @Override
+   protected void createReplicatedConfigs() throws Exception
+   {
+      super.createReplicatedConfigs();
+      liveConfig.setNodeGroupName("liveNodeGroup1");
+      backupConfig.setNodeGroupName("liveNodeGroup1");
+   }
 }

@@ -380,7 +380,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(final long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(final long uniqueEventID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
       {
          if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
          {

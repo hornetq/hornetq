@@ -25,8 +25,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessage
 {
    private long uniqueEventID;
+   private String nodeName;
 
-   public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
+   public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final String nodeName,
+                                          final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
    {
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
 
@@ -39,6 +41,8 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       this.exit = false;
 
       this.uniqueEventID = uniqueEventID;
+
+      this.nodeName = nodeName;
    }
 
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID)
@@ -65,11 +69,17 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       return uniqueEventID;
    }
 
+   public String getNodeName()
+   {
+      return nodeName;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(exit);
       buffer.writeString(nodeID);
+      buffer.writeNullableString(nodeName);
       buffer.writeLong(uniqueEventID);
       if (!exit)
       {
@@ -100,6 +110,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
    {
       exit = buffer.readBoolean();
       nodeID = buffer.readString();
+      nodeName = buffer.readNullableString();
       uniqueEventID = buffer.readLong();
       if (!exit)
       {

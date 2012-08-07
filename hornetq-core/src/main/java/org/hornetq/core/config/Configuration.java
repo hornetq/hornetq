@@ -51,6 +51,18 @@ public interface Configuration extends Serializable
    void setName(String name);
 
    /**
+    * returns the name used to group of live/backup servers
+    * @return thr node group name
+    */
+   public String getNodeGroupName();
+
+   /**
+    * used to configure groups of live/backup servers
+    * @param nodeGroupName thye node group name
+    */
+   public void setNodeGroupName(String nodeGroupName);
+
+   /**
     * Returns whether this server is clustered.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_CLUSTERED}.

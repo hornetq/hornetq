@@ -1336,6 +1336,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void sendNodeAnnounce(final long currentEventID,
                                 String nodeID,
+                                String nodeName,
                                 boolean isBackup,
                                 TransportConfiguration config,
                                 TransportConfiguration backupConfig)
@@ -1345,7 +1346,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          HornetQLogger.LOGGER.debug("Announcing node " + serverLocator.getNodeID() + ", isBackup=" + isBackup);
       }
-      channel0.send(new NodeAnnounceMessage(currentEventID, nodeID, isBackup, config, backupConfig));
+      channel0.send(new NodeAnnounceMessage(currentEventID, nodeID, nodeName, isBackup, config, backupConfig));
    }
 
    @Override
@@ -1495,10 +1496,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             public void run()
             {
                final long eventUID;
+               final String nodeName;
                if (topMessage instanceof ClusterTopologyChangeMessage_V2)
+               {
                   eventUID = ((ClusterTopologyChangeMessage_V2)topMessage).getUniqueEventID();
+                  nodeName = ((ClusterTopologyChangeMessage_V2)topMessage).getNodeName();
+               }
                else
+               {
                   eventUID = System.currentTimeMillis();
+                  nodeName = null;
+               }
 
                if (topMessage.isExit())
                {
@@ -1529,7 +1537,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                                              null);
                }
 
-               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), transportConfig, topMessage.isLast());
+               serverLocator.notifyNodeUp(eventUID, topMessage.getNodeID(), nodeName, transportConfig, topMessage.isLast());
             }
          });
       }

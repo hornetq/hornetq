@@ -25,6 +25,8 @@ public class NodeAnnounceMessage extends PacketImpl
 {
    private String nodeID;
 
+   private String nodeName;
+
    private boolean backup;
 
    private long currentEventID;
@@ -37,13 +39,15 @@ public class NodeAnnounceMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
+   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final String nodeName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
    {
       super(PacketImpl.NODE_ANNOUNCE);
 
       this.currentEventID = currentEventID;
 
       this.nodeID = nodeID;
+
+      this.nodeName = nodeName;
 
       this.backup = backup;
 
@@ -63,6 +67,11 @@ public class NodeAnnounceMessage extends PacketImpl
    public String getNodeID()
    {
       return nodeID;
+   }
+
+   public String getNodeName()
+   {
+      return nodeName;
    }
 
    public boolean isBackup()
@@ -92,6 +101,7 @@ public class NodeAnnounceMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeString(nodeID);
+      buffer.writeNullableString(nodeName);
       buffer.writeBoolean(backup);
       buffer.writeLong(currentEventID);
       if (connector != null)
@@ -118,6 +128,7 @@ public class NodeAnnounceMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       this.nodeID = buffer.readString();
+      this.nodeName = buffer.readNullableString();
       this.backup = buffer.readBoolean();
       this.currentEventID = buffer.readLong();
       if (buffer.readBoolean())

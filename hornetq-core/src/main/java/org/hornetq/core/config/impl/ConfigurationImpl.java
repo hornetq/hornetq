@@ -203,6 +203,8 @@ public class ConfigurationImpl implements Configuration
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
+   private String nodeGroupName = null;
+
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
 
    protected boolean backup = ConfigurationImpl.DEFAULT_BACKUP;
@@ -1431,6 +1433,16 @@ public class ConfigurationImpl implements Configuration
    public void setName(String name)
    {
       this.name = name;
+   }
+
+   public String getNodeGroupName()
+   {
+      return nodeGroupName;
+   }
+
+   public void setNodeGroupName(String nodeGroupName)
+   {
+      this.nodeGroupName = nodeGroupName;
    }
 
    @Override
