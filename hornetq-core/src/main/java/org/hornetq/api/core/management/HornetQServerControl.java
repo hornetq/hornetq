@@ -25,13 +25,6 @@ public interface HornetQServerControl
    // Attributes ----------------------------------------------------
 
    /**
-    * Returns the name of the connector used to connect to the live.
-    * <br>
-    * If this server is not a backup that uses shared nothing HA, it's value is null
-    */
-   String getLiveConnectorName() throws Exception;
-
-   /**
     * Returns this server's version.
     */
    String getVersion();

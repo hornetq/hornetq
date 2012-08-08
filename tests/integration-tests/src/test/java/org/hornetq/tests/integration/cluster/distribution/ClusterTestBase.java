@@ -1637,8 +1637,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       TransportConfiguration backupConfig = createTransportConfiguration(netty, false, generateParams(node, netty));
       configuration.getConnectorConfigurations().put(backupConfig.getName(), backupConfig);
 
-      configuration.setLiveConnectorName(liveConfig.getName());
-
       HornetQServer server;
 
       if (sharedStorage)

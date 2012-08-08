@@ -188,21 +188,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
-   public String getLiveConnectorName()
-   {
-      checkStarted();
-
-      clearIO();
-      try
-      {
-         return configuration.getLiveConnectorName();
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
    public String getBindingsDirectory()
    {
       checkStarted();

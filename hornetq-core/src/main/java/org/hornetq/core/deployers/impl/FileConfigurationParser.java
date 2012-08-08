@@ -327,17 +327,6 @@ public final class FileConfigurationParser
 
       config.setInterceptorClassNames(interceptorList);
 
-      NodeList lives = e.getElementsByTagName("live-connector-ref");
-
-      // There should be at most one - this will be enforced by the DTD
-
-      if (lives.getLength() > 0)
-      {
-         Node liveNode = lives.item(0);
-
-         config.setLiveConnectorName(liveNode.getAttributes().getNamedItem("connector-name").getNodeValue());
-      }
-
       NodeList connectorNodes = e.getElementsByTagName("connector");
 
       for (int i = 0; i < connectorNodes.getLength(); i++)

@@ -51,14 +51,12 @@ public final class ReplicatedBackupUtils
          backupAcceptorSet.add(backupAcceptor);
       }
 
-      final String backupConnectorName = backupConnector.getName();
       backupConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
       backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
       ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, BACKUP_NODE_NAME, LIVE_NODE_NAME);
 
       backupConfig.setSharedStore(false);
       backupConfig.setBackup(true);
-      backupConfig.setLiveConnectorName(LIVE_NODE_NAME);
       backupConfig.setClustered(true);
 
       liveConfig.setName(LIVE_NODE_NAME);

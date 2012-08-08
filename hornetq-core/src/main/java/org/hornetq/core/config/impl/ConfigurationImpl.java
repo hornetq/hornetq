@@ -252,8 +252,6 @@ public class ConfigurationImpl implements Configuration
 
    private Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
-   protected String liveConnectorName;
-
    protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
 
    protected List<DivertConfiguration> divertConfigurations = new ArrayList<DivertConfiguration>();
@@ -526,16 +524,6 @@ public class ConfigurationImpl implements Configuration
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
-   }
-
-   public String getLiveConnectorName()
-   {
-      return liveConnectorName;
-   }
-
-   public void setLiveConnectorName(final String liveConnectorName)
-   {
-      this.liveConnectorName = liveConnectorName;
    }
 
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
@@ -1081,17 +1069,6 @@ public class ConfigurationImpl implements Configuration
          return false;
       }
       if (sharedStore != other.sharedStore)
-      {
-         return false;
-      }
-      if (liveConnectorName == null)
-      {
-         if (other.liveConnectorName != null)
-         {
-            return false;
-         }
-      }
-      else if (!liveConnectorName.equals(other.liveConnectorName))
       {
          return false;
       }

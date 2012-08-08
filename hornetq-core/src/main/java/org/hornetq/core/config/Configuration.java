@@ -295,22 +295,6 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    /**
-    * Returns the name of the connector used to connect to the live node.
-    * <p>
-    * This is only used when not sharing storage with the backup, that is when
-    * {@link #isSharedStore()} is {@code false}.
-    */
-   String getLiveConnectorName();
-
-   /**
-    * Sets the name of the connector used to connect to the live node.
-    * <p>
-    * This is only used when not sharing storage with the backup, that is when
-    * {@link #isSharedStore()} is {@code false}.
-    */
-   void setLiveConnectorName(String name);
-
-   /**
     * Returns the broadcast groups configured for this server.
     */
    List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();

@@ -230,7 +230,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
          return;
       }
       configuration.setCheckForLiveServer(true);
-      configuration.setLiveConnectorName(ReplicatedBackupUtils.LIVE_NODE_NAME);
    }
 
    @Override

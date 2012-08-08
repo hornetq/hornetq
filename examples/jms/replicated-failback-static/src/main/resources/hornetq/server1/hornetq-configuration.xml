@@ -2,8 +2,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq ../../../../../../../../hornetq-core/src/main/resources/schema/hornetq-configuration.xsd">
 
-   <live-connector-ref connector-name="netty-live-connector"/>
-
    <clustered>true</clustered>
 
    <bindings-directory>${build.directory}/server1/data/messaging/bindings</bindings-directory>
