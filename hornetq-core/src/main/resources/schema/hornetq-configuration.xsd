@@ -6,6 +6,13 @@
 			<xsd:all>
 				<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="clustered"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
+               <xsd:annotation>
+                  <xsd:documentation>
+                     Whether or not we should check the cluster for a live server when starting up (replicated servers only)
+                  </xsd:documentation>
+               </xsd:annotation>
+            </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="file-deployment-enabled"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="persistence-enabled"/>
 				<xsd:element maxOccurs="1" minOccurs="0" name="scheduled-thread-pool-max-size" type="xsd:int">

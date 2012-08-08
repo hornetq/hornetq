@@ -179,6 +179,8 @@ public final class FileConfigurationParser
 
       config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
 
+      config.setCheckForLiveServer(XMLConfigurationUtil.getBoolean(e, "check-for-live-server", config.isClustered()));
+
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
 
       config.setFailbackDelay(XMLConfigurationUtil.getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));

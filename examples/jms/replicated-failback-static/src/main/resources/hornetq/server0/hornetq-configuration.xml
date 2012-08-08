@@ -4,6 +4,9 @@
 
    <clustered>true</clustered>
 
+   <!--we need this for auto failback-->
+   <check-for-live-server>true</check-for-live-server>
+
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
    <journal-directory>${build.directory}/server0/data/messaging/journal</journal-directory>
