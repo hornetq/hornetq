@@ -13,11 +13,14 @@
 
 package org.hornetq.core.server.cluster.impl;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -61,10 +64,12 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
    private boolean started;
+   
+   private final long broadCastPeriod;
+   
+   private final ScheduledExecutorService scheduledExecutor;
 
    private ScheduledFuture<?> future;
-
-   private boolean active;
 
    private boolean loggedBroadcastException = false;
 
@@ -83,7 +88,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
                              final int localPort,
                              final InetAddress groupAddress,
                              final int groupPort,
-                             final boolean active) throws Exception
+                             final ScheduledExecutorService scheduledExecutor,
+                             final long broadcastPeriod) throws Exception
    {
       this.nodeID = nodeID;
 
@@ -96,8 +102,10 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
-
-      this.active = active;
+      
+      this.scheduledExecutor = scheduledExecutor;
+      
+      this.broadCastPeriod = broadcastPeriod;
 
       uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
@@ -137,6 +145,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
          notificationService.sendNotification(notification);
       }
+      
+      activate();
    }
 
    public synchronized void stop()
@@ -197,18 +207,19 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       return connectors.size();
    }
 
-   public synchronized void activate()
+   private synchronized void activate()
    {
-      active = true;
+      if (scheduledExecutor != null)
+      {
+         future = scheduledExecutor.scheduleWithFixedDelay(this,
+                                                           0L,
+                                                           broadCastPeriod,
+                                                           MILLISECONDS);
+      }
    }
 
    public synchronized void broadcastConnectors() throws Exception
    {
-      if (!active)
-      {
-         return;
-      }
-
       HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
 
       buff.writeString(nodeID);
@@ -254,11 +265,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
             BroadcastGroupImpl.log.debug("Failed to broadcast connector configs...again", e);
          }
       }
-   }
-
-   public synchronized void setScheduledFuture(final ScheduledFuture<?> future)
-   {
-      this.future = future;
    }
 
 }

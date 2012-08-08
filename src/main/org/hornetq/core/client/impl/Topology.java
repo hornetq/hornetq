@@ -159,7 +159,7 @@ public class Topology implements Serializable
    {
 
       Long deleteTme = getMapDelete().get(nodeId);
-      if (deleteTme != null && uniqueEventID < deleteTme)
+      if (deleteTme != null && uniqueEventID != 0 && uniqueEventID < deleteTme)
       {
          log.debug("Update uniqueEvent=" + uniqueEventID +
                    ", nodeId=" +

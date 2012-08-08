@@ -340,7 +340,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             try
             {
                broadcastGroup.start();
-               broadcastGroup.activate();
             }
             catch (Exception e)
             {
@@ -777,7 +776,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort(),
-                                                        !backup);
+                                                        scheduledExecutor,
+                                                        config.getBroadcastPeriod());
 
       for (String connectorInfo : config.getConnectorInfos())
       {
@@ -792,13 +792,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          group.addConnector(connector);
       }
-
-      ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
-                                                                           0L,
-                                                                           config.getBroadcastPeriod(),
-                                                                           MILLISECONDS);
-
-      group.setScheduledFuture(future);
 
       broadcastGroups.put(config.getName(), group);
 
