@@ -2458,26 +2458,27 @@ public class HornetQServerImpl implements HornetQServer
             locator.setReconnectAttempts(0);
             try
             {
+               locator.addClusterTopologyListener(listener);
                factory = locator.connectNoWarnings();
             }
             catch (Exception notConnected)
             {
                return false;
             }
-            Topology topology = locator.getTopology();
 
             listener.latch.await(5, TimeUnit.SECONDS);
 
             if (nodeId0 != null)
             {
                // if the nodeID is not null, then a node with that nodeID MUST be found:
-               if (listener.isLivePresent)
+               if (listener.isNodePresent)
                   return true;
                // Error! NodeId not found but fail-back servers running: cancel start-up.
                stopTheServer();
                throw new HornetQException("Fail-back servers found but node is different ('local nodeId'=" + nodeId0 +
                         ")");
             }
+            Topology topology = locator.getTopology();
             return !topology.isEmpty();
          }
          finally
@@ -2509,7 +2510,7 @@ public class HornetQServerImpl implements HornetQServer
 
       final class NodeIdListener implements ClusterTopologyListener
       {
-         volatile boolean isLivePresent = false;
+         volatile boolean isNodePresent = false;
 
          private final SimpleString nodeId;
          private final CountDownLatch latch = new CountDownLatch(1);
@@ -2526,9 +2527,9 @@ public class HornetQServerImpl implements HornetQServer
             boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
             if (isOurNodeId)
             {
-               isLivePresent = true;
+               isNodePresent = true;
             }
-            if (isOurNodeId||last)
+            if (isOurNodeId || last)
             {
                latch.countDown();
             }

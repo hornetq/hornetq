@@ -96,6 +96,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private final Topology topology;
 
+   private final Object topologyArrayGuard = new Object();
    private volatile Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
    private volatile boolean receivedTopology;
@@ -534,11 +535,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       // what updates were sent from the server
       if (receivedTopology && ha)
       {
-         int pos = loadBalancingPolicy.select(topologyArray.length);
+         synchronized (topologyArrayGuard)
+         {
+            int pos = loadBalancingPolicy.select(topologyArray.length);
+            Pair<TransportConfiguration, TransportConfiguration> pair = topologyArray[pos];
 
-         Pair<TransportConfiguration, TransportConfiguration> pair = topologyArray[pos];
-
-         return pair.getA();
+            return pair.getA();
+         }
       }
       else
       {
@@ -789,13 +792,17 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                {
                   attempts++;
 
-                  if (topologyArray != null && attempts == topologyArray.length)
+                  synchronized (topologyArrayGuard)
                   {
-                     throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
-                  }
-                  if (topologyArray == null && initialConnectors != null && attempts == initialConnectors.length)
-                  {
-                     throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
+
+                     if (topologyArray != null && attempts == topologyArray.length)
+                     {
+                        throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
+                     }
+                     if (topologyArray == null && initialConnectors != null && attempts == initialConnectors.length)
+                     {
+                        throw HornetQMessageBundle.BUNDLE.cannotConnectToServers();
+                     }
                   }
                   retry = true;
                }
@@ -1393,7 +1400,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
       else
       {
-         synchronized (this)
+         synchronized (topologyArrayGuard)
          {
             if (topology.isEmpty())
             {
@@ -1479,17 +1486,21 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    @SuppressWarnings("unchecked")
-   private synchronized void updateArraysAndPairs()
+   private void updateArraysAndPairs()
    {
-      Collection<TopologyMember> membersCopy = topology.getMembers();
+      synchronized (topologyArrayGuard)
+      {
+         Collection<TopologyMember> membersCopy = topology.getMembers();
 
-      topologyArray = (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
+         topologyArray =
+                  (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                                 membersCopy.size());
 
-      int count = 0;
-      for (TopologyMember pair : membersCopy)
-      {
-         topologyArray[count++] = pair.getConnector();
+         int count = 0;
+         for (TopologyMember pair : membersCopy)
+         {
+            topologyArray[count++] = pair.getConnector();
+         }
       }
    }
 
@@ -1552,10 +1563,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          if (!clusterConnection && factories.isEmpty())
          {
             // Go back to using the broadcast or static list
+            synchronized (topologyArrayGuard)
+            {
+               receivedTopology = false;
 
-            receivedTopology = false;
-
-            topologyArray = null;
+               topologyArray = null;
+            }
          }
       }
    }
