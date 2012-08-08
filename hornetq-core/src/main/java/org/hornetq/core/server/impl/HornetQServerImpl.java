@@ -2537,36 +2537,16 @@ public class HornetQServerImpl implements HornetQServer
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
-                  // HORNETQ-967 XXX do we really need this:
                   clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), pair, true);
 
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
-                     new Thread(new Runnable()
+                     BackupTopologyListener listener = new BackupTopologyListener(getNodeID().toString());
+                     clusterConnection.addClusterTopologyListener(listener);
+                     if (listener.waitForBackup())
                      {
-
-                        @Override
-                        public void run()
-                        {
-                           try
-                           {
-                              // HORNETQ-967 TODO: this needs review...
-                              // First there's a hard coded sleep here
-                              // The server probably needs to loop until the backup has announced
-                              // itself with a timeout before giving up
-                              // we delay stopping the server in order to allow the backup to
-                              // announce
-                              // itself.
-                              Thread.sleep(5000);
-                              stop(true);
-                           }
-                           catch (Exception e)
-                           {
-                              e.printStackTrace();
-                           }
-                        }
-
-                     }).start();
+                        stop(true);
+                     }
                   }
                }
                catch (Exception e)
