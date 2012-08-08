@@ -649,6 +649,7 @@
    ClientRequestor requestor = new ClientRequestor(session, "jms.queue.hornetq.management");
    ClientMessage message = session.createMessage(false);
    ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "messageCount");
+   session.start();
    ClientMessage reply = requestor.request(m);
    int count = (Integer) ManagementHelper.getResult(reply);
    System.out.println("There are " + count + " messages in exampleQueue");
