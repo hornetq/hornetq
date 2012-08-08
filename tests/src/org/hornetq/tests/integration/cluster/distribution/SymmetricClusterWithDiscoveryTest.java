@@ -13,7 +13,14 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.cluster.BroadcastGroup;
+import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.MessageFlowRecord;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionBridge;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 
 /**
  * A SymmetricClusterWithDiscoveryTest
@@ -60,36 +67,89 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
    @Override
    protected void setupServers() throws Exception
    {
-      setupLiveServerWithDiscovery(0,
-                              groupAddress,
-                               groupPort,
-                               isFileStorage(),
-                               isNetty(),
-                               false);
-      setupLiveServerWithDiscovery(1,
-                              groupAddress,
-                               groupPort,
-                               isFileStorage(),
-                               isNetty(),
-                               false);
-      setupLiveServerWithDiscovery(2,
-                              groupAddress,
-                               groupPort,
-                               isFileStorage(),
-                               isNetty(),
-                               false);
-      setupLiveServerWithDiscovery(3,
-                              groupAddress,
-                               groupPort,
-                               isFileStorage(),
-                               isNetty(),
-                               false);
-      setupLiveServerWithDiscovery(4,
-                              groupAddress,
-                               groupPort,
-                               isFileStorage(),
-                               isNetty(),
-                               false);
+      setupLiveServerWithDiscovery(0, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupLiveServerWithDiscovery(1, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupLiveServerWithDiscovery(2, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupLiveServerWithDiscovery(3, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupLiveServerWithDiscovery(4, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+   }
+
+   public void testTemporaryFailure() throws Throwable
+   {
+      setupCluster();
+
+      for (ClusterConnectionConfiguration config : servers[0].getConfiguration().getClusterConfigurations())
+      {
+         config.setConnectionTTL(5000);
+         config.setClientFailureCheckPeriod(1000);
+      }
+
+      startServers(0, 1);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+
+      System.out.println(clusterDescription(servers[0]));
+      
+      
+      for (BroadcastGroup group: servers[1].getClusterManager().getBroadcastGroups())
+      {
+         group.stop();
+      }
+
+      for (ClusterConnection conn : servers[0].getClusterManager().getClusterConnections())
+      {
+         ClusterConnectionImpl implConn = (ClusterConnectionImpl)conn;
+         for (MessageFlowRecord record : implConn.getRecords().values())
+         {
+            ClusterConnectionBridge bridge = (ClusterConnectionBridge)record.getBridge();
+            bridge.setupRetry(2, 1);
+            bridge.connectionFailed(new HornetQException(1, "test"), false);
+         }
+         System.out.println("conn " + conn);
+      }
+      
+      
+      // More than 1 second timeout required to cleanup broadcasting
+      Thread.sleep(1500);
+      
+      waitForTopology(servers[0], 1);
+      
+      waitForTopology(servers[1], 1);
+
+
+      System.out.println(clusterDescription(servers[0]));
+
+      waitForBindings(0, "queues.testaddress", 0, 0, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+
+      
+      
+      for (BroadcastGroup group: servers[1].getClusterManager().getBroadcastGroups())
+      {
+         group.start();
+      }
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+      
+      waitForTopology(servers[0], 2);
+      
+      waitForTopology(servers[1], 2);
+
    }
 
    /*
