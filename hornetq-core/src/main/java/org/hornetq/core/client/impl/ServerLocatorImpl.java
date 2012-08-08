@@ -96,7 +96,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private final Topology topology;
 
-   private final Object topologyArrayGuard = new Object();
+   //needs to be serializable
+   private final String topologyArrayGuard = new String();
+
    private volatile Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
    private volatile boolean receivedTopology;
