@@ -1544,4 +1544,10 @@ public interface HornetQLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114081, value = "Exception happened while stopping Discovery BroadcastEndpoint {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorStoppingDiscoveryBroadcastEndpoint(Object endpoint, @Cause Throwable t);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 114082,
+            value = "Backup server that requested fail-back was not announced. Server will not stop for fail-back.",
+            format = Message.Format.MESSAGE_FORMAT)
+   void failbackMissedBackupAnnouncement();
 }
