@@ -18,7 +18,7 @@ final class BackupTopologyListener implements ClusterTopologyListener
    }
 
    @Override
-   public void nodeUP(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+   public void nodeUP(long eventUID, String nodeName, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                       boolean last)
    {
       if (ownId.equals(nodeID) && connectorPair.getB() != null)
