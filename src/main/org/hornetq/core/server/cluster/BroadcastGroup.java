@@ -40,6 +40,4 @@ public interface BroadcastGroup extends HornetQComponent
    int size();
 
    void broadcastConnectors() throws Exception;
-
-   void activate();
 }
