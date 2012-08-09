@@ -2180,7 +2180,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                //locate the first live server to try to replicate
                nodeLocator.locateNode();
-               liveConnector = nodeLocator.getLiveConfiguration();
+               Pair<TransportConfiguration, TransportConfiguration> possibleLive = nodeLocator.getLiveConfiguration();
                nodeID = nodeLocator.getNodeID();
                //in a normal (non failback) scenario if we couldn't find our live server we should fail
                if (!attemptFailBack)
@@ -2191,10 +2191,32 @@ public class HornetQServerImpl implements HornetQServer
                   nodeManager.setNodeID(nodeID);
                }
 
-               liveServerSessionFactory
-                    = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(liveConnector);
+               try
+               {
+                  liveServerSessionFactory
+                       = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getA(), 0, false);
+                  liveConnector = possibleLive.getA();
+               }
+               catch (Exception e)
+               {
+                  if(possibleLive.getB() != null)
+                  {
+                     try
+                     {
+                        liveServerSessionFactory
+                          = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getB(), 0, false);
+                        liveConnector = possibleLive.getB();
+                     } catch (Exception e1)
+                     {
+                        liveServerSessionFactory = null;
+                     }
+                  }
+               }
                if (liveServerSessionFactory == null)
-                  throw new RuntimeException("Could not establish the connection");
+               {
+                  signal = FAILURE_REPLICATING;
+                  continue;
+               }
 
                threadPool.execute(endpointConnector);
                /**
@@ -2216,8 +2238,11 @@ public class HornetQServerImpl implements HornetQServer
                   break;
                //ok, this live is no good, lets reset and try again
                quorumManager.reset();
-               replicationEndpoint.getChannel().close();
-               replicationEndpoint.setChannel(null);
+               if (replicationEndpoint.getChannel() != null)
+               {
+                  replicationEndpoint.getChannel().close();
+                  replicationEndpoint.setChannel(null);
+               }
             } while (signal == FAILURE_REPLICATING);
 
 

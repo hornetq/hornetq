@@ -82,6 +82,8 @@ public interface ServerLocator
     */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception;
 
+   ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration, int reconnectAttempts, boolean failoverOnInitialConnection) throws Exception;
+
    /**
     * Returns the period used to check if a client has failed to receive pings from the server.
     *

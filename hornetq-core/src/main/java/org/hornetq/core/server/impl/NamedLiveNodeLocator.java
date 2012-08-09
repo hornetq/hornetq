@@ -44,7 +44,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
    private Condition condition = lock.newCondition();
    private String nodeGroupName;
    private QuorumManager quorumManager;
-   private TransportConfiguration liveConfiguration;
+   private Pair<TransportConfiguration, TransportConfiguration> liveConfiguration;
 
    private String nodeID;
 
@@ -85,8 +85,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
          lock.lock();
          if(nodeGroupName.equals(nodeName) && connectorPair.getA() != null)
          {
-            System.out.println("NamedLiveNodeLocator.nodeUP " + quorumManager + " " + connectorPair.getA());
-            liveConfiguration = connectorPair.getA();
+            liveConfiguration = connectorPair;
             this.nodeID = nodeID;
             condition.signal();
          }
@@ -108,7 +107,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       return nodeID;
    }
 
-   public TransportConfiguration getLiveConfiguration()
+   public Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration()
    {
       return liveConfiguration;
    }
