@@ -35,26 +35,26 @@ public class ClusterConnectionConfiguration implements Serializable
    private final String name;
 
    private final String address;
-   
+
    private final String connectorName;
 
-   private final long clientFailureCheckPeriod;
-   
-   private final long connectionTTL;
-   
-   private final long retryInterval;
-   
-   private final double retryIntervalMultiplier;
-   
-   private final long maxRetryInterval;
-   
-   private final int reconnectAttempts;
-   
-   private final long callTimeout;
+   private long clientFailureCheckPeriod;
 
-   private final boolean duplicateDetection;
+   private long connectionTTL;
 
-   private final boolean forwardWhenNoConsumers;
+   private long retryInterval;
+
+   private double retryIntervalMultiplier;
+
+   private long maxRetryInterval;
+
+   private int reconnectAttempts;
+
+   private long callTimeout;
+
+   private boolean duplicateDetection;
+
+   private boolean forwardWhenNoConsumers;
 
    private final List<String> staticConnectors;
 
@@ -65,9 +65,9 @@ public class ClusterConnectionConfiguration implements Serializable
    private final int confirmationWindowSize;
 
    private final boolean allowDirectConnectionsOnly;
-   
+
    private final int minLargeMessageSize;
-   
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -97,7 +97,6 @@ public class ClusterConnectionConfiguration implements Serializable
            staticConnectors,
            allowDirectConnectionsOnly);
    }
-
 
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
@@ -137,7 +136,6 @@ public class ClusterConnectionConfiguration implements Serializable
       this.minLargeMessageSize = minLargeMessageSize;
    }
 
-   
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -164,8 +162,8 @@ public class ClusterConnectionConfiguration implements Serializable
            maxHops,
            confirmationWindowSize,
            discoveryGroupName);
-   }
 
+   }
 
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
@@ -213,7 +211,7 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return address;
    }
-   
+
    /**
     * @return the clientFailureCheckPeriod
     */
@@ -253,12 +251,12 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return reconnectAttempts;
    }
-   
+
    public long getCallTimeout()
    {
       return callTimeout;
    }
-   
+
    public String getConnectorName()
    {
       return connectorName;
@@ -304,7 +302,6 @@ public class ClusterConnectionConfiguration implements Serializable
       return allowDirectConnectionsOnly;
    }
 
-
    /**
     * @return the minLargeMessageSize
     */
@@ -312,6 +309,77 @@ public class ClusterConnectionConfiguration implements Serializable
    {
       return minLargeMessageSize;
    }
-   
-   
+
+   /**
+    * @param clientFailureCheckPeriod the clientFailureCheckPeriod to set
+    */
+   public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   {
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+   }
+
+   /**
+    * @param connectionTTL the connectionTTL to set
+    */
+   public void setConnectionTTL(long connectionTTL)
+   {
+      this.connectionTTL = connectionTTL;
+   }
+
+   /**
+    * @param retryInterval the retryInterval to set
+    */
+   public void setRetryInterval(long retryInterval)
+   {
+      this.retryInterval = retryInterval;
+   }
+
+   /**
+    * @param retryIntervalMultiplier the retryIntervalMultiplier to set
+    */
+   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   /**
+    * @param maxRetryInterval the maxRetryInterval to set
+    */
+   public void setMaxRetryInterval(long maxRetryInterval)
+   {
+      this.maxRetryInterval = maxRetryInterval;
+   }
+
+   /**
+    * @param reconnectAttempts the reconnectAttempts to set
+    */
+   public void setReconnectAttempts(int reconnectAttempts)
+   {
+      this.reconnectAttempts = reconnectAttempts;
+   }
+
+   /**
+    * @param callTimeout the callTimeout to set
+    */
+   public void setCallTimeout(long callTimeout)
+   {
+      this.callTimeout = callTimeout;
+   }
+
+   /**
+    * @param duplicateDetection the duplicateDetection to set
+    */
+   public void setDuplicateDetection(boolean duplicateDetection)
+   {
+      this.duplicateDetection = duplicateDetection;
+   }
+
+   /**
+    * @param forwardWhenNoConsumers the forwardWhenNoConsumers to set
+    */
+   public void setForwardWhenNoConsumers(boolean forwardWhenNoConsumers)
+   {
+      this.forwardWhenNoConsumers = forwardWhenNoConsumers;
+   }
+
 }

@@ -77,7 +77,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -168,7 +168,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  6552,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -214,7 +214,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -276,7 +276,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -365,7 +365,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -407,7 +407,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -466,7 +466,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress1,
                                                   groupPort1,
-                                                  true);
+                                                  null, 0);
 
       BroadcastGroup bg2 = new BroadcastGroupImpl(node2,
                                                   RandomUtil.randomString(),
@@ -474,7 +474,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress2,
                                                   groupPort2,
-                                                  true);
+                                                  null, 0);
 
       BroadcastGroup bg3 = new BroadcastGroupImpl(node3,
                                                   RandomUtil.randomString(),
@@ -482,7 +482,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress3,
                                                   groupPort3,
-                                                  true);
+                                                  null, 0);
       bg2.start();
       bg1.start();
       bg3.start();
@@ -609,7 +609,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -676,7 +676,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress,
                                                   groupPort,
-                                                  true);
+                                                  null, 0);
       bg1.start();
 
       BroadcastGroup bg2 = new BroadcastGroupImpl(node2,
@@ -685,7 +685,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress,
                                                   groupPort,
-                                                  true);
+                                                  null, 0);
       bg2.start();
 
       BroadcastGroup bg3 = new BroadcastGroupImpl(node3,
@@ -694,7 +694,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   -1,
                                                   groupAddress,
                                                   groupPort,
-                                                  true);
+                                                  null, 0);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -864,7 +864,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
 
       bg.start();
 
@@ -975,7 +975,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  -1,
                                                  groupAddress,
                                                  groupPort,
-                                                 true);
+                                                 null, 0);
       bg.setNotificationService(notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());
