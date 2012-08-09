@@ -1859,7 +1859,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          MessageProducer prod = sessSend.createProducer(sourceQueue);
 
-         final int NUM_MESSAGES = 5000;
+         final int NUM_MESSAGES = 500;
 
          StressSender sender = new StressSender();
          sender.sess = sessSend;
@@ -1952,7 +1952,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          MessageProducer prod = sessSend.createProducer(sourceQueue);
 
-         final int NUM_MESSAGES = 2000;
+         final int NUM_MESSAGES = 200;
 
          StressSender sender = new StressSender();
          sender.sess = sessSend;
