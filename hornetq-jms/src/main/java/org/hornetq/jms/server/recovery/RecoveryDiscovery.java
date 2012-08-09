@@ -142,6 +142,7 @@ public class RecoveryDiscovery implements SessionFailureListener
 
       public void nodeUP(long eventUID,
                          String nodeID,
+                         String nodeName,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {

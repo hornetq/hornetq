@@ -135,7 +135,7 @@ public final class Topology implements Serializable
             topology.put(nodeId, currentMember);
          }
 
-         TopologyMember newMember = new TopologyMember(currentMember.getA(), memberInput.getB());
+         TopologyMember newMember = new TopologyMember(currentMember.getNodeName(), currentMember.getA(), memberInput.getB());
          newMember.setUniqueEventID(System.currentTimeMillis());
          topology.remove(nodeId);
          topology.put(nodeId, newMember);
@@ -189,7 +189,7 @@ public final class Topology implements Serializable
          {
             if (uniqueEventID > currentMember.getUniqueEventID())
             {
-               TopologyMember newMember =  new TopologyMember(memberInput.getA(), memberInput.getB());
+               TopologyMember newMember =  new TopologyMember(memberInput.getNodeName(), memberInput.getA(), memberInput.getB());
 
                if (newMember.getA() == null && currentMember.getA() != null)
                {
@@ -267,7 +267,7 @@ public final class Topology implements Serializable
 
                   try
                   {
-                     listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
+                     listener.nodeUP(uniqueEventID, nodeId, memberToSend.getNodeName(), memberToSend.getConnector(), false);
                   }
                   catch (Throwable e)
                   {
@@ -392,7 +392,7 @@ public final class Topology implements Serializable
                             " with connector=" +
                             member.getConnector());
                }
-               listener.nodeUP(member.getUniqueEventID(), nodeID, member.getConnector(), false);
+               listener.nodeUP(member.getUniqueEventID(), nodeID, member.getNodeName(), member.getConnector(), false);
             }
          }
       });
@@ -431,6 +431,7 @@ public final class Topology implements Serializable
                }
                listener.nodeUP(entry.getValue().getUniqueEventID(),
                                entry.getKey(),
+                               entry.getValue().getNodeName(),
                                entry.getValue().getConnector(),
                                ++count == copy.size());
             }

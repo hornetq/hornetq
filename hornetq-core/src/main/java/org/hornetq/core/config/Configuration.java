@@ -51,6 +51,18 @@ public interface Configuration extends Serializable
    void setName(String name);
 
    /**
+    * returns the name used to group of live/backup servers
+    * @return thr node group name
+    */
+   public String getNodeGroupName();
+
+   /**
+    * used to configure groups of live/backup servers
+    * @param nodeGroupName thye node group name
+    */
+   public void setNodeGroupName(String nodeGroupName);
+
+   /**
     * Returns whether this server is clustered.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_CLUSTERED}.
@@ -281,33 +293,6 @@ public interface Configuration extends Serializable
     * Sets the connectors configured for this server.
     */
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
-
-   /**
-    * Returns set of connectors used to determine whether a server should start normally or if it
-    * will need to perform a fail-back.
-    * <p>
-    * Only applicable to live servers (not backups) configured with {@link #isSharedStore()} set to
-    * {@code false}.
-    * @return set of connectors used to determine whether there is a server running with this server
-    *         nodeID.
-    */
-   Set<TransportConfiguration> getFailBackConnectors();
-
-   /**
-    * Returns the name of the connector used to connect to the live node.
-    * <p>
-    * This is only used when not sharing storage with the backup, that is when
-    * {@link #isSharedStore()} is {@code false}.
-    */
-   String getLiveConnectorName();
-
-   /**
-    * Sets the name of the connector used to connect to the live node.
-    * <p>
-    * This is only used when not sharing storage with the backup, that is when
-    * {@link #isSharedStore()} is {@code false}.
-    */
-   void setLiveConnectorName(String name);
 
    /**
     * Returns the broadcast groups configured for this server.
@@ -893,6 +878,20 @@ public interface Configuration extends Serializable
     * Sets the fail-back delay.
     */
    void setFailbackDelay(long delay);
+
+   /**
+    * should we check the cluster to see if a live node with our node is exists
+    *
+    * @return true if we want to make the check
+    */
+   boolean isCheckForLiveServer();
+
+   /**
+    * set if we want to check the cluster for a server using our node id
+    *
+    * @param checkForLiveServer true if we want to make the check
+    */
+   public void setCheckForLiveServer(boolean checkForLiveServer);
 
    /**
     * The default password decoder

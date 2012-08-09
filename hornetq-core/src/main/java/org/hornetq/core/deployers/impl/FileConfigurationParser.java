@@ -179,6 +179,8 @@ public final class FileConfigurationParser
 
       config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
 
+      config.setCheckForLiveServer(XMLConfigurationUtil.getBoolean(e, "check-for-live-server", config.isClustered()));
+
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
 
       config.setFailbackDelay(XMLConfigurationUtil.getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
@@ -327,17 +329,6 @@ public final class FileConfigurationParser
 
       config.setInterceptorClassNames(interceptorList);
 
-      NodeList lives = e.getElementsByTagName("live-connector-ref");
-
-      // There should be at most one - this will be enforced by the DTD
-
-      if (lives.getLength() > 0)
-      {
-         Node liveNode = lives.item(0);
-
-         config.setLiveConnectorName(liveNode.getAttributes().getNamedItem("connector-name").getNodeValue());
-      }
-
       NodeList connectorNodes = e.getElementsByTagName("connector");
 
       for (int i = 0; i < connectorNodes.getLength(); i++)
@@ -372,14 +363,6 @@ public final class FileConfigurationParser
          TransportConfiguration acceptorConfig = parseTransportConfiguration(acceptorNode, config);
 
          config.getAcceptorConfigurations().add(acceptorConfig);
-      }
-
-      NodeList failBackConnectorNodes = e.getElementsByTagName("failback-connector");
-      for (int i = 0; i < failBackConnectorNodes.getLength(); i++)
-      {
-         Element connectorNode = (Element)connectorNodes.item(i);
-         TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode, config);
-         config.getFailBackConnectors().add(connectorConfig);
       }
 
       NodeList bgNodes = e.getElementsByTagName("broadcast-group");

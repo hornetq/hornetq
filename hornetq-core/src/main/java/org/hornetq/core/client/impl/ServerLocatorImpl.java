@@ -96,7 +96,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private final Topology topology;
 
-   private final Object topologyArrayGuard = new Object();
+   //needs to be serializable
+   private final String topologyArrayGuard = new String();
+
    private volatile Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
    private volatile boolean receivedTopology;
@@ -1425,6 +1427,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public void notifyNodeUp(long uniqueEventID,
                             final String nodeID,
+                            final String nodeName,
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
@@ -1433,7 +1436,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          HornetQLogger.LOGGER.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
-      TopologyMember member = new TopologyMember(connectorPair.getA(), connectorPair.getB());
+      TopologyMember member = new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB());
 
       topology.updateMember(uniqueEventID, nodeID, member);
 

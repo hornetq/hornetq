@@ -226,6 +226,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 
       public void nodeUP(final long uniqueEventID,
                          String nodeID,
+                         String nodeName,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {

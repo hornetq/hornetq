@@ -45,6 +45,7 @@ public abstract class NodeManager implements HornetQComponent
    private final Object nodeIDGuard = new Object();
    private SimpleString nodeID;
    private UUID uuid;
+   private String nodeGroupName;
 
    public void start() throws Exception
    {
@@ -106,9 +107,20 @@ public abstract class NodeManager implements HornetQComponent
       }
    }
 
+   public void setNodeGroupName(String nodeGroupName)
+   {
+      this.nodeGroupName = nodeGroupName;
+   }
+
+   public String getNodeGroupName()
+   {
+      return nodeGroupName;
+   }
+
    public abstract boolean isAwaitingFailback() throws Exception;
 
    public abstract boolean isBackupLive() throws Exception;
 
    public abstract void interrupt();
+
 }

@@ -3,6 +3,8 @@
          xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
    <clustered>true</clustered>
+   <!--we need this for auto failback-->
+   <check-for-live-server>true</check-for-live-server>
 
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
@@ -21,13 +23,6 @@
    <shared-store>false</shared-store>
 
    <allow-failback>true</allow-failback>
-   <!-- Connectors -->
-   <failback-connectors>
-      <failback-connector>
-         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-         <param key="port" value="5446"/>
-      </failback-connector>
-   </failback-connectors>
 
    <connectors>
       <connector name="netty-connector">

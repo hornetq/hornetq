@@ -195,11 +195,15 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
 
+   public static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
+
    public static final boolean DEFAULT_MASK_PASSWORD = false;
 
    // Attributes -----------------------------------------------------------------------------
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
+
+   private String nodeGroupName = null;
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
 
@@ -247,8 +251,6 @@ public class ConfigurationImpl implements Configuration
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    private Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
-
-   protected String liveConnectorName;
 
    protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
 
@@ -353,11 +355,11 @@ public class ConfigurationImpl implements Configuration
 
    private long failbackDelay = ConfigurationImpl.DEFAULT_FAILBACK_DELAY;
 
+   private boolean checkForLiveServer = ConfigurationImpl.DEFAULT_CHECK_FOR_LIVE_SERVER;
+
    private boolean maskPassword = ConfigurationImpl.DEFAULT_MASK_PASSWORD;
 
    private transient String passwordCodec;
-
-   private final Set<TransportConfiguration> failBackConnectors = new HashSet<TransportConfiguration>();
 
    // Public -------------------------------------------------------------------------
 
@@ -522,21 +524,6 @@ public class ConfigurationImpl implements Configuration
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
-   }
-
-   public Set<TransportConfiguration> getFailBackConnectors()
-   {
-      return failBackConnectors;
-   }
-
-   public String getLiveConnectorName()
-   {
-      return liveConnectorName;
-   }
-
-   public void setLiveConnectorName(final String liveConnectorName)
-   {
-      this.liveConnectorName = liveConnectorName;
    }
 
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
@@ -1085,17 +1072,6 @@ public class ConfigurationImpl implements Configuration
       {
          return false;
       }
-      if (liveConnectorName == null)
-      {
-         if (other.liveConnectorName != null)
-         {
-            return false;
-         }
-      }
-      else if (!liveConnectorName.equals(other.liveConnectorName))
-      {
-         return false;
-      }
       if (bindingsDirectory == null)
       {
          if (other.bindingsDirectory != null)
@@ -1405,6 +1381,16 @@ public class ConfigurationImpl implements Configuration
       this.failbackDelay = failbackDelay;
    }
 
+   public boolean isCheckForLiveServer()
+   {
+      return checkForLiveServer;
+   }
+
+   public void setCheckForLiveServer(boolean checkForLiveServer)
+   {
+      this.checkForLiveServer = checkForLiveServer;
+   }
+
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
    {
       this.connectorServiceConfigurations = configs;
@@ -1424,6 +1410,16 @@ public class ConfigurationImpl implements Configuration
    public void setName(String name)
    {
       this.name = name;
+   }
+
+   public String getNodeGroupName()
+   {
+      return nodeGroupName;
+   }
+
+   public void setNodeGroupName(String nodeGroupName)
+   {
+      this.nodeGroupName = nodeGroupName;
    }
 
    @Override

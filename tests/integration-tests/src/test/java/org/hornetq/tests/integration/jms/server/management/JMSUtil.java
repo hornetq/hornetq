@@ -292,7 +292,7 @@ public class JMSUtil
          this.latch = latch;
       }
 
-      public void nodeUP(final long uniqueEventID, String nodeID,
+      public void nodeUP(final long uniqueEventID, String nodeID,   String nodeName,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {

@@ -199,7 +199,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
             public void nodeUP(final long uniqueEventID,
-                               String nodeID,
+                               String nodeID, String nodeName,
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
@@ -281,7 +281,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
             public void nodeUP(final long uniqueEventID,
-                               String nodeID,
+                               String nodeID,    String nodeName,
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
@@ -352,7 +352,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-             public void nodeUP(final long uniqueEventID, String nodeID,
+             public void nodeUP(final long uniqueEventID, String nodeID, String nodeName,
                      Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      boolean last)
             {
@@ -432,7 +432,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-             public void nodeUP(final long uniqueEventID, String nodeID,
+             public void nodeUP(final long uniqueEventID, String nodeID,   String nodeName,
                      Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      boolean last)
             {

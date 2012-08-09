@@ -131,8 +131,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
          }
       }
 
-      Assert.assertEquals(2, conf.getFailBackConnectors().size());
-
       Assert.assertEquals(2, conf.getBroadcastGroupConfigurations().size());
       for (BroadcastGroupConfiguration bc : conf.getBroadcastGroupConfigurations())
       {

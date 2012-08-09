@@ -47,6 +47,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
@@ -89,8 +90,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    private final Configuration configuration;
 
-   private final UUID nodeUUID;
-
    private volatile boolean started;
 
    private volatile boolean backup;
@@ -104,17 +103,19 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    private final Executor executor;
 
+   private final NodeManager nodeManager;
+
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final HornetQServer server,
                              final PostOffice postOffice,
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
                              final Configuration configuration,
-                             final UUID nodeUUID,
+                             final NodeManager nodeManager,
                              final boolean backup,
                              final boolean clustered)
    {
-      if (nodeUUID == null)
+      if (nodeManager.getNodeId() == null)
       {
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
@@ -133,7 +134,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       this.configuration = configuration;
 
-      this.nodeUUID = nodeUUID;
+      this.nodeManager = nodeManager;
 
       this.backup = backup;
 
@@ -190,7 +191,13 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
    public String getNodeId()
    {
-      return nodeUUID.toString();
+      return nodeManager.getNodeId().toString();
+   }
+
+   @Override
+   public String getNodeGroupName()
+   {
+      return configuration.getNodeGroupName();
    }
 
    public synchronized void deploy() throws Exception
@@ -539,7 +546,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                      config.getRetryInterval(),
                                      config.getRetryIntervalMultiplier(),
                                      config.getMaxRetryInterval(),
-                                     nodeUUID,
+                                     nodeManager.getUUID(),
                                      new SimpleString(config.getName()),
                                      queue,
                                      executorFactory.getExecutor(),
@@ -696,7 +703,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                        managementService,
                                                        scheduledExecutor,
                                                        config.getMaxHops(),
-                                                       nodeUUID,
+                                                       nodeManager,
                                                        backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
@@ -735,7 +742,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                        managementService,
                                                        scheduledExecutor,
                                                        config.getMaxHops(),
-                                                       nodeUUID,
+                                                       nodeManager,
                                                        backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
@@ -813,7 +820,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                     config.getLocalBindPort());
           }
 
-          group = new BroadcastGroupImpl(nodeUUID.toString(), config.getName(), !backup,
+          group = new BroadcastGroupImpl(nodeManager.getNodeId().toString(), config.getName(), !backup,
                                                  config.getBroadcastPeriod(), endpoint);
           
           for (String connectorInfo : config.getConnectorInfos())
