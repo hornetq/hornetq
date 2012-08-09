@@ -439,6 +439,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return session.getConnection();
       }
    }
+   
+   // for testing only
+   public void setupRetry(final int currentCount, final int maxRetry)
+   {
+      this.retryCount = currentCount;
+      this.reconnectAttemptsInUse = maxRetry;
+   }
 
    // SendAcknowledgementHandler implementation ---------------------
 
@@ -896,7 +903,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return;
       }
 
-      if (reconnectAttemptsInUse >= 0 && retryCount > reconnectAttempts)
+      if (reconnectAttemptsInUse >= 0 && retryCount > reconnectAttemptsInUse)
       {
          HornetQLogger.LOGGER.bridgeAbortStart(name, retryCount, reconnectAttempts);
          fail(true);
