@@ -187,6 +187,7 @@ class CoreProtocolManager implements ProtocolManager
             {
                public void nodeUP(final long uniqueEventID,
                                   final String nodeID,
+                                  final String nodeName,
                                   final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                   final boolean last)
                {
@@ -201,7 +202,7 @@ class CoreProtocolManager implements ProtocolManager
                         {
                            if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                            {
-                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, nodeName, connectorPair, last));
                            }
                            else
                            {
@@ -278,7 +279,7 @@ class CoreProtocolManager implements ProtocolManager
                      Pair<TransportConfiguration, TransportConfiguration> emptyConfig = new Pair<TransportConfiguration, TransportConfiguration>(null, null);
                      if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                      {
-                        channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, emptyConfig, true));
+                        channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, server.getConfiguration().getName(), emptyConfig, true));
                      }
                      else
                      {
@@ -312,7 +313,7 @@ class CoreProtocolManager implements ProtocolManager
                ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
                if (clusterConn != null)
                {
-                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), msg.getNodeName(), pair, msg.isBackup());
                }
                else
                {

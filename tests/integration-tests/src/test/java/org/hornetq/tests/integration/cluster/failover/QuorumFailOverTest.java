@@ -81,7 +81,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       }
 
       @Override
-      public void nodeUP(long eventUID, String nodeID,
+      public void nodeUP(long eventUID, String nodeID, String nodeName,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
       {
          nodes.put(nodeID, connectorPair);

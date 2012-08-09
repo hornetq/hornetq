@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.cluster.impl;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.server.cluster.ClusterManager;
 
@@ -31,4 +32,5 @@ public interface ClusterManagerInternal extends ClusterManager
    
    String getNodeId();
 
+   String getNodeGroupName();
 }

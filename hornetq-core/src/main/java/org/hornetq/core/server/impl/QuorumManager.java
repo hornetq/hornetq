@@ -37,7 +37,7 @@ public final class QuorumManager implements FailureListener, CloseListener
    private String targetServerID = "";
    private final ExecutorService executor;
    private final String serverIdentity;
-   private final CountDownLatch latch;
+   private CountDownLatch latch;
    private volatile BACKUP_ACTIVATION signal;
    private ClientSessionFactoryInternal sessionFactory;
    private final Topology topology;
@@ -156,6 +156,12 @@ public final class QuorumManager implements FailureListener, CloseListener
    private static boolean nodeIsDown(int total, int pingCount)
    {
       return pingCount * 2 >= total - 1;
+   }
+
+   public void notifyRegistrationFailed()
+   {
+      signal = BACKUP_ACTIVATION.FAILURE_REPLICATING;
+      latch.countDown();
    }
 
    /**
@@ -286,7 +292,7 @@ public final class QuorumManager implements FailureListener, CloseListener
    }
    enum BACKUP_ACTIVATION
    {
-      FAIL_OVER, STOP;
+      FAIL_OVER, FAILURE_REPLICATING, STOP;
    }
 
    /**
@@ -309,11 +315,12 @@ public final class QuorumManager implements FailureListener, CloseListener
 
    /**
     * Cause the Activation thread to exit and the server to be stopped.
+    * @param signal the state we want to set the quorum manager to
     */
-   public synchronized void causeExit()
+   public synchronized void causeExit(BACKUP_ACTIVATION signal)
    {
       removeListener();
-      signal = BACKUP_ACTIVATION.STOP;
+      this.signal = signal;
       latch.countDown();
    }
 
@@ -353,6 +360,10 @@ public final class QuorumManager implements FailureListener, CloseListener
       connection.addCloseListener(this);
    }
 
+   public synchronized void reset()
+   {
+      latch = new CountDownLatch(1);
+   }
    @Override
    public void connectionClosed()
    {

@@ -40,7 +40,7 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
 
    HornetQServer getServer();
 
-   void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
+   void nodeAnnounced(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
 
    void addClusterTopologyListener(ClusterTopologyListener listener);
 

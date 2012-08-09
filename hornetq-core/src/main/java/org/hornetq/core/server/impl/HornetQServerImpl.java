@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Array;
 import java.nio.channels.ClosedChannelException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -38,25 +39,14 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.api.core.HornetQAlreadyReplicatingException;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.HornetQIllegalStateException;
-import org.hornetq.api.core.HornetQInternalErrorException;
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.*;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.*;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -93,7 +83,7 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.protocol.core.impl.ChannelImpl;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -113,6 +103,7 @@ import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.LiveNodeLocator;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
@@ -145,6 +136,8 @@ import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
+
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.*;
 
 /**
  * The HornetQ server implementation
@@ -371,6 +364,8 @@ public class HornetQServerImpl implements HornetQServer
          checkJournalDirectory();
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());
+
+         nodeManager.setNodeGroupName(configuration.getNodeGroupName());
 
          nodeManager.start();
 
@@ -1359,7 +1354,7 @@ public class HornetQServerImpl implements HornetQServer
          scheduledPool,
          managementService,
          configuration,
-         nodeManager.getUUID(),
+         nodeManager,
          configuration.isBackup(),
          configuration.isClustered());
 
@@ -2112,16 +2107,14 @@ public class HornetQServerImpl implements HornetQServer
       void close(boolean permanently) throws Exception;
    }
 
-   private final class SharedNothingBackupActivation implements Activation, ClusterTopologyListener
+   private final class SharedNothingBackupActivation implements Activation
    {
       private volatile ServerLocatorInternal serverLocator0;
-      private volatile boolean failedToConnect;
       private volatile QuorumManager quorumManager;
       private final boolean attemptFailBack;
-      private static final int MAX_TOPOLOGY_WAIT = 60;
-      private final CountDownLatch latch = new CountDownLatch(1);
       private String nodeID;
-      private Object liveConnector;
+      private TransportConfiguration liveConnector;
+      ClientSessionFactoryInternal liveServerSessionFactory;
       private boolean closed;
 
       public SharedNothingBackupActivation(boolean attemptFailBack)
@@ -2135,17 +2128,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             // move all data away:
             moveServerData();
-            TransportConfiguration[] tp = null;
-            if (attemptFailBack) {
-               tp = configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
-            } else {
-               final String liveConnectorName = configuration.getLiveConnectorName();
-               if (liveConnectorName == null)
-               {
-                  throw HornetQMessageBundle.BUNDLE.noLiveForReplicatedBackup();
-               }
-               tp = new TransportConfiguration[] { configuration.getConnectorConfigurations().get(liveConnectorName) };
-            }
+
             synchronized (HornetQServerImpl.this)
             {
                state = SERVER_STATE.STARTED;
@@ -2154,33 +2137,14 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tp);
+               //we use the cluster connection configuration to connect to the cluster to find the live node we want to
+               //connect to.
+               ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
+               serverLocator0 = getFailbackLocator(config);
             }
+            //if the cluster isn't available we want to hang around until it is
             serverLocator0.setReconnectAttempts(-1);
             serverLocator0.setInitialConnectAttempts(-1);
-            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
-
-            if (!attemptFailBack) {
-               final String liveConnectorName = configuration.getLiveConnectorName();
-               liveConnector = configuration.getConnectorConfigurations().get(liveConnectorName);
-               serverLocator0.addClusterTopologyListener(this);
-            }
-            final ClientSessionFactoryInternal liveServerSessionFactory = serverLocator0.connect();
-            if (liveServerSessionFactory == null)
-               throw new RuntimeException("Could not establish the connection");
-            if (!attemptFailBack)
-            {
-               latch.await(MAX_TOPOLOGY_WAIT, TimeUnit.SECONDS);
-               if (nodeID == null)
-                  throw new RuntimeException("Could not establish the connection");
-               serverLocator0.removeClusterTopologyListener(this);
-               nodeManager.setNodeID(nodeID);
-            }
-
-            nodeManager.startBackup();
-
-            initialisePart1();
-            clusterManager.start();
 
             synchronized (this)
             {
@@ -2188,63 +2152,74 @@ public class HornetQServerImpl implements HornetQServer
                   return;
                quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
             }
+
+            //use a Node Locator to connect to the cluster
+            LiveNodeLocator nodeLocator = configuration.getNodeGroupName() == null?
+                  new AnyLiveNodeLocator(quorumManager):
+                  new NamedLiveNodeLocator(configuration.getNodeGroupName(), quorumManager);
+            serverLocator0.addClusterTopologyListener(nodeLocator);
+            nodeLocator.connectToCluster(serverLocator0);
+
+            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
+
+            nodeManager.startBackup();
+
+            initialisePart1();
+            clusterManager.start();
+
+
             replicationEndpoint.setQuorumManager(quorumManager);
 
-            threadPool.execute(new Runnable()
-            {
-               @Override
-               public void run()
-               {
-                  try
-                  {
-
-                     liveServerSessionFactory.setReconnectAttempts(1);
-                     quorumManager.setSessionFactory(liveServerSessionFactory);
-                     CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
-                     quorumManager.addAsFailureListenerOf(liveConnection);
-                     Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
-                     Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
-                     connectToReplicationEndpoint(replicationChannel);
-                     replicationEndpoint.start();
-                     clusterManager.announceReplicatingBackupToLive(pingChannel, attemptFailBack);
-                  }
-                  catch (Exception e)
-                  {
-                     HornetQLogger.LOGGER.replicationStartProblem(e);
-                     failedToConnect = true;
-                     quorumManager.causeExit();
-                     try
-                     {
-                        if (state != SERVER_STATE.STOPPED)
-                           stopTheServer();
-                        return;
-                     }
-                     catch (Exception e1)
-                     {
-                        throw new RuntimeException(e1);
-                     }
-                  }
-               }
-            });
+            EndpointConnector endpointConnector = new EndpointConnector();
 
             HornetQLogger.LOGGER.backupServerStarted(version.getFullVersion(), nodeManager.getNodeId());
             state = SERVER_STATE.STARTED;
 
-            // Server node (i.e. Live node) is not running, now the backup takes over.
-            // we must remember to close stuff we don't need any more
-            if (failedToConnect)
-               return;
-            /**
-             * Wait for a shutdown order or for the live to fail. All the action happens inside
-             * {@link QuorumManager}
-             */
-            QuorumManager.BACKUP_ACTIVATION signal = quorumManager.waitForStatusChange();
-            liveServerSessionFactory.close();
-            serverLocator0.close();
-            stopComponent(replicationEndpoint);
+            BACKUP_ACTIVATION signal;
+            do
+            {
+               //locate the first live server to try to replicate
+               nodeLocator.locateNode();
+               liveConnector = nodeLocator.getLiveConfiguration();
+               nodeID = nodeLocator.getNodeID();
+               //in a normal (non failback) scenario if we couldn't find our live server we should fail
+               if (!attemptFailBack)
+               {
+                  //this shouldn't happen
+                  if (nodeID == null)
+                     throw new RuntimeException("Could not establish the connection");
+                  nodeManager.setNodeID(nodeID);
+               }
 
-            if (failedToConnect || !isStarted() || signal == BACKUP_ACTIVATION.STOP)
-               return;
+               liveServerSessionFactory
+                    = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(liveConnector);
+               if (liveServerSessionFactory == null)
+                  throw new RuntimeException("Could not establish the connection");
+
+               threadPool.execute(endpointConnector);
+               /**
+               * Wait for a signal from the the quorum manager, at this point if replication has been successful we can
+               * fail over or if there is an error trying to replicate (such as already replicating) we try the
+               * process again on the next live server.  All the action happens inside
+               * {@link QuorumManager}
+               */
+               signal = quorumManager.waitForStatusChange();
+               //close this session factory, we're done with it
+               liveServerSessionFactory.close();
+               //not sure why we stop this @Francisco
+               stopComponent(replicationEndpoint);
+               //time to give up
+               if (!isStarted() || signal == STOP)
+                  return;
+               //time to fail over
+               if(signal == FAIL_OVER)
+                  break;
+               //ok, this live is no good, lets reset and try again
+               quorumManager.reset();
+               replicationEndpoint.getChannel().close();
+               replicationEndpoint.setChannel(null);
+            } while (signal == FAILURE_REPLICATING);
+
 
             if (!isRemoteBackupUpToDate())
             {
@@ -2329,7 +2304,7 @@ public class HornetQServerImpl implements HornetQServer
          synchronized (this)
          {
             if (quorumManager != null)
-            quorumManager.causeExit();
+               quorumManager.causeExit(STOP);
             if (serverLocator0 != null)
             {
                serverLocator0.close();
@@ -2379,21 +2354,32 @@ public class HornetQServerImpl implements HornetQServer
          quorumManager.failOver();
       }
 
-      @Override
-      public void nodeUP(long eventUID, String nodeID,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      private class EndpointConnector implements Runnable
       {
-         if (liveConnector.equals(connectorPair.getA()))
+         @Override
+         public void run()
          {
-            this.nodeID = nodeID;
-            latch.countDown();
+            try
+            {
+               //we should only try once, if its not there we should move on.
+               liveServerSessionFactory.setReconnectAttempts(1);
+               quorumManager.setSessionFactory(liveServerSessionFactory);
+               //get the connection and request replication to live
+               CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
+               quorumManager.addAsFailureListenerOf(liveConnection);
+               Channel pingChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
+               Channel replicationChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.REPLICATION.id, -1);
+               connectToReplicationEndpoint(replicationChannel);
+               replicationEndpoint.start();
+               clusterManager.announceReplicatingBackupToLive(pingChannel, attemptFailBack);
+            }
+            catch (Exception e)
+            {
+               //we shouldn't stop the server just mark the connector as tried and unavailable
+               HornetQLogger.LOGGER.replicationStartProblem(e);
+               quorumManager.causeExit(FAILURE_REPLICATING);
+            }
          }
-      }
-
-      @Override
-      public void nodeDown(long eventUID, String nodeID)
-      {
-         // ignore
       }
    }
 
@@ -2404,7 +2390,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            if (configuration.isClustered() && isNodeIdUsed())
+            if (configuration.isClustered() && configuration.isCheckForLiveServer() && isNodeIdUsed())
             {
                configuration.setBackup(true);
                return;
@@ -2438,23 +2424,32 @@ public class HornetQServerImpl implements HornetQServer
        */
       private boolean isNodeIdUsed() throws Exception
       {
-         if (configuration.getFailBackConnectors().isEmpty())
+         if (configuration.getClusterConfigurations().size() == 0)
             return false;
          SimpleString nodeId0;
-         try {
+         try
+         {
             nodeId0 = nodeManager.readNodeId();
-         } catch (HornetQIllegalStateException e) {
+         }
+         catch (HornetQIllegalStateException e)
+         {
             nodeId0 = null;
          }
 
-         ServerLocatorInternal locator = null;
+         ServerLocatorInternal locator;
+
+         ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
+
+
+         locator = getFailbackLocator(config);
+
          ClientSessionFactoryInternal factory = null;
+
          NodeIdListener listener=new NodeIdListener(nodeId0);
+
+         locator.addClusterTopologyListener(listener);
          try
          {
-            TransportConfiguration[] tpArray =
-               configuration.getFailBackConnectors().toArray(new TransportConfiguration[1]);
-            locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tpArray);
             locator.setReconnectAttempts(0);
             try
             {
@@ -2468,18 +2463,7 @@ public class HornetQServerImpl implements HornetQServer
 
             listener.latch.await(5, TimeUnit.SECONDS);
 
-            if (nodeId0 != null)
-            {
-               // if the nodeID is not null, then a node with that nodeID MUST be found:
-               if (listener.isNodePresent)
-                  return true;
-               // Error! NodeId not found but fail-back servers running: cancel start-up.
-               stopTheServer();
-               throw new HornetQException("Fail-back servers found but node is different ('local nodeId'=" + nodeId0 +
-                        ")");
-            }
-            Topology topology = locator.getTopology();
-            return !topology.isEmpty();
+            return listener.isNodePresent;
          }
          finally
          {
@@ -2521,7 +2505,7 @@ public class HornetQServerImpl implements HornetQServer
          }
 
          @Override
-         public void nodeUP(long eventUID, String nodeID,
+         public void nodeUP(long eventUID, String nodeID, String nodeName,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
          {
             boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
@@ -2544,6 +2528,27 @@ public class HornetQServerImpl implements HornetQServer
 
    }
 
+   private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
+   {
+      TransportConfiguration[] tcConfigs = (TransportConfiguration[]) Array.newInstance(TransportConfiguration.class,
+            connectorNames.size());
+      int count = 0;
+      for (String connectorName : connectorNames)
+      {
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+
+         if (connector == null)
+         {
+            HornetQLogger.LOGGER.bridgeNoConnector(connectorName);
+
+            return null;
+         }
+
+         tcConfigs[count++] = connector;
+      }
+
+      return tcConfigs;
+   }
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.
@@ -2594,7 +2599,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
-                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), pair, true);
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getNodeGroupName(), pair, true);
 
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
@@ -2703,4 +2708,29 @@ public class HornetQServerImpl implements HornetQServer
          ((SharedNothingBackupActivation)activation).failOver();
       }
    }
+
+
+   private ServerLocatorInternal getFailbackLocator(ClusterConnectionConfiguration config) throws HornetQException
+   {
+      ServerLocatorInternal locator;
+      if(config.getDiscoveryGroupName() != null)
+      {
+         DiscoveryGroupConfiguration dg = configuration.getDiscoveryGroupConfigurations().get(config.getDiscoveryGroupName());
+
+         if (dg == null)
+         {
+            throw new HornetQException("foo");
+         }
+         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(dg);
+      }
+      else
+      {
+         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
+                                                                               : null;
+
+         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(tcConfigs);
+      }
+      return locator;
+   }
+
 }

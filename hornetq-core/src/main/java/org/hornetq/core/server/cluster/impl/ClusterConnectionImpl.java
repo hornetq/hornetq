@@ -53,6 +53,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -66,6 +67,8 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
+
+import javax.xml.soap.Node;
 
 /**
  *
@@ -125,7 +128,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final int maxHops;
 
-   private final UUID nodeUUID;
+   private final NodeManager nodeManager;
 
    private boolean backup;
 
@@ -181,19 +184,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final int maxHops,
-                                final UUID nodeUUID,
+                                final NodeManager nodeManager,
                                 final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
                                 final boolean allowDirectConnectionsOnly) throws Exception
    {
-
-      if (nodeUUID == null)
-      {
-         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
-      }
-
-      this.nodeUUID = nodeUUID;
+      this.nodeManager = nodeManager;
 
       this.connector = connector;
 
@@ -302,19 +299,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final int maxHops,
-                                final UUID nodeUUID,
+                                final NodeManager nodeManager,
                                 final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
                                 final boolean allowDirectConnectionsOnly) throws Exception
    {
-
-      if (nodeUUID == null)
-      {
-         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
-      }
-
-      this.nodeUUID = nodeUUID;
+      this.nodeManager = nodeManager;
 
       this.connector = connector;
 
@@ -423,7 +414,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          serverLocator.removeClusterTopologyListener(this);
       }
 
-      HornetQLogger.LOGGER.debug("Cluster connection being stopped for node" + nodeUUID +
+      HornetQLogger.LOGGER.debug("Cluster connection being stopped for node" + nodeManager.getNodeId() +
                 ", server = " +
                 this.server +
                 " serverLocator = " +
@@ -447,7 +438,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(),
+         Notification notification = new Notification(nodeManager.getNodeId().toString(),
                                                       NotificationType.CLUSTER_CONNECTION_STOPPED,
                                                       props);
          managementService.sendNotification(notification);
@@ -516,7 +507,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                   backupSessionFactory.getConnection()
                                       .getChannel(0, -1)
                                       .send(new NodeAnnounceMessage(System.currentTimeMillis(),
-                                                                    nodeUUID.toString(),
+                                                                    nodeManager.getNodeId().toString(),
+                                                                    manager.getNodeGroupName(),
                                                                     true,
                                                                     connector,
                                                                     null));
@@ -576,6 +568,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public void nodeAnnounced(final long uniqueEventID,
                              final String nodeID,
+                             final String nodeName,
                              final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                              final boolean backup)
    {
@@ -584,11 +577,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          HornetQLogger.LOGGER.debug(this + "::NodeAnnounced, backup=" + backup + nodeID + connectorPair);
       }
 
-      TopologyMember newMember = new TopologyMember(connectorPair.getA(), connectorPair.getB());
+      TopologyMember newMember = new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB());
       newMember.setUniqueEventID(uniqueEventID);
       if (backup)
       {
-         topology.updateBackup(nodeID, new TopologyMember(connectorPair.getA(), connectorPair.getB()));
+         topology.updateBackup(nodeID, new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB()));
       }
       else
       {
@@ -604,6 +597,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          sf.sendNodeAnnounce(localMember.getUniqueEventID(),
                              manager.getNodeId(),
+                             manager.getNodeGroupName(),
                              false,
                              localMember.getConnector().getA(),
                              localMember.getConnector().getB());
@@ -633,7 +627,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public String getNodeID()
    {
-      return nodeUUID.toString();
+      return nodeManager.getNodeId().toString();
    }
 
    public HornetQServer getServer()
@@ -676,12 +670,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         HornetQLogger.LOGGER.debug("Activating cluster connection nodeID=" + nodeUUID + " for server=" + this.server);
+         HornetQLogger.LOGGER.debug("Activating cluster connection nodeID=" + nodeManager.getNodeId() + " for server=" + this.server);
       }
 
       backup = false;
 
-      topology.updateAsLive(manager.getNodeId(), new TopologyMember(connector, null));
+      topology.updateAsLive(manager.getNodeId(), new TopologyMember(manager.getNodeGroupName(), connector, null));
 
       if (backupServerLocator != null)
       {
@@ -715,7 +709,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             throw new IllegalStateException("InternalError! The ClusterConnection doesn't know about its own node = " + this);
          }
 
-         serverLocator.setNodeID(nodeUUID.toString());
+         serverLocator.setNodeID(nodeManager.getNodeId().toString());
          serverLocator.setIdentity("(main-ClusterConnection::" + server.toString() + ")");
          serverLocator.setReconnectAttempts(0);
          serverLocator.setClusterConnection(true);
@@ -748,7 +742,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(),
+         Notification notification = new Notification(nodeManager.getNodeId().toString(),
                                                       NotificationType.CLUSTER_CONNECTION_STARTED,
                                                       props);
          HornetQLogger.LOGGER.debug("sending notification: " + notification);
@@ -774,7 +768,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          HornetQLogger.LOGGER.debug(this + " receiving nodeDown for nodeID=" + nodeID, new Exception("trace"));
       }
-      if (nodeID.equals(nodeUUID.toString()))
+      if (nodeID.equals(nodeManager.getNodeId().toString()))
       {
          return;
       }
@@ -802,6 +796,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public void nodeUP(final long eventUID,
                       final String nodeID,
+                      final String nodeName,
                       final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                       final boolean last)
    {
@@ -816,12 +811,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
       // discard notifications about ourselves unless its from our backup
 
-      if (nodeID.equals(nodeUUID.toString()))
+      if (nodeID.equals(nodeManager.getNodeId().toString()))
       {
          if (HornetQLogger.LOGGER.isTraceEnabled())
          {
             HornetQLogger.LOGGER.trace(this + "::informing about backup to itself, nodeUUID=" +
-                      nodeUUID +
+                      nodeManager.getNodeId() +
                       ", connectorPair=" +
                       connectorPair +
                       " this = " +
@@ -1001,7 +996,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                    retryInterval,
                                                                    retryIntervalMultiplier,
                                                                    maxRetryInterval,
-                                                                   nodeUUID,
+                                                                   nodeManager.getUUID(),
                                                                    record.getEventUID(),
                                                                    record.getTargetNodeID(),
                                                                    record.getQueueName(),
@@ -1589,7 +1584,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    {
       return "ClusterConnectionImpl@" + System.identityHashCode(this) +
              "[nodeUUID=" +
-             nodeUUID +
+             nodeManager.getNodeId() +
              ", connector=" +
              connector +
              ", address=" +

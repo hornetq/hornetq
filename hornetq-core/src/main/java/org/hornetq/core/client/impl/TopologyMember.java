@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 import java.io.Serializable;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 
 /**
@@ -27,11 +28,19 @@ public class TopologyMember implements Serializable
 
    private final Pair<TransportConfiguration, TransportConfiguration> connector;
 
+   private final String nodeName;
+
    /** transient to avoid serialization changes */
    private transient long uniqueEventID = System.currentTimeMillis();
 
    public TopologyMember(final TransportConfiguration a, final TransportConfiguration b)
    {
+      this(null, a, b);
+   }
+
+   public TopologyMember(final String nodeName, final TransportConfiguration a, final TransportConfiguration b)
+   {
+      this.nodeName = nodeName;
       this.connector = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
       uniqueEventID = System.currentTimeMillis();
    }
@@ -64,6 +73,11 @@ public class TopologyMember implements Serializable
       return uniqueEventID;
    }
 
+   public String getNodeName()
+   {
+      return nodeName;
+   }
+
    /**
     * @param uniqueEventID the uniqueEventID to set
     */
@@ -80,6 +94,6 @@ public class TopologyMember implements Serializable
    @Override
    public String toString()
    {
-      return "TopologyMember[connector=" + connector + "]";
+      return "TopologyMember[name = " + nodeName + ", connector=" + connector + "]";
    }
 }
