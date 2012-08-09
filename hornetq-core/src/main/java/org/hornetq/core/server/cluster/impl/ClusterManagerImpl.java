@@ -351,7 +351,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             try
             {
                broadcastGroup.start();
-               broadcastGroup.activate();
             }
             catch (Exception e)
             {
@@ -820,8 +819,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                     config.getLocalBindPort());
           }
 
-          group = new BroadcastGroupImpl(nodeManager.getNodeId().toString(), config.getName(), !backup,
-                                                 config.getBroadcastPeriod(), endpoint);
+          group = new BroadcastGroupImpl(nodeManager.getNodeId().toString(), config.getName(),
+                                        config.getBroadcastPeriod(), scheduledExecutor, endpoint);
           
           for (String connectorInfo : config.getConnectorInfos())
           {
@@ -843,8 +842,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
           logWarnNoConnector(config.getConnectorInfos().toString(), group.getName());
           return null;
        }
-
-       group.schedule(scheduledExecutor);
 
        broadcastGroups.put(config.getName(), group);
        

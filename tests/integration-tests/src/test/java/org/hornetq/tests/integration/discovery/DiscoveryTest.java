@@ -117,8 +117,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -150,7 +149,7 @@ public class DiscoveryTest extends UnitTestCase
    {
       final String nodeID = RandomUtil.randomString();
 
-      bg = new BroadcastGroupImpl(nodeID, "broadcast", true, 100,
+      bg = new BroadcastGroupImpl(nodeID, "broadcast", 100, null,
          BroadcastEndpointFactory.createJGropusEndpoint("test-jgroups-file_ping.xml", "tst"));
 
       bg.start();
@@ -282,8 +281,7 @@ public class DiscoveryTest extends UnitTestCase
          6552,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -325,8 +323,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -384,8 +381,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -428,8 +424,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -467,8 +462,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -494,9 +488,6 @@ public class DiscoveryTest extends UnitTestCase
 
       Assert.assertFalse(ok);
 
-      tearDown();
-      setUp();
-      testMultipleGroups();
    }
 
    public void testMultipleGroups() throws Exception
@@ -527,8 +518,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress1,
          groupPort1,
-         true,
-         5000L);
+         null, 0);
 
       bg2 = new BroadcastGroupImpl(node2,
          RandomUtil.randomString(),
@@ -536,8 +526,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress2,
          groupPort2,
-         true,
-         5000L);
+         null, 0);
 
       bg3 = new BroadcastGroupImpl(node3,
          RandomUtil.randomString(),
@@ -545,8 +534,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress3,
          groupPort3,
-         true,
-         5000L);
+         null, 0);
       bg2.start();
       bg1.start();
       bg3.start();
@@ -665,8 +653,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -729,8 +716,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
       bg1.start();
 
       bg2 = new BroadcastGroupImpl(node2,
@@ -739,8 +725,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
       bg2.start();
 
       bg3 = new BroadcastGroupImpl(node3,
@@ -749,8 +734,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -914,8 +898,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
 
       bg.start();
 
@@ -1025,8 +1008,7 @@ public class DiscoveryTest extends UnitTestCase
          -1,
          groupAddress,
          groupPort,
-         true,
-         5000L);
+         null, 0);
       bg.setNotificationService(notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());

@@ -36,25 +36,25 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private final String connectorName;
 
-   private final long clientFailureCheckPeriod;
+   private long clientFailureCheckPeriod;
 
-   private final long connectionTTL;
+   private long connectionTTL;
 
-   private final long retryInterval;
+   private long retryInterval;
 
-   private final double retryIntervalMultiplier;
+   private double retryIntervalMultiplier;
 
-   private final long maxRetryInterval;
+   private long maxRetryInterval;
 
-   private final int reconnectAttempts;
+   private int reconnectAttempts;
 
-   private final long callTimeout;
+   private long callTimeout;
 
-   private final long callFailoverTimeout;
+   private long callFailoverTimeout;
 
-   private final boolean duplicateDetection;
+   private boolean duplicateDetection;
 
-   private final boolean forwardWhenNoConsumers;
+   private boolean forwardWhenNoConsumers;
 
    private final List<String> staticConnectors;
 
@@ -80,23 +80,23 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final boolean allowDirectConnectionsOnly)
    {
       this(name,
-           address,
-           connectorName,
-           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-           ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
-           retryInterval,
-           ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-           ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-           ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
-           HornetQClient.DEFAULT_CALL_TIMEOUT,
-           HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
-           duplicateDetection,
-           forwardWhenNoConsumers,
-           maxHops,
-           confirmationWindowSize,
-           staticConnectors,
-           allowDirectConnectionsOnly);
+         address,
+         connectorName,
+         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+         ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+         ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+         retryInterval,
+         ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+         ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+         ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+         HornetQClient.DEFAULT_CALL_TIMEOUT,
+         HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
+         duplicateDetection,
+         forwardWhenNoConsumers,
+         maxHops,
+         confirmationWindowSize,
+         staticConnectors,
+         allowDirectConnectionsOnly);
    }
 
 
@@ -161,22 +161,22 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final String discoveryGroupName)
    {
       this(name,
-           address,
-           connectorName,
-           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-           ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
-           retryInterval,
-           ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-           ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-           ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
-           HornetQClient.DEFAULT_CALL_TIMEOUT,
-           HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
-           duplicateDetection,
-           forwardWhenNoConsumers,
-           maxHops,
-           confirmationWindowSize,
-           discoveryGroupName);
+         address,
+         connectorName,
+         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+         ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+         ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+         retryInterval,
+         ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+         ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+         ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+         HornetQClient.DEFAULT_CALL_TIMEOUT,
+         HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
+         duplicateDetection,
+         forwardWhenNoConsumers,
+         maxHops,
+         confirmationWindowSize,
+         discoveryGroupName);
    }
 
 
@@ -191,7 +191,7 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final long maxRetryInterval,
                                          final int reconnectAttempts,
                                          final long callTimeout,
-                                         final long callFAiloverTimeout,
+                                         final long callFailoverTimeout,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -208,7 +208,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.maxRetryInterval = maxRetryInterval;
       this.reconnectAttempts = reconnectAttempts;
       this.callTimeout = callTimeout;
-      this.callFailoverTimeout = callFAiloverTimeout;
+      this.callFailoverTimeout = callFailoverTimeout;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
@@ -333,5 +333,84 @@ public final class ClusterConnectionConfiguration implements Serializable
       return minLargeMessageSize;
    }
 
+   /**
+    * @param clientFailureCheckPeriod the clientFailureCheckPeriod to set
+    */
+   public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   {
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+   }
+
+   /**
+    * @param connectionTTL the connectionTTL to set
+    */
+   public void setConnectionTTL(long connectionTTL)
+   {
+      this.connectionTTL = connectionTTL;
+   }
+
+   /**
+    * @param retryInterval the retryInterval to set
+    */
+   public void setRetryInterval(long retryInterval)
+   {
+      this.retryInterval = retryInterval;
+   }
+
+   /**
+    * @param retryIntervalMultiplier the retryIntervalMultiplier to set
+    */
+   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   /**
+    * @param maxRetryInterval the maxRetryInterval to set
+    */
+   public void setMaxRetryInterval(long maxRetryInterval)
+   {
+      this.maxRetryInterval = maxRetryInterval;
+   }
+
+   /**
+    * @param reconnectAttempts the reconnectAttempts to set
+    */
+   public void setReconnectAttempts(int reconnectAttempts)
+   {
+      this.reconnectAttempts = reconnectAttempts;
+   }
+
+   /**
+    * @param callTimeout the callTimeout to set
+    */
+   public void setCallTimeout(long callTimeout)
+   {
+      this.callTimeout = callTimeout;
+   }
+
+   /**
+    * @param callFailoverTimeout the callTimeout to set
+    */
+   public void setCallFailoverTimeout(long callFailoverTimeout)
+   {
+      this.callFailoverTimeout = callFailoverTimeout;
+   }
+
+   /**
+    * @param duplicateDetection the duplicateDetection to set
+    */
+   public void setDuplicateDetection(boolean duplicateDetection)
+   {
+      this.duplicateDetection = duplicateDetection;
+   }
+
+   /**
+    * @param forwardWhenNoConsumers the forwardWhenNoConsumers to set
+    */
+   public void setForwardWhenNoConsumers(boolean forwardWhenNoConsumers)
+   {
+      this.forwardWhenNoConsumers = forwardWhenNoConsumers;
+   }
 
 }

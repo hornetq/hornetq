@@ -57,9 +57,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private boolean started;
 
-   private ScheduledFuture<?> future;
+   private final long broadCastPeriod;
 
-   private boolean active;
+   private final ScheduledExecutorService scheduledExecutor;
+
+   private ScheduledFuture<?> future;
 
    private boolean loggedBroadcastException = false;
 
@@ -69,8 +71,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private NotificationService notificationService;
 
-   private long broadcastPeriod;
-
    private BroadcastEndpoint endpoint;
 
    /**
@@ -78,34 +78,34 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
     * Broadcast group is bound locally to the wildcard address
     */
    public BroadcastGroupImpl(final String nodeID,
-                                  final String name,
-                                  final InetAddress localAddress,
-                                  final int localPort,
-                                  final InetAddress groupAddress,
-                                  final int groupPort,
-                                  final boolean active,
-                                  final long broadcastPeriod) throws Exception
+                             final String name,
+                             final InetAddress localAddress,
+                             final int localPort,
+                             final InetAddress groupAddress,
+                             final int groupPort,
+                             final ScheduledExecutorService scheduledExecutor,
+                             final long broadcastPeriod) throws Exception
    {
-      this(nodeID, name, active, broadcastPeriod,
-           BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
+      this(nodeID, name, broadcastPeriod, scheduledExecutor,
+         BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
    }
 
    /**
     * Broadcast group is bound locally to the wildcard address
     */
    public BroadcastGroupImpl(final String nodeID,
-                                  final String name,
-                                  final boolean active,
-                                  final long broadcastPeriod,
-                                  final BroadcastEndpoint endpoint) throws Exception
+                             final String name,
+                             final long broadCastPeriod,
+                             final ScheduledExecutorService scheduledExecutor,
+                             final BroadcastEndpoint endpoint) throws Exception
    {
       this.nodeID = nodeID;
 
       this.name = name;
 
-      this.active = active;
+      this.scheduledExecutor = scheduledExecutor;
 
-      this.broadcastPeriod = broadcastPeriod;
+      this.broadCastPeriod = broadCastPeriod;
 
       this.endpoint = endpoint;
 
@@ -135,6 +135,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
          notificationService.sendNotification(notification);
       }
+
+      activate();
    }
 
    public synchronized void stop()
@@ -202,18 +204,19 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       return connectors.size();
    }
 
-   public synchronized void activate()
+   private synchronized void activate()
    {
-      active = true;
+      if (scheduledExecutor != null)
+      {
+         future = scheduledExecutor.scheduleWithFixedDelay(this,
+            0L,
+            broadCastPeriod,
+            TimeUnit.MILLISECONDS);
+      }
    }
 
    public synchronized void broadcastConnectors() throws Exception
    {
-      if (!active)
-      {
-         return;
-      }
-
       HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
 
       buff.writeString(nodeID);
@@ -257,11 +260,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
             HornetQLogger.LOGGER.debug("Failed to broadcast connector configs...again", e);
          }
       }
-   }
-
-   public void schedule(ScheduledExecutorService scheduledExecutor)
-   {
-      future = scheduledExecutor.scheduleWithFixedDelay(this, 0, broadcastPeriod, TimeUnit.MILLISECONDS);
    }
 
 }
