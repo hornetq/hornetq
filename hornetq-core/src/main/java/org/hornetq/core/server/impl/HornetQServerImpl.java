@@ -2604,6 +2604,10 @@ public class HornetQServerImpl implements HornetQServer
                      {
                         stop(true);
                      }
+                     else
+                     {
+                        HornetQLogger.LOGGER.failbackMissedBackupAnnouncement();
+                     }
                   }
                }
                catch (Exception e)
