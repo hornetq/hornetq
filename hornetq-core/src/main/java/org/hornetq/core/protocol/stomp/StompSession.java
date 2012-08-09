@@ -79,6 +79,10 @@ public class StompSession implements SessionCallback
    {
    }
 
+   public void sendProducerCreditsFailMessage(int credits, SimpleString address)
+   {
+   }
+
    public int sendMessage(ServerMessage serverMessage, long consumerID, int deliveryCount)
    {
       try

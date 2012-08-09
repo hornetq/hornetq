@@ -87,6 +87,8 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleReceiveProducerCredits(SimpleString address, int credits);
 
+   void handleReceiveProducerFailCredits(SimpleString address, int credits);
+
    ClientProducerCreditManager getProducerCreditManager();
 
    void setAddress(Message message, SimpleString address);

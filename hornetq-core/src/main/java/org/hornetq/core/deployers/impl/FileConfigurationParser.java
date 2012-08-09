@@ -837,6 +837,10 @@ public final class FileConfigurationParser
             {
                policy = AddressFullMessagePolicy.PAGE;
             }
+            else if (value.equals(AddressFullMessagePolicy.FAIL.toString()))
+            {
+               policy = AddressFullMessagePolicy.FAIL;
+            }
             addressSettings.setAddressFullMessagePolicy(policy);
          }
          else if (FileConfigurationParser.LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))

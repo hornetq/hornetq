@@ -148,6 +148,8 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_INDIVIDUAL_ACKNOWLEDGE = 81;
 
+   public static final byte SESS_PRODUCER_FAIL_CREDITS = 82;
+
    // Replication
 
    public static final byte REPLICATION_RESPONSE = 90;
