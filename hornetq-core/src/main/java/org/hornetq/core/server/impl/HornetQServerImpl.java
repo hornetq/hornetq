@@ -2424,7 +2424,7 @@ public class HornetQServerImpl implements HornetQServer
        */
       private boolean isNodeIdUsed() throws Exception
       {
-         if (configuration.getClusterConfigurations().size() == 0)
+         if (configuration.getClusterConfigurations().isEmpty())
             return false;
          SimpleString nodeId0;
          try
