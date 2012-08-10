@@ -317,8 +317,7 @@ class StompProtocolManager implements ProtocolManager
       
       HornetQSecurityManager sm = server.getSecurityManager();
       
-      // The sm will be null case security is not enabled...
-      if (sm != null)
+      if (sm != null && server.getConfiguration().isSecurityEnabled())
       {
          validated = sm.validateUser(login, passcode);
       }
