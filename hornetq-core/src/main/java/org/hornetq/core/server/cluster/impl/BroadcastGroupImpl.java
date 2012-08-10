@@ -56,8 +56,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
-   private String nodeID;
-
    private boolean started;
 
    private final long broadCastPeriod;
@@ -76,36 +74,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private BroadcastEndpoint endpoint;
 
-   /**
-    * @deprecated  use the other constructors
-    * Broadcast group is bound locally to the wildcard address
-    */
-   public BroadcastGroupImpl(final String nodeID,
-                             final String name,
-                             final InetAddress localAddress,
-                             final int localPort,
-                             final InetAddress groupAddress,
-                             final int groupPort,
-                             final ScheduledExecutorService scheduledExecutor,
-                             final long broadcastPeriod) throws Exception
-   {
-      this((NodeManager) null, name, broadcastPeriod, scheduledExecutor,
-         BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
-      this.nodeID = nodeID;
-   }
-
-   /**
-    * Broadcast group is bound locally to the wildcard address
-    */
-   public BroadcastGroupImpl(final String nodeID,
-                             final String name,
-                             final long broadCastPeriod,
-                             final ScheduledExecutorService scheduledExecutor,
-                             final BroadcastEndpoint endpoint) throws Exception
-   {
-      this((NodeManager) null, name, broadCastPeriod, scheduledExecutor, endpoint);
-      this.nodeID = nodeID;
-   }
 
    public BroadcastGroupImpl(final NodeManager nodeManager,
                                   final String name,
@@ -138,11 +106,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
 
-      if(nodeManager != null)
-      {
-         nodeID = nodeManager.getNodeId().toString();
-      }
-
       endpoint.openBroadcaster();
 
       started = true;
@@ -151,7 +114,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
+         Notification notification = new Notification(nodeManager.getNodeId().toString(), NotificationType.BROADCAST_GROUP_STARTED, props);
          notificationService.sendNotification(notification);
       }
 
@@ -185,7 +148,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STOPPED, props);
+         Notification notification = new Notification(nodeManager.getNodeId().toString(), NotificationType.BROADCAST_GROUP_STOPPED, props);
          try
          {
             notificationService.sendNotification(notification);
@@ -238,7 +201,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    {
       HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
 
-      buff.writeString(nodeID);
+      buff.writeString(nodeManager.getNodeId().toString());
 
       buff.writeString(uniqueID);
 
