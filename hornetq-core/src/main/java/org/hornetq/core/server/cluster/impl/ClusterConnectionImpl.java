@@ -66,9 +66,6 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.TypedProperties;
-import org.hornetq.utils.UUID;
-
-import javax.xml.soap.Node;
 
 /**
  *
