@@ -266,6 +266,14 @@ public enum HornetQExceptionType implements Serializable
       {
          return null;
       }
+   },
+   ADDRESS_FULL(210)
+   {
+      @Override
+      HornetQException createException(String msg)
+      {
+          return null;
+      }
    };
 
    private final static Map<Integer, HornetQExceptionType> TYPE_MAP;

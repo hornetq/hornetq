@@ -21,11 +21,12 @@
 */
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQDuplicateMetaDataException;
-import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQIOErrorException;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQIncompatibleClientServerException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -36,10 +37,10 @@ import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.HornetQSecurityException;
 import org.hornetq.api.core.HornetQSessionCreationException;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.HornetQTransactionRolledBackException;
 import org.hornetq.api.core.HornetQUnBlockedException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
@@ -488,4 +489,8 @@ public interface HornetQMessageBundle
 
    @Message(id = 119138, value = "method autoEncode doesn't know how to convert {0} yet", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException autoConvertError(Class<? extends Object> aClass);
+
+   @Message(id = 119139, value = "Address \"{0}\" is full. Message encode size = {1}B", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAddressFullException addressIsFull(String addressName, int size);
+
 }

@@ -136,8 +136,10 @@
                                 <entry>This must be set to PAGE for paging to enable. If the value
                                     is PAGE then further messages will be paged to disk. If the
                                     value is DROP then further messages will be silently dropped. If
-                                    the value is BLOCK then client message producers will block when
-                                    they try and send further messages.</entry>
+                                    the value is FAIL then the messages will be dropped and the client
+                                    message producers will receive an exception. If the value is
+                                    BLOCK then client message producers will block when they try and
+                                    send further messages.</entry>
                                 <entry>PAGE</entry>
                             </row>
                             <row>
@@ -159,6 +161,14 @@
             configured to just drop messages when the address is full.</para>
         <para>To do this just set the <literal>address-full-policy</literal> to <literal
                 >DROP</literal> in the address settings</para>
+    </section>
+    <section>
+        <title>Dropping messages and throwing an exception to producers</title>
+        <para>Instead of paging messages when the max size is reached, an address can also be
+            configured to drop messages and also throw an exception on the client-side
+            when the address is full.</para>
+        <para>To do this just set the <literal>address-full-policy</literal> to <literal
+                >FAIL</literal> in the address settings</para>
     </section>
     <section>
         <title>Blocking producers</title>

@@ -271,6 +271,23 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       session.workDone();
 
+      try
+      {
+         // This will block if credits are not available
+
+         // Note, that for a large message, the encode size only includes the properties + headers
+         // Not the continuations, but this is ok since we are only interested in limiting the amount of
+         // data in *memory* and continuations go straight to the disk
+
+         if (!isLarge)
+         {
+            theCredits.acquireCredits(msgI.getEncodeSize());
+         }
+      }
+      catch (InterruptedException e)
+      {
+      }
+
       if (isLarge)
       {
          largeMessageSend(sendBlocking, msgI, theCredits);
@@ -287,23 +304,6 @@ public class ClientProducerImpl implements ClientProducerInternal
          {
             channel.sendBatched(packet);
          }
-      }
-
-      try
-      {
-         // This will block if credits are not available
-
-         // Note, that for a large message, the encode size only includes the properties + headers
-         // Not the continuations, but this is ok since we are only interested in limiting the amount of
-         // data in *memory* and continuations go straight to the disk
-
-         if (!isLarge)
-         {
-            theCredits.acquireCredits(msgI.getEncodeSize());
-         }
-      }
-      catch (InterruptedException e)
-      {
       }
    }
 
