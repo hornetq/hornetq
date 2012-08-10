@@ -13,16 +13,16 @@
 
 package org.hornetq.core.client.impl;
 
-import java.util.concurrent.Semaphore;
-
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQMessageBundle;
+
+import java.util.concurrent.Semaphore;
 
 /**
  * A ClientProducerCreditsImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class ClientProducerCreditsImpl implements ClientProducerCredits
 {
@@ -31,16 +31,20 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final int windowSize;
 
    private volatile boolean closed;
-   
+
    private boolean blocked;
 
    private final SimpleString address;
 
    private final ClientSessionInternal session;
 
+   private int pendingCredits;
+
    private int arriving;
 
    private int refCount;
+
+   private boolean serverRespondedWithFail;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
@@ -56,7 +60,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore = new Semaphore(0, false);
    }
-   
+
    public void init()
    {
       // We initial request twice as many credits as we request in subsequent requests
@@ -64,11 +68,19 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       checkCredits(windowSize);
    }
 
-   public void acquireCredits(final int credits) throws InterruptedException
+   public void acquireCredits(final int credits) throws InterruptedException, HornetQException
    {
       checkCredits(credits);
 
-      if (!semaphore.tryAcquire(credits))
+
+      boolean tryAcquire;
+
+      synchronized (this)
+      {
+         tryAcquire = semaphore.tryAcquire(credits);
+      }
+
+      if (!tryAcquire)
       {
          if (!closed)
          {
@@ -81,6 +93,28 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
             {
                this.blocked = false;
             }
+         }
+      }
+
+
+      synchronized (this)
+      {
+         pendingCredits -= credits;
+      }
+
+      // check to see if the blocking mode is FAIL on the server
+      synchronized (this)
+      {
+         if (serverRespondedWithFail)
+         {
+            serverRespondedWithFail = false;
+
+            // remove existing credits to force the client to ask the server for more on the next send
+            semaphore.drainPermits();
+            pendingCredits = 0;
+            arriving = 0;
+
+            throw HornetQMessageBundle.BUNDLE.addressIsFull(address.toString(), credits);
          }
       }
    }
@@ -105,14 +139,22 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       semaphore.release(credits);
    }
 
+   public void receiveFailCredits(final int credits)
+   {
+      serverRespondedWithFail = true;
+      // receive credits like normal to keep the sender from blocking
+      receiveCredits(credits);
+   }
+
    public synchronized void reset()
    {
-      // Any arriving credits from before failover won't arrive, so we re-initialise
+      // Any pendingCredits credits from before failover won't arrive, so we re-initialise
 
       semaphore.drainPermits();
 
-      int beforeFailure = arriving;
+      int beforeFailure = pendingCredits;
 
+      pendingCredits = 0;
       arriving = 0;
 
       // If we are waiting for more credits than what's configured, then we need to use what we tried before
@@ -155,6 +197,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
          {
             toRequest = needed - arriving;
 
+            pendingCredits += toRequest;
             arriving += toRequest;
          }
       }
@@ -169,5 +212,4 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    {
       session.sendProducerCreditsMessage(credits, address);
    }
-
 }

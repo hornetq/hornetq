@@ -13,24 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -58,13 +40,28 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.FutureLatch;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+
 /**
- *
- * @see PagingStore
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @see PagingStore
  */
 public class PagingStoreImpl implements PagingStore
 {
@@ -158,11 +155,11 @@ public class PagingStoreImpl implements PagingStore
       if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
       {
          throw new IllegalStateException("pageSize for address " + address +
-                                         " >= maxSize. Normally pageSize should" +
-                                         " be significantly smaller than maxSize, ms: " +
-                                         maxSize +
-                                         " ps " +
-                                         pageSize);
+               " >= maxSize. Normally pageSize should" +
+               " be significantly smaller than maxSize, ms: " +
+               maxSize +
+               " ps " +
+               pageSize);
       }
 
       this.executor = executor;
@@ -215,10 +212,10 @@ public class PagingStoreImpl implements PagingStore
    public boolean lock(long timeout)
    {
       if (timeout == -1)
-   {
-      lock.writeLock().lock();
+      {
+         lock.writeLock().lock();
          return true;
-   }
+      }
       try
       {
          return lock.writeLock().tryLock(timeout, TimeUnit.MILLISECONDS);
@@ -294,6 +291,10 @@ public class PagingStoreImpl implements PagingStore
          if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
          {
             return false;
+         }
+         if (addressFullMessagePolicy == AddressFullMessagePolicy.FAIL)
+         {
+            return isFull();
          }
          if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
          {
@@ -464,7 +465,7 @@ public class PagingStoreImpl implements PagingStore
                      if (msg.getMessage().isLargeMessage())
                      {
                         // We have to do this since addLIveMessage will increment an extra one
-                        ((LargeServerMessage)msg.getMessage()).decrementDelayDeletionCount();
+                        ((LargeServerMessage) msg.getMessage()).decrementDelayDeletionCount();
                      }
                   }
 
@@ -529,29 +530,29 @@ public class PagingStoreImpl implements PagingStore
       {
          synchronized (pagingGuard)
          {
-         if (paging)
-         {
-            return false;
-         }
-
-         if (currentPage == null)
-         {
-            try
+            if (paging)
             {
-               openNewPage();
-            }
-            catch (Exception e)
-            {
-               // If not possible to starting page due to an IO error, we will just consider it non paging.
-               // This shouldn't happen anyway
-               HornetQLogger.LOGGER.pageStoreStartIOError(e);
                return false;
             }
-         }
 
-         paging = true;
+            if (currentPage == null)
+            {
+               try
+               {
+                  openNewPage();
+               }
+               catch (Exception e)
+               {
+                  // If not possible to starting page due to an IO error, we will just consider it non paging.
+                  // This shouldn't happen anyway
+                  HornetQLogger.LOGGER.pageStoreStartIOError(e);
+                  return false;
+               }
+            }
 
-         return true;
+            paging = true;
+
+            return true;
          }
       }
       finally
@@ -600,15 +601,17 @@ public class PagingStoreImpl implements PagingStore
       openNewPage();
    }
 
-    /**
+   /**
     * Returns a Page out of the Page System without reading it.
     * <p>
     * The method calling this method will remove the page and will start reading it outside of any
     * locks. This method could also replace the current file by a new file, and that process is done
     * through acquiring a writeLock on currentPageLock.
+    * </p>
     * <p>
     * Observation: This method is used internally as part of the regular depage process, but
     * externally is used only on tests, and that's why this method is part of the Testable Interface
+    * </p>
     */
    public Page depage() throws Exception
    {
@@ -719,13 +722,13 @@ public class PagingStoreImpl implements PagingStore
       }
    }
 
-   public void executeRunnableWhenMemoryAvailable(final Runnable runnable)
+   public boolean checkMemory(final Runnable runWhenAvailable)
    {
       if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
       {
          if (sizeInBytes.get() > maxSize)
          {
-            OurRunnable ourRunnable = new OurRunnable(runnable);
+            OurRunnable ourRunnable = new OurRunnable(runWhenAvailable);
 
             onMemoryFreedRunnables.add(ourRunnable);
 
@@ -739,11 +742,20 @@ public class PagingStoreImpl implements PagingStore
                ourRunnable.run();
             }
 
-            return;
+            return true;
+         }
+      }
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.FAIL && maxSize != -1)
+      {
+         if (sizeInBytes.get() > maxSize)
+         {
+            return false;
          }
       }
 
-      runnable.run();
+      runWhenAvailable.run();
+
+      return true;
    }
 
    public void addSize(final int size)
@@ -785,7 +797,7 @@ public class PagingStoreImpl implements PagingStore
 
          return;
       }
-      else if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP || addressFullMessagePolicy == AddressFullMessagePolicy.FAIL)
       {
          sizeInBytes.addAndGet(size);
       }
@@ -802,10 +814,9 @@ public class PagingStoreImpl implements PagingStore
    }
 
    @Override
-   public
-            boolean
-            page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock)
-                                                                                                             throws Exception
+   public boolean
+   page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock)
+         throws Exception
    {
 
       if (!running)
@@ -815,7 +826,7 @@ public class PagingStoreImpl implements PagingStore
 
       boolean full = isFull();
 
-      if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP || addressFullMessagePolicy == AddressFullMessagePolicy.FAIL)
       {
          if (full)
          {
@@ -874,7 +885,7 @@ public class PagingStoreImpl implements PagingStore
 
             if (message.isLargeMessage())
             {
-               ((LargeServerMessage)message).setPaged();
+               ((LargeServerMessage) message).setPaged();
             }
 
             int bytesToWrite = pagedMessage.getEncodeSize() + Page.SIZE_RECORD;
@@ -891,7 +902,7 @@ public class PagingStoreImpl implements PagingStore
             if (isTrace)
             {
                HornetQLogger.LOGGER.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
-                        " pageId=" + currentPage.getPageId());
+                     " pageId=" + currentPage.getPageId());
             }
 
             if (tx != null)
@@ -940,7 +951,7 @@ public class PagingStoreImpl implements PagingStore
 
    private void installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
    {
-      FinishPageMessageOperation pgOper = (FinishPageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+      FinishPageMessageOperation pgOper = (FinishPageMessageOperation) tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
       if (pgOper == null)
       {
          PageTransactionInfo pgTX = new PageTransactionInfoImpl(tx.getID());

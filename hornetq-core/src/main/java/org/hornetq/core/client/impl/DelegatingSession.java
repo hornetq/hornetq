@@ -548,6 +548,11 @@ public class DelegatingSession implements ClientSessionInternal
       session.handleReceiveProducerCredits(address, credits);
    }
 
+   public void handleReceiveProducerFailCredits(final SimpleString address, final int credits)
+   {
+      session.handleReceiveProducerFailCredits(address, credits);
+   }
+
    public ClientProducerCreditManager getProducerCreditManager()
    {
       return session.getProducerCreditManager();

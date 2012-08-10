@@ -74,9 +74,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter
 {
@@ -211,7 +211,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames()
-                                                                                         .size()]);
+               .size()]);
       }
       finally
       {
@@ -227,7 +227,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferSize_AIO()
-                                                                     : configuration.getJournalBufferSize_NIO();
+               : configuration.getJournalBufferSize_NIO();
       }
       finally
       {
@@ -243,7 +243,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalBufferTimeout_AIO()
-                                                                     : configuration.getJournalBufferTimeout_NIO();
+               : configuration.getJournalBufferTimeout_NIO();
       }
       finally
       {
@@ -290,7 +290,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          return configuration.getJournalType() == JournalType.ASYNCIO ? configuration.getJournalMaxIO_AIO()
-                                                                     : configuration.getJournalMaxIO_NIO();
+               : configuration.getJournalMaxIO_NIO();
       }
       finally
       {
@@ -576,10 +576,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          server.deployQueue(new SimpleString(address),
-                            new SimpleString(name),
-                            new SimpleString(filterString),
-                            true,
-                            false);
+               new SimpleString(name),
+               new SimpleString(filterString),
+               true,
+               false);
       }
       finally
       {
@@ -666,7 +666,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          String[] names = new String[queues.length];
          for (int i = 0; i < queues.length; i++)
          {
-            QueueControl queue = (QueueControl)queues[i];
+            QueueControl queue = (QueueControl) queues[i];
             names[i] = queue.getName();
          }
 
@@ -689,7 +689,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          String[] names = new String[addresses.length];
          for (int i = 0; i < addresses.length; i++)
          {
-            AddressControl address = (AddressControl)addresses[i];
+            AddressControl address = (AddressControl) addresses[i];
             names[i] = address.getAddress();
          }
 
@@ -898,7 +898,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
             {
                // sort by creation time, oldest first
-               return (int)(entry1.getValue() - entry2.getValue());
+               return (int) (entry1.getValue() - entry2.getValue());
             }
          });
          String[] s = new String[xidsSortedByCreationTime.size()];
@@ -936,7 +936,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
             {
                // sort by creation time, oldest first
-               return (int)(entry1.getValue() - entry2.getValue());
+               return (int) (entry1.getValue() - entry2.getValue());
             }
          });
 
@@ -945,8 +945,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          {
             Xid xid = entry.getKey();
             TransactionDetail detail = new CoreTransactionDetail(xid,
-                                                                 resourceManager.getTransaction(xid),
-                                                                 entry.getValue());
+                  resourceManager.getTransaction(xid),
+                  entry.getValue());
 
             txDetailListJson.put(detail.toJSON());
          }
@@ -977,7 +977,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
             {
                // sort by creation time, oldest first
-               return (int)(entry1.getValue() - entry2.getValue());
+               return (int) (entry1.getValue() - entry2.getValue());
             }
          });
 
@@ -988,8 +988,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          {
             Xid xid = entry.getKey();
             TransactionDetail detail = new CoreTransactionDetail(xid,
-                                                                 resourceManager.getTransaction(xid),
-                                                                 entry.getValue());
+                  resourceManager.getTransaction(xid),
+                  entry.getValue());
 
             JSONObject txJson = detail.toJSON();
 
@@ -1270,21 +1270,21 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
-   
+
 
    /* (non-Javadoc)
-    * @see org.hornetq.api.core.management.HornetQServerControl#listProducersInfoAsJSON()
-    */
+   * @see org.hornetq.api.core.management.HornetQServerControl#listProducersInfoAsJSON()
+   */
    public String listProducersInfoAsJSON() throws Exception
    {
       JSONArray producers = new JSONArray();
-      
-      
+
+
       for (ServerSession session : server.getSessions())
       {
          session.describeProducersInfo(producers);
       }
-      
+
       return producers.toString();
    }
 
@@ -1297,7 +1297,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations()
-                                                                                   .values();
+               .values();
 
          Object[] ret = new Object[connectorConfigurations.size()];
 
@@ -1358,23 +1358,23 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          Set<Role> roles = SecurityFormatter.createSecurity(sendRoles,
-                                                            consumeRoles,
-                                                            createDurableQueueRoles,
-                                                            deleteDurableQueueRoles,
-                                                            createNonDurableQueueRoles,
-                                                            deleteNonDurableQueueRoles,
-                                                            manageRoles);
+               consumeRoles,
+               createDurableQueueRoles,
+               deleteDurableQueueRoles,
+               createNonDurableQueueRoles,
+               deleteNonDurableQueueRoles,
+               manageRoles);
 
          server.getSecurityRepository().addMatch(addressMatch, roles);
 
          PersistedRoles persistedRoles = new PersistedRoles(addressMatch,
-                                                            sendRoles,
-                                                            consumeRoles,
-                                                            createDurableQueueRoles,
-                                                            deleteDurableQueueRoles,
-                                                            createNonDurableQueueRoles,
-                                                            deleteNonDurableQueueRoles,
-                                                            manageRoles);
+               sendRoles,
+               consumeRoles,
+               createDurableQueueRoles,
+               deleteDurableQueueRoles,
+               createNonDurableQueueRoles,
+               deleteNonDurableQueueRoles,
+               manageRoles);
 
          storageManager.storeSecurityRoles(persistedRoles);
       }
@@ -1416,14 +1416,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          int i = 0;
          for (Role role : roles)
          {
-            objRoles[i++] = new Object[] { role.getName(),
-                                          CheckType.SEND.hasRole(role),
-                                          CheckType.CONSUME.hasRole(role),
-                                          CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.MANAGE.hasRole(role) };
+            objRoles[i++] = new Object[]{role.getName(),
+                  CheckType.SEND.hasRole(role),
+                  CheckType.CONSUME.hasRole(role),
+                  CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                  CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                  CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                  CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
+                  CheckType.MANAGE.hasRole(role)};
          }
          return objRoles;
       }
@@ -1480,16 +1480,17 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       settings.put("lastValueQueue", addressSettings.isLastValueQueue());
       settings.put("sendToDLAOnNoRoute", addressSettings.isSendToDLAOnNoRoute());
       String policy = addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.PAGE ? "PAGE"
-                                                                                                    : addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.BLOCK ? "BLOCK"
-                                                                                                                                                                                     : "DROP";
+            : addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.BLOCK ? "BLOCK"
+            : addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.DROP ? "DROP"
+            : "FAIL";
       settings.put("addressFullMessagePolicy", policy);
 
       JSONObject jsonObject = new JSONObject(settings);
       return jsonObject.toString();
    }
 
-   
-    public void addAddressSettings(final String address,
+
+   public void addAddressSettings(final String address,
                                   final String DLA,
                                   final String expiryAddress,
                                   final boolean lastValueQueue,
@@ -1511,10 +1512,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          throw new IllegalStateException("pageSize has to be lower than maxSizeBytes. Invalid argument (" + pageSizeBytes + " < " + maxSizeBytes + ")");
       }
-      
-      if (maxSizeBytes < -1 )
+
+      if (maxSizeBytes < -1)
       {
-    	  throw new IllegalStateException("Invalid argument on maxSizeBytes");
+         throw new IllegalStateException("Invalid argument on maxSizeBytes");
       }
 
       AddressSettings addressSettings = new AddressSettings();
@@ -1545,6 +1546,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       else if (addressFullMessagePolicy.equalsIgnoreCase("BLOCK"))
       {
          addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      }
+      else if (addressFullMessagePolicy.equalsIgnoreCase("FAIL"))
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.FAIL);
       }
       server.getAddressSettingsRepository().addMatch(address, addressSettings);
 
@@ -1585,7 +1590,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          String[] names = new String[diverts.length];
          for (int i = 0; i < diverts.length; i++)
          {
-            DivertControl divert = (DivertControl)diverts[i];
+            DivertControl divert = (DivertControl) diverts[i];
             names[i] = divert.getUniqueName();
          }
 
@@ -1611,12 +1616,12 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          DivertConfiguration config = new DivertConfiguration(name,
-                                                              routingName,
-                                                              address,
-                                                              forwardingAddress,
-                                                              exclusive,
-                                                              filterString,
-                                                              transformerClassName);
+               routingName,
+               address,
+               forwardingAddress,
+               exclusive,
+               filterString,
+               transformerClassName);
          server.deployDivert(config);
       }
       finally
@@ -1651,7 +1656,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          String[] names = new String[bridges.length];
          for (int i = 0; i < bridges.length; i++)
          {
-            BridgeControl bridge = (BridgeControl)bridges[i];
+            BridgeControl bridge = (BridgeControl) bridges[i];
             names[i] = bridge.getName();
          }
 
@@ -1691,45 +1696,45 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          if (useDiscoveryGroup)
          {
             config = new BridgeConfiguration(name,
-                                            queueName,
-                                            forwardingAddress,
-                                            filterString,
-                                            transformerClassName,
-                                            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                            clientFailureCheckPeriod,
-                                            HornetQClient.DEFAULT_CONNECTION_TTL,
-                                            retryInterval,
-                                            HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                            retryIntervalMultiplier,
-                                            reconnectAttempts,
-                                            useDuplicateDetection,
-                                            confirmationWindowSize,
-                                            connectorNames,
-                                            ha,
-                                            user,
-                                            password);
+                  queueName,
+                  forwardingAddress,
+                  filterString,
+                  transformerClassName,
+                  HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                  clientFailureCheckPeriod,
+                  HornetQClient.DEFAULT_CONNECTION_TTL,
+                  retryInterval,
+                  HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                  retryIntervalMultiplier,
+                  reconnectAttempts,
+                  useDuplicateDetection,
+                  confirmationWindowSize,
+                  connectorNames,
+                  ha,
+                  user,
+                  password);
          }
          else
          {
             List<String> connectors = toList(connectorNames);
             config = new BridgeConfiguration(name,
-                                            queueName,
-                                            forwardingAddress,
-                                            filterString,
-                                            transformerClassName,
-                                            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                            clientFailureCheckPeriod,
-                                            HornetQClient.DEFAULT_CONNECTION_TTL,
-                                            retryInterval,
-                                            HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                            retryIntervalMultiplier,
-                                            reconnectAttempts,
-                                            useDuplicateDetection,
-                                            confirmationWindowSize,
-                                            connectors,
-                                            ha,
-                                            user,
-                                            password);
+                  queueName,
+                  forwardingAddress,
+                  filterString,
+                  transformerClassName,
+                  HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                  clientFailureCheckPeriod,
+                  HornetQClient.DEFAULT_CONNECTION_TTL,
+                  retryInterval,
+                  HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                  retryIntervalMultiplier,
+                  reconnectAttempts,
+                  useDuplicateDetection,
+                  confirmationWindowSize,
+                  connectors,
+                  ha,
+                  user,
+                  password);
          }
          server.deployBridge(config);
       }
@@ -1823,9 +1828,9 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          names[i] = values[i].toString();
       }
-      return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
-                                                                     this.getClass().getName(),
-                                                                     "Notifications emitted by a Core Server") };
+      return new MBeanNotificationInfo[]{new MBeanNotificationInfo(names,
+            this.getClass().getName(),
+            "Notifications emitted by a Core Server")};
    }
 
    // Package protected ---------------------------------------------

@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -359,53 +360,62 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-         locator.setProducerWindowSize(1024);
-         locator.setConsumerWindowSize(1024);
-         locator.setAckBatchSize(1024);
+      locator.setProducerWindowSize(1024);
+      locator.setConsumerWindowSize(1024);
+      locator.setAckBatchSize(1024);
 
       sf = createSessionFactory(locator);
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         final SimpleString queueName = new SimpleString("testqueue");
+      final SimpleString queueName = new SimpleString("testqueue");
 
-         session.createQueue(address, queueName, null, false);
+      session.createQueue(address, queueName, null, false);
 
-         ClientProducer producer = session.createProducer(address);
+      ClientProducer producer = session.createProducer(address);
 
-         byte[] bytes = new byte[2000];
+      byte[] bytes = new byte[2000];
 
-         ClientMessage message = session.createMessage(false);
+      ClientMessage message = session.createMessage(false);
 
-         message.getBodyBuffer().writeBytes(bytes);
+      message.getBodyBuffer().writeBytes(bytes);
 
-         final AtomicBoolean closed = new AtomicBoolean(false);
+      final AtomicBoolean closed = new AtomicBoolean(false);
 
-         Thread t = new Thread(new Runnable()
+      Thread t = new Thread(new Runnable()
+      {
+         public void run()
          {
-            public void run()
+            try
             {
-               try
-               {
-                  Thread.sleep(500);
+               Thread.sleep(500);
 
-                  closed.set(true);
+               closed.set(true);
 
-                  session.close();
-               }
-               catch (Exception e)
-               {
-               }
+               session.close();
             }
-         });
+            catch (Exception e)
+            {
+            }
+         }
+      });
 
-         t.start();
+      t.start();
 
+      try
+      {
          // This will block
-         producer.send(message);
+         for (int i = 0 ; i < 10; i++)
+         {
+            producer.send(message);
+         }
+      }
+      catch (HornetQObjectClosedException expected)
+      {
+      }
 
-         Assert.assertTrue(closed.get());
+      Assert.assertTrue(closed.get());
 
-         t.join();
+      t.join();
    }
 
    public void testFlowControlMessageNotRouted() throws Exception

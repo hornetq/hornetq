@@ -15,6 +15,7 @@ package org.hornetq.core.protocol.core.impl;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsFailMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
@@ -80,6 +81,14 @@ public final class CoreSessionCallback implements SessionCallback
    public void sendProducerCreditsMessage(int credits, SimpleString address)
    {
       Packet packet = new SessionProducerCreditsMessage(credits, address);
+
+      channel.send(packet);
+   }
+
+   @Override
+   public void sendProducerCreditsFailMessage(int credits, SimpleString address)
+   {
+      Packet packet = new SessionProducerCreditsFailMessage(credits, address);
 
       channel.send(packet);
    }
