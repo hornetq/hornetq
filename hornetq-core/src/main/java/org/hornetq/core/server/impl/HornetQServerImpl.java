@@ -13,6 +13,10 @@
 
 package org.hornetq.core.server.impl;
 
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -39,14 +43,27 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.*;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationUtils;
+import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -136,8 +153,6 @@ import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
-
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.*;
 
 /**
  * The HornetQ server implementation
@@ -2152,7 +2167,8 @@ public class HornetQServerImpl implements HornetQServer
                   return;
                //we use the cluster connection configuration to connect to the cluster to find the live node we want to
                //connect to.
-               ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
+               ClusterConnectionConfiguration config =
+                        ConfigurationUtils.getReplicationClusterConfiguration(configuration);
                serverLocator0 = getFailbackLocator(config);
             }
             //if the cluster isn't available we want to hang around until it is
@@ -2503,8 +2519,7 @@ public class HornetQServerImpl implements HornetQServer
 
          ServerLocatorInternal locator;
 
-         ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
-
+         ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
 
          locator = getFailbackLocator(config);
 

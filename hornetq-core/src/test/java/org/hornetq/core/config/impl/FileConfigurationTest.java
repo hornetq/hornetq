@@ -228,6 +228,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       }
 
       Assert.assertEquals(2, conf.getClusterConfigurations().size());
+      Assert.assertEquals("replication cluster name", "cluster-connection1", conf.getReplicationClustername());
+
       for (ClusterConnectionConfiguration ccc : conf.getClusterConfigurations())
       {
          if (ccc.getName().equals("cluster-connection1"))
@@ -354,5 +356,4 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
       return fc;
    }
-
 }
