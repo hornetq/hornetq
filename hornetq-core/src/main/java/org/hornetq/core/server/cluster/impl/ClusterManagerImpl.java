@@ -819,7 +819,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                     config.getLocalBindPort());
           }
 
-          group = new BroadcastGroupImpl(nodeManager.getNodeId().toString(), config.getName(),
+          group = new BroadcastGroupImpl(nodeManager, config.getName(),
                                         config.getBroadcastPeriod(), scheduledExecutor, endpoint);
           
           for (String connectorInfo : config.getConnectorInfos())

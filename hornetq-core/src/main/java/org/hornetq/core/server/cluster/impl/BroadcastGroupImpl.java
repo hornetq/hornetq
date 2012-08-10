@@ -28,6 +28,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -49,7 +50,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 {
-   private final String nodeID;
+   private final NodeManager nodeManager;
 
    private final String name;
 
@@ -73,33 +74,14 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private BroadcastEndpoint endpoint;
 
-   /**
-    * @deprecated  use the other constructors
-    * Broadcast group is bound locally to the wildcard address
-    */
-   public BroadcastGroupImpl(final String nodeID,
-                             final String name,
-                             final InetAddress localAddress,
-                             final int localPort,
-                             final InetAddress groupAddress,
-                             final int groupPort,
-                             final ScheduledExecutorService scheduledExecutor,
-                             final long broadcastPeriod) throws Exception
-   {
-      this(nodeID, name, broadcastPeriod, scheduledExecutor,
-         BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
-   }
 
-   /**
-    * Broadcast group is bound locally to the wildcard address
-    */
-   public BroadcastGroupImpl(final String nodeID,
-                             final String name,
-                             final long broadCastPeriod,
-                             final ScheduledExecutorService scheduledExecutor,
-                             final BroadcastEndpoint endpoint) throws Exception
+   public BroadcastGroupImpl(final NodeManager nodeManager,
+                                  final String name,
+                                  final long broadCastPeriod,
+                                  final ScheduledExecutorService scheduledExecutor,
+                                  final BroadcastEndpoint endpoint) throws Exception
    {
-      this.nodeID = nodeID;
+      this.nodeManager = nodeManager;
 
       this.name = name;
 
@@ -132,7 +114,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
+         Notification notification = new Notification(nodeManager.getNodeId().toString(), NotificationType.BROADCAST_GROUP_STARTED, props);
          notificationService.sendNotification(notification);
       }
 
@@ -166,7 +148,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STOPPED, props);
+         Notification notification = new Notification(nodeManager.getNodeId().toString(), NotificationType.BROADCAST_GROUP_STOPPED, props);
          try
          {
             notificationService.sendNotification(notification);
@@ -219,7 +201,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    {
       HornetQBuffer buff = HornetQBuffers.dynamicBuffer(4096);
 
-      buff.writeString(nodeID);
+      buff.writeString(nodeManager.getNodeId().toString());
 
       buff.writeString(uniqueID);
 
