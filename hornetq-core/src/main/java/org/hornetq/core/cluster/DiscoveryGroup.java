@@ -82,48 +82,6 @@ public class DiscoveryGroup
    private final NotificationService notificationService;
 
    /**
-    * @deprecated use the other available constructors
-    * @param nodeID
-    * @param name
-    * @param localBindAddress
-    * @param groupAddress
-    * @param groupPort
-    * @param timeout
-    * @param notificationService
-    * @throws Exception
-    */
-   public DiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
-                         final InetAddress groupAddress, final int groupPort, final long timeout,
-                         NotificationService notificationService) throws Exception
-   {
-      this.nodeID = nodeID;
-      this.name = name;
-      this.timeout = timeout;
-
-      this.endpoint = BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localBindAddress, -1);
-
-      this.notificationService = notificationService;
-   }
-
-
-   /**
-    * @deprecated use the other available constructors
-    * @param nodeID
-    * @param name
-    * @param localBindAddress
-    * @param groupAddress
-    * @param groupPort
-    * @param timeout
-    * @throws Exception
-    */
-   public DiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
-                         final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
-   {
-      this(nodeID, name, localBindAddress, groupAddress, groupPort, timeout, null);
-   }
-
-
-   /**
     * This is the main constructor, intended to be used
     * @param nodeID
     * @param name
