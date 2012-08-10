@@ -708,6 +708,48 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+   public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration, int reconnectAttempts, boolean failoverOnInitialConnection) throws Exception
+   {
+      assertOpen();
+
+      initialise();
+
+      ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
+                                                                          transportConfiguration,
+                                                                          callTimeout,
+                                                                          callFailoverTimeout,
+                                                                          clientFailureCheckPeriod,
+                                                                          connectionTTL,
+                                                                          retryInterval,
+                                                                          retryIntervalMultiplier,
+                                                                          maxRetryInterval,
+                                                                          reconnectAttempts,
+                                                                          threadPool,
+                                                                          scheduledThreadPool,
+                                                                          interceptors);
+
+      addToConnecting(factory);
+      try
+      {
+          try
+          {
+             factory.connect(reconnectAttempts, failoverOnInitialConnection);
+          }
+          catch (HornetQException e1)
+          {
+             //we need to make sure is closed just for garbage collection
+              factory.close();
+              throw e1;
+          }
+          addFactory(factory);
+         return factory;
+      }
+      finally
+      {
+         removeFromConnecting(factory);
+      }
+   }
+
    private void removeFromConnecting(ClientSessionFactoryInternal factory)
    {
       synchronized (connectingFactories)

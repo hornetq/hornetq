@@ -47,8 +47,8 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
    private Lock lock = new ReentrantLock();
    private Condition condition = lock.newCondition();
    private QuorumManager quorumManager;
-   Map<String, TransportConfiguration> untriedConnectors = new HashMap<String, TransportConfiguration>();
-   Map<String, TransportConfiguration> triedConnectors = new HashMap<String, TransportConfiguration>();
+   Map<String, Pair<TransportConfiguration, TransportConfiguration>> untriedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
+   Map<String, Pair<TransportConfiguration, TransportConfiguration>> triedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
 
    private String nodeID;
 
@@ -90,7 +90,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         untriedConnectors.put(nodeID, connectorPair.getA());
+         untriedConnectors.put(nodeID, connectorPair);
          condition.signal();
       }
       finally
@@ -127,7 +127,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       return nodeID;
    }
 
-   public TransportConfiguration getLiveConfiguration()
+   public Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration()
    {
       try
       {
@@ -151,7 +151,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         TransportConfiguration tc = untriedConnectors.remove(nodeID);
+         Pair<TransportConfiguration, TransportConfiguration> tc = untriedConnectors.remove(nodeID);
          //it may have been removed
          if (tc != null)
          {

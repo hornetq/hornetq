@@ -28,6 +28,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -49,11 +50,13 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 {
-   private final String nodeID;
+   private final NodeManager nodeManager;
 
    private final String name;
 
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
+
+   private String nodeID;
 
    private boolean started;
 
@@ -86,8 +89,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
                              final ScheduledExecutorService scheduledExecutor,
                              final long broadcastPeriod) throws Exception
    {
-      this(nodeID, name, broadcastPeriod, scheduledExecutor,
+      this((NodeManager) null, name, broadcastPeriod, scheduledExecutor,
          BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
+      this.nodeID = nodeID;
    }
 
    /**
@@ -99,7 +103,17 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
                              final ScheduledExecutorService scheduledExecutor,
                              final BroadcastEndpoint endpoint) throws Exception
    {
+      this((NodeManager) null, name, broadCastPeriod, scheduledExecutor, endpoint);
       this.nodeID = nodeID;
+   }
+
+   public BroadcastGroupImpl(final NodeManager nodeManager,
+                                  final String name,
+                                  final long broadCastPeriod,
+                                  final ScheduledExecutorService scheduledExecutor,
+                                  final BroadcastEndpoint endpoint) throws Exception
+   {
+      this.nodeManager = nodeManager;
 
       this.name = name;
 
@@ -122,6 +136,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       if (started)
       {
          return;
+      }
+
+      if(nodeManager != null)
+      {
+         nodeID = nodeManager.getNodeId().toString();
       }
 
       endpoint.openBroadcaster();

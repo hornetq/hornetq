@@ -22,6 +22,7 @@
 package org.hornetq.core.server;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -43,7 +44,7 @@ public abstract class LiveNodeLocator implements ClusterTopologyListener
    /*
    * get the current connector
    * */
-   public abstract TransportConfiguration getLiveConfiguration();
+   public abstract Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration();
 
    /*
    * get the node id for the current connector
