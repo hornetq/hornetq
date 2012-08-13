@@ -1933,7 +1933,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startLiveNode();
 
-            if (state != SERVER_STATE.STARTED)
+            if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
             {
                return;
             }
