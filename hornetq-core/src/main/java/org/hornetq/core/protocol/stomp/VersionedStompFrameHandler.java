@@ -309,7 +309,7 @@ public abstract class VersionedStompFrameHandler
       synchronized (serverMessage)
       {
 
-         HornetQBuffer buffer = serverMessage.getBodyBuffer();
+         HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
 
          int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
                .writerIndex() : serverMessage.getEndOfBodyPosition();
