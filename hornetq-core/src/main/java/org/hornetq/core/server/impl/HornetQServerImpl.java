@@ -168,6 +168,11 @@ public class HornetQServerImpl implements HornetQServer
        */
       STARTED,
       /**
+       * stop() was called but has not finished yet. Meant to avoids starting components while
+       * stop() is executing.
+       */
+      STOPPING,
+      /**
        * Stopped. Either stop() has been called and has finished running, or start() has never been
        * called.
        */
@@ -514,6 +519,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             return;
          }
+         state = SERVER_STATE.STOPPING;
 
          if (replicationManager != null)
          {
@@ -1923,7 +1929,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startLiveNode();
 
-            if (state == SERVER_STATE.STOPPED)
+            if (state != SERVER_STATE.STARTED)
             {
                return;
             }
