@@ -202,6 +202,12 @@ public interface Message
     */
    HornetQBuffer getBodyBuffer();
 
+   /**
+    * Returns a <em>copy</em> of the message body as a HornetQBuffer. Any modification
+    * of this buffer should not impact the underlying buffer.
+    */
+   HornetQBuffer getBodyBufferCopy();
+
    // Properties
    // -----------------------------------------------------------------
 
