@@ -143,7 +143,7 @@
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
                </excludes>
-               <argLine>-Djgroups.bind_addr=::1 -Djava.library.path=${project.build.directory}/../../../distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${project.build.directory}/../../../distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
+               <argLine>-Djgroups.bind_addr=::1 -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/config/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>

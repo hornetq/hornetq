@@ -168,7 +168,12 @@ public class HornetQServerImpl implements HornetQServer
        */
       STARTED,
       /**
-       * Stopped. Either stop() has been called and has finished running, or start() has never been
+       * stop() was called but has not finished yet. Meant to avoids starting components while
+       * stop() is executing.
+       */
+      STOPPING,
+      /**
+       * Stopped: either stop() has been called and has finished running, or start() has never been
        * called.
        */
       STOPPED;
@@ -514,11 +519,16 @@ public class HornetQServerImpl implements HornetQServer
          {
             return;
          }
-
-         if (replicationManager != null)
+         state = SERVER_STATE.STOPPING;
+         final ReplicationManager localReplicationManager;
+         synchronized (replicationLock)
          {
-            remotingService.freeze(replicationManager.getBackupTransportConnection());
-            final ReplicationManager localReplicationManager = replicationManager;
+            localReplicationManager = replicationManager;
+         }
+
+         if (localReplicationManager != null)
+         {
+            remotingService.freeze(localReplicationManager.getBackupTransportConnection());
             // Schedule for 10 seconds
             scheduledPool.schedule(new Runnable() {
                @Override
@@ -527,8 +537,8 @@ public class HornetQServerImpl implements HornetQServer
                   localReplicationManager.clearReplicationTokens();
                }
             }, 10, TimeUnit.SECONDS);
-            replicationManager.sendLiveIsStopping();
-            stopComponent(replicationManager);
+            localReplicationManager.sendLiveIsStopping();
+            stopComponent(localReplicationManager);
          }
 
          stopComponent(connectorsService);
@@ -1923,7 +1933,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startLiveNode();
 
-            if (state == SERVER_STATE.STOPPED)
+            if (state != SERVER_STATE.STARTED)
             {
                return;
             }
@@ -2601,7 +2611,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (!isStarted())
       {
-         throw new IllegalStateException();
+         throw new HornetQIllegalStateException();
       }
 
       synchronized (replicationLock)
