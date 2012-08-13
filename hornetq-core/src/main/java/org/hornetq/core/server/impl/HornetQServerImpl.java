@@ -2611,7 +2611,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (!isStarted())
       {
-         throw new IllegalStateException();
+         throw new HornetQIllegalStateException();
       }
 
       synchronized (replicationLock)
