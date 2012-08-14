@@ -2646,6 +2646,13 @@ public class HornetQServerImpl implements HornetQServer
                      clusterConnection.addClusterTopologyListener(listener);
                      if (listener.waitForBackup())
                      {
+                        try
+                        {
+                           Thread.sleep(configuration.getFailbackDelay());
+                        } catch (InterruptedException e)
+                        {
+                           //
+                        }
                         stop(true);
                      }
                      else
