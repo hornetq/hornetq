@@ -518,6 +518,11 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      public HornetQBuffer getBodyBufferCopy()
+      {
+         return null;
+      }
+
       public BodyEncoder getBodyEncoder() throws HornetQException
       {
 
