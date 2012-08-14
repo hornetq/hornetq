@@ -1276,10 +1276,10 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * Starts everything apart from RemotingService and loading the data.
     */
-   private synchronized void initialisePart1() throws Exception
+   private synchronized boolean initialisePart1() throws Exception
    {
       if (state == SERVER_STATE.STOPPED)
-         return;
+         return false;
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
@@ -1429,6 +1429,7 @@ public class HornetQServerImpl implements HornetQServer
       deploySecurityFromConfiguration();
 
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
+      return true;
    }
 
    /*
@@ -1914,7 +1915,8 @@ public class HornetQServerImpl implements HornetQServer
                HornetQLogger.LOGGER.debug("First part initialization on " + this);
             }
 
-            initialisePart1();
+            if (!initialisePart1())
+               return;
 
             if (nodeManager.isBackupLive())
             {
@@ -1975,7 +1977,8 @@ public class HornetQServerImpl implements HornetQServer
          {
             nodeManager.startBackup();
 
-            initialisePart1();
+            if (!initialisePart1())
+               return;
 
             clusterManager.start();
 
@@ -2174,7 +2177,8 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startBackup();
 
-            initialisePart1();
+            if (!initialisePart1())
+               return;
             clusterManager.start();
 
 
