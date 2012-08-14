@@ -57,6 +57,7 @@
       <skipConcurrentTests>true</skipConcurrentTests>
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/</hornetq-surefire-argline>
    </properties>
 
    <scm>
@@ -617,7 +618,7 @@
                   <testFailureIgnore>true</testFailureIgnore>
                   <runOrder>alphabetical</runOrder>
                   <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                  <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:///${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/</argLine>
+                  <argLine>${hornetq-surefire-argline}</argLine>
                </configuration>
             </plugin>
             <plugin>
