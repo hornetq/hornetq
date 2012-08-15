@@ -1279,6 +1279,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   // HORNETQ-1007
    public void testMultiProtocolConsumers() throws Exception
    {
       final int TIME_OUT = 100;
