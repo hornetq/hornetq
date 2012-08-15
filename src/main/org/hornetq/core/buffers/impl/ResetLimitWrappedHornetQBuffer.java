@@ -52,7 +52,10 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 
    private void changed()
    {
-      message.bodyChanged();
+      if (message != null)
+      {
+         message.bodyChanged();
+      }
    }
 
    public void setBuffer(final HornetQBuffer buffer)

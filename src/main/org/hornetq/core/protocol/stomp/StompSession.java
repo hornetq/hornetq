@@ -143,7 +143,7 @@ class StompSession implements SessionCallback
             headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
          }
          
-         HornetQBuffer buffer = serverMessage.getBodyBuffer();
+         HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
    
          int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
                                                                  : serverMessage.getEndOfBodyPosition();
