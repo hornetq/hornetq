@@ -73,6 +73,7 @@ public class StompV11Test extends StompTestBase2
 
    public void testConnection() throws Exception
    {
+      server.getHornetQServer().getConfiguration().setSecurityEnabled(true);
       StompClientConnection connection = StompClientConnectionFactory.createClientConnection("1.0", hostname, port);
 
       connection.connect(defUser, defPass);

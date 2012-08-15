@@ -185,7 +185,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       int headersPropsSize = getHeadersAndPropertiesEncodeSize();
 
-      int bodyPos = endOfBodyPosition == -1 ? buffer.writerIndex() : endOfBodyPosition;
+      int bodyPos = getEndOfBodyPosition();
 
       int bodySize = bodyPos - BUFFER_HEADER_SPACE - DataConstants.SIZE_INT;
 
@@ -273,15 +273,15 @@ public abstract class MessageImpl implements MessageInternal
       return bodyBuffer;
    }
 
-   public HornetQBuffer getBodyBufferCopy()
+   public synchronized HornetQBuffer getBodyBufferCopy()
    {
       // Must copy buffer before sending it
 
-      HornetQBuffer newbuffer = buffer.copy(0, buffer.capacity());
+      HornetQBuffer newBuffer = buffer.copy(0, buffer.capacity());
 
-      newbuffer.setIndex(0, endOfBodyPosition);
+      newBuffer.setIndex(0, getEndOfBodyPosition());
 
-      return new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, newbuffer, null);
+      return new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, newBuffer, null);
    }
 
    public long getMessageID()
@@ -467,6 +467,10 @@ public abstract class MessageImpl implements MessageInternal
 
    public int getEndOfBodyPosition()
    {
+      if (endOfBodyPosition < 0)
+      {
+         endOfBodyPosition = buffer.writerIndex();
+      }
       return endOfBodyPosition;
    }
 
@@ -909,25 +913,21 @@ public abstract class MessageImpl implements MessageInternal
             forceCopy();
          }
 
-         if (endOfBodyPosition == -1)
-         {
-            // Means sending message for first time
-            endOfBodyPosition = buffer.writerIndex();
-         }
+         int bodySize = getEndOfBodyPosition();
 
          // write it
-         buffer.setInt(BUFFER_HEADER_SPACE, endOfBodyPosition);
+         buffer.setInt(BUFFER_HEADER_SPACE, bodySize);
 
          // Position at end of body and skip past the message end position int.
          // check for enough room in the buffer even though it is dynamic
-         if ((endOfBodyPosition + 4) > buffer.capacity())
+         if ((bodySize + 4) > buffer.capacity())
          {
-            buffer.setIndex(0, endOfBodyPosition);
+            buffer.setIndex(0, bodySize);
             buffer.writeInt(0);
          }
          else
          {
-            buffer.setIndex(0, endOfBodyPosition + DataConstants.SIZE_INT);
+            buffer.setIndex(0, bodySize + DataConstants.SIZE_INT);
          }
 
          encodeHeadersAndProperties(buffer);
@@ -936,7 +936,7 @@ public abstract class MessageImpl implements MessageInternal
 
          endOfMessagePosition = buffer.writerIndex();
 
-         buffer.setInt(endOfBodyPosition, endOfMessagePosition);
+         buffer.setInt(bodySize, endOfMessagePosition);
 
          bufferValid = true;
       }
@@ -975,7 +975,7 @@ public abstract class MessageImpl implements MessageInternal
 
       buffer = buffer.copy(0, buffer.capacity());
 
-      buffer.setIndex(0, endOfBodyPosition);
+      buffer.setIndex(0, getEndOfBodyPosition());
 
       if (bodyBuffer != null)
       {

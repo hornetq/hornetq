@@ -306,49 +306,40 @@ public abstract class VersionedStompFrameHandler
                subscription.getID());
       }
 
-      synchronized (serverMessage)
+      HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
+
+      int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
+            .writerIndex() : serverMessage.getEndOfBodyPosition();
+
+      buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE
+                  + DataConstants.SIZE_INT);
+
+      int size = bodyPos - buffer.readerIndex();
+
+      byte[] data = new byte[size];
+
+      if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH)
+            || serverMessage.getType() == Message.BYTES_TYPE)
       {
-
-         HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
-
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
-               .writerIndex() : serverMessage.getEndOfBodyPosition();
-
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE
-                     + DataConstants.SIZE_INT);
-         
-         int size = bodyPos - buffer.readerIndex();
-
-         byte[] data = new byte[size];
-
-         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH)
-               || serverMessage.getType() == Message.BYTES_TYPE)
+         frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
+         buffer.readBytes(data);
+      }
+      else
+      {
+         SimpleString text = buffer.readNullableSimpleString();
+         if (text != null)
          {
-            frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
-            buffer.readBytes(data);
+            data = text.toString().getBytes("UTF-8");
          }
          else
          {
-            SimpleString text = buffer.readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-            else
-            {
-               data = new byte[0];
-            }
+            data = new byte[0];
          }
-         frame.setByteBody(data);
-
-         // Reset indexes so they are in order when
-         // StompSession.sendMessage is called again with the same
-         // ServerMessage instance
-         buffer.setIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT, bodyPos);
-
-         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame,
-               deliveryCount);
       }
+      frame.setByteBody(data);
+
+      StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame,
+            deliveryCount);
 
       return frame;
    }
