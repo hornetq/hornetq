@@ -24,7 +24,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.utils.DataConstants;
@@ -47,17 +46,13 @@ import org.hornetq.utils.UUID;
  */
 public abstract class MessageImpl implements MessageInternal
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(MessageImpl.class);
-
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
-   
-   // used by the bridges to set duplicates 
+
+   // used by the bridges to set duplicates
    public static final SimpleString HDR_BRIDGE_DUPLICATE_ID = new SimpleString("_HQ_BRIDGE_DUP");
 
    public static final int BUFFER_HEADER_SPACE = PacketImpl.PACKET_HEADERS_SIZE;
-   
+
    public static final int BODY_OFFSET = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
 
 
@@ -70,7 +65,7 @@ public abstract class MessageImpl implements MessageInternal
    protected boolean durable;
 
    /** GMT milliseconds at which this message expires. 0 means never expires * */
-   protected long expiration;
+   private long expiration;
 
    protected long timestamp;
 
@@ -91,7 +86,7 @@ public abstract class MessageImpl implements MessageInternal
    private boolean copied = true;
 
    private boolean bufferUsed;
-   
+
    private UUID userID;
 
    // Constructors --------------------------------------------------
@@ -190,7 +185,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       int headersPropsSize = getHeadersAndPropertiesEncodeSize();
 
-      int bodyPos = endOfBodyPosition == -1 ? buffer.writerIndex() : endOfBodyPosition;
+      int bodyPos = getEndOfBodyPosition();
 
       int bodySize = bodyPos - BUFFER_HEADER_SPACE - DataConstants.SIZE_INT;
 
@@ -210,7 +205,6 @@ public abstract class MessageImpl implements MessageInternal
              DataConstants./* Priority */SIZE_BYTE +
              /* PropertySize and Properties */properties.getEncodeSize();
    }
-   
 
    public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
@@ -254,7 +248,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = buffer.readByte();
       properties.decode(buffer);
    }
-   
+
    public void copyHeadersAndProperties(final MessageInternal msg)
    {
       messageID = msg.getMessageID();
@@ -267,7 +261,7 @@ public abstract class MessageImpl implements MessageInternal
       priority = msg.getPriority();
       properties = msg.getTypedProperties();
    }
-   
+
    public HornetQBuffer getBodyBuffer()
    {
       if (bodyBuffer == null)
@@ -278,37 +272,44 @@ public abstract class MessageImpl implements MessageInternal
       return bodyBuffer;
    }
 
-   public HornetQBuffer getBodyBufferCopy()
+   public synchronized HornetQBuffer getBodyBufferCopy()
    {
       // Must copy buffer before sending it
 
-      HornetQBuffer newbuffer = buffer.copy(0, buffer.capacity());
+      HornetQBuffer newBuffer = buffer.copy(0, buffer.capacity());
 
-      newbuffer.setIndex(0, endOfBodyPosition);
+      newBuffer.setIndex(0, getEndOfBodyPosition());
 
-      return new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, newbuffer, null);
+      return new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, newBuffer, null);
    }
 
    public long getMessageID()
    {
       return messageID;
    }
-   
+
    public UUID getUserID()
    {
       return userID;
    }
-   
+
    public void setUserID(final UUID userID)
    {
       this.userID = userID;
    }
 
+   /** this doesn't need to be synchronized as setAddress is protecting the buffer,
+    *  not the address*/
    public SimpleString getAddress()
    {
       return address;
    }
 
+   /**
+    * The only reason this is synchronized is because of encoding a message versus invalidating the buffer.
+    * This synchronization can probably be removed since setAddress is always called from a single thread.
+    * However I will keep it as it's harmless and it's been well tested
+    */
    public synchronized void setAddress(final SimpleString address)
    {
       if (this.address != address)
@@ -461,6 +462,10 @@ public abstract class MessageImpl implements MessageInternal
 
    public int getEndOfBodyPosition()
    {
+      if (endOfBodyPosition < 0)
+      {
+         endOfBodyPosition = buffer.writerIndex();
+      }
       return endOfBodyPosition;
    }
 
@@ -513,7 +518,7 @@ public abstract class MessageImpl implements MessageInternal
          return buffer;
       }
    }
-   
+
    public void setAddressTransient(final SimpleString address)
    {
       this.address = address;
@@ -585,7 +590,7 @@ public abstract class MessageImpl implements MessageInternal
 
       bufferValid = false;
    }
-   
+
    public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
    {
       if (value == null)
@@ -826,7 +831,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }
-   
+
    public Object getObjectProperty(final String key)
    {
       return properties.getProperty(new SimpleString(key));
@@ -870,7 +875,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return new DecodingContext();
    }
-   
+
    public TypedProperties getTypedProperties()
    {
       return this.properties;
@@ -889,7 +894,8 @@ public abstract class MessageImpl implements MessageInternal
       return properties;
    }
 
-   // This must be synchronized as it can be called concurrently id the message is being delivered concurently to
+   // This must be synchronized as it can be called concurrently id the message is being delivered
+   // concurrently to
    // many queues - the first caller in this case will actually encode it
    private synchronized HornetQBuffer encodeToBuffer()
    {
@@ -902,25 +908,21 @@ public abstract class MessageImpl implements MessageInternal
             forceCopy();
          }
 
-         if (endOfBodyPosition == -1)
-         {
-            // Means sending message for first time
-            endOfBodyPosition = buffer.writerIndex();
-         }
+         int bodySize = getEndOfBodyPosition();
 
          // write it
-         buffer.setInt(BUFFER_HEADER_SPACE, endOfBodyPosition);
+         buffer.setInt(BUFFER_HEADER_SPACE, bodySize);
 
          // Position at end of body and skip past the message end position int.
-         // check for enough room in the buffer even tho it is dynamic
-         if ((endOfBodyPosition + 4) > buffer.capacity())
+         // check for enough room in the buffer even though it is dynamic
+         if ((bodySize + 4) > buffer.capacity())
          {
-            buffer.setIndex(0, endOfBodyPosition);
+            buffer.setIndex(0, bodySize);
             buffer.writeInt(0);
          }
          else
          {
-            buffer.setIndex(0, endOfBodyPosition + DataConstants.SIZE_INT);
+            buffer.setIndex(0, bodySize + DataConstants.SIZE_INT);
          }
 
          encodeHeadersAndProperties(buffer);
@@ -929,7 +931,7 @@ public abstract class MessageImpl implements MessageInternal
 
          endOfMessagePosition = buffer.writerIndex();
 
-         buffer.setInt(endOfBodyPosition, endOfMessagePosition);
+         buffer.setInt(bodySize, endOfMessagePosition);
 
          bufferValid = true;
       }
@@ -968,7 +970,7 @@ public abstract class MessageImpl implements MessageInternal
 
       buffer = buffer.copy(0, buffer.capacity());
 
-      buffer.setIndex(0, endOfBodyPosition);
+      buffer.setIndex(0, getEndOfBodyPosition());
 
       if (bodyBuffer != null)
       {
