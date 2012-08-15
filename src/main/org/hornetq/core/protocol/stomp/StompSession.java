@@ -134,44 +134,40 @@ class StompSession implements SessionCallback
    private StompFrame createFrame(ServerMessage serverMessage, int deliveryCount, StompSubscription subscription) throws UnsupportedEncodingException,
                                                                                                                  Exception
    {
-      synchronized (serverMessage)
+      Map<String, Object> headers = new HashMap<String, Object>();
+      headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
+      if (subscription.getID() != null)
       {
-         Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
-         if (subscription.getID() != null)
+         headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
+      }
+      
+      HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
+
+      int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
+                                                              : serverMessage.getEndOfBodyPosition();
+      int size = bodyPos - buffer.readerIndex();
+      buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+      byte[] data = new byte[size];
+      if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
+      {
+         headers.put(Headers.CONTENT_LENGTH, data.length);
+         buffer.readBytes(data);
+      }
+      else
+      {
+         SimpleString text = buffer.readNullableSimpleString();
+         if (text != null)
          {
-            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
-         }
-         
-         HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
-   
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                 : serverMessage.getEndOfBodyPosition();
-         int size = bodyPos - buffer.readerIndex();
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-         byte[] data = new byte[size];
-         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
-         {
-            headers.put(Headers.CONTENT_LENGTH, data.length);
-            buffer.readBytes(data);
+            data = text.toString().getBytes("UTF-8");
          }
          else
          {
-            SimpleString text = buffer.readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-            else
-            {
-               data = new byte[0];
-            }
+            data = new byte[0];
          }
-         serverMessage.getBodyBuffer().resetReaderIndex();
-         StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
-         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
-         return frame;
       }
+      StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
+      StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+      return frame;
    }
 
    public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
