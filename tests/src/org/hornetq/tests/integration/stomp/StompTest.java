@@ -1278,4 +1278,76 @@ public class StompTest extends StompTestBase
       frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
       sendFrame(frame);
    }
+
+   public void testMultiProtocolConsumers() throws Exception
+   {
+      final int TIME_OUT = 100;
+
+      int count = 1000;
+
+      // Create 2 core consumers
+      MessageConsumer consumer1 = session.createConsumer(topic);
+      MessageConsumer consumer2 = session.createConsumer(topic);
+
+      // connect and subscribe STOMP consumer
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+      frame = receiveFrame(TIME_OUT);
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+      frame = "SUBSCRIBE\n" + "destination:" +
+            getTopicPrefix() +
+            getTopicName() +
+            "\n" +
+            "receipt: 12\n" +
+            "\n\n" +
+            Stomp.NULL;
+      sendFrame(frame);
+      // wait for SUBSCRIBE's receipt
+      frame = receiveFrame(TIME_OUT);
+      Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+      MessageProducer producer = session.createProducer(topic);
+      TextMessage message = session.createTextMessage(getName());
+
+      for (int i = 1; i <= count; i++)
+      {
+         producer.send(message);
+         Assert.assertNotNull(consumer1.receive(TIME_OUT));
+         Assert.assertNotNull(consumer2.receive(TIME_OUT));
+         frame = receiveFrame(TIME_OUT);
+         Assert.assertTrue(frame.startsWith("MESSAGE"));
+         Assert.assertTrue(frame.indexOf("destination:") > 0);
+         Assert.assertTrue(frame.indexOf(getName()) > 0);
+      }
+
+      consumer1.close();
+      consumer2.close();
+      frame = "UNSUBSCRIBE\n" + "destination:" +
+            getTopicPrefix() +
+            getTopicName() +
+            "\n" +
+            "receipt: 1234\n" +
+            "\n\n" +
+            Stomp.NULL;
+      sendFrame(frame);
+      // wait for UNSUBSCRIBE's receipt
+      frame = receiveFrame(TIME_OUT);
+      Assert.assertTrue(frame.startsWith("RECEIPT"));
+
+      sendMessage(getName(), topic);
+
+      try
+      {
+         frame = receiveFrame(TIME_OUT);
+         log.info("Received frame: " + frame);
+         Assert.fail("No message should have been received since subscription was removed");
+      }
+      catch (SocketTimeoutException e)
+      {
+
+      }
+
+      frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
+      sendFrame(frame);
+   }
 }
