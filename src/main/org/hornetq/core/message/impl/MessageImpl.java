@@ -278,6 +278,17 @@ public abstract class MessageImpl implements MessageInternal
       return bodyBuffer;
    }
 
+   public HornetQBuffer getBodyBufferCopy()
+   {
+      // Must copy buffer before sending it
+
+      HornetQBuffer newbuffer = buffer.copy(0, buffer.capacity());
+
+      newbuffer.setIndex(0, endOfBodyPosition);
+
+      return new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, newbuffer, null);
+   }
+
    public long getMessageID()
    {
       return messageID;
