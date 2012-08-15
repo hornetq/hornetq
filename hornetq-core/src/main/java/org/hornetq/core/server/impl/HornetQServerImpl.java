@@ -2194,6 +2194,10 @@ public class HornetQServerImpl implements HornetQServer
             {
                //locate the first live server to try to replicate
                nodeLocator.locateNode();
+               if(closed)
+               {
+                  return;
+               }
                Pair<TransportConfiguration, TransportConfiguration> possibleLive = nodeLocator.getLiveConfiguration();
                nodeID = nodeLocator.getNodeID();
                //in a normal (non failback) scenario if we couldn't find our live server we should fail
