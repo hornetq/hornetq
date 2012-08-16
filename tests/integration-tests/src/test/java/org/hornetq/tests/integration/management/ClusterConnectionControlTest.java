@@ -122,10 +122,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Assert.assertEquals(clusterConnectionConfig2.getMaxHops(), clusterConnectionControl.getMaxHops());
 
       Object[] connectorPairs = clusterConnectionControl.getStaticConnectors();
-      Assert.assertNull(connectorPairs);
+      Assert.assertEquals(0, connectorPairs.length);
 
       String jsonPairs = clusterConnectionControl.getStaticConnectorsAsJSON();
-      Assert.assertNull(jsonPairs);
+      Assert.assertEquals("[]", jsonPairs);
 
       Assert.assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(),
                           clusterConnectionControl.getDiscoveryGroupName());

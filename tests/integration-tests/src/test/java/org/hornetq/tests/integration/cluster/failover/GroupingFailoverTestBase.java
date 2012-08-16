@@ -14,8 +14,16 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.tests.util.ServiceTestBase;
+
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -44,6 +52,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
+      servers[0].getConfiguration().setNodeGroupName("group1");
+      servers[1].getConfiguration().setNodeGroupName("group2");
+      servers[2].getConfiguration().setNodeGroupName("group1");
+
       startServers(0, 1, 2);
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
@@ -63,11 +75,18 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForTopology(servers[1], 2);
+         waitForTopology(servers[1], 2, 1);
 
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
+
+         if (!isSharedServer())
+         {
+            waitForBackupTopologyAnnouncement(sfs[0]);
+         }
+
+         Thread.sleep(1000);
 
          closeSessionFactory(0);
 
@@ -84,6 +103,29 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 2);
+   }
+
+   public void waitForBackupTopologyAnnouncement(ClientSessionFactory sf) throws Exception
+   {
+      long start = System.currentTimeMillis();
+
+      ServerLocator locator = sf.getServerLocator();
+      do
+      {
+         Collection<TopologyMember> members = locator.getTopology().getMembers();
+         for (TopologyMember member : members)
+         {
+            if(member.getB() != null)
+            {
+               return;
+            }
+         }
+
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < ServiceTestBase.WAIT_TIMEOUT);
+
+      throw new IllegalStateException("Timed out waiting for backup announce");
    }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
@@ -106,6 +148,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
+      servers[0].getConfiguration().setNodeGroupName("group1");
+      servers[1].getConfiguration().setNodeGroupName("group2");
+      servers[2].getConfiguration().setNodeGroupName("group1");
 
       startServers(0, 1, 2);
 
@@ -145,7 +190,12 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          Thread.sleep(1000);
 
-         servers[0].stop(true);
+      if (isSharedServer())
+      {
+         waitForBackupTopologyAnnouncement(sfs[0]);
+      }
+
+      servers[0].stop(true);
 
          waitForServerRestart(2);
 

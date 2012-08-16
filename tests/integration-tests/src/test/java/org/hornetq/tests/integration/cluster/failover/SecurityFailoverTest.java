@@ -133,7 +133,7 @@ public class SecurityFailoverTest extends FailoverTest
       liveConfig.setSecurityEnabled(true);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      List<String> pairs = null;
+      List<String> pairs = new ArrayList<String>();
       ClusterConnectionConfiguration ccc0 =
                new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 100, false, false, 1, 1,
                                                   pairs, false);
