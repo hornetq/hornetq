@@ -2163,7 +2163,8 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
+               quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
+               serverLocator0.addClusterTopologyListener(quorumManager);
             }
 
             //use a Node Locator to connect to the cluster
@@ -2194,6 +2195,10 @@ public class HornetQServerImpl implements HornetQServer
             {
                //locate the first live server to try to replicate
                nodeLocator.locateNode();
+               if(closed)
+               {
+                  return;
+               }
                Pair<TransportConfiguration, TransportConfiguration> possibleLive = nodeLocator.getLiveConfiguration();
                nodeID = nodeLocator.getNodeID();
                //in a normal (non failback) scenario if we couldn't find our live server we should fail

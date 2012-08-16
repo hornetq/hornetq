@@ -18,6 +18,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -118,6 +119,10 @@ public class CoreClientOverSSLTest extends ServiceTestBase
          Assert.fail();
       }
       catch(HornetQNotConnectedException se)
+      {
+         //ok
+      }
+      catch(HornetQConnectionTimedOutException ctoe)
       {
          //ok
       }
