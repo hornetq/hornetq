@@ -643,6 +643,7 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
+      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
