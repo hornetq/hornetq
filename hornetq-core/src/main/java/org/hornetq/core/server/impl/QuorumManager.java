@@ -11,10 +11,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
@@ -32,7 +29,7 @@ import org.hornetq.core.server.HornetQServer;
  * quorum will help a remote backup deciding whether to replace its 'live' server or to keep trying
  * to reconnect.
  */
-public final class QuorumManager implements FailureListener, CloseListener
+public final class QuorumManager implements FailureListener, CloseListener, ClusterTopologyListener
 {
    private String targetServerID = "";
    private final ExecutorService executor;
@@ -41,20 +38,33 @@ public final class QuorumManager implements FailureListener, CloseListener
    private volatile BACKUP_ACTIVATION signal;
    private ClientSessionFactoryInternal sessionFactory;
    private final Topology topology;
-   private final HornetQServer backupServer;
    private CoreRemotingConnection connection;
 
    /** safety parameter to make _sure_ we get out of await() */
    private static final int LATCH_TIMEOUT = 30;
    private static final int RECONNECT_ATTEMPTS = 5;
 
-   public QuorumManager(HornetQServer backup, ServerLocator serverLocator, ExecutorService executor, String identity)
+   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, String identity)
    {
       this.serverIdentity = identity;
       this.executor = executor;
       this.latch = new CountDownLatch(1);
-      this.backupServer = backup;
       topology = serverLocator.getTopology();
+   }
+
+   @Override
+   public void nodeUP(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+   {
+      //noop
+   }
+
+   @Override
+   public void nodeDown(long eventUID, String nodeID)
+   {
+      if(targetServerID.equals(nodeID))
+      {
+         decideOnAction();
+      }
    }
 
    public void setLiveID(String liveID)
@@ -237,7 +247,6 @@ public final class QuorumManager implements FailureListener, CloseListener
       // Check if connection was reestablished by the sessionFactory:
       if (sessionFactory.numConnections() > 0)
       {
-         resetReplication();
          return;
       }
       if (!isLiveDown())
@@ -246,7 +255,6 @@ public final class QuorumManager implements FailureListener, CloseListener
          {
             // no point in repeating all the reconnection logic
             sessionFactory.connect(RECONNECT_ATTEMPTS, false);
-            resetReplication();
             return;
          }
          catch (HornetQException e)
@@ -255,41 +263,11 @@ public final class QuorumManager implements FailureListener, CloseListener
                HornetQLogger.LOGGER.errorReConnecting(e);
          }
       }
-
       // live is assumed to be down, backup fails-over
       signal = BACKUP_ACTIVATION.FAIL_OVER;
       latch.countDown();
    }
 
-   private void resetReplication()
-   {
-      new Thread(new ServerRestart(backupServer)).start();
-   }
-
-   private static final class ServerRestart implements Runnable
-   {
-      final HornetQServer backup;
-
-      public ServerRestart(HornetQServer backup)
-      {
-         this.backup = backup;
-      }
-
-      @Override
-      public void run()
-      {
-         try
-         {
-            backup.stop();
-            backup.start();
-         }
-         catch (Exception e)
-         {
-            HornetQLogger.LOGGER.errorRestartingBackupServer(e, backup);
-         }
-      }
-
-   }
    enum BACKUP_ACTIVATION
    {
       FAIL_OVER, FAILURE_REPLICATING, STOP;

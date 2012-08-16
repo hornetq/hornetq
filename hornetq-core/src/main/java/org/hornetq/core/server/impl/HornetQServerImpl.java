@@ -2163,7 +2163,8 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(HornetQServerImpl.this, serverLocator0, threadPool, getIdentity());
+               quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
+               serverLocator0.addClusterTopologyListener(quorumManager);
             }
 
             //use a Node Locator to connect to the cluster
