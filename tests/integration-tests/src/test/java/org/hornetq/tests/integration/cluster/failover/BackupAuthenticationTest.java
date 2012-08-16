@@ -36,7 +36,10 @@ public class BackupAuthenticationTest extends FailoverTestBase
        * live.
        */
       Thread.sleep(2000);
-      assertTrue("Live should still be up", backupConfig.isBackup());
+      assertFalse("backup should have stopped", backupServer.isStarted());
+      backupConfig.setClusterPassword(CLUSTER_PASSWORD);
+      backupServer.start();
+      waitForRemoteBackup(null, 5, true, backupServer.getServer());
    }
 
    @Override
