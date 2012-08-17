@@ -34,8 +34,20 @@
                 <xsd:element maxOccurs="1" minOccurs="0" name="wild-card-routing-enabled" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="management-address" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="management-notification-address" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xsd:string">
+                <xsd:annotation>
+                  <xsd:documentation>
+                    Cluster username. It applies to any cluster configuration.
+                  </xsd:documentation>
+                 </xsd:annotation>
+                 </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string">
+                  <xsd:annotation>
+                  <xsd:documentation>
+                    Cluster password. It applies to any cluster configuration.
+                  </xsd:documentation>
+                 </xsd:annotation>
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="replication-clustername" type="xsd:string">
                  <xsd:annotation>
                   <xsd:documentation>

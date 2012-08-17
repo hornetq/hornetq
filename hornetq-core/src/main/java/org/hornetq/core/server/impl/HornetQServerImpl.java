@@ -2297,7 +2297,8 @@ public class HornetQServerImpl implements HornetQServer
                   replicationEndpoint.getChannel().close();
                   replicationEndpoint.setChannel(null);
                }
-            } while (signal == ALREADY_REPLICATING);
+            }
+            while (signal == BACKUP_ACTIVATION.ALREADY_REPLICATING);
 
 
             if (!isRemoteBackupUpToDate())

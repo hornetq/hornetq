@@ -46,7 +46,7 @@ import org.hornetq.utils.json.JSONArray;
  * A BridgeControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  */
@@ -98,7 +98,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(1, array.length());
       Assert.assertEquals(clusterConnectionConfig1.getStaticConnectors().get(0), array.getString(0));
-      
+
       Assert.assertNull(clusterConnectionControl.getDiscoveryGroupName());
 
       Assert.assertTrue(clusterConnectionControl.isStarted());
@@ -200,30 +200,12 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                               false);
       List<String> connectors = new ArrayList<String>();
       connectors.add(connectorConfig.getName());
-      
-      clusterConnectionConfig1 = new ClusterConnectionConfiguration(RandomUtil.randomString(),
-                                                                    queueConfig.getAddress(),
-                                                                    connectorConfig.getName(),
-                                                                    RandomUtil.randomPositiveLong(),
-                                                                    RandomUtil.randomBoolean(),
-                                                                    RandomUtil.randomBoolean(),
-                                                                    RandomUtil.randomPositiveInt(),
-                                                                    RandomUtil.randomPositiveInt(),
-                                                                    connectors, false);
+
 
       String discoveryGroupName = RandomUtil.randomString();
-      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryGroupName, null, -1,  "230.1.2.3", 6745, 500, 0);
+      DiscoveryGroupConfiguration discoveryGroupConfig =
+               new DiscoveryGroupConfiguration(discoveryGroupName, null, -1, "230.1.2.3", 6745, 500, 0);
 
-      clusterConnectionConfig2 = new ClusterConnectionConfiguration(RandomUtil.randomString(),
-                                                                    queueConfig.getAddress(),
-                                                                    connectorConfig.getName(),
-                                                                    RandomUtil.randomPositiveLong(),
-                                                                    RandomUtil.randomBoolean(),
-                                                                    RandomUtil.randomBoolean(),
-                                                                    RandomUtil.randomPositiveInt(),
-                                                                    RandomUtil.randomPositiveInt(),
-                                                                    discoveryGroupName);
-      
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
@@ -232,6 +214,19 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_1.getQueueConfigurations().add(queueConfig);
 
       Configuration conf_0 = createBasicConfig();
+      clusterConnectionConfig1 =
+               new ClusterConnectionConfiguration(RandomUtil.randomString(), queueConfig.getAddress(),
+                                                  connectorConfig.getName(), RandomUtil.randomPositiveLong(),
+                                                  RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
+                                                  RandomUtil.randomPositiveInt(), RandomUtil.randomPositiveInt(),
+                                                  connectors, false);
+      clusterConnectionConfig2 =
+               new ClusterConnectionConfiguration(RandomUtil.randomString(), queueConfig.getAddress(),
+                                                  connectorConfig.getName(), RandomUtil.randomPositiveLong(),
+                                                  RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
+                                                  RandomUtil.randomPositiveInt(), RandomUtil.randomPositiveInt(),
+                                                  discoveryGroupName);
+
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
       conf_0.setClustered(true);
@@ -242,10 +237,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.getDiscoveryGroupConfigurations().put(discoveryGroupName, discoveryGroupConfig);
 
       mbeanServer_1 = MBeanServerFactory.createMBeanServer();
-      server_1 = HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false);
+      server_1 = addServer(HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false));
       server_1.start();
 
-      server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
+      server_0 = addServer(HornetQServers.newHornetQServer(conf_0, mbeanServer, false));
       server_0.start();
    }
 

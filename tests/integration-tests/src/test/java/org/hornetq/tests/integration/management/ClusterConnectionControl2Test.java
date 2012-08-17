@@ -116,16 +116,6 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
                                                               RandomUtil.randomString(),
                                                               null,
                                                               false);
-
-      clusterConnectionConfig_0 = new ClusterConnectionConfiguration(clusterName,
-                                                                     queueConfig.getAddress(),
-                                                                     "netty",
-                                                                     1000,
-                                                                     false,
-                                                                     false,
-                                                                     1,
-                                                                     1024,
-                                                                     discoveryName);
       List<String> connectorInfos = new ArrayList<String>();
       connectorInfos.add("netty");
       BroadcastGroupConfiguration broadcastGroupConfig = new BroadcastGroupConfiguration(discoveryName,
@@ -146,6 +136,11 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
       conf_1.setClustered(true);
+
+      clusterConnectionConfig_0 =
+               new ClusterConnectionConfiguration(clusterName, queueConfig.getAddress(), "netty", 1000, false, false,
+                                                  1, 1024,
+                                                  discoveryName);
       conf_1.getClusterConfigurations().add(clusterConnectionConfig_0);
       conf_1.getAcceptorConfigurations().add(acceptorConfig_1);
       conf_1.getConnectorConfigurations().put("netty", connectorConfig_1);
