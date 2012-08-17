@@ -175,8 +175,13 @@ public class HornetQServerImpl implements HornetQServer
 
    enum SERVER_STATE
    {
-      /** start() has been called but components are not initialized */
-      INITIALIZING,
+      /**
+       * start() has been called but components are not initialized. The whole point of this state,
+       * is to be in a state which is different from {@link SERVER_STATE#STARTED} and
+       * {@link SERVER_STATE#STOPPED}, so that methods testing for these two values such as
+       * {@link #stop(boolean,boolean)} work as intended.
+       */
+      STARTING,
       /**
        * server is started. {@code server.isStarted()} returns {@code true}, and all assumptions
        * about it hold.
@@ -374,7 +379,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          cancelFailBackChecker = false;
       }
-      state = SERVER_STATE.INITIALIZING;
+      state = SERVER_STATE.STARTING;
       HornetQLogger.LOGGER.debug("Starting server " + this);
 
       OperationContextImpl.clearContext();
@@ -1290,6 +1295,9 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * Starts everything apart from RemotingService and loading the data.
+    * <p>
+    * After optional intermediary steps, Part 1 is meant to be followed by part 2
+    * {@link #initialisePart2()}.
     */
    private synchronized boolean initialisePart1() throws Exception
    {
@@ -1454,7 +1462,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       // Load the journal and populate queues, transactions and caches in memory
 
-      if (state == SERVER_STATE.STOPPED)
+      if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
       {
          return;
       }
