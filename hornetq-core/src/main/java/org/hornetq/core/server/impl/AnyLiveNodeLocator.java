@@ -46,7 +46,6 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
 {
    private Lock lock = new ReentrantLock();
    private Condition condition = lock.newCondition();
-   private QuorumManager quorumManager;
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> untriedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> triedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
 
@@ -54,7 +53,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
 
    public AnyLiveNodeLocator(QuorumManager quorumManager)
    {
-      this.quorumManager = quorumManager;
+      super(quorumManager);
    }
 
    public void locateNode() throws HornetQException
@@ -146,7 +145,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       }
    }
 
-   public void notifyRegistrationFailed()
+   public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
       try
       {
@@ -162,7 +161,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       {
          lock.unlock();
       }
-      quorumManager.notifyRegistrationFailed();
+      super.notifyRegistrationFailed(alreadyReplicating);
    }
 }
 

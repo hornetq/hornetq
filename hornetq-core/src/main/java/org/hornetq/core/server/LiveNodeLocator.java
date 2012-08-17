@@ -26,6 +26,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.server.impl.QuorumManager;
 
 /**
  * A class that will locate a particular live server running in a cluster.
@@ -36,9 +37,16 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
  */
 public abstract class LiveNodeLocator implements ClusterTopologyListener
 {
+   private QuorumManager quorumManager;
+
+   public LiveNodeLocator(QuorumManager quorumManager)
+   {
+      this.quorumManager = quorumManager;
+   }
+
    /*
-   * locate a possible live server in a cluster
-   * */
+  * locate a possible live server in a cluster
+  * */
    public abstract void locateNode() throws HornetQException;
 
    /*
@@ -54,7 +62,17 @@ public abstract class LiveNodeLocator implements ClusterTopologyListener
    /*
    * tells the locator the the current connector has failed.
    * */
-   public abstract void notifyRegistrationFailed();
+   public  void notifyRegistrationFailed(boolean alreadyReplicating)
+   {
+      if(alreadyReplicating)
+      {
+         quorumManager.notifyAlreadyReplicating();
+      }
+      else
+      {
+         quorumManager.notifyRegistrationFailed();
+      }
+   }
 
    /*
    * connect to the cluster
