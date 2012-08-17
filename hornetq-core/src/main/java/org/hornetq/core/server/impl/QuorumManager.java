@@ -174,6 +174,12 @@ public final class QuorumManager implements FailureListener, CloseListener, Clus
       latch.countDown();
    }
 
+   public void notifyAlreadyReplicating()
+   {
+      signal = BACKUP_ACTIVATION.ALREADY_REPLICATING;
+      latch.countDown();
+   }
+
    /**
     * Attempts to connect to a given server.
     */
@@ -270,7 +276,7 @@ public final class QuorumManager implements FailureListener, CloseListener, Clus
 
    enum BACKUP_ACTIVATION
    {
-      FAIL_OVER, FAILURE_REPLICATING, STOP;
+      FAIL_OVER, FAILURE_REPLICATING, ALREADY_REPLICATING, STOP;
    }
 
    /**

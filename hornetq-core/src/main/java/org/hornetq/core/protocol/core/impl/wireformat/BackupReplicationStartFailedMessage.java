@@ -4,9 +4,12 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Informs the Backup trying to start replicating of an error.
@@ -15,50 +18,46 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public final class BackupReplicationStartFailedMessage extends PacketImpl
 {
 
-   enum BackupRegistrationProblem
+   public enum BackupRegistrationProblem
    {
-      EXCEPTION(0), AUTHENTICATION(1);
+      EXCEPTION(0), AUTHENTICATION(1), ALREADY_REPLICATING(2);
+
+      private static final Map<Integer, BackupRegistrationProblem> TYPE_MAP;
+
       final int code;
 
       private BackupRegistrationProblem(int code)
       {
          this.code = code;
       }
+
+      static
+      {
+         HashMap<Integer, BackupRegistrationProblem> map = new HashMap<Integer, BackupRegistrationProblem>();
+         for (BackupRegistrationProblem type : EnumSet.allOf(BackupRegistrationProblem.class))
+         {
+            map.put(type.code, type);
+         }
+         TYPE_MAP = Collections.unmodifiableMap(map);
+      }
    }
 
-   private HornetQExceptionType errorCode;
    private BackupRegistrationProblem problem;
-   private String msg;
 
-   public BackupReplicationStartFailedMessage(HornetQException e)
+   private static BackupRegistrationProblem getType(int type)
+   {
+      return BackupRegistrationProblem.TYPE_MAP.get(type);
+   }
+
+   public BackupReplicationStartFailedMessage(BackupRegistrationProblem registrationProblem)
    {
       super(BACKUP_REGISTRATION_FAILED);
-      if (e != null)
-      {
-         msg = e.getMessage();
-         errorCode = e.getType();
-         problem = BackupRegistrationProblem.EXCEPTION;
-      }
-      else
-      {
-         problem = BackupRegistrationProblem.AUTHENTICATION;
-      }
+      problem = registrationProblem;
    }
 
    public BackupReplicationStartFailedMessage()
    {
       super(BACKUP_REGISTRATION_FAILED);
-   }
-
-   public HornetQExceptionType getCause()
-   {
-      return errorCode;
-   }
-
-   public HornetQException getException() {
-      if (errorCode == null)
-         return null;
-      return HornetQExceptionType.createException(errorCode.getCode(), msg);
    }
 
    public BackupRegistrationProblem getRegistrationProblem()
@@ -70,60 +69,33 @@ public final class BackupReplicationStartFailedMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeInt(problem.code);
-      if (problem == BackupRegistrationProblem.EXCEPTION)
-      {
-         buffer.writeInt(errorCode != null?errorCode.getCode():-1);
-         buffer.writeNullableString(msg);
-      }
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      if (buffer.readInt() == BackupRegistrationProblem.AUTHENTICATION.code)
-      {
-         problem = BackupRegistrationProblem.AUTHENTICATION;
-      }
-      else
-      {
-         problem = BackupRegistrationProblem.EXCEPTION;
-         errorCode = HornetQExceptionType.getType(buffer.readInt());
-         msg = buffer.readNullableString();
-      }
+      problem = getType(buffer.readInt());
+   }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      if (!super.equals(o)) return false;
+
+      BackupReplicationStartFailedMessage that = (BackupReplicationStartFailedMessage) o;
+
+      if (problem != that.problem) return false;
+
+      return true;
    }
 
    @Override
    public int hashCode()
    {
-      final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + ((errorCode == null) ? 0 : errorCode.hashCode());
-      result = prime * result + ((msg == null) ? 0 : msg.hashCode());
-      result = prime * result + ((problem == null) ? 0 : problem.hashCode());
+      result = 31 * result + (problem != null ? problem.hashCode() : 0);
       return result;
-   }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (!super.equals(obj))
-         return false;
-      if (!(obj instanceof BackupReplicationStartFailedMessage))
-         return false;
-      BackupReplicationStartFailedMessage other = (BackupReplicationStartFailedMessage)obj;
-      if (errorCode != other.errorCode)
-         return false;
-      if (msg == null)
-      {
-         if (other.msg != null)
-            return false;
-      }
-      else if (!msg.equals(other.msg))
-         return false;
-      if (problem != other.problem)
-         return false;
-      return true;
    }
 }

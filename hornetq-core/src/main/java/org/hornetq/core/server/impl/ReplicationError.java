@@ -4,10 +4,12 @@
 package org.hornetq.core.server.impl;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LiveNodeLocator;
@@ -36,17 +38,34 @@ final class ReplicationError implements Interceptor
    {
       if (packet.getType() != PacketImpl.BACKUP_REGISTRATION_FAILED)
          return true;
-      HornetQLogger.LOGGER.errorRegisteringBackup();
-      /*try
+      BackupReplicationStartFailedMessage message = (BackupReplicationStartFailedMessage) packet;
+      switch (message.getRegistrationProblem())
       {
-         server.stop();
+         case ALREADY_REPLICATING:
+            tryNext();
+            break;
+         case AUTHENTICATION:
+            failed();
+            break;
+         case EXCEPTION:
+            failed();
+            break;
+         default:
+            failed();
+
       }
-      catch (Exception e)
-      {
-         throw HornetQMessageBundle.BUNDLE.errorStoppingServer(e, server);
-      }*/
-      nodeLocator.notifyRegistrationFailed();
       return false;
+   }
+
+   private void failed() throws HornetQInternalErrorException
+   {
+      HornetQLogger.LOGGER.errorRegisteringBackup();
+      nodeLocator.notifyRegistrationFailed(false);
+   }
+
+   private void tryNext()
+   {
+      nodeLocator.notifyRegistrationFailed(true);
    }
 
 }
