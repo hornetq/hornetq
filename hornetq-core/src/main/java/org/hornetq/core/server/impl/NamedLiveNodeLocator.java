@@ -43,15 +43,14 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
    private Lock lock = new ReentrantLock();
    private Condition condition = lock.newCondition();
    private String nodeGroupName;
-   private QuorumManager quorumManager;
    private Pair<TransportConfiguration, TransportConfiguration> liveConfiguration;
 
    private String nodeID;
 
    public NamedLiveNodeLocator(String nodeGroupName, QuorumManager quorumManager)
    {
+      super(quorumManager);
       this.nodeGroupName = nodeGroupName;
-      this.quorumManager = quorumManager;
    }
 
    public void locateNode() throws HornetQException
@@ -112,13 +111,13 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       return liveConfiguration;
    }
 
-   public void notifyRegistrationFailed()
+   public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
       try
       {
          lock.lock();
          liveConfiguration = null;
-         quorumManager.notifyRegistrationFailed();
+         super.notifyRegistrationFailed(alreadyReplicating);
       }
       finally
       {

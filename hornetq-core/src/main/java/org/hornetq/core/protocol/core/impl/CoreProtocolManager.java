@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -336,14 +337,18 @@ class CoreProtocolManager implements ProtocolManager
                   server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
                                           msg.isFailBackRequest());
                }
+               catch(HornetQAlreadyReplicatingException are)
+               {
+                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.ALREADY_REPLICATING));
+               }
                catch (HornetQException e)
                {
-                  channel0.send(new BackupReplicationStartFailedMessage(e));
+                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
                }
             }
             else
             {
-               channel0.send(new BackupReplicationStartFailedMessage(null));
+               channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.AUTHENTICATION));
             }
          }
       }
