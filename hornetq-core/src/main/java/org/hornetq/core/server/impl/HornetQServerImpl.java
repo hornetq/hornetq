@@ -2253,8 +2253,30 @@ public class HornetQServerImpl implements HornetQServer
                if (!isStarted() || signal == STOP)
                   return;
                //time to fail over
-               if(signal == FAIL_OVER)
+               else if(signal == FAIL_OVER)
                   break;
+               //something has gone badly run restart from scratch
+               else if(signal == BACKUP_ACTIVATION.FAILURE_REPLICATING)
+               {
+                  Thread startThread = new Thread(new Runnable()
+                  {
+                     @Override
+                     public void run()
+                     {
+                        try
+                        {
+                           stop();
+                           start();
+                        }
+                        catch (Exception e)
+                        {
+                           HornetQLogger.LOGGER.errorRestartingBackupServer(e, HornetQServerImpl.this);
+                        }
+                     }
+                  });
+                  startThread.start();
+                  return;
+               }
                //ok, this live is no good, lets reset and try again
                quorumManager.reset();
                if (replicationEndpoint.getChannel() != null)
@@ -2262,7 +2284,7 @@ public class HornetQServerImpl implements HornetQServer
                   replicationEndpoint.getChannel().close();
                   replicationEndpoint.setChannel(null);
                }
-            } while (signal == FAILURE_REPLICATING);
+            } while (signal == ALREADY_REPLICATING);
 
 
             if (!isRemoteBackupUpToDate())

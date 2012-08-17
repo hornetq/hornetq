@@ -62,6 +62,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.server.cluster.Bridge;
@@ -1223,6 +1224,10 @@ public interface HornetQLogger extends BasicLogger
    @Message(id = 112216, value = "Moving data directory {0} to {1}",
             format = Message.Format.MESSAGE_FORMAT)
    void backupMovingDataAway(String oldPath, String newPath);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 112217, value = "Error when trying to start replication {0}", format = Message.Format.MESSAGE_FORMAT)
+   void errorStartingReplication(BackupReplicationStartFailedMessage.BackupRegistrationProblem problem);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114001, value = "Failed to call onMessage", format = Message.Format.MESSAGE_FORMAT)
