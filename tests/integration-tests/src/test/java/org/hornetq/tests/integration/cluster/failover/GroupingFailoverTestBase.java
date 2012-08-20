@@ -186,16 +186,14 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1);
 
+         if (!isSharedServer())
+         {
+            waitForBackupTopologyAnnouncement(sfs[0]);
+         }
+
          closeSessionFactory(0);
 
-         Thread.sleep(1000);
-
-      if (isSharedServer())
-      {
-         waitForBackupTopologyAnnouncement(sfs[0]);
-      }
-
-      servers[0].stop(true);
+         servers[0].stop(true);
 
          waitForServerRestart(2);
 

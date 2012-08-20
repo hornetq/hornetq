@@ -81,6 +81,10 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
+      liveServers = new ArrayList<TestableServer>();
+      backupServers = new ArrayList<TestableServer>();
+      backupConfigs = new ArrayList<Configuration>();
+      liveConfigs = new ArrayList<Configuration>();
       for(int i = 0; i < getLiveServerCount(); i++)
       {
          Configuration configuration = createDefaultConfig(useNetty());
@@ -149,12 +153,34 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    {
       for (TestableServer backupServer : backupServers)
       {
-         backupServer.stop();
+         try
+         {
+            backupServer.stop();
+         }
+         catch (Exception e)
+         {
+            logAndSystemOut("unable to stop server", e);
+         }
       }
+      backupServers.clear();
+      backupServers = null;
+      backupConfigs.clear();
+      backupConfigs = null;
       for (TestableServer liveServer : liveServers)
       {
-         liveServer.stop();
+         try
+         {
+            liveServer.stop();
+         }
+         catch (Exception e)
+         {
+            logAndSystemOut("unable to stop server", e);
+         }
       }
+      liveServers.clear();
+      liveServers = null;
+      liveConfigs.clear();
+      liveConfigs = null;
       super.tearDown();
    }
 
