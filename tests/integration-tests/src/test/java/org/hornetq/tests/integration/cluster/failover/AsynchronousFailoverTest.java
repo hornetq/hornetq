@@ -516,6 +516,12 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   {
                      session.commit();
                   }
+                  catch(HornetQTransactionRolledBackException trbe)
+                  {
+                     //we know the tx has been rolled back so we just consume again
+                     retry = true;
+                     continue;
+                  }
                   catch (HornetQException e)
                   {
                      // This could eventually happen
