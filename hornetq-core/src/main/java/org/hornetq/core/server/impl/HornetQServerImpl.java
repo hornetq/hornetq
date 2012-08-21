@@ -2286,7 +2286,10 @@ public class HornetQServerImpl implements HornetQServer
                }
                if (liveServerSessionFactory == null)
                {
-                  signal = FAILURE_REPLICATING;
+                  //its ok to retry here since we haven't started replication yet
+                  //it may just be the server has gone since discovery
+                  Thread.sleep(serverLocator0.getRetryInterval());
+                  signal = ALREADY_REPLICATING;
                   continue;
                }
 
