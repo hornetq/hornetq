@@ -319,7 +319,7 @@ class StompSession implements SessionCallback
    {
       if (connection.enableMessageID())
       {
-         message.putStringProperty("hq-message-id", "STOMP" + message.getMessageID());
+         message.putStringProperty("hqMessageId", "STOMP" + message.getMessageID());
       }
       session.send(message, direct);
    }
