@@ -54,7 +54,7 @@ public interface PageSubscription
    public LinkedListIterator<PagedReference> iterator();
 
    // To be called when the cursor is closed for good. Most likely when the queue is deleted
-   void close() throws Exception;
+   void destroy() throws Exception;
 
    void scheduleCleanupCheck();
 
