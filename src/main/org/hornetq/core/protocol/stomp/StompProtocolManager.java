@@ -125,7 +125,8 @@ class StompProtocolManager implements ProtocolManager
       // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
 
-      Long ttl = (Long)acceptorUsed.getConfiguration().get("connection-ttl");
+      String ttlStr = (String)acceptorUsed.getConfiguration().get("connection-ttl");
+      Long ttl = ttlStr == null ? null : Long.valueOf(ttlStr);
 
       if (ttl != null)
       {
