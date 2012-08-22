@@ -40,7 +40,7 @@ public class ExtraStompTest extends StompTestBase
    {
       try
       {
-         server = createServerWithTTL(3000);
+         server = createServerWithTTL("3000");
          server.start();
 
          setUpAfterServer();
@@ -132,7 +132,7 @@ public class ExtraStompTest extends StompTestBase
          while (enu.hasMoreElements())
          {
             Message msg = enu.nextElement();
-            String msgId = msg.getStringProperty("hq-message-id");
+            String msgId = msg.getStringProperty("hqMessageId");
             if (enable != null && enable.booleanValue())
             {
                assertNotNull(msgId);
@@ -164,12 +164,12 @@ public class ExtraStompTest extends StompTestBase
       }
    }
    
-   protected JMSServerManager createServerWithTTL(long ttl) throws Exception
+   protected JMSServerManager createServerWithTTL(String ttl) throws Exception
    {
       return createServerWithExtraStompOptions(ttl, null);
    }
 
-   protected JMSServerManager createServerWithExtraStompOptions(Long ttl, Boolean enableMessageID) throws Exception
+   protected JMSServerManager createServerWithExtraStompOptions(String ttl, Boolean enableMessageID) throws Exception
    {
       Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
