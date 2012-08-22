@@ -218,7 +218,6 @@ public class XmlDataExporter
       // Just logging these, no action necessary
       TransactionFailureCallback transactionFailureCallback = new TransactionFailureCallback()
       {
-         @Override
          public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
          {
             StringBuilder message = new StringBuilder();
