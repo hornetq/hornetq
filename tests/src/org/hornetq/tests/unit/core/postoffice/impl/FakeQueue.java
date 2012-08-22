@@ -693,4 +693,13 @@ public class FakeQueue implements Queue
       
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#destroyPaging()
+    */
+   public void destroyPaging()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }
