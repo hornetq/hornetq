@@ -1013,6 +1013,8 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       postOffice.removeBinding(queueName);
+      
+      queue.destroyPaging();
 
       queue.deleteAllReferences();
 
@@ -1021,18 +1023,6 @@ public class HornetQServerImpl implements HornetQServer
          storageManager.deleteQueueBinding(queue.getID());
       }
       
-
-      if (queue.getPageSubscription() != null)
-      {
-         queue.getPageSubscription().close();
-      }
-      
-      PageSubscription subs = queue.getPageSubscription();
-      
-      if (subs != null)
-      {
-         subs.cleanupEntries(true);
-      }
    }
 
    public synchronized void registerActivateCallback(final ActivateCallback callback)
@@ -1748,7 +1738,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             if (pageSubscription != null)
             {
-               pageSubscription.close();
+               pageSubscription.destroy();
             }
          }
          catch (Throwable ignored)

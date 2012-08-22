@@ -105,9 +105,9 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
-   private final PageSubscription pageSubscription;
+   private PageSubscription pageSubscription;
 
-   private final LinkedListIterator<PagedReference> pageIterator;
+   private LinkedListIterator<PagedReference> pageIterator;
 
    // Messages will first enter intermediateMessageReferences
    // Before they are added to messageReferences
@@ -1076,6 +1076,14 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = iter.next();
 
+            if (ref.isPaged() && pageIterator == null)
+            {
+               // this means the queue is being removed
+               // hence paged references are just going away through 
+               // page cleanup
+               continue;
+            }
+            
             if (filter == null || filter.match(ref.getMessage()))
             {
                deliveringCount.incrementAndGet();
@@ -1129,6 +1137,20 @@ public class QueueImpl implements Queue
       {
          iter.close();
       }
+   }
+   
+   
+   public void destroyPaging() throws Exception
+   {
+
+      if (pageSubscription != null)
+      {
+         pageSubscription.destroy();
+         pageSubscription.cleanupEntries(true);
+         pageSubscription = null;
+         pageIterator = null;
+      }
+      
    }
 
    public synchronized boolean deleteReference(final long messageID) throws Exception
