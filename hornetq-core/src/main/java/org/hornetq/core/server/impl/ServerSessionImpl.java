@@ -29,8 +29,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -78,9 +78,8 @@ import org.hornetq.utils.UUID;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
-/*
- * Session implementation
- *
+/**
+ * Server side Session implementation
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -609,12 +608,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
+
       if (consumer == null)
       {
          throw HornetQMessageBundle.BUNDLE.consumerDoesntExist(consumerID);
       }
-      
+
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
          // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
@@ -638,7 +637,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
       }
-      
+
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
           // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
@@ -687,7 +686,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    /**
-    * 
+    *
     * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
     * @param considerLastMessageAsDelivered
     * @throws Exception
@@ -719,7 +718,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private TransactionImpl newTransaction()
    {
       TransactionImpl tx = new TransactionImpl(storageManager, timeoutSeconds);
-      
+
       return tx;
    }
 
@@ -730,7 +729,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private TransactionImpl newTransaction(final Xid xid)
    {
       TransactionImpl tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
-      
+
       return tx;
    }
 
@@ -746,8 +745,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          Transaction theTx = resourceManager.removeTransaction(xid);
-         
-         
+
+
          if (isTrace)
          {
             HornetQLogger.LOGGER.trace("XAcommit into " + theTx + ", xid=" + xid);
@@ -808,7 +807,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (tx.getState() == Transaction.State.ROLLEDBACK)
          {
             final String msg = "Cannot end, transaction is rolled back";
-            
+
             tx = null;
 
             throw new HornetQXAException(XAException.XAER_PROTO, msg);
@@ -977,7 +976,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   HornetQLogger.LOGGER.warn(e.getMessage(), e);
                }
-               
+
                throw new HornetQXAException(XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
             }
          }
@@ -1538,7 +1537,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          theTx.addOperation(new TransactionOperationAbstract()
          {
-            
+
+            @Override
             public void afterRollback(Transaction tx)
             {
                for (ServerConsumer consumer : consumers.values())
@@ -1546,10 +1546,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                   consumer.setStarted(true);
                }
             }
-            
+
          });
       }
-      
+
       theTx.rollback();
    }
 
