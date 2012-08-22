@@ -1750,7 +1750,10 @@ public class JournalStorageManager implements StorageManager
 
          if (queue == null)
          {
-            HornetQLogger.LOGGER.journalCannotFindQueueForMessage(queueID);
+            if (queueRecords.values().size() != 0)
+            {
+               HornetQLogger.LOGGER.journalCannotFindQueueForMessage(queueID);
+            }
 
             continue;
          }
@@ -3593,8 +3596,6 @@ public class JournalStorageManager implements StorageManager
       return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
    }
 
-   // Encoding functions for binding Journal
-
    public static Object newObjectEncoding(RecordInfo info)
    {
       return newObjectEncoding(info, null);
@@ -3769,7 +3770,7 @@ public class JournalStorageManager implements StorageManager
 
    public static class AckDescribe
    {
-      RefEncoding refEncoding;
+      public RefEncoding refEncoding;
 
       public AckDescribe(RefEncoding refEncoding)
       {
