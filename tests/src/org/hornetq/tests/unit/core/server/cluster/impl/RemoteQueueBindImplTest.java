@@ -687,6 +687,15 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#destroyPaging()
+       */
+      public void destroyPaging()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
 }
