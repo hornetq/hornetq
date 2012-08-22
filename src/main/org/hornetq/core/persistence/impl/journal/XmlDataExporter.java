@@ -21,7 +21,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
@@ -204,13 +206,57 @@ public class XmlDataExporter
 
       List<RecordInfo> records = new LinkedList<RecordInfo>();
 
+      // We load these, but don't use them.
+      List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
+
       Journal messageJournal = storageManager.getMessageJournal();
 
       log.debug("Reading journal from " + config.getJournalDirectory());
 
       messageJournal.start();
 
-      ((JournalImpl) messageJournal).load(records, null, null, false);
+      // Just logging these, no action necessary
+      TransactionFailureCallback transactionFailureCallback = new TransactionFailureCallback()
+      {
+         @Override
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+            StringBuilder message = new StringBuilder();
+            message.append("Encountered failed journal transaction: " + transactionID);
+            for (int i = 0; i < records.size(); i++)
+            {
+               if (i == 0)
+               {
+                  message.append("; Records: ");
+               }
+               message.append(records.get(i));
+               if (i != (records.size() - 1))
+               {
+                  message.append(", ");
+               }
+            }
+
+            for (int i = 0; i < recordsToDelete.size(); i++)
+            {
+               if (i == 0)
+               {
+                  message.append("; RecordsToDelete: ");
+               }
+               message.append(recordsToDelete.get(i));
+               if (i != (recordsToDelete.size() - 1))
+               {
+                  message.append(", ");
+               }
+            }
+
+            log.debug(message.toString());
+         }
+      };
+
+      ((JournalImpl) messageJournal).load(records, preparedTransactions, transactionFailureCallback, false);
+
+      // Since we don't use these nullify the reference so that the garbage collector can clean them up
+      preparedTransactions = null;
 
       for (RecordInfo info : records)
       {
