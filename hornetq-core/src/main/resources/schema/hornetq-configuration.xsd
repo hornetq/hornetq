@@ -72,6 +72,13 @@
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" name="node-group-name" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            used for replication, if set backups will only replicate from live server who have the same node group name
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="failback-delay" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
