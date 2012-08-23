@@ -13,15 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
@@ -110,17 +107,7 @@ public class SecurityFailoverTest extends FailoverTest
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive =
-               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10,
-                                                                                  false,
-                                                                                  false,
-                                                                                  1,
-                                                                                  1,
-                                                                                  staticConnectors,
-                                                                                  false);
-      backupConfig.getClusterConfigurations().add(cccLive);
+      basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
       backupServer = createTestableServer(backupConfig);
 
       HornetQSecurityManager securityManager = installSecurity(backupServer);
@@ -133,11 +120,7 @@ public class SecurityFailoverTest extends FailoverTest
       liveConfig.setSecurityEnabled(true);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      List<String> pairs = new ArrayList<String>();
-      ClusterConnectionConfiguration ccc0 =
-               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 100, false, false, 1, 1,
-                                                  pairs, false);
-      liveConfig.getClusterConfigurations().add(ccc0);
+      basicClusterConnectionConfig(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
 

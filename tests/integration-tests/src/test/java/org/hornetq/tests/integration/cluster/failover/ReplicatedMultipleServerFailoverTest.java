@@ -21,7 +21,11 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -31,10 +35,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
-import org.hornetq.tests.util.ReplicatedBackupUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -203,8 +203,7 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
             connectors.add(staticTc.getName());
          }
       }
-      ReplicatedBackupUtils.createClusterConnectionConf(configuration, livetc.getName(),
-               connectors.toArray(new String[servers - 1]));
+      basicClusterConnectionConfig(configuration, livetc.getName(), connectors);
 
    }
 
@@ -232,7 +231,6 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
             connectors.add(staticTc.getName());
          }
       }
-      ReplicatedBackupUtils.createClusterConnectionConf(configuration, backuptc.getName(),
-               connectors.toArray(new String[servers * 2 - 1]));
+      basicClusterConnectionConfig(configuration, backuptc.getName(), connectors);
    }
 }

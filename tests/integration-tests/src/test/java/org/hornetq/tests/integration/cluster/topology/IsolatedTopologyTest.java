@@ -28,6 +28,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A IsolatedTopologyTest
@@ -118,7 +119,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc1");
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, "1");
 
-      TransportConfiguration acceptor1VM1 = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY,
+      TransportConfiguration acceptor1VM1 = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY,
                                                                        params,
                                                                        "acceptor-cc1");
       config1.getAcceptorConfigurations().add(acceptor1VM1);
@@ -133,7 +134,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc2");
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, "2");
 
-      TransportConfiguration acceptor2VM1 = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY,
+      TransportConfiguration acceptor2VM1 = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY,
                                                                        params,
                                                                        "acceptor-cc2");
       config1.getAcceptorConfigurations().add(acceptor2VM1);
@@ -141,9 +142,8 @@ public class IsolatedTopologyTest extends ServiceTestBase
       List<String> connectTo = new ArrayList<String>();
       connectTo.add("other-cc1");
 
-      ClusterConnectionConfiguration server1CC1 = new ClusterConnectionConfiguration("cc1",
-                                                                                     "jms",
-                                                                                     "local-cc1",
+      ClusterConnectionConfiguration server1CC1 =
+               new ClusterConnectionConfiguration("cc1", "jms", "local-cc1",
                                                                                      250,
                                                                                      true,
                                                                                      false,
@@ -154,18 +154,16 @@ public class IsolatedTopologyTest extends ServiceTestBase
 
       config1.getClusterConfigurations().add(server1CC1);
 
-      connectTo = new ArrayList<String>();
-      connectTo.add("other-cc2");
+      ArrayList<String> connectTo2 = new ArrayList<String>();
+      connectTo2.add("other-cc2");
 
-      ClusterConnectionConfiguration server1CC2 = new ClusterConnectionConfiguration("cc2",
-                                                                                     "jms",
-                                                                                     "local-cc2",
-                                                                                     250,
+      ClusterConnectionConfiguration server1CC2 =
+               new ClusterConnectionConfiguration("cc2", "jms", "local-cc2", 250,
                                                                                      true,
                                                                                      false,
                                                                                      1,
                                                                                      1024,
-                                                                                     connectTo,
+                                                                                     connectTo2,
                                                                                      false);
 
       config1.getClusterConfigurations().add(server1CC2);
@@ -186,7 +184,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc1");
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, "3");
 
-      TransportConfiguration acceptor1VM1 = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY,
+      TransportConfiguration acceptor1VM1 = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY,
                                                                        params,
                                                                        "acceptor-cc1");
       config1.getAcceptorConfigurations().add(acceptor1VM1);
@@ -201,7 +199,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc2");
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, "4");
 
-      TransportConfiguration acceptor2VM1 = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY,
+      TransportConfiguration acceptor2VM1 = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY,
                                                                        params,
                                                                        "acceptor-cc2");
       config1.getAcceptorConfigurations().add(acceptor2VM1);
@@ -209,32 +207,18 @@ public class IsolatedTopologyTest extends ServiceTestBase
       List<String> connectTo = new ArrayList<String>();
       connectTo.add("other-cc1");
 
-      ClusterConnectionConfiguration server1CC1 = new ClusterConnectionConfiguration("cc1",
-                                                                                     "jms",
-                                                                                     "local-cc1",
-                                                                                     250,
-                                                                                     true,
-                                                                                     false,
-                                                                                     1,
-                                                                                     1024,
-                                                                                     connectTo,
-                                                                                     false);
+      ClusterConnectionConfiguration server1CC1 =
+               new ClusterConnectionConfiguration("cc1", "jms", "local-cc1", 250, true, false, 1, 1024, connectTo,
+                                                  false);
 
       config1.getClusterConfigurations().add(server1CC1);
 
-      connectTo = new ArrayList<String>();
-      connectTo.add("other-cc2");
+      ArrayList<String> connectTo2 = new ArrayList<String>();
+      connectTo2.add("other-cc2");
 
-      ClusterConnectionConfiguration server1CC2 = new ClusterConnectionConfiguration("cc2",
-                                                                                     "jms",
-                                                                                     "local-cc2",
-                                                                                     250,
-                                                                                     true,
-                                                                                     false,
-                                                                                     1,
-                                                                                     1024,
-                                                                                     connectTo,
-                                                                                     false);
+      ClusterConnectionConfiguration server1CC2 =
+               new ClusterConnectionConfiguration("cc2", "jms", "local-cc2", 250, true, false, 1, 1024, connectTo2,
+                                                  false);
 
       config1.getClusterConfigurations().add(server1CC2);
 

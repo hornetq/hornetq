@@ -68,6 +68,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -173,6 +174,28 @@ public abstract class UnitTestCase extends TestCase
       {
          return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
       }
+   }
+
+   protected static final void basicClusterConnectionConfig(Configuration mainConfig,
+                                                                                      String connectorName,
+                                                                                      String... connectors)
+   {
+      ArrayList<String> connectors0 = new ArrayList<String>();
+      for (String c : connectors)
+      {
+         connectors0.add(c);
+      }
+      basicClusterConnectionConfig(mainConfig, connectorName, connectors0);
+   }
+
+   protected static final void basicClusterConnectionConfig(Configuration mainConfig,
+                                                                                      String connectorName,
+                                                                                      List<String> connectors)
+   {
+      ClusterConnectionConfiguration ccc =
+               new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, false, 1, 1, connectors,
+                                                  false);
+      mainConfig.getClusterConfigurations().add(ccc);
    }
 
    protected static Configuration createClusteredDefaultConfig(final int index,

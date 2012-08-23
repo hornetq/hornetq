@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +29,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -264,13 +261,7 @@ public class FailBackAutoTest extends FailoverTestBase
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive =
-               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10, false, false, 1,
-                                                  1,
-            staticConnectors, false);
-      backupConfig.getClusterConfigurations().add(cccLive);
+      basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
       backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
@@ -280,12 +271,7 @@ public class FailBackAutoTest extends FailoverTestBase
       liveConfig.setSharedStore(true);
       liveConfig.setFailbackDelay(1000);
       liveConfig.setClustered(true);
-      List<String> pairs = new ArrayList<String>();
-      pairs.add(backupConnector.getName());
-      ClusterConnectionConfiguration ccc0 =
-               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 10, false, false, 1, 1,
-            pairs, false);
-      liveConfig.getClusterConfigurations().add(ccc0);
+      basicClusterConnectionConfig(liveConfig, liveConnector.getName(), backupConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       liveServer = createTestableServer(liveConfig);

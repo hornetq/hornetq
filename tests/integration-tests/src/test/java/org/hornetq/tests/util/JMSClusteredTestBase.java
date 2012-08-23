@@ -142,28 +142,20 @@ public class JMSClusteredTestBase extends ServiceTestBase
       List<String> toOtherServerPair = new ArrayList<String>();
       toOtherServerPair.add("toServer1");
 
-      Configuration conf2 = createDefaultConfig(1, generateInVMParams(1), InVMAcceptorFactory.class.getCanonicalName());
+      Configuration conf2 = createDefaultConfig(1, generateInVMParams(1), INVM_ACCEPTOR_FACTORY);
       conf2.setSecurityEnabled(false);
       conf2.setJMXManagementEnabled(true);
       conf2.setPersistenceEnabled(false);
 
       conf2.getConnectorConfigurations().put("toServer1",
-                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                        generateInVMParams(0)));
+                                             new TransportConfiguration(INVM_CONNECTOR_FACTORY, generateInVMParams(0)));
       conf2.getConnectorConfigurations().put("server2",
-                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                        generateInVMParams(1)));
+                                             new TransportConfiguration(INVM_CONNECTOR_FACTORY, generateInVMParams(1)));
 
       conf2.setClustered(true);
 
-      conf2.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server1",
-                                                                              "jms",
-                                                                                 "server2",
-                                                                              1000,
-                                                                              true,
-                                                                              false,
-                                                                              MAX_HOPS,
-                                                                              1024,
+      conf2.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server1", "jms", "server2", 1000,
+                                                                              true, false, MAX_HOPS, 1024,
                                                                               toOtherServerPair, false));
 
 
@@ -201,14 +193,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       conf1.setClustered(true);
 
-      conf1.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server2",
-                                                                              "jms",
-                                                                              "server1",
-                                                                              1000,
-                                                                              true,
-                                                                              false,
-                                                                              MAX_HOPS,
-                                                                              1024,
+      conf1.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server2", "jms", "server1", 1000,
+                                                                              true, false, MAX_HOPS, 1024,
                                                                               toOtherServerPair, false));
 
 
