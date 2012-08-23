@@ -20,7 +20,8 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- * USe to validate whether a user has is valid to connect to the server and perform certain functions
+ * Use to validate whether a user has is valid to connect to the server and perform certain
+ * functions
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface HornetQSecurityManager extends HornetQComponent

@@ -188,6 +188,8 @@ public final class FileConfigurationParser
       config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e,
                                                                          "failover-on-shutdown",
                                                                          config.isFailoverOnServerShutdown()));
+      config.setReplicationClustername(XMLConfigurationUtil.getString(e, "replication-clustername", null,
+                                                                      Validators.NO_CHECK));
 
       config.setBackup(XMLConfigurationUtil.getBoolean(e, "backup", config.isBackup()));
 

@@ -361,6 +361,8 @@ public class ConfigurationImpl implements Configuration
 
    private transient String passwordCodec;
 
+   private String replicationClusterName;
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1455,6 +1457,18 @@ public class ConfigurationImpl implements Configuration
    public String getPasswordCodec()
    {
       return passwordCodec;
+   }
+
+   @Override
+   public void setReplicationClustername(String clusterName)
+   {
+      this.replicationClusterName = clusterName;
+   }
+
+   @Override
+   public String getReplicationClustername()
+   {
+      return replicationClusterName;
    }
 
 }

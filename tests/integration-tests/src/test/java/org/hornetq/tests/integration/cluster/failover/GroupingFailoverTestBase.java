@@ -12,18 +12,16 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.Collection;
+
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.TopologyMember;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import java.util.Collection;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

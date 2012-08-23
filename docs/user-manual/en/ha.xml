@@ -71,11 +71,14 @@
                 not be a fully operational backup right after start, but only after it finishes
                 synchronizing the data. The time it will take for this to happen will depend on the
                 amount of data to be synchronized and the connection speed.</para>
-                <param>The replicating live and backup pair will also need to belong to a
-                cluster. This requires specific configuration not strictly necessary in the shared
-                store case. Both servers need to be configured to use the same cluster, and have the
-                same cluster user and password. The later will be used in the authentication between
-                them.</param>
+                <param>The replicating live and backup pair must be clustered. This requires
+                specific configuration not strictly necessary in the shared store case. Both servers
+                must be on the same cluster, and have the same cluster user and password.</param>
+                <param>The backup will search for any live server in the cluster that has a matching
+                <literal>nodeGroupName</literal> configuration, and does not already have a backup. If all live
+                servers in the cluster already have backups, a newly started backup will retry
+                connecting after a time-out of XXX-REPLICATION-TIMEOUT-RETRY.</param>
+
                 <param>Much like in the shared-store case, when the live server stops or crashes,
                 its replicating backup will become active and take over its duties. Specifically,
                 the backup will become active when it loses connection to its live server. This can
@@ -85,34 +88,31 @@
                 than half the servers, it will become active, if more than half the servers also
                 disappeared with the live, the backup will wait and try reconnecting with the live.
                 </param>
+
                 <section>
                 <title>Configuration</title>
 
                 <para>To configure the live and backup servers to be a replicating pair, configure
-                all <literal>hornetq-configuration.xml</literal> to have:</para>
+                both <literal>hornetq-configuration.xml</literal> to have:</para>
 
                 <programlisting>
 &lt;shared-store>false&lt;shared-store>
-                </programlisting>
-
-                <para>Both servers must be configured to be part of a cluster:</para>
-                <programlisting>
 &lt;clustered>true&lt;/clustered>
 .
 .
 .
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
+     &lt;cluster-user>fish&lt;cluster-user>
+     &lt;cluster-password>ILikeToSwim&lt;cluster-password>
    ...
    &lt;/cluster-connection>
 &lt;/cluster-connections>
                 </programlisting>
 
-                <para>The backup server must be flagged explicitly as a backup, must configure which is the connector to be used to reach the live server and have such connector configured</para>
+                <para>The backup server must be flagged explicitly as a backup.</para>
                 <programlisting>
-&lt;clustered>true&lt;/clustered>
 &lt;backup>true&lt;/backup>
-&lt;live-connector-ref>nameOfConfiguredLiveServerConnector&lt;/live-connector-ref>
 &lt;connectors>
   &lt;connector name="nameOfConfiguredLiveServerConnector">
     &lt;factory-class>

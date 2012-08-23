@@ -9,7 +9,7 @@
                 <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
-                            Whether or not we should check the cluster for a live server when starting up (replicated servers only)
+                            Whether or not we should check the cluster for a live server when starting up. This setting only applies to replicated servers.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:element>
@@ -36,6 +36,15 @@
                 <xsd:element maxOccurs="1" minOccurs="0" name="management-notification-address" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="replication-clustername" type="xsd:string">
+                 <xsd:annotation>
+                  <xsd:documentation>
+                   Name of the cluster configuration to use for replication. 
+                   This setting is only necessary in case you configure multiple cluster connections. 
+                   It is used by a replicating backups and by live servers that may attempt fail-back.
+                  </xsd:documentation>
+                 </xsd:annotation>
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="password-codec" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="mask-password" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xsd:string"/>

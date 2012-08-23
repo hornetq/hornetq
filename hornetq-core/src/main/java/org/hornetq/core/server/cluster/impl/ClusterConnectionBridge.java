@@ -44,12 +44,11 @@ import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A ClusterConnectionBridge
- *
+ * A bridge with extra functionality only available when the server is clustered.
+ * <p>
+ * Such as such adding extra properties and setting up notifications between the nodes.
  * @author tim
  * @author Clebert Suconic
- *
- *
  */
 public class ClusterConnectionBridge extends BridgeImpl
 {

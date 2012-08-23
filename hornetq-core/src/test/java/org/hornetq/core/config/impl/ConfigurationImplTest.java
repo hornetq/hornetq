@@ -22,7 +22,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.RandomUtil;
@@ -538,8 +537,6 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertTrue(conf.equals(conf2));
    }
 
-   // Protected ----------------------------------------------------------------------------------------
-
    @Override
    protected void setUp() throws Exception
    {
@@ -552,7 +549,4 @@ public class ConfigurationImplTest extends UnitTestCase
    {
       return new ConfigurationImpl();
    }
-
-   // Private --------------------------------------------------------------------------------------------
-
 }

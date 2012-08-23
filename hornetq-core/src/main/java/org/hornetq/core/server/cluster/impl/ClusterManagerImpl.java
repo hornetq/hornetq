@@ -40,6 +40,7 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationUtils;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
@@ -398,15 +399,13 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
                                                                                                         throws HornetQException
    {
-      List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if (configs.isEmpty())
+      ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
+      if (config == null)
       {
          HornetQLogger.LOGGER.announceBackupNoClusterConnections();
          throw new HornetQException("lacking cluster connection");
-      }
-      // XXX HORNETQ-970
-      ClusterConnectionConfiguration config = configs.get(0);
 
+      }
       TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
 
       if (connector == null)
