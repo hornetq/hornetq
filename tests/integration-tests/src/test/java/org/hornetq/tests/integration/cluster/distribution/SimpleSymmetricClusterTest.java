@@ -13,10 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import java.util.List;
-
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
@@ -41,40 +37,13 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
    }
 
-   /**
-    * @param name
-    * @param address
-    * @param forwardWhenNoConsumers
-    * @param maxHops
-    * @param connectorFrom
-    * @param pairs
-    * @return
-    */
-   protected ClusterConnectionConfiguration createClusterConfig(final String name,
-                                                                final String address,
-                                                                final boolean forwardWhenNoConsumers,
-                                                                final int maxHops,
-                                                                TransportConfiguration connectorFrom,
-                                                                List<String> pairs)
-   {
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      connectorFrom.getName(),
-                                                                                      2000,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs,
-                                                                                      false);
-      return clusterConf;
-   }
-
+   @Override
    public void tearDown() throws Exception
    {
       log.info("#test tearDown " + loopNumber);

@@ -292,7 +292,7 @@ public final class FileConfigurationParser
       // parsing cluster password
       String passwordText = XMLConfigurationUtil.getString(e, "cluster-password", null, Validators.NO_CHECK);
 
-      boolean maskText = config.isMaskPassword();
+      final boolean maskText = config.isMaskPassword();
 
       if (passwordText != null)
       {
@@ -1141,32 +1141,21 @@ public final class FileConfigurationParser
 
       if (discoveryGroupName == null)
       {
-         config = new ClusterConnectionConfiguration(name,
-                                                     address,
-                                                     connectorName,
-                                                     minLargeMessageSize,
-                                                     clientFailureCheckPeriod,
-                                                     connectionTTL,
-                                                     retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     maxRetryInterval,
-                                                     reconnectAttempts,
-                                                     callTimeout,
-                                                     callFailoverTimeout,
-                                                     duplicateDetection,
-                                                     forwardWhenNoConsumers,
-                                                     maxHops,
+         config =
+                  new ClusterConnectionConfiguration(name, address, connectorName,
+                                                     minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                                                     retryInterval, retryIntervalMultiplier, maxRetryInterval,
+                                                     reconnectAttempts, callTimeout, callFailoverTimeout,
+                                                     duplicateDetection, forwardWhenNoConsumers, maxHops,
                                                      confirmationWindowSize,
                                                      staticConnectorNames,
                                                      allowDirectConnectionsOnly);
       }
       else
       {
-         config = new ClusterConnectionConfiguration(name,
-                                                     address,
-                                                     connectorName,
-                                                     minLargeMessageSize,
-                                                     clientFailureCheckPeriod,
+         config =
+                  new ClusterConnectionConfiguration(name, address, connectorName,
+                                                     minLargeMessageSize, clientFailureCheckPeriod,
                                                      connectionTTL,
                                                      retryInterval,
                                                      retryIntervalMultiplier,

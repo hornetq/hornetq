@@ -1841,10 +1841,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
          pairs = new ArrayList<String>();
          pairs.add(serverTotc.getName());
       }
-
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      name,
+      Configuration config = serverFrom.getConfiguration();
+      ClusterConnectionConfiguration clusterConf =
+               new ClusterConnectionConfiguration(name, address, name,
                                                                                       100,
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
@@ -1852,7 +1851,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                                       1024,
                                                                                       pairs,
                                                                                       allowDirectConnectionsOnly);
-      serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
+      config.getClusterConfigurations().add(clusterConf);
    }
 
    protected void setupClusterConnection(final String name,
@@ -1880,15 +1879,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-
-      ClusterConnectionConfiguration clusterConf = createClusterConfig(name,
-                                                                       address,
-                                                                       forwardWhenNoConsumers,
+      Configuration conf=serverFrom.getConfiguration();
+      ClusterConnectionConfiguration clusterConf =
+               createClusterConfig(name, address, forwardWhenNoConsumers,
                                                                        maxHops,
                                                                        connectorFrom,
                                                                        pairs);
 
-      serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
+      conf.getClusterConfigurations().add(clusterConf);
    }
 
    protected void setupClusterConnection(final String name,
@@ -1918,9 +1916,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-
+Configuration conf=serverFrom.getConfiguration();
 		ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
-				name, address, connectorFrom.getName(),
+name, address, connectorFrom.getName(),
 				HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
 				ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
 				ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
@@ -1930,36 +1928,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
 				reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
 				1024, pairs, false);
 
-      serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
+      conf.getClusterConfigurations().add(clusterConf);
    }
 
-   /**
-    * @param name
-    * @param address
-    * @param forwardWhenNoConsumers
-    * @param maxHops
-    * @param connectorFrom
-    * @param pairs
-    * @return
-    */
-   protected ClusterConnectionConfiguration createClusterConfig(final String name,
-                                                                final String address,
-                                                                final boolean forwardWhenNoConsumers,
-                                                                final int maxHops,
-                                                                TransportConfiguration connectorFrom,
-                                                                List<String> pairs)
+   private ClusterConnectionConfiguration createClusterConfig(final String name, final String address,
+                                                              final boolean forwardWhenNoConsumers, final int maxHops,
+                                TransportConfiguration connectorFrom, List<String> pairs)
    {
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      connectorFrom.getName(),
-                                                                                      250,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs,
-                                                                                      false);
-      return clusterConf;
+      return new ClusterConnectionConfiguration(name, address, connectorFrom.getName(), 250, true,
+                                                forwardWhenNoConsumers, maxHops, 1024, pairs, false);
    }
 
    protected void setupClusterConnectionWithBackups(final String name,
@@ -1987,9 +1964,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
+      Configuration config = serverFrom.getConfiguration();
+      ClusterConnectionConfiguration clusterConf =
+               new ClusterConnectionConfiguration(name, address,
                                                                                       name,
                                                                                       250,
                                                                                       true,
@@ -1999,7 +1976,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                                       pairs,
                                                                                       false);
 
-      serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
+      config.getClusterConfigurations().add(clusterConf);
    }
 
    protected void setupDiscoveryClusterConnection(final String name,
@@ -2019,17 +1996,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       TransportConfiguration connectorConfig = createTransportConfiguration(netty, false, generateParams(node, netty));
       server.getConfiguration().getConnectorConfigurations().put(name, connectorConfig);
-
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      name,
-                                                                                      100,
+      Configuration conf = server.getConfiguration();
+      ClusterConnectionConfiguration clusterConf =
+               new ClusterConnectionConfiguration(name, address, name, 100,
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
                                                                                       1024,
                                                                                       discoveryGroupName);
-      List<ClusterConnectionConfiguration> clusterConfs = server.getConfiguration().getClusterConfigurations();
+      List<ClusterConnectionConfiguration> clusterConfs = conf.getClusterConfigurations();
 
       clusterConfs.add(clusterConf);
    }

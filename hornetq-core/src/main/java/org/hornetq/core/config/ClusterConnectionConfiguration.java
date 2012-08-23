@@ -412,5 +412,4 @@ public final class ClusterConnectionConfiguration implements Serializable
    {
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
    }
-
 }

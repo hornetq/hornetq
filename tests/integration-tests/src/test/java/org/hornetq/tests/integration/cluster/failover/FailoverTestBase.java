@@ -171,9 +171,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-
-      ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
-              liveConnector.getName());
+      basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
       backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
@@ -183,7 +181,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setClustered(true);
       liveConfig.setFailbackDelay(1000);
 
-      ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
+      basicClusterConnectionConfig(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
    }

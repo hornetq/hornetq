@@ -23,7 +23,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
@@ -143,11 +142,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       }
       TransportConfiguration backupConnector =
                createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
-      ClusterConnectionConfiguration ccc1 =
-               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), 10, false, false, 1,
-                                                  1,
-                                                  staticConnectors, false);
-      config1.getClusterConfigurations().add(ccc1);
+      basicClusterConnectionConfig(config1, backupConnector.getName(), staticConnectors);
       config1.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
 
       config1.setBindingsDirectory(config1.getBindingsDirectory() + "_" + liveNode);
@@ -169,10 +164,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
       config0.setClustered(true);
-      ClusterConnectionConfiguration ccc0 =
-               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), 10, false, false, 1, 1,
-                                                  null, false);
-      config0.getClusterConfigurations().add(ccc0);
+      basicClusterConnectionConfig(config0, liveConnector.getName());
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 
       config0.setBindingsDirectory(config0.getBindingsDirectory() + "_" + liveNode);

@@ -57,8 +57,8 @@ public interface Configuration extends Serializable
    public String getNodeGroupName();
 
    /**
-    * used to configure groups of live/backup servers
-    * @param nodeGroupName thye node group name
+    * Used to configure groups of live/backup servers.
+    * @param nodeGroupName the node group name
     */
    public void setNodeGroupName(String nodeGroupName);
 
