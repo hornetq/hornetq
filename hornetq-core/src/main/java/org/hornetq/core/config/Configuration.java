@@ -913,4 +913,18 @@ public interface Configuration extends Serializable
     */
    boolean isMaskPassword();
 
+   /**
+    * Name of the cluster configuration to use for replication.
+    * <p>
+    * Only applicable for servers with more than one cluster configuration. This value is only used
+    * by replicating backups and live servers that attempt fail-back.
+    * @param clusterName
+    */
+   void setReplicationClustername(String clusterName);
+
+   /**
+    * @see #setReplicationClustername(String)
+    * @return name of the cluster configuration to use
+    */
+   String getReplicationClustername();
 }

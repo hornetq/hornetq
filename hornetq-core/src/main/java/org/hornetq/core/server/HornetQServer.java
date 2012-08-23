@@ -54,10 +54,7 @@ import org.hornetq.utils.ExecutorFactory;
  * This interface defines the internal interface of the HornetQ Server exposed to other components
  * of the server.
  * <p>
- * The external management interface of the HornetQ Server is defined by the HornetQServerManagement
- * interface.
- * <p>
- * This interface is never exposed outside the HornetQ server, e.g. by JMX or other means
+ * This is not part of our public API.
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */

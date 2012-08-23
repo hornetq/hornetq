@@ -13,6 +13,10 @@
 
 package org.hornetq.core.server.impl;
 
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -39,14 +43,27 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.*;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConfigurationUtils;
+import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -137,8 +154,6 @@ import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.*;
-
 /**
  * The HornetQ server implementation
  *
@@ -160,8 +175,13 @@ public class HornetQServerImpl implements HornetQServer
 
    enum SERVER_STATE
    {
-      /** start() has been called but components are not initialized */
-      INITIALIZING,
+      /**
+       * start() has been called but components are not initialized. The whole point of this state,
+       * is to be in a state which is different from {@link SERVER_STATE#STARTED} and
+       * {@link SERVER_STATE#STOPPED}, so that methods testing for these two values such as
+       * {@link #stop(boolean,boolean)} work as intended.
+       */
+      STARTING,
       /**
        * server is started. {@code server.isStarted()} returns {@code true}, and all assumptions
        * about it hold.
@@ -359,7 +379,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          cancelFailBackChecker = false;
       }
-      state = SERVER_STATE.INITIALIZING;
+      state = SERVER_STATE.STARTING;
       HornetQLogger.LOGGER.debug("Starting server " + this);
 
       OperationContextImpl.clearContext();
@@ -1275,6 +1295,9 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * Starts everything apart from RemotingService and loading the data.
+    * <p>
+    * After optional intermediary steps, Part 1 is meant to be followed by part 2
+    * {@link #initialisePart2()}.
     */
    private synchronized boolean initialisePart1() throws Exception
    {
@@ -1439,7 +1462,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       // Load the journal and populate queues, transactions and caches in memory
 
-      if (state == SERVER_STATE.STOPPED)
+      if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
       {
          return;
       }
@@ -2152,7 +2175,8 @@ public class HornetQServerImpl implements HornetQServer
                   return;
                //we use the cluster connection configuration to connect to the cluster to find the live node we want to
                //connect to.
-               ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
+               ClusterConnectionConfiguration config =
+                        ConfigurationUtils.getReplicationClusterConfiguration(configuration);
                serverLocator0 = getFailbackLocator(config);
             }
             //if the cluster isn't available we want to hang around until it is
@@ -2503,8 +2527,7 @@ public class HornetQServerImpl implements HornetQServer
 
          ServerLocatorInternal locator;
 
-         ClusterConnectionConfiguration config = configuration.getClusterConfigurations().get(0);
-
+         ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
 
          locator = getFailbackLocator(config);
 
