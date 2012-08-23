@@ -574,7 +574,7 @@ class PageSubscriptionImpl implements PageSubscription
    /**
     * All the data associated with the cursor should go away here
     */
-   public void close() throws Exception
+   public void destroy() throws Exception
    {
       final long tx = store.generateUniqueID();
       try

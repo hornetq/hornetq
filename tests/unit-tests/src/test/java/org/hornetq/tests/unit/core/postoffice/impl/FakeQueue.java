@@ -689,4 +689,11 @@ public class FakeQueue implements Queue
       return 0;
    }
 
+   /* (non-Javadoc)
+   * @see org.hornetq.core.server.Queue#destroyPaging()
+   */
+   public void destroyPaging()
+   {
+   }
+
 }

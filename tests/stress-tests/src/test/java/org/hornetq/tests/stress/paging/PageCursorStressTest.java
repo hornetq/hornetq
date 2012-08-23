@@ -208,7 +208,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       System.out.println("NumberOfPages = " + numberOfPages);
 
-      queue.getPageSubscription().close();
+      queue.getPageSubscription().destroy();
 
       PagedReference msg;
 
