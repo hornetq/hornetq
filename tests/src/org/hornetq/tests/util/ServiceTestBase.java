@@ -17,14 +17,17 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -34,6 +37,14 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.journal.PreparedTransactionInfo;
+import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.JournalFile;
+import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.JournalReaderCallback;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -612,6 +623,146 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                     (byte)1);
       message.getBodyBuffer().writeBytes(b);
       return message;
+   }
+   
+   
+   
+   /**
+    * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
+    * independent of being deleted or not
+    * @param config
+    * @return
+    * @throws Exception
+    */
+   protected Pair<List<RecordInfo>, List<PreparedTransactionInfo>> loadMessageJournal(Configuration config) throws Exception
+   {
+      JournalImpl messagesJournal = null;
+      try
+      {
+         SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
+   
+         messagesJournal = new JournalImpl(config.getJournalFileSize(),
+                                           config.getJournalMinFiles(),
+                                           0,
+                                           0,
+                                           messagesFF,
+                                           "hornetq-data",
+                                           "hq",
+                                           1);
+         final List<RecordInfo> committedRecords = new LinkedList<RecordInfo>();
+         final List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
+         
+         messagesJournal.start();
+         
+         messagesJournal.load(committedRecords, preparedTransactions, null, false);
+         
+         return new Pair<List<RecordInfo>, List<PreparedTransactionInfo>>(committedRecords, preparedTransactions);
+      }
+      finally
+      {
+         try
+         {
+            if (messagesJournal != null)
+            {
+               messagesJournal.stop();
+            }
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+   
+   /**
+    * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
+    * independent of being deleted or not
+    * @param config
+    * @return
+    * @throws Exception
+    */
+   protected HashMap<Integer, AtomicInteger> countJournal(Configuration config) throws Exception
+   {
+      final HashMap<Integer, AtomicInteger> recordsType = new HashMap<Integer, AtomicInteger>();
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
+
+      JournalImpl messagesJournal = new JournalImpl(config.getJournalFileSize(),
+                                                    config.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
+      List<JournalFile> filesToRead = messagesJournal.orderFiles();
+
+      for (JournalFile file : filesToRead)
+      {
+         JournalImpl.readJournalFile(messagesFF, file, new JournalReaderCallback()
+         {
+
+            AtomicInteger getType(byte key)
+            {
+               if (key == 0)
+               {
+                  System.out.println("huh?");
+               }
+               Integer ikey = new Integer(key);
+               AtomicInteger value = recordsType.get(ikey);
+               if (value == null)
+               {
+                  value = new AtomicInteger();
+                  recordsType.put(ikey, value);
+               }
+               return value;
+            }
+
+            public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+               getType(recordInfo.getUserRecordType()).incrementAndGet();
+            }
+
+            public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+            {
+               getType(recordInfo.getUserRecordType()).incrementAndGet();
+            }
+
+            public void onReadRollbackRecord(long transactionID) throws Exception
+            {
+            }
+
+            public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+            {
+            }
+
+            public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+            }
+
+            public void onReadDeleteRecord(long recordID) throws Exception
+            {
+            }
+
+            public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+            {
+            }
+
+            public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+               getType(recordInfo.getUserRecordType()).incrementAndGet();
+            }
+
+            public void onReadAddRecord(RecordInfo recordInfo) throws Exception
+            {
+               getType(recordInfo.getUserRecordType()).incrementAndGet();
+            }
+
+            public void markAsDataFile(JournalFile file)
+            {
+            }
+         });
+      }
+      return recordsType;
    }
 
    /**
