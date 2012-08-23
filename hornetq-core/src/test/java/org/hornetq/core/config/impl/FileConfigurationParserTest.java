@@ -86,6 +86,8 @@ public class FileConfigurationParserTest extends UnitTestCase
       config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
       
       assertEquals("newpassword", config.getClusterPassword());
+
+      assertEquals("anodegroupname", config.getNodeGroupName());
    }
 
    private static String firstPart = 
@@ -93,6 +95,7 @@ public class FileConfigurationParserTest extends UnitTestCase
             "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
             "xsi:schemaLocation=\"urn:hornetq /schema/hornetq-configuration.xsd\">\n" +
             "<name>HornetQ.main.config</name>" + "\n" +
+            "<node-group-name>anodegroupname</node-group-name>" + "\n" +
             "<log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
             "<bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>" + "\n" +
             "<journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>" + "\n" +
