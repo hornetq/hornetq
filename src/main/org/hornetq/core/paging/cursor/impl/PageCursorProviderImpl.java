@@ -342,11 +342,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
                log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
             }
 
-            ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
-            cursorList.addAll(activeCursors.values());
+            ArrayList<PageSubscription> cursorList = cloneSubscriptions();
 
             long minPage = checkMinPage(cursorList);
 
+            // if the current page is being written...
+            // on that case we need to move to verify it in a different way
             if (minPage == pagingStore.getCurrentWritingPage() && pagingStore.getCurrentPage().getNumberOfMessages() > 0)
             {
                boolean complete = true;
@@ -372,6 +373,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   }
                }
 
+               
+               // All the pages on the cursor are complete.. so we will cleanup everything and store a bookmark
                if (complete)
                {
 
@@ -385,7 +388,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
                   Page currentPage = pagingStore.getCurrentPage();
 
-                  storePositions(cursorList, currentPage);
+                  storeBookmark(cursorList, currentPage);
 
                   pagingStore.stopPaging();
 
@@ -486,6 +489,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             }
 
             depagedPage.delete(pgdMessages);
+            onDeletePage(depagedPage);
             
             synchronized (softCache)
             {
@@ -502,11 +506,30 @@ public class PageCursorProviderImpl implements PageCursorProvider
    }
 
    /**
+    * @return
+    */
+   private synchronized ArrayList<PageSubscription> cloneSubscriptions()
+   {
+      ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
+      cursorList.addAll(activeCursors.values());
+      return cursorList;
+   }
+   
+   protected void onDeletePage(Page deletedPage) throws Exception
+   {
+      List<PageSubscription> subscriptions = cloneSubscriptions();
+      for (PageSubscription subs: subscriptions)
+      {
+         subs.onDeletePage(deletedPage);
+      }
+   }
+
+   /**
     * @param cursorList
     * @param currentPage
     * @throws Exception
     */
-   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   protected void storeBookmark(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
    {
       try
       {
