@@ -15,7 +15,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq ../../../../../../../hornetq-core/src/main/resources/schema/hornetq-configuration.xsd">
 
-   <clustered>true</clustered>
+   
 
    <backup>true</backup>
 

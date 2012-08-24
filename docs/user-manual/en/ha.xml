@@ -71,7 +71,7 @@
                 not be a fully operational backup right after start, but only after it finishes
                 synchronizing the data. The time it will take for this to happen will depend on the
                 amount of data to be synchronized and the connection speed.</para>
-                <param>The replicating live and backup pair must be clustered. This requires
+                <param>The replicating live and backup pair must be part of a cluster. This requires
                 specific configuration not strictly necessary in the shared store case. Both servers
                 must be on the same cluster, and have the same cluster user and password.</param>
                 <param>The backup will search for any live server in the cluster that has a matching
@@ -97,7 +97,6 @@
 
                 <programlisting>
 &lt;shared-store>false&lt;shared-store>
-&lt;clustered>true&lt;/clustered>
 .
 .
 .

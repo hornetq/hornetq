@@ -80,7 +80,6 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
@@ -119,7 +118,6 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
@@ -142,8 +140,4 @@ public class BroadcastGroupControlTest extends ManagementTestBase
    {
       return ManagementControlHelper.createBroadcastGroupControl(name, mbeanServer);
    }
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

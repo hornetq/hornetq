@@ -60,8 +60,6 @@ public class PersistentDivertTest extends ServiceTestBase
    {
       Configuration conf = createDefaultConfig();
 
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress1 = "forwardAddress1";
@@ -262,8 +260,6 @@ public class PersistentDivertTest extends ServiceTestBase
    public void doTestPersistentDivertRestartBeforeConsume(final boolean largeMessage) throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
 
       final String testAddress = "testAddress";
 

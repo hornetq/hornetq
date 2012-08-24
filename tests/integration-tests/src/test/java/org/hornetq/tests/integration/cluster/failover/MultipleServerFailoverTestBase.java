@@ -21,6 +21,9 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -37,9 +40,6 @@ import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.TransportConfigurationUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -102,7 +102,6 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          {
             //todo
          }
-         configuration.setClustered(true);
          configuration.setFailbackDelay(1000);
          if(getNodeGroupName() != null)
          {
@@ -132,7 +131,6 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          {
             //todo
          }
-         configuration.setClustered(true);
          configuration.setBackup(true);
          configuration.setFailbackDelay(1000);
          if(getNodeGroupName() != null)

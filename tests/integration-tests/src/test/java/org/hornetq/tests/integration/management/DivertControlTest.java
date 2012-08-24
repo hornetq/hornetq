@@ -101,7 +101,6 @@ public class DivertControlTest extends ManagementTestBase
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.setClustered(true);
       conf.getQueueConfigurations().add(queueConfig);
       conf.getQueueConfigurations().add(fowardQueueConfig);
       conf.getDivertConfigurations().add(divertConfig);
@@ -131,9 +130,4 @@ public class DivertControlTest extends ManagementTestBase
    {
       return ManagementControlHelper.createDivertControl(name, mbeanServer);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

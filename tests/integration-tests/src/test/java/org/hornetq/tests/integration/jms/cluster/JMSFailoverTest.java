@@ -369,7 +369,6 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.setPagingDirectory(getPageDir());
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
       backupConf.setPersistenceEnabled(true);
-      backupConf.setClustered(true);
       backupService = new ServiceTestBase.InVMNodeManagerServer(backupConf, nodeManager);
 
       backupJMSService = new JMSServerManagerImpl(backupService);
@@ -397,7 +396,6 @@ public class JMSFailoverTest extends ServiceTestBase
       liveConf.setLargeMessagesDirectory(getLargeMessagesDir());
       liveConf.getConnectorConfigurations().put(livetc.getName(), livetc);
       liveConf.setPersistenceEnabled(true);
-      liveConf.setClustered(true);
       liveService = new InVMNodeManagerServer(liveConf, nodeManager);
 
       liveJMSService = new JMSServerManagerImpl(liveService);

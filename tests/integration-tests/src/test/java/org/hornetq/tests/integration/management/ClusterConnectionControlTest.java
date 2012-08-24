@@ -209,7 +209,6 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
-      conf_1.setClustered(true);
       conf_1.getAcceptorConfigurations().add(acceptorConfig);
       conf_1.getQueueConfigurations().add(queueConfig);
 
@@ -229,7 +228,6 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
-      conf_0.setClustered(true);
       conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig1);

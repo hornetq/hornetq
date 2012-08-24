@@ -1560,7 +1560,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setSharedStore(sharedStorage);
       configuration.setThreadPoolMaxSize(10);
-      configuration.setClustered(true);
 
       configuration.getAcceptorConfigurations().clear();
       configuration.getAcceptorConfigurations().add(createTransportConfiguration(netty, true,
@@ -1623,7 +1622,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
       configuration.setSharedStore(sharedStorage);
-      configuration.setClustered(true);
       configuration.setBackup(true);
 
       configuration.getAcceptorConfigurations().clear();
@@ -1667,7 +1665,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(node);
 
       configuration.setJournalMaxIO_AIO(1000);
-      configuration.setClustered(true);
       configuration.setBackup(false);
 
       configuration.getAcceptorConfigurations().clear();
@@ -1745,7 +1742,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
       configuration.setSharedStore(sharedStorage);
-      configuration.setClustered(true);
       configuration.setBackup(true);
 
       configuration.getAcceptorConfigurations().clear();

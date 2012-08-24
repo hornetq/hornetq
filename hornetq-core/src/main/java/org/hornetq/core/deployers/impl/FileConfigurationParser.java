@@ -177,8 +177,6 @@ public final class FileConfigurationParser
 
       config.setName(XMLConfigurationUtil.getString(e, "name", config.getName(), Validators.NO_CHECK));
 
-      config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
-
       config.setCheckForLiveServer(XMLConfigurationUtil.getBoolean(e, "check-for-live-server", config.isClustered()));
 
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));

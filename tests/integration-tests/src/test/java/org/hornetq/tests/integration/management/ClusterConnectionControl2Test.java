@@ -135,7 +135,6 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
-      conf_1.setClustered(true);
 
       clusterConnectionConfig_0 =
                new ClusterConnectionConfiguration(clusterName, queueConfig.getAddress(), "netty", 1000, false, false,
@@ -151,7 +150,6 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       Configuration conf_0 = createBasicConfig(1);
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
-      conf_0.setClustered(true);
       conf_0.getAcceptorConfigurations().add(acceptorConfig_0);
       conf_0.getConnectorConfigurations().put("netty", connectorConfig_0);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig_0);

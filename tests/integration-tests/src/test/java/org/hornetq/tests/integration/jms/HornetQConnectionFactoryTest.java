@@ -697,15 +697,12 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    {
       Configuration liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
-      liveTC = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
-      liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+      liveTC = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
+      liveConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       connectors.put(liveTC.getName(), liveTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setSharedStore(true);
-      liveConf.setClustered(true);
-
       List<String> connectorNames = new ArrayList<String>();
       connectorNames.add(liveTC.getName());
 

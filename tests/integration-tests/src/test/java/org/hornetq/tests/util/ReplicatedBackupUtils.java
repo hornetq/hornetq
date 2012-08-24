@@ -37,14 +37,12 @@ public final class ReplicatedBackupUtils
 
       backupConfig.setSharedStore(false);
       backupConfig.setBackup(true);
-      backupConfig.setClustered(true);
 
       liveConfig.setName(LIVE_NODE_NAME);
       liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
       liveConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(false);
-      liveConfig.setClustered(true);
       UnitTestCase.basicClusterConnectionConfig(liveConfig, LIVE_NODE_NAME, BACKUP_NODE_NAME);
    }
 }

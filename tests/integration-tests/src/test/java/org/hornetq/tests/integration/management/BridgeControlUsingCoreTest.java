@@ -160,15 +160,13 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
-      conf_1.setClustered(true);
       conf_1.getAcceptorConfigurations().add(acceptorConfig);
       conf_1.getQueueConfigurations().add(targetQueueConfig);
 
       Configuration conf_0 = createBasicConfig();
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
-      conf_0.setClustered(true);
-      conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf_0.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       conf_0.getQueueConfigurations().add(sourceQueueConfig);
       conf_0.getBridgeConfigurations().add(bridgeConfig);
@@ -180,7 +178,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       server_0.start();
       ServerLocator locator =
                addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                                      InVMConnectorFactory.class.getName())));
+                                                                                                      INVM_CONNECTOR_FACTORY)));
       ClientSessionFactory sf = createSessionFactory(locator);
       session = addClientSession(sf.createSession(false, true, true));
       session.start();
