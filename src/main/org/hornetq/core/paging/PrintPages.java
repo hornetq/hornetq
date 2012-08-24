@@ -79,9 +79,9 @@ public class PrintPages
       try
       {
 
-         Pair<Map<Long, Set<PagePosition>>, Set<Long>> cursorACKs = PrintPages.loadCursorACKs(arg[1]);
+         PageCursorsInfo cursorACKs = PrintPages.loadCursorACKs(arg[1]);
          
-         Set<Long> pgTXs = cursorACKs.getB();
+         Set<Long> pgTXs = cursorACKs.getPgTXs();
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
          final ExecutorService executor = Executors.newFixedThreadPool(10);
@@ -139,7 +139,7 @@ public class PrintPages
 
                      boolean acked = false;
 
-                     Set<PagePosition> positions = cursorACKs.getA().get(q[i]);
+                     Set<PagePosition> positions = cursorACKs.getCursorRecords().get(q[i]);
                      if (positions != null)
                      {
                         acked = positions.contains(posCheck);
@@ -149,6 +149,12 @@ public class PrintPages
                      {
                         System.out.print(" (ACK)");
                      }
+                     
+                     if (cursorACKs.getCompletePages(q[i]).contains(new Long(pgid)))
+                     {
+                        System.out.println(" (PG-COMPLETE)");
+                     }
+                              
 
                      if (i + 1 < q.length)
                      {
@@ -174,13 +180,67 @@ public class PrintPages
          e.printStackTrace();
       }
    }
+   
+   private static class PageCursorsInfo
+   {
+      private final Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
+      
+      private final Set<Long> pgTXs = new HashSet<Long>();
+      
+      private final  Map<Long, Set<Long>> completePages = new HashMap<Long, Set<Long>>();
+
+      public PageCursorsInfo()
+      {
+      }
+      
+      
+      /**
+       * @return the pgTXs
+       */
+      public Set<Long> getPgTXs()
+      {
+         return pgTXs;
+      }
+
+
+      /**
+       * @return the cursorRecords
+       */
+      public Map<Long, Set<PagePosition>> getCursorRecords()
+      {
+         return cursorRecords;
+      }
+
+
+      /**
+       * @return the completePages
+       */
+      public  Map<Long, Set<Long>> getCompletePages()
+      {
+         return completePages;
+      }
+      
+      public Set<Long> getCompletePages(Long queueID)
+      {
+         Set<Long> completePagesSet = completePages.get(queueID);
+         
+         if (completePagesSet == null)
+         {
+            completePagesSet = new HashSet<Long>();
+            completePages.put(queueID, completePagesSet);
+         }
+         
+         return completePagesSet;
+      }
+
+   }
 
    /**
     * @param journalLocation
     * @return
     * @throws Exception
     */
-   protected static Pair<Map<Long, Set<PagePosition>>, Set<Long>> loadCursorACKs(final String journalLocation) throws Exception
+   protected static PageCursorsInfo loadCursorACKs(final String journalLocation) throws Exception
    {
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(journalLocation, null);
 
@@ -202,10 +262,9 @@ public class PrintPages
       ArrayList<PreparedTransactionInfo> txs = new ArrayList<PreparedTransactionInfo>();
 
       messagesJournal.load(records, txs, null, false);
-
-      Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
       
-      Set<Long> pgTXs = new HashSet<Long>();
+      PageCursorsInfo cursorInfo = new PageCursorsInfo();
+
 
       for (RecordInfo record : records)
       {
@@ -218,15 +277,28 @@ public class PrintPages
             CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
             encoding.decode(buff);
 
-            Set<PagePosition> set = cursorRecords.get(encoding.queueID);
+            Set<PagePosition> set = cursorInfo.getCursorRecords().get(encoding.queueID);
 
             if (set == null)
             {
                set = new HashSet<PagePosition>();
-               cursorRecords.put(encoding.queueID, set);
+               cursorInfo.getCursorRecords().put(encoding.queueID, set);
             }
 
             set.add(encoding.position);
+         }
+         else if (record.userRecordType == JournalStorageManager.PAGE_CURSOR_COMPLETE)
+         {
+            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+            encoding.decode(buff);
+            
+            Long queueID = new Long(encoding.queueID);
+            Long pageNR = new Long(encoding.position.getPageNr());
+            
+            if (!cursorInfo.getCompletePages(queueID).add(pageNR))
+            {
+               System.err.println("Page " + pageNR + " has been already set as complete on queue " + queueID);
+            }
          }
          else if (record.userRecordType == JournalStorageManager.PAGE_TRANSACTION)
          {
@@ -235,7 +307,7 @@ public class PrintPages
                PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
 
                pageUpdate.decode(buff);
-               pgTXs.add(pageUpdate.pageTX);
+               cursorInfo.getPgTXs().add(pageUpdate.pageTX);
             }
             else
             {
@@ -244,12 +316,12 @@ public class PrintPages
                pageTransactionInfo.decode(buff);
 
                pageTransactionInfo.setRecordID(record.id);
-               pgTXs.add(pageTransactionInfo.getTransactionID());
+               cursorInfo.getPgTXs().add(pageTransactionInfo.getTransactionID());
             }
          }
       }
       
-      return new Pair<Map<Long, Set<PagePosition>>, Set<Long>>(cursorRecords, pgTXs);
+      return cursorInfo;
    }
 
    // Package protected ---------------------------------------------
