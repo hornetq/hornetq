@@ -162,7 +162,6 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config1.setSecurityEnabled(false);
       config1.setSharedStore(true);
       config1.setBackup(true);
-      config1.setClustered(true);
 
       List<String> staticConnectors = new ArrayList<String>();
       for (int node : otherBackupNodes)
@@ -208,7 +207,6 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
                                                                            generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
-      config0.setClustered(true);
       List<String> pairs = new ArrayList<String>();
       for (int node : otherLiveNodes)
       {

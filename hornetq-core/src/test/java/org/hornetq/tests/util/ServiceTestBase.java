@@ -27,8 +27,8 @@ import javax.management.MBeanServer;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -43,7 +43,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
@@ -566,7 +565,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                            final Map<String, Object> params) throws Exception
    {
       String acceptor = isNetty ? NETTY_ACCEPTOR_FACTORY : INVM_ACCEPTOR_FACTORY;
-      return createServer(realFiles, createClusteredDefaultConfig(index, params, acceptor), -1, -1,
+      return createServer(realFiles, createDefaultConfig(index, params, acceptor), -1, -1,
                           new HashMap<String, AddressSettings>());
    }
 
@@ -579,18 +578,14 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       if (isNetty)
       {
-         return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
+         return createServer(realFiles, createDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
                              pageSize,
                              maxAddressSize,
                              new HashMap<String, AddressSettings>());
       }
       else
       {
-         return createServer(realFiles,
-                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                             -1,
-                             -1,
+         return createServer(realFiles, createDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), -1, -1,
                              new HashMap<String, AddressSettings>());
       }
    }

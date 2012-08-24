@@ -63,16 +63,10 @@ public interface Configuration extends Serializable
    public void setNodeGroupName(String nodeGroupName);
 
    /**
-    * Returns whether this server is clustered.
-    * <br>
-    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_CLUSTERED}.
+    * Returns whether this server is clustered. <br>
+    * {@code true} if {@link #getClusterConfigurations()} is not empty.
     */
    boolean isClustered();
-
-   /**
-    * Sets whether this server is clustered or not.
-    */
-   void setClustered(boolean clustered);
 
    /**
     * Returns whether a backup will automatically stop when a live server is restarting (i.e.

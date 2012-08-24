@@ -16,7 +16,7 @@
          xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
    <!-- Connectors -->
 
-    <clustered>true</clustered>
+    
 
     <backup>true</backup>
 

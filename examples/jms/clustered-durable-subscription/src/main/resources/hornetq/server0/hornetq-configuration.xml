@@ -10,7 +10,7 @@
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
-   <clustered>true</clustered>
+   
 
    <!-- Connectors -->
    <connectors>

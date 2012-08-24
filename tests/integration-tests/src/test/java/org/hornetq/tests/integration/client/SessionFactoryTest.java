@@ -557,7 +557,6 @@ public class SessionFactoryTest extends ServiceTestBase
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       liveConf.getConnectorConfigurations().put(liveTC.getName(), liveTC);
       liveConf.setSharedStore(true);
-      liveConf.setClustered(true);
 
       final long broadcastPeriod = 250;
 

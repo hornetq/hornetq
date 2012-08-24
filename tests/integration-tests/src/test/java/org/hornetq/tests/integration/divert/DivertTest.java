@@ -47,9 +47,6 @@ public class DivertTest extends ServiceTestBase
    public void testSingleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress = "forwardAddress";
@@ -143,9 +140,6 @@ public class DivertTest extends ServiceTestBase
    public void testSingleNonExclusiveDivert2() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress = "forwardAddress";
@@ -277,9 +271,6 @@ public class DivertTest extends ServiceTestBase
    public void testSingleNonExclusiveDivert3() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress = "forwardAddress";
@@ -353,9 +344,6 @@ public class DivertTest extends ServiceTestBase
    public void testSingleExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress = "forwardAddress";
@@ -451,8 +439,6 @@ public class DivertTest extends ServiceTestBase
    public void testMultipleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
 
       final String testAddress = "testAddress";
 
@@ -604,9 +590,6 @@ public class DivertTest extends ServiceTestBase
    public void testMultipleExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress1 = "forwardAddress1";
@@ -747,8 +730,6 @@ public class DivertTest extends ServiceTestBase
    {
       Configuration conf = createDefaultConfig();
 
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress1 = "forwardAddress1";
@@ -878,9 +859,6 @@ public class DivertTest extends ServiceTestBase
    public void testSingleExclusiveNonMatchingAndNonExclusiveDiverts() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress1 = "forwardAddress1";
@@ -1065,9 +1043,6 @@ public class DivertTest extends ServiceTestBase
    public void testRoundRobinDiverts() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
-
       final String testAddress = "testAddress";
 
       final String forwardAddress1 = "forwardAddress1";
@@ -1226,8 +1201,6 @@ public class DivertTest extends ServiceTestBase
    public void testDeployDivertsSameUniqueName() throws Exception
    {
       Configuration conf = createDefaultConfig();
-
-      conf.setClustered(true);
 
       final String testAddress = "testAddress";
 

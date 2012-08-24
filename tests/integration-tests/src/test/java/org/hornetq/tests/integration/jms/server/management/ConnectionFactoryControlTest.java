@@ -17,7 +17,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -30,7 +29,7 @@ import org.hornetq.tests.unit.util.InVMContext;
  * A Connection Factory Control Test
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
- * 
+ *
  * Created 13 nov. 2008 16:50:53
  *
  *
@@ -71,7 +70,7 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
       assertTrue(cf.isCompressLargeMessage());
 
       stopServer();
-      
+
       Thread.sleep(500);
 
       startServer();
@@ -100,13 +99,11 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
    protected void startServer() throws Exception
    {
       Configuration conf = createDefaultConfig(false);
-      conf.setClustered(false);
-      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setSharedStore(false);
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       server.start();
 

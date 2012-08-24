@@ -5,7 +5,13 @@
         <xsd:complexType>
             <xsd:all>
                 <xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="clustered"/>
+                <xsd:element maxOccurs="1" minOccurs="0" ref="clustered">
+                 <xsd:annotation>
+                        <xsd:documentation>
+                            DEPRECATED. This option is deprecated and its value will be ignored. A HornetQ server will be "clustered" when its configuration contain a cluster-configuration. 
+                        </xsd:documentation>
+                    </xsd:annotation>
+                    </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>

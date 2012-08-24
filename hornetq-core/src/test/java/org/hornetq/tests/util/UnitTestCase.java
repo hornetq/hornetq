@@ -198,17 +198,6 @@ public abstract class UnitTestCase extends TestCase
       mainConfig.getClusterConfigurations().add(ccc);
    }
 
-   protected static Configuration createClusteredDefaultConfig(final int index,
-                                                               final Map<String, Object> params,
-                                                               final String... acceptors) throws Exception
-   {
-      Configuration config = createDefaultConfig(index, params, acceptors);
-
-      config.setClustered(true);
-
-      return config;
-   }
-
    protected static Configuration createDefaultConfig(final int index,
                                                       final Map<String, Object> params,
                                                       final String... acceptors) throws Exception

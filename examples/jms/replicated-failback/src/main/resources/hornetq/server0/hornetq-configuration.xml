@@ -2,7 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   <clustered>true</clustered>
+   
    <!--we need this for auto failback-->
    <check-for-live-server>true</check-for-live-server>
 

@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
    <!-- We need to make it clustered otherwise the bridge won't deploy -->
-   <clustered>true</clustered>
+   
 
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
