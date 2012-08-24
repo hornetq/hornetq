@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQObjectClosedException;
+import org.hornetq.api.core.HornetQUnBlockedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.HornetQUnBlockedException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -141,7 +141,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       }
    }
 
-   protected void waitForClusterConnections(final int node, final int count) throws Exception
+   protected void waitForClusterConnections(final int node, final int expected) throws Exception
    {
       HornetQServer server = servers[node];
 
@@ -154,9 +154,10 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       long start = System.currentTimeMillis();
 
+      int nodesCount;
       do
       {
-         int nodesCount = 0;
+         nodesCount = 0;
 
          for (ClusterConnection clusterConn : clusterManager.getClusterConnections())
          {
@@ -170,7 +171,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
             }
          }
 
-         if (nodesCount == count)
+         if (nodesCount == expected)
          {
             return;
          }
@@ -180,10 +181,10 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
       log.error(clusterDescription(servers[node]));
-      throw new IllegalStateException("Timed out waiting for cluster connections ");
+      assertEquals("Timed out waiting for cluster connections for server " + node, expected, nodesCount);
    }
 
-   
+
    public void testReceiveNotificationsWhenOtherNodesAreStartedAndStopped() throws Throwable
    {
       startServers(0);
@@ -254,7 +255,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          checkContains(new int[] { 0 }, nodeIDs, nodes);
 
          sf.close();
-         
+
          locator.close();
 
          stopServers(0);
@@ -352,7 +353,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          locator.addClusterTopologyListener(new ClusterTopologyListener()
          {
-             public void nodeUP(final long uniqueEventID, String nodeID, String nodeName,
+         public synchronized void nodeUP(final long uniqueEventID, String nodeID, String nodeName,
                      Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      boolean last)
             {
@@ -363,7 +364,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
                }
             }
 
-            public void nodeDown(final long uniqueEventID, String nodeID)
+         public synchronized void nodeDown(final long uniqueEventID, String nodeID)
             {
                if (nodes.contains(nodeID))
                {
@@ -477,7 +478,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          {
             sf.close();
          }
-         
+
          locator.close();
 
          stopServers(0);
