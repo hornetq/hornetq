@@ -2,7 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   <clustered>true</clustered>
+   
 
    <!--we kill the server process so don't need this set to true-->
    <failover-on-shutdown>false</failover-on-shutdown>

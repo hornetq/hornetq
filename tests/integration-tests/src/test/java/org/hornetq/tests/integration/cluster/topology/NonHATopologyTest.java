@@ -70,8 +70,6 @@ public class NonHATopologyTest extends ServiceTestBase
                   .getConnectorConfigurations()
                   .put("netty", new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
 
-            server.getConfiguration().setClustered(true);
-
             ArrayList<String> list = new ArrayList<String>();
             list.add("netty");
             Configuration config = server.getConfiguration();

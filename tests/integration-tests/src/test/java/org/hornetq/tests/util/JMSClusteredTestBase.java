@@ -152,8 +152,6 @@ public class JMSClusteredTestBase extends ServiceTestBase
       conf2.getConnectorConfigurations().put("server2",
                                              new TransportConfiguration(INVM_CONNECTOR_FACTORY, generateInVMParams(1)));
 
-      conf2.setClustered(true);
-
       conf2.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server1", "jms", "server2", 1000,
                                                                               true, false, MAX_HOPS, 1024,
                                                                               toOtherServerPair, false));
@@ -190,8 +188,6 @@ public class JMSClusteredTestBase extends ServiceTestBase
       conf1.getConnectorConfigurations().put("server1",
                                              new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                         generateInVMParams(0)));
-
-      conf1.setClustered(true);
 
       conf1.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server2", "jms", "server1", 1000,
                                                                               true, false, MAX_HOPS, 1024,

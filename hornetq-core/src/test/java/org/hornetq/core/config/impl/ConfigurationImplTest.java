@@ -40,8 +40,6 @@ public class ConfigurationImplTest extends UnitTestCase
 
    public void testDefaults()
    {
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SHARED_STORE, conf.isSharedStore());
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                           conf.getScheduledThreadPoolMaxSize());
@@ -107,10 +105,6 @@ public class ConfigurationImplTest extends UnitTestCase
       for (int j = 0; j < 100; j++)
       {
          boolean b = RandomUtil.randomBoolean();
-         conf.setClustered(b);
-         Assert.assertEquals(b, conf.isClustered());
-
-         b = RandomUtil.randomBoolean();
          conf.setBackup(b);
          Assert.assertEquals(b, conf.isBackup());
 
@@ -325,10 +319,6 @@ public class ConfigurationImplTest extends UnitTestCase
    public void testSerialize() throws Exception
    {
       boolean b = RandomUtil.randomBoolean();
-      conf.setClustered(b);
-      Assert.assertEquals(b, conf.isClustered());
-
-      b = RandomUtil.randomBoolean();
       conf.setBackup(b);
       Assert.assertEquals(b, conf.isBackup());
 

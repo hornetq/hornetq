@@ -67,7 +67,8 @@
                         <row>
                             <entry><link linkend="clusters">clustered</link></entry>
                             <entry>Boolean</entry>
-                            <entry>true means that the server is clustered</entry>
+                            <entry>Deprecated. This option is ignored. If the configuration has at
+                            least one cluster-configuration, the server will be clustered</entry>
                             <entry>false</entry>
                         </row>
                         <row>

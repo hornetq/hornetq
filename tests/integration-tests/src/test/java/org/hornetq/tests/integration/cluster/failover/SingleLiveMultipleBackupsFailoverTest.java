@@ -130,7 +130,6 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config1.setSecurityEnabled(false);
       config1.setSharedStore(true);
       config1.setBackup(true);
-      config1.setClustered(true);
       List<String> staticConnectors = new ArrayList<String>();
 
       for (int node : nodes)
@@ -163,7 +162,6 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
                                                                            generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
-      config0.setClustered(true);
       basicClusterConnectionConfig(config0, liveConnector.getName());
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 

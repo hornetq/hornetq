@@ -113,8 +113,6 @@ public class IsolatedTopologyTest extends ServiceTestBase
       // i.e. two cluster connections isolated on the same node
       Configuration config1 = createBasicConfig(0);
 
-      config1.setClustered(true);
-
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc1");
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, "1");
@@ -177,8 +175,6 @@ public class IsolatedTopologyTest extends ServiceTestBase
       // talking to a different connector.
       // i.e. two cluster connections isolated on the same node
       Configuration config1 = createBasicConfig(3);
-
-      config1.setClustered(true);
 
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.CLUSTER_CONNECTION, "cc1");

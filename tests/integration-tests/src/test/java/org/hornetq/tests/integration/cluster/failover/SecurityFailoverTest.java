@@ -100,7 +100,6 @@ public class SecurityFailoverTest extends FailoverTest
       backupConfig.setSecurityEnabled(true);
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
-      backupConfig.setClustered(true);
       backupConfig.setFailbackDelay(1000);
 
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
@@ -119,7 +118,6 @@ public class SecurityFailoverTest extends FailoverTest
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(true);
       liveConfig.setSharedStore(true);
-      liveConfig.setClustered(true);
       basicClusterConnectionConfig(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);

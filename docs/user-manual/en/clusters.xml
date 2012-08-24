@@ -290,8 +290,6 @@
 
       &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
 
-      &lt;clustered>true&lt;/clustered>
-
       &lt;backup>true&lt;/backup>
 
       &lt;shared-store>true&lt;/shared-store>
@@ -398,9 +396,7 @@
                   attribute.
                </para>
                <para>
-                  After that we have the same cluster configuration as live, that is
-                  <literal>clustered</literal>
-                  is true and
+                  After that we have the same cluster configuration as live, where
                   <literal>shared-store</literal>
                   is true. However you can see we have added a new configuration element
                   <literal>allow-failback</literal>. When this is set to true then this backup server will automatically

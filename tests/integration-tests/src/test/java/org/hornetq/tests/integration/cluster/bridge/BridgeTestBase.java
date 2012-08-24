@@ -64,7 +64,6 @@ public abstract class BridgeTestBase extends UnitTestCase
                                                final NodeManager nodeManager) throws Exception
    {
       Configuration serviceConf = createBasicConfig();
-      serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);
       serviceConf.setSharedStore(true);
       serviceConf.setJournalType(getDefaultJournalType());
@@ -107,7 +106,6 @@ public abstract class BridgeTestBase extends UnitTestCase
                                                final NodeManager nodeManager) throws Exception
    {
       Configuration serviceConf = createBasicConfig();
-      serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);
       serviceConf.setBackup(true);
       serviceConf.setSharedStore(true);

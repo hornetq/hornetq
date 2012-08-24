@@ -33,9 +33,6 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
    @Override
    public void testDefaults()
    {
-
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
-
       Assert.assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
 
       Assert.assertEquals(ConfigurationImpl.DEFAULT_SHARED_STORE, conf.isSharedStore());

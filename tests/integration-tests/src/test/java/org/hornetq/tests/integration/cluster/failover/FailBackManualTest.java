@@ -115,7 +115,6 @@ public class FailBackManualTest extends FailoverTestBase
       backupConfig.setSecurityEnabled(false);
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
-      backupConfig.setClustered(true);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -129,7 +128,6 @@ public class FailBackManualTest extends FailoverTestBase
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
-      liveConfig.setClustered(true);
       basicClusterConnectionConfig(liveConfig, liveConnector.getName(), backupConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
