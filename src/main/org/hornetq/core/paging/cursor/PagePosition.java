@@ -38,8 +38,5 @@ public interface PagePosition extends Comparable<PagePosition>
    PagePosition nextMessage();
 
    PagePosition nextPage();
-   
-   /** This will just test if the current position is the immediate next to the parameter position */
-   boolean isRightAfter(PagePosition previous);
 
 }
