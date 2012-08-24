@@ -3,7 +3,6 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="urn:hornetq ../../src/config/common/schema/hornetq-configuration.xsd">
       <name>SomeNameForUseOnTheApplicationServer</name>
-      
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>
       <thread-pool-max-size>54321</thread-pool-max-size>
       <persistence-enabled>false</persistence-enabled>
@@ -171,8 +170,6 @@
       </bridges>
       <cluster-connections>
          <cluster-connection name="cluster-connection1">
-           <cluster-user>crocodile</cluster-user>
-           <cluster-password>SwimsInTheNile</cluster-password>
          <address>queues1</address>
          <connector-ref>connector1</connector-ref>
          <check-period>331</check-period>
