@@ -38,6 +38,7 @@ import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.utils.UUID;
@@ -54,7 +55,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 {
    private final ClusterConnection clusterConnection;
 
-   private final ClusterManagerInternal clusterManager;
+   private final ClusterManager clusterManager;
 
    private final MessageFlowRecord flowRecord;
 
@@ -72,8 +73,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    private final ServerLocatorInternal discoveryLocator;
 
-   public ClusterConnectionBridge(final ClusterConnection clusterConnection,
-                                  final ClusterManagerInternal clusterManager,
+   public ClusterConnectionBridge(final ClusterConnection clusterConnection, final ClusterManager clusterManager,
                                   final ServerLocatorInternal targetLocator,
                                   final ServerLocatorInternal discoveryLocator,
                                   final int reconnectAttempts,

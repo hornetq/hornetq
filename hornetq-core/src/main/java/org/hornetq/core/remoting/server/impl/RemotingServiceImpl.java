@@ -34,7 +34,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration; 
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
@@ -500,7 +500,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private ClusterConnection lookupClusterConnection(TransportConfiguration acceptorConfig)
    {
       String clusterConnectionName = (String)acceptorConfig.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
@@ -510,7 +510,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
       }
-      
+
       // if not found we will still use the default name, even if a name was provided
       if (clusterConnection == null)
       {

@@ -129,7 +129,6 @@ import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
-import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -1371,7 +1370,7 @@ public class HornetQServerImpl implements HornetQServer
          addressSettingsRepository);
 
       // This can't be created until node id is set
-      clusterManager = new ClusterManagerImpl(executorFactory,
+      clusterManager = new ClusterManager(executorFactory,
          this,
          postOffice,
          scheduledPool,
