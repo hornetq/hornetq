@@ -42,7 +42,7 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
@@ -232,7 +232,7 @@ public class JMSUtil
          session.addFailureListener(new MyListener());
       }
 
-      ClusterManagerImpl clusterManager = (ClusterManagerImpl)server.getClusterManager();
+      ClusterManager clusterManager = server.getClusterManager();
       clusterManager.clear();
       server.stop(true);
 

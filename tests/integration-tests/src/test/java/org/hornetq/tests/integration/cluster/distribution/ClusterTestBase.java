@@ -2049,9 +2049,9 @@ name, address, connectorFrom.getName(),
    protected void stopServers(final int... nodes) throws Exception
    {
       log.info("Stopping nodes " + Arrays.toString(nodes));
+      Exception exception = null;
       for (int node : nodes)
       {
-         log.info("#test stop server " + node);
          if (servers[node] != null && servers[node].isStarted())
          {
             try
@@ -2071,10 +2071,12 @@ name, address, connectorFrom.getName(),
             }
             catch (Exception e)
             {
-               log.warn(e.getMessage(), e);
+               exception = e;
             }
          }
       }
+      if (exception != null)
+         throw exception;
    }
 
    protected boolean isFileStorage()
