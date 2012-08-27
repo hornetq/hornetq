@@ -57,6 +57,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
@@ -145,7 +146,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
 
-   private final ClusterManagerInternal manager;
+   private final ClusterManager manager;
 
    private final int minLargeMessageSize;
 
@@ -158,7 +159,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private volatile boolean announcingBackup;
    private volatile boolean stopping = false;
 
-   public ClusterConnectionImpl(final ClusterManagerInternal manager,
+   public ClusterConnectionImpl(final ClusterManager manager,
                                 final TransportConfiguration[] tcConfigs,
                                 final TransportConfiguration connector,
                                 final SimpleString name,
@@ -273,7 +274,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
-   public ClusterConnectionImpl(final ClusterManagerImpl manager,
+   public ClusterConnectionImpl(final ClusterManager manager,
                                 DiscoveryGroupConfiguration dg,
                                 final TransportConfiguration connector,
                                 final SimpleString name,
