@@ -93,8 +93,6 @@ public class ClusterManager implements HornetQComponent
 
    private volatile boolean backup;
 
-   private final boolean clustered;
-
    // the cluster connections which links this node to other cluster nodes
    private final Map<String, ClusterConnection> clusterConnections = new HashMap<String, ClusterConnection>();
 
@@ -136,8 +134,6 @@ public class ClusterManager implements HornetQComponent
       this.nodeManager = nodeManager;
 
       this.backup = backup;
-
-      this.clustered = clustered;
    }
 
    public String describe()
@@ -204,8 +200,6 @@ public class ClusterManager implements HornetQComponent
 
    public synchronized void deploy() throws Exception
    {
-      if (clustered)
-      {
          for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
          {
             deployBroadcastGroup(config);
@@ -215,7 +209,6 @@ public class ClusterManager implements HornetQComponent
          {
             deployClusterConnection(config);
          }
-      }
    }
 
    public synchronized void start() throws Exception
@@ -261,8 +254,6 @@ public class ClusterManager implements HornetQComponent
             return;
          }
 
-         if (clustered)
-         {
             for (BroadcastGroup group : broadcastGroups.values())
             {
                group.stop();
@@ -276,8 +267,6 @@ public class ClusterManager implements HornetQComponent
                clusterConnection.stop();
                managementService.unregisterCluster(clusterConnection.getName().toString());
             }
-
-         }
 
          for (Bridge bridge : bridges.values())
          {
