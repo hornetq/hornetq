@@ -277,6 +277,11 @@ public interface HornetQLogger extends BasicLogger
    @Message(id = 111044, value = "{0} to become \'live\'", format = Message.Format.MESSAGE_FORMAT)
    void becomingLive(HornetQServer server);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 111045, value = "Configuration option {0} is deprecated. Consult the manual for details.",
+            format = Message.Format.MESSAGE_FORMAT)
+   void deprecatedConfigurationOption(String deprecatedOption);
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 112001, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
          format = Message.Format.MESSAGE_FORMAT)

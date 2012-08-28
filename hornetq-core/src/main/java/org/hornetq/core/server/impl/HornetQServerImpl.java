@@ -1370,15 +1370,9 @@ public class HornetQServerImpl implements HornetQServer
          addressSettingsRepository);
 
       // This can't be created until node id is set
-      clusterManager = new ClusterManager(executorFactory,
-         this,
-         postOffice,
-         scheduledPool,
-         managementService,
-         configuration,
-         nodeManager,
-         configuration.isBackup(),
-         configuration.isClustered());
+      clusterManager =
+               new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
+                                  nodeManager, configuration.isBackup());
 
       clusterManager.deploy();
 

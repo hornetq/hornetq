@@ -108,9 +108,7 @@ public class ClusterManager implements HornetQComponent
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
                              final Configuration configuration,
-                             final NodeManager nodeManager,
-                             final boolean backup,
-                             final boolean clustered)
+                         final NodeManager nodeManager, final boolean backup)
    {
       if (nodeManager.getNodeId() == null)
       {
