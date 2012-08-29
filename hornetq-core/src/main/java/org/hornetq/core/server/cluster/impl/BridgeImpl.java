@@ -394,7 +394,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       activated = true;
 
-      executor.execute(new ConnectRunnable());
+      executor.execute(new ConnectRunnable(this));
    }
 
    public SimpleString getName()
@@ -439,7 +439,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return session.getConnection();
       }
    }
-   
+
    // for testing only
    public void setupRetry(final int currentCount, final int maxRetry)
    {
@@ -650,13 +650,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                unsetLargeMessageDelivery();
                HornetQLogger.LOGGER.bridgeUnableToSendMessage(e, ref);
 
-               executor.execute(new Runnable()
-               {
-                  public void run()
-                  {
-                     connectionFailed(e, false);
-                  }
-               });
+               executor.execute(new ConnectionFailure(e, BridgeImpl.this));
             }
          }
       });
@@ -705,9 +699,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return HandleStatus.HANDLED;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -785,6 +776,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    /* This is called only when the bridge is activated */
    protected void connect()
    {
+      if (stopping)
+         return;
+
       synchronized (connectionGuard)
       {
 
@@ -950,7 +944,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          HornetQLogger.LOGGER.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
       }
 
-      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(),
+      if (futureScheduledReconnection != null && !futureScheduledReconnection.isDone())
+         return;
+
+      futureScheduledReconnection =
+               scheduledExecutor.schedule(new FutureConnectRunnable(executor, this),
                                                                milliseconds,
                                                                TimeUnit.MILLISECONDS);
    }
@@ -1020,7 +1018,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             synchronized (BridgeImpl.this)
             {
                started = false;
-
                active = false;
             }
 
@@ -1057,24 +1054,35 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    }
 
    // The scheduling will still use the main executor here
-   private class FutureConnectRunnable implements Runnable
+   private static class FutureConnectRunnable implements Runnable
    {
+      private final BridgeImpl bridge;
+      private final Executor executor;
+
+      public FutureConnectRunnable(Executor exe, BridgeImpl bridge)
+      {
+         executor = exe;
+         this.bridge = bridge;
+      }
       public void run()
       {
-         executor.execute(new ConnectRunnable());
+         if (bridge.isStarted())
+            executor.execute(new ConnectRunnable(bridge));
       }
    }
 
-   private final class ConnectRunnable implements Runnable
+   private static final class ConnectRunnable implements Runnable
    {
-      public synchronized void run()
-      {
-         if (!stopping)
-         {
-            connect();
-         }
-      }
+      private final BridgeImpl bridge;
 
+      public ConnectRunnable(BridgeImpl bridge2)
+      {
+         bridge = bridge2;
+      }
+      public void run()
+      {
+         bridge.connect();
+      }
    }
 
    private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
