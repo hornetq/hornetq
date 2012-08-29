@@ -591,17 +591,13 @@ public class DelegatingSession implements ClientSessionInternal
       return "DelegatingSession [session=" + session + "]";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ClientSessionInternal#getChannel()
-    */
+   @Override
    public Channel getChannel()
    {
       return session.getChannel();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientSession#addUniqueMetaData(java.lang.String, java.lang.String)
-    */
+   @Override
    public void addUniqueMetaData(String key, String data) throws HornetQException
    {
       session.addUniqueMetaData(key, data);

@@ -362,11 +362,9 @@ public interface Configuration extends Serializable
    void setQueueConfigurations(final List<CoreQueueConfiguration> configs);
 
    /**
-    * Returns the management address of this server.
-    * <br>
-    * Clients can send management messages to this address to manage this server.
-    * <br>
-    * Default value is "hornetq.management".
+    * Returns the management address of this server. <br>
+    * Clients can send management messages to this address to manage this server. <br>
+    * Default value is {@value hornetq.management}.
     */
     SimpleString getManagementAddress();
 
