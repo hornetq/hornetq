@@ -699,13 +699,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          // because of this we have to remove the reference here
          refs.remove(ref);
 
-         executor.execute(new Runnable()
-         {
-            public void run()
-            {
-               connectionFailed(e, false);
-            }
-         });
+         connectionFailed(e, false);
 
          return HandleStatus.BUSY;
       }
