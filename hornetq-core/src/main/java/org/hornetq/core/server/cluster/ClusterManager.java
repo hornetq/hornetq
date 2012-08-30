@@ -52,6 +52,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionBridge;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -59,14 +60,13 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
 
 /**
- * A ClusterManagerImpl
- *
+ * A ClusterManager manages {@link ClusterConnection}s, {@link BroadcastGroup}s and {@link Bridge}s.
+ * <p>
+ * Note that {@link ClusterConnectionBridge}s extend Bridges but are controlled over through
+ * {@link ClusterConnectionImpl}. As a node is discovered a new {@link ClusterConnectionBridge} is
+ * deployed.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author Clebert Suconic
- *
- * Created 18 Nov 2008 09:23:49
- *
- *
+ * @author Clebert Suconic Created 18 Nov 2008 09:23:49
  */
 public class ClusterManager implements HornetQComponent
 {
