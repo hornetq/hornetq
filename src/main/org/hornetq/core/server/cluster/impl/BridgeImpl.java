@@ -111,7 +111,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
-   
+
    private boolean deliveringLargeMessage;
 
    private final String user;
@@ -329,9 +329,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return;
       }
-      
+
       stopping = true;
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("Bridge " + this.name + " being stopped");
@@ -400,7 +400,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       activated = true;
 
-      executor.execute(new ConnectRunnable());
+      executor.execute(new ConnectRunnable(this));
    }
 
    public SimpleString getName()
@@ -544,7 +544,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             return HandleStatus.BUSY;
          }
-         
+
          if (deliveringLargeMessage)
          {
             return HandleStatus.BUSY;
@@ -554,7 +554,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             log.trace("Bridge " + this + " is handling reference=" + ref);
          }
-         
+
          ref.handled();
 
          refs.add(ref);
@@ -572,7 +572,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
-         
+
          if (message.isLargeMessage())
          {
             deliveringLargeMessage = true;
@@ -636,7 +636,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Private -------------------------------------------------------
 
-   
+
    private void deliverLargeMessage(final SimpleString dest,
                                     final MessageReference ref,
                                     final LargeServerMessage message)
@@ -648,12 +648,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             try
             {
                producer.send(dest, message);
-               
+
                // as soon as we are done sending the large message
                // we unset the delivery flag and we will call the deliveryAsync on the queue
                // so the bridge will be able to resume work
                unsetLargeMessageDelivery();
-               
+
                if (queue != null)
                {
                   queue.deliverAsync();
@@ -664,18 +664,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                unsetLargeMessageDelivery();
                log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
 
-               executor.execute(new Runnable()
-               {
-                  public void run()
-                  {
-                     connectionFailed(e, false);
-                  }
-               });
+               connectionFailed(e, false);
             }
          }
       });
    }
-   
+
    /**
     * @param ref
     * @param message
@@ -687,12 +681,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // that this will throw a disconnect, we need to remove the message
       // from the acks so it will get resent, duplicate detection will cope
       // with any messages resent
-  
+
       if (log.isTraceEnabled())
       {
          log.trace("going to send message " + message);
       }
-  
+
       try
       {
          producer.send(dest, message);
@@ -700,11 +694,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       catch (final HornetQException e)
       {
          log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
-  
+
          // We remove this reference as we are returning busy which means the reference will never leave the Queue.
          // because of this we have to remove the reference here
          refs.remove(ref);
-         
+
          executor.execute(new Runnable()
          {
             public void run()
@@ -712,16 +706,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                connectionFailed(e, false);
             }
          });
-  
+
          return HandleStatus.BUSY;
       }
-  
+
       return HandleStatus.HANDLED;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -795,6 +786,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    protected void connect()
    {
       BridgeImpl.log.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
+      if (stopping)
+         return;
 
       retryCount++;
 
@@ -965,7 +958,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          log.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
       }
 
-      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(),
+      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(BridgeImpl.this, executor),
                                                                milliseconds,
                                                                TimeUnit.MILLISECONDS);
    }
@@ -1072,22 +1065,36 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    }
 
    // The scheduling will still use the main executor here
-   private class FutureConnectRunnable implements Runnable
+   private static class FutureConnectRunnable implements Runnable
    {
+      final Executor executor;
+      final BridgeImpl bridge;
+
+
+      public FutureConnectRunnable(BridgeImpl bridge,Executor executor)
+      {
+       this.bridge=bridge;
+       this.executor=executor;
+      }
+
       public void run()
       {
-         executor.execute(new ConnectRunnable());
+         executor.execute(new ConnectRunnable(bridge));
       }
    }
 
-   private class ConnectRunnable implements Runnable
+   private static class ConnectRunnable implements Runnable
    {
+      final BridgeImpl bridge;
+
+      public ConnectRunnable(BridgeImpl bridge)
+      {
+         this.bridge=bridge;
+      }
+
       public synchronized void run()
       {
-         if (!stopping)
-         {
-            connect();
-         }
+         bridge.connect();
       }
    }
 }
