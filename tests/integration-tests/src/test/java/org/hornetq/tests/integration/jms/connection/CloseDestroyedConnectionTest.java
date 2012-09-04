@@ -13,39 +13,44 @@
 package org.hornetq.tests.integration.jms.connection;
 
 import javax.jms.Connection;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Session;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.jms.client.HornetQTemporaryTopic;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- *
- * A CloseDestroyedConnectionTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class CloseDestroyedConnectionTest extends JMSTestBase
 {
    private HornetQConnectionFactory cf;
+   private HornetQSession session1;
+   private Connection conn2;
+   private HornetQSession session2;
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -53,9 +58,43 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      if (session1 != null)
+         session1.close();
+      if (session2 != null)
+         session2.close();
+      if (conn != null)
+         conn.close();
+      if (conn2 != null)
+         conn2.close();
       cf = null;
 
       super.tearDown();
+   }
+
+   public void testClosingTemporaryTopicDeletesQueue() throws JMSException, HornetQException
+   {
+      conn = cf.createConnection();
+
+      Assert.assertEquals(1, server.getRemotingService().getConnections().size());
+
+      session1 = (HornetQSession)conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      HornetQTemporaryTopic topic = (HornetQTemporaryTopic)session1.createTemporaryTopic();
+      String address = topic.getAddress();
+      session1.close();
+      conn.close();
+      conn2 = cf.createConnection();
+      session2 = (HornetQSession)conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      ClientSession cs = session2.getCoreSession();
+      try
+      {
+         cs.createConsumer(address);
+         fail("the address from the TemporaryTopic still exists!");
+      }
+      catch (HornetQException e)
+      {
+         assertEquals("expecting 'queue does not exist'", HornetQExceptionType.QUEUE_DOES_NOT_EXIST, e.getType());
+      }
    }
 
    /*
@@ -68,7 +107,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
       // Need to set connection ttl to a low figure so connections get removed quickly on the server
       cf.setConnectionTTL(connectionTTL);
 
-      Connection conn = cf.createConnection();
+      conn = cf.createConnection();
 
       Assert.assertEquals(1, server.getRemotingService().getConnections().size());
 

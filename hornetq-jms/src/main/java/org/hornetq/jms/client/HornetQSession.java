@@ -741,7 +741,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession
          // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
          // subscriptions - core has no notion of a topic
 
-         session.createQueue(simpleAddress, simpleAddress, HornetQSession.REJECTING_FILTER, false);
+         session.createTemporaryQueue(simpleAddress, simpleAddress, HornetQSession.REJECTING_FILTER);
 
          connection.addTemporaryQueue(simpleAddress);
 
