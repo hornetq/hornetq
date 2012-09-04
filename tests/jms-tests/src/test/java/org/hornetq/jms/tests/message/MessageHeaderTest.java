@@ -40,6 +40,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -1291,10 +1292,19 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addFailureListener(final FailureListener listener)
       {
       }
+      
+      public void addFailoverListener(FailoverEventListener listener) 
+	  {
+	  }
 
       public boolean removeFailureListener(final FailureListener listener)
       {
          return false;
+      }
+      
+      public boolean removeFailoverListener(FailoverEventListener listener) 
+      {
+    	return false;
       }
 
       public int getVersion()

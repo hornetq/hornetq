@@ -36,6 +36,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.protocol.core.Channel;
@@ -719,6 +720,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public boolean removeFailureListener(final SessionFailureListener listener)
    {
       return sessionFactory.removeFailureListener(listener);
+   }
+
+   public void addFailoverListener(FailoverEventListener listener) 
+   {
+	  sessionFactory.addFailoverListener(listener);
+   }
+   
+   public boolean removeFailoverListener(FailoverEventListener listener) 
+   {
+	  return sessionFactory.removeFailoverListener(listener);
    }
 
    public int getVersion()

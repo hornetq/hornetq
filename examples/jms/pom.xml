@@ -38,6 +38,7 @@
             <module>browser</module>
             <module>client-kickoff</module>
             <module>client-side-load-balancing</module>
+	    <module>client-side-failoverlistener</module>
             <module>clustered-durable-subscription</module>
             <module>clustered-grouping</module>
             <module>clustered-queue</module>
