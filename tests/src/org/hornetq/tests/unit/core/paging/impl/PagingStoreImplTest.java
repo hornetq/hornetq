@@ -1737,6 +1737,24 @@ public class PagingStoreImplTest extends UnitTestCase
          
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCompleteTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
+       */
+      public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageComplete(long)
+       */
+      public void deletePageComplete(long ackID) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
     }
 
    class FakeStoreFactory implements PagingStoreFactory
