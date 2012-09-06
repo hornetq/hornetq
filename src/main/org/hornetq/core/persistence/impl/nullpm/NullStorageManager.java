@@ -633,4 +633,18 @@ public class NullStorageManager implements StorageManager
       // We can just have hope on GC here :-)
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCompleteTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
+    */
+   public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deletePageComplete(long)
+    */
+   public void deletePageComplete(long ackID) throws Exception
+   {
+   }
+
  }
