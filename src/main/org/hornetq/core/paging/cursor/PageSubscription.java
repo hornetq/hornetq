@@ -15,6 +15,7 @@ package org.hornetq.core.paging.cursor;
 
 import java.util.concurrent.Executor;
 
+import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
@@ -86,6 +87,8 @@ public interface PageSubscription
     * @param position
     */
    void reloadACK(PagePosition position);
+   
+   void reloadPageCompletion(PagePosition position);
 
    /**
     * To be called when the cursor decided to ignore a position.
@@ -138,4 +141,10 @@ public interface PageSubscription
     * @return
     */
    Executor getExecutor();
+
+   /**
+    * @param deletedPage
+    * @throws Exception 
+    */
+   void onDeletePage(Page deletedPage) throws Exception;
 }
