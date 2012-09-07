@@ -39,6 +39,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.FailoverEventListener;
+import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.protocol.core.Channel;
@@ -135,6 +137,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
 
+   private final Set<FailoverEventListener> failoverListeners = new ConcurrentHashSet<FailoverEventListener>();
+   
    private Connector connector;
 
    private Future<?> pingerFuture;
@@ -436,6 +440,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       return listeners.remove(listener);
    }
+   
+	public void addFailoverListener(FailoverEventListener listener) 
+	{
+	  failoverListeners.add(listener);
+	}
+   
+	public boolean removeFailoverListener(FailoverEventListener listener)
+	{
+	  return failoverListeners.remove(listener);
+	}
 
    public void causeExit()
    {
@@ -569,6 +583,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             HornetQLogger.LOGGER.trace("Client Connection failed, calling failure listeners and trying to reconnect, reconnectAttempts=" + reconnectAttempts);
          }
 
+         callFailoverListeners(FailoverEventType.FAILURE_DETECTED);
          // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
          callSessionFailureListeners(me, false, false);
 
@@ -672,6 +687,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   oldConnection.destroy();
                }
+               
+               if (connection != null)
+               {
+            	   callFailoverListeners(FailoverEventType.FAILOVER_COMPLETED); 
+               }
             }
          }
          else
@@ -681,7 +701,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                connectionToDestory.destroy();
             }
-
             connection = null;
          }
 
@@ -691,6 +710,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
             }
+            callFailoverListeners(FailoverEventType.FAILOVER_FAILED);
             callSessionFailureListeners(me, true, false);
          }
       }
@@ -924,6 +944,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             HornetQLogger.LOGGER.failedToExecuteListener(t);
          }
       }
+   }
+   
+   private void callFailoverListeners(FailoverEventType type) 
+   {
+	      final List<FailoverEventListener> listenersClone = new ArrayList<FailoverEventListener>(failoverListeners);
+
+	      for (final FailoverEventListener listener : listenersClone)
+	      {
+	         try
+	         {
+	           listener.failoverEvent(type);
+	         }
+	         catch (final Throwable t)
+	         {
+	            // Failure of one listener to execute shouldn't prevent others
+	            // from
+	            // executing
+	            HornetQLogger.LOGGER.failedToExecuteListener(t);
+	         }
+	      }
    }
 
    /*

@@ -135,6 +135,22 @@ public interface ClientSession extends XAResource
    boolean removeFailureListener(SessionFailureListener listener);
 
    /**
+    * Adds a FailoverEventListener to the session which is notified if a failover event  occurs on the session.
+    *
+    * @param listener the listener to add
+    */
+   void addFailoverListener(FailoverEventListener listener) ;
+
+   /**
+    * Removes a FailoverEventListener to the session.
+    *
+    * @param listener the listener to remove
+    * @return <code>true</code> if the listener was removed, <code>false</code> else
+    */
+   boolean removeFailoverListener(FailoverEventListener listener);
+
+   
+   /**
     * Returns the server's incrementingVersion.
     *
     * @return the server's <code>incrementingVersion</code>

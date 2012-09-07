@@ -41,6 +41,8 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.FailoverEventListener;
+import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.version.Version;
@@ -86,6 +88,8 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    private volatile boolean hasNoLocal;
 
    private volatile ExceptionListener exceptionListener;
+   
+   private volatile FailoverEventListener failoverEventListener;
 
    private volatile boolean justCreated = true;
 
@@ -106,6 +110,8 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    private final String password;
 
    private final SessionFailureListener listener = new JMSFailureListener(this);
+   
+   private final FailoverEventListener failoverListener = new FailoverEventListenerImpl(this);
 
    private final Version thisVersion;
 
@@ -237,7 +243,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       exceptionListener = listener;
       justCreated = false;
    }
-
+   
    public synchronized void start() throws JMSException
    {
       checkClosed();
@@ -423,6 +429,37 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
    // Public ---------------------------------------------------------------------------------------
 
+   /**
+    * Sets a FailureListener for the  session which is notified if a failure occurs on the session.
+    *
+    * @param listener the listener to add
+    * @throws JMSException 
+    */
+   public void setFailoverListener(final FailoverEventListener listener) throws JMSException
+   {
+      checkClosed();
+
+      justCreated = false;
+
+      this.failoverEventListener = listener;
+	   
+   }
+   
+	/**
+	* @return {@link FailoverEventListener} the current failover event listener for this connection
+	* @throws JMSException
+	*/
+	public FailoverEventListener getFailoverListener() throws JMSException
+   {
+      checkClosed();
+
+      justCreated = false;
+
+      return failoverEventListener;
+   }
+
+   
+   
    public void addTemporaryQueue(final SimpleString queueAddress)
    {
       tempQueues.add(queueAddress);
@@ -548,7 +585,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          // Setting multiple times on different sessions doesn't matter since RemotingConnection maintains
          // a set (no duplicates)
          session.addFailureListener(listener);
-         
+         session.addFailoverListener(failoverListener);
          
          
 
@@ -599,6 +636,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          addSessionMetaData(initialSession);
 
          initialSession.addFailureListener(listener);
+         initialSession.addFailoverListener(failoverListener);
       }
       catch (HornetQException me)
       {
@@ -673,7 +711,52 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
       public void beforeReconnect(final HornetQException me)
       {
+    	  
       }
 
+   }
+   
+   private static class FailoverEventListenerImpl implements FailoverEventListener
+   {
+	   private final WeakReference<HornetQConnection> connectionRef;
+
+	    FailoverEventListenerImpl(final HornetQConnection connection)
+	    {
+	      connectionRef = new WeakReference<HornetQConnection>(connection);
+	    }
+
+		@Override
+		public void failoverEvent(final FailoverEventType eventType) {
+	    	  HornetQConnection conn = connectionRef.get();
+
+	          if (conn != null)
+	          {
+	             try
+	             {
+	                final FailoverEventListener failoverListener= conn.getFailoverListener();
+
+	                if (failoverListener != null)
+	                {
+	    
+	                   new Thread(new Runnable()
+	                   {
+	                      public void run()
+	                      {
+	                    	  failoverListener.failoverEvent(eventType);
+	                      }
+	                   }).start();
+	                }
+	             }
+	             catch (JMSException e)
+	             {
+	                if (!conn.closed)
+	                {
+	                   HornetQJMSLogger.LOGGER.errorCallingFailoverListener(e);
+	                }
+	             }
+	          }
+
+		}
+	   
    }
 }
