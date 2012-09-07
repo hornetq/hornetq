@@ -494,6 +494,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   groupId);
          }
 
+         public String closeConnectionWithClientID(String clientID) throws Exception
+         {
+            return (String)proxy.invokeOperation("closeConnectionWithClientID", clientID);
+         }
+
       };
    }
    // Public --------------------------------------------------------

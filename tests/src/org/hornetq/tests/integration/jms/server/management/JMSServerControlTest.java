@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -692,6 +693,52 @@ public class JMSServerControlTest extends ManagementTestBase
      control.listPreparedTransactionDetailsAsHTML();
 
    }
+   
+   
+   public void testRemoteClientIDConnection() throws Exception
+   {
+      JMSServerControl control = createManagementControl();
+
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
+                                                                 new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      Connection connection = cf.createConnection();
+      
+      connection.setClientID("someID");
+
+      Connection connection2 = cf.createConnection();
+      boolean failed = false;
+      
+      try
+      {
+         connection2.setClientID("someID");
+      }
+      catch (JMSException e)
+      {
+         failed = true;
+      }
+      
+      assertTrue(failed);
+      
+      System.out.println(control.closeConnectionWithClientID("someID"));
+      
+      connection2.setClientID("someID");
+      
+      
+      failed = false;
+      Connection connection3 = cf.createConnection();
+
+      try
+      {
+         connection3.setClientID("someID");
+      }
+      catch (JMSException e)
+      {
+         failed = true;
+      }
+      
+      assertTrue(failed);
+   }
+
 
    // Package protected ---------------------------------------------
 
