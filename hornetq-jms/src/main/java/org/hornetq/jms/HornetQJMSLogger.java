@@ -205,4 +205,9 @@ public interface HornetQJMSLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124009, value = "Message Listener failed to recover session" , format = Message.Format.MESSAGE_FORMAT)
    void errorRecoveringSession(@Cause Throwable e);
+   
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 124010, value = "Failed to call Failover listener" , format = Message.Format.MESSAGE_FORMAT)
+   void errorCallingFailoverListener(@Cause Exception e);
+ 
 }

@@ -25,6 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.protocol.core.Channel;
@@ -113,6 +114,11 @@ public class DelegatingSession implements ClientSessionInternal
    public void addFailureListener(final SessionFailureListener listener)
    {
       session.addFailureListener(listener);
+   }
+   
+   public void addFailoverListener(FailoverEventListener listener) 
+   {
+	  session.addFailoverListener(listener);
    }
 
    public void addProducer(final ClientProducerInternal producer)
@@ -451,6 +457,11 @@ public class DelegatingSession implements ClientSessionInternal
    public boolean removeFailureListener(final SessionFailureListener listener)
    {
       return session.removeFailureListener(listener);
+   }
+   
+   public boolean removeFailoverListener(FailoverEventListener listener) 
+   {
+		return session.removeFailoverListener(listener);
    }
 
    public void removeProducer(final ClientProducerInternal producer)
