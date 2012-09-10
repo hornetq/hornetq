@@ -687,6 +687,57 @@ public class HornetQServerImpl implements HornetQServer
 
       return str.toString();
    }
+   
+   public String destroyConnectionWithSessionMetadata(String metaKey, String parameterValue) throws Exception
+   {
+      StringBuffer operationsExecuted = new StringBuffer();
+      
+      try
+      {
+         operationsExecuted.append("**************************************************************************************************\n");
+         operationsExecuted.append("Executing destroyConnection with " + metaKey + "='" + parameterValue + "' through management's request\n");
+         
+         Set<ServerSession> allSessions = getSessions();
+   
+         ServerSession sessionFound = null;
+         for (ServerSession session : allSessions)
+         {
+            try
+            {
+               String value = session.getMetaData(metaKey);
+               if (value != null && value.equals(parameterValue))
+               {
+                  sessionFound = session;
+                  operationsExecuted.append("Closing connection " + sessionFound + "\n");
+                  RemotingConnection conn = session.getRemotingConnection();
+                  if (conn != null)
+                  {
+                     conn.fail(new HornetQException(HornetQException.DISCONNECTED, "Connection being disconnected per admin's request on destroyConnection(" + metaKey + "=" + parameterValue +")"));
+                  }
+                  session.close(true);
+                  sessions.remove(session);
+               }
+            }
+            catch (Throwable e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+         }
+         
+         if (sessionFound == null)
+         {
+            operationsExecuted.append("No session was found with " + metaKey + "=" + parameterValue + "\n");
+         }
+
+         return operationsExecuted.toString();
+      }
+      finally
+      {
+         // This operation is critical for the knowledge of the admin, so we need to add info logs for later knowledge
+         log.info(operationsExecuted.toString());
+      }
+
+   }
 
    public void setIdentity(String identity)
    {
@@ -855,7 +906,7 @@ public class HornetQServerImpl implements HornetQServer
       sessions.remove(name);
    }
 
-   public boolean lookupSession(String key, String value)
+   public ServerSession lookupSession(String key, String value)
    {
       // getSessions is called here in a try to minimize locking the Server while this check is being done
       Set<ServerSession> allSessions = getSessions();
@@ -865,11 +916,11 @@ public class HornetQServerImpl implements HornetQServer
          String metaValue = session.getMetaData(key);
          if (metaValue != null && metaValue.equals(value))
          {
-            return true;
+            return session;
          }
       }
 
-      return false;
+      return null;
    }
 
    public synchronized List<ServerSession> getSessions(final String connectionID)
