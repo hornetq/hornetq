@@ -135,7 +135,7 @@ public interface HornetQServer extends HornetQComponent
    List<ServerSession> getSessions(String connectionID);
 
    /** will return true if there is any session wth this key */
-   boolean lookupSession(String metakey, String metavalue);
+   ServerSession lookupSession(String metakey, String metavalue);
 
    ClusterManager getClusterManager();
 
@@ -160,6 +160,8 @@ public interface HornetQServer extends HornetQComponent
    void destroyQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
+   
+   String destroyConnectionWithSessionMetadata(String metaKey, String metaValue) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
    

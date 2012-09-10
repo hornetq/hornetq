@@ -1004,6 +1004,11 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
       return array.toString();
    }
+   
+   public String closeConnectionWithClientID(final String clientID) throws Exception
+   {
+      return server.getHornetQServer().destroyConnectionWithSessionMetadata("jms-client-id", clientID);
+   }
 
    private JSONObject toJSONObject(ServerConsumer consumer) throws Exception
    {
