@@ -432,10 +432,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    }
 
-   /**
-    * For test cases only
-    * @return
-    */
    public RemotingConnection getRemotingConnection()
    {
       return remotingConnection;
@@ -1352,7 +1348,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public boolean addUniqueMetaData(String key, String data)
    {
-      if (server.lookupSession(key, data))
+      ServerSession sessionWithMetaData = server.lookupSession(key, data);
+      if (sessionWithMetaData != null && sessionWithMetaData != this)
       {
          // There is a duplication of this property
          return false;
@@ -1424,6 +1421,24 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          producerInfo.put("msgSent", entry.getValue().getB().longValue());
          array.put(producerInfo);
       }
+   }
+   
+   public String toString()
+   {
+      StringBuffer buffer = new StringBuffer();
+      if (this.metaData != null)
+      {
+         for (Map.Entry<String, String> value : metaData.entrySet())
+         {
+            System.out.println("entry: " + value);
+            buffer.append(",");
+            buffer.append(value.getKey() + "=" + value.getValue());
+         }
+      }
+      // This will actually appear on some management operations
+      // so please don't clog this with debug objects
+      // unless you provide a special way for management to translate sessions
+      return "ServerSessionImpl(" + buffer.toString() + ")";
    }
 
    // FailureListener implementation
