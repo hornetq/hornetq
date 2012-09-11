@@ -74,6 +74,13 @@ public interface HornetQRALogger extends BasicLogger
    @Message(id = 151005, value = "HornetQ resource adaptor stopped", format = Message.Format.MESSAGE_FORMAT)
    void raStopped();
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 151006, value = "Unable to retrieve {0} from JNDI. Creating a new {1} named \"{2}\" to be used by the MDB.", format = Message.Format.MESSAGE_FORMAT)
+   void unableToRetrieveDestinationFromJNDI(String destinationName, String destinationType, String calculatedDestinationName);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 151007, value = "Instantiating {0} \"{1}\" directly since UseJNDI=false.", format = Message.Format.MESSAGE_FORMAT)
+   void instantiatingDestination(String destinationType, String destination);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 152001, value = "It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod" +
