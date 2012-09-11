@@ -66,7 +66,7 @@ import org.hornetq.utils.FutureLatch;
  * {@link ClusterConnectionImpl}. As a node is discovered a new {@link ClusterConnectionBridge} is
  * deployed.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author Clebert Suconic Created 18 Nov 2008 09:23:49
+ * @author Clebert Suconic
  */
 public class ClusterManager implements HornetQComponent
 {

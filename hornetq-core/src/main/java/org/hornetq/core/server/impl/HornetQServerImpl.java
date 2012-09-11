@@ -158,7 +158,6 @@ import org.hornetq.utils.VersionLoader;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
- * @version <tt>$Revision: 3543 $</tt> <p/> $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
  */
 public class HornetQServerImpl implements HornetQServer
 {
