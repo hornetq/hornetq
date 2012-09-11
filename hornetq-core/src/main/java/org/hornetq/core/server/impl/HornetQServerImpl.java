@@ -2695,6 +2695,8 @@ public class HornetQServerImpl implements HornetQServer
                }
                catch (Exception e)
                {
+                  if (state == HornetQServerImpl.SERVER_STATE.STARTED)
+                  {
                   /*
                    * The reasoning here is that the exception was either caused by (1) the
                    * (interaction with) the backup, or (2) by an IO Error at the storage. If (1), we
@@ -2702,11 +2704,10 @@ public class HornetQServerImpl implements HornetQServer
                    * will crash shortly.
                    */
                   HornetQLogger.LOGGER.errorStartingReplication(e);
-
+                  }
                   try
                   {
-                     if (replicationManager != null)
-                        replicationManager.stop();
+                     stopComponent(replicationManager);
                   }
                   catch (Exception hqe)
                   {
