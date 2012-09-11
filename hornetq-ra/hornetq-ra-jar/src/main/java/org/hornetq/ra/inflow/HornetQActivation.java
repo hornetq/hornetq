@@ -468,9 +468,8 @@ public class HornetQActivation
                destinationType = Queue.class;
             }
 
-            HornetQRALogger.LOGGER.debug("Retrieving destination " + destinationName +
-                                        " of type " +
-                                        destinationType.getName());
+            HornetQRALogger.LOGGER.debug("Retrieving " + destinationType.getName() + " \"" + destinationName + "\" from JNDI");
+
             try
             {
                destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, destinationType);
@@ -481,23 +480,26 @@ public class HornetQActivation
                {
                   throw e;
                }
+
+               String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
+
+               HornetQRALogger.LOGGER.unableToRetrieveDestinationFromJNDI(destinationName, destinationType.getName(), calculatedDestinationName);
+
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = (HornetQDestination)HornetQJMSClient.createTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination)HornetQJMSClient.createTopic(calculatedDestinationName);
                }
                else
                {
-                  destination = (HornetQDestination)HornetQJMSClient.createQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = (HornetQDestination)HornetQJMSClient.createQueue(calculatedDestinationName);
                }
             }
          }
          else
          {
-            HornetQRALogger.LOGGER.debug("Destination type not defined");
-            HornetQRALogger.LOGGER.debug("Retrieving destination " + destinationName +
-                                        " of type " +
-                                        Destination.class.getName());
+            HornetQRALogger.LOGGER.debug("Destination type not defined in MDB activation configuration.");
+            HornetQRALogger.LOGGER.debug("Retrieving " + Destination.class.getName() + " \"" + destinationName + "\" from JNDI");
 
             destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
@@ -508,6 +510,8 @@ public class HornetQActivation
       }
       else
       {
+         HornetQRALogger.LOGGER.instantiatingDestination(spec.getDestinationType(), spec.getDestination());
+
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
             destination = (HornetQDestination)HornetQJMSClient.createTopic(spec.getDestination());
@@ -518,8 +522,6 @@ public class HornetQActivation
             destination = (HornetQDestination)HornetQJMSClient.createQueue(spec.getDestination());
          }
       }
-
-      HornetQRALogger.LOGGER.debug("Got destination " + destination + " from " + destinationName);
    }
 
    /**
