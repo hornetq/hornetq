@@ -259,7 +259,6 @@ public class HornetQServerImpl implements HornetQServer
    private final Object initialiseGuard = new Object();
    private CountDownLatch initialised = new CountDownLatch(1);
 
-   private final Object startUpLock = new Object();
    private final Object replicationLock = new Object();
 
    /**
@@ -605,95 +604,91 @@ public class HornetQServerImpl implements HornetQServer
 
       synchronized (this)
       {
-         synchronized (startUpLock)
+         // Stop the deployers
+         if (configuration.isFileDeploymentEnabled())
          {
+            stopComponent(basicUserCredentialsDeployer);
+            stopComponent(addressSettingsDeployer);
+            stopComponent(queueDeployer);
+            stopComponent(securityDeployer);
+            stopComponent(deploymentManager);
+         }
 
-            // Stop the deployers
-            if (configuration.isFileDeploymentEnabled())
-            {
-               stopComponent(basicUserCredentialsDeployer);
-               stopComponent(addressSettingsDeployer);
-               stopComponent(queueDeployer);
-               stopComponent(securityDeployer);
-               stopComponent(deploymentManager);
-            }
-
-            if (managementService != null)
+         if (managementService != null)
             managementService.unregisterServer();
 
-            stopComponent(managementService);
-            stopComponent(replicationManager);
-            stopComponent(pagingManager);
-            stopComponent(replicationEndpoint);
+         stopComponent(managementService);
+         stopComponent(replicationManager);
+         stopComponent(pagingManager);
+         stopComponent(replicationEndpoint);
 
-            if (!criticalIOError)
+         if (!criticalIOError)
+         {
+            stopComponent(storageManager);
+         }
+         stopComponent(securityManager);
+         stopComponent(resourceManager);
+
+         stopComponent(postOffice);
+
+         if (scheduledPool != null)
+         {
+            // we just interrupt all running tasks, these are supposed to be pings and the like.
+            scheduledPool.shutdownNow();
+         }
+
+         stopComponent(memoryManager);
+
+         if (threadPool != null)
+         {
+            threadPool.shutdown();
+            try
             {
-               stopComponent(storageManager);
-            }
-            stopComponent(securityManager);
-            stopComponent(resourceManager);
-
-            stopComponent(postOffice);
-
-            if (scheduledPool != null)
-            {
-               // we just interrupt all running tasks, these are supposed to be pings and the like.
-               scheduledPool.shutdownNow();
-            }
-
-            stopComponent(memoryManager);
-
-            if (threadPool != null)
-            {
-               threadPool.shutdown();
-               try
+               if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
                {
-                  if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+                  HornetQLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
+                  for (Runnable r : threadPool.shutdownNow())
                   {
-                     HornetQLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
-                     for (Runnable r : threadPool.shutdownNow())
-                     {
-                        HornetQLogger.LOGGER.debug("Cancelled the execution of " + r);
-                     }
+                     HornetQLogger.LOGGER.debug("Cancelled the execution of " + r);
                   }
                }
-               catch (InterruptedException e)
-               {
-                  // Ignore
-               }
             }
-
-            scheduledPool = null;
-            threadPool = null;
-
-            if (securityStore != null)
-               securityStore.stop();
-
-            threadPool = null;
-
-            scheduledPool = null;
-
-            pagingManager = null;
-            securityStore = null;
-            resourceManager = null;
-            replicationManager = null;
-            replicationEndpoint = null;
-            postOffice = null;
-            queueFactory = null;
-            resourceManager = null;
-            messagingServerControl = null;
-            memoryManager = null;
-
-            sessions.clear();
-
-            state = SERVER_STATE.STOPPED;
-            synchronized (initialiseLock)
+            catch (InterruptedException e)
             {
-               // replace the latch only if necessary. It could still be '1' in case of errors
-               // during start-up.
-               if (initialised.getCount() < 1)
-                  initialised = new CountDownLatch(1);
+               // Ignore
             }
+         }
+
+         scheduledPool = null;
+         threadPool = null;
+
+         if (securityStore != null)
+            securityStore.stop();
+
+         threadPool = null;
+
+         scheduledPool = null;
+
+         pagingManager = null;
+         securityStore = null;
+         resourceManager = null;
+         replicationManager = null;
+         replicationEndpoint = null;
+         postOffice = null;
+         queueFactory = null;
+         resourceManager = null;
+         messagingServerControl = null;
+         memoryManager = null;
+
+         sessions.clear();
+
+         state = SERVER_STATE.STOPPED;
+         synchronized (initialiseGuard)
+         {
+            // replace the latch only if necessary. It could still be '1' in case of errors
+            // during start-up.
+            if (initialised.getCount() < 1)
+               initialised = new CountDownLatch(1);
          }
 
          // to display in the log message
@@ -882,6 +877,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
+      if (!isStarted())
+         return null;
       if (!configuration.isBackup())
       {
          throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
@@ -2299,7 +2296,7 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             configuration.setBackup(false);
-            synchronized (startUpLock)
+            synchronized (HornetQServerImpl.this)
             {
                if (!isStarted())
                   return;
