@@ -1962,15 +1962,8 @@ name, address, connectorFrom.getName(),
       }
       Configuration config = serverFrom.getConfiguration();
       ClusterConnectionConfiguration clusterConf =
-               new ClusterConnectionConfiguration(name, address,
-                                                                                      name,
-                                                                                      250,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs,
-                                                                                      false);
+               new ClusterConnectionConfiguration(name, address, name, 250, true, forwardWhenNoConsumers, maxHops,
+                                                  1024, pairs, false);
 
       config.getClusterConfigurations().add(clusterConf);
    }
@@ -2061,7 +2054,6 @@ name, address, connectorFrom.getName(),
                   // We can't stop and start a node too fast (faster than what the Topology could realize about this
                  Thread.sleep(TIMEOUT_START_SERVER);
                }
-
 
                timeStarts[node] = System.currentTimeMillis();
 

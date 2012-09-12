@@ -37,7 +37,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
    }
 
    @Override
-   protected void setBody(final int i, final ClientMessage message) throws Exception
+   protected void setBody(final int i, final ClientMessage message)
    {
       setLargeMessageBody(i, message);
    }

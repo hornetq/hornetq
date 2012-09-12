@@ -882,6 +882,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
       private FileChannel channel;
       private final File file;
+      private FileOutputStream fos;
 
       public JournalSyncFile(JournalFile jFile) throws Exception
       {
@@ -890,17 +891,20 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
          seqFile.close();
       }
 
-      FileChannel getChannel() throws Exception
+      synchronized FileChannel getChannel() throws Exception
       {
          if (channel == null)
          {
-            channel = new FileOutputStream(file).getChannel();
+            fos = new FileOutputStream(file);
+            channel = fos.getChannel();
          }
          return channel;
-   }
+      }
 
-      void close() throws IOException
+      synchronized void close() throws IOException
       {
+         if (fos != null)
+            fos.close();
          if (channel != null)
             channel.close();
       }

@@ -65,7 +65,7 @@ public class LargeMessageFailoverTest extends FailoverTest
     * @param message
     */
    @Override
-   protected void setBody(final int i, final ClientMessage message) throws Exception
+   protected void setBody(final int i, final ClientMessage message)
    {
       setLargeMessageBody(i, message);
    }

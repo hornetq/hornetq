@@ -665,7 +665,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param message
     * @throws Exception
     */
-   protected void setBody(final int i, final ClientMessage message) throws Exception
+   protected void setBody(final int i, final ClientMessage message)
    {
       message.getBodyBuffer().writeString("message" + i);
    }
