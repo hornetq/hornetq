@@ -256,7 +256,7 @@ public class HornetQServerImpl implements HornetQServer
     * We guard the {@code initialised} field because if we restart a {@code HornetQServer}, we need
     * to replace the {@code CountDownLatch} by a new one.
     */
-   private final Object initialiseLock = new Object();
+   private final Object initialiseGuard = new Object();
    private CountDownLatch initialised = new CountDownLatch(1);
 
    private final Object startUpLock = new Object();
@@ -944,7 +944,7 @@ public class HornetQServerImpl implements HornetQServer
    @Override
    public boolean isInitialised()
    {
-      synchronized (initialiseLock)
+      synchronized (initialiseGuard)
       {
          return initialised.getCount() < 1;
       }
@@ -954,7 +954,7 @@ public class HornetQServerImpl implements HornetQServer
    public boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException
    {
       CountDownLatch latch;
-      synchronized (initialiseLock)
+      synchronized (initialiseGuard)
       {
          latch = initialised;
       }
