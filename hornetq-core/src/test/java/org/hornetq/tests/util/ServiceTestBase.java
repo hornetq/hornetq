@@ -857,6 +857,51 @@ public abstract class ServiceTestBase extends UnitTestCase
       return recordsType;
    }
 
+   /**
+    * This method will load a journal and count the living records
+    * @param config
+    * @return
+    * @throws Exception
+    */
+   protected HashMap<Integer, AtomicInteger> countJournalLivingRecords(Configuration config) throws Exception
+   {
+      final HashMap<Integer, AtomicInteger> recordsType = new HashMap<Integer, AtomicInteger>();
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
+
+      JournalImpl messagesJournal = new JournalImpl(config.getJournalFileSize(),
+         config.getJournalMinFiles(),
+         0,
+         0,
+         messagesFF,
+         "hornetq-data",
+         "hq",
+         1);
+      messagesJournal.start();
+
+
+      final List<RecordInfo> committedRecords = new LinkedList<RecordInfo>();
+      final List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
+
+
+      messagesJournal.load(committedRecords, preparedTransactions, null, false);
+
+      for (RecordInfo info: committedRecords)
+      {
+         Integer ikey = new Integer(info.getUserRecordType());
+         AtomicInteger value = recordsType.get(ikey);
+         if (value == null)
+         {
+            value = new AtomicInteger();
+            recordsType.put(ikey, value);
+         }
+         value.incrementAndGet();
+
+      }
+
+      messagesJournal.stop();
+      return recordsType;
+   }
+
 
    /**
     * Deleting a file on LargeDir is an asynchronous process. We need to keep looking for a while if

@@ -170,6 +170,8 @@ public class JournalStorageManager implements StorageManager
 
    private static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
+   public static final byte PAGE_CURSOR_COMPLETE = 42;
+
    private final Semaphore pageMaxConcurrentIO;
 
    private final BatchingIDGenerator idGenerator;
@@ -1095,6 +1097,21 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
+   {
+      long recordID = idGenerator.generateID();
+      position.setRecordID(recordID);
+      messageJournal.appendAddRecordTransactional(txID,
+         recordID,
+         PAGE_CURSOR_COMPLETE,
+         new CursorAckRecordEncoding(queueID, position));
+   }
+
+   public void deletePageComplete(long ackID) throws Exception
+   {
+      messageJournal.appendDeleteRecord(ackID, false);
+   }
+
    public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
    {
       readLock();
@@ -1724,6 +1741,29 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
+
+               case PAGE_CURSOR_COMPLETE:
+               {
+                  CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+                  encoding.decode(buff);
+
+                  encoding.position.setRecordID(record.id);
+
+                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+
+                  if (sub != null)
+                  {
+                     sub.reloadPageCompletion(encoding.position);
+                  }
+                  else
+                  {
+                     HornetQLogger.LOGGER.cantFindQueueOnPageComplete(encoding.queueID);
+                     messageJournal.appendDeleteRecord(record.id, false);
+                  }
+
+                  break;
+               }
+
                default:
                {
                   throw new IllegalStateException("Invalid record type " + recordType);
@@ -3713,6 +3753,15 @@ public class JournalStorageManager implements StorageManager
          case PAGE_CURSOR_COUNTER_VALUE:
          {
             PageCountRecord encoding = new PageCountRecord();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case PAGE_CURSOR_COMPLETE:
+         {
+            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
 
             encoding.decode(buffer);
 

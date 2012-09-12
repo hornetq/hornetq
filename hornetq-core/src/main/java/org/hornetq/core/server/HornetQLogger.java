@@ -1557,7 +1557,13 @@ public interface HornetQLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 114082,
-            value = "Backup server that requested fail-back was not announced. Server will not stop for fail-back.",
-            format = Message.Format.MESSAGE_FORMAT)
+      value = "Backup server that requested fail-back was not announced. Server will not stop for fail-back.",
+      format = Message.Format.MESSAGE_FORMAT)
    void failbackMissedBackupAnnouncement();
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 114083,
+      value = "Can't find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
+      format = Message.Format.MESSAGE_FORMAT)
+   void cantFindQueueOnPageComplete(long queueID);
 }
