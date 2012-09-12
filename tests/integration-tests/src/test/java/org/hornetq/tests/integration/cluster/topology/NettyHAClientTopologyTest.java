@@ -18,33 +18,13 @@ package org.hornetq.tests.integration.cluster.topology;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- *
  */
 public class NettyHAClientTopologyTest extends HAClientTopologyTest
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected boolean isNetty()
    {
       return true;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

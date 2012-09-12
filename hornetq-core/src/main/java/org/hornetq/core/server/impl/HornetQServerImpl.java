@@ -158,7 +158,6 @@ import org.hornetq.utils.VersionLoader;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
- * @version <tt>$Revision: 3543 $</tt> <p/> $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
  */
 public class HornetQServerImpl implements HornetQServer
 {
@@ -257,10 +256,9 @@ public class HornetQServerImpl implements HornetQServer
     * We guard the {@code initialised} field because if we restart a {@code HornetQServer}, we need
     * to replace the {@code CountDownLatch} by a new one.
     */
-   private final Object initialiseLock = new Object();
+   private final Object initialiseGuard = new Object();
    private CountDownLatch initialised = new CountDownLatch(1);
 
-   private final Object startUpLock = new Object();
    private final Object replicationLock = new Object();
 
    /**
@@ -606,95 +604,91 @@ public class HornetQServerImpl implements HornetQServer
 
       synchronized (this)
       {
-         synchronized (startUpLock)
+         // Stop the deployers
+         if (configuration.isFileDeploymentEnabled())
          {
+            stopComponent(basicUserCredentialsDeployer);
+            stopComponent(addressSettingsDeployer);
+            stopComponent(queueDeployer);
+            stopComponent(securityDeployer);
+            stopComponent(deploymentManager);
+         }
 
-            // Stop the deployers
-            if (configuration.isFileDeploymentEnabled())
-            {
-               stopComponent(basicUserCredentialsDeployer);
-               stopComponent(addressSettingsDeployer);
-               stopComponent(queueDeployer);
-               stopComponent(securityDeployer);
-               stopComponent(deploymentManager);
-            }
-
-            if (managementService != null)
+         if (managementService != null)
             managementService.unregisterServer();
 
-            stopComponent(managementService);
-            stopComponent(replicationManager);
-            stopComponent(pagingManager);
-            stopComponent(replicationEndpoint);
+         stopComponent(managementService);
+         stopComponent(replicationManager);
+         stopComponent(pagingManager);
+         stopComponent(replicationEndpoint);
 
-            if (!criticalIOError)
+         if (!criticalIOError)
+         {
+            stopComponent(storageManager);
+         }
+         stopComponent(securityManager);
+         stopComponent(resourceManager);
+
+         stopComponent(postOffice);
+
+         if (scheduledPool != null)
+         {
+            // we just interrupt all running tasks, these are supposed to be pings and the like.
+            scheduledPool.shutdownNow();
+         }
+
+         stopComponent(memoryManager);
+
+         if (threadPool != null)
+         {
+            threadPool.shutdown();
+            try
             {
-               stopComponent(storageManager);
-            }
-            stopComponent(securityManager);
-            stopComponent(resourceManager);
-
-            stopComponent(postOffice);
-
-            if (scheduledPool != null)
-            {
-               // we just interrupt all running tasks, these are supposed to be pings and the like.
-               scheduledPool.shutdownNow();
-            }
-
-            stopComponent(memoryManager);
-
-            if (threadPool != null)
-            {
-               threadPool.shutdown();
-               try
+               if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
                {
-                  if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+                  HornetQLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
+                  for (Runnable r : threadPool.shutdownNow())
                   {
-                     HornetQLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
-                     for (Runnable r : threadPool.shutdownNow())
-                     {
-                        HornetQLogger.LOGGER.debug("Cancelled the execution of " + r);
-                     }
+                     HornetQLogger.LOGGER.debug("Cancelled the execution of " + r);
                   }
                }
-               catch (InterruptedException e)
-               {
-                  // Ignore
-               }
             }
-
-            scheduledPool = null;
-            threadPool = null;
-
-            if (securityStore != null)
-               securityStore.stop();
-
-            threadPool = null;
-
-            scheduledPool = null;
-
-            pagingManager = null;
-            securityStore = null;
-            resourceManager = null;
-            replicationManager = null;
-            replicationEndpoint = null;
-            postOffice = null;
-            queueFactory = null;
-            resourceManager = null;
-            messagingServerControl = null;
-            memoryManager = null;
-
-            sessions.clear();
-
-            state = SERVER_STATE.STOPPED;
-            synchronized (initialiseLock)
+            catch (InterruptedException e)
             {
-               // replace the latch only if necessary. It could still be '1' in case of errors
-               // during start-up.
-               if (initialised.getCount() < 1)
-                  initialised = new CountDownLatch(1);
+               // Ignore
             }
+         }
+
+         scheduledPool = null;
+         threadPool = null;
+
+         if (securityStore != null)
+            securityStore.stop();
+
+         threadPool = null;
+
+         scheduledPool = null;
+
+         pagingManager = null;
+         securityStore = null;
+         resourceManager = null;
+         replicationManager = null;
+         replicationEndpoint = null;
+         postOffice = null;
+         queueFactory = null;
+         resourceManager = null;
+         messagingServerControl = null;
+         memoryManager = null;
+
+         sessions.clear();
+
+         state = SERVER_STATE.STOPPED;
+         synchronized (initialiseGuard)
+         {
+            // replace the latch only if necessary. It could still be '1' in case of errors
+            // during start-up.
+            if (initialised.getCount() < 1)
+               initialised = new CountDownLatch(1);
          }
 
          // to display in the log message
@@ -883,6 +877,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
+      if (!isStarted())
+         return null;
       if (!configuration.isBackup())
       {
          throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
@@ -945,7 +941,7 @@ public class HornetQServerImpl implements HornetQServer
    @Override
    public boolean isInitialised()
    {
-      synchronized (initialiseLock)
+      synchronized (initialiseGuard)
       {
          return initialised.getCount() < 1;
       }
@@ -955,7 +951,7 @@ public class HornetQServerImpl implements HornetQServer
    public boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException
    {
       CountDownLatch latch;
-      synchronized (initialiseLock)
+      synchronized (initialiseGuard)
       {
          latch = initialised;
       }
@@ -2300,7 +2296,7 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             configuration.setBackup(false);
-            synchronized (startUpLock)
+            synchronized (HornetQServerImpl.this)
             {
                if (!isStarted())
                   return;
@@ -2696,6 +2692,8 @@ public class HornetQServerImpl implements HornetQServer
                }
                catch (Exception e)
                {
+                  if (state == HornetQServerImpl.SERVER_STATE.STARTED)
+                  {
                   /*
                    * The reasoning here is that the exception was either caused by (1) the
                    * (interaction with) the backup, or (2) by an IO Error at the storage. If (1), we
@@ -2703,11 +2701,10 @@ public class HornetQServerImpl implements HornetQServer
                    * will crash shortly.
                    */
                   HornetQLogger.LOGGER.errorStartingReplication(e);
-
+                  }
                   try
                   {
-                     if (replicationManager != null)
-                        replicationManager.stop();
+                     stopComponent(replicationManager);
                   }
                   catch (Exception hqe)
                   {

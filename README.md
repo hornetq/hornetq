@@ -55,7 +55,7 @@ then you will need to set the following maven options, on Linux by
 
 and the finally run the examples by
 
-```mvn verify```
+```% mvn verify```
 
 You can also run individual examples by running the same command from the directory of which ever example you want to run.
 NB for this make sure you have installed examples/common.
@@ -66,10 +66,10 @@ NB for this make sure you have installed examples/common.
 
 ## Eclipse
 
-We recommend you to use Eclipse 3.7 "Indigo". As it improved Maven and
-Git support considerably. Note that there are still some Maven plugins
-used by sub-projects (e.g. documentation) which are not supported even
-in Eclipse 3.7.
+We recommend using at least Eclipse Indigo (3.7). As it improved Maven
+and Git support considerably. Note that there are still some Maven
+plugins used by sub-projects (e.g. documentation) which are not
+supported even in Eclipse Juno (4.2).
 
 Eclipse code formatting and (basic) project configuration files can be
 found at the ```etc/``` folder. You need to manually copy them or use
@@ -85,8 +85,16 @@ Processor Toolkit_ [m2e-apt].
 [JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
 [m2e-apt]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out
 
+### M2E Connector for Javacc-Maven-Plugin
 
+Eclipse Indigo (3.7) has out-of-the-box support for it.
+
+As of this writing, Eclipse Juno (4.2) still lacks support for Maven's
+javacc plugin. See this post on the [m2e connector for
+javacc-maven-plugin] for manual installation instructions.
+
+[m2e connector for javacc-maven-plugin]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
 
 ## To build the release bundle
 
-mvn -P release package
+```% mvn -P release package```
