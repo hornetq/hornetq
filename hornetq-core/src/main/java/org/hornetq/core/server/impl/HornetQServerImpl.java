@@ -2182,7 +2182,6 @@ public class HornetQServerImpl implements HornetQServer
       private volatile QuorumManager quorumManager;
       private final boolean attemptFailBack;
       private String nodeID;
-      private TransportConfiguration liveConnector;
       ClientSessionFactoryInternal liveServerSessionFactory;
       private boolean closed;
 
@@ -2271,7 +2270,6 @@ public class HornetQServerImpl implements HornetQServer
                {
                   liveServerSessionFactory
                        = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getA(), 0, false);
-                  liveConnector = possibleLive.getA();
                }
                catch (Exception e)
                {
@@ -2281,7 +2279,6 @@ public class HornetQServerImpl implements HornetQServer
                      {
                         liveServerSessionFactory
                           = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getB(), 0, false);
-                        liveConnector = possibleLive.getB();
                      } catch (Exception e1)
                      {
                         liveServerSessionFactory = null;
