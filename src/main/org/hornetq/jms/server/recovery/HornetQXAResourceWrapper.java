@@ -101,7 +101,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("Commit " + xaResource + " xid " + " onePhase=" + onePhase);
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("Commit " + xaResource + " xid " + " onePhase=" + onePhase);
+      }
       try
       {
          xaResource.commit(xid, onePhase);
@@ -115,7 +118,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void rollback(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("Rollback " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("Rollback " + xaResource + " xid ");
+      }
       try
       {
          xaResource.rollback(xid);
@@ -129,7 +135,11 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void forget(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("Forget " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("Forget " + xaResource + " xid ");
+      }
+      
       try
       {
          xaResource.forget(xid);
@@ -161,7 +171,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public int prepare(final Xid xid) throws XAException
    {
       XAResource xaResource = getDelegate(true);
-      HornetQXAResourceWrapper.log.debug("prepare " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("prepare " + xaResource + " xid ");
+      }
       try
       {
          return xaResource.prepare(xid);
@@ -175,7 +188,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void start(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("start " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("start " + xaResource + " xid ");
+      }
       try
       {
          xaResource.start(xid, flags);
@@ -189,7 +205,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public void end(final Xid xid, final int flags) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("end " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("end " + xaResource + " xid ");
+      }
       try
       {
          xaResource.end(xid, flags);
@@ -203,7 +222,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public int getTransactionTimeout() throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("getTransactionTimeout " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("getTransactionTimeout " + xaResource + " xid ");
+      }
       try
       {
          return xaResource.getTransactionTimeout();
@@ -217,7 +239,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    public boolean setTransactionTimeout(final int seconds) throws XAException
    {
       XAResource xaResource = getDelegate(false);
-      HornetQXAResourceWrapper.log.debug("setTransactionTimeout " + xaResource + " xid ");
+      if (log.isDebugEnabled())
+      {
+         HornetQXAResourceWrapper.log.debug("setTransactionTimeout " + xaResource + " xid ");
+      }
       try
       {
          return xaResource.setTransactionTimeout(seconds);
@@ -232,7 +257,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    {
       if (me.getCode() == HornetQException.DISCONNECTED)
       {
-         log.debug("being disconnected for server shutdown", me);
+         if (log.isDebugEnabled())
+         {
+            log.debug("being disconnected for server shutdown", me);
+         }
       }
       else
       {
@@ -278,7 +306,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             {
                xae.initCause(error);
             }
-            HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            if (log.isDebugEnabled())
+            {
+               HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            }
             throw xae;
          }
          else
@@ -289,7 +320,10 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
             {
                xae.initCause(error);
             }
-            HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            if (log.isDebugEnabled())
+            {
+               HornetQXAResourceWrapper.log.debug("Cannot get connectionFactory XAResource", xae);
+            }
             throw xae;
          }
 
