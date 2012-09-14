@@ -1469,6 +1469,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          settings.put("expiryAddress", addressSettings.getExpiryAddress());
       }
+      settings.put("expiryDelay", addressSettings.getExpiryDelay());
       settings.put("maxDeliveryAttempts", addressSettings.getMaxDeliveryAttempts());
       settings.put("pageCacheMaxSize", addressSettings.getPageCacheMaxSize());
       settings.put("maxSizeBytes", addressSettings.getMaxSizeBytes());
@@ -1493,6 +1494,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    public void addAddressSettings(final String address,
                                   final String DLA,
                                   final String expiryAddress,
+                                  final long expiryDelay,
                                   final boolean lastValueQueue,
                                   final int deliveryAttempts,
                                   final long maxSizeBytes,
@@ -1521,6 +1523,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setDeadLetterAddress(DLA == null ? null : new SimpleString(DLA));
       addressSettings.setExpiryAddress(expiryAddress == null ? null : new SimpleString(expiryAddress));
+      addressSettings.setExpiryDelay(expiryDelay);
       addressSettings.setLastValueQueue(lastValueQueue);
       addressSettings.setMaxDeliveryAttempts(deliveryAttempts);
       addressSettings.setPageCacheMaxSize(pageMaxCacheSize);
