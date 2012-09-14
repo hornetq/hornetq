@@ -333,4 +333,12 @@ public interface JMSServerControl
     */
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in HTML format", impact = MBeanOperationInfo.INFO)
    String listPreparedTransactionDetailsAsHTML() throws Exception;
+
+
+   /**
+    * List all the prepared transaction, sorted by date,
+    * oldest first, with details, in HTML format
+    */
+   @Operation(desc = "Will close any connection with the given connectionID", impact = MBeanOperationInfo.INFO)
+   String closeConnectionWithClientID(@Parameter(desc="the clientID used to connect", name="clientID") String clientID) throws Exception;
 }

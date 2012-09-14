@@ -493,4 +493,20 @@ public interface HornetQMessageBundle
    @Message(id = 119139, value = "Address \"{0}\" is full. Message encode size = {1}B", format = Message.Format.MESSAGE_FORMAT)
    HornetQAddressFullException addressIsFull(String addressName, int size);
 
+   /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
+   @Message(id = 119140, value = "Executing destroyConnection with {0}={1} through management's request", format = Message.Format.MESSAGE_FORMAT)
+   String destroyConnectionWithSessionMetadataHeader(String key, String value);
+
+   /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
+   @Message(id = 119141, value = "Closing connection {0}", format = Message.Format.MESSAGE_FORMAT)
+   String destroyConnectionWithSessionMetadataClosingConnection(String serverSessionString);
+
+   /** Exception used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
+   @Message(id = 119142, value = "Disconnected per admin's request on {0}={1}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQDisconnectedException destroyConnectionWithSessionMetadataSendException(String key, String value);
+
+   /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
+   @Message(id = 119143, value = "No session found with {0}={1}", format = Message.Format.MESSAGE_FORMAT)
+   String destroyConnectionWithSessionMetadataNoSessionFound(String key, String value);
+
 }
