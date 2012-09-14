@@ -646,7 +646,8 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <!-- do not upgrade this component until we check why it fails on Macs -->
+            <!-- do not upgrade this component until this JIRA is fixed:
+                 http://jira.codehaus.org/browse/MCOMPILER-181 -->
             <version>2.3.2</version>
             <configuration>
                <showWarnings>true</showWarnings>
