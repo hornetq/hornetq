@@ -106,6 +106,8 @@ public final class FileConfigurationParser
 
    private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
 
+   private static final String EXPIRY_DELAY_NODE_NAME = "expiry-delay";
+
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
 
    private static final String REDELIVERY_DELAY_MULTIPLIER_NODE_NAME = "redelivery-delay-multiplier";
@@ -799,6 +801,10 @@ public final class FileConfigurationParser
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
             addressSettings.setExpiryAddress(queueName);
+         }
+         else if (FileConfigurationParser.EXPIRY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            addressSettings.setExpiryDelay(Long.valueOf(child.getTextContent()));
          }
          else if (FileConfigurationParser.REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

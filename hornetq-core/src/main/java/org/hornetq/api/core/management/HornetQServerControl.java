@@ -523,6 +523,7 @@ public interface HornetQServerControl
    void addAddressSettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch,
                            @Parameter(desc="the dead letter address setting", name="DLA") String DLA,
                            @Parameter(desc="the expiry address setting", name="expiryAddress") String expiryAddress,
+                           @Parameter(desc="the expiry delay setting", name="expiryDelay") long expiryDelay,
                            @Parameter(desc="are any queues created for this address a last value queue", name="lastValueQueue") boolean lastValueQueue,
                            @Parameter(desc="the delivery attempts", name="deliveryAttempts") int deliveryAttempts,
                            @Parameter(desc="the max size in bytes", name="maxSizeBytes") long maxSizeBytes,

@@ -422,6 +422,7 @@
             <xsd:all>
                 <xsd:element maxOccurs="1" minOccurs="0" name="dead-letter-address" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="expiry-address" type="xsd:string"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="expiry-delay" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="redelivery-delay" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="redelivery-delay-multiplier" type="xsd:double"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="max-redelivery-delay" type="xsd:long"/>
