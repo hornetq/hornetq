@@ -126,6 +126,12 @@
                 >here</link>.</para>
         <para><literal>expiry-address</literal> defines where to send a message that has expired.
             see <link linkend="message-expiry.configuring">here</link>.</para>
+        <para><literal>expiry-delay</literal> defines the expiration time that will be used for messages which are using
+            the default expiration time (i.e. 0). For example, if <literal>expiry-delay</literal> is set to "10" and a
+            message which is using the default expiration time (i.e. 0) arrives then its expiration time of "0" will be
+            changed to "10." However, if a message which is using an expiration time of "20" arrives then its expiration
+            time will remain unchanged. Setting <literal>expiry-delay</literal> to "-1" will disable this feature. The
+            default is "-1".</para>
         <para><literal>last-value-queue</literal> defines whether a queue only uses last values or
             not. see <link linkend="last-value-queues">here</link>.</para>
         <para><literal>max-size-bytes</literal> and <literal>page-size-bytes</literal> are used to

@@ -55,6 +55,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    public static final long DEFAULT_REDISTRIBUTION_DELAY = -1;
 
+   public static final long DEFAULT_EXPIRY_DELAY = -1;
+
    public static final boolean DEFAULT_SEND_TO_DLA_ON_NO_ROUTE = false;
 
    private AddressFullMessagePolicy addressFullMessagePolicy = null;
@@ -80,6 +82,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    private SimpleString deadLetterAddress = null;
 
    private SimpleString expiryAddress = null;
+
+   private Long expiryDelay = AddressSettings.DEFAULT_EXPIRY_DELAY;
 
    private Boolean lastValueQueue = null;
 
@@ -209,6 +213,16 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       this.expiryAddress = expiryAddress;
    }
 
+   public Long getExpiryDelay()
+   {
+      return expiryDelay;
+   }
+
+   public void setExpiryDelay(final Long expiryDelay)
+   {
+      this.expiryDelay = expiryDelay;
+   }
+
    public boolean isSendToDLAOnNoRoute()
    {
       return sendToDLAOnNoRoute != null ? sendToDLAOnNoRoute : AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE;
@@ -279,6 +293,10 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       {
          expiryAddress = merged.expiryAddress;
       }
+      if (expiryDelay == null)
+      {
+         expiryDelay = merged.expiryDelay;
+      }
       if (redistributionDelay == null)
       {
          redistributionDelay = merged.redistributionDelay;
@@ -331,6 +349,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       expiryAddress = buffer.readNullableSimpleString();
 
+      expiryDelay = BufferHelper.readNullableLong(buffer);
+
       lastValueQueue = BufferHelper.readNullableBoolean(buffer);
 
       redistributionDelay = BufferHelper.readNullableLong(buffer);
@@ -356,6 +376,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
              BufferHelper.sizeOfNullableLong(maxRedeliveryDelay) +
              SimpleString.sizeofNullableString(deadLetterAddress) +
              SimpleString.sizeofNullableString(expiryAddress) +
+             BufferHelper.sizeOfNullableLong(expiryDelay) +
              BufferHelper.sizeOfNullableBoolean(lastValueQueue) +
              BufferHelper.sizeOfNullableLong(redistributionDelay) +
              BufferHelper.sizeOfNullableBoolean(sendToDLAOnNoRoute);
@@ -391,6 +412,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
       buffer.writeNullableSimpleString(expiryAddress);
 
+      BufferHelper.writeNullableLong(buffer, expiryDelay);
+
       BufferHelper.writeNullableBoolean(buffer, lastValueQueue);
 
       BufferHelper.writeNullableLong(buffer, redistributionDelay);
@@ -410,6 +433,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       result = prime * result + ((deadLetterAddress == null) ? 0 : deadLetterAddress.hashCode());
       result = prime * result + ((dropMessagesWhenFull == null) ? 0 : dropMessagesWhenFull.hashCode());
       result = prime * result + ((expiryAddress == null) ? 0 : expiryAddress.hashCode());
+      result = prime * result + ((expiryDelay == null) ? 0 : expiryDelay.hashCode());
       result = prime * result + ((lastValueQueue == null) ? 0 : lastValueQueue.hashCode());
       result = prime * result + ((maxDeliveryAttempts == null) ? 0 : maxDeliveryAttempts.hashCode());
       result = prime * result + ((maxSizeBytes == null) ? 0 : maxSizeBytes.hashCode());
@@ -465,6 +489,13 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
             return false;
       }
       else if (!expiryAddress.equals(other.expiryAddress))
+         return false;
+      if (expiryDelay == null)
+      {
+         if (other.expiryDelay != null)
+            return false;
+      }
+      else if (!expiryDelay.equals(other.expiryDelay))
          return false;
       if (lastValueQueue == null)
       {
@@ -559,6 +590,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
              dropMessagesWhenFull +
              ", expiryAddress=" +
              expiryAddress +
+             ", expiryDelay=" +
+             expiryDelay +
              ", lastValueQueue=" +
              lastValueQueue +
              ", maxDeliveryAttempts=" +

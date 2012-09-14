@@ -73,6 +73,57 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   public void testMessageExpiredWithoutExpiryAddressWithExpiryDelayOverride() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createMessage(false);
+      AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(queue.toString());
+      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION * 5);
+      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
+      producer.send(message);
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message2 = consumer.receiveImmediate();
+      Assert.assertNull(message2);
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
+   public void testMessageExpiredWithoutExpiryAddressWithExpiryDelayOverrideThatShouldNotBeApplied() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createMessage(false);
+      AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(queue.toString());
+      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION);
+      producer.send(message);
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message2 = consumer.receiveImmediate();
+      Assert.assertNull(message2);
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
    public void testMessageExpirationOnServer() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();

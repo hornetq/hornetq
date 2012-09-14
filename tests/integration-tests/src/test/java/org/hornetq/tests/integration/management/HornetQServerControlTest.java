@@ -476,6 +476,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       String DLA = "someDLA";
       String expiryAddress = "someExpiry";
+      long expiryDelay = -1;
       boolean lastValueQueue = true;
       int deliveryAttempts = 1;
       long maxSizeBytes = 20;
@@ -491,6 +492,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       serverControl.addAddressSettings(addressMatch,
                                        DLA,
                                        expiryAddress,
+                                       expiryDelay,
                                        lastValueQueue,
                                        deliveryAttempts,
                                        maxSizeBytes,
@@ -510,6 +512,7 @@ public class HornetQServerControlTest extends ManagementTestBase
          serverControl.addAddressSettings(addressMatch,
                                           DLA,
                                           expiryAddress,
+                                          expiryDelay,
                                           lastValueQueue,
                                           deliveryAttempts,
                                           100,
@@ -551,6 +554,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       serverControl.addAddressSettings(addressMatch,
                                        DLA,
                                        expiryAddress,
+                                       expiryDelay,
                                        lastValueQueue,
                                        deliveryAttempts,
                                        -1,
@@ -588,6 +592,7 @@ public class HornetQServerControlTest extends ManagementTestBase
          serverControl.addAddressSettings(addressMatch,
                                           DLA,
                                           expiryAddress,
+                                          expiryDelay,
                                           lastValueQueue,
                                           deliveryAttempts,
                                           -2,
