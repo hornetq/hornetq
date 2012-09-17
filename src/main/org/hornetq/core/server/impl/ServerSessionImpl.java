@@ -1437,9 +1437,19 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          for (Map.Entry<String, String> value : metaData.entrySet())
          {
-            System.out.println("entry: " + value);
-            buffer.append(",");
-            buffer.append(value.getKey() + "=" + value.getValue());
+            if (buffer.length() != 0)
+            {
+               buffer.append(",");
+            }
+            Object tmpValue = value.getValue();
+            if (tmpValue == null || tmpValue.toString().isEmpty())
+            {
+               buffer.append(value.getKey() + "=*N/A*");
+            }
+            else
+            {
+               buffer.append(value.getKey() + "=" + tmpValue);
+            }
          }
       }
       // This will actually appear on some management operations
