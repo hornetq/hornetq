@@ -45,6 +45,7 @@ import javax.management.MBeanServer;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
+import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -746,6 +747,59 @@ public class HornetQServerImpl implements HornetQServer
       return str.toString();
    }
 
+   public String destroyConnectionWithSessionMetadata(String metaKey, String parameterValue) throws Exception
+   {
+      StringBuffer operationsExecuted = new StringBuffer();
+
+      try
+      {
+         operationsExecuted.append("**************************************************************************************************\n");
+         operationsExecuted.append(HornetQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataHeader(metaKey, parameterValue) + "\n");
+
+         Set<ServerSession> allSessions = getSessions();
+
+         ServerSession sessionFound = null;
+         for (ServerSession session : allSessions)
+         {
+            try
+            {
+               String value = session.getMetaData(metaKey);
+               if (value != null && value.equals(parameterValue))
+               {
+                  sessionFound = session;
+                  operationsExecuted.append(HornetQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataClosingConnection(sessionFound.toString()) + "\n");
+                  RemotingConnection conn = session.getRemotingConnection();
+                  if (conn != null)
+                  {
+                     conn.fail(HornetQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataSendException(metaKey, parameterValue));
+                  }
+                  session.close(true);
+                  sessions.remove(session);
+               }
+            }
+            catch (Throwable e)
+            {
+               HornetQLogger.LOGGER.warn(e.getMessage(), e);
+            }
+         }
+
+         if (sessionFound == null)
+         {
+            operationsExecuted.append(HornetQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataNoSessionFound(metaKey, parameterValue) + "\n");
+         }
+
+         operationsExecuted.append("**************************************************************************************************");
+
+         return operationsExecuted.toString();
+      }
+      finally
+      {
+         // This operation is critical for the knowledge of the admin, so we need to add info logs for later knowledge
+         HornetQLogger.LOGGER.info(operationsExecuted.toString());
+      }
+
+   }
+
    public void setIdentity(String identity)
    {
       this.identity = identity;
@@ -901,7 +955,7 @@ public class HornetQServerImpl implements HornetQServer
       sessions.remove(name);
    }
 
-   public boolean lookupSession(String key, String value)
+   public ServerSession lookupSession(String key, String value)
    {
       // getSessions is called here in a try to minimize locking the Server while this check is being done
       Set<ServerSession> allSessions = getSessions();
@@ -911,11 +965,11 @@ public class HornetQServerImpl implements HornetQServer
          String metaValue = session.getMetaData(key);
          if (metaValue != null && metaValue.equals(value))
          {
-            return true;
+            return session;
          }
       }
 
-      return false;
+      return null;
    }
 
    public synchronized List<ServerSession> getSessions(final String connectionID)

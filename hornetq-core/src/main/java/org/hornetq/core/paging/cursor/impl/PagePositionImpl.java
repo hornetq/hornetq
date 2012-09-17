@@ -24,11 +24,18 @@ public class PagePositionImpl implements PagePosition
 {
    private long pageNr;
 
+   /**
+    * The index of the message on the page file.
+    *
+    * This can be used as -1 in cases where the message is irrelevant, 
+    * for instance when a cursor is storing the next message to be received
+    * or when a page is marked as fully complete (as the ACKs are removed)
+    */
    private int messageNr;
 
    /** ID used for storage */
    private long recordID;
- 
+
    /**
     * @param pageNr
     * @param messageNr
@@ -42,7 +49,7 @@ public class PagePositionImpl implements PagePosition
 
    public PagePositionImpl()
    {
-      
+
    }
 
    /**
@@ -75,11 +82,6 @@ public class PagePositionImpl implements PagePosition
    public int getMessageNr()
    {
       return messageNr;
-   }
-   
-   public boolean isRightAfter(final PagePosition previous)
-   {
-      return this.pageNr == previous.getPageNr() && this.messageNr == previous.getMessageNr() + 1;
    }
 
    /* (non-Javadoc)
@@ -156,11 +158,11 @@ public class PagePositionImpl implements PagePosition
          return false;
       return true;
    }
-   
+
    @Override
    public String toString()
    {
       return "PagePositionImpl [pageNr=" + pageNr + ", messageNr=" + messageNr + ", recordID=" + recordID + "]";
    }
-   
+
 }

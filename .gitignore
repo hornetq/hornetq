@@ -35,6 +35,7 @@ org.maven.ide.eclipse.prefs
 /bin
 tests/*-tests/hs_err_pid*.log
 tests/**/server.lock
+hornetq-core/*.log
 
 # /
 /build

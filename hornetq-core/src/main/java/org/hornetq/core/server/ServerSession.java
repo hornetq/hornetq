@@ -21,6 +21,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.json.JSONArray;
 
 /**
@@ -42,6 +43,8 @@ public interface ServerSession
    int getMinLargeMessageSize();
 
    Object getConnectionID();
+
+   RemotingConnection getRemotingConnection();
 
    void removeConsumer(long consumerID) throws Exception;
 

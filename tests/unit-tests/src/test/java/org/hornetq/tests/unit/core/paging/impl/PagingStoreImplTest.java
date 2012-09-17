@@ -1227,6 +1227,14 @@ public class PagingStoreImplTest extends UnitTestCase
          //
       }
 
+      public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
+      {
+      }
+
+      public void deletePageComplete(long ackID) throws Exception
+      {
+      }
+
       @Override
       public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depage) throws Exception
       {
