@@ -2289,7 +2289,7 @@ public class HornetQServerImpl implements HornetQServer
                   //its ok to retry here since we haven't started replication yet
                   //it may just be the server has gone since discovery
                   Thread.sleep(serverLocator0.getRetryInterval());
-                  signal = ALREADY_REPLICATING;
+                  signal = BACKUP_ACTIVATION.ALREADY_REPLICATING;
                   continue;
                }
 
