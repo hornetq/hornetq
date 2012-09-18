@@ -189,7 +189,7 @@ class PageSubscriptionImpl implements PageSubscription
    {
       PageCursorInfo info = new PageCursorInfo(position.getPageNr(), position.getMessageNr(), null);
       info.setCompleteInfo(position);
-      consumedPages.put(new Long(position.getPageNr()), info);
+      consumedPages.put(Long.valueOf(position.getPageNr()), info);
    }
 
    public void scheduleCleanupCheck()
@@ -378,7 +378,7 @@ class PageSubscriptionImpl implements PageSubscription
       while (true)
       {
          retPos = retPos.nextPage();
-         PageCursorInfo pageInfo = consumedPages.get((Long)retPos.getPageNr());
+         PageCursorInfo pageInfo = consumedPages.get(Long.valueOf(retPos.getPageNr()));
          if (pageInfo == null || (!pageInfo.isPendingDelete() && pageInfo.getCompleteInfo() == null))
          {
             return retPos;
@@ -759,7 +759,7 @@ class PageSubscriptionImpl implements PageSubscription
       PageCursorInfo info;
       synchronized (this)
       {
-         info = consumedPages.remove(new Long(deletedPage.getPageId()));
+         info = consumedPages.remove(Long.valueOf(deletedPage.getPageId()));
       }
       if (info != null)
       {
@@ -772,9 +772,6 @@ class PageSubscriptionImpl implements PageSubscription
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscription#executeWithContext(java.lang.Runnable)
-    */
    public Executor getExecutor()
    {
       return executor;

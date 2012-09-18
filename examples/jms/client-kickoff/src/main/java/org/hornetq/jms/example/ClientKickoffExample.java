@@ -38,7 +38,7 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class ClientKickoffExample extends HornetQExample
 {
-   private final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
+   private final static String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 
    public static void main(final String[] args)
    {
@@ -65,7 +65,8 @@ public class ClientKickoffExample extends HornetQExample
          final AtomicReference<JMSException> exception = new AtomicReference<JMSException>();
          connection.setExceptionListener(new ExceptionListener()
          {
-            public void onException(final JMSException e)
+            @Override
+			public void onException(final JMSException e)
             {
                exception.set(e);
             }
@@ -78,7 +79,7 @@ public class ClientKickoffExample extends HornetQExample
          ObjectName on = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         HornetQServerControl serverControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                             on,
                                                                                             HornetQServerControl.class,
                                                                                             false);

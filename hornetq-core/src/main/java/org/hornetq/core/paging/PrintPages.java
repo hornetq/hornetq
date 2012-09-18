@@ -149,7 +149,7 @@ public class PrintPages
                         System.out.print(" (ACK)");
                      }
 
-                     if (cursorACKs.getCompletePages(q[i]).contains(new Long(pgid)))
+                     if (cursorACKs.getCompletePages(q[i]).contains(Long.valueOf(pgid)))
                      {
                         System.out.println(" (PG-COMPLETE)");
                      }

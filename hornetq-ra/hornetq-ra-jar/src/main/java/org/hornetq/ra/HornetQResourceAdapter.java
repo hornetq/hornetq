@@ -13,7 +13,12 @@
 package org.hornetq.ra;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,9 +57,6 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 {
-   /**
-    * 
-    */
    private static final long serialVersionUID = 4756893709825838770L;
 
    /**
@@ -71,7 +73,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties
     */
    private final HornetQRAProperties raProperties;
-   
+
    /**
     * The resource adapter properties before parsing
     */
@@ -101,7 +103,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private String unparsedJndiParams;
 
-   private RecoveryManager recoveryManager;
+   private final RecoveryManager recoveryManager;
 
    private boolean useAutoRecovery = true;
 
@@ -189,7 +191,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQRALogger.LOGGER.trace("getXAResources(" + specs + ")");
+         HornetQRALogger.LOGGER.trace("getXAResources(" + Arrays.toString(specs) + ")");
       }
 
       throw new ResourceException("Unsupported");
@@ -208,7 +210,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQRALogger.LOGGER.trace("start(" + ctx + ")");
       }
-      
+
       locateTM();
 
       recoveryManager.start(useAutoRecovery);
@@ -1581,6 +1583,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
+   @Override
    public boolean equals(final Object obj)
    {
       if (HornetQResourceAdapter.trace)
@@ -1608,6 +1611,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     *
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (HornetQResourceAdapter.trace)
@@ -1893,13 +1897,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
             transportConfigurations[i] = tc;
          }
-         
+
 
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
-            HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for transport=" + transportConfigurations + " with ha=" + ha);
+            HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for transport=" +
+                     Arrays.toString(transportConfigurations) + " with ha=" + ha);
          }
-         
+
          if (ha)
          {
             cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -2003,7 +2008,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
-            HornetQRALogger.LOGGER.debug("Creating Recovery Connection Factory on the resource adapter for transport=" + transportConfigurations);
+            HornetQRALogger.LOGGER.debug("Creating Recovery Connection Factory on the resource adapter for transport=" +
+                     Arrays.toString(transportConfigurations));
          }
 
          cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -2039,12 +2045,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       return map;
    }
-   
+
    private void locateTM()
    {
       String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
       String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
-      
+
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
          tm = HornetQRaUtils.locateTM(locatorClasses[i], locatorMethods[i]);
@@ -2053,7 +2059,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             break;
          }
       }
-      
+
       if (tm == null)
       {
          HornetQRALogger.LOGGER.noTXLocator();

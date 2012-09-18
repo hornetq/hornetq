@@ -36,7 +36,7 @@ public class StompFrame
 {
    protected static final byte[] NO_DATA = new byte[] {};
 
-   protected static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
+   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
    protected String command;
 
