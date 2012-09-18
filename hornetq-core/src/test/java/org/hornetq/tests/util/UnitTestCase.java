@@ -616,7 +616,7 @@ public abstract class UnitTestCase extends TestCase
       return connectors;
    }
 
-   protected static void checkFreePort(final int... ports)
+   protected final static void checkFreePort(final int... ports)
    {
       for (int port : ports)
       {
@@ -627,7 +627,7 @@ public abstract class UnitTestCase extends TestCase
          }
          catch (Exception e)
          {
-            throw new IllegalStateException("port " + port + " is bound");
+            throw new IllegalStateException("port " + port + " is bound", e);
          }
          finally
          {
@@ -644,10 +644,6 @@ public abstract class UnitTestCase extends TestCase
          }
       }
    }
-
-   // Constructors --------------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    /**
     * @return the testDir

@@ -1519,11 +1519,7 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          // some are durable, some are not!
-         boolean durable = isDurable(i);
-         ClientMessage message = session.createMessage(durable);
-         setBody(i, message);
-         message.putIntProperty("counter", i);
-         producer.send(message);
+         producer.send(createMessage(session, i, isDurable(i)));
       }
    }
 
@@ -1611,15 +1607,8 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = NUM_MESSAGES; i < NUM_MESSAGES * 2; i++)
       {
-         ClientMessage message = session.createMessage(isDurable(i));
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
+         producer.send(createMessage(session, i, isDurable(i)));
       }
-
       receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
    }
 

@@ -312,15 +312,20 @@ public class BindingsImpl implements Bindings
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
       return "BindingsImpl [name=" + name + "]";
    }
 
+   /**
+    * This code has a race on the assigned value to routing names.
+    * <p>
+    * This is not that much of an issue because<br/>
+    * Say you have the same queue name bound into two servers. The routing will load balance between
+    * these two servers. This will eventually send more messages to one server than the other
+    * (depending if you are using multi-thread), and not lose messages.
+    */
    private Binding getNextBinding(final ServerMessage message,
                                   final SimpleString routingName,
                                   final List<Binding> bindings)
@@ -411,9 +416,7 @@ public class BindingsImpl implements Bindings
                   }
                }
 
-               pos = lastLowPriorityBinding;
-
-               pos = incrementPos(pos, length);
+               pos = incrementPos(lastLowPriorityBinding, length);
             }
             break;
          }
@@ -504,7 +507,7 @@ public class BindingsImpl implements Bindings
          }
       }
    }
-   
+
    private String debugBindings()
    {
       StringWriter writer = new StringWriter();
@@ -527,9 +530,9 @@ public class BindingsImpl implements Bindings
 //         }
          out.println();
       }
-      
+
       out.println();
-      
+
       out.println("RoutingNamePositions:");
       if (routingNamePositions.isEmpty())
       {
@@ -539,11 +542,11 @@ public class BindingsImpl implements Bindings
       {
          out.println("key=" + entry.getKey() + ", value=" + entry.getValue());
       }
-      
+
       out.println();
-      
+
       out.println("BindingsMap:");
-      
+
       if (bindingsMap.isEmpty())
       {
          out.println("EMPTY!");
@@ -552,15 +555,15 @@ public class BindingsImpl implements Bindings
       {
          out.println("Key=" + entry.getKey() + ", value=" + entry.getValue());
       }
-      
+
       out.println();
-      
+
       out.println("ExclusiveBindings:");
       if (exclusiveBindings.isEmpty())
       {
          out.println("EMPTY!");
       }
-      
+
       for (Binding binding: exclusiveBindings)
       {
          out.println(binding);

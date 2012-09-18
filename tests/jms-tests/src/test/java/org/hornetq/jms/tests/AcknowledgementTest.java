@@ -34,31 +34,12 @@ import javax.jms.TopicSubscriber;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> <p/> $Id: AcknowledgementTest.java 3173 2007-10-05 12:48:16Z
- *         timfox $
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class AcknowledgementTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   /* Topics shouldn't hold on to messages if there are no subscribers */
-
+   /** Topics shouldn't hold on to messages if there are no subscribers */
    public void testPersistentMessagesForTopicDropped() throws Exception
    {
       TopicConnection conn = null;

@@ -74,6 +74,10 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    // Constants -----------------------------------------------------
 
+   /**
+    * 
+    */
+   private static final String SEND_CALL_NUMBER = "sendCallNumber";
    protected static final long WAIT_TIMEOUT = 10000;
    private int sendMsgCount = 0;
 
@@ -87,7 +91,12 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-
+   @Override
+   protected void setUp() throws Exception
+   {
+      sendMsgCount = 0;
+      super.setUp();
+   }
 
    protected Topology waitForTopology(final HornetQServer server, final int nodes) throws Exception
    {
@@ -691,12 +700,17 @@ public abstract class ServiceTestBase extends UnitTestCase
       sendMsgCount++;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createMessage(true);
-         setBody(i, message);
-         message.putIntProperty("counter", i);
-         message.putIntProperty("sendCallNumber", sendMsgCount);
-         producer.send(message);
+         producer.send(createMessage(session, i, true));
       }
+   }
+
+   protected final ClientMessage createMessage(ClientSession session, int counter, boolean durable) throws Exception
+   {
+      ClientMessage message = session.createMessage(durable);
+      setBody(counter, message);
+      message.putIntProperty("counter", counter);
+      message.putIntProperty(SEND_CALL_NUMBER, sendMsgCount);
+      return message;
    }
 
    protected final void
@@ -708,7 +722,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          ClientMessage message = consumer.receive(1000);
          Assert.assertNotNull("Expecting a message " + i, message);
          // sendCallNumber is just a debugging measure.
-         Object prop = message.getObjectProperty("sendCallNumber");
+         Object prop = message.getObjectProperty(SEND_CALL_NUMBER);
          if (prop == null)
             prop = Integer.valueOf(-1);
          Assert.assertEquals("property['counter']=" + i + " sendNumber=" + prop, i,
