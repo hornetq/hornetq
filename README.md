@@ -45,7 +45,7 @@ Generating reports from unit tests:
 
 To run an example firstly make sure you have run
 
-```% mvn install```
+```% mvn -Prelease install```
 
 If the project version has already been released then this is unnecessary.
 
