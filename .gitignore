@@ -742,3 +742,8 @@ native/src/.deps
 */*.iml
 */*/*.iml
 */*/*/*.iml
+
+hornetq.log
+*/hornetq.log
+*/*/hornetq.log
+*/*/*/hornetq.log
