@@ -47,7 +47,7 @@
         <para>Another important part of clustering is <emphasis>server discovery</emphasis> where
             servers can broadcast their connection details so clients or other servers can connect
             to them with the minimum of configuration.</para>
-        <warning>
+        <warning id="copy-warning">
             <para>Once a cluster node has been configured it is common to simply copy that configuration
             to other nodes to produce a symmetric cluster. However, care must be taken when copying the
             HornetQ files. Do not copy the HornetQ <emphasis>data</emphasis> (i.e. the
@@ -743,6 +743,8 @@
             <para>With a symmetric cluster each node knows about all the queues that exist on all
                 the other nodes and what consumers they have. With this knowledge it can determine
                 how to load balance and redistribute messages around the nodes.</para>
+            <para>Don't forget <link linkend="copy-warning">this warning</link> when creating a
+                symmetric cluster.</para>
         </section>
         <section>
             <title>Chain cluster</title>
