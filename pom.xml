@@ -57,7 +57,7 @@
       <skipConcurrentTests>true</skipConcurrentTests>
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/ -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
+      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/ -Djgroups.bind_addr=::1</hornetq-surefire-argline>
    </properties>
 
    <scm>
