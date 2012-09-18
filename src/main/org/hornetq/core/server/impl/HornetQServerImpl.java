@@ -716,7 +716,7 @@ public class HornetQServerImpl implements HornetQServer
                      conn.fail(new HornetQException(HornetQException.DISCONNECTED, "Connection being disconnected per admin's request on destroyConnection(" + metaKey + "=" + parameterValue +")"));
                   }
                   session.close(true);
-                  sessions.remove(session);
+                  sessions.remove(session.getName());
                }
             }
             catch (Throwable e)
