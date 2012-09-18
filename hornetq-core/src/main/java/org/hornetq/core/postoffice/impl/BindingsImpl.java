@@ -416,9 +416,7 @@ public class BindingsImpl implements Bindings
                   }
                }
 
-               pos = lastLowPriorityBinding;
-
-               pos = incrementPos(pos, length);
+               pos = incrementPos(lastLowPriorityBinding, length);
             }
             break;
          }

@@ -91,13 +91,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
       }
-      PageSubscription activeCursor = activeCursors.get(cursorID);
-      if (activeCursor != null)
+
+      if (activeCursors.containsKey(cursorID))
       {
          throw new IllegalStateException("Cursor " + cursorID + " had already been created");
       }
 
-      activeCursor = new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
+      PageSubscription activeCursor =
+               new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
