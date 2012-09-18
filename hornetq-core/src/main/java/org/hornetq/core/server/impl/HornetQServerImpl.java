@@ -45,7 +45,6 @@ import javax.management.MBeanServer;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
-import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -774,7 +773,7 @@ public class HornetQServerImpl implements HornetQServer
                      conn.fail(HornetQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataSendException(metaKey, parameterValue));
                   }
                   session.close(true);
-                  sessions.remove(session);
+                  sessions.remove(session.getName());
                }
             }
             catch (Throwable e)
