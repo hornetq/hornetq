@@ -41,6 +41,14 @@ Generating reports from unit tests:
 
 ```% mvn install site```
 
+
+Running tests individually
+
+```%mvn -Phudson-tests -DfailIfNoTests=false -Dtest=<test-name> test ```
+
+where <test-name> is the name of the Test class without its package name
+
+
 ## Examples
 
 To run an example firstly make sure you have run
