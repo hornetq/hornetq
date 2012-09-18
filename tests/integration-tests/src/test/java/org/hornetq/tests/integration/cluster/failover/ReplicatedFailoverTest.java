@@ -13,6 +13,11 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientSessionInternal;
+
+import java.util.concurrent.TimeUnit;
+
 public class ReplicatedFailoverTest extends FailoverTest
 {
 
@@ -20,5 +25,39 @@ public class ReplicatedFailoverTest extends FailoverTest
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
+   }
+
+   @Override
+   protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   {
+      if (sessions.length > 0)
+      {
+         for (ClientSession session : sessions)
+         {
+            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+         }
+      }
+      else
+      {
+         waitForRemoteBackup(null, 5, true, backupServer.getServer());
+      }
+      super.crash(waitFailure, sessions);
+   }
+
+   @Override
+   protected void crash(ClientSession... sessions) throws Exception
+   {
+      if (sessions.length > 0)
+      {
+         for (ClientSession session : sessions)
+         {
+            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+         }
+      }
+      else
+      {
+         waitForRemoteBackup(null, 5, true, backupServer.getServer());
+      }
+      super.crash(sessions);
    }
 }

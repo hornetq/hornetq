@@ -2214,6 +2214,9 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator0.setReconnectAttempts(-1);
             serverLocator0.setInitialConnectAttempts(-1);
 
+            if (!initialisePart1())
+               return;
+
             synchronized (this)
             {
                if (closed)
@@ -2233,10 +2236,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startBackup();
 
-            if (!initialisePart1())
-               return;
             clusterManager.start();
-
 
             replicationEndpoint.setQuorumManager(quorumManager);
 
