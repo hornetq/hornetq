@@ -47,6 +47,16 @@
         <para>Another important part of clustering is <emphasis>server discovery</emphasis> where
             servers can broadcast their connection details so clients or other servers can connect
             to them with the minimum of configuration.</para>
+        <warning>
+            <para>Once a cluster node has been configured it is common to simply copy that configuration
+            to other nodes to produce a symmetric cluster. However, care must be taken when copying the
+            HornetQ files. Do not copy the HornetQ <emphasis>data</emphasis> (i.e. the
+            <literal>bindings</literal>, <literal>journal</literal>, and <literal>large-messages</literal>
+            directories) from one node to another. When a node is started for the first time and initializes
+            its journal files it also persists a special identifier to the <literal>journal</literal>
+            directory. This id <emphasis>must</emphasis> be unique among nodes in the cluster or the
+            cluster will not form properly.</para>
+        </warning>
     </section>
     <section id="clusters.server-discovery">
         <title>Server discovery</title>
