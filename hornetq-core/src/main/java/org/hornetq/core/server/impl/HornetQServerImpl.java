@@ -2214,6 +2214,9 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator0.setReconnectAttempts(-1);
             serverLocator0.setInitialConnectAttempts(-1);
 
+            if (!initialisePart1())
+               return;
+
             synchronized (this)
             {
                if (closed)
@@ -2233,10 +2236,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startBackup();
 
-            if (!initialisePart1())
-               return;
             clusterManager.start();
-
 
             replicationEndpoint.setQuorumManager(quorumManager);
 
@@ -2286,7 +2286,10 @@ public class HornetQServerImpl implements HornetQServer
                }
                if (liveServerSessionFactory == null)
                {
-                  signal = FAILURE_REPLICATING;
+                  //its ok to retry here since we haven't started replication yet
+                  //it may just be the server has gone since discovery
+                  Thread.sleep(serverLocator0.getRetryInterval());
+                  signal = BACKUP_ACTIVATION.ALREADY_REPLICATING;
                   continue;
                }
 
