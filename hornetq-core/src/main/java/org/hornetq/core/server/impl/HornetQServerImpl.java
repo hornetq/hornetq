@@ -243,11 +243,8 @@ public class HornetQServerImpl implements HornetQServer
    private volatile DeploymentManager deploymentManager;
 
    private Deployer basicUserCredentialsDeployer;
-
    private Deployer addressSettingsDeployer;
-
    private Deployer queueDeployer;
-
    private Deployer securityDeployer;
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
@@ -2612,41 +2609,40 @@ public class HornetQServerImpl implements HornetQServer
             }
          }
       }
+   }
 
-      final class NodeIdListener implements ClusterTopologyListener
+   static final class NodeIdListener implements ClusterTopologyListener
+   {
+      volatile boolean isNodePresent = false;
+
+      private final SimpleString nodeId;
+      private final CountDownLatch latch = new CountDownLatch(1);
+
+      public NodeIdListener(SimpleString nodeId)
       {
-         volatile boolean isNodePresent = false;
+         this.nodeId = nodeId;
+      }
 
-         private final SimpleString nodeId;
-         private final CountDownLatch latch = new CountDownLatch(1);
-
-         public NodeIdListener(SimpleString nodeId)
+      @Override
+      public void nodeUP(long eventUID, String nodeID, String nodeName,
+                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      {
+         boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
+         if (isOurNodeId)
          {
-            this.nodeId = nodeId;
+            isNodePresent = true;
          }
-
-         @Override
-         public void nodeUP(long eventUID, String nodeID, String nodeName,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+         if (isOurNodeId || last)
          {
-            boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
-            if (isOurNodeId)
-            {
-               isNodePresent = true;
-            }
-            if (isOurNodeId || last)
-            {
-               latch.countDown();
-            }
-         }
-
-         @Override
-         public void nodeDown(long eventUID, String nodeID)
-         {
-            // no-op
+            latch.countDown();
          }
       }
 
+      @Override
+      public void nodeDown(long eventUID, String nodeID)
+      {
+         // no-op
+      }
    }
 
    private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
@@ -2670,6 +2666,7 @@ public class HornetQServerImpl implements HornetQServer
 
       return tcConfigs;
    }
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.
