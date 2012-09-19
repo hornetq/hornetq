@@ -385,6 +385,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getJgroupsFile(), config.getJgroupsChannelName());
       }
+      else if (config.getChannelInstance() != null)
+      {
+         endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getChannelInstance(), config.getJgroupsChannelName());
+      }
       else
       {
          endpoint = BroadcastEndpointFactory.createUDPEndpoint(config.getGroupAddress(), config.getGroupPort(),

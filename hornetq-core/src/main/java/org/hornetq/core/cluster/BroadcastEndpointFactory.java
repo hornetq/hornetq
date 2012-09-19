@@ -3,13 +3,16 @@ package org.hornetq.core.cluster;
 import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint;
 import org.hornetq.core.cluster.impl.UDPBroadcastEndpoint;
 import org.hornetq.utils.ClassloadingUtil;
 
 public class BroadcastEndpointFactory
 {
+   public static Map<String, BroadcastEndpoint> sharedEndpoints = new HashMap<String, BroadcastEndpoint>();
+   
    public static BroadcastEndpoint createUDPEndpoint(final String groupAddress,
                                                      final int groupPort,
                                                      final String localBindAddress,
@@ -37,6 +40,25 @@ public class BroadcastEndpointFactory
          {
             BroadcastEndpoint endpoint = (BroadcastEndpoint) ClassloadingUtil.
                     newInstanceFromClassLoader("org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint", fileName, channelName);
+            return endpoint;
+         }
+      });
+   }
+
+   public synchronized static BroadcastEndpoint createJGropusEndpoint(final Object channel, final String channelName)
+   {
+      BroadcastEndpoint point = sharedEndpoints.get(channelName);
+      if (point != null)
+      {
+         return point;
+      }
+      return AccessController.doPrivileged(new PrivilegedAction<BroadcastEndpoint>()
+      {
+         public BroadcastEndpoint run()
+         {
+            BroadcastEndpoint endpoint = (BroadcastEndpoint) ClassloadingUtil.
+                    newInstanceFromClassLoader2("org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint", channel, channelName);
+            sharedEndpoints.put(channelName, endpoint);
             return endpoint;
          }
       });

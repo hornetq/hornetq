@@ -70,7 +70,6 @@ import org.hornetq.utils.FutureLatch;
  */
 public class ClusterManager implements HornetQComponent
 {
-
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
 
    private final Map<String, Bridge> bridges = new HashMap<String, Bridge>();
@@ -805,6 +804,10 @@ public class ClusterManager implements HornetQComponent
           {
              endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getJgroupsFile(),
                  config.getJgroupsChannel());
+          }
+          else if (config.getChannelInstance() != null)
+          {
+             endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getChannelInstance(), config.getJgroupsChannel());
           }
           else
           {

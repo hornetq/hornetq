@@ -47,6 +47,30 @@ public class BroadcastGroupConfiguration implements Serializable
    private String jgroupsChannel;
 
    private List<String> connectorInfos;
+   
+   private String jgroupsRef;
+   
+   private transient Object channelInstance;
+
+   public BroadcastGroupConfiguration(final String name,
+                                      final String localBindAddress,
+                                      final int localBindPort,
+                                      final String groupAddress,
+                                      final int groupPort,
+                                      final long broadcastPeriod,
+                                      final List<String> connectorInfos,
+                                      final String jgroupsRef)
+   {
+      super();
+      this.name = name;
+      this.localBindAddress = localBindAddress;
+      this.localBindPort = localBindPort;
+      this.groupAddress = groupAddress;
+      this.groupPort = groupPort;
+      this.broadcastPeriod = broadcastPeriod;
+      this.connectorInfos = connectorInfos;
+      this.jgroupsRef = jgroupsRef;
+   }
 
    public BroadcastGroupConfiguration(final String name,
                                       final String localBindAddress,
@@ -196,5 +220,25 @@ public class BroadcastGroupConfiguration implements Serializable
    public void setJgroupsChannel(String jgroupsChannel)
    {
       this.jgroupsChannel = jgroupsChannel;
+   }
+
+   public String getJgroupsRef()
+   {
+      return jgroupsRef;
+   }
+
+   public void setJgroupsRef(String jgroupsRef)
+   {
+      this.jgroupsRef = jgroupsRef;
+   }
+   
+   public Object getChannelInstance()
+   {
+      return channelInstance;
+   }
+   
+   public void setChannelInstance(Object instance)
+   {
+      this.channelInstance = instance;
    }
 }

@@ -155,7 +155,8 @@ public class UDPBroadcastEndpoint implements BroadcastEndpoint
       open = true;
    }
 
-   public void close() throws Exception
+   //@Todo: using isBroadcast to share endpoint between broadcast and receiving
+   public void close(boolean isBroadcast) throws Exception
    {
       open = false;
       

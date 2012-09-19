@@ -1,5 +1,6 @@
 package org.hornetq.utils;
 
+import java.lang.reflect.Constructor;
 import java.net.URL;
 
 /**
@@ -65,6 +66,71 @@ public class ClassloadingUtil
          }
          Class<?> clazz = loader.loadClass(className);
          return clazz.getConstructor(parametersType).newInstance(objs);
+      }
+      catch (Throwable t)
+      {
+         if (t instanceof InstantiationException)
+         {
+            System.out.println(INSTANTIATION_EXCEPTION_MESSAGE);
+         }
+         loader = Thread.currentThread().getContextClassLoader();
+         if (loader == null)
+            throw new RuntimeException("No local context classloader", t);
+
+         try
+         {
+            return loader.loadClass(className).newInstance();
+         }
+         catch (InstantiationException e)
+         {
+            throw new RuntimeException(INSTANTIATION_EXCEPTION_MESSAGE + " " + className, e);
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+         catch (IllegalAccessException e)
+         {
+            throw new RuntimeException(e);
+         }
+      }
+   }
+
+   public static Object newInstanceFromClassLoader2(final String className, Object... objs)
+   {
+      ClassLoader loader = ClassloadingUtil.class.getClassLoader();
+      try
+      {
+         Class<?> clazz = loader.loadClass(className);
+         Constructor<?>[] constructors = clazz.getConstructors();
+         Constructor<?> found = null;
+         for (Constructor<?> cotr : constructors)
+         {
+            Class<?>[] paramTypes = cotr.getParameterTypes();
+            if (paramTypes.length == objs.length)
+            {
+               boolean match = true;
+               for (int i = 0; i < objs.length; i++)
+               {
+                  if (!paramTypes[i].isInstance(objs[i]))
+                  {
+                     match = false;
+                     break;
+                  }
+                  objs[i] = paramTypes[i].cast(objs[i]);
+               }
+               if (match)
+               {
+                  found = cotr;
+                  break;
+               }
+            }
+         }
+         if (found == null)
+         {
+            throw new InstantiationException("No suitable constructor found for " + className);
+         }
+         return found.newInstance(objs);
       }
       catch (Throwable t)
       {

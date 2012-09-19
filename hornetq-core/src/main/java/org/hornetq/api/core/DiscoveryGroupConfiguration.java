@@ -52,6 +52,29 @@ public class DiscoveryGroupConfiguration implements Serializable
    private String jgroupsFile;
 
    private String jgroupsChannelName;
+   
+   private String jgroupsRef;
+   
+   private transient Object channelInstance;
+
+   public DiscoveryGroupConfiguration(final String name,
+                                      final String localBindAddress,
+                                      final int localBindPort,
+                                      final String groupAddress,
+                                      final int groupPort,
+                                      final long refreshTimeout,
+                                      final long discoveryInitialWaitTimeout,
+                                      final String jgroupsRef)
+   {
+      this.name = name;
+      this.localBindPort = localBindPort;
+      this.groupAddress = groupAddress;
+      this.localBindAddress = localBindAddress;
+      this.groupPort = groupPort;
+      this.refreshTimeout = refreshTimeout;
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+      this.jgroupsRef = jgroupsRef;
+   }
 
    public DiscoveryGroupConfiguration(final String name,
                                       final String localBindAddress,
@@ -215,6 +238,26 @@ public class DiscoveryGroupConfiguration implements Serializable
    public void setJgroupsChannelName(String jgroupsChannelName)
    {
       this.jgroupsChannelName = jgroupsChannelName;
+   }
+
+   public String getJgroupsRef()
+   {
+      return jgroupsRef;
+   }
+
+   public void setJgroupsRef(String jgroupsRef)
+   {
+      this.jgroupsRef = jgroupsRef;
+   }
+   
+   public Object getChannelInstance()
+   {
+      return channelInstance;
+   }
+   
+   public void setChannelInstance(Object instance)
+   {
+      this.channelInstance = instance;
    }
 
    @Override
