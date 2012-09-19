@@ -14,6 +14,11 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientSessionInternal;
+
+import java.util.concurrent.TimeUnit;
+
 /**
  * A ReplicatedLargeMessageFailoverTest
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -25,5 +30,39 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
+   }
+
+   @Override
+   protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   {
+      if (sessions.length > 0)
+      {
+         for (ClientSession session : sessions)
+         {
+            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+         }
+      }
+      else
+      {
+         waitForRemoteBackup(null, 5, true, backupServer.getServer());
+      }
+      super.crash(waitFailure, sessions);
+   }
+
+   @Override
+   protected void crash(ClientSession... sessions) throws Exception
+   {
+      if (sessions.length > 0)
+      {
+         for (ClientSession session : sessions)
+         {
+            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+         }
+      }
+      else
+      {
+         waitForRemoteBackup(null, 5, true, backupServer.getServer());
+      }
+      super.crash(sessions);
    }
 }
