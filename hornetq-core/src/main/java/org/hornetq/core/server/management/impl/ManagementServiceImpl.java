@@ -685,7 +685,7 @@ public class ManagementServiceImpl implements ManagementService
                // start sending notification *messages* only when server has initialised
                // Note at backup initialisation we don't want to send notifications either
                // https://jira.jboss.org/jira/browse/HORNETQ-317
-               if (messagingServer == null || !messagingServer.isInitialised())
+               if (messagingServer == null || !messagingServer.isActive())
                {
             	  if (HornetQLogger.LOGGER.isDebugEnabled())
             	  {

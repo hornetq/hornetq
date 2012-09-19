@@ -156,9 +156,9 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       syncDelay.deliverUpToDateMsg();
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
-      assertFalse("should not be initialized", backupServer.getServer().isInitialised());
+      assertFalse("should not be initialized", backupServer.getServer().isActive());
       crash(session);
-      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
+      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
    }
 
    public void testMessageSyncSimple() throws Exception
@@ -191,7 +191,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       waitForServer(liveServer.getServer());
       assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
 
-      assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+      assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
       assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().isBackup());
       int i = 0;
       while (backupServer.isStarted() && i++ < 100)
@@ -220,7 +220,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       backupServer.start();
       waitForBackup(sessionFactory, BACKUP_WAIT_TIME);
       crash(session);
-      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
+      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
    }
 
    protected void createProducerSendSomeMessages() throws HornetQException, Exception

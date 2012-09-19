@@ -38,14 +38,10 @@ public class SameProcessHornetQServer implements TestableServer
       this.server = server;
    }
 
-   public boolean isInitialised()
+   @Override
+   public boolean isActive()
    {
-      return server.isInitialised();
-   }
-
-   public void destroy()
-   {
-      // To change body of implemented methods use File | Settings | File Templates.
+      return server.isActive();
    }
 
    public void setIdentity(String identity)
@@ -92,7 +88,7 @@ public class SameProcessHornetQServer implements TestableServer
          session.addFailureListener(listener);
       }
 
-      ClusterManager clusterManager = (ClusterManager) server.getClusterManager();
+      ClusterManager clusterManager = server.getClusterManager();
       clusterManager.flushExecutor();
       clusterManager.clear();
       Assert.assertTrue("server should be running!", server.isStarted());

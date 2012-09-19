@@ -40,23 +40,15 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
    @Override
    protected void tearDown() throws Exception
    {
-      for (TestableServer testableServer : servers.values())
+      try
       {
-         if (testableServer != null)
-         {
-            try
-            {
-               testableServer.destroy();
-            }
-            catch (Throwable e)
-            {
-               //
-            }
-         }
+         closeServerLocator(locator);
+         closeServerLocator(locator2);
       }
-      closeServerLocator(locator);
-      closeServerLocator(locator2);
-      super.tearDown();
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    public void testMultipleFailovers2LiveServers() throws Exception

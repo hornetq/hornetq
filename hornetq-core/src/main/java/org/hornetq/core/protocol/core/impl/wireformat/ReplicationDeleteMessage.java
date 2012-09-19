@@ -26,18 +26,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationDeleteMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long id;
 
    /** 0 - Bindings, 1 - MessagesJournal */
    private byte journalID;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationDeleteMessage()
    {
@@ -81,5 +73,32 @@ public class ReplicationDeleteMessage extends PacketImpl
    public byte getJournalID()
    {
       return journalID;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(id ^ (id >>> 32));
+      result = prime * result + journalID;
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof ReplicationDeleteMessage))
+         return false;
+      ReplicationDeleteMessage other = (ReplicationDeleteMessage)obj;
+      if (id != other.id)
+         return false;
+      if (journalID != other.journalID)
+         return false;
+      return true;
    }
 }

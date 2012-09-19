@@ -3,6 +3,9 @@ package org.hornetq.tests.integration.cluster.failover;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 
+/**
+ * See {@link BackupSyncDelay} for the rationale about these 'WithDelay' tests.
+ */
 public class ReplicatedWithDelayFailoverTest extends ReplicatedFailoverTest
 {
 

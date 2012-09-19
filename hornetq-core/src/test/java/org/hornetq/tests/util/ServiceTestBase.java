@@ -330,7 +330,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (!server.getConfiguration().isBackup())
       {
-         if (!server.waitForInitialization(wait, TimeUnit.MILLISECONDS))
+         if (!server.waitForActivation(wait, TimeUnit.MILLISECONDS))
             fail("Server didn't initialize: " + server);
       }
    }

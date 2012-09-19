@@ -12,15 +12,19 @@
  */
 package org.hornetq.core.server.group.impl;
 
+import java.io.Serializable;
+
 import org.hornetq.api.core.SimpleString;
 
 /**
  * A remote Grouping handler configuration
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class GroupingHandlerConfiguration
+public class GroupingHandlerConfiguration implements Serializable
 {
+   private static final long serialVersionUID = -4600283023652477326L;
+
    private final SimpleString name;
 
    private final TYPE type;

@@ -49,7 +49,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
    // We try to separate old record from new ones when doing the compacting
    // this is a split line
    // We will force a moveNextFiles when the compactCount is bellow than COMPACT_SPLIT_LINE
-   private final short COMPACT_SPLIT_LINE = 2;
+   private static final short COMPACT_SPLIT_LINE = 2;
 
    // Snapshot of transactions that were pending when the compactor started
    private final Map<Long, PendingTransaction> pendingTransactions = new ConcurrentHashMap<Long, PendingTransaction>();
