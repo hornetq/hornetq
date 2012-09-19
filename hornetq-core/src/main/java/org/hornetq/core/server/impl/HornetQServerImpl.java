@@ -2298,8 +2298,6 @@ public class HornetQServerImpl implements HornetQServer
                * {@link QuorumManager}
                */
                signal = quorumManager.waitForStatusChange();
-               //close this session factory, we're done with it
-               liveServerSessionFactory.close();
                //not sure why we stop this @Francisco
                stopComponent(replicationEndpoint);
                //time to give up
@@ -2330,6 +2328,8 @@ public class HornetQServerImpl implements HornetQServer
                   return;
                }
                //ok, this live is no good, lets reset and try again
+               //close this session factory, we're done with it
+               liveServerSessionFactory.close();
                quorumManager.reset();
                if (replicationEndpoint.getChannel() != null)
                {
