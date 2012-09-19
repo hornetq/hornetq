@@ -13,25 +13,17 @@
 
 package org.hornetq.core.cluster.impl;
 
-import java.net.URL;
-
 import org.jgroups.JChannel;
-
 
 /**
  * This class is the implementation of HornetQ members discovery that will use JGroups.
- * @author Tomohisa
  * @author Howard Gao
- * @author Clebert Suconic
  */
-public class JGroupsBroadcastEndpoint extends AbstractJGroupsBroadcastEndpoint
+public class AS7JGroupsBroadcastEndpoint extends AbstractJGroupsBroadcastEndpoint
 {
-   private final String fileName;
-
-   public JGroupsBroadcastEndpoint(final String fileName, final String channelName)
+   public AS7JGroupsBroadcastEndpoint(final JChannel channel, final String channelName)
    {
-      super(channelName);
-      this.fileName = fileName;
+      super(channel, channelName);
    }
 
    /**
@@ -41,16 +33,6 @@ public class JGroupsBroadcastEndpoint extends AbstractJGroupsBroadcastEndpoint
     */
    protected void internalOpen() throws Exception
    {
-      if (channel == null)
-      {
-         URL configURL = Thread.currentThread().getContextClassLoader().getResource(this.fileName);
-         if (configURL == null)
-         {
-            throw new RuntimeException("couldn't find JGroups configuration " + fileName);
-         }
-         channel = new JChannel(configURL);
-      }
-
       if (channel.isConnected()) return;
       channel.connect(this.channelName);
    }
