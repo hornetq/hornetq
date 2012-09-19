@@ -25,7 +25,7 @@ public interface BroadcastEndpoint
 
    void openBroadcaster() throws Exception;
 
-   void close() throws Exception;
+   void close(boolean isBroadcast) throws Exception;
 
    void broadcast(byte[] data) throws Exception;
 

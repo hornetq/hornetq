@@ -135,7 +135,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       try
       {
-         endpoint.close();
+         endpoint.close(true);
       }
       catch (Exception e1)
       {

@@ -149,7 +149,7 @@ public class DiscoveryGroup
 
       try
       {
-         endpoint.close();
+         endpoint.close(false);
       }
       catch (Exception e1)
       {
