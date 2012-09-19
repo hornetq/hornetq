@@ -139,7 +139,7 @@ public interface HornetQServer extends HornetQComponent
 
    SimpleString getNodeID();
 
-   boolean isInitialised();
+   boolean isActive();
 
    /**
     * Wait for server initialization.
@@ -150,7 +150,7 @@ public interface HornetQServer extends HornetQComponent
     *         timeout period, {@code false} otherwise.
     * @throws InterruptedException
     */
-   boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException;
+   boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException;
 
    Queue createQueue(SimpleString address,
                      SimpleString queueName,

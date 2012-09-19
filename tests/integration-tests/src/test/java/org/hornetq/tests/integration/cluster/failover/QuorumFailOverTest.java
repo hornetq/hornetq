@@ -70,7 +70,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 
       waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
 
-      assertTrue(servers[3].waitForInitialization(2, TimeUnit.SECONDS));
+      assertTrue(servers[3].waitForActivation(2, TimeUnit.SECONDS));
       assertFalse("3 should have failed over ", servers[3].getConfiguration().isBackup());
 
       failNode(1);

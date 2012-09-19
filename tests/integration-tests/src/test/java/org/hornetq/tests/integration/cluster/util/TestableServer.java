@@ -40,8 +40,7 @@ public interface TestableServer extends HornetQComponent
    
    public void crash(boolean waitFailure, ClientSession... sessions) throws Exception;
 
-   public boolean isInitialised();
-
+   public boolean isActive();
    void destroy();
 
    boolean isStarted();

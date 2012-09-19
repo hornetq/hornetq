@@ -253,11 +253,11 @@ public class HornetQServerImpl implements HornetQServer
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    /**
-    * We guard the {@code initialised} field because if we restart a {@code HornetQServer}, we need
-    * to replace the {@code CountDownLatch} by a new one.
+    * We guard the {@code activationLatch} field because if we restart a {@code HornetQServer}, we
+    * need to replace the {@code CountDownLatch} by a new one.
     */
-   private final Object initialiseGuard = new Object();
-   private CountDownLatch initialised = new CountDownLatch(1);
+   private final Object activationLatchGuard = new Object();
+   private CountDownLatch activationLatch = new CountDownLatch(1);
 
    private final Object replicationLock = new Object();
 
@@ -683,12 +683,12 @@ public class HornetQServerImpl implements HornetQServer
          sessions.clear();
 
          state = SERVER_STATE.STOPPED;
-         synchronized (initialiseGuard)
+         synchronized (activationLatchGuard)
          {
             // replace the latch only if necessary. It could still be '1' in case of errors
             // during start-up.
-            if (initialised.getCount() < 1)
-               initialised = new CountDownLatch(1);
+            if (activationLatch.getCount() < 1)
+               activationLatch = new CountDownLatch(1);
          }
 
          // to display in the log message
@@ -992,21 +992,21 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public boolean isInitialised()
+   public boolean isActive()
    {
-      synchronized (initialiseGuard)
+      synchronized (activationLatchGuard)
       {
-         return initialised.getCount() < 1;
+         return activationLatch.getCount() < 1;
       }
    }
 
    @Override
-   public boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException
+   public boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException
    {
       CountDownLatch latch;
-      synchronized (initialiseGuard)
+      synchronized (activationLatchGuard)
       {
-         latch = initialised;
+         latch = activationLatch;
       }
       return latch.await(timeout, unit);
    }
@@ -1553,7 +1553,7 @@ public class HornetQServerImpl implements HornetQServer
 
       remotingService.start();
 
-      initialised.countDown();
+      activationLatch.countDown();
    }
 
    /**
