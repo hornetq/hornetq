@@ -65,19 +65,19 @@ public class LastValueQueueExample extends HornetQExample
          TextMessage message = session.createTextMessage("1st message with Last-Value property set");
          message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
          producer.send(message);
-         System.out.format("Sent message: %s\n", message.getText());
+         System.out.format("Sent message: %s%n", message.getText());
 
          // Step 6. Create and send a second text message with the Last-Value header set
          message = session.createTextMessage("2nd message with Last-Value property set");
          message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
          producer.send(message);
-         System.out.format("Sent message: %s\n", message.getText());
+         System.out.format("Sent message: %s%n", message.getText());
 
          // Step 7. Create and send a third text message with the Last-Value header set
          message = session.createTextMessage("3rd message with Last-Value property set");
          message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
          producer.send(message);
-         System.out.format("Sent message: %s\n", message.getText());
+         System.out.format("Sent message: %s%n", message.getText());
 
          // Step 8. Browse the queue. There is only 1 message in it, the last sent
          QueueBrowser browser = session.createBrowser(queue);
@@ -85,7 +85,7 @@ public class LastValueQueueExample extends HornetQExample
          while (enumeration.hasMoreElements())
          {
             TextMessage messageInTheQueue = (TextMessage)enumeration.nextElement();
-            System.out.format("Message in the queue: %s\n", messageInTheQueue.getText());
+            System.out.format("Message in the queue: %s%n", messageInTheQueue.getText());
          }
          browser.close();
 
@@ -98,13 +98,13 @@ public class LastValueQueueExample extends HornetQExample
          // Step 11. Trying to receive a message. Since the queue is configured to keep only the
          // last message with the Last-Value header set, the message received is the last sent
          TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
-         System.out.format("Received message: %s\n", messageReceived.getText());
+         System.out.format("Received message: %s%n", messageReceived.getText());
 
          // Step 12. Trying to receive another message but there will be none.
          // The 1st message was discarded when the 2nd was sent to the queue.
          // The 2nd message was in turn discarded when the 3trd was sent to the queue
          messageReceived = (TextMessage)messageConsumer.receive(5000);
-         System.out.format("Received message: %s\n", messageReceived);
+         System.out.format("Received message: %s%n", messageReceived);
 
          initialContext.close();
 

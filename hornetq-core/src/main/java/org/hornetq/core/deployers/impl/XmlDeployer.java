@@ -91,7 +91,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
             added.add(name);
             // if this has never been deployed deploy
             Map<String, Node> map = configuration.get(url);
-            if (map == null || map != null && map.get(name) == null)
+            if (map == null || map.get(name) == null)
             {
                deploy(node);
             }

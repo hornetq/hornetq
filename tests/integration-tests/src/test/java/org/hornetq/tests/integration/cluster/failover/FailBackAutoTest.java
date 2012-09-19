@@ -222,7 +222,7 @@ public class FailBackAutoTest extends FailoverTestBase
       liveServer.start();
 
       assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
-      assertTrue("live initialized after restart", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+      assertTrue("live initialized after restart", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
 
       session.start();
       receiveMessages(consumer, 0, NUM_MESSAGES, true);

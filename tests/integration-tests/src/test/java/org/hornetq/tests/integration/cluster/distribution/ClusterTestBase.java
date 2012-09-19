@@ -355,7 +355,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void waitForServerRestart(final int node) throws Exception
    {
-      if (!servers[node].waitForInitialization(ServiceTestBase.WAIT_TIMEOUT, TimeUnit.MILLISECONDS))
+      if (!servers[node].waitForActivation(ServiceTestBase.WAIT_TIMEOUT, TimeUnit.MILLISECONDS))
       {
          String msg = "Timed out waiting for server starting = " + node;
 

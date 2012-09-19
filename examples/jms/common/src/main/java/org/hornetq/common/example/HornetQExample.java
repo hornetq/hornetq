@@ -11,6 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.common.example;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import javax.jms.Connection;
+import javax.naming.InitialContext;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -19,29 +27,22 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.naming.InitialContext;
-
 /**
- * a baee class for examples. This takes care of starting and stopping the server as well as deploying any queue needed.
+ * Base class for HornetQ examples.
+ * <p>
+ * This takes care of starting and stopping the server as well as deploying any
+ * queue needed.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public abstract class HornetQExample
 {
-   protected static Logger log = Logger.getLogger(HornetQExample.class.getName());
+   protected static final Logger log = Logger.getLogger(HornetQExample.class
+			.getName());
 
    protected boolean failure = false;
 
    private String[] args;
-
 
    public abstract boolean runExample() throws Exception;
 
@@ -96,7 +97,7 @@ public abstract class HornetQExample
       File file = new File(configDir + "/server" + id + "/KILL_ME");
 
       file.createNewFile();
-      
+
       // Sleep longer than the KillChecker check period
       Thread.sleep(3000);
    }

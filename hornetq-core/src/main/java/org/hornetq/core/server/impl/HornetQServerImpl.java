@@ -243,21 +243,18 @@ public class HornetQServerImpl implements HornetQServer
    private volatile DeploymentManager deploymentManager;
 
    private Deployer basicUserCredentialsDeployer;
-
    private Deployer addressSettingsDeployer;
-
    private Deployer queueDeployer;
-
    private Deployer securityDeployer;
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    /**
-    * We guard the {@code initialised} field because if we restart a {@code HornetQServer}, we need
-    * to replace the {@code CountDownLatch} by a new one.
+    * We guard the {@code activationLatch} field because if we restart a {@code HornetQServer}, we
+    * need to replace the {@code CountDownLatch} by a new one.
     */
-   private final Object initialiseGuard = new Object();
-   private CountDownLatch initialised = new CountDownLatch(1);
+   private final Object activationLatchGuard = new Object();
+   private CountDownLatch activationLatch = new CountDownLatch(1);
 
    private final Object replicationLock = new Object();
 
@@ -683,12 +680,12 @@ public class HornetQServerImpl implements HornetQServer
          sessions.clear();
 
          state = SERVER_STATE.STOPPED;
-         synchronized (initialiseGuard)
+         synchronized (activationLatchGuard)
          {
             // replace the latch only if necessary. It could still be '1' in case of errors
             // during start-up.
-            if (initialised.getCount() < 1)
-               initialised = new CountDownLatch(1);
+            if (activationLatch.getCount() < 1)
+               activationLatch = new CountDownLatch(1);
          }
 
          // to display in the log message
@@ -992,21 +989,21 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public boolean isInitialised()
+   public boolean isActive()
    {
-      synchronized (initialiseGuard)
+      synchronized (activationLatchGuard)
       {
-         return initialised.getCount() < 1;
+         return activationLatch.getCount() < 1;
       }
    }
 
    @Override
-   public boolean waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException
+   public boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException
    {
       CountDownLatch latch;
-      synchronized (initialiseGuard)
+      synchronized (activationLatchGuard)
       {
-         latch = initialised;
+         latch = activationLatch;
       }
       return latch.await(timeout, unit);
    }
@@ -1553,7 +1550,7 @@ public class HornetQServerImpl implements HornetQServer
 
       remotingService.start();
 
-      initialised.countDown();
+      activationLatch.countDown();
    }
 
    /**
@@ -2612,41 +2609,40 @@ public class HornetQServerImpl implements HornetQServer
             }
          }
       }
+   }
 
-      final class NodeIdListener implements ClusterTopologyListener
+   static final class NodeIdListener implements ClusterTopologyListener
+   {
+      volatile boolean isNodePresent = false;
+
+      private final SimpleString nodeId;
+      private final CountDownLatch latch = new CountDownLatch(1);
+
+      public NodeIdListener(SimpleString nodeId)
       {
-         volatile boolean isNodePresent = false;
+         this.nodeId = nodeId;
+      }
 
-         private final SimpleString nodeId;
-         private final CountDownLatch latch = new CountDownLatch(1);
-
-         public NodeIdListener(SimpleString nodeId)
+      @Override
+      public void nodeUP(long eventUID, String nodeID, String nodeName,
+                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      {
+         boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
+         if (isOurNodeId)
          {
-            this.nodeId = nodeId;
+            isNodePresent = true;
          }
-
-         @Override
-         public void nodeUP(long eventUID, String nodeID, String nodeName,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+         if (isOurNodeId || last)
          {
-            boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
-            if (isOurNodeId)
-            {
-               isNodePresent = true;
-            }
-            if (isOurNodeId || last)
-            {
-               latch.countDown();
-            }
-         }
-
-         @Override
-         public void nodeDown(long eventUID, String nodeID)
-         {
-            // no-op
+            latch.countDown();
          }
       }
 
+      @Override
+      public void nodeDown(long eventUID, String nodeID)
+      {
+         // no-op
+      }
    }
 
    private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
@@ -2670,6 +2666,7 @@ public class HornetQServerImpl implements HornetQServer
 
       return tcConfigs;
    }
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.

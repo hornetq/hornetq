@@ -43,7 +43,7 @@ import org.hornetq.common.example.HornetQExample;
  */
 public class MessageCounterExample extends HornetQExample
 {
-   private final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
+   private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
 
    public static void main(final String[] args)
    {
@@ -82,9 +82,10 @@ public class MessageCounterExample extends HornetQExample
 
          // Step 7. Use JMX to retrieve the message counters using the JMSQueueControl
          ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
-         JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
+         JMXConnector connector =
+                  JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, Object>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         JMSQueueControl queueControl = MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                       on,
                                                                                       JMSQueueControl.class,
                                                                                       false);
@@ -113,7 +114,7 @@ public class MessageCounterExample extends HornetQExample
 
          // Step 14. Receive a JMS message from the queue. It corresponds to the message sent at step #5
          TextMessage messageReceived = (TextMessage)consumer.receive(5000);
-         System.out.format("Received message: %s\n\n", messageReceived.getText());
+         System.out.format("Received message: %s%n%n", messageReceived.getText());
 
          // Step 15. Sleep on last time to have the queue sampled
          System.out.println("Sleep a little bit one last time...");
@@ -142,14 +143,14 @@ public class MessageCounterExample extends HornetQExample
 
    private void displayMessageCounter(final MessageCounterInfo counter)
    {
-      System.out.format("%s (sample updated at %s)\n", counter.getName(), counter.getUdpateTimestamp());
-      System.out.format("   %s message(s) added to the queue (since last sample: %s)\n",
+      System.out.format("%s (sample updated at %s)%n", counter.getName(), counter.getUdpateTimestamp());
+      System.out.format("   %s message(s) added to the queue (since last sample: %s)%n",
                         counter.getCount(),
                         counter.getCountDelta());
-      System.out.format("   %s message(s) in the queue (since last sample: %s)\n",
+      System.out.format("   %s message(s) in the queue (since last sample: %s)%n",
                         counter.getDepth(),
                         counter.getDepthDelta());
-      System.out.format("   last message added at %s\n\n", counter.getLastAddTimestamp());
+      System.out.format("   last message added at %s%n%n", counter.getLastAddTimestamp());
    }
 
 }

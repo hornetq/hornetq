@@ -199,6 +199,9 @@ public final class UUID
                case 8:
                case 10:
                   b.append('-');
+                  break;
+               default:
+                  // no-op
             }
             int hex = mId[i] & 0xFF;
             b.append(UUID.kHexChars.charAt(hex >> 4));
@@ -217,7 +220,7 @@ public final class UUID
     * Creates a 128bit number from the String representation of {@link UUID}.
     * @param uuid
     * @return byte array that can be used to recreate a UUID instance from the given String
-    *         reprentation
+    *         representation
     */
    public static byte[] stringToBytes(String uuid)
    {

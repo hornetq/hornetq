@@ -85,7 +85,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          for (int node : nodes)
          {
             TestableServer backupServer = servers.get(node);
-            if (newLive == -1 && backupServer.isInitialised())
+            if (newLive == -1 && backupServer.isActive())
             {
                newLive = node;
             }

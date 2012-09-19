@@ -28,7 +28,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * A simple JMS Queue example that sends and receives message groups.
@@ -37,7 +36,7 @@ import org.hornetq.jms.client.HornetQMessage;
  */
 public class MessageGroup2Example extends HornetQExample
 {
-   private Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
+   private final Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
    private boolean result = true;
 
    public static void main(String[] args)
@@ -45,6 +44,7 @@ public class MessageGroup2Example extends HornetQExample
       new MessageGroup2Example().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection = null;
@@ -118,7 +118,7 @@ public class MessageGroup2Example extends HornetQExample
          return result;
       }
       finally
-      {                                                                                     
+      {
          //Step 11. Be sure to close our JMS resources!
          if (initialContext != null)
          {
@@ -133,7 +133,7 @@ public class MessageGroup2Example extends HornetQExample
 
    private class SimpleMessageListener implements MessageListener
    {
-      private String name;
+      private final String name;
 
       public SimpleMessageListener(String listenerName)
       {
@@ -145,7 +145,7 @@ public class MessageGroup2Example extends HornetQExample
          try
          {
             TextMessage msg = (TextMessage)message;
-            System.out.format("Message: [%s] received by %s\n",
+            System.out.format("Message: [%s] received by %s%n",
                               msg.getText(),
                               name);
             messageReceiverMap.put(msg.getText(), name);

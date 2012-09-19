@@ -34,7 +34,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example demonstrates the ability of HornetQ to send and consume a very large message, much
  * bigger than can fit in RAM.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -45,11 +45,14 @@ public class LargeMessageExample extends HornetQExample
       new LargeMessageExample().run(args);
    }
 
-   // The message we will send is size 10GiB, even though we are only running in 50MB of RAM on both client and server.
-   // This may take some considerable time to create, send and consume - if it takes too long or you don't have
-   // enough disk space just reduce the file size here
-
-  private final long FILE_SIZE = 2L * 1024 * 1024 * 1024; // 10 GiB message
+   /**
+    * The message we will send is size 10GiB, even though we are only running in 50MB of RAM on both
+    * client and server.
+    * <p>
+    * This may take some considerable time to create, send and consume - if it takes too long or you
+    * don't have enough disk space just reduce the file size here
+    */
+   private static final long FILE_SIZE = 2L * 1024 * 1024 * 1024; // 10 GiB message
 
    @Override
    public boolean runExample() throws Exception

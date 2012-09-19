@@ -593,7 +593,7 @@ public class FailoverTest extends FailoverTestBase
       adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
       beforeRestart(liveServer);
       liveServer.start();
-      assertTrue("live initialized...", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+      assertTrue("live initialized...", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
 
       sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
@@ -643,13 +643,13 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      backupServer.getServer().waitForInitialization(5, TimeUnit.SECONDS);
+      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
       beforeRestart(liveServer);
       liveServer.start();
-      liveServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+      liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
 
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
@@ -697,7 +697,7 @@ public class FailoverTest extends FailoverTestBase
          adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
          beforeRestart(liveServer);
          liveServer.start();
-         assertTrue("live initialized...", liveServer.getServer().waitForInitialization(15, TimeUnit.SECONDS));
+         assertTrue("live initialized...", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
          int i = 0;
          while (backupServer.isStarted() && i++ < 100)
          {
@@ -710,7 +710,7 @@ public class FailoverTest extends FailoverTestBase
          backupServer.stop();
          beforeRestart(backupServer);
          backupServer.start();
-         backupServer.getServer().waitForInitialization(10, TimeUnit.SECONDS);
+         backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
       }
 
       ClientSession session2 = createSession(sf, false, false);

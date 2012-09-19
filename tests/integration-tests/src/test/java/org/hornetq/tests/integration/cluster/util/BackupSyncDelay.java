@@ -22,14 +22,23 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 /**
  * An interceptor to keep a replicated backup server from reaching "up-to-date" status.
  * <p>
+ * There are 3 test scenarios for 'adding data to a remote backup':<br/>
+ * 1. sync data that already existed <br/>
+ * 2. adding `new` Journal updates (that arrived after the backup appeared) WHILE sync'ing happens<br/>
+ * 3. adding `new` Journal updates AFTER sync'ing is done<br/>
+ * <p>
+ * These 'withDelay' tests were created to test/verify data transfers of type 2. because there is so
+ * little data, if we don't delay the sync message, we cannot be sure we are testing scenario .2.
+ * because the sync will be done too fast.
+ * <p>
  * One problem is that we can't add an interceptor to the backup before starting it. So we add the
  * interceptor to the 'live' which will place a different {@link ChannelHandler} in the backup
  * during the initialization of replication.
  * <p>
  * We need to hijack the replication channel handler, because we need to
  * <ol>
- * <li>send an early answer to the {@link PacketImpl#REPLICATION_SYNC_FILE} packet that signals being
- * up-to-date
+ * <li>send an early answer to the {@link PacketImpl#REPLICATION_SYNC_FILE} packet that signals
+ * being up-to-date
  * <li>not send an answer to it, when we deliver the packet later.
  * </ol>
  */

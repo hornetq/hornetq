@@ -336,9 +336,9 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          executor = createExecutor();
       }
-      
+
       initPasswords();
-      
+
       checkParams();
 
       TransactionManager tm = getTm();
@@ -831,21 +831,21 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    // Private -------------------------------------------------------------------
 
-   private void checkParams()
+   private synchronized void checkParams()
    {
-      JMSBridgeImpl.checkNotNull(sourceCff, "sourceCff");
-      JMSBridgeImpl.checkNotNull(targetCff, "targetCff");
-      JMSBridgeImpl.checkNotNull(sourceDestinationFactory, "sourceDestinationFactory");
-      JMSBridgeImpl.checkNotNull(targetDestinationFactory, "targetDestinationFactory");
-      JMSBridgeImpl.checkValidValue(failureRetryInterval, "failureRetryInterval");
-      JMSBridgeImpl.checkValidValue(maxRetries, "maxRetries");
+      checkNotNull(sourceCff, "sourceCff");
+      checkNotNull(targetCff, "targetCff");
+      checkNotNull(sourceDestinationFactory, "sourceDestinationFactory");
+      checkNotNull(targetDestinationFactory, "targetDestinationFactory");
+      checkValidValue(failureRetryInterval, "failureRetryInterval");
+      checkValidValue(maxRetries, "maxRetries");
       if (failureRetryInterval == -1 && maxRetries > 0)
       {
          throw new IllegalArgumentException("If failureRetryInterval == -1 maxRetries must be set to -1");
       }
-      JMSBridgeImpl.checkMaxBatchSize(maxBatchSize);
-      JMSBridgeImpl.checkValidValue(maxBatchTime, "maxBatchTime");
-      JMSBridgeImpl.checkNotNull(qualityOfServiceMode, "qualityOfServiceMode");
+      checkMaxBatchSize(maxBatchSize);
+      checkValidValue(maxBatchTime, "maxBatchTime");
+      checkNotNull(qualityOfServiceMode, "qualityOfServiceMode");
    }
 
    /**

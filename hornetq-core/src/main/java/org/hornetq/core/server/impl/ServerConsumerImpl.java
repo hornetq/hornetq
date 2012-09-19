@@ -13,14 +13,17 @@
 
 package org.hornetq.core.server.impl;
 
-import java.lang.IllegalStateException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -105,8 +108,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
    private final SessionCallback callback;
-
-   private volatile boolean closed;
 
    private final boolean preAcknowledge;
 
@@ -346,8 +347,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       LinkedList<MessageReference> refs = cancelRefs(failed, false, null);
 
       Iterator<MessageReference> iter = refs.iterator();
-
-      closed = true;
 
       Transaction tx = new TransactionImpl(storageManager);
 
