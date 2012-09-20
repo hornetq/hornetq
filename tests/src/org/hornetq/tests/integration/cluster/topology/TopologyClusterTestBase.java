@@ -15,9 +15,11 @@ package org.hornetq.tests.integration.cluster.topology;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
@@ -106,7 +108,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       }
    }
 
-   protected void checkContains(int[] expected, String[] nodeIDs, List<String> actual)
+   protected void checkContains(int[] expected, String[] nodeIDs, ClusterNodeSet actual)
    {
       long start = System.currentTimeMillis();
       do
@@ -215,7 +217,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          ((ServerLocatorImpl)locator).getTopology().setOwner("testReceive");
 
-         final List<String> nodes = new ArrayList<String>();
+         final ClusterNodeSet nodes = new ClusterNodeSet(1000);
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
@@ -226,11 +228,10 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
-               if (!nodes.contains(nodeID))
+               if (nodes.add(nodeID))
                {
                   System.out.println("Node UP " + nodeID + " added");
                   log.info("Node UP " + nodeID + " added");
-                  nodes.add(nodeID);
                   upLatch.countDown();
                }
                else
@@ -242,11 +243,10 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
             public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               if (nodes.contains(nodeID))
+               if (nodes.remove(nodeID))
                {
                   log.info("Node down " + nodeID + " accepted");
                   System.out.println("Node down " + nodeID + " accepted");
-                  nodes.remove(nodeID);
                   downLatch.countDown();
                }
                else
@@ -263,6 +263,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          String[] nodeIDs = getNodeIDs(0, 1, 2, 3, 4);
 
          assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
+         
          checkContains(new int[] { 0, 1, 4, 3, 2 }, nodeIDs, nodes);
 
          waitForClusterConnections(0, 4);
@@ -273,7 +274,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          stopServers(2, 3, 1, 4);
 
-         assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
+         assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));         
          checkContains(new int[] { 0 }, nodeIDs, nodes);
 
          sf.close();
@@ -303,7 +304,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          waitForClusterConnections(3, 4);
          waitForClusterConnections(4, 4);
 
-         final List<String> nodes = new ArrayList<String>();
+         final ClusterNodeSet nodes = new ClusterNodeSet(1000);
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
@@ -314,18 +315,16 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
-               if (!nodes.contains(nodeID))
+               if (nodes.add(nodeID))
                {
-                  nodes.add(nodeID);
                   upLatch.countDown();
                }
             }
 
             public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               if (nodes.contains(nodeID))
+               if (nodes.remove(nodeID))
                {
-                  nodes.remove(nodeID);
                   downLatch.countDown();
                }
             }
@@ -384,7 +383,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          waitForClusterConnections(3, 4);
          waitForClusterConnections(4, 4);
 
-         final List<String> nodes = new ArrayList<String>();
+         final ClusterNodeSet nodes = new ClusterNodeSet(1000);
          final CountDownLatch upLatch = new CountDownLatch(5);
 
          locator.addClusterTopologyListener(new ClusterTopologyListener()
@@ -394,19 +393,15 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
-               if (!nodes.contains(nodeID))
+               if (nodes.add(nodeID))
                {
-                  nodes.add(nodeID);
                   upLatch.countDown();
                }
             }
 
             public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               if (nodes.contains(nodeID))
-               {
-                  nodes.remove(nodeID);
-               }
+               nodes.remove(nodeID);
             }
          });
 
@@ -473,7 +468,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          waitForClusterConnections(3, 4);
          waitForClusterConnections(4, 4);
 
-         final List<String> nodes = new ArrayList<String>();
+         final ClusterNodeSet nodes = new ClusterNodeSet(1000);
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
@@ -484,18 +479,16 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
                                Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                boolean last)
             {
-               if (!nodes.contains(nodeID))
+               if (nodes.add(nodeID))
                {
-                  nodes.add(nodeID);
                   upLatch.countDown();
                }
             }
 
             public void nodeDown(final long uniqueEventID, String nodeID)
             {
-               if (nodes.contains(nodeID))
+               if (nodes.remove(nodeID))
                {
-                  nodes.remove(nodeID);
                   downLatch.countDown();
                }
             }
@@ -538,5 +531,82 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   /**
+    * A ClusterNodeSet
+    *
+    * This is used for holding dynamic node IDs in a cluster. It has 
+    * the following rules:
+    * 
+    * 1. only new node IDs can be added.
+    * 2. When a node is removed, it cannot be added within a certain time.
+    * This is to prevent a dead node's last broadcast coming in after 
+    * it has just dead and removed.
+    * 
+    * @author howard
+    *
+    *
+    */
+   public static class ClusterNodeSet
+   {
+      private Set<String> nodes = new HashSet<String>();
+      private Map<String, Long> forbiddenMap = new HashMap<String, Long>();
+      private long forbiddenTime;
+      
+      public ClusterNodeSet(long time)
+      {
+         forbiddenTime = time;
+      }
+      
+      public synchronized boolean add(String node)
+      {
+         if ((!nodes.contains(node)) && (!isForbidden(node)))
+         {
+            nodes.add(node);
+            return true;
+         }
+         return false;
+      }
+      
+      public synchronized boolean remove(String node)
+      {
+         if (nodes.remove(node))
+         {
+            forbidden(node);
+            return true;
+         }
+         return false;
+      }
+      
+      public synchronized int size()
+      {
+         return nodes.size();
+      }
+      
+      public synchronized boolean contains(String node)
+      {
+         return nodes.contains(node);
+      }
+      
+      private void forbidden(String node)
+      {
+         forbiddenMap.put(node, System.currentTimeMillis());
+      }
+      
+      private boolean isForbidden(String node)
+      {
+         Long tstamp = forbiddenMap.get(node);
+         if (tstamp == null) return false;
+         
+         if ( (System.currentTimeMillis() - tstamp) > forbiddenTime )
+         {
+            //expirted, remove and return false
+            forbiddenMap.remove(node);
+            return false;
+         }
+         return true;
+      }
+      
+   }
 
 }
