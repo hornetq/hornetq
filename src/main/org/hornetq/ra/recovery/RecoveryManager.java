@@ -27,12 +27,10 @@ import java.util.Set;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.HornetQRecoveryRegistry;
 import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -56,7 +54,7 @@ public class RecoveryManager
       }
       else
       {
-         registry = new EmptyRecoveryRegistry();
+         registry = null;
       }
    }
 
@@ -94,14 +92,18 @@ public class RecoveryManager
 
    public void unRegister(XARecoveryConfig resourceRecovery)
    {
-      registry.unRegister(resourceRecovery);
+      if (registry != null) {
+         registry.unRegister(resourceRecovery);
+      }
    }
 
    public void stop()
    {
-      for (XARecoveryConfig recovery : resources)
-      {
-         registry.unRegister(recovery);
+      if (registry != null) {
+         for (XARecoveryConfig recovery : resources)
+         {
+            registry.unRegister(recovery);
+         }
       }
       resources.clear();
    }
@@ -126,11 +128,7 @@ public class RecoveryManager
          }
       }
 
-      if (registry == null)
-      {
-         registry = new EmptyRecoveryRegistry();
-      }
-      else
+      if (registry != null)
       {
          log.debug("Recovery Registry located = " + registry);
       }
@@ -149,27 +147,5 @@ public class RecoveryManager
             return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
-   }
-
-   private static class EmptyRecoveryRegistry extends HornetQRegistryBase
-   {
-
-      @Override
-      public XAResourceRecoveryRegistry getTMRegistry()
-      {
-         return null;
-      }
-      
-
-      /** no need to register any discovery since we woulnd't do anything with it */
-      public void register(final XARecoveryConfig resourceConfig)
-      {
-      }
-
-      /** no need to register any discovery since we woulnd't do anything with it */
-      public void unRegister(final XARecoveryConfig resourceConfig)
-      {
-      }
-
    }
 }
