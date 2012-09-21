@@ -1275,6 +1275,7 @@
          <fileset file="${build.jars.dir}/${ra.jar.name}"/>
          <fileset file="${build.jars.dir}/${core.client.jar.name}"/>
          <fileset file="${build.jars.dir}/${jms.jar.name}"/>
+         <fileset file="${org.jboss.netty.lib}/${netty.jar.name}"/>
       </jar>
    </target>
 
