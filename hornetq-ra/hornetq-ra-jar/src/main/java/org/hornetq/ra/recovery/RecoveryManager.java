@@ -54,7 +54,7 @@ public class RecoveryManager
       }
       else
       {
-         registry = new EmptyRecoveryRegistry();
+         registry = null;
       }
    }
 
@@ -93,14 +93,20 @@ public class RecoveryManager
 
    public void unRegister(XARecoveryConfig resourceRecovery)
    {
-      registry.unRegister(resourceRecovery);
+      if (registry != null)
+      {
+         registry.unRegister(resourceRecovery);
+      }
    }
 
    public void stop()
    {
-      for (XARecoveryConfig recovery : resources)
+      if (registry != null)
       {
-         registry.unRegister(recovery);
+         for (XARecoveryConfig recovery : resources)
+         {
+            registry.unRegister(recovery);
+         }
       }
       resources.clear();
    }
@@ -125,11 +131,7 @@ public class RecoveryManager
          }
       }
 
-      if (registry == null)
-      {
-         registry = new EmptyRecoveryRegistry();
-      }
-      else
+      if (registry != null)
       {
          HornetQRALogger.LOGGER.debug("Recovery Registry located = " + registry);
       }
@@ -148,27 +150,5 @@ public class RecoveryManager
             return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
-   }
-
-   private static class EmptyRecoveryRegistry extends HornetQRegistryBase
-   {
-
-      @Override
-      public XAResourceRecoveryRegistry getTMRegistry()
-      {
-         return null;
-      }
-      
-
-      /** no need to register any discovery since we woulnd't do anything with it */
-      public void register(final XARecoveryConfig resourceConfig)
-      {
-      }
-
-      /** no need to register any discovery since we woulnd't do anything with it */
-      public void unRegister(final XARecoveryConfig resourceConfig)
-      {
-      }
-
    }
 }
