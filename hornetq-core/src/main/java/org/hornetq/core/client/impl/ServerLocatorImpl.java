@@ -872,11 +872,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             catch (InterruptedException ignore)
             {
             }
-
          }
 
-         final boolean hasTimedOut = timeout > System.currentTimeMillis();
-         if (!hasTimedOut && !receivedTopology)
+         if (isClosed() || !receivedTopology)
          {
             factory.cleanup();
             throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
