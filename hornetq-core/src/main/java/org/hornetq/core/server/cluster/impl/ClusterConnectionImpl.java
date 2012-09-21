@@ -74,10 +74,6 @@ import org.hornetq.utils.TypedProperties;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- *
- * Created 21 Jan 2009 14:43:05
- *
- *
  */
 public final class ClusterConnectionImpl implements ClusterConnection, AfterConnectInternalListener
 {
@@ -159,8 +155,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private volatile boolean announcingBackup;
    private volatile boolean stopping = false;
 
-   public ClusterConnectionImpl(final ClusterManager manager,
-                                final TransportConfiguration[] tcConfigs,
+   /**
+    * @param staticTranspConfigs notice if {@code null} this is a cluster which won't connect to
+    *           anyone, but that can still accept incoming connections.
+    */
+   public ClusterConnectionImpl(final ClusterManager manager, final TransportConfiguration[] staticTranspConfigs,
                                 final TransportConfiguration connector,
                                 final SimpleString name,
                                 final SimpleString address,
@@ -246,17 +245,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.minLargeMessageSize = minLargeMessageSize;
 
-      clusterConnector = new StaticClusterConnector(tcConfigs);
+      clusterConnector = new StaticClusterConnector(staticTranspConfigs);
 
       setUpBackupLocator();
 
-      if (tcConfigs != null && tcConfigs.length > 0)
+      if (staticTranspConfigs != null && staticTranspConfigs.length > 0)
       {
          // a cluster connection will connect to other nodes only if they are directly connected
          // through a static list of connectors or broadcasting using UDP.
          if (allowDirectConnectionsOnly)
          {
-            allowableConnections.addAll(Arrays.asList(tcConfigs));
+            allowableConnections.addAll(Arrays.asList(staticTranspConfigs));
          }
       }
 
@@ -274,6 +273,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
+   /**
+    * @param dg discovery group, notice if {@code null} this is a cluster which won't connect to
+    *           anyone, but that can still accept incoming connections.
+    */
    public ClusterConnectionImpl(final ClusterManager manager,
                                 DiscoveryGroupConfiguration dg,
                                 final TransportConfiguration connector,
