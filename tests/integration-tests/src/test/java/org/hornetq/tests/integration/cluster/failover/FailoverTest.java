@@ -215,10 +215,9 @@ public class FailoverTest extends FailoverTestBase
             try
             {
                log.debug("acking message = id = " + message.getMessageID() + ", counter = " +
-                        message.getIntProperty("counter"));
+                     message.getIntProperty("counter"));
                message.acknowledge();
-            }
-            catch (HornetQException e)
+            } catch (HornetQException e)
             {
                e.printStackTrace();
                return;
@@ -397,7 +396,15 @@ public class FailoverTest extends FailoverTestBase
       session.prepare(xid);
       crash(false, session);
 
-      session.commit(xid, false);
+      try
+      {
+         session.commit(xid, false);
+      }
+      catch (XAException e)
+      {
+         //there is still an edge condition that we must deal with
+         session.commit(xid, false);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
       session.start();
@@ -443,7 +450,15 @@ public class FailoverTest extends FailoverTestBase
       session.prepare(xid);
       crash(false, session);
 
-      session.rollback(xid);
+      try
+      {
+         session.rollback(xid);
+      }
+      catch (XAException e)
+      {
+         //there is still an edge condition that we must deal with
+         session.rollback(xid);
+      }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
       session.start();

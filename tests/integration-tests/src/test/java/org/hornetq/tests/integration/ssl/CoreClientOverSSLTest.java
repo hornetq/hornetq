@@ -112,10 +112,9 @@ public class CoreClientOverSSLTest extends ServiceTestBase
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       locator.setCallTimeout(2000);
-      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
       try
       {
-         sf.createSession(false, true, true);
+         addSessionFactory(createSessionFactory(locator));
          Assert.fail();
       }
       catch(HornetQNotConnectedException se)
