@@ -127,7 +127,7 @@ public class FilterImpl implements Filter
       return sfilterString;
    }
 
-   public boolean match(final ServerMessage message)
+   public synchronized boolean match(final ServerMessage message)
    {
       try
       {
