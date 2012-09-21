@@ -213,10 +213,10 @@ public class DiscoveryTest extends UnitTestCase
          try
          {
             if (broadcaster != null)
-               broadcaster.close();
+               broadcaster.close(true);
 
             if (client != null)
-               client.close();
+               client.close(false);
          }
          catch (Exception ignored)
          {
