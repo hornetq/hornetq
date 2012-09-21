@@ -44,9 +44,9 @@ Generating reports from unit tests:
 
 Running tests individually
 
-```%mvn -Phudson-tests -DfailIfNoTests=false -Dtest=<test-name> test ```
+```% mvn -Phudson-tests -DfailIfNoTests=false -Dtest=<test-name> test ```
 
-where <test-name> is the name of the Test class without its package name
+where &lt;test-name> is the name of the Test class without its package name
 
 
 ## Examples
@@ -70,13 +70,17 @@ NB for this make sure you have installed examples/common.
 
 ## To build a release artifact
 
-```% mvn install -Prelease```
+```% mvn -Prelease install```
+
+## To build the release bundle
+
+```% mvn -Prelease package```
 
 ## Eclipse
 
-We recommend using at least Eclipse Indigo (3.7). As it improved Maven
-and Git support considerably. Note that there are still some Maven
-plugins used by sub-projects (e.g. documentation) which are not
+We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to
+the improved Maven and Git support. Note that there are still some
+Maven plugins used by sub-projects (e.g. documentation) which are not
 supported even in Eclipse Juno (4.2).
 
 Eclipse code formatting and (basic) project configuration files can be
@@ -102,7 +106,3 @@ javacc plugin. See this post on the [m2e connector for
 javacc-maven-plugin] for manual installation instructions.
 
 [m2e connector for javacc-maven-plugin]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
-
-## To build the release bundle
-
-```% mvn -P release package```
