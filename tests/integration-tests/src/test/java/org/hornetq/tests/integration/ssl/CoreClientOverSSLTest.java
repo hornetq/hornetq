@@ -20,8 +20,8 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.HornetQNotConnectedException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -66,7 +66,7 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
-      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
@@ -92,7 +92,6 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       try
       {
          ClientSessionFactory sf = createSessionFactory(locator);
-         addSessionFactory(sf);
          Assert.fail();
       }
       catch(HornetQNotConnectedException se)
@@ -114,8 +113,8 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       locator.setCallTimeout(2000);
       try
       {
-         addSessionFactory(createSessionFactory(locator));
-         Assert.fail();
+         createSessionFactory(locator);
+         fail("expecting exception");
       }
       catch(HornetQNotConnectedException se)
       {
