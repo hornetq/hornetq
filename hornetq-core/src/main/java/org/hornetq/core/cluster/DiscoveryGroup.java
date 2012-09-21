@@ -346,8 +346,9 @@ public class DiscoveryGroup
 
                   changed = changed || checkExpiration();
                }
-
-               if (changed)
+               //only call the listeners if we have changed
+               //also make sure that we aren't stopping to avoid deadlock
+               if (changed && started)
                {
                   if (isTrace)
                   {

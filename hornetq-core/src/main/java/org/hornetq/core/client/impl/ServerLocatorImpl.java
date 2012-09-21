@@ -865,7 +865,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
          {
             // Now wait for the topology
-
             try
             {
                wait(1000);
@@ -876,8 +875,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          }
 
-         if (System.currentTimeMillis() > timeout && !receivedTopology)
+         final boolean hasTimedOut = timeout > System.currentTimeMillis();
+         if (!hasTimedOut && !receivedTopology)
          {
+            factory.cleanup();
             throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
          }
 
