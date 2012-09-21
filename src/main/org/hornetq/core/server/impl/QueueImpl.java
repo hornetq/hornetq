@@ -97,7 +97,7 @@ public class QueueImpl implements Queue
 
    private final SimpleString name;
 
-   private volatile Filter filter;
+   private final Filter filter;
 
    private final boolean durable;
 
