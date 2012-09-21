@@ -1598,7 +1598,7 @@ public abstract class UnitTestCase extends TestCase
       return sf;
    }
 
-   protected final HornetQServer addServer(HornetQServer server)
+   protected final HornetQServer addServer(final HornetQServer server)
    {
       if (server != null)
       {
@@ -1610,7 +1610,7 @@ public abstract class UnitTestCase extends TestCase
       return server;
    }
 
-   protected final ServerLocator addServerLocator(ServerLocator locator)
+   protected final ServerLocator addServerLocator(final ServerLocator locator)
    {
       if (locator != null)
       {
@@ -1622,7 +1622,7 @@ public abstract class UnitTestCase extends TestCase
       return locator;
    }
 
-   protected final ClientSession addClientSession(ClientSession session)
+   protected final ClientSession addClientSession(final ClientSession session)
    {
       if (session != null)
       {
@@ -1634,7 +1634,7 @@ public abstract class UnitTestCase extends TestCase
       return session;
    }
 
-   protected final ClientConsumer addClientConsumer(ClientConsumer consumer)
+   protected final ClientConsumer addClientConsumer(final ClientConsumer consumer)
    {
       if (consumer != null)
       {
@@ -1646,7 +1646,7 @@ public abstract class UnitTestCase extends TestCase
       return consumer;
    }
 
-   protected final ClientProducer addClientProducer(ClientProducer producer)
+   protected final ClientProducer addClientProducer(final ClientProducer producer)
    {
       if (producer != null)
       {
@@ -1658,7 +1658,7 @@ public abstract class UnitTestCase extends TestCase
       return producer;
    }
 
-   protected final void addHornetQComponent(HornetQComponent component)
+   protected final void addHornetQComponent(final HornetQComponent component)
    {
       if (component != null)
       {
@@ -1669,7 +1669,7 @@ public abstract class UnitTestCase extends TestCase
       }
    }
 
-   protected final ClientSessionFactory addSessionFactory(ClientSessionFactory sf)
+   protected final ClientSessionFactory addSessionFactory(final ClientSessionFactory sf)
    {
       if (sf != null)
       {
