@@ -13,8 +13,10 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -22,6 +24,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -42,21 +45,29 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
    // Static --------------------------------------------------------
 
    final String ADDRESS = "ADDRESS";
-   final int numberOfMessages = 1000;
+
+   final int numberOfMessages = 2000;
+
    final int nThreads = 4;
 
-   private boolean isNetty=false;
+   private static final int PAGE_MAX = 100 * 1024;
+
+   private static final int PAGE_SIZE = 10 * 1024;
+
+   private boolean isNetty = false;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-
    class SomeProducer extends Thread
    {
       final ClientSessionFactory factory;
+
       final ServerLocator locator;
+
       final ClientSession prodSession;
+
       public final AtomicInteger errors = new AtomicInteger(0);
 
       public SomeProducer() throws Exception
@@ -64,26 +75,14 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
          locator = createNonHALocator(isNetty);
          factory = locator.createSessionFactory();
          prodSession = factory.createSession(false, false);
+         sendMessages(numberOfMessages / 2);
       }
 
       public void run()
       {
          try
          {
-            ClientProducer producer = prodSession.createProducer(ADDRESS);
-
-            for (int i = 0 ; i < numberOfMessages; i++)
-            {
-               ClientMessage message = prodSession.createMessage(true);
-               message.putIntProperty("prodNR", i % nThreads);
-               producer.send(message);
-
-               if (i % 100 == 0)
-               {
-                  prodSession.commit();
-               }
-            }
-            prodSession.commit();
+            sendMessages(numberOfMessages / 2);
          }
          catch (Throwable e)
          {
@@ -104,15 +103,44 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
 
          }
       }
+
+      /**
+       * @throws HornetQException
+       */
+      private void sendMessages(int msgs) throws HornetQException
+      {
+         ClientProducer producer = prodSession.createProducer(ADDRESS);
+
+         for (int i = 0; i < msgs; i++)
+         {
+            ClientMessage message = prodSession.createMessage(true);
+            message.putIntProperty("prodNR", i % nThreads);
+            producer.send(message);
+
+            if (i % 100 == 0)
+            {
+               System.out.println("Sent " + i);
+               prodSession.commit();
+            }
+         }
+         prodSession.commit();
+
+         producer.close();
+      }
    }
 
    class SomeConsumer extends Thread
    {
       final ClientSessionFactory factory;
+
       final ServerLocator locator;
+
       final ClientSession consumerSession;
+
       ClientConsumer consumer;
+
       final int nr;
+
       final AtomicInteger errors = new AtomicInteger(0);
 
       public SomeConsumer(int nr) throws Exception
@@ -132,15 +160,16 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
          {
             consumerSession.start();
 
-            for (int i = 0 ; i < numberOfMessages; i++)
+            for (int i = 0; i < numberOfMessages; i++)
             {
                ClientMessage msg = consumer.receive(5000);
                assertNotNull(msg);
                assertEquals(nr, msg.getIntProperty("prodNR").intValue());
                msg.acknowledge();
 
-               if (i % 100 == 0)
+               if (i % 500 == 0)
                {
+                  System.out.println("Consumed " + i);
                   consumerSession.commit();
                }
             }
@@ -170,22 +199,40 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       }
    }
 
-
    public void testSendingNetty() throws Exception
    {
-      testSending(true);
+      testSending(true, false);
+   }
+
+   public void testSendingNettyPaging() throws Exception
+   {
+      testSending(true, true);
    }
 
    public void testSendingInVM() throws Exception
    {
-      testSending(false);
+      testSending(false, false);
    }
 
+   public void testSendingInVMPaging() throws Exception
+   {
+      testSending(false, true);
+   }
 
-   private void testSending(boolean isNetty) throws Exception
+   private void testSending(boolean isNetty, boolean isPaging) throws Exception
    {
       this.isNetty = isNetty;
-      HornetQServer server = createServer(true, isNetty);
+      HornetQServer server;
+
+      if (isPaging)
+      {
+         server = createServer(true, createDefaultConfig(isNetty), PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      }
+      else
+      {
+         server = createServer(true, isNetty);
+      }
+
       server.start();
 
       SomeConsumer[] consumers = new SomeConsumer[nThreads];
@@ -193,13 +240,17 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       try
       {
 
-         for (int i = 0 ; i < nThreads; i++)
+         for (int i = 0; i < nThreads; i++)
          {
             consumers[i] = new SomeConsumer(i);
+         }
+
+         for (int i = 0; i < nThreads; i++)
+         {
             producers[i] = new SomeProducer();
          }
 
-         for (int i = 0 ; i < nThreads; i++)
+         for (int i = 0; i < nThreads; i++)
          {
             consumers[i].start();
             producers[i].start();
@@ -210,7 +261,6 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
             producer.join();
             assertEquals(0, producer.errors.get());
          }
-
 
          for (SomeConsumer consumer : consumers)
          {
@@ -225,6 +275,11 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       }
    }
 
+   @Override
+   public void tearDown()
+   {
+      // replace the tearDown back
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
