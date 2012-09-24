@@ -208,6 +208,10 @@ public class MultipleThreadFilterTwoTest extends ServiceTestBase
          for (int i = 0; i < nThreads; i++)
          {
             consumers[i] = new SomeConsumer(i);
+         }
+
+         for (int i = 0; i < nThreads; i++)
+         {
             producers[i] = new SomeProducer();
          }
 
