@@ -29,6 +29,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -229,7 +230,8 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
          if (message != null)
          {
             msg = HornetQMessage.createMessage(message,
-                                               ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession() : null);
+                                               (ackMode == Session.CLIENT_ACKNOWLEDGE |
+                                                ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE) ? session.getCoreSession() : null);
 
             try
             {
@@ -241,10 +243,16 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
                return null;
             }
-
             // We Do the ack after doBeforeRecive, as in the case of large messages, this may fail so we don't want messages redelivered
             // https://issues.jboss.org/browse/JBPAPP-6110
-            message.acknowledge();
+            if (session.getAcknowledgeMode() == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
+            {
+               msg.setIndividualAcknowledge();
+            }
+            else
+            {
+               message.acknowledge();
+            }
          }
 
          return msg;

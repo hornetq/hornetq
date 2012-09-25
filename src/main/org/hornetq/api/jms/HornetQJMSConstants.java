@@ -32,6 +32,8 @@ public class HornetQJMSConstants
 
    public static final int PRE_ACKNOWLEDGE = 100;
    
+   public static final int INDIVIDUAL_ACKNOWLEDGE = 101;
+   
    public static final String JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME = 
       "hq.jms.support-bytes-id";
 }
