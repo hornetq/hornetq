@@ -20,6 +20,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -40,6 +41,8 @@ public class JMSMessageListenerWrapper implements MessageHandler
    private final ClientConsumer consumer;
 
    private final boolean transactedOrClientAck;
+   
+   private final boolean individualACK;
 
    protected JMSMessageListenerWrapper(final HornetQSession session,
                                        final ClientConsumer consumer,
@@ -53,6 +56,8 @@ public class JMSMessageListenerWrapper implements MessageHandler
       this.listener = listener;
 
       transactedOrClientAck = (ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE) || session.isXA();
+      
+      individualACK = (ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
    }
 
    /**
@@ -62,6 +67,11 @@ public class JMSMessageListenerWrapper implements MessageHandler
    public void onMessage(final ClientMessage message)
    {
       HornetQMessage msg = HornetQMessage.createMessage(message, session.getCoreSession());
+      
+      if (individualACK)
+      {
+         msg.setIndividualAcknowledge();
+      }
 
       try
       {
@@ -100,6 +110,11 @@ public class JMSMessageListenerWrapper implements MessageHandler
          {
             try
             {
+               if (individualACK)
+               {
+                  message.individualAcknowledge();
+               }
+               
                session.getCoreSession().rollback(true);
 
                session.setRecoverCalled(true);
@@ -111,7 +126,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
       }
 
-      if (!session.isRecoverCalled())
+      if (!session.isRecoverCalled() && !individualACK)
       {
          try
          {

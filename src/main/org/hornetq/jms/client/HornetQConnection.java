@@ -538,6 +538,16 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
                                                    sessionFactory.getServerLocator().isPreAcknowledge(),
                                                    transactionBatchSize);
          }
+         else if (acknowledgeMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
+         {
+            session = sessionFactory.createSession(username,
+                                                   password,
+                                                   isXA,
+                                                   true,
+                                                   false,
+                                                   false,
+                                                   transactionBatchSize);
+         }
          else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
