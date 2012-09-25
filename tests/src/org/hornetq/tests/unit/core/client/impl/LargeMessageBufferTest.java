@@ -940,6 +940,15 @@ public class LargeMessageBufferTest extends UnitTestCase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#individualAcknowledge(org.hornetq.api.core.client.ClientMessage)
+       */
+      public void individualAcknowledge(ClientMessage message) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
 }
