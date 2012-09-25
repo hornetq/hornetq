@@ -55,6 +55,19 @@ public interface ClientMessage extends Message
     * @see ClientSession#isAutoCommitAcks()
     */
    void acknowledge() throws HornetQException;
+   
+   /**
+    * Acknowledge reception of a single message.
+    * 
+    * If the session responsible to acknowledge this message has  {@code autoCommitAcks}
+    * set to {@code true}, the transaction will automatically commit the current transaction.
+    * Otherwise, this acknwoledgement will not be committed until the client commits the session transaction.
+    * 
+    * @throws HornetQException if an error occured while acknowledging the message.
+    * 
+    * @see ClientSession#isAutoCommitAcks()
+    */
+   void individualAcknowledge() throws HornetQException;
 
    /**
     * Return the size (in bytes) of this message's body
