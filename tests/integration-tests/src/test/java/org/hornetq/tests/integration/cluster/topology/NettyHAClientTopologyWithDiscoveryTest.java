@@ -29,17 +29,4 @@ public class NettyHAClientTopologyWithDiscoveryTest extends HAClientTopologyWith
       return true;
    }
 
-
-
-   public void testReceiveNotificationsRepeat() throws Throwable
-   {
-      for (int i = 0 ; i < 1000; i++)
-      {
-         logAndSystemOut("#test " + i);
-         testReceiveNotifications();
-         tearDown();
-         setUp();;
-      }
-   }
-
 }
