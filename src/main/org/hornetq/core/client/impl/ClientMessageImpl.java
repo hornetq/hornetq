@@ -98,6 +98,19 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          consumer.acknowledge(this);
       }
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.client.ClientMessage#individualAcknowledge()
+    */
+   public void individualAcknowledge() throws HornetQException
+   {
+      if (consumer != null)
+      {
+         consumer.individualAcknowledge(this);
+      }
+   }
+
 
    public int getFlowControlSize()
    {
