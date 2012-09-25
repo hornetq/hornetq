@@ -749,12 +749,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (ackIndividually)
       {
-         if (lastAckedMessage != null)
-         {
-            flushAcks();
-         }
-
-         session.individualAcknowledge(id, message.getMessageID());
+         individualAcknowledge(message);
       }
       else
       {
@@ -769,6 +764,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             lastAckedMessage = cmi;
          }
       }
+   }
+
+   public void individualAcknowledge(ClientMessage message) throws HornetQException
+   {
+      if (lastAckedMessage != null)
+      {
+         flushAcks();
+      }
+
+      session.individualAcknowledge(id, message.getMessageID());
    }
 
    public void flushAcks() throws HornetQException

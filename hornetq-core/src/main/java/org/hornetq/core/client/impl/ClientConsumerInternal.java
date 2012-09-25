@@ -65,6 +65,8 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void acknowledge(ClientMessage message) throws HornetQException;
 
+   void individualAcknowledge(ClientMessage message) throws HornetQException;
+
    void flushAcks() throws HornetQException;
 
    void stop() throws HornetQException;
