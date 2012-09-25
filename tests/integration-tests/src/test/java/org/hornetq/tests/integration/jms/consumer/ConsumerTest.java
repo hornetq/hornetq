@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.jms.consumer;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -20,9 +21,9 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -33,6 +34,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -85,6 +87,142 @@ public class ConsumerTest extends JMSTestBase
       SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+   }
+
+   public void testIndividualACK() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
+      jBossQueue = HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 100;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         producer.send(session.createTextMessage("m" + i));
+      }
+
+      conn.start();
+
+      // Consume even numbers first
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         Message m = consumer.receive(500);
+         Assert.assertNotNull(m);
+         if (i % 2 == 0)
+         {
+            m.acknowledge();
+         }
+      }
+
+      session.close();
+
+      session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
+
+      consumer = session.createConsumer(jBossQueue);
+
+      // Consume odd numbers first
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         if (i % 2 == 0)
+         {
+            continue;
+         }
+
+         TextMessage m = (TextMessage) consumer.receive(1000);
+         assertNotNull(m);
+         m.acknowledge();
+         assertEquals("m" + i, m.getText());
+      }
+
+      SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      conn.close();
+   }
+
+   public void testIndividualACKMessageConsumer() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
+      jBossQueue = HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 100;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         producer.setPriority(2);
+         producer.send(session.createTextMessage("m" + i));
+      }
+
+      conn.start();
+
+      final AtomicInteger errors = new AtomicInteger(0);
+      final ReusableLatch latch = new ReusableLatch();
+      latch.setCount(noOfMessages);
+
+      class MessageAckEven implements MessageListener
+      {
+         int count = 0;
+
+         public void onMessage(Message msg)
+         {
+            try
+            {
+               TextMessage txtmsg = (TextMessage)msg;
+               if (!txtmsg.getText().equals("m" + count))
+               {
+
+                  errors.incrementAndGet();
+               }
+
+               if (count % 2 == 0)
+               {
+                  msg.acknowledge();
+               }
+
+               count ++;
+            }
+            catch (Exception e)
+            {
+               errors.incrementAndGet();
+            }
+            finally
+            {
+               latch.countDown();
+            }
+         }
+
+      }
+
+      consumer.setMessageListener(new MessageAckEven());
+
+      assertTrue(latch.await(5000));
+
+      session.close();
+
+      session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
+
+      consumer = session.createConsumer(jBossQueue);
+
+      // Consume odd numbers first
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         if (i % 2 == 0)
+         {
+            continue;
+         }
+
+         TextMessage m = (TextMessage) consumer.receive(1000);
+         assertNotNull(m);
+         m.acknowledge();
+         assertEquals("m" + i, m.getText());
+      }
+
+      SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      conn.close();
    }
 
    public void testPreCommitAcksSetOnConnectionFactory() throws Exception

@@ -220,6 +220,8 @@ public class HornetQMessage implements javax.jms.Message
    // Cache it
    private String jmsType;
 
+   private boolean individualAck;
+
    // Constructors --------------------------------------------------
 
    /*
@@ -845,6 +847,11 @@ public class HornetQMessage implements javax.jms.Message
       {
          try
          {
+            if (individualAck)
+            {
+               message.individualAcknowledge();
+            }
+
             session.commit();
          }
          catch (HornetQException e)
@@ -855,6 +862,11 @@ public class HornetQMessage implements javax.jms.Message
    }
 
    // Public --------------------------------------------------------
+
+   public void setIndividualAcknowledge()
+   {
+      this.individualAck = true;
+   }
 
    public void resetMessageID(final String msgID)
    {

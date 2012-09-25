@@ -818,6 +818,11 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       }
 
+      @Override
+      public void individualAcknowledge(ClientMessage message) throws HornetQException
+      {
+      }
+
       public void cleanUp() throws HornetQException
       {
          // TODO Auto-generated method stub
