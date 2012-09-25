@@ -106,3 +106,13 @@ javacc plugin. See this post on the [m2e connector for
 javacc-maven-plugin] for manual installation instructions.
 
 [m2e connector for javacc-maven-plugin]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
+
+
+
+## Github procedures
+
+HornetQ accepts committs by pull requests. After evaluated pull requests are either merged or rejected.
+
+When a pull request needs to be reworked as when say you have missed something, the pull request is then closed, at the time you finished the required changes you should reopen your original Pull Request and it will then be re-evaluated. At that point if the request is aproved we will then merge it.
+
+Make sure you always rebase your branch on master before submitting pull requests.
