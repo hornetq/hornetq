@@ -47,6 +47,7 @@ import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -1679,22 +1680,18 @@ public abstract class ClusterTestBase extends ServiceTestBase
       List<String> connectorPairs = new ArrayList<String>();
       connectorPairs.add(connector.getName());
 
+      UDPBroadcastGroupConfiguration endpoint = new UDPBroadcastGroupConfiguration(groupAddress, port, null, -1);
+      
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
-                                                                             null,
-                                                                             -1,
-                                                                             groupAddress,
-                                                                             port,
                                                                              200,
-                                                                             connectorPairs);
+                                                                             connectorPairs,
+                                                                             endpoint);
 
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
       DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1",
-                                                                             null, -1,
-                                                                             groupAddress,
-                                                                             port,
                                                                              1000,
-                                                                             1000);
+                                                                             1000, endpoint);
 
       configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
@@ -1756,22 +1753,19 @@ public abstract class ClusterTestBase extends ServiceTestBase
       List<String> connectorPairs = new ArrayList<String>();
       connectorPairs.add(connector.getName());
 
+      UDPBroadcastGroupConfiguration endpoint = new UDPBroadcastGroupConfiguration(groupAddress, port, null, -1);
+
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
-                                                                             null,
-                                                                             -1,
-                                                                             groupAddress,
-                                                                             port,
                                                                              1000,
-                                                                             connectorPairs);
+                                                                             connectorPairs,
+                                                                             endpoint);
 
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
       DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1",
-                                                                             null, -1,
-                                                                             groupAddress,
-                                                                             port,
                                                                              5000,
-                                                                             5000);
+                                                                             5000,
+                                                                             endpoint);
 
       configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 

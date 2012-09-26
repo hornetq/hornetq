@@ -17,6 +17,7 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.json.JSONArray;
@@ -120,12 +121,17 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
       }
    }
 
-   public String getGroupAddress()
+   //todo ghoward we should deal with this properly
+   public String getGroupAddress() throws Exception
    {
       clearIO();
       try
       {
-         return configuration.getGroupAddress();
+         if (configuration.getEndpointFactoryConfiguration() instanceof UDPBroadcastGroupConfiguration)
+         {
+            return ((UDPBroadcastGroupConfiguration)configuration.getEndpointFactoryConfiguration()).getGroupAddress();
+         }
+         throw new Exception("Invalid request because this is not a UDP Broadcast configuration.");
       }
       finally
       {
@@ -133,12 +139,16 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
       }
    }
 
-   public int getGroupPort()
+   public int getGroupPort() throws Exception
    {
       clearIO();
       try
       {
-         return configuration.getGroupPort();
+         if (configuration.getEndpointFactoryConfiguration() instanceof UDPBroadcastGroupConfiguration)
+         {
+            return ((UDPBroadcastGroupConfiguration)configuration.getEndpointFactoryConfiguration()).getGroupPort();
+         }
+         throw new Exception("Invalid request because this is not a UDP Broadcast configuration.");
       }
       finally
       {
@@ -146,12 +156,16 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
       }
    }
 
-   public int getLocalBindPort()
+   public int getLocalBindPort() throws Exception
    {
       clearIO();
       try
       {
-         return configuration.getLocalBindPort();
+         if (configuration.getEndpointFactoryConfiguration() instanceof UDPBroadcastGroupConfiguration)
+         {
+            return ((UDPBroadcastGroupConfiguration)configuration.getEndpointFactoryConfiguration()).getLocalBindPort();
+         }
+         throw new Exception("Invalid request because this is not a UDP Broadcast configuration.");
       }
       finally
       {

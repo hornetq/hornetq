@@ -11,49 +11,47 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.cluster.impl;
+package org.hornetq.api.core;
 
-import java.net.URL;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
-import org.jgroups.util.Util;
 
 
 /**
  * This class is the implementation of HornetQ members discovery that will use JGroups.
- * @author Tomohisa
  * @author Howard Gao
- * @author Clebert Suconic
  */
-public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
+public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpoint
 {
-   private final String fileName;
-
-   private final String channelName;
-
-   private JChannel channel;
-
    private BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
 
-   private Message broadcastMsg;
+   private boolean clientOpened;
 
-   private boolean opened;
+   private boolean broadcastOpened;
 
-   public JGroupsBroadcastEndpoint(final String fileName, final String channelName)
+   protected final String channelName;
+
+   protected JChannel channel;
+
+   public AbstractJGroupsBroadcastEndpoint(final JChannel channel, final String channelName)
    {
-      this.fileName = fileName;
+      this.channelName = channelName;
+      this.channel = channel;
+   }
+
+   public AbstractJGroupsBroadcastEndpoint(final String channelName)
+   {
       this.channelName = channelName;
    }
 
    public void broadcast(byte[] data) throws Exception
    {
-      if (opened)
+      if (broadcastOpened)
       {
          Message msg = new Message();
          msg.setBuffer(data);
@@ -63,7 +61,7 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
 
    public byte[] receiveBroadcast() throws Exception
    {
-      if (opened)
+      if (clientOpened)
       {
          byte[] msg = dequeue.take();
          return msg;
@@ -74,10 +72,9 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
       }
    }
 
-
    public byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception
    {
-      if (opened)
+      if (clientOpened)
       {
          byte[] msg = dequeue.poll(time, unit);
          return msg;
@@ -88,27 +85,22 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
       }
    }
 
-
-
-   public void openClient() throws Exception
+   public synchronized void openClient() throws Exception
    {
-      if (opened)
+      if (clientOpened)
       {
          return;
       }
       internalOpen();
       channel.setReceiver(new JGroupsReceiver());
-      opened = true;
+      clientOpened = true;
    }
 
-   public void openBroadcaster() throws Exception
+   public synchronized void openBroadcaster() throws Exception
    {
-      if (opened)
-      {
-         return;
-      }
+      if (broadcastOpened) return;
       internalOpen();
-      opened = true;
+      broadcastOpened = true;
    }
 
    /**
@@ -116,25 +108,19 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
     * for that reason we can have a single internal method to open it
     * @throws Exception
     */
-   private void internalOpen() throws Exception
-   {
-      URL configURL = Thread.currentThread().getContextClassLoader().getResource(this.fileName);
-      if (configURL == null)
-      {
-         throw new RuntimeException("couldn't find JGroups configuration " + fileName);
-      }
-      channel = new JChannel(configURL);
-      channel.connect(this.channelName);
-   }
+   protected abstract void internalOpen() throws Exception;
 
-   public void close() throws Exception
+   public synchronized void close(boolean isBroadcast) throws Exception
    {
-      if (channel != null)
+      if (isBroadcast)
       {
-         Util.shutdown(channel);
-         channel = null;
+         broadcastOpened = false;
       }
-      opened = false;
+      else
+      {
+         channel.setReceiver(null);
+         clientOpened = false;
+      }
    }
 
    private class JGroupsReceiver extends ReceiverAdapter
@@ -143,7 +129,5 @@ public class JGroupsBroadcastEndpoint implements BroadcastEndpoint
       {
          dequeue.add(msg.getBuffer());
       }
-
    }
-
 }

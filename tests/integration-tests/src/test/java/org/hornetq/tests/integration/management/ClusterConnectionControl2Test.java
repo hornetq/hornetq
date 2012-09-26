@@ -30,6 +30,7 @@ import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -119,18 +120,13 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       List<String> connectorInfos = new ArrayList<String>();
       connectorInfos.add("netty");
       BroadcastGroupConfiguration broadcastGroupConfig = new BroadcastGroupConfiguration(discoveryName,
-                                                                                         null,
-                                                                                         -1,
-                                                                                         groupAddress,
-                                                                                         groupPort,
                                                                                          250,
-                                                                                         connectorInfos);
+                                                                                         connectorInfos,
+                                             new UDPBroadcastGroupConfiguration(null, -1, groupAddress, groupPort));
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryName,
-                                                                                         null, -1,
-                                                                                         groupAddress,
-                                                                                         groupPort,
                                                                                          0,
-                                                                                         0);
+                                                                                         0,
+                                             new UDPBroadcastGroupConfiguration(null, -1, groupAddress, groupPort));
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);

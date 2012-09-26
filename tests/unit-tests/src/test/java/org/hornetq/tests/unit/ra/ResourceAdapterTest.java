@@ -21,12 +21,14 @@ import javax.jms.Connection;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.server.HornetQServer;
@@ -267,9 +269,11 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       Assert.assertNotSame(factory, defaultFactory);
-      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getLocalBindAddress(), "newAddress");
-      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getGroupAddress(), "myhost");
-      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getGroupPort(), 5678);
+      DiscoveryGroupConfiguration dc = factory.getServerLocator().getDiscoveryGroupConfiguration();
+      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
+      Assert.assertEquals(udpDg.getLocalBindAddress(), "newAddress");
+      Assert.assertEquals(udpDg.getGroupAddress(), "myhost");
+      Assert.assertEquals(udpDg.getGroupPort(), 5678);
    }
 
    public void testCreateConnectionFactoryMultipleConnectors()

@@ -32,6 +32,7 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -204,7 +205,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
       String discoveryGroupName = RandomUtil.randomString();
       DiscoveryGroupConfiguration discoveryGroupConfig =
-               new DiscoveryGroupConfiguration(discoveryGroupName, null, -1, "230.1.2.3", 6745, 500, 0);
+               new DiscoveryGroupConfiguration(discoveryGroupName, 500, 0,
+                     new UDPBroadcastGroupConfiguration(null, -1, "230.1.2.3", 6745));
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
