@@ -121,6 +121,7 @@ public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpo
          channel.setReceiver(null);
          clientOpened = false;
       }
+      channel.close();
    }
 
    private class JGroupsReceiver extends ReceiverAdapter
