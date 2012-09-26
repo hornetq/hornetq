@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
@@ -35,13 +36,6 @@ import org.hornetq.utils.TypedProperties;
  * This class is used to search for members on the cluster through the opaque interface {@link BroadcastEndpoint}.
  *
  * There are two current implementations, and that's probably all we will ever need.
- *
- * {@link org.hornetq.core.cluster.impl.UDPBroadcastEndpoint} provides a pure UDP implementation, which was the first
- * implementation since we had the first versions on HornetQ.
- *
- * {@link org.hornetq.core.cluster.impl.JGroupsBroadcastEndpoint} provides a more robust implementation where we could
- * use simple UDP or cloud based protocols (example S3 File Bucket or other protocols available) and it was introduced
- * during HornetQ 2.3
  *
  * We will probably keep both interfaces for a while as UDP is a simple solution requiring no extra dependencies which
  * is suitable for users looking for embedded solutions.
@@ -83,21 +77,22 @@ public class DiscoveryGroup
 
    /**
     * This is the main constructor, intended to be used
+    *
     * @param nodeID
     * @param name
     * @param timeout
-    * @param endpoint
+    * @param endpointFactory
     * @param service
     * @throws Exception
     */
    public DiscoveryGroup(final String nodeID, final String name, final long timeout,
-                         BroadcastEndpoint endpoint,
+                         BroadcastEndpointFactory endpointFactory,
                          NotificationService service) throws Exception
    {
       this.nodeID = nodeID;
       this.name = name;
       this.timeout = timeout;
-      this.endpoint = endpoint;
+      this.endpoint = endpointFactory.createBroadcastEndpoint();
       this.notificationService = service;
    }
 
@@ -149,7 +144,7 @@ public class DiscoveryGroup
 
       try
       {
-         endpoint.close();
+         endpoint.close(false);
       }
       catch (Exception e1)
       {

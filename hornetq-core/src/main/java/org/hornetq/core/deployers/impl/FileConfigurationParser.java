@@ -28,13 +28,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.*;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
@@ -991,23 +985,18 @@ public final class FileConfigurationParser
 
       // TODO: validate if either jgroups or UDP is being filled
 
-      BroadcastGroupConfiguration config;
+      BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
 
       if (jgroupsFile != null)
       {
-         config = new BroadcastGroupConfiguration(name,
-            jgroupsFile, jgroupsChannel, broadcastPeriod, connectorNames);
+         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFile, jgroupsChannel);
       }
       else
       {
-         config = new BroadcastGroupConfiguration(name,
-            localAddress,
-            localBindPort,
-            groupAddress,
-            groupPort,
-            broadcastPeriod,
-            connectorNames);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localAddress, localBindPort, groupAddress, groupPort);
       }
+
+      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name, broadcastPeriod, connectorNames, endpointFactoryConfiguration);
 
       mainConfig.getBroadcastGroupConfigurations().add(config);
    }
@@ -1015,8 +1004,6 @@ public final class FileConfigurationParser
    private void parseDiscoveryGroupConfiguration(final Element e, final Configuration mainConfig)
    {
       String name = e.getAttribute("name");
-
-      DiscoveryGroupConfiguration config = null;
 
       long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
          "initial-wait-timeout",
@@ -1041,21 +1028,17 @@ public final class FileConfigurationParser
       String jgroupsChannel = XMLConfigurationUtil.getString(e, "jgroups-channel", null, Validators.NO_CHECK);
 
       // TODO: validate if either jgroups or UDP is being filled
-
+      BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
       if (jgroupsFile != null)
       {
-         config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, jgroupsFile, jgroupsChannel);
+         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFile, jgroupsChannel);
       }
       else
       {
-         config = new DiscoveryGroupConfiguration(name,
-            localBindAddress,
-            localBindPort,
-            groupAddress,
-            groupPort,
-            refreshTimeout,
-            discoveryInitialWaitTimeout);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localBindAddress, localBindPort, groupAddress, groupPort);
       }
+
+      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, endpointFactoryConfiguration);
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {

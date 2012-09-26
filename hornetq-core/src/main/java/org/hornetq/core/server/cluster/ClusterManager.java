@@ -33,7 +33,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
@@ -70,7 +69,6 @@ import org.hornetq.utils.FutureLatch;
  */
 public class ClusterManager implements HornetQComponent
 {
-
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
 
    private final Map<String, Bridge> bridges = new HashMap<String, Bridge>();
@@ -798,23 +796,8 @@ public class ClusterManager implements HornetQComponent
 
        if (group == null)
        {
-          BroadcastEndpoint endpoint;
-
-
-          if (config.getJgroupsFile() != null)
-          {
-             endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getJgroupsFile(),
-                 config.getJgroupsChannel());
-          }
-          else
-          {
-             endpoint = BroadcastEndpointFactory.createUDPEndpoint(config.getGroupAddress(),
-                                                    config.getGroupPort(), config.getLocalBindAddress(),
-                                                    config.getLocalBindPort());
-          }
-
           group = new BroadcastGroupImpl(nodeManager, config.getName(),
-                                        config.getBroadcastPeriod(), scheduledExecutor, endpoint);
+                                        config.getBroadcastPeriod(), scheduledExecutor, config.getEndpointFactoryConfiguration().createBroadcastEndpointFactory());
 
           for (String connectorInfo : config.getConnectorInfos())
           {

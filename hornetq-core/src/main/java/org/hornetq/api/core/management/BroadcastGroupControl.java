@@ -29,17 +29,17 @@ public interface BroadcastGroupControl extends HornetQComponentControl
    /**
     * Returns the local port this broadcast group is bound to.
     */
-   int getLocalBindPort();
+   int getLocalBindPort() throws Exception;
 
    /**
     * Returns the address this broadcast group is broadcasting to.
     */
-   String getGroupAddress();
+   String getGroupAddress() throws Exception;
 
    /**
     * Returns the port this broadcast group is broadcasting to.
     */
-   int getGroupPort();
+   int getGroupPort() throws Exception;
 
    /**
     * Returns the period used by this broadcast group.

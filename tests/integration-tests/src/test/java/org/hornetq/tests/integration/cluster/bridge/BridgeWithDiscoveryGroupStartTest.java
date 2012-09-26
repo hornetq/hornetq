@@ -33,6 +33,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -93,17 +94,17 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
          ArrayList<String> list = new ArrayList<String>();
          list.add(server1tc.getName());
+
+         UDPBroadcastGroupConfiguration endpoint = new UDPBroadcastGroupConfiguration(groupAddress, port, null, -1);
+
          BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
-                                                                                null,
-                                                                                -1,
-                                                                                groupAddress,
-                                                                                port,
                                                                                 250,
-               list);
+                                                                                list,
+                                                                                endpoint);
 
          server0.getConfiguration().getBroadcastGroupConfigurations().add(bcConfig);
 
-         DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", null, groupAddress, port, 5000, 5000);
+         DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", 5000, 5000, endpoint);
 
          server0.getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
