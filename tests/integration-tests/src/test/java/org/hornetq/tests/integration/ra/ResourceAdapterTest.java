@@ -23,12 +23,14 @@ import javax.jms.Connection;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -255,7 +257,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQConnectionFactory factory = adapter.getDefaultHornetQConnectionFactory();
       long initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
-      int port = factory.getDiscoveryGroupConfiguration().getGroupPort();
+      int port = ((UDPBroadcastGroupConfiguration)factory.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getGroupPort();
 
       //defaults
       assertEquals(10000l, refresh);
@@ -366,10 +368,12 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
       HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
+      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
+      assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
+      assertEquals(udpDg.getGroupPort(), 1234);
+      assertEquals(dc.getRefreshTimeout(), 1l);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
       qResourceAdapter.stop();
    }
 
@@ -395,10 +399,12 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDiscoveryInitialWaitTimeout(1l);
       spec.setDiscoveryRefreshTimeout(1l);
       HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
-      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
+      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
+      assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
+      assertEquals(udpDg.getGroupPort(), 1234);
+      assertEquals(dc.getRefreshTimeout(), 1l);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
       qResourceAdapter.stop();
    }
 

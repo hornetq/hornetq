@@ -44,8 +44,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
-import org.hornetq.core.cluster.BroadcastEndpoint;
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
@@ -377,24 +375,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private static DiscoveryGroup createDiscoveryGroup(String nodeID, DiscoveryGroupConfiguration config) throws Exception
    {
-      DiscoveryGroup group = null;
-
-      BroadcastEndpoint endpoint;
-
-      if (config.getJgroupsFile() != null)
-      {
-         endpoint = BroadcastEndpointFactory.createJGropusEndpoint(config.getJgroupsFile(), config.getJgroupsChannelName());
-      }
-      else
-      {
-         endpoint = BroadcastEndpointFactory.createUDPEndpoint(config.getGroupAddress(), config.getGroupPort(),
-            config.getLocalBindAddress(), config.getLocalBindPort());
-      }
-
-      group = new DiscoveryGroup(nodeID,
-         config.getName(),
-         config.getRefreshTimeout(),
-         endpoint, null);
+      DiscoveryGroup group = new DiscoveryGroup(nodeID, config.getName(),
+            config.getRefreshTimeout(), config.getBroadcastEndpointFactoryConfiguration().createBroadcastEndpointFactory(), null);
       return group;
    }
 

@@ -23,6 +23,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
@@ -41,12 +42,9 @@ public class BroadcastGroupControlTest extends ManagementTestBase
    public static BroadcastGroupConfiguration randomBroadcastGroupConfiguration(final List<String> connectorInfos)
    {
       return new BroadcastGroupConfiguration(RandomUtil.randomString(),
-                                             null,
-                                             1198,
-                                             "231.7.7.7",
-                                             1199,
                                              RandomUtil.randomPositiveInt(),
-                                             connectorInfos);
+                                             connectorInfos,
+                                             new UDPBroadcastGroupConfiguration(null, 1198, "231.7.7.7", 1199));
    }
 
    public static Pair<String, String> randomPair()
@@ -63,7 +61,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       List<String> connectorInfos = new ArrayList<String>();
       connectorInfos.add(connectorConfiguration.getName());
-      BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
+      BroadcastGroupConfiguration broadcastGroupConfig = (BroadcastGroupConfiguration) BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
@@ -76,10 +74,11 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
 
+      UDPBroadcastGroupConfiguration udpCfg = (UDPBroadcastGroupConfiguration) broadcastGroupConfig.getEndpointFactoryConfiguration();
       Assert.assertEquals(broadcastGroupConfig.getName(), broadcastGroupControl.getName());
-      Assert.assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
-      Assert.assertEquals(broadcastGroupConfig.getGroupPort(), broadcastGroupControl.getGroupPort());
-      Assert.assertEquals(broadcastGroupConfig.getLocalBindPort(), broadcastGroupControl.getLocalBindPort());
+      Assert.assertEquals(udpCfg.getGroupAddress(), broadcastGroupControl.getGroupAddress());
+      Assert.assertEquals(udpCfg.getGroupPort(), broadcastGroupControl.getGroupPort());
+      Assert.assertEquals(udpCfg.getLocalBindPort(), broadcastGroupControl.getLocalBindPort());
       Assert.assertEquals(broadcastGroupConfig.getBroadcastPeriod(), broadcastGroupControl.getBroadcastPeriod());
 
       Object[] connectorPairs = broadcastGroupControl.getConnectorPairs();

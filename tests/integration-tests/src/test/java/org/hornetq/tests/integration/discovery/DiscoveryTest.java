@@ -27,15 +27,17 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
+
+import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.cluster.BroadcastEndpoint;
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
+import org.hornetq.core.config.JGroupsBroadcastGroupConfigurationWithFile;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
@@ -117,7 +119,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID),
          RandomUtil.randomString(),
-         0,  null, BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, null, -1));
+         0,  null, new UDPBroadcastGroupConfiguration(null, -1, address1, groupPort).createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -150,7 +152,7 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID), "broadcast", 100, null,
-         BroadcastEndpointFactory.createJGropusEndpoint("test-jgroups-file_ping.xml", "tst"));
+         new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -159,9 +161,8 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = new DiscoveryGroup(nodeID + "1", "broadcast", 5000l,
-         BroadcastEndpointFactory.createJGropusEndpoint("test-jgroups-file_ping.xml",
-            "tst"),
-         null);
+            new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory(),
+            null);
 
       dg.start();
 
@@ -181,11 +182,12 @@ public class DiscoveryTest extends UnitTestCase
       BroadcastEndpoint client = null;
       try
       {
-         broadcaster = BroadcastEndpointFactory.createJGropusEndpoint("test-jgroups-file_ping.xml", "tst");
+         JGroupsBroadcastGroupConfigurationWithFile jgroupsConfig = new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst");
+         broadcaster = jgroupsConfig.createBroadcastEndpointFactory().createBroadcastEndpoint();
 
          broadcaster.openBroadcaster();
 
-         client = BroadcastEndpointFactory.createJGropusEndpoint("test-jgroups-file_ping.xml", "tst");
+         client = jgroupsConfig.createBroadcastEndpointFactory().createBroadcastEndpoint();
 
          client.openClient();
 
@@ -213,10 +215,10 @@ public class DiscoveryTest extends UnitTestCase
          try
          {
             if (broadcaster != null)
-               broadcaster.close();
+               broadcaster.close(true);
 
             if (client != null)
-               client.close();
+               client.close(false);
          }
          catch (Exception ignored)
          {
@@ -1113,7 +1115,7 @@ public class DiscoveryTest extends UnitTestCase
                                            final int groupPort) throws Exception
    {
       return new BroadcastGroupImpl(new FakeNodeManager(nodeID), name, 0, null,
-         BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localAddress, localPort));
+         new UDPBroadcastGroupConfiguration(localAddress.getHostAddress(), localPort, groupAddress.getHostAddress(), groupPort).createBroadcastEndpointFactory());
    }
 
    private DiscoveryGroup newDiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
@@ -1125,7 +1127,8 @@ public class DiscoveryTest extends UnitTestCase
    private DiscoveryGroup newDiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
                                             final InetAddress groupAddress, final int groupPort, final long timeout, NotificationService notif) throws Exception
    {
-      return new DiscoveryGroup(nodeID, name, timeout, BroadcastEndpointFactory.createUDPEndpoint(groupAddress, groupPort, localBindAddress, -1), notif);
+      return new DiscoveryGroup(nodeID, name, timeout, 
+            new UDPBroadcastGroupConfiguration(localBindAddress.getHostAddress(), -1, groupAddress.getHostAddress(), groupPort).createBroadcastEndpointFactory(), notif);
    }
 
 

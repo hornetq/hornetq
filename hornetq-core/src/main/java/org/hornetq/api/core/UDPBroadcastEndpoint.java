@@ -10,7 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.core.cluster.impl;
+package org.hornetq.api.core;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -23,7 +23,6 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.cluster.BroadcastEndpoint;
 import org.hornetq.core.server.HornetQLogger;
 
 /**
@@ -155,7 +154,8 @@ public class UDPBroadcastEndpoint implements BroadcastEndpoint
       open = true;
    }
 
-   public void close() throws Exception
+   //@Todo: using isBroadcast to share endpoint between broadcast and receiving
+   public void close(boolean isBroadcast) throws Exception
    {
       open = false;
       

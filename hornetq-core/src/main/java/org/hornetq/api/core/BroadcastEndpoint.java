@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.cluster;
+package org.hornetq.api.core;
 
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +25,7 @@ public interface BroadcastEndpoint
 
    void openBroadcaster() throws Exception;
 
-   void close() throws Exception;
+   void close(boolean isBroadcast) throws Exception;
 
    void broadcast(byte[] data) throws Exception;
 

@@ -24,6 +24,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -338,9 +339,10 @@ public class JMSServerDeployerTest extends ServiceTestBase
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
-      DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup", "172.16.8.10",
-                                                                        "243.7.7.7", 12345,
-                                                                        5432, 5432);
+      DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup",
+                                                                        5432, 5432,
+                                                                        new UDPBroadcastGroupConfiguration("172.16.8.10", -1,
+                                                                        "243.7.7.7", 12345));
       config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 
