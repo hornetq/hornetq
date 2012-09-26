@@ -993,7 +993,7 @@ public final class FileConfigurationParser
       }
       else
       {
-         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localAddress, localBindPort, groupAddress, groupPort);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localAddress, localBindPort);
       }
 
       BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name, broadcastPeriod, connectorNames, endpointFactoryConfiguration);
@@ -1035,7 +1035,7 @@ public final class FileConfigurationParser
       }
       else
       {
-         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localBindAddress, localBindPort, groupAddress, groupPort);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localBindAddress, localBindPort);
       }
 
       DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, endpointFactoryConfiguration);

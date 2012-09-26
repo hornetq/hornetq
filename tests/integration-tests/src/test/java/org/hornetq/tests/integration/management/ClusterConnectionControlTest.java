@@ -206,7 +206,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       String discoveryGroupName = RandomUtil.randomString();
       DiscoveryGroupConfiguration discoveryGroupConfig =
                new DiscoveryGroupConfiguration(discoveryGroupName, 500, 0,
-                     new UDPBroadcastGroupConfiguration(null, -1, "230.1.2.3", 6745));
+                     new UDPBroadcastGroupConfiguration("230.1.2.3", 6745, null, -1));
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
