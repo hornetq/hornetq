@@ -50,7 +50,7 @@ public class SessionFactoryTest extends ServiceTestBase
 {
    private final DiscoveryGroupConfiguration groupConfiguration =
             new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                                            new UDPBroadcastGroupConfiguration(null, -1, getUDPDiscoveryAddress(), getUDPDiscoveryPort()));
+                                            new UDPBroadcastGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort(), null, -1));
 
    private HornetQServer liveService;
 
@@ -569,10 +569,11 @@ public class SessionFactoryTest extends ServiceTestBase
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               broadcastPeriod,
                                                                               Arrays.asList(liveTC.getName()),
-                                                                              new UDPBroadcastGroupConfiguration(                                                                              null,
-                                                                              localBindPort,
+                                                                              new UDPBroadcastGroupConfiguration(
                                                                               getUDPDiscoveryAddress(),
-                                                                              getUDPDiscoveryPort()));
+                                                                              getUDPDiscoveryPort(),
+                                                                              null,
+                                                                              localBindPort));
 
       List<BroadcastGroupConfiguration> bcConfigs1 = new ArrayList<BroadcastGroupConfiguration>();
       bcConfigs1.add(bcConfig1);
