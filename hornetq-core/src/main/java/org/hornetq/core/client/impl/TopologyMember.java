@@ -14,7 +14,7 @@ package org.hornetq.core.client.impl;
 
 import java.io.Serializable;
 
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 

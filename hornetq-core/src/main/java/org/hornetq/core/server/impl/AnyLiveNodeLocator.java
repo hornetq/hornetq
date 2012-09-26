@@ -21,19 +21,17 @@
 */
 package org.hornetq.core.server.impl;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.server.LiveNodeLocator;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.server.LiveNodeLocator;
+import org.hornetq.utils.Pair;
 
 /**
  * This implementatiuon looks for any available live node, once tried with no success it is marked as tried and the next
@@ -44,8 +42,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class AnyLiveNodeLocator extends LiveNodeLocator
 {
-   private Lock lock = new ReentrantLock();
-   private Condition condition = lock.newCondition();
+   private final Lock lock = new ReentrantLock();
+   private final Condition condition = lock.newCondition();
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> untriedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> triedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
 
@@ -56,6 +54,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       super(quorumManager);
    }
 
+   @Override
    public void locateNode() throws HornetQException
    {
       //first time
@@ -121,11 +120,13 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       }
    }
 
+   @Override
    public String getNodeID()
    {
       return nodeID;
    }
 
+   @Override
    public Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration()
    {
       try
@@ -145,6 +146,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       }
    }
 
+   @Override
    public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
       try

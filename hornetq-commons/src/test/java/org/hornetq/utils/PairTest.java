@@ -15,7 +15,6 @@ package org.hornetq.utils;
 
 import junit.framework.TestCase;
 
-import org.hornetq.api.core.Pair;
 
 public class PairTest extends TestCase
 {

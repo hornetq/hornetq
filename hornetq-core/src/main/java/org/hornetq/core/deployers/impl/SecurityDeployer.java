@@ -15,7 +15,7 @@ package org.hornetq.core.deployers.impl;
 
 import java.util.Set;
 
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;

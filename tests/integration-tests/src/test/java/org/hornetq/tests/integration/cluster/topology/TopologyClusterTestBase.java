@@ -22,7 +22,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQUnBlockedException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -35,6 +34,7 @@ import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.utils.Pair;
 
 /**
  * A TopologyClusterTestBase

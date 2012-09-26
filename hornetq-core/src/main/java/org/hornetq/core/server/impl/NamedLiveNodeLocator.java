@@ -22,7 +22,7 @@
 package org.hornetq.core.server.impl;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.server.LiveNodeLocator;

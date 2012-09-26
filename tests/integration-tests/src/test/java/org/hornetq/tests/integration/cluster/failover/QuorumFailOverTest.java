@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
+import org.hornetq.utils.Pair;
 
 public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 {

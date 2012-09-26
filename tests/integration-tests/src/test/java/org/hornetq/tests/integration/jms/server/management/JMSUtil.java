@@ -32,7 +32,6 @@ import javax.jms.TopicSubscriber;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -47,6 +46,7 @@ import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.utils.Pair;
 
 /**
  * A JMSUtil

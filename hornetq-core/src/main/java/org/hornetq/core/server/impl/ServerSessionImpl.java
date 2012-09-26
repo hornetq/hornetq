@@ -31,7 +31,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
