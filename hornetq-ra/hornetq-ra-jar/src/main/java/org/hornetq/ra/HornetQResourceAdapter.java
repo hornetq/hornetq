@@ -1832,7 +1832,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          {
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                                                                            : raProperties.getDiscoveryLocalBindAddress();
-            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localBindAddress, -1, discoveryAddress, discoveryPort);
+            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
          else
          {
@@ -1954,7 +1954,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          {
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                                                                            : raProperties.getDiscoveryLocalBindAddress();
-            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(localBindAddress, -1, discoveryAddress, discoveryPort);
+            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
          else
          {

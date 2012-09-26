@@ -119,7 +119,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID),
          RandomUtil.randomString(),
-         0,  null, new UDPBroadcastGroupConfiguration(null, -1, address1, groupPort).createBroadcastEndpointFactory());
+         0,  null, new UDPBroadcastGroupConfiguration(address1, groupPort, null, -1).createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -1115,7 +1115,7 @@ public class DiscoveryTest extends UnitTestCase
                                            final int groupPort) throws Exception
    {
       return new BroadcastGroupImpl(new FakeNodeManager(nodeID), name, 0, null,
-         new UDPBroadcastGroupConfiguration(localAddress.getHostAddress(), localPort, groupAddress.getHostAddress(), groupPort).createBroadcastEndpointFactory());
+         new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort, localAddress.getHostAddress(), localPort).createBroadcastEndpointFactory());
    }
 
    private DiscoveryGroup newDiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
@@ -1128,7 +1128,7 @@ public class DiscoveryTest extends UnitTestCase
                                             final InetAddress groupAddress, final int groupPort, final long timeout, NotificationService notif) throws Exception
    {
       return new DiscoveryGroup(nodeID, name, timeout, 
-            new UDPBroadcastGroupConfiguration(localBindAddress.getHostAddress(), -1, groupAddress.getHostAddress(), groupPort).createBroadcastEndpointFactory(), notif);
+            new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort, localBindAddress.getHostAddress(), -1).createBroadcastEndpointFactory(), notif);
    }
 
 

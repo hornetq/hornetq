@@ -38,15 +38,15 @@ public class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryC
 
    private int groupPort;
 
-   public UDPBroadcastGroupConfiguration(final String localBindAddress,
-                                      final int localBindPort,
-                                      final String groupAddress,
-                                      final int groupPort)
+   public UDPBroadcastGroupConfiguration(final String groupAddress,
+                                         final int groupPort, 
+                                         final String localBindAddress,
+                                         final int localBindPort)
    {
-      this.localBindAddress = localBindAddress;
-      this.localBindPort = localBindPort;
       this.groupAddress = groupAddress;
       this.groupPort = groupPort;
+      this.localBindAddress = localBindAddress;
+      this.localBindPort = localBindPort;
    }
 
    public BroadcastEndpointFactory createBroadcastEndpointFactory()

@@ -44,7 +44,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       return new BroadcastGroupConfiguration(RandomUtil.randomString(),
                                              RandomUtil.randomPositiveInt(),
                                              connectorInfos,
-                                             new UDPBroadcastGroupConfiguration(null, 1198, "231.7.7.7", 1199));
+                                             new UDPBroadcastGroupConfiguration("231.7.7.7", 1199, null, 1198));
    }
 
    public static Pair<String, String> randomPair()

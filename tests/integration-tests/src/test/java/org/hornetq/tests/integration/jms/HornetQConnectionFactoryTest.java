@@ -159,7 +159,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    public void testDiscoveryConstructor() throws Exception
    {
       DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-            new UDPBroadcastGroupConfiguration(null, -1, groupAddress, groupPort));
+            new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, -1));
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
@@ -717,7 +717,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               broadcastPeriod,
                                                                               connectorNames,
-                                              new UDPBroadcastGroupConfiguration(null, localBindPort, groupAddress, groupPort));
+                                              new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, localBindPort));
 
       List<BroadcastGroupConfiguration> bcConfigs1 = new ArrayList<BroadcastGroupConfiguration>();
       bcConfigs1.add(bcConfig1);

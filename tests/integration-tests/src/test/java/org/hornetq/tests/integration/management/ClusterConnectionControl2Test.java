@@ -122,11 +122,11 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       BroadcastGroupConfiguration broadcastGroupConfig = new BroadcastGroupConfiguration(discoveryName,
                                                                                          250,
                                                                                          connectorInfos,
-                                             new UDPBroadcastGroupConfiguration(null, -1, groupAddress, groupPort));
+                                             new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, -1));
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryName,
                                                                                          0,
                                                                                          0,
-                                             new UDPBroadcastGroupConfiguration(null, -1, groupAddress, groupPort));
+                                             new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, -1));
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);

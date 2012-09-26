@@ -341,8 +341,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup",
                                                                         5432, 5432,
-                                                                        new UDPBroadcastGroupConfiguration("172.16.8.10", -1,
-                                                                        "243.7.7.7", 12345));
+                                                                        new UDPBroadcastGroupConfiguration("243.7.7.7", 12345,
+                                                                        "172.16.8.10", -1));
       config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 
