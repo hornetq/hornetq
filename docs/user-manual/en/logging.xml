@@ -23,38 +23,133 @@
 ]>
 <chapter id="logging">
     <title>Logging</title>
-    <para>HornetQ has its own logging delegate that has no dependencies on any particular logging
-        framework. The default delegate delegates all its logs to the standard <ulink
-            url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK logging</ulink>,
-        (a.k.a Java-Util-Logging: JUL). By default the server picks up its JUL configuration from a
-            <literal>logging.properties</literal> file found in the config directories. This is
-        configured to use our own HornetQ logging formatter and will log to the console as well as a
-        log file. For more information on configuring JUL visit Suns website.</para>
-    <para>You can configure a different Logging Delegate programatically or via a System
-        Property.</para>
-    <para>To do this programatically simply do the
-        following<programlisting>org.hornetq.core.logging.Logger.setDelegateFactory(new Log4jLogDelegateFactory())</programlisting></para>
-    <para>Where <literal>Log4jLogDelegateFactory</literal> is the implementation of <literal
-            >org.hornetq.spi.core.logging.LogDelegateFactory </literal>that you would like to
-        use.</para>
-    <para>To do this via a System Property simply set the property <literal
-            >org.hornetq.logger-delegate-factory-class-name</literal> to the delegate factory being
-        used,
-        i.e.<programlisting>-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.integration.logging.Log4jLogDelegateFactory</programlisting></para>
-    <para>As you can see in the above example HornetQ provides some Delegate Factories for your
-        convenience. these are<orderedlist
-                    ><listitem><para>org.hornetq.core.logging.impl.JULLogDelegateFactory - the
-                    default that uses
-                    JUL.</para></listitem><listitem><para>org.hornetq.integration.logging.Log4jLogDelegateFactory
-                    - which uses Log4J</para></listitem></orderedlist></para>
-    <para>If you configure your client's logging to use the JUL delegate, make sure you provide a
-            <literal>logging.properties</literal> file and set the <literal
-            >java.util.logging.config.file</literal> property on client startup</para>
+    <para>HornetQ uses the JBoss Logging framework to do its logging and is configurable via the <literal>logging.properties</literal>
+       file found in the configuration directories. This is configured by Default to log to both the console and to a file.</para>
+   <para>There are 6 loggers availabe which are as follows:</para>
+    <table frame="topbot" border="2">
+       <title>Global Configuration Properties</title>
+       <tgroup cols="2">
+           <colspec colname="c1" colnum="1"/>
+           <colspec colname="c2" colnum="2"/>
+           <thead>
+               <row>
+                   <entry>Logger</entry>
+                   <entry>Logger Description</entry>
+               </row>
+           </thead>
+           <tbody>
+               <row>
+                   <entry>org.jboss.logging</entry>
+                   <entry>Logs any calls not handled by the HornetQ loggers</entry>
+               </row>
+               <row>
+                   <entry>org.hornetq.core.server</entry>
+                   <entry>Logs the core server</entry>
+               </row>
+               <row>
+                   <entry>org.hornetq.utils</entry>
+                   <entry>Logs utility calls</entry>
+               </row>
+               <row>
+                   <entry>org.hornetq.journal</entry>
+                   <entry>Logs Journal calls</entry>
+               </row>
+               <row>
+                   <entry>org.hornetq.jms</entry>
+                   <entry>Logs JMS calls</entry>
+               </row>
+               <row>
+                   <entry>org.hornetq.integration.bootstrap</entry>
+                   <entry>Logs bootstrap calls</entry>
+               </row>
+            </tbody>
+         </tgroup>
+       <para>you can configure the levels on these loggers independently in the appropriate <literal>logging.properties</literal>
+        file</para>
+   </table>
+   <section>
+      <title>Logging in a client or with an Embedded server</title>
+      <para>
+         Firstly, if you want to enable logging on the client side you need to include the jboss logging jars in your library.
+         If you are using the distribution make sure the jnp-client.jar is included or if you are using maven add the following
+         dependencies.
+         <programlisting>
+   &lt;dependency>
+   &lt;groupId>org.jboss.naming&lt;/groupId>
+   &lt;artifactId>jnp-client&lt;/artifactId>
+   &lt;version>5.0.5.Final&lt;/version>
+      &lt;exclusions>
+         &lt;exclusion>
+            &lt;groupId>org.jboss.logging&lt;/groupId>
+            &lt;artifactId>jboss-logging-spi&lt;/artifactId>
+         &lt;/exclusion>
+      &lt;/exclusions>
+   &lt;/dependency>
+   &lt;dependency>
+      &lt;groupId>org.jboss.logmanager&lt;/groupId>
+      &lt;artifactId>jboss-logmanager&lt;/artifactId>
+      &lt;version>1.3.1.Final&lt;/version>
+   &lt;/dependency>
+   &lt;dependency>
+       &lt;groupId>org.hornetq&lt;/groupId>
+       &lt;artifactId>hornetq-core-client&lt;/artifactId>
+       &lt;version>2.3.0.BETA1&lt;/version>
+   &lt;/dependency>
+         </programlisting>
+         The first dependency <literal>jnp-client</literal> is not actually needed for logging, however this is needed for
+         using JNDI and imports a previous version JBoss logging which needs to be excluded
+      </para>
+      <para>
+         There are 2 properties you need to set when starting your java program, the first is to set the Log Manager to use
+         the JBoss Log Manager, this is done by setting the <literal>-Djava.util.logging.manager</literal> property i.e.
+         <literal>-Djava.util.logging.manager=org.jboss.logmanager.LogManager</literal>
+      </para>
+      <para>
+         The second is to set the location of the logging.properties file to use, this is done via the <literal>-Dlogging.configuration</literal>
+         for instance <literal>-Dlogging.configuration=file:///home/user/projects/myProject/logging.properties</literal>.
+         <note>The value for this needs to be valid URL</note>
+      </para>
+      <para>
+         The following is a typical <literal>logging.properties for a client</literal>
+         <programlisting>
+   # Root logger option
+   loggers=org.jboss.logging,org.hornetq.core.server,org.hornetq.utils,org.hornetq.journal,org.hornetq.jms,org.hornetq.ra
+
+   # Root logger level
+   logger.level=INFO
+   # HornetQ logger levels
+   logger.org.hornetq.core.server.level=INFO
+   logger.org.hornetq.utils.level=INFO
+   logger.org.hornetq.jms.level=DEBUG
+
+   # Root logger handlers
+   logger.handlers=FILE,CONSOLE
+
+   # Console handler configuration
+   handler.CONSOLE=org.jboss.logmanager.handlers.ConsoleHandler
+   handler.CONSOLE.properties=autoFlush
+   handler.CONSOLE.level=FINE
+   handler.CONSOLE.autoFlush=true
+   handler.CONSOLE.formatter=PATTERN
+
+   # File handler configuration
+   handler.FILE=org.jboss.logmanager.handlers.FileHandler
+   handler.FILE.level=FINE
+   handler.FILE.properties=autoFlush,fileName
+   handler.FILE.autoFlush=true
+   handler.FILE.fileName=hornetq.log
+   handler.FILE.formatter=PATTERN
+
+   # Formatter pattern configuration
+   formatter.PATTERN=org.jboss.logmanager.formatters.PatternFormatter
+   formatter.PATTERN.properties=pattern
+   formatter.PATTERN.pattern=%d{HH:mm:ss,SSS} %-5p [%c] %s%E%n
+         </programlisting>
+      </para>
+   </section>
     <section>
         <title>Logging With The JBoss Application Server</title>
-        <para>When HornetQ is deployed within the JBoss Application Server version 5.x or above then
-            it will still use JUL however the logging is redirected to the default JBoss logger. For
-            more information on this refer to the JBoss documentation. In versions before this you
-            must specify what logger delegate you want to use.</para>
+        <para>When HornetQ is deployed within the JBoss Application Server version 7.x or above then
+            it will still use JBoss Logging, refer to the AS7 documentation on how to configure AS7 logging.</para>
     </section>
 </chapter>
