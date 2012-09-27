@@ -48,6 +48,7 @@ import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.utils.ClassloadingUtil;
+import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -1570,7 +1571,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (ha)
       {
-         backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+         backup = topology.getBackupForConnector((Connector)factory.getConnector());
       }
 
       factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
