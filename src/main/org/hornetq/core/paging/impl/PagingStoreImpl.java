@@ -50,7 +50,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.Future;
@@ -509,6 +508,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       lock.writeLock().lock();
       paging = false;
+      this.cursorProvider.onPageModeCleared();
       lock.writeLock().unlock();
    }
 
@@ -941,12 +941,14 @@ public class PagingStoreImpl implements TestSupportPageStore
       for (org.hornetq.core.server.Queue q : durableQueues)
       {
          q.getPageSubscription().getCounter().increment(tx, 1);
+         q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }
 
       for (org.hornetq.core.server.Queue q : nonDurableQueues)
       {
          q.getPageSubscription().getCounter().increment(tx, 1);
+         q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }
       return ids;

@@ -55,6 +55,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -111,6 +112,20 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          fail("InVMREgistry size > 0");
       }
+   }
+
+   /**
+    * @param queue
+    * @throws InterruptedException
+    */
+   protected void waitForNotPaging(Queue queue) throws InterruptedException
+   {
+      long timeout = System.currentTimeMillis() + 10000;
+      while (timeout > System.currentTimeMillis() && queue.getPageSubscription().getPagingStore().isPaging())
+      {
+         Thread.sleep(100);
+      }
+      assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
    }
 
    protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
