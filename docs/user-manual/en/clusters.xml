@@ -27,10 +27,11 @@
         <title>Clusters Overview</title>
         <para>HornetQ clusters allow groups of HornetQ servers to be grouped together in order to
             share message processing load. Each active node in the cluster is an active HornetQ
-            server which manages its own messages and handles its own connections. A server must be
-            configured to be clustered, you will need to set the <literal>clustered</literal>
-            element in the <literal>hornetq-configuration.xml</literal> configuration file to
-            <literal>true</literal>, this is <literal>false</literal> by default.</para>
+            server which manages its own messages and handles its own connections. </para>
+        <note id="clustered-deprecation">
+            <para> The <emphasis>clustered</emphasis> parameter is deprecated and no longer needed for
+            setting up a cluster.</para>
+        </note>
         <para>The cluster is formed by each node declaring <emphasis>cluster connections</emphasis>
             to other nodes in the core configuration file <literal
                     >hornetq-configuration.xml</literal>. When a node forms a cluster connection to
@@ -78,17 +79,16 @@
         <para>
             This information, lets call it the Cluster Topology, is actually sent around normal HornetQ
             connections to clients and to other servers over cluster connections. This being the case we need a
-            way of establishing the initial first connection. This can either be done using
-            <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink> or by
+            way of establishing the initial first connection. This can be done using
+            dynamic discovery techniques like <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink>
+            and <ulink url="http://www.jgroups.org/">JGroups</ulink>, or by
             providing a list of initial connectors.
         </para>
         <section>
-            <title>Discovery using UDP</title>
+            <title>Dynamic Discovery</title>
             <para>
                 Server discovery uses <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink>
-                multicast to broadcast server connection settings. If UDP is disabled
-                on your network you won't be able to use this, and will have to specify servers
-                explicitly when setting up a cluster or using a messaging client.
+                multicast or <ulink url="http://www.jgroups.org/">JGroups</ulink> to broadcast server connection settings. 
             </para>
             <section id="clusters.broadcast-groups">
                 <title>Broadcast Groups</title>
@@ -98,13 +98,14 @@
                     <xref linkend="configuring-transports"/>.</para>
                 <para>The broadcast group takes a set of connector pairs, each connector pair contains
                     connection settings for a live and backup server (if one exists) and broadcasts them on
-                    the network. It also defines the UDP address and port settings. </para>
+                    the network. Depending on which broadcasting technique you configure the cluster, it
+                    uses either UDP or JGroups to broadcast connector pairs information.</para>
                 <para>Broadcast groups are defined in the server configuration file <literal
                         >hornetq-configuration.xml</literal>. There can be many broadcast groups per
                     HornetQ server. All broadcast groups must be defined in a <literal
                             >broadcast-groups</literal> element.</para>
                 <para>Let's take a look at an example broadcast group from <literal
-                        >hornetq-configuration.xml</literal>:</para>
+                        >hornetq-configuration.xml</literal> that defines a UDP broadcast group:</para>
                 <programlisting>&lt;broadcast-groups>
                     &lt;broadcast-group name="my-broadcast-group">
                     &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
@@ -129,25 +130,25 @@
                             your server, you would specify which one you wish to use for broadcasts by
                             setting this property. If this property is not specified then the socket
                             will be bound to the wildcard address, an IP address chosen by the
-                            kernel.</para>
+                            kernel. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>local-bind-port</literal>. If you want to specify a local port to
                             which the datagram socket is bound you can specify it here. Normally you
                             would just use the default value of <literal>-1</literal> which signifies
                             that an anonymous port should be used. This parameter is alawys specified in conjunction with
-                            <literal>local-bind-address</literal>.</para>
+                            <literal>local-bind-address</literal>. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>group-address</literal>. This is the multicast address to which
                             the data will be broadcast. It is a class D IP address in the range <literal
                                     >224.0.0.0</literal> to <literal>239.255.255.255</literal>, inclusive.
                             The address <literal>224.0.0.0</literal> is reserved and is not available
-                            for use. This parameter is mandatory.</para>
+                            for use. This parameter is mandatory. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>group-port</literal>. This is the UDP port number used for
-                            broadcasting. This parameter is mandatory.</para>
+                            broadcasting. This parameter is mandatory. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>broadcast-period</literal>. This is the period in milliseconds
@@ -159,17 +160,46 @@
                             optional backup connector that will be broadcasted (see <xref
                                     linkend="configuring-transports"/> for more information on connectors).
                             The connector to be broadcasted is specified by the <literal
-                                    >connector-name</literal> attribute..</para>
+                                    >connector-name</literal> attribute.</para>
                     </listitem>
                 </itemizedlist>
+
+                <para>Here is another example broadcast group that defines a JGroups broadcast group:</para>
+                <programlisting>&lt;broadcast-groups>
+                    &lt;broadcast-group name="my-broadcast-group">
+                    &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+                    &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+                    &lt;broadcast-period>2000&lt;/broadcast-period>
+                    &lt;connector-ref connector-name="netty-connector"/>
+                    &lt;/broadcast-group>
+                    &lt;/broadcast-groups></programlisting>
+                <para>To be able to use JGroups to broadcast, one must specify two attributes, i.e. 
+                    <literal>jgroups-file</literal> and <literal>jgroups-channel</literal>, as discussed
+                    in details as following:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para><literal>jgroups-file</literal> attribute. This is the name of JGroups configuration
+                            file. It will be used to initialize JGroups channels. Make sure the file is in the 
+                            java resource path so that HornetQ can load it. </para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>jgroups-channel</literal> attribute. The name that JGroups channels connect
+                        to for broadcasting.</para>
+                    </listitem>
+                </itemizedlist>
+                <note>
+                    <para>The JGroups attributes (<literal>jgroups-file</literal> and <literal>jgroups-channel</literal>)
+                    and UDP specific attributes described above are exclusive of each other. Only one set can be
+                    specified in a broadcast group configuration. Don't mix them!</para>
+                </note>
             </section>
             <section id="clusters.discovery-groups">
                 <title>Discovery Groups</title>
                 <para>While the broadcast group defines how connector information is broadcasted from a
                     server, a discovery group defines how connector information is received from a
-                    multicast address.</para>
+                    broadcast endpoint (a UDP multicast address or JGroup channel).</para>
                 <para>A discovery group maintains a list of connector pairs - one for each broadcast by
-                    a different server. As it receives broadcasts on the multicast group address from a
+                    a different server. As it receives broadcasts on the broadcast endpoint from a
                     particular server it updates its entry in the list for that server.</para>
                 <para>If it has not received a broadcast from a particular server for a length of time
                     it will remove that server's entry from its list.</para>
@@ -187,6 +217,13 @@
                     backup servers is only ever used when an initial connection is made, from then server discovery is
                     done over the normal HornetQ connections.
                 </para>
+                <note>
+                    <para>
+                    Each discovery group must be configured with broadcast endpoint (UDP or JGroups) that matches its broadcast
+                    group counterpart. For example, if broadcast is configured using UDP, the discovery group must also use UDP, and the same
+                    multicast address.
+                    </para>
+                </note>
             </section>
             <section>
                 <title>Defining Discovery Groups on the Server</title>
@@ -195,14 +232,15 @@
                     groups must be defined inside a <literal>discovery-groups</literal> element. There
                     can be many discovery groups defined by HornetQ server. Let's look at an
                     example:</para>
-                <programlisting>&lt;discovery-groups>
-                    &lt;discovery-group name="my-discovery-group">
+                <programlisting>
+                &lt;discovery-groups>
+                  &lt;discovery-group name="my-discovery-group">
                     &lt;local-bind-address>172.16.9.7&lt;/local-bind-address>
                     &lt;group-address>231.7.7.7&lt;/group-address>
                     &lt;group-port>9876&lt;/group-port>
                     &lt;refresh-timeout>10000&lt;/refresh-timeout>
-                    &lt;/discovery-group>
-                    &lt;/discovery-groups></programlisting>
+                  &lt;/discovery-group>
+                &lt;/discovery-groups></programlisting>
                 <para>We'll consider each parameter of the discovery group:</para>
                 <itemizedlist>
                     <listitem>
@@ -212,18 +250,18 @@
                     <listitem>
                         <para><literal>local-bind-address</literal>. If you are running with multiple network interfaces on the same machine, you
                             may want to specify that the discovery group listens only only a specific interface. To do this you can specify the interface
-                            address with this parameter. This parameter is optional.</para>
+                            address with this parameter. This parameter is optional. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>group-address</literal>. This is the multicast ip address of the
                             group to listen on. It should match the <literal>group-address</literal> in
                             the broadcast group that you wish to listen from. This parameter is
-                            mandatory.</para>
+                            mandatory.  This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>group-port</literal>. This is the UDP port of the multicast
                             group. It should match the <literal>group-port</literal> in the broadcast
-                            group that you wish to listen from. This parameter is mandatory.</para>
+                            group that you wish to listen from. This parameter is mandatory. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
                         <para><literal>refresh-timeout</literal>. This is the period the discovery group
@@ -237,6 +275,33 @@
                             seconds).</para>
                     </listitem>
                 </itemizedlist>
+                <para>Here is another example that defines a JGroups discovery group:</para>
+                <programlisting>&lt;discovery-groups>
+                    &lt;discovery-group name="my-broadcast-group">
+                    &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+                    &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+                    &lt;refresh-timeout>10000&lt;/refresh-timeout>
+                    &lt;/discovery-group>
+                    &lt;/discovery-groups></programlisting>
+                <para>To receive broadcast from JGroups channels, one must specify two attributes, 
+                    <literal>jgroups-file</literal> and <literal>jgroups-channel</literal>, as discussed
+                    in details as following:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para><literal>jgroups-file</literal> attribute. This is the name of JGroups configuration
+                            file. It will be used to initialize JGroups channels. Make sure the file is in the 
+                            java resource path so that HornetQ can load it. </para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>jgroups-channel</literal> attribute. The name that JGroups channels connect
+                        to for receiving broadcasts.</para>
+                    </listitem>
+                </itemizedlist>
+                <note>
+                    <para>The JGroups attributes (<literal>jgroups-file</literal> and <literal>jgroups-channel</literal>)
+                    and UDP specific attributes described above are exclusive of each other. Only one set can be
+                    specified in a discovery group configuration. Don't mix them!</para>
+                </note>
             </section>
             <section id="clusters-discovery.groups.clientside">
                 <title>Discovery Groups on the Client Side</title>
