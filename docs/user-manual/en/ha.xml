@@ -51,7 +51,7 @@
         <section id="ha.mode">
             <title>HA modes</title>
             <para>HornetQ supports two different strategies for backing up a server <emphasis>shared
-            store</emphasis> and <emphasis> replication</emphasis>.</para>
+            store</emphasis> and <emphasis>replication</emphasis>.</para>
             <note>
               <para>Only persistent message data will survive failover. Any non persistent message
               data will not be available after failover.</para>
@@ -61,25 +61,40 @@
                 <title>Data Replication</title>
                 <para>Replication is supported since version 2.3.</para>
                 <para>When using replication, the live and the backup servers do not share the same
-                data directories, and all data synchronization is done through network
-                traffic. Therefore all (persistent) data traffic received by the live server will be
-                duplicated to the backup.
+                data directories, all data synchronization is done through network traffic. Therefore all (persistent)
+                   data traffic received by the live server will be duplicated to the backup.
                 </para>
+               <graphic fileref="images/ha-replicated-store.png" align="center"/>
                 <para>Notice that upon start-up the backup server will first need to synchronize all
                 existing data from the live server, before becoming capable of replacing the live
                 server should it fail. So unlike the shared store case, a replicating backup will
                 not be a fully operational backup right after start, but only after it finishes
                 synchronizing the data. The time it will take for this to happen will depend on the
                 amount of data to be synchronized and the connection speed.</para>
-                <param>The replicating live and backup pair must be part of a cluster. This requires
-                specific configuration not strictly necessary in the shared store case. Both servers
-                must be on the same cluster, and have the same cluster user and password.</param>
-                <param>The backup will search for any live server in the cluster that has a matching
-                <literal>node-group-name</literal> configuration, and does not already have a backup. If all live
-                servers in the cluster already have backups, the backup will retry
-                connecting after a time-out of 1000ms.</param>
+               <note>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
+               current clients.</note>
+                <para>The replicating live and backup pair must be part of a cluster, meaning that even tho you may have
+                   a single live/backup it is still regarded as a cluster and must have a cluster connection configured in
+                   both the live and tha backup's for the same address. Also all servers must be on the same cluster,
+                   and have the same cluster user and password.</para>
+                <para>There are two ways that a backup server will locate a live server to replicate from, these are:</para>
+                <itemizedlist>
+                   <listitem>
+                      <para><literal>specifying a node group</literal>. You can specify a group of live servers that a backup
+                      server can connect to. This is done by configuring <literal>node-group-name</literal> in the main
+                      <literal>hornetq-configuration.xml</literal>. A Backup server will only connect to a live server that
+                         shares the same node group name</para>
+                   </listitem>
+                   <listitem>
+                      <para><literal>connecting to any live</literal>. Simply put not configuring <literal>node-group-name</literal>
+                      will allow a backup server to connect to any live server</para>
+                   </listitem>
+                </itemizedlist>
+                <para>The backup will search for any live server that it is configured to connect to. It then tries to
+                   replicate with each live server in turn until it finds a live server that has no current backup configured.
+                If no live server is available it will wait until the cluster topology changes and repeats the process.</para>
 
-                <param>Much like in the shared-store case, when the live server stops or crashes,
+                <para>Much like in the shared-store case, when the live server stops or crashes,
                 its replicating backup will become active and take over its duties. Specifically,
                 the backup will become active when it loses connection to its live server. This can
                 be problematic because this can also happen because of a temporary network
@@ -87,7 +102,8 @@
                 still can connect to the other servers in the cluster. If it can connect to more
                 than half the servers, it will become active, if more than half the servers also
                 disappeared with the live, the backup will wait and try reconnecting with the live.
-                </param>
+                This avoids a split brain situation.
+                </para>
 
                 <section>
                 <title>Configuration</title>
