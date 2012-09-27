@@ -26,7 +26,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.BroadcastEndpointFactory;
-import org.hornetq.core.config.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;

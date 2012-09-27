@@ -13,7 +13,6 @@
 
 package org.hornetq.api.core;
 
-import org.hornetq.core.config.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.utils.UUIDGenerator;
 
 import java.io.Serializable;

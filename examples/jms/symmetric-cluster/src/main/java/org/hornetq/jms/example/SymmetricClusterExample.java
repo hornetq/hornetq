@@ -22,6 +22,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.common.example.HornetQExample;
@@ -81,7 +83,8 @@ public class SymmetricClusterExample extends HornetQExample
          // connection factory directly we avoid having to worry about a JNDI look-up.
          // In an app server environment you could use HA-JNDI to lookup from the clustered JNDI servers without
          // having to know about a specific one.
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration("231.7.7.7", 9876);
+         UDPBroadcastGroupConfiguration udpCfg = new UDPBroadcastGroupConfiguration("231.7.7.7", 9876, null, -1);
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, udpCfg);
          
          ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.CF);
 
