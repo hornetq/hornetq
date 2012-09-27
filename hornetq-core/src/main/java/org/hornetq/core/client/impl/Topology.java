@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.spi.core.remoting.Connector;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -509,11 +510,11 @@ public final class Topology implements Serializable
       this.owner = owner;
    }
 
-   TransportConfiguration getBackupForConnector(final TransportConfiguration connectorConfiguration)
+   public TransportConfiguration getBackupForConnector(final Connector connector)
    {
       for (TopologyMember member : topology.values())
       {
-         if (member.getA() != null && member.getA().equals(connectorConfiguration))
+         if (member.getA() != null && connector.isEquivalent(member.getA().getParams()))
          {
             return member.getB();
          }
