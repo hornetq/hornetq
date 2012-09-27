@@ -103,8 +103,8 @@ public class ClientRequestor
    public void close() throws Exception
    {
       replyConsumer.close();
+      requestProducer.close();
       queueSession.deleteQueue(replyQueue);
-      queueSession.close();
    }
 
 }
