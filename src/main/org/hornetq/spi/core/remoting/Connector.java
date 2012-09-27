@@ -12,6 +12,8 @@
  */
 package org.hornetq.spi.core.remoting;
 
+import java.util.Map;
+
 /**
  * A Connector is used by the client for creating and controlling a connection.
  *
@@ -45,4 +47,13 @@ public interface Connector
     * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
     */
    Connection createConnection();
+
+   /**
+    * If the configuration is equivalent to this connector, which means
+    * if the parameter configuration is used to create a connection to a target
+    * node, it will be the same node as of the connections made with this connector.
+    * @param configuration
+    * @return true means the configuration is equivalent to the connector. false otherwise.
+    */
+   boolean isEquivalent(Map<String, Object> configuration);
 }
