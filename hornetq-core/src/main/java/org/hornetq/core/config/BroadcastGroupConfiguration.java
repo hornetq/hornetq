@@ -16,7 +16,7 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.api.core.BroadcastEndpoint;
+import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 
 
 /**

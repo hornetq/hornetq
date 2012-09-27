@@ -15,9 +15,9 @@ package org.hornetq.core.management.impl;
 
 import javax.management.MBeanOperationInfo;
 
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.json.JSONArray;
