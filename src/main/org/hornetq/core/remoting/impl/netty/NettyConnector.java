@@ -13,6 +13,7 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
 import java.net.Inet6Address;
@@ -20,6 +21,7 @@ import java.net.UnknownHostException;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +40,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.AbstractConnector;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.VersionLoader;
@@ -88,7 +90,7 @@ import org.jboss.netty.util.VirtualExecutorService;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
  */
-public class NettyConnector implements Connector
+public class NettyConnector extends AbstractConnector
 {
    // Constants -----------------------------------------------------
 
@@ -151,8 +153,6 @@ public class NettyConnector implements Connector
    private BatchFlusher flusher;
    
    private ScheduledFuture<?> batchFlusherFuture;
-   
-   private final Map<String, Object> configuration;
 
    // Static --------------------------------------------------------
 
@@ -167,6 +167,7 @@ public class NettyConnector implements Connector
                          final Executor threadPool,
                          final ScheduledExecutorService scheduledThreadPool)
    {
+      super(configuration);
       if (listener == null)
       {
          throw new IllegalArgumentException("Invalid argument null listener");
@@ -176,8 +177,6 @@ public class NettyConnector implements Connector
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
-      
-      this.configuration = configuration;
 
       this.listener = listener;
 
@@ -778,6 +777,41 @@ public class NettyConnector implements Connector
       {
          cancelled = true;
       }
+   }
+
+   public boolean isEquivalent(Map<String, Object> configuration)
+   {
+      //here we only check host and port because these two parameters
+      //is sufficient to determine the target host
+      String host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
+                                                   TransportConstants.DEFAULT_HOST,
+                                                   configuration);
+      Integer port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
+                                                TransportConstants.DEFAULT_PORT,
+                                                configuration);
+      
+      if (!port.equals(this.port)) return false;
+      
+      if (host.equals(this.host)) return true;
+      
+      //The host may be an alias. We need to compare raw IP address.
+      boolean result = false;
+      try
+      {
+         InetAddress inetAddr1 = InetAddress.getByName(host);
+         InetAddress inetAddr2 = InetAddress.getByName(this.host);
+         String ip1 = inetAddr1.getHostAddress();
+         String ip2 = inetAddr2.getHostAddress();
+         log.debug("host 1: " + host + " ip address: " + ip1 + " host 2: " + this.host + " ip address: " + ip2);
+         
+         result = ip1.equals(ip2);
+      }
+      catch (UnknownHostException e)
+      {
+         log.error("Cannot resolve host", e);
+      }
+      
+      return result;
    }
 
 }
