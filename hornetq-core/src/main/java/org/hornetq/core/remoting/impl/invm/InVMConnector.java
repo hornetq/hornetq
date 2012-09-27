@@ -21,11 +21,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.AbstractConnector;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.OrderedExecutorFactory;
 
@@ -35,7 +35,7 @@ import org.hornetq.utils.OrderedExecutorFactory;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InVMConnector implements Connector
+public class InVMConnector extends AbstractConnector
 {
    // Used for testing failure only
    public static volatile boolean failOnCreateConnection;
@@ -82,6 +82,7 @@ public class InVMConnector implements Connector
                         final Executor closeExecutor,
                         final Executor threadPool)
    {
+      super(configuration);
       this.listener = listener;
 
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
@@ -175,6 +176,14 @@ public class InVMConnector implements Connector
       return new InVMConnection(null, id, handler, listener, serverExecutor);
    }
 
+   public boolean isEquivalent(Map<String, Object> configuration)
+   {
+      int serverId = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME,
+                                            0,
+                                            configuration);
+      return id == serverId;
+   }
+
    private class Listener implements ConnectionLifeCycleListener
    {
       public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
@@ -220,9 +229,6 @@ public class InVMConnector implements Connector
       public void connectionReadyForWrites(Object connectionID, boolean ready)
       {
       }
-      
-      
-
    }
 
 }

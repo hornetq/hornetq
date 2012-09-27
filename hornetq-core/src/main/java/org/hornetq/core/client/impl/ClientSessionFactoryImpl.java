@@ -1759,4 +1759,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       reconnectAttempts = attempts;
    }
+
+   public Object getConnector()
+   {
+      return connector;
+   }
 }
