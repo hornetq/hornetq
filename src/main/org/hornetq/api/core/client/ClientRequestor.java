@@ -104,7 +104,7 @@ public class ClientRequestor
    {
       replyConsumer.close();
       queueSession.deleteQueue(replyQueue);
-      queueSession.close();
+      requestProducer.close();
    }
 
 }
