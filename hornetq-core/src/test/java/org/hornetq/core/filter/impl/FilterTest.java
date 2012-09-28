@@ -13,6 +13,9 @@
 
 package org.hornetq.core.filter.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -36,12 +39,33 @@ public class FilterTest extends TestCase
 
    private ServerMessage message;
 
+   private PrintStream origSysOut;
+
+   private PrintStream origSysErr;
+
+   private PrintStream sysOut;
+
+   private PrintStream sysErr;
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-
+      origSysOut = System.out;
+      origSysErr = System.err;
+      sysOut = new PrintStream(new ByteArrayOutputStream());
+      System.setOut(sysOut);
+      sysErr = new PrintStream(new ByteArrayOutputStream());
+      System.setErr(sysErr);
       message = new ServerMessageImpl(1, 1000);
+   }
+
+   @Override
+   public void tearDown() throws Exception
+   {
+      System.setOut(origSysOut);
+      System.setErr(origSysErr);
+      super.tearDown();
    }
 
    public void testFilterForgets() throws Exception
