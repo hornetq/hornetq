@@ -20,10 +20,10 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
@@ -61,7 +61,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       List<String> connectorInfos = new ArrayList<String>();
       connectorInfos.add(connectorConfiguration.getName());
-      BroadcastGroupConfiguration broadcastGroupConfig = (BroadcastGroupConfiguration) BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
+      BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);

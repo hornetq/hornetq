@@ -30,14 +30,14 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.JGroupsBroadcastGroupConfigurationWithFile;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.config.UDPBroadcastGroupConfiguration;
-import org.hornetq.core.config.JGroupsBroadcastGroupConfigurationWithFile;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
@@ -86,6 +86,7 @@ public class DiscoveryTest extends UnitTestCase
    DiscoveryGroup dg = null, dg1 = null, dg2 = null, dg3 = null;
 
 
+   @Override
    protected void tearDown() throws Exception
    {
       try
@@ -1128,7 +1129,7 @@ public class DiscoveryTest extends UnitTestCase
    private DiscoveryGroup newDiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
                                             final InetAddress groupAddress, final int groupPort, final long timeout, NotificationService notif) throws Exception
    {
-      return new DiscoveryGroup(nodeID, name, timeout, 
+      return new DiscoveryGroup(nodeID, name, timeout,
             new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort,
                   localBindAddress != null?localBindAddress.getHostAddress(): null, -1).createBroadcastEndpointFactory(), notif);
    }
