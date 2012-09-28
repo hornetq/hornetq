@@ -1,15 +1,14 @@
-/**
- *
- */
 package org.hornetq.core.config;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
 
-/**
- *
- */
 public final class ConfigurationUtils
 {
+
+   private ConfigurationUtils()
+   {
+      // Utility class
+   }
 
    public static ClusterConnectionConfiguration
             getReplicationClusterConfiguration(Configuration conf) throws HornetQIllegalStateException
@@ -25,5 +24,4 @@ public final class ConfigurationUtils
       throw new HornetQIllegalStateException("Missing cluster-configuration for replication-cluster-name '" +
                replicationCluster + "'.");
    }
-
 }

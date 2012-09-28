@@ -75,7 +75,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Constants -----------------------------------------------------
 
    /**
-    * 
+    *
     */
    private static final String SEND_CALL_NUMBER = "sendCallNumber";
    protected static final long WAIT_TIMEOUT = 10000;
@@ -697,7 +697,6 @@ public abstract class ServiceTestBase extends UnitTestCase
     */
    public final void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
    {
-      sendMsgCount++;
       for (int i = 0; i < numMessages; i++)
       {
          producer.send(createMessage(session, i, true));
@@ -709,7 +708,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       ClientMessage message = session.createMessage(durable);
       setBody(counter, message);
       message.putIntProperty("counter", counter);
-      message.putIntProperty(SEND_CALL_NUMBER, sendMsgCount);
+      message.putIntProperty(SEND_CALL_NUMBER, sendMsgCount++);
       return message;
    }
 

@@ -29,20 +29,21 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each node
- * is connected to every other node in the cluster. Also each node, has it's own backup node.
- * 
- * This is probably the most obvious clustering topology and the one most people will be familiar with from
- * using clustering in an app server, where every node has pretty much identical configuration to every other node.
- * 
- * By clustering nodes symmetrically, HornetQ can give the impression of clustered queues, topics and
- * durable subscriptions.
- * 
- * In this example we send some messages to a distributed queue and topic and kill all the live servers at different
- * times, and verify that they transparently fail over onto their backup servers.
- * 
+ * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each
+ * node is connected to every other node in the cluster. Also each node, has it's own backup node.
+ * <p>
+ * This is probably the most obvious clustering topology and the one most people will be familiar
+ * with from using clustering in an app server, where every node has pretty much identical
+ * configuration to every other node.
+ * <p>
+ * By clustering nodes symmetrically, HornetQ can give the impression of clustered queues, topics
+ * and durable subscriptions.
+ * <p>
+ * In this example we send some messages to a distributed queue and topic and kill all the live
+ * servers at different times, and verify that they transparently fail over onto their backup
+ * servers.
+ * <p>
  * Please see the readme.html file for more information.
- *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
 public class SymmetricClusterExample extends HornetQExample
