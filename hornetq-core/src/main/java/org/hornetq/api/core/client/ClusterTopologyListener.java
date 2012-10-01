@@ -13,10 +13,6 @@
 
 package org.hornetq.api.core.client;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.utils.Pair;
-
-
 /**
  * A ClusterTopologyListener
  *
@@ -24,7 +20,7 @@ import org.hornetq.utils.Pair;
  */
 public interface ClusterTopologyListener
 {
-   void nodeUP(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   void nodeUP(TopologyMember member, boolean last);
 
    void nodeDown(long eventUID, String nodeID);
 }

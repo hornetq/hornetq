@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -45,7 +46,6 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
 
 /**
  * A FailoverTestBase
@@ -362,11 +362,9 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    // Inner classes -------------------------------------------------
 
-   class LatchClusterTopologyListener implements ClusterTopologyListener
+   public static final class LatchClusterTopologyListener implements ClusterTopologyListener
    {
       final CountDownLatch latch;
-      int liveNodes = 0;
-      int backUpNodes = 0;
       List<String> liveNode = new ArrayList<String>();
       List<String> backupNode = new ArrayList<String>();
 
@@ -375,16 +373,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(final long uniqueEventID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(TopologyMember topologyMember, boolean last)
       {
-         if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
+         if (topologyMember.getLive() != null && !liveNode.contains(topologyMember.getLive().getName()))
          {
-            liveNode.add(connectorPair.getA().getName());
+            liveNode.add(topologyMember.getLive().getName());
             latch.countDown();
          }
-         if (connectorPair.getB() != null && !backupNode.contains(connectorPair.getB().getName()))
+         if (topologyMember.getBackup() != null && !backupNode.contains(topologyMember.getBackup().getName()))
          {
-            backupNode.add(connectorPair.getB().getName());
+            backupNode.add(topologyMember.getBackup().getName());
             latch.countDown();
          }
       }

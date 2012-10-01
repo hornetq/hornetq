@@ -19,7 +19,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -92,14 +92,14 @@ public class NonHATopologyTest extends ServiceTestBase
 
          if (!isNetty)
          {
-            TopologyMember member = topology.getMembers().iterator().next();
+            TopologyMemberImpl member = topology.getMembers().iterator().next();
             if (isNetty)
             {
-               assertEquals(NettyConnectorFactory.class.getName(), member.getA().getFactoryClassName());
+               assertEquals(NettyConnectorFactory.class.getName(), member.getLive().getFactoryClassName());
             }
             else
             {
-               assertEquals(InVMConnectorFactory.class.getName(), member.getA().getFactoryClassName());
+               assertEquals(InVMConnectorFactory.class.getName(), member.getLive().getFactoryClassName());
             }
          }
 

@@ -21,28 +21,26 @@
 */
 package org.hornetq.core.server.impl;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.utils.Pair;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.server.LiveNodeLocator;
-
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.TopologyMember;
+import org.hornetq.core.server.LiveNodeLocator;
+import org.hornetq.utils.Pair;
+
 /**
- * This implementation looks for a live server in the cluster with a specific nodeGroupName
+ * NamedLiveNodeLocator looks for a live server in the cluster with a specific nodeGroupName
  * @see org.hornetq.core.config.Configuration#getNodeGroupName()
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         8/1/12
  */
 public class NamedLiveNodeLocator extends LiveNodeLocator
 {
-   private Lock lock = new ReentrantLock();
-   private Condition condition = lock.newCondition();
-   private String nodeGroupName;
+   private final Lock lock = new ReentrantLock();
+   private final Condition condition = lock.newCondition();
+   private final String nodeGroupName;
    private Pair<TransportConfiguration, TransportConfiguration> liveConfiguration;
 
    private String nodeID;
@@ -53,6 +51,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       this.nodeGroupName = nodeGroupName;
    }
 
+   @Override
    public void locateNode() throws HornetQException
    {
       try
@@ -77,15 +76,17 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
    }
 
    @Override
-   public void nodeUP(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+   public void nodeUP(TopologyMember topologyMember, boolean last)
    {
       try
       {
          lock.lock();
-         if(nodeGroupName.equals(nodeName) && connectorPair.getA() != null)
+         if (nodeGroupName.equals(topologyMember.getBackupGroupName()) && topologyMember.getLive() != null)
          {
-            liveConfiguration = connectorPair;
-            this.nodeID = nodeID;
+            liveConfiguration =
+                     new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                              topologyMember.getBackup());
+            nodeID = topologyMember.getNodeId();
             condition.signal();
          }
       }
@@ -101,16 +102,19 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       //no op
    }
 
+   @Override
    public String getNodeID()
    {
       return nodeID;
    }
 
+   @Override
    public Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration()
    {
       return liveConfiguration;
    }
 
+   @Override
    public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
       try

@@ -23,10 +23,10 @@ import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
@@ -34,8 +34,8 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -51,6 +51,7 @@ import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.utils.Pair;
 
 /**
  * A CoreProtocolManager
@@ -186,14 +187,15 @@ class CoreProtocolManager implements ProtocolManager
 
             final ClusterTopologyListener listener = new ClusterTopologyListener()
             {
-               public void nodeUP(final long uniqueEventID,
-                                  final String nodeID,
-                                  final String nodeName,
-                                  final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                  final boolean last)
+               @Override
+               public void nodeUP(final TopologyMember topologyMember, final boolean last)
                {
                   try
                   {
+                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair =
+                              new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                                       topologyMember.getBackup());
+                     final String nodeID = topologyMember.getNodeId();
                      // Using an executor as most of the notifications on the Topology
                      // may come from a channel itself
                      // What could cause deadlocks
@@ -203,7 +205,9 @@ class CoreProtocolManager implements ProtocolManager
                         {
                            if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                            {
-                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, nodeName, connectorPair, last));
+                              channel0.send(new ClusterTopologyChangeMessage_V2(topologyMember.getUniqueEventID(),
+                                                                                nodeID, topologyMember.getBackupGroupName(),
+                                                                                connectorPair, last));
                            }
                            else
                            {

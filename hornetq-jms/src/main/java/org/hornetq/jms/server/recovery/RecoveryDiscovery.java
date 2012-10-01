@@ -21,6 +21,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.utils.Pair;
@@ -36,29 +37,29 @@ import org.hornetq.utils.Pair;
  */
 public class RecoveryDiscovery implements SessionFailureListener
 {
-   
+
    private ServerLocator locator;
    private ClientSessionFactoryInternal sessionFactory;
    private final XARecoveryConfig config;
    private final AtomicInteger usage = new AtomicInteger(0);
    private boolean started = false;
-   
-   
+
+
    public RecoveryDiscovery(XARecoveryConfig config)
    {
       this.config = config;
    }
-   
+
    public synchronized void start()
    {
       if (!started)
       {
     	 HornetQJMSLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
          started = true;
-         
+
          locator = config.createServerLocator();
          locator.disableFinalizeCheck();
-         locator.addClusterTopologyListener(new InternalListener());
+         locator.addClusterTopologyListener(new InternalListener(config));
          try
          {
             sessionFactory = (ClientSessionFactoryInternal)locator.createSessionFactory();
@@ -66,7 +67,7 @@ public class RecoveryDiscovery implements SessionFailureListener
             // on the session as all we want here is to get the topology
             // in case of failure we will retry
             sessionFactory.addFailureListener(this);
-            
+
             HornetQJMSLogger.LOGGER.debug("RecoveryDiscovery started fine on " + config);
          }
          catch (Exception startupError)
@@ -75,15 +76,15 @@ public class RecoveryDiscovery implements SessionFailureListener
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
-         
+
       }
    }
-   
+
    public synchronized void stop()
    {
       internalStop();
    }
-  
+
    /** we may have several connection factories referencing the same connection recovery entry.
     *  Because of that we need to make a count of the number of the instances that are referencing it,
     *  so we will remove it as soon as we are done */
@@ -97,7 +98,8 @@ public class RecoveryDiscovery implements SessionFailureListener
       return usage.incrementAndGet();
    }
 
-   
+
+   @Override
    protected void finalize()
    {
       // I don't think it's a good thing to synchronize a method on a finalize,
@@ -121,7 +123,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          {
         	 HornetQJMSLogger.LOGGER.debug(ignored, ignored);
          }
-         
+
          try
          {
             locator.close();
@@ -130,27 +132,33 @@ public class RecoveryDiscovery implements SessionFailureListener
          {
         	 HornetQJMSLogger.LOGGER.debug(ignored, ignored);
          }
-         
+
          sessionFactory = null;
          locator = null;
       }
    }
-   
 
-   class InternalListener implements ClusterTopologyListener
+
+   static final class InternalListener implements ClusterTopologyListener
    {
+      private final XARecoveryConfig config;
 
-      public void nodeUP(long eventUID,
-                         String nodeID,
-                         String nodeName,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         boolean last)
+      public InternalListener(final XARecoveryConfig config)
+      {
+         this.config = config;
+      }
+
+      public void nodeUP(TopologyMember topologyMember, boolean last)
       {
          // There is a case where the backup announce itself,
-         // we need to ignore a case where getA is null
-         if (connectorPair.getA() != null)
+         // we need to ignore a case where getLive is null
+         if (topologyMember.getLive() != null)
          {
-            HornetQRecoveryRegistry.getInstance().nodeUp(nodeID, new Pair<TransportConfiguration, TransportConfiguration>(connectorPair.getA(), connectorPair.getB()), config.getUsername(), config.getPassword());
+            Pair<TransportConfiguration, TransportConfiguration> connector =
+                     new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                              topologyMember.getBackup());
+            HornetQRecoveryRegistry.getInstance().nodeUp(topologyMember.getNodeId(), connector,
+                                           config.getUsername(), config.getPassword());
          }
       }
 
@@ -158,7 +166,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       {
          // I'm not putting any node down, since it may have previous transactions hanging
       }
-      
+
    }
 
 

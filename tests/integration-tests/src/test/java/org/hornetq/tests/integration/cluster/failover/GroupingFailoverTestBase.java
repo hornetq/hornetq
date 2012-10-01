@@ -18,7 +18,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -110,10 +110,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       ServerLocator locator = sf.getServerLocator();
       do
       {
-         Collection<TopologyMember> members = locator.getTopology().getMembers();
-         for (TopologyMember member : members)
+         Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
+         for (TopologyMemberImpl member : members)
          {
-            if(member.getB() != null)
+            if(member.getBackup() != null)
             {
                return;
             }

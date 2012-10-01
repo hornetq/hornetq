@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.utils.Pair;
@@ -94,10 +95,11 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       }
 
       @Override
-      public void nodeUP(long eventUID, String nodeID, String nodeName,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(TopologyMember topologyMember, boolean last)
       {
-         nodes.put(nodeID, connectorPair);
+         Pair<TransportConfiguration, TransportConfiguration> connectorPair =
+                  new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
+         nodes.put(topologyMember.getBackupGroupName(), connectorPair);
       }
 
       @Override

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -28,16 +26,15 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.integration.cluster.failover.FailoverTestBase.LatchClusterTopologyListener;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.Pair;
 
 /**
  * A MultipleBackupsFailoverTestBase
@@ -209,41 +206,5 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          configs[i] = createTransportConfiguration(isNetty(), false, generateParams(nodes[i], isNetty()));
       }
       return addServerLocator(new ServerLocatorImpl(true, configs));
-   }
-
-   private final class LatchClusterTopologyListener implements ClusterTopologyListener
-   {
-      final CountDownLatch latch;
-
-      List<String> liveNode = new ArrayList<String>();
-
-      List<String> backupNode = new ArrayList<String>();
-
-      public LatchClusterTopologyListener(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void nodeUP(final long uniqueEventID,
-                         String nodeID,
-                         String nodeName,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         boolean last)
-      {
-         if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
-         {
-            liveNode.add(connectorPair.getA().getName());
-            latch.countDown();
-         }
-         if (connectorPair.getB() != null && !backupNode.contains(connectorPair.getB().getName()))
-         {
-            backupNode.add(connectorPair.getB().getName());
-            latch.countDown();
-         }
-      }
-
-      public void nodeDown(final long uniqueEventID, String nodeID)
-      {
-      }
    }
 }

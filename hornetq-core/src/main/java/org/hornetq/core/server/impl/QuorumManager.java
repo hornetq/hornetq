@@ -9,20 +9,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.utils.Pair;
 
 /**
  * Manages a quorum of servers used to determine whether a given server is running or not.
@@ -57,7 +58,7 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
    }
 
    @Override
-   public void nodeUP(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+   public void nodeUP(TopologyMember topologyMember, boolean last)
    {
       //noop
    }
@@ -78,11 +79,11 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
 
    private boolean isLiveDown()
    {
-      Collection<TopologyMember> nodes = topology.getMembers();
+      Collection<TopologyMemberImpl> nodes = topology.getMembers();
       Collection<ServerLocator> locatorsList = new LinkedList<ServerLocator>();
       AtomicInteger pingCount = new AtomicInteger(0);
       int total = 0;
-      for (TopologyMember tm : nodes)
+      for (TopologyMemberImpl tm : nodes)
          if (useIt(tm))
             total++;
 
@@ -92,7 +93,7 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
       final CountDownLatch latch = new CountDownLatch(total);
       try
       {
-         for (TopologyMember tm : nodes)
+         for (TopologyMemberImpl tm : nodes)
          {
             Pair<TransportConfiguration, TransportConfiguration> pair = tm.getConnector();
 
@@ -138,9 +139,9 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
     * @param tm
     * @return
     */
-   private boolean useIt(TopologyMember tm)
+   private boolean useIt(TopologyMemberImpl tm)
    {
-      return tm.getA() != null && !targetServerID.equals(tm.getA().getName());
+      return tm.getLive() != null && !targetServerID.equals(tm.getLive().getName());
    }
 
    @Override

@@ -44,7 +44,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -289,8 +289,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                servers[node].getClusterManager().getClusterConnections().iterator().next().getConnector();
          do
          {
-            Collection<TopologyMember> members = topology.getMembers();
-            for (TopologyMember member : members)
+            Collection<TopologyMemberImpl> members = topology.getMembers();
+            for (TopologyMemberImpl member : members)
             {
                if(member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
                {

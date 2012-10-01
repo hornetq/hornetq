@@ -75,5 +75,4 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
     * @return {@code true} if username and password match, {@code false} otherwise.
     */
    boolean verify(String clusterUser, String clusterPassword);
-
 }

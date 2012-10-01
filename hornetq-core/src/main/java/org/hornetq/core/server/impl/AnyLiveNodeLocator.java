@@ -30,15 +30,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
 import org.hornetq.utils.Pair;
 
 /**
- * This implementatiuon looks for any available live node, once tried with no success it is marked as tried and the next
- * available is used.
- *
+ * This implementation looks for any available live node, once tried with no success it is marked as
+ * tried and the next available is used.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         8/1/12
  */
 public class AnyLiveNodeLocator extends LiveNodeLocator
 {
@@ -80,15 +79,14 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
    }
 
    @Override
-   /*
-   *
-   * */
-   public void nodeUP(long eventUID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+   public void nodeUP(TopologyMember topologyMember, boolean last)
    {
       try
       {
          lock.lock();
-         untriedConnectors.put(nodeID, connectorPair);
+         Pair<TransportConfiguration, TransportConfiguration> connector =
+                  new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
+         untriedConnectors.put(topologyMember.getNodeId(), connector);
          condition.signal();
       }
       finally

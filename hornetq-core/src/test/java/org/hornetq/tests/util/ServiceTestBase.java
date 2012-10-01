@@ -38,7 +38,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -134,13 +134,13 @@ public abstract class ServiceTestBase extends UnitTestCase
     	 liveNodesCount = 0;
     	 backupNodesCount = 0;
 
-    	 for (TopologyMember member : topology.getMembers())
+    	 for (TopologyMemberImpl member : topology.getMembers())
     	 {
-    		 if (member.getA() != null)
+    		 if (member.getLive() != null)
     		 {
     			 liveNodesCount ++;
     		 }
-    		 if (member.getB() != null)
+    		 if (member.getBackup() != null)
     		 {
     			 backupNodesCount ++;
     		 }

@@ -3,9 +3,8 @@ package org.hornetq.core.server.impl;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.client.TopologyMember;
 
 final class BackupTopologyListener implements ClusterTopologyListener
 {
@@ -20,11 +19,11 @@ final class BackupTopologyListener implements ClusterTopologyListener
    }
 
    @Override
-   public void nodeUP(long eventUID, String nodeID, String nodeName,
-                      Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                      boolean last)
+   public void nodeUP(TopologyMember topologyMember, boolean last)
    {
-      if (ownId.equals(nodeID) && connectorPair.getB() != null)
+      final String nodeID = topologyMember.getNodeId();
+
+      if (ownId.equals(nodeID) && topologyMember.getBackup() != null)
          latch.countDown();
    }
 

@@ -31,12 +31,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.AfterConnectInternalListener;
@@ -44,7 +44,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -66,6 +66,7 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -578,11 +579,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          HornetQLogger.LOGGER.debug(this + "::NodeAnnounced, backup=" + backup + nodeID + connectorPair);
       }
 
-      TopologyMember newMember = new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB());
+      TransportConfiguration live = connectorPair.getA();
+      TransportConfiguration backupTC = connectorPair.getB();
+      TopologyMemberImpl newMember = new TopologyMemberImpl(nodeID, nodeName, live, backupTC);
       newMember.setUniqueEventID(uniqueEventID);
       if (backup)
       {
-         topology.updateBackup(nodeID, new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB()));
+         topology.updateBackup(new TopologyMemberImpl(nodeID, nodeName, live, backupTC));
       }
       else
       {
@@ -600,8 +603,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                              manager.getNodeId(),
                              manager.getNodeGroupName(),
                              false,
-                             localMember.getConnector().getA(),
-                             localMember.getConnector().getB());
+                             localMember.getLive(), localMember.getBackup());
       }
       else
       {
@@ -676,7 +678,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       backup = false;
 
-      topology.updateAsLive(manager.getNodeId(), new TopologyMember(manager.getNodeGroupName(), connector, null));
+      topology.updateAsLive(manager.getNodeId(), new TopologyMemberImpl(manager.getNodeId(),
+                                                                        manager.getNodeGroupName(), connector, null));
 
       if (backupServerLocator != null)
       {
@@ -795,20 +798,18 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
-   public void nodeUP(final long eventUID,
-                      final String nodeID,
-                      final String nodeName,
-                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                      final boolean last)
+   @Override
+   public void nodeUP(final TopologyMember topologyMember, final boolean last)
    {
       if (stopping)
       {
          return;
       }
+      final String nodeID = topologyMember.getNodeId();
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
          String ClusterTestBase = "receiving nodeUP for nodeID=";
-         HornetQLogger.LOGGER.debug(this + ClusterTestBase + nodeID + " connectionPair=" + connectorPair);
+         HornetQLogger.LOGGER.debug(this + ClusterTestBase + nodeID + " connectionPair=" + topologyMember);
       }
       // discard notifications about ourselves unless its from our backup
 
@@ -817,17 +818,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          if (HornetQLogger.LOGGER.isTraceEnabled())
          {
             HornetQLogger.LOGGER.trace(this + "::informing about backup to itself, nodeUUID=" +
-                      nodeManager.getNodeId() +
-                      ", connectorPair=" +
-                      connectorPair +
-                      " this = " +
-                      this);
+                     nodeManager.getNodeId() + ", connectorPair=" + topologyMember + ", this = " + this);
          }
          return;
       }
 
       // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
-      if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.getA()))
+      if (allowDirectConnectionsOnly && !allowableConnections.contains(topologyMember.getLive()))
       {
          return;
       }
@@ -839,16 +836,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          return;
       }
       /*we dont create bridges to backups*/
-      if (connectorPair.getA() == null)
+      if (topologyMember.getLive() == null)
       {
          if (isTrace)
          {
-            HornetQLogger.LOGGER.trace(this + " ignoring call with nodeID=" +
-                      nodeID +
-                      ", connectorPair=" +
-                      connectorPair +
-                      ", last=" +
-                      last);
+            HornetQLogger.LOGGER.trace(this + " ignoring call with nodeID=" + nodeID + ", topologyMember=" +
+                     topologyMember + ", last=" + last);
          }
          return;
       }
@@ -863,7 +856,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             {
                if (HornetQLogger.LOGGER.isDebugEnabled())
                {
-                  HornetQLogger.LOGGER.debug(this + "::Creating record for nodeID=" + nodeID + ", connectorPair=" + connectorPair);
+                  HornetQLogger.LOGGER.debug(this + "::Creating record for nodeID=" + nodeID + ", topologyMember=" +
+                           topologyMember);
                }
 
                // New node - create a new flow record
@@ -885,17 +879,14 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                   queue = server.createQueue(queueName, queueName, null, true, false);
                }
 
-               createNewRecord(eventUID, nodeID, connectorPair.getA(), queueName, queue, true);
+               createNewRecord(topologyMember.getUniqueEventID(), nodeID, topologyMember.getLive(), queueName, queue, true);
             }
             else
             {
                if (isTrace)
                {
-                  HornetQLogger.LOGGER.trace(this + " ignored nodeUp record for " +
-                            connectorPair +
-                            " on nodeID=" +
-                            nodeID +
-                            " as the record already existed");
+                  HornetQLogger.LOGGER.trace(this + " ignored nodeUp record for " + topologyMember + " on nodeID=" +
+                           nodeID + " as the record already existed");
                }
             }
          }
@@ -910,15 +901,15 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    {
       String nodeID = server.getNodeID().toString();
 
-      TopologyMember localMember;
+      TopologyMemberImpl localMember;
 
       if (backup)
       {
-         localMember = new TopologyMember(null, connector);
+         localMember = new TopologyMemberImpl(nodeID, null, null, connector);
       }
       else
       {
-         localMember = new TopologyMember(connector, null);
+         localMember = new TopologyMemberImpl(nodeID, null, connector, null);
       }
 
       topology.updateAsLive(nodeID, localMember);
