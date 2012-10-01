@@ -30,6 +30,8 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.SoftValueHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,7 +118,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       PageCache cache = getPageCache(pos);
 
-      if (pos.getMessageNr() >= cache.getNumberOfMessages())
+      if (cache == null || pos.getMessageNr() >= cache.getNumberOfMessages())
       {
          // sanity check, this should never happen unless there's a bug
          throw new IllegalStateException("Invalid messageNumber passed = " + pos + " on " + cache);
@@ -316,6 +318,40 @@ public class PageCursorProviderImpl implements PageCursorProvider
          }
       });
    }
+   
+   
+   /**
+    * Delete everything associated with any queue on this address.
+    * This is to be called when the address is about to be released from paging.
+    * Hence the PagingStore will be holding a write lock, meaning no messages are going to be paged at this time.
+    * So, we shouldn't lock anything after this method, to avoid dead locks between the writeLock and any synchronization with the CursorProvider.
+    */
+   public void onPageModeCleared()
+   {
+      ArrayList<PageSubscription> subscriptions = cloneSubscriptions();
+      
+      Transaction tx = new TransactionImpl(storageManager);
+      for (PageSubscription sub : subscriptions)
+      {
+         try
+         {
+            sub.onPageModeCleared(tx);
+         }
+         catch (Exception e)
+         {
+            log.warn("Error while cleaning paging on queue " + sub.getQueue().getName(), e);
+         }
+      }
+      
+      try
+      {
+         tx.commit();
+      }
+      catch (Exception e)
+      {
+         log.warn("Error while cleaning page, during the commit", e);
+      }
+   }
 
    public void cleanup()
    {
@@ -391,12 +427,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   storeBookmark(cursorList, currentPage);
 
                   pagingStore.stopPaging();
-
-                  // This has to be called after we stopped paging
-                  for (PageSubscription cursor : cursorList)
-                  {
-                     cursor.scheduleCleanupCheck();
-                  }
 
                }
             }
@@ -588,7 +618,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
          {
             log.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
          }
-         if (firstPage < minPage)
+         
+         // the cursor will return -1 if the cursor is empty
+         if (firstPage >= 0 && firstPage < minPage)
          {
             minPage = firstPage;
          }

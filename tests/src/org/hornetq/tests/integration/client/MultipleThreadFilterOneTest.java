@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -267,6 +268,8 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
             consumer.join();
             assertEquals(0, consumer.errors.get());
          }
+         
+         waitForNotPaging(server.locateQueue(new SimpleString("Q1")));
 
       }
       finally
