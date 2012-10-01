@@ -64,6 +64,11 @@ public interface PageCursorProvider
 
    void scheduleCleanup();
    
+   /**
+    * Cleanup stuff as paging mode is being cleared
+    */
+   void onPageModeCleared();
+   
    // Perform the cleanup at the caller's thread (for startup and recovery)
    void cleanup();
    

@@ -47,5 +47,7 @@ public interface PageSubscriptionCounter
    
    // used when deleting the counter
    void delete() throws Exception;
+   
+   void delete(Transaction tx) throws Exception;
 
 }
