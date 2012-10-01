@@ -52,7 +52,7 @@ public class Receiver extends Runner implements MessageListener
 
    protected boolean isListener;
 
-   protected Map counts = new HashMap();
+   protected Map<String, Object> counts = new HashMap<String, Object>();
 
    protected boolean isCC;
 

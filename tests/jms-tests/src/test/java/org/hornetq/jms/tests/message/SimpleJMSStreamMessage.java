@@ -37,7 +37,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
 
    // Attributes ----------------------------------------------------
 
-   protected List content;
+   protected List<Object> content;
 
    protected int position;
 
@@ -55,7 +55,7 @@ public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMe
 
    public SimpleJMSStreamMessage()
    {
-      content = new ArrayList();
+      content = new ArrayList<Object>();
       position = 0;
       size = 0;
       offset = 0;

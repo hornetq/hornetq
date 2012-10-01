@@ -19,6 +19,7 @@ package org.hornetq.tests.integration.stomp.v11;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -295,7 +296,7 @@ public class StompV11Test extends StompTestBase2
       ClientStompFrame frame = connV11.createFrame("SEND");
 
       String body = "Hello World 1!";
-      String cLen = String.valueOf(body.getBytes("UTF-8").length);
+      String cLen = String.valueOf(body.getBytes(Charset.forName("UTF-8")).length);
 
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
       frame.addHeader("content-type", "application/xml");

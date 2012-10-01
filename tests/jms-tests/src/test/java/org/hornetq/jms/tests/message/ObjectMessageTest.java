@@ -211,7 +211,7 @@ public class ObjectMessageTest extends MessageTestBase
          pathIgnore = classLocation.toString();
       }
 
-      ArrayList urls = new ArrayList();
+      ArrayList<URL> urls = new ArrayList<URL>();
       while (tokenString.hasMoreElements())
       {
          String value = tokenString.nextToken();
@@ -222,7 +222,7 @@ public class ObjectMessageTest extends MessageTestBase
          }
       }
 
-      URL[] urlArray = (URL[])urls.toArray(new URL[urls.size()]);
+      URL[] urlArray = urls.toArray(new URL[urls.size()]);
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
 

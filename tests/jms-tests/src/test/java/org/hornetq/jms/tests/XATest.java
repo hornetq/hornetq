@@ -14,6 +14,7 @@
 package org.hornetq.jms.tests;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -73,6 +74,7 @@ public class XATest extends HornetQServerTestCase
 
    // TestCase overrides -------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -88,6 +90,7 @@ public class XATest extends HornetQServerTestCase
       suspendedTx = tm.suspend();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       if (TxUtils.isUncommitted(tm))
@@ -520,7 +523,7 @@ public class XATest extends HornetQServerTestCase
          tm.begin();
 
          XASession sess = conn.createXASession();
-         XAResource res = (XAResource)sess.getXAResource();
+         XAResource res = sess.getXAResource();
          // res.setForceNotSameRM(true);
 
          XAResource res2 = new DummyXAResource();
@@ -2229,7 +2232,7 @@ public class XATest extends HornetQServerTestCase
    {
       protected JmsTestLogger log = JmsTestLogger.LOGGER;
 
-      public ArrayList messages = new ArrayList();
+      public List<Message> messages = new ArrayList<Message>();
 
       public void onMessage(final Message message)
       {

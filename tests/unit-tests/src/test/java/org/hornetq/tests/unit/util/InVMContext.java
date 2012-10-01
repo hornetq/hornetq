@@ -25,6 +25,7 @@ import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
@@ -161,22 +162,22 @@ public class InVMContext implements Context, Serializable
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration list(final Name name) throws NamingException
+   public NamingEnumeration<NameClassPair> list(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration list(final String name) throws NamingException
+   public NamingEnumeration<NameClassPair> list(final String name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration listBindings(final Name name) throws NamingException
+   public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException
    {
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration listBindings(String contextName) throws NamingException
+   public NamingEnumeration<Binding> listBindings(String contextName) throws NamingException
    {
       contextName = trimSlashes(contextName);
       if (!"".equals(contextName) && !".".equals(contextName))
@@ -198,7 +199,7 @@ public class InVMContext implements Context, Serializable
          Object object = map.get(name);
          l.add(new Binding(name, object));
       }
-      return new NamingEnumerationImpl(l.iterator());
+      return new NamingEnumerationImpl<Binding>(l.iterator());
    }
 
    public void destroySubcontext(final Name name) throws NamingException
@@ -338,11 +339,11 @@ public class InVMContext implements Context, Serializable
 
    // Inner classes -------------------------------------------------
 
-   private class NamingEnumerationImpl implements NamingEnumeration
+   private class NamingEnumerationImpl<T> implements NamingEnumeration<T>
    {
-      private final Iterator<?> iterator;
+      private final Iterator<T> iterator;
 
-      NamingEnumerationImpl(final Iterator<?> bindingIterator)
+      NamingEnumerationImpl(final Iterator<T> bindingIterator)
       {
          iterator = bindingIterator;
       }
@@ -357,7 +358,7 @@ public class InVMContext implements Context, Serializable
          return iterator.hasNext();
       }
 
-      public Object next() throws NamingException
+      public T next() throws NamingException
       {
          return iterator.next();
       }
@@ -367,7 +368,7 @@ public class InVMContext implements Context, Serializable
          return iterator.hasNext();
       }
 
-      public Object nextElement()
+      public T nextElement()
       {
          return iterator.next();
       }

@@ -64,7 +64,7 @@ public class SelectiveTestRunner extends TestRunner
 
    // Attributes ----------------------------------------------------
 
-   private final List methods = new ArrayList();
+   private final List<String> methods = new ArrayList<String>();
 
    // Constructors --------------------------------------------------
 
@@ -97,7 +97,7 @@ public class SelectiveTestRunner extends TestRunner
     */
    private String[] preProcessCommandLine(final String[] args)
    {
-      List l = new ArrayList();
+      List<String> l = new ArrayList<String>();
       for (int i = 0; i < args.length; i++)
       {
          if ("-t".equals(args[i]))
@@ -115,7 +115,7 @@ public class SelectiveTestRunner extends TestRunner
       }
 
       String[] a = new String[l.size()];
-      return (String[])l.toArray(a);
+      return l.toArray(a);
    }
 
    // Inner classes -------------------------------------------------
