@@ -22,7 +22,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -100,10 +100,10 @@ public class IsolatedTopologyTest extends ServiceTestBase
    {
       Topology topology = serverParameter.getClusterManager().getClusterConnection(clusterName).getTopology();
 
-      TopologyMember member1 = topology.getMember(nodeId1);
-      TopologyMember member2 = topology.getMember(nodeId2);
-      Assert.assertEquals(member1.getA().getParams().toString(), cfg1.getParams().toString());
-      Assert.assertEquals(member2.getA().getParams().toString(), cfg2.getParams().toString());
+      TopologyMemberImpl member1 = topology.getMember(nodeId1);
+      TopologyMemberImpl member2 = topology.getMember(nodeId2);
+      Assert.assertEquals(member1.getLive().getParams().toString(), cfg1.getParams().toString());
+      Assert.assertEquals(member2.getLive().getParams().toString(), cfg2.getParams().toString());
    }
 
    private HornetQServer createServer1() throws Exception

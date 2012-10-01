@@ -42,7 +42,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
@@ -66,6 +65,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.Pair;
 
 /**
  *

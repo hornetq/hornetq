@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -39,6 +38,7 @@ import org.hornetq.jms.persistence.config.PersistedDestination;
 import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.utils.IDGenerator;
+import org.hornetq.utils.Pair;
 
 /**
  * A JournalJMSStorageManagerImpl

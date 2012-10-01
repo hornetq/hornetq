@@ -81,12 +81,12 @@
                 <itemizedlist>
                    <listitem>
                       <para><literal>specifying a node group</literal>. You can specify a group of live servers that a backup
-                      server can connect to. This is done by configuring <literal>node-group-name</literal> in the main
+                      server can connect to. This is done by configuring <literal>backup-group-name</literal> in the main
                       <literal>hornetq-configuration.xml</literal>. A Backup server will only connect to a live server that
                          shares the same node group name</para>
                    </listitem>
                    <listitem>
-                      <para><literal>connecting to any live</literal>. Simply put not configuring <literal>node-group-name</literal>
+                      <para><literal>connecting to any live</literal>. Simply put not configuring <literal>backup-group-name</literal>
                       will allow a backup server to connect to any live server</para>
                    </listitem>
                 </itemizedlist>

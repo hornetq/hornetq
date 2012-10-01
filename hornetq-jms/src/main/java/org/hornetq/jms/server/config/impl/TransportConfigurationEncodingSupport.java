@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.utils.BufferHelper;
 import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.Pair;
 
 /**
  * A TransportConfigurationEncodingSupport

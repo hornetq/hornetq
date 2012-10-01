@@ -22,12 +22,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQUnBlockedException;
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -46,7 +45,50 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class TopologyClusterTestBase extends ClusterTestBase
 {
 
-    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+    /**
+    *
+    */
+   private static final class LatchListener implements ClusterTopologyListener
+   {
+      private final CountDownLatch upLatch;
+      private final List<String> nodes;
+      private final CountDownLatch downLatch;
+
+      /**
+       * @param upLatch
+       * @param nodes
+       * @param downLatch
+       */
+      private LatchListener(CountDownLatch upLatch, List<String> nodes, CountDownLatch downLatch)
+      {
+         this.upLatch = upLatch;
+         this.nodes = nodes;
+         this.downLatch = downLatch;
+      }
+
+      @Override
+      public void nodeUP(TopologyMember topologyMember, boolean last)
+      {
+         final String nodeID = topologyMember.getNodeId();
+
+            if (!nodes.contains(nodeID))
+            {
+               nodes.add(nodeID);
+               upLatch.countDown();
+            }
+         }
+
+      public void nodeDown(final long uniqueEventID, String nodeID)
+      {
+         if (nodes.contains(nodeID))
+         {
+            nodes.remove(nodeID);
+            downLatch.countDown();
+         }
+      }
+   }
+
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final long WAIT_TIMEOUT = 5000;
 
@@ -197,43 +239,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
-         locator.addClusterTopologyListener(new ClusterTopologyListener()
-         {
-            public void nodeUP(final long uniqueEventID,
-                               String nodeID, String nodeName,
-                               Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                               boolean last)
-            {
-               if (!nodes.contains(nodeID))
-               {
-                  System.out.println("Node UP " + nodeID + " added");
-                  log.info("Node UP " + nodeID + " added");
-                  nodes.add(nodeID);
-                  upLatch.countDown();
-               }
-               else
-               {
-                  System.out.println("Node UP " + nodeID + " was already here");
-                  log.info("Node UP " + nodeID + " was already here");
-               }
-            }
-
-            public void nodeDown(final long uniqueEventID, String nodeID)
-            {
-               if (nodes.contains(nodeID))
-               {
-                  log.info("Node down " + nodeID + " accepted");
-                  System.out.println("Node down " + nodeID + " accepted");
-                  nodes.remove(nodeID);
-                  downLatch.countDown();
-               }
-               else
-               {
-                  log.info("Node down " + nodeID + " already removed");
-                  System.out.println("Node down " + nodeID + " already removed");
-               }
-            }
-         });
+      locator.addClusterTopologyListener(new LatchListener(upLatch, nodes, downLatch));
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
@@ -279,29 +285,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
-         locator.addClusterTopologyListener(new ClusterTopologyListener()
-         {
-            public void nodeUP(final long uniqueEventID,
-                               String nodeID,    String nodeName,
-                               Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                               boolean last)
-            {
-               if (!nodes.contains(nodeID))
-               {
-                  nodes.add(nodeID);
-                  upLatch.countDown();
-               }
-            }
-
-            public void nodeDown(final long uniqueEventID, String nodeID)
-            {
-               if (nodes.contains(nodeID))
-               {
-                  nodes.remove(nodeID);
-                  downLatch.countDown();
-               }
-            }
-         });
+      locator.addClusterTopologyListener(new LatchListener(upLatch, nodes, downLatch));
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
@@ -351,29 +335,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          final List<String> nodes = new ArrayList<String>();
          final CountDownLatch upLatch = new CountDownLatch(5);
 
-         locator.addClusterTopologyListener(new ClusterTopologyListener()
-         {
-         public synchronized void nodeUP(final long uniqueEventID, String nodeID, String nodeName,
-                     Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                     boolean last)
-            {
-               if (!nodes.contains(nodeID))
-               {
-                  nodes.add(nodeID);
-                  upLatch.countDown();
-               }
-            }
-
-         public synchronized void nodeDown(final long uniqueEventID, String nodeID)
-            {
-               if (nodes.contains(nodeID))
-               {
-                  nodes.remove(nodeID);
-               }
-            }
-         });
-
-         ClientSessionFactory sf = createSessionFactory(locator);
+      locator.addClusterTopologyListener(new LatchListener(upLatch, nodes, new CountDownLatch(0)));
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
          checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
@@ -410,7 +373,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
          catch (Exception e)
          {
-
+         throw e;
          }
    }
 
@@ -431,28 +394,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          final CountDownLatch upLatch = new CountDownLatch(5);
          final CountDownLatch downLatch = new CountDownLatch(4);
 
-         locator.addClusterTopologyListener(new ClusterTopologyListener()
-         {
-             public void nodeUP(final long uniqueEventID, String nodeID,   String nodeName,
-                     Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                     boolean last)
-            {
-               if (!nodes.contains(nodeID))
-               {
-                  nodes.add(nodeID);
-                  upLatch.countDown();
-               }
-            }
-
-            public void nodeDown(final long uniqueEventID, String nodeID)
-            {
-               if (nodes.contains(nodeID))
-               {
-                  nodes.remove(nodeID);
-                  downLatch.countDown();
-               }
-            }
-         });
+         locator.addClusterTopologyListener(new LatchListener(upLatch, nodes, downLatch));
 
          ClientSessionFactory[] sfs = new ClientSessionFactory[] {
                  locator.createSessionFactory(),

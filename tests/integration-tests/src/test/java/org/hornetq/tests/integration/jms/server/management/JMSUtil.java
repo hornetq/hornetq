@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -32,10 +30,8 @@ import javax.jms.TopicSubscriber;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -46,6 +42,7 @@ import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -263,7 +260,7 @@ public class JMSUtil
 
       ServerLocator locator = factory.getServerLocator();
 
-      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+      locator.addClusterTopologyListener(new FailoverTestBase.LatchClusterTopologyListener(countDownLatch));
 
       conn = (HornetQConnection)factory.createConnection();
 
@@ -273,44 +270,5 @@ public class JMSUtil
          throw new IllegalStateException("timed out waiting for topology");
       }
       return conn;
-   }
-
-   static class LatchClusterTopologyListener implements ClusterTopologyListener
-   {
-      final CountDownLatch latch;
-
-      int liveNodes = 0;
-
-      int backUpNodes = 0;
-
-      List<String> liveNode = new ArrayList<String>();
-
-      List<String> backupNode = new ArrayList<String>();
-
-      public LatchClusterTopologyListener(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void nodeUP(final long uniqueEventID, String nodeID,   String nodeName,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         boolean last)
-      {
-         if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
-         {
-            liveNode.add(connectorPair.getA().getName());
-            latch.countDown();
-         }
-         if (connectorPair.getB() != null && !backupNode.contains(connectorPair.getB().getName()))
-         {
-            backupNode.add(connectorPair.getB().getName());
-            latch.countDown();
-         }
-      }
-
-      public void nodeDown(final long uniqueEventID, String nodeID)
-      {
-         // To change body of implemented methods use File | Settings | File Templates.
-      }
    }
 }

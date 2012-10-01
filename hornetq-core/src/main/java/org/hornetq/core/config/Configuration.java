@@ -52,15 +52,15 @@ public interface Configuration extends Serializable
 
    /**
     * returns the name used to group of live/backup servers
-    * @return thr node group name
+    * @return the name of the group
     */
-   public String getNodeGroupName();
+   public String getBackupGroupName();
 
    /**
     * Used to configure groups of live/backup servers.
     * @param nodeGroupName the node group name
     */
-   public void setNodeGroupName(String nodeGroupName);
+   public void setBackupGroupName(String nodeGroupName);
 
    /**
     * Returns whether this server is clustered. <br>

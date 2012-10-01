@@ -107,7 +107,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
       for (int i = 0; i < 40; i++)
       {
-         if (threads[i].exceptions.isEmpty())
+         if (!threads[i].exceptions.isEmpty())
          {
             hasFailure = true;
             for (Exception element : threads[i].exceptions)
