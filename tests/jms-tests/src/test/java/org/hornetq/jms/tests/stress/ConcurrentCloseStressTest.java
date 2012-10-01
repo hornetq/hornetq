@@ -14,7 +14,7 @@
 package org.hornetq.jms.tests.stress;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -107,12 +107,12 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
       for (int i = 0; i < 40; i++)
       {
-         if (threads[i].exceptions.size() > 0)
+         if (threads[i].exceptions.isEmpty())
          {
             hasFailure = true;
-            for (Iterator failureIter = threads[i].exceptions.iterator(); failureIter.hasNext();)
+            for (Exception element : threads[i].exceptions)
             {
-               Exception ex = (Exception)failureIter.next();
+               Exception ex = element;
                ConcurrentCloseStressTest.log.error("Exception occurred in one of the threads - " + ex, ex);
             }
          }
@@ -138,7 +138,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
    static class TestThread extends Thread
    {
-      ArrayList exceptions = new ArrayList();
+      List<Exception> exceptions = new ArrayList<Exception>();
 
       protected int index;
 

@@ -41,13 +41,13 @@ public class SelectiveTestSuite extends TestSuite
 
    private final List methods;
 
-   private final List tests;
+   private final List<TestCase> tests;
 
    // Constructors --------------------------------------------------
 
    public SelectiveTestSuite(final TestSuite original, final List methods)
    {
-      tests = new ArrayList();
+      tests = new ArrayList<TestCase>();
       this.methods = new ArrayList(methods);
       this.methods.add("warning");
 
@@ -78,7 +78,7 @@ public class SelectiveTestSuite extends TestSuite
    @Override
    public Test testAt(final int index)
    {
-      return (Test)tests.get(index);
+      return tests.get(index);
    }
 
    @Override

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.tools.container;
 
-import org.hornetq.jms.tests.JmsTestLogger;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +32,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
+
+import org.hornetq.jms.tests.JmsTestLogger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -194,7 +194,7 @@ public class InVMContext implements Context, Serializable
          }
       }
 
-      List l = new ArrayList();
+      List<Binding> l = new ArrayList<Binding>();
       for (Iterator i = map.keySet().iterator(); i.hasNext();)
       {
          String name = (String)i.next();
