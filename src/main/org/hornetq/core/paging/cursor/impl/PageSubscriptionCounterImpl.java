@@ -28,6 +28,7 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 
 /**
  * This class will encapsulate the persistent counters for the PagingSubscription
@@ -159,6 +160,11 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public synchronized void loadValue(final long recordID, final long value)
    {
+      if (this.subscription != null)
+      {
+         // it could be null on testcases... which is ok
+         this.subscription.notEmpty();
+      }
       this.value.set(value);
       this.recordID = recordID;
    }
@@ -178,28 +184,31 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    
    public void delete() throws Exception
    {
-      synchronized (this)
+      Transaction tx = new TransactionImpl(storage);
+      
+      delete(tx);
+      
+      tx.commit();
+   }
+
+   public synchronized void delete(Transaction tx) throws Exception
+   {
+      for (Long record : incrementRecords)
       {
-         long tx = storage.generateUniqueID();
-         
-         boolean txUsed = false;
-         for (Long record : incrementRecords)
-         {
-            txUsed = true;
-            storage.deleteIncrementRecord(tx, record.longValue());
-         }
-         
-         if (recordID >= 0)
-         {
-            txUsed = true;
-            storage.deletePageCounter(tx, this.recordID);
-         }
-         
-         if (txUsed)
-         {
-            storage.commit(tx);
-         }
+         storage.deleteIncrementRecord(tx.getID(), record.longValue());
+         tx.setContainsPersistent();
       }
+      
+      if (recordID >= 0)
+      {
+         storage.deletePageCounter(tx.getID(), this.recordID);
+         tx.setContainsPersistent();
+      }
+      
+      recordID = -1;
+      value.set(0);
+      incrementRecords.clear();
+
    }
 
    /* (non-Javadoc)
@@ -222,6 +231,12 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    {
       if (loadList != null)
       {
+         if (subscription != null)
+         {
+            // it could be null on testcases
+            subscription.notEmpty();
+         }
+         
          for (Pair<Long, Integer> incElement : loadList)
          {
             value.addAndGet(incElement.getB());
