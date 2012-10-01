@@ -77,6 +77,8 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       PageSubscriptionImpl.log.trace(message);
    }
+   
+   private boolean empty = true;
 
    private volatile boolean autoCleanup = true;
 
@@ -169,6 +171,12 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       return cursorProvider;
    }
+   
+   public void notEmpty()
+   {
+      this.empty = false;
+      
+   }
 
    public void bookmark(PagePosition position) throws Exception
    {
@@ -184,7 +192,14 @@ public class PageSubscriptionImpl implements PageSubscription
 
    public long getMessageCount()
    {
-      return counter.getValue() - deliveredCount.get();
+      if (empty)
+      {
+         return 0;
+      }
+      else
+      {
+         return counter.getValue() - deliveredCount.get();
+      }
    }
 
    public PageSubscriptionCounter getCounter()
@@ -224,6 +239,16 @@ public class PageSubscriptionImpl implements PageSubscription
             }
          });
       }
+   }
+   
+   public void onPageModeCleared(Transaction tx) throws Exception
+   {
+	  if (counter != null)
+	  {
+		  // this could be null on testcases
+		  counter.delete(tx);
+	  }
+	  this.empty = true;
    }
 
    /** 
@@ -534,6 +559,11 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          try
          {
+            
+            if (empty && consumedPages.isEmpty())
+            {
+               return -1;
+            }
             long lastPageSeen = 0;
             for (Map.Entry<Long, PageCursorInfo> info : consumedPages.entrySet())
             {
@@ -590,6 +620,7 @@ public class PageSubscriptionImpl implements PageSubscription
       }
       catch (Exception e)
       {
+         log.warn(e.getMessage(), e);
          throw new RuntimeException(e.getMessage(), e);
       }
    }
@@ -636,8 +667,21 @@ public class PageSubscriptionImpl implements PageSubscription
     */
    public boolean isComplete(long page)
    {
+      if (empty && consumedPages.isEmpty())
+      {
+         return true;
+      }
+      
       PageCursorInfo info = consumedPages.get(page);
-      return info != null && info.isDone();
+      
+      if (info == null && empty)
+      {
+         return true;
+      }
+      else
+      {
+         return info != null && info.isDone();
+      }
    }
 
    /**
