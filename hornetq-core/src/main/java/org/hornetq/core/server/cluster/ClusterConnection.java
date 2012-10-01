@@ -15,7 +15,7 @@ package org.hornetq.core.server.cluster;
 
 import java.util.Map;
 
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -75,5 +75,4 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
     * @return {@code true} if username and password match, {@code false} otherwise.
     */
    boolean verify(String clusterUser, String clusterPassword);
-
 }

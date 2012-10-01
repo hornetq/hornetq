@@ -12,17 +12,15 @@
  */
 package org.hornetq.core.client.impl;
 
-import java.io.Serializable;
-
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.TopologyMember;
+import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Aug 16, 2010
  */
-public class TopologyMember implements Serializable
+public final class TopologyMemberImpl implements TopologyMember
 {
    private static final long serialVersionUID = 1123652191795626133L;
 
@@ -33,47 +31,53 @@ public class TopologyMember implements Serializable
    /** transient to avoid serialization changes */
    private transient long uniqueEventID = System.currentTimeMillis();
 
-   public TopologyMember(final TransportConfiguration a, final TransportConfiguration b)
-   {
-      this(null, a, b);
-   }
+   private final String nodeId;
 
-   public TopologyMember(final String nodeName, final TransportConfiguration a, final TransportConfiguration b)
+   public TopologyMemberImpl(String nodeId, final String nodeName, final TransportConfiguration a,
+                             final TransportConfiguration b)
    {
+      this.nodeId = nodeId;
       this.nodeName = nodeName;
       this.connector = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
       uniqueEventID = System.currentTimeMillis();
    }
 
-   public TransportConfiguration getA()
+   @Override
+   public TransportConfiguration getLive()
    {
       return connector.getA();
    }
 
-   public TransportConfiguration getB()
+   @Override
+   public TransportConfiguration getBackup()
    {
       return connector.getB();
    }
 
-   public void setB(final TransportConfiguration param)
+   public void setBackup(final TransportConfiguration param)
    {
       connector.setB(param);
    }
 
-   public void setA(final TransportConfiguration param)
+   public void setLive(final TransportConfiguration param)
    {
       connector.setA(param);
    }
 
-   /**
-    * @return the uniqueEventID
-    */
+   @Override
+   public String getNodeId()
+   {
+      return nodeId;
+   }
+
+   @Override
    public long getUniqueEventID()
    {
       return uniqueEventID;
    }
 
-   public String getNodeName()
+   @Override
+   public String getBackupGroupName()
    {
       return nodeName;
    }

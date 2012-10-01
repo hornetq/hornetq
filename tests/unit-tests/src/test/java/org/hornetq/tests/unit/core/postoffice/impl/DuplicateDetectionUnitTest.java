@@ -22,7 +22,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -39,6 +38,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.Pair;
 
 /**
  * A DuplicateDetectionUnitTest

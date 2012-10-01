@@ -49,11 +49,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
@@ -150,6 +150,7 @@ import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
@@ -384,7 +385,7 @@ public class HornetQServerImpl implements HornetQServer
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());
 
-         nodeManager.setNodeGroupName(configuration.getNodeGroupName());
+         nodeManager.setNodeGroupName(configuration.getBackupGroupName());
 
          nodeManager.start();
 
@@ -2223,9 +2224,9 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             //use a Node Locator to connect to the cluster
-            LiveNodeLocator nodeLocator = configuration.getNodeGroupName() == null?
+            LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null?
                   new AnyLiveNodeLocator(quorumManager):
-                  new NamedLiveNodeLocator(configuration.getNodeGroupName(), quorumManager);
+                  new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
             serverLocator0.addClusterTopologyListener(nodeLocator);
             nodeLocator.connectToCluster(serverLocator0);
 
@@ -2624,10 +2625,9 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       @Override
-      public void nodeUP(long eventUID, String nodeID, String nodeName,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(TopologyMember topologyMember, boolean last)
       {
-         boolean isOurNodeId = nodeId != null && nodeID.equals(this.nodeId.toString());
+         boolean isOurNodeId = nodeId != null && nodeId.toString().equals(topologyMember.getNodeId());
          if (isOurNodeId)
          {
             isNodePresent = true;
@@ -2717,7 +2717,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
-                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getNodeGroupName(), pair, true);
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), pair, true);
 
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {

@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -28,6 +27,7 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.Pair;
 
 public class FakePostOffice implements PostOffice
 {

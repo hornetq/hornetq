@@ -20,10 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.jboss.tm.XAResourceRecovery;
 import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.utils.Pair;
 
 /**
  * <p>This class is used by the Resource Adapter to register RecoveryDiscovery, which is based on the {@link XARecoveryConfig}</p>

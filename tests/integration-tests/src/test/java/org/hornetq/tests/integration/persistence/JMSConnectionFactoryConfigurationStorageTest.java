@@ -20,12 +20,12 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.Pair;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.utils.Pair;
 
 /**
  * A JMSConnectionFactoryConfigurationStorageTest

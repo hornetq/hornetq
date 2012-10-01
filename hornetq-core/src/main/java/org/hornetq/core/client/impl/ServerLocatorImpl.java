@@ -38,11 +38,11 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
@@ -53,6 +53,7 @@ import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -627,26 +628,23 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          return null;
       }
-      else if (topologyMember.getA() != null)
+      if (topologyMember.getLive() != null)
       {
-         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getA());
-         if (topologyMember.getB() != null)
+         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getLive());
+         if (topologyMember.getBackup() != null)
          {
-            factory.setBackupConnector(topologyMember.getA(), topologyMember.getB());
+            factory.setBackupConnector(topologyMember.getLive(), topologyMember.getBackup());
          }
          return factory;
       }
-      else if (topologyMember.getA() == null && topologyMember.getB() != null)
+      if (topologyMember.getLive() == null && topologyMember.getBackup() != null)
       {
          // This shouldn't happen, however I wanted this to consider all possible cases
-         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getB());
+         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getBackup());
          return factory;
       }
-      else
-      {
-         // it shouldn't happen
-         return null;
-      }
+      // it shouldn't happen
+      return null;
    }
 
    public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
@@ -1460,13 +1458,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          HornetQLogger.LOGGER.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
-      TopologyMember member = new TopologyMember(nodeName, connectorPair.getA(), connectorPair.getB());
+      TopologyMemberImpl member = new TopologyMemberImpl(nodeID, nodeName, connectorPair.getA(), connectorPair.getB());
 
       topology.updateMember(uniqueEventID, nodeID, member);
 
       TopologyMember actMember = topology.getMember(nodeID);
 
-      if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
+      if (actMember != null && actMember.getLive() != null && actMember.getBackup() != null)
       {
          HashSet<ClientSessionFactory> clonedFactories = new HashSet<ClientSessionFactory>();
          synchronized (factories)
@@ -1476,8 +1474,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          for (ClientSessionFactory factory : clonedFactories)
          {
-            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
-                                                                       actMember.getConnector().getB());
+            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getLive(), actMember.getBackup());
          }
       }
 
@@ -1517,14 +1514,14 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       synchronized (topologyArrayGuard)
       {
-         Collection<TopologyMember> membersCopy = topology.getMembers();
+         Collection<TopologyMemberImpl> membersCopy = topology.getMembers();
 
          topologyArray =
                   (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                                 membersCopy.size());
 
          int count = 0;
-         for (TopologyMember pair : membersCopy)
+         for (TopologyMemberImpl pair : membersCopy)
          {
             topologyArray[count++] = pair.getConnector();
          }
@@ -1543,7 +1540,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          if (ha && topology.getMember(entry.getNodeID()) == null)
          {
-            TopologyMember member = new TopologyMember(entry.getConnector(), null);
+            TopologyMemberImpl member = new TopologyMemberImpl(entry.getNodeID(), null, entry.getConnector(), null);
             // on this case we set it as zero as any update coming from server should be accepted
             topology.updateMember(0, entry.getNodeID(), member);
          }

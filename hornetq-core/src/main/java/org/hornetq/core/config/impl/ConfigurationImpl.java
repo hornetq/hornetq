@@ -1400,12 +1400,12 @@ public class ConfigurationImpl implements Configuration
       this.name = name;
    }
 
-   public String getNodeGroupName()
+   public String getBackupGroupName()
    {
       return nodeGroupName;
    }
 
-   public void setNodeGroupName(String nodeGroupName)
+   public void setBackupGroupName(String nodeGroupName)
    {
       this.nodeGroupName = nodeGroupName;
    }

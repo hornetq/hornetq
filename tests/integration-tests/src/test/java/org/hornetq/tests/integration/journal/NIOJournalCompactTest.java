@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -51,6 +50,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**

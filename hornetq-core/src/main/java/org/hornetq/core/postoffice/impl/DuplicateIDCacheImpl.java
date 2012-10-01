@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.DuplicateIDCache;
@@ -26,17 +25,16 @@ import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.utils.Pair;
 
 /**
  * A DuplicateIDCacheImpl
- * 
+ *
  * A fixed size rotating cache of last X duplicate ids.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 8 Dec 2008 16:35:55
- *
- *
  */
 public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
@@ -118,22 +116,22 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
 
    }
-   
-   
+
+
    public void deleteFromCache(byte [] duplicateID) throws Exception
    {
       ByteArrayHolder bah = new ByteArrayHolder(duplicateID);
-      
+
       Integer posUsed = cache.remove(bah);
-      
+
       if (posUsed != null)
       {
          Pair<ByteArrayHolder, Long> id;
-   
+
          synchronized (this)
          {
             id = ids.get(posUsed.intValue());
-            
+
             if (id.getA().equals(bah))
             {
                id.setA(null);
@@ -142,9 +140,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
             }
          }
       }
-      
+
    }
-   
+
 
    public boolean contains(final byte[] duplID)
    {
@@ -189,7 +187,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
    private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID)
    {
       ByteArrayHolder holder = new ByteArrayHolder(duplID);
-      
+
       cache.put(holder, pos);
 
       Pair<ByteArrayHolder, Long> id;
@@ -203,11 +201,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          if (id.getA() != null)
          {
             cache.remove(id.getA());
-   
+
             // Record already exists - we delete the old one and add the new one
             // Note we can't use update since journal update doesn't let older records get
             // reclaimed
-   
+
             if (id.getB() != null)
             {
                try
@@ -223,10 +221,10 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
          id.setA(holder);
 
-         // The recordID could be negative if the duplicateCache is configured to not persist, 
+         // The recordID could be negative if the duplicateCache is configured to not persist,
          // -1 would mean null on this case
          id.setB(recordID >= 0 ? recordID : null);
-         
+
          holder.pos = pos;
       }
       else
@@ -234,7 +232,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          id = new Pair<ByteArrayHolder, Long>(holder, recordID >= 0 ? recordID : null);
 
          ids.add(id);
-         
+
          holder.pos = pos;
       }
 
@@ -311,7 +309,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       final byte[] bytes;
 
       int hash;
-      
+
       int pos;
 
       @Override

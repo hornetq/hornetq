@@ -32,70 +32,70 @@ import org.hornetq.utils.DefaultSensitiveStringCodec;
  */
 public class FileConfigurationParserTest extends UnitTestCase
 {
-   
+
    public void testParsingDefaultServerConfig() throws Exception
    {
       FileConfigurationParser parser = new FileConfigurationParser();
-      
+
       String configStr = firstPart + lastPart;
       ByteArrayInputStream input = new ByteArrayInputStream(configStr.getBytes("UTF-8"));
-      
+
       Configuration config = parser.parseMainConfig(input);
-      
+
       String clusterPassword = config.getClusterPassword();
-      
+
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, clusterPassword);
-      
+
       //if we add cluster-password, it should be default plain text
       String clusterPasswordPart = "<cluster-password>helloworld</cluster-password>";
-      
+
       configStr = firstPart + clusterPasswordPart + lastPart;
-      
+
       config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
-      
+
       assertEquals("helloworld", config.getClusterPassword());
 
       //if we add mask, it should be able to decode correctly
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
       String mask = (String)codec.encode("helloworld");
-      
+
       String maskPasswordPart = "<mask-password>true</mask-password>";
       clusterPasswordPart = "<cluster-password>" + mask + "</cluster-password>";
-      
+
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + lastPart;
-      
+
       config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
-      
+
       assertEquals("helloworld", config.getClusterPassword());
-      
+
       //if we change key, it should be able to decode correctly
       codec = new DefaultSensitiveStringCodec();
       Map<String, String> prop = new HashMap<String, String>();
       prop.put("key", "newkey");
       codec.init(prop);
-      
+
       mask = (String)codec.encode("newpassword");
-      
+
       clusterPasswordPart = "<cluster-password>" + mask + "</cluster-password>";
-      
+
       String codecPart = "<password-codec>" + "org.hornetq.utils.DefaultSensitiveStringCodec" +
                          ";key=newkey</password-codec>";
-      
+
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + codecPart + lastPart;
-      
+
       config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
-      
+
       assertEquals("newpassword", config.getClusterPassword());
 
-      assertEquals("anodegroupname", config.getNodeGroupName());
+      assertEquals("anodegroupname", config.getBackupGroupName());
    }
 
-   private static String firstPart = 
-            "<configuration xmlns=\"urn:hornetq\"\n" + 
+   private static String firstPart =
+            "<configuration xmlns=\"urn:hornetq\"\n" +
             "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
             "xsi:schemaLocation=\"urn:hornetq /schema/hornetq-configuration.xsd\">\n" +
             "<name>HornetQ.main.config</name>" + "\n" +
-            "<node-group-name>anodegroupname</node-group-name>" + "\n" +
+            "<backup-group-name>anodegroupname</backup-group-name>" + "\n" +
             "<log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
             "<bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>" + "\n" +
             "<journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>" + "\n" +
@@ -157,6 +157,6 @@ public class FileConfigurationParserTest extends UnitTestCase
             "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
             "</address-setting>" + "\n" +
             "</address-settings>";
-   
+
    private static String lastPart = "</configuration>";
 }

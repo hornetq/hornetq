@@ -43,7 +43,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.Pair;
+import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
