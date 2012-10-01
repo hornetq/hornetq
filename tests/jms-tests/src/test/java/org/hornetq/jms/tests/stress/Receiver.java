@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.stress;
 
-import org.hornetq.jms.tests.JmsTestLogger;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +27,14 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
+import org.hornetq.jms.tests.JmsTestLogger;
+
 /**
- * 
+ *
  * A Receiver.
- * 
+ *
  * Receives messages from a dstination for stress testing
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -262,7 +262,7 @@ public class Receiver extends Runner implements MessageListener
       }
    }
 
-   class MockServerSessionPool implements ServerSessionPool
+   static final class MockServerSessionPool implements ServerSessionPool
    {
       private final ServerSession serverSession;
 
@@ -277,7 +277,7 @@ public class Receiver extends Runner implements MessageListener
       }
    }
 
-   class MockServerSession implements ServerSession
+   static final class MockServerSession implements ServerSession
    {
       Session session;
 
