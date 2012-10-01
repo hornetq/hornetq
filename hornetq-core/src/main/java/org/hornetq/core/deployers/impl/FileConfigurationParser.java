@@ -193,7 +193,8 @@ public final class FileConfigurationParser
 
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
 
-      config.setNodeGroupName(XMLConfigurationUtil.getString(e, "node-group-name", config.getNodeGroupName(), Validators.NO_CHECK));
+      config.setBackupGroupName(XMLConfigurationUtil.getString(e, "backup-group-name", config.getBackupGroupName(),
+                                                               Validators.NO_CHECK));
 
       config.setFailbackDelay(XMLConfigurationUtil.getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
 

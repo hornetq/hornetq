@@ -18,12 +18,12 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
    {
       super.setupServers();
       //we need to know who is connected to who
-      servers[0].getConfiguration().setNodeGroupName("group0");
-      servers[1].getConfiguration().setNodeGroupName("group1");
-      servers[2].getConfiguration().setNodeGroupName("group2");
-      servers[3].getConfiguration().setNodeGroupName("group0");
-      servers[4].getConfiguration().setNodeGroupName("group1");
-      servers[5].getConfiguration().setNodeGroupName("group2");
+      servers[0].getConfiguration().setBackupGroupName("group0");
+      servers[1].getConfiguration().setBackupGroupName("group1");
+      servers[2].getConfiguration().setBackupGroupName("group2");
+      servers[3].getConfiguration().setBackupGroupName("group0");
+      servers[4].getConfiguration().setBackupGroupName("group1");
+      servers[5].getConfiguration().setBackupGroupName("group2");
    }
 
    public void testQuorumVoting() throws Exception

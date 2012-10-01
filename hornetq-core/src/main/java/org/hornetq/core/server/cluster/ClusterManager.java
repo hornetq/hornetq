@@ -191,7 +191,7 @@ public class ClusterManager implements HornetQComponent
 
    public String getNodeGroupName()
    {
-      return configuration.getNodeGroupName();
+      return configuration.getBackupGroupName();
    }
 
    public synchronized void deploy() throws Exception

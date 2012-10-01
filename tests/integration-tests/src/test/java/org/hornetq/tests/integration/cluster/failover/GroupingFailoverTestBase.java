@@ -50,9 +50,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      servers[0].getConfiguration().setNodeGroupName("group1");
-      servers[1].getConfiguration().setNodeGroupName("group2");
-      servers[2].getConfiguration().setNodeGroupName("group1");
+      servers[0].getConfiguration().setBackupGroupName("group1");
+      servers[1].getConfiguration().setBackupGroupName("group2");
+      servers[2].getConfiguration().setBackupGroupName("group1");
 
       startServers(0, 1, 2);
          setupSessionFactory(0, isNetty());
@@ -146,9 +146,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      servers[0].getConfiguration().setNodeGroupName("group1");
-      servers[1].getConfiguration().setNodeGroupName("group2");
-      servers[2].getConfiguration().setNodeGroupName("group1");
+      servers[0].getConfiguration().setBackupGroupName("group1");
+      servers[1].getConfiguration().setBackupGroupName("group2");
+      servers[2].getConfiguration().setBackupGroupName("group1");
 
       startServers(0, 1, 2);
 

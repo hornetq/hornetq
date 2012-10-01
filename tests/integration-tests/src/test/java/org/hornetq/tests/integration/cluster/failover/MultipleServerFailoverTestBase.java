@@ -105,7 +105,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          configuration.setFailbackDelay(1000);
          if(getNodeGroupName() != null)
          {
-            configuration.setNodeGroupName(getNodeGroupName() + "-" + i);
+            configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
          }
          createLiveClusterConfiguration(i, configuration, getLiveServerCount());
          liveConfigs.add(configuration);
@@ -135,7 +135,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          configuration.setFailbackDelay(1000);
          if(getNodeGroupName() != null)
          {
-            configuration.setNodeGroupName(getNodeGroupName() + "-" + i);
+            configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
          }
          createBackupClusterConfiguration(i, configuration, getBackupServerCount());
          backupConfigs.add(configuration);

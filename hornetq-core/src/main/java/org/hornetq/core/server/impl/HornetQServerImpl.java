@@ -385,7 +385,7 @@ public class HornetQServerImpl implements HornetQServer
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());
 
-         nodeManager.setNodeGroupName(configuration.getNodeGroupName());
+         nodeManager.setNodeGroupName(configuration.getBackupGroupName());
 
          nodeManager.start();
 
@@ -2224,9 +2224,9 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             //use a Node Locator to connect to the cluster
-            LiveNodeLocator nodeLocator = configuration.getNodeGroupName() == null?
+            LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null?
                   new AnyLiveNodeLocator(quorumManager):
-                  new NamedLiveNodeLocator(configuration.getNodeGroupName(), quorumManager);
+                  new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
             serverLocator0.addClusterTopologyListener(nodeLocator);
             nodeLocator.connectToCluster(serverLocator0);
 
@@ -2717,7 +2717,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
-                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getNodeGroupName(), pair, true);
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), pair, true);
 
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {

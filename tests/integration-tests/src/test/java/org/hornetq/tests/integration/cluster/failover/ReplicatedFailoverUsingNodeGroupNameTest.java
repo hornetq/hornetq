@@ -19,7 +19,7 @@ public class ReplicatedFailoverUsingNodeGroupNameTest extends ReplicatedFailover
    protected void createReplicatedConfigs() throws Exception
    {
       super.createReplicatedConfigs();
-      liveConfig.setNodeGroupName("liveNodeGroup1");
-      backupConfig.setNodeGroupName("liveNodeGroup1");
+      liveConfig.setBackupGroupName("liveNodeGroup1");
+      backupConfig.setBackupGroupName("liveNodeGroup1");
    }
 }

@@ -33,7 +33,7 @@ import org.hornetq.utils.Pair;
 
 /**
  * NamedLiveNodeLocator looks for a live server in the cluster with a specific nodeGroupName
- * @see org.hornetq.core.config.Configuration#getNodeGroupName()
+ * @see org.hornetq.core.config.Configuration#getBackupGroupName()
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class NamedLiveNodeLocator extends LiveNodeLocator

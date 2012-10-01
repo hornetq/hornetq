@@ -41,8 +41,8 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
 {
    public void testStartLiveFirst() throws Exception
    {
-      backupServers.get(2).getServer().getConfiguration().setNodeGroupName(getNodeGroupName() + "-0");
-      backupServers.get(3).getServer().getConfiguration().setNodeGroupName(getNodeGroupName() + "-1");
+      backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
+      backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
       for (TestableServer liveServer : liveServers)
       {
          liveServer.start();
@@ -58,8 +58,8 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
 
    public void testStartBackupFirst() throws Exception
    {
-      backupServers.get(2).getServer().getConfiguration().setNodeGroupName(getNodeGroupName() + "-0");
-      backupServers.get(3).getServer().getConfiguration().setNodeGroupName(getNodeGroupName() + "-1");
+      backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
+      backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
 
       for (TestableServer backupServer : backupServers)
       {
