@@ -14,17 +14,15 @@
 package org.hornetq.jms.tests;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.ServerSession;
-import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAConnection;
@@ -73,6 +71,7 @@ public class XATest extends HornetQServerTestCase
 
    // TestCase overrides -------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -88,6 +87,7 @@ public class XATest extends HornetQServerTestCase
       suspendedTx = tm.suspend();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       if (TxUtils.isUncommitted(tm))
@@ -520,7 +520,7 @@ public class XATest extends HornetQServerTestCase
          tm.begin();
 
          XASession sess = conn.createXASession();
-         XAResource res = (XAResource)sess.getXAResource();
+         XAResource res = sess.getXAResource();
          // res.setForceNotSameRM(true);
 
          XAResource res2 = new DummyXAResource();
@@ -2229,48 +2229,12 @@ public class XATest extends HornetQServerTestCase
    {
       protected JmsTestLogger log = JmsTestLogger.LOGGER;
 
-      public ArrayList messages = new ArrayList();
+      public List<Message> messages = new ArrayList<Message>();
 
       public void onMessage(final Message message)
       {
          messages.add(message);
       }
-   }
-
-   static class MockServerSessionPool implements ServerSessionPool
-   {
-      private final ServerSession serverSession;
-
-      MockServerSessionPool(final Session sess)
-      {
-         serverSession = new MockServerSession(sess);
-      }
-
-      public ServerSession getServerSession() throws JMSException
-      {
-         return serverSession;
-      }
-   }
-
-   static class MockServerSession implements ServerSession
-   {
-      Session session;
-
-      MockServerSession(final Session sess)
-      {
-         session = sess;
-      }
-
-      public Session getSession() throws JMSException
-      {
-         return session;
-      }
-
-      public void start() throws JMSException
-      {
-         session.run();
-      }
-
    }
 
    static class DummyXAResource implements XAResource

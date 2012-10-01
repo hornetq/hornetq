@@ -498,21 +498,4 @@ public class ResourceAdapterTest extends ServiceTestBase
          server.stop();
       }
    }
-
-   class MockHornetQResourceAdapter extends HornetQResourceAdapter
-   {
-
-      /**
-       *
-       */
-      private static final long serialVersionUID = 2893126091158533715L;
-      /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,
-                                                        Map<String, Object> connectionParameters)
-      {
-         HornetQRAConnectionFactory factory = super.createHornetQConnectionFactory(connectionParameters);
-
-         return factory;
-      }*/
-   }
-
 }
