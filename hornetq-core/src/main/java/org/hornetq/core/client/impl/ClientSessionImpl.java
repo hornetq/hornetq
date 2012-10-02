@@ -50,7 +50,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -1172,16 +1171,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }
  }
-
-   @Deprecated
-   public void addMetaDataV1(String key, String data) throws HornetQException
-   {
-      synchronized (metadata)
-      {
-         metadata.put(key, data);
-      }
-      channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
-   }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
