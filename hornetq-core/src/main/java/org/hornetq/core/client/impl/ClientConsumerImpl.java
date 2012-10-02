@@ -491,11 +491,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return closed;
    }
 
-   public void stop() throws HornetQException
-   {
-      stop(true);
-   }
-
    public void stop(final boolean waitForOnMessage) throws HornetQException
    {
       waitForOnMessageToComplete(waitForOnMessage);
@@ -540,11 +535,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
-
-   public ClientSessionInternal getSession()
-   {
-      return session;
-   }
 
    public SessionQueueQueryResponseMessage getQueueInfo()
    {

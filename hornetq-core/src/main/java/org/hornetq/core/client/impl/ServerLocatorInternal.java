@@ -16,10 +16,10 @@ package org.hornetq.core.client.impl;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.utils.Pair;
 
 /**
  * A ServerLocatorInternal
@@ -32,8 +32,6 @@ public interface ServerLocatorInternal extends ServerLocator
 {
    void start(Executor executor) throws Exception;
 
-   Executor getExecutor();
-
    void factoryClosed(final ClientSessionFactory factory);
 
    AfterConnectInternalListener getAfterConnectInternalListener();
@@ -44,8 +42,6 @@ public interface ServerLocatorInternal extends ServerLocator
     *
     *  This method used to be on tests interface, but I'm now making it part of the public interface since*/
    void setIdentity(String identity);
-
-   String getIdentity();
 
    void setNodeID(String nodeID);
 

@@ -156,14 +156,6 @@ public class MessageCounterManagerImpl implements MessageCounterManager
       }
    }
 
-   public MessageCounter getMessageCounter(final String name)
-   {
-      synchronized (messageCounters)
-      {
-         return messageCounters.get(name);
-      }
-   }
-
    public void resetAllCounters()
    {
       synchronized (messageCounters)

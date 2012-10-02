@@ -567,11 +567,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
-   public Executor getExecutor()
-   {
-      return startExecutor;
-   }
-
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
@@ -1230,11 +1225,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
          }
       }
-   }
-
-   public String getIdentity()
-   {
-      return identity;
    }
 
    public void setIdentity(String identity)
