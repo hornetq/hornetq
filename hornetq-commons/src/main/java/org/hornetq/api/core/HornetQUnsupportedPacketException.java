@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.UNSUPPORTED_PACKET;
  *
  * A packet of unsupported type was received by HornetQ PacketHandler.
  */
-public class HornetQUnsupportedPacketException extends HornetQException
+public final class HornetQUnsupportedPacketException extends HornetQException
 {
    private static final long serialVersionUID = -7074681529482463675L;
 

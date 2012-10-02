@@ -30,7 +30,7 @@ import static org.hornetq.api.core.HornetQExceptionType.SESSION_CREATION_REJECTE
  * The creation of a session was rejected by the server (e.g. if the
  * server is starting and has not finish to be initialized.
  */
-public class HornetQSessionCreationException extends HornetQException
+public final class HornetQSessionCreationException extends HornetQException
 {
    private static final long serialVersionUID = -4486139158452585895L;
 

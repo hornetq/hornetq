@@ -13,7 +13,6 @@
 package org.hornetq.jms.example;
 
 import java.util.Date;
-import java.util.Hashtable;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;

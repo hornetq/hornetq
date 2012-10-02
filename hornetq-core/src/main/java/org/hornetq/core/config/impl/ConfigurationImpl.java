@@ -48,17 +48,17 @@ public class ConfigurationImpl implements Configuration
 
    private static final long serialVersionUID = 4077088945050267843L;
 
-   public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
+   static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
-   public static final boolean DEFAULT_BACKUP = false;
+   static final boolean DEFAULT_BACKUP = false;
 
-   public static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
+   private static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
 
-   public static final boolean DEFAULT_SHARED_STORE = true;
+   static final boolean DEFAULT_SHARED_STORE = true;
 
    static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
-   public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
+   static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
    static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
@@ -88,7 +88,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
-   public static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
+   private static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
 
@@ -110,21 +110,21 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
 
-   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+   private static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
 
-   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   private static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
 
    public static final int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
 
-   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+   private static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
 
-   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+   private static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
    public static final int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
 
-   public static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
+   private static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -191,11 +191,11 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
-   public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
+   private static final long DEFAULT_FAILBACK_DELAY = 5000; // in milliseconds
 
-   public static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
+   private static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
 
-   public static final boolean DEFAULT_MASK_PASSWORD = false;
+   private static final boolean DEFAULT_MASK_PASSWORD = false;
 
    // Attributes -----------------------------------------------------------------------------
 

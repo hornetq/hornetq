@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.INTERNAL_ERROR;
  *
  * Internal error which prevented HornetQ from performing an important operation.
  */
-public class HornetQInternalErrorException extends HornetQException
+public final class HornetQInternalErrorException extends HornetQException
 {
    private static final long serialVersionUID = -5987814047521530695L;
 

@@ -8,7 +8,6 @@
       <version>2.3.0.BETA1</version>
    </parent>
 
-   <groupId>org.hornetq.examples.jms</groupId>
    <artifactId>common</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Examples common</name>

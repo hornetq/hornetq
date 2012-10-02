@@ -351,7 +351,7 @@ public final class Topology implements Serializable
       return member != null;
    }
 
-   protected void execute(final Runnable runnable)
+   private void execute(final Runnable runnable)
    {
       if (executor != null)
       {
@@ -361,37 +361,6 @@ public final class Topology implements Serializable
       {
          runnable.run();
       }
-   }
-
-   /**
-    * it will send the member to its listeners
-    * @param nodeID
-    */
-   public void sendMember(final String nodeID)
-   {
-      final TopologyMemberImpl member = getMember(nodeID);
-
-      final ArrayList<ClusterTopologyListener> copy = copyListeners();
-
-      execute(new Runnable()
-      {
-         public void run()
-         {
-            // Now force sending it
-            for (ClusterTopologyListener listener : copy)
-            {
-               if (HornetQLogger.LOGGER.isDebugEnabled())
-               {
-                  HornetQLogger.LOGGER.debug("Informing client listener " + listener +
-                            " about itself node " +
-                            nodeID +
-                            " with connector=" +
-                            member.getConnector());
-               }
-               listener.nodeUP(member, false);
-            }
-         }
-      });
    }
 
    public synchronized void sendTopology(final ClusterTopologyListener listener)

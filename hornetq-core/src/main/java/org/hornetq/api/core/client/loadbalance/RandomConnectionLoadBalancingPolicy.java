@@ -19,12 +19,12 @@ import org.hornetq.utils.Random;
  * {@link RandomConnectionLoadBalancingPolicy#select(int)} returns a random integer between {@code 0} (inclusive) and {@code max} (exclusive)
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 28 Nov 2008 10:24:11
  *
  *
  */
-public class RandomConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
+public final class RandomConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
    private final Random random = new Random();
 

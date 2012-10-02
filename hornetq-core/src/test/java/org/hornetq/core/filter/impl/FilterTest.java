@@ -13,11 +13,7 @@
 
 package org.hornetq.core.filter.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -26,6 +22,7 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.SilentTestCase;
 
 /**
  * Tests the compliance with the HornetQ Filter syntax.
@@ -33,39 +30,17 @@ import org.hornetq.tests.util.RandomUtil;
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class FilterTest extends TestCase
+public class FilterTest extends SilentTestCase
 {
    private Filter filter;
 
    private ServerMessage message;
 
-   private PrintStream origSysOut;
-
-   private PrintStream origSysErr;
-
-   private PrintStream sysOut;
-
-   private PrintStream sysErr;
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      origSysOut = System.out;
-      origSysErr = System.err;
-      sysOut = new PrintStream(new ByteArrayOutputStream());
-      System.setOut(sysOut);
-      sysErr = new PrintStream(new ByteArrayOutputStream());
-      System.setErr(sysErr);
       message = new ServerMessageImpl(1, 1000);
-   }
-
-   @Override
-   public void tearDown() throws Exception
-   {
-      System.setOut(origSysOut);
-      System.setErr(origSysErr);
-      super.tearDown();
    }
 
    public void testFilterForgets() throws Exception

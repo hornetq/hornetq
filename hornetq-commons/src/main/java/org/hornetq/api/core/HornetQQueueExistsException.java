@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.QUEUE_EXISTS;
  *
  * An operation failed because a queue exists on the server.
  */
-public class HornetQQueueExistsException extends HornetQException
+public final class HornetQQueueExistsException extends HornetQException
 {
    private static final long serialVersionUID = -405552292451883063L;
 

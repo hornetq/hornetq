@@ -37,7 +37,7 @@ public class ConnectionFactoryProperties
     * The transport config, changing the default configured from the RA
     */
    private List<Map<String, Object>> connectionParameters;
-   
+
    private Boolean ha;
 
    private String connectionLoadBalancingPolicyClassName;
@@ -147,13 +147,13 @@ public class ConnectionFactoryProperties
    {
       return ha;
    }
-   
+
    public void setHA(final Boolean ha)
    {
       hasBeenUpdated = true;
       this.ha = ha;
    }
-   
+
    public Boolean isCacheLargeMessagesClient()
    {
       return cacheLargeMessagesClient;
@@ -310,6 +310,7 @@ public class ConnectionFactoryProperties
    }
 
    /** This is for backward compatibility */
+   @Deprecated
    public void setClientId(final String clientID)
    {
       setClientID(clientID);

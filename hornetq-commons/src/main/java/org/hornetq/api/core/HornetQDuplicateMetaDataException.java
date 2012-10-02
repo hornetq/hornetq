@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_METADATA;
  *
  * A Session Metadata was set in duplication
  */
-public class HornetQDuplicateMetaDataException extends HornetQException
+public final class HornetQDuplicateMetaDataException extends HornetQException
 {
    private static final long serialVersionUID = 7877182872143004058L;
 

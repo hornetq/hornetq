@@ -43,7 +43,6 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.Message;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -106,6 +105,7 @@ import org.hornetq.utils.Base64;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
@@ -144,7 +144,7 @@ public class JournalStorageManager implements StorageManager
 
    // This is used when a large message is created but not yet stored on the system.
    // We use this to avoid temporary files missing
-   public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
+   static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
    public static final byte ADD_LARGE_MESSAGE = 30;
 

@@ -26,7 +26,7 @@ import org.jgroups.ReceiverAdapter;
  * This class is the implementation of HornetQ members discovery that will use JGroups.
  * @author Howard Gao
  */
-public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpoint
+abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpoint
 {
    private BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
 

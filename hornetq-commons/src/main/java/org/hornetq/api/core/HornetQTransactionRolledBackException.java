@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_ROLLED_BACK;
  *
  * A transaction was rolled back.
  */
-public class HornetQTransactionRolledBackException extends HornetQException
+public final class HornetQTransactionRolledBackException extends HornetQException
 {
    private static final long serialVersionUID = 5823412198677126300L;
 

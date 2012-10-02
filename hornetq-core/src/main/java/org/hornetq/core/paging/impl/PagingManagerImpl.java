@@ -261,12 +261,6 @@ public class PagingManagerImpl implements PagingManager
    }
 
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private PagingStore newStore(final SimpleString address) throws Exception
    {
       syncLock.readLock().lock();
@@ -284,11 +278,6 @@ public class PagingManagerImpl implements PagingManager
       {
          syncLock.readLock().unlock();
       }
-   }
-
-   protected PagingStoreFactory getStoreFactory()
-   {
-      return pagingStoreFactory;
    }
 
    public void unlock()

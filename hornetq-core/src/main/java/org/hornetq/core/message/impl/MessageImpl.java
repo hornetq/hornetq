@@ -121,12 +121,6 @@ public abstract class MessageImpl implements MessageInternal
       createBody(initialMessageBufferSize);
    }
 
-   protected MessageImpl(final long messageID, final int initialMessageBufferSize)
-   {
-      this(initialMessageBufferSize);
-      this.messageID = messageID;
-   }
-
    protected MessageImpl(final int initialMessageBufferSize)
    {
       this();

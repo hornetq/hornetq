@@ -19,7 +19,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
@@ -32,7 +31,7 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A XARecoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -44,25 +43,10 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class XARecoveryTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /*
-    * In this test, we have two queues, each with four messages already in them.
-    * 
-    * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
-    * Then recover it without restarting the server
-    * 
+    * In this test, we have two queues, each with four messages already in them. We send 4 more
+    * messages to each queue, and ack the original 4 in a tx Then recover it without restarting the
+    * server
     */
    public void testComplexTransactionalRecoveryWithoutRestart() throws Exception
    {
@@ -292,11 +276,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it without restarting the server, then rollback
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithoutRestartRollback() throws Exception
    {
@@ -542,11 +526,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it after restarting the server
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithRestart() throws Exception
    {
@@ -806,11 +790,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it after restarting the server, then rollback
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithRestartRollback() throws Exception
    {
@@ -1866,13 +1850,13 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
-    * 
+    *
     * We ack them, then add four more messages
-    * 
+    *
     * This test tests for the recovery when the same message is in multiple channels
-    * 
+    *
     * We don't restart in this test
-    * 
+    *
     */
    public void testRecoveryWithTwoDurableSubsWithoutRestart() throws Exception
    {
@@ -1892,9 +1876,9 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.topic2);
 
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         MessageConsumer sub1 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         MessageConsumer sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          // send four messages
 
@@ -1942,9 +1926,9 @@ public class XARecoveryTest extends JMSTestCase
 
          // And consume the first four from each in the tx
 
-         sub1 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         sub1 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         sub2 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         sub2 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          TextMessage rm1 = (TextMessage)sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -2027,9 +2011,9 @@ public class XARecoveryTest extends JMSTestCase
 
          // Should now see the last 4 messages
 
-         sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         sub1 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          TextMessage rm5 = (TextMessage)sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -2122,13 +2106,13 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
-    * 
+    *
     * We ack them, then add four more messages
-    * 
+    *
     * This test tests for the recovery when the same message is in multiple channels
-    * 
+    *
     * We do restart in this test
-    * 
+    *
     */
    public void testRecoveryWithTwoDurableSubsWithRestart() throws Exception
    {
@@ -2148,9 +2132,9 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.topic2);
 
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         MessageConsumer sub1 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         MessageConsumer sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          // send four messages
 
@@ -2198,9 +2182,9 @@ public class XARecoveryTest extends JMSTestCase
 
          // And consume the first four from each in the tx
 
-         sub1 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         sub1 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         sub2 = sess2.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         sub2 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          TextMessage rm1 = (TextMessage)sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -2295,9 +2279,9 @@ public class XARecoveryTest extends JMSTestCase
 
          // Should now see the last 4 messages
 
-         sub1 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub1");
+         sub1 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub1");
 
-         sub2 = sess1.createDurableSubscriber((Topic)HornetQServerTestCase.topic2, "sub2");
+         sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
          TextMessage rm5 = (TextMessage)sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -2394,8 +2378,8 @@ public class XARecoveryTest extends JMSTestCase
     * Crash the server
     * Restart the server
     * Make sure the messages can be received
-    * NOTE this test only tests transactional sends, not transactional acknowledgments 
-    * 
+    * NOTE this test only tests transactional sends, not transactional acknowledgments
+    *
     */
    public void testTransactionalDeliveryRecovery() throws Exception
    {

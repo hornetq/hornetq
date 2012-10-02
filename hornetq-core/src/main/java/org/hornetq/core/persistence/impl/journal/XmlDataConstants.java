@@ -19,48 +19,53 @@ package org.hornetq.core.persistence.impl.journal;
  *
  * @author Justin Bertram
  */
-public class XmlDataConstants
+final class XmlDataConstants
 {
-   public static final String XML_VERSION = "1.0";
-   public static final String DOCUMENT_PARENT = "hornetq-journal";
-   public static final String BINDINGS_PARENT = "bindings";
-   public static final String BINDINGS_CHILD = "binding";
-   public static final String BINDING_ADDRESS = "address";
-   public static final String BINDING_FILTER_STRING = "filter-string";
-   public static final String BINDING_QUEUE_NAME = "queue-name";
-   public static final String BINDING_ID = "id";
-   public static final String MESSAGES_PARENT = "messages";
-   public static final String MESSAGES_CHILD = "message";
-   public static final String MESSAGE_ID = "id";
-   public static final String MESSAGE_PRIORITY = "priority";
-   public static final String MESSAGE_EXPIRATION = "expiration";
-   public static final String MESSAGE_TIMESTAMP = "timestamp";
-   public static final String DEFAULT_TYPE_PRETTY = "default";
-   public static final String BYTES_TYPE_PRETTY = "bytes";
-   public static final String MAP_TYPE_PRETTY = "map";
-   public static final String OBJECT_TYPE_PRETTY = "object";
-   public static final String STREAM_TYPE_PRETTY = "stream";
-   public static final String TEXT_TYPE_PRETTY = "text";
-   public static final String MESSAGE_TYPE = "type";
-   public static final String MESSAGE_IS_LARGE = "isLarge";
-   public static final String MESSAGE_USER_ID = "user-id";
-   public static final String MESSAGE_BODY = "body";
-   public static final String PROPERTIES_PARENT = "properties";
-   public static final String PROPERTIES_CHILD = "property";
-   public static final String PROPERTY_NAME = "name";
-   public static final String PROPERTY_VALUE = "value";
-   public static final String PROPERTY_TYPE = "type";
-   public static final String QUEUES_PARENT = "queues";
-   public static final String QUEUES_CHILD = "queue";
-   public static final String QUEUE_NAME = "name";
-   public static final String PROPERTY_TYPE_BOOLEAN = "boolean";
-   public static final String PROPERTY_TYPE_BYTE = "byte";
-   public static final String PROPERTY_TYPE_BYTES = "bytes";
-   public static final String PROPERTY_TYPE_SHORT = "short";
-   public static final String PROPERTY_TYPE_INTEGER = "integer";
-   public static final String PROPERTY_TYPE_LONG = "long";
-   public static final String PROPERTY_TYPE_FLOAT = "float";
-   public static final String PROPERTY_TYPE_DOUBLE = "double";
-   public static final String PROPERTY_TYPE_STRING = "string";
-   public static final String PROPERTY_TYPE_SIMPLE_STRING = "simple-string";
+
+   private XmlDataConstants()
+   {
+      // Utility
+   }
+   static final String XML_VERSION = "1.0";
+   static final String DOCUMENT_PARENT = "hornetq-journal";
+   static final String BINDINGS_PARENT = "bindings";
+   static final String BINDINGS_CHILD = "binding";
+   static final String BINDING_ADDRESS = "address";
+   static final String BINDING_FILTER_STRING = "filter-string";
+   static final String BINDING_QUEUE_NAME = "queue-name";
+   static final String BINDING_ID = "id";
+   static final String MESSAGES_PARENT = "messages";
+   static final String MESSAGES_CHILD = "message";
+   static final String MESSAGE_ID = "id";
+   static final String MESSAGE_PRIORITY = "priority";
+   static final String MESSAGE_EXPIRATION = "expiration";
+   static final String MESSAGE_TIMESTAMP = "timestamp";
+   static final String DEFAULT_TYPE_PRETTY = "default";
+   static final String BYTES_TYPE_PRETTY = "bytes";
+   static final String MAP_TYPE_PRETTY = "map";
+   static final String OBJECT_TYPE_PRETTY = "object";
+   static final String STREAM_TYPE_PRETTY = "stream";
+   static final String TEXT_TYPE_PRETTY = "text";
+   static final String MESSAGE_TYPE = "type";
+   static final String MESSAGE_IS_LARGE = "isLarge";
+   static final String MESSAGE_USER_ID = "user-id";
+   static final String MESSAGE_BODY = "body";
+   static final String PROPERTIES_PARENT = "properties";
+   static final String PROPERTIES_CHILD = "property";
+   static final String PROPERTY_NAME = "name";
+   static final String PROPERTY_VALUE = "value";
+   static final String PROPERTY_TYPE = "type";
+   static final String QUEUES_PARENT = "queues";
+   static final String QUEUES_CHILD = "queue";
+   static final String QUEUE_NAME = "name";
+   static final String PROPERTY_TYPE_BOOLEAN = "boolean";
+   static final String PROPERTY_TYPE_BYTE = "byte";
+   static final String PROPERTY_TYPE_BYTES = "bytes";
+   static final String PROPERTY_TYPE_SHORT = "short";
+   static final String PROPERTY_TYPE_INTEGER = "integer";
+   static final String PROPERTY_TYPE_LONG = "long";
+   static final String PROPERTY_TYPE_FLOAT = "float";
+   static final String PROPERTY_TYPE_DOUBLE = "double";
+   static final String PROPERTY_TYPE_STRING = "string";
+   static final String PROPERTY_TYPE_SIMPLE_STRING = "simple-string";
 }

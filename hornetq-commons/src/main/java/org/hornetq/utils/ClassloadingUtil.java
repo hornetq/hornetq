@@ -11,12 +11,12 @@ import java.net.URL;
 * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
 */
 
-public class ClassloadingUtil
+public final class ClassloadingUtil
 {
    private static final String INSTANTIATION_EXCEPTION_MESSAGE =
             "Your class must have a constructor without arguments. If it is an inner class, it must be static!";
 
-   public static Object newInstanceFromClassLoader(final String className)
+   public static final Object newInstanceFromClassLoader(final String className)
    {
       ClassLoader loader = ClassloadingUtil.class.getClassLoader();
       try

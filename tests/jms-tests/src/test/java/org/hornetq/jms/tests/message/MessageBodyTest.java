@@ -35,14 +35,14 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A MessageBodyTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
- * 
+ *
  */
 public class MessageBodyTest extends HornetQServerTestCase
 {
@@ -64,6 +64,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -80,6 +81,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       consumerConnection.start();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       producerConnection.close();
@@ -544,11 +546,11 @@ public class MessageBodyTest extends HornetQServerTestCase
       m2.readBoolean();
       int unsignedByte = m2.readUnsignedByte();
 
-      ProxyAssertSupport.assertEquals((int)(myByte & 0xFF), unsignedByte);
+      ProxyAssertSupport.assertEquals(myByte & 0xFF, unsignedByte);
 
       int unsignedShort = m2.readUnsignedShort();
 
-      ProxyAssertSupport.assertEquals((int)(myShort & 0xFFFF), unsignedShort);
+      ProxyAssertSupport.assertEquals(myShort & 0xFFFF, unsignedShort);
 
       m2.clearBody();
 
@@ -715,11 +717,11 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       ProxyAssertSupport.assertFalse(m2.itemExists("sausages"));
 
-      HashSet itemNames = new HashSet();
-      Enumeration en = m2.getMapNames();
+      HashSet<String> itemNames = new HashSet<String>();
+      Enumeration<String> en = m2.getMapNames();
       while (en.hasMoreElements())
       {
-         String propName = (String)en.nextElement();
+         String propName = en.nextElement();
          itemNames.add(propName);
       }
 
@@ -796,9 +798,9 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // byte item can be read as short, int, long or String
 
-      ProxyAssertSupport.assertEquals((short)myByte, m2.getShort("myByte"));
-      ProxyAssertSupport.assertEquals((int)myByte, m2.getInt("myByte"));
-      ProxyAssertSupport.assertEquals((long)myByte, m2.getLong("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getShort("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getInt("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getLong("myByte"));
       ProxyAssertSupport.assertEquals(String.valueOf(myByte), m2.getString("myByte"));
 
       try
@@ -830,8 +832,8 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // short item can be read as int, long or String
 
-      ProxyAssertSupport.assertEquals((int)myShort, m2.getInt("myShort"));
-      ProxyAssertSupport.assertEquals((long)myShort, m2.getLong("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getInt("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getLong("myShort"));
       ProxyAssertSupport.assertEquals(String.valueOf(myShort), m2.getString("myShort"));
 
       try
@@ -872,7 +874,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       // int item can be read as long or String
 
-      ProxyAssertSupport.assertEquals((long)myInt, m2.getLong("myInt"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getLong("myInt"));
       ProxyAssertSupport.assertEquals(String.valueOf(myInt), m2.getString("myInt"));
 
       try
@@ -981,7 +983,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       // float can be read as double or String
 
       ProxyAssertSupport.assertEquals(String.valueOf(myFloat), m2.getString("myFloat"));
-      ProxyAssertSupport.assertEquals((double)myFloat, m2.getDouble("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myFloat, m2.getDouble("myFloat"), 0);
 
       try
       {
@@ -1091,7 +1093,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       ProxyAssertSupport.assertFalse(m2.getMapNames().hasMoreElements());
 
       // Test String -> Numeric and bool conversions
-      MapMessage m3 = (MapMessage)queueProducerSession.createMapMessage();
+      MapMessage m3 = queueProducerSession.createMapMessage();
 
       m3.setString("myBool", String.valueOf(myBool));
       m3.setString("myByte", String.valueOf(myByte));

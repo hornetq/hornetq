@@ -32,11 +32,11 @@ public final class ObjectNameBuilder
    /**
     * Default JMX domain for HornetQ resources.
     */
-   public static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+   public final static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
 
-   public static final String JMS_MODULE = "JMS";
+   static final String JMS_MODULE = "JMS";
 
-   public static final String CORE_MODULE = "Core";
+   static final String CORE_MODULE = "Core";
 
    // Attributes ----------------------------------------------------
 

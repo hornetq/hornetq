@@ -357,10 +357,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          return new AIOFileLockNodeManager(directory);
       }
-      else
-      {
-         return new FileLockNodeManager(directory);
-      }
+      return new FileLockNodeManager(directory);
    }
 
    public synchronized void start() throws Exception
@@ -1268,10 +1265,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          return "HornetQServerImpl::" + identity;
       }
-      else
-      {
-         return "HornetQServerImpl::" + (nodeManager != null ? "serverUUID=" + nodeManager.getUUID() : "");
-      }
+      return "HornetQServerImpl::" + (nodeManager != null ? "serverUUID=" + nodeManager.getUUID() : "");
    }
 
    /**
@@ -1306,10 +1300,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          return new JournalStorageManager(configuration, executorFactory, shutdownOnCriticalIO);
       }
-      else
-      {
-         return new NullStorageManager();
-      }
+      return new NullStorageManager();
    }
 
    private void callActivateCallbacks()

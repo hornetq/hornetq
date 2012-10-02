@@ -22,7 +22,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * A simple example that demonstrates server side load-balancing of messages between the queue instances on different
@@ -37,6 +36,7 @@ public class ClusteredGroupingExample extends HornetQExample
       new ClusteredGroupingExample().run(args);
    }
 
+   @Override
    public boolean runExample() throws Exception
    {
       Connection connection0 = null;

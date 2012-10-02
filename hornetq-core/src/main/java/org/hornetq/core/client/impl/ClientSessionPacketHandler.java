@@ -18,7 +18,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTIN
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
@@ -38,13 +37,13 @@ import org.hornetq.core.server.HornetQLogger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ClientSessionPacketHandler implements ChannelHandler
+final class ClientSessionPacketHandler implements ChannelHandler
 {
    private final ClientSessionInternal clientSession;
 
    private final Channel channel;
 
-   public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
+   ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
    {
       clientSession = clientSesssion;
 

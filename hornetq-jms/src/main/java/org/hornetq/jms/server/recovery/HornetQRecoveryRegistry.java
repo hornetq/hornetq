@@ -21,16 +21,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.jboss.tm.XAResourceRecovery;
 import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.utils.Pair;
+import org.jboss.tm.XAResourceRecovery;
 
 /**
  * <p>This class is used by the Resource Adapter to register RecoveryDiscovery, which is based on the {@link XARecoveryConfig}</p>
- * 
+ *
  * <p>Each outbound or inboud connection will pass the configuration here through by calling the method {@link HornetQRecoveryRegistry#register(XARecoveryConfig)}</p>
- * 
- * <p>Later the {@link RecoveryDiscovery} will call {@link HornetQRecoveryRegistry#nodeUp(String, Pair, String, String)} 
+ *
+ * <p>Later the {@link RecoveryDiscovery} will call {@link HornetQRecoveryRegistry#nodeUp(String, Pair, String, String)}
  * so we will keep a track of nodes on the cluster
  * or nodes where this server is connected to. </p>
  *
@@ -43,16 +43,16 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
    private final static HornetQRecoveryRegistry theInstance = new HornetQRecoveryRegistry();
 
-   private ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery> configSet = new ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery>();
+   private final ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery> configSet = new ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery>();
 
    /** The list by server id and resource adapter wrapper, what will actually be calling recovery.
     * This will be returned by getXAResources*/
-   private ConcurrentHashMap<String, HornetQXAResourceWrapper> recoveries = new ConcurrentHashMap<String, HornetQXAResourceWrapper>();
+   private final ConcurrentHashMap<String, HornetQXAResourceWrapper> recoveries = new ConcurrentHashMap<String, HornetQXAResourceWrapper>();
 
    /**
     * In case of failures, we retry on the next getXAResources
     */
-   private Set<RecoveryDiscovery> failedDiscoverySet = new HashSet<RecoveryDiscovery>();
+   private final Set<RecoveryDiscovery> failedDiscoverySet = new HashSet<RecoveryDiscovery>();
 
    private HornetQRecoveryRegistry()
    {
@@ -193,6 +193,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
          // to be done on a new thread
          Thread t = new Thread("HornetQ Recovery Discovery Reinitialization")
          {
+            @Override
             public void run()
             {
                for (RecoveryDiscovery discovery : failures)
@@ -224,10 +225,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       {
          return new TransportConfiguration[] { networkConfiguration.getA(), networkConfiguration.getB() };
       }
-      else
-      {
-         return new TransportConfiguration[] { networkConfiguration.getA() };
-      }
+      return new TransportConfiguration[] { networkConfiguration.getA() };
    }
 
 }
