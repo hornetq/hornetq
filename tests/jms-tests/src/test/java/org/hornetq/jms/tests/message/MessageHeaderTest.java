@@ -311,7 +311,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       while (en.hasMoreElements())
       {
          String propName = (String)en.nextElement();
-         
+
          propNames.add(propName);
       }
 
@@ -388,9 +388,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       // byte property can be read as short, int, long or String
 
-      ProxyAssertSupport.assertEquals((short)myByte, m2.getShortProperty("myByte"));
-      ProxyAssertSupport.assertEquals((int)myByte, m2.getIntProperty("myByte"));
-      ProxyAssertSupport.assertEquals((long)myByte, m2.getLongProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getShortProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getIntProperty("myByte"));
+      ProxyAssertSupport.assertEquals(myByte, m2.getLongProperty("myByte"));
       ProxyAssertSupport.assertEquals(String.valueOf(myByte), m2.getStringProperty("myByte"));
 
       try
@@ -422,8 +422,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       // short property can be read as int, long or String
 
-      ProxyAssertSupport.assertEquals((int)myShort, m2.getIntProperty("myShort"));
-      ProxyAssertSupport.assertEquals((long)myShort, m2.getLongProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getIntProperty("myShort"));
+      ProxyAssertSupport.assertEquals(myShort, m2.getLongProperty("myShort"));
       ProxyAssertSupport.assertEquals(String.valueOf(myShort), m2.getStringProperty("myShort"));
 
       try
@@ -464,7 +464,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       // int property can be read as long or String
 
-      ProxyAssertSupport.assertEquals((long)myInt, m2.getLongProperty("myInt"));
+      ProxyAssertSupport.assertEquals(myInt, m2.getLongProperty("myInt"));
       ProxyAssertSupport.assertEquals(String.valueOf(myInt), m2.getStringProperty("myInt"));
 
       try
@@ -573,7 +573,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       // float property can be read as double or String
 
       ProxyAssertSupport.assertEquals(String.valueOf(myFloat), m2.getStringProperty("myFloat"));
-      ProxyAssertSupport.assertEquals((double)myFloat, m2.getDoubleProperty("myFloat"), 0);
+      ProxyAssertSupport.assertEquals(myFloat, m2.getDoubleProperty("myFloat"), 0);
 
       try
       {
@@ -951,11 +951,13 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       private static final long serialVersionUID = 5545509674580823610L;
 
       // A ForeignDestination equals any other ForeignDestination, for simplicity
+      @Override
       public boolean equals(final Object obj)
       {
          return obj instanceof ForeignDestination;
       }
 
+      @Override
       public int hashCode()
       {
          return 157;
@@ -1292,8 +1294,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addFailureListener(final FailureListener listener)
       {
       }
-      
-      public void addFailoverListener(FailoverEventListener listener) 
+
+      public void addFailoverListener(FailoverEventListener listener)
 	  {
 	  }
 
@@ -1301,8 +1303,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
          return false;
       }
-      
-      public boolean removeFailoverListener(FailoverEventListener listener) 
+
+      public boolean removeFailoverListener(FailoverEventListener listener)
       {
     	return false;
       }
@@ -1398,7 +1400,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void createQueue(SimpleString address, SimpleString queueName) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1407,7 +1409,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void setClientID(String clientID)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1416,16 +1418,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addMetaData(String key, String data) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
-      }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.api.core.client.ClientSession#addMetaDataV1(java.lang.String, java.lang.String)
-       */
-      public void addMetaDataV1(String key, String data) throws HornetQException
-      {
-         // TODO Auto-generated method stub
-         
       }
 
       /* (non-Javadoc)
@@ -1434,8 +1427,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addUniqueMetaData(String key, String data) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
    }
-
 }
