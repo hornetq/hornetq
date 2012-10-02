@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_ID_REJECTED;
  *
  * A DuplicateID was rejected.
  */
-public class HornetQDuplicateIdException extends HornetQException
+public final class HornetQDuplicateIdException extends HornetQException
 {
    private static final long serialVersionUID = -4302979339865777119L;
 

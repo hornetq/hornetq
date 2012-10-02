@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
  *
  * A client timed out will connecting to HornetQ server.
  */
-public class HornetQConnectionTimedOutException extends HornetQException
+public final class HornetQConnectionTimedOutException extends HornetQException
 {
    private static final long serialVersionUID = 3244233758084830372L;
 

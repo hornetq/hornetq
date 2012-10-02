@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.IO_ERROR;
  *
  * Unexpected I/O error occurred on the server.
  */
-public class HornetQIOErrorException extends HornetQException
+public final class HornetQIOErrorException extends HornetQException
 {
    private static final long serialVersionUID = 797277117077787396L;
 
