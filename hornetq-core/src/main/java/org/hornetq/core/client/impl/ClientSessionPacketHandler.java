@@ -37,13 +37,13 @@ import org.hornetq.core.server.HornetQLogger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ClientSessionPacketHandler implements ChannelHandler
+final class ClientSessionPacketHandler implements ChannelHandler
 {
    private final ClientSessionInternal clientSession;
 
    private final Channel channel;
 
-   public ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
+   ClientSessionPacketHandler(final ClientSessionInternal clientSesssion, final Channel channel)
    {
       clientSession = clientSesssion;
 

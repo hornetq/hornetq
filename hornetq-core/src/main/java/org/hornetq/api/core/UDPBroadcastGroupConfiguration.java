@@ -19,24 +19,24 @@ package org.hornetq.api.core;
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 08:44:30
  *
  */
-public class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
+public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
 {
    private static final long serialVersionUID = 1052413739064253955L;
 
-   private String localBindAddress;
+   private final String localBindAddress;
 
-   private int localBindPort;
+   private final int localBindPort;
 
-   private String groupAddress;
+   private final String groupAddress;
 
-   private int groupPort;
+   private final int groupPort;
 
    public UDPBroadcastGroupConfiguration(final String groupAddress,
-                                         final int groupPort, 
+                                         final int groupPort,
                                          final String localBindAddress,
                                          final int localBindPort)
    {

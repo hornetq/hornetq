@@ -109,7 +109,7 @@ import org.hornetq.utils.XidCodecSupport;
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  *
  */
-public class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
+final class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
 
    private final Map<String, String> metadata = new HashMap<String, String>();
@@ -200,7 +200,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Constructors ----------------------------------------------------------------------------
 
-   public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
+   ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
                             final String username,
                             final String password,
@@ -522,14 +522,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       rollback(false);
 
-      if(outcomeKnown)
+      if (outcomeKnown)
       {
          throw HornetQMessageBundle.BUNDLE.txRolledBack();
       }
-      else
-      {
-         throw HornetQMessageBundle.BUNDLE.txOutcomeUnknown();
-      }
+
+      throw HornetQMessageBundle.BUNDLE.txOutcomeUnknown();
    }
 
    public void commit() throws HornetQException
@@ -722,12 +720,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return sessionFactory.removeFailureListener(listener);
    }
 
-   public void addFailoverListener(FailoverEventListener listener) 
+   public void addFailoverListener(FailoverEventListener listener)
    {
 	  sessionFactory.addFailoverListener(listener);
    }
-   
-   public boolean removeFailoverListener(FailoverEventListener listener) 
+
+   public boolean removeFailoverListener(FailoverEventListener listener)
    {
 	  return sessionFactory.removeFailoverListener(listener);
    }
@@ -1175,6 +1173,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
  }
 
+   @Deprecated
    public void addMetaDataV1(String key, String data) throws HornetQException
    {
       synchronized (metadata)
@@ -1508,11 +1507,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                {
                   throw new XAException(response.getResponseCode());
                }
-               else
-               {
-                  xaRetry = false;
-                  return response.getResponseCode();
-               }
+
+               xaRetry = false;
+               return response.getResponseCode();
             }
             catch (HornetQException e1)
             {
@@ -1562,10 +1559,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(XAException.XAER_RMERR);
          }
       }
-      else
-      {
-         return new Xid[0];
-      }
+
+      return new Xid[0];
    }
 
    public void rollback(final Xid xid) throws XAException

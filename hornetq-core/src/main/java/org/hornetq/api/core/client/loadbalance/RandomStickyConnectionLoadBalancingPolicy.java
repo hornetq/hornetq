@@ -19,9 +19,9 @@ import org.hornetq.utils.Random;
  * {@link RandomConnectionLoadBalancingPolicy#select(int)} chooses a the initial node randomly then subsequent requests return the same node
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  */
-public class RandomStickyConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
+public final class RandomStickyConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
    private final Random random = new Random();
 
@@ -33,7 +33,7 @@ public class RandomStickyConnectionLoadBalancingPolicy implements ConnectionLoad
       {
          pos = random.getRandom().nextInt(max);
       }
-      
+
       return pos;
    }
 }

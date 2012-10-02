@@ -54,8 +54,8 @@ import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.paging.PagedMessage;
@@ -93,31 +93,31 @@ import org.hornetq.utils.ExecutorFactory;
  *
  * @author Justin Bertram
  */
-public class XmlDataExporter
+public final class XmlDataExporter
 {
    // Constants -----------------------------------------------------
 
-   public static final Long LARGE_MESSAGE_CHUNK_SIZE = 1000L;
+   private static final Long LARGE_MESSAGE_CHUNK_SIZE = 1000L;
 
    // Attributes ----------------------------------------------------
 
-   private JournalStorageManager storageManager;
+   private final JournalStorageManager storageManager;
 
-   private Configuration config;
+   private final Configuration config;
 
-   private XMLStreamWriter xmlWriter;
+   private final XMLStreamWriter xmlWriter;
 
    // an inner map of message refs hashed by the queue ID to which they belong and then hashed by their record ID
-   private Map<Long, HashMap<Long, ReferenceDescribe>> messageRefs;
+   private final Map<Long, HashMap<Long, ReferenceDescribe>> messageRefs;
 
    // map of all message records hashed by their record ID (which will match the record ID of the message refs)
-   private HashMap<Long, Message> messages;
+   private final HashMap<Long, Message> messages;
 
-   private Map<Long, Set<PagePosition>> cursorRecords;
+   private final Map<Long, Set<PagePosition>> cursorRecords;
 
-   private Set<Long> pgTXs;
+   private final Set<Long> pgTXs;
 
-   HashMap<Long, PersistentQueueBindingEncoding> queueBindings;
+   final HashMap<Long, PersistentQueueBindingEncoding> queueBindings;
 
    long messagesPrinted = 0L;
 
@@ -127,7 +127,8 @@ public class XmlDataExporter
 
    // Constructors --------------------------------------------------
 
-   public XmlDataExporter(OutputStream out, String bindingsDir, String journalDir, String pagingDir, String largeMessagesDir)
+   public XmlDataExporter(OutputStream out, String bindingsDir, String journalDir, String pagingDir,
+                          String largeMessagesDir) throws Exception
    {
       config = new ConfigurationImpl();
       config.setBindingsDirectory(bindingsDir);
@@ -163,20 +164,13 @@ public class XmlDataExporter
 
       queueBindings = new HashMap<Long, PersistentQueueBindingEncoding>();
 
-      try
-      {
-         XMLOutputFactory factory = XMLOutputFactory.newInstance();
+      XMLOutputFactory factory = XMLOutputFactory.newInstance();
          XMLStreamWriter rawXmlWriter = factory.createXMLStreamWriter(out);
          PrettyPrintHandler handler = new PrettyPrintHandler(rawXmlWriter);
          xmlWriter = (XMLStreamWriter) Proxy.newProxyInstance(
                XMLStreamWriter.class.getClassLoader(),
                new Class[]{XMLStreamWriter.class},
                handler);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
    }
 
    // Public --------------------------------------------------------

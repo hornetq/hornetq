@@ -351,7 +351,7 @@ public final class Topology implements Serializable
       return member != null;
    }
 
-   protected void execute(final Runnable runnable)
+   private void execute(final Runnable runnable)
    {
       if (executor != null)
       {

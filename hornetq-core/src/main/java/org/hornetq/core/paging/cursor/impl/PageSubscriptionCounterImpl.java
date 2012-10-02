@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.utils.Pair;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
@@ -28,6 +27,7 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
+import org.hornetq.utils.Pair;
 
 /**
  * This class will encapsulate the persistent counters for the PagingSubscription
@@ -38,7 +38,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
 
    // Constants -----------------------------------------------------
-   
+
    static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -310,7 +310,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    // Inner classes -------------------------------------------------
 
-   static class ItemOper
+   private static class ItemOper
    {
 
       public ItemOper(PageSubscriptionCounterImpl counter, long id, int add)
@@ -327,7 +327,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       int ammount;
    }
 
-   static class CounterOperations implements TransactionOperation
+   private static class CounterOperations implements TransactionOperation
    {
       LinkedList<ItemOper> operations = new LinkedList<ItemOper>();
 

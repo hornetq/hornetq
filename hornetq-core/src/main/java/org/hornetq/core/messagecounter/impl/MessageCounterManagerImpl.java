@@ -26,12 +26,12 @@ import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 
 /**
- * 
+ *
  * A MessageCounterManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision: 3307 $</tt>
  *
  * $Id: MessageCounterManager.java 3307 2007-11-09 20:43:00Z timfox $
@@ -194,7 +194,7 @@ public class MessageCounterManagerImpl implements MessageCounterManager
       }
    }
 
-   class MessageCountersPinger implements Runnable
+   private class MessageCountersPinger implements Runnable
    {
       private boolean closed = false;
 

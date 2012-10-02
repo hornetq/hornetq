@@ -21,14 +21,14 @@ import org.hornetq.core.server.impl.FileLockNodeManager;
  * A PrintData
  * <p>
  * To run this class with Maven, use:
- * 
+ *
  * <pre>
  * cd hornetq-core
  * mvn -q exec:java -Dexec.args="/foo/hornetq/bindings /foo/hornetq/journal" -Dexec.mainClass="org.hornetq.core.persistence.impl.journal.PrintData"
  * </pre>
  * @author clebertsuconic
  */
-public class PrintData
+public class PrintData // NO_UCD (unused code)
 {
 
    public static void main(String arg[])
