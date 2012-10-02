@@ -18,7 +18,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTIN
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;

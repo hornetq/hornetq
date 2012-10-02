@@ -29,7 +29,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.replication.ReplicatedJournal;
-import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.jms.persistence.JMSStorageManager;

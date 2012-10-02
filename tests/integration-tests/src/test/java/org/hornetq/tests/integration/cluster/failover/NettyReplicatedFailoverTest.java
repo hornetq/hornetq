@@ -19,8 +19,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * A NettyReplicatedFailoverTest
  *

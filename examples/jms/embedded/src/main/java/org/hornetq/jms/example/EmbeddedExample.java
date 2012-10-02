@@ -14,7 +14,6 @@ package org.hornetq.jms.example;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -40,12 +39,12 @@ import org.hornetq.jms.server.embedded.EmbeddedJMS;
 
 /**
  * This example demonstrates how to run a HornetQ embedded with JMS
- * 
+ *
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:bburke@redhat.com">Bill Burke</a>
  */
-public class EmbeddedExample extends HornetQExample
+public final class EmbeddedExample extends HornetQExample
 {
 
    public static void main(final String[] args) throws Exception
