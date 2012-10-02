@@ -29,6 +29,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AcceptorControl;
@@ -40,7 +41,6 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;

@@ -20,12 +20,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.BroadcastEndpoint;
+import org.hornetq.api.core.BroadcastEndpointFactory;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;

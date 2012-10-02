@@ -13,9 +13,6 @@
 
 package org.hornetq.api.core;
 
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
-import org.hornetq.core.cluster.UDPBroadcastEndpointFactory;
-
 
 /**
  * The configuration used to determine how the server will broadcast members

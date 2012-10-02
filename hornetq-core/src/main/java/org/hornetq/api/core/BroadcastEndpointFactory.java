@@ -1,4 +1,4 @@
-package org.hornetq.core.cluster;
+package org.hornetq.api.core;
 
 import java.net.InetAddress;
 import java.security.AccessController;

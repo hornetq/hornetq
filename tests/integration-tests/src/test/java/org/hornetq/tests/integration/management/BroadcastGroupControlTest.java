@@ -18,10 +18,10 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
