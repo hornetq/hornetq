@@ -65,7 +65,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    private QueueSession session;
 
-   private String topicBinding = "/topic/" + randomString();
+   private final String topicBinding = "/topic/" + randomString();
 
    // Static --------------------------------------------------------
 
@@ -437,8 +437,9 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       serverManager.createTopic(false, topicName, topicBinding);
       topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();

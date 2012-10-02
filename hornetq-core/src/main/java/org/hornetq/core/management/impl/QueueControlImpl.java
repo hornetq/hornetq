@@ -32,7 +32,11 @@ import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.Consumer;
+import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.LinkedListIterator;
@@ -41,9 +45,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class QueueControlImpl extends AbstractControl implements QueueControl
 {
@@ -267,10 +271,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          {
             return addressSettings.getDeadLetterAddress().toString();
          }
-         else
-         {
-            return null;
-         }
+         return null;
       }
       finally
       {
@@ -399,7 +400,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          {
             while (iterator.hasNext())
             {
-               MessageReference ref = (MessageReference)iterator.next();
+               MessageReference ref = iterator.next();
                if (filter == null || filter.match(ref.getMessage()))
                {
                   Message message = ref.getMessage();
@@ -458,7 +459,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                int count = 0;
                while (iterator.hasNext())
                {
-                  MessageReference ref = (MessageReference)iterator.next();
+                  MessageReference ref = iterator.next();
                   if (filter.match(ref.getMessage()))
                   {
                      count++;

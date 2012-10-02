@@ -21,7 +21,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -35,7 +34,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A JMSXDeliveryCountTest
 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -499,7 +498,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          producer.send(tm);
 
-         xaConn = ((XAConnectionFactory)getXAConnectionFactory()).createXAConnection();
+         xaConn = getXAConnectionFactory().createXAConnection();
 
          XASession consumerSess = xaConn.createXASession();
          MessageConsumer consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);

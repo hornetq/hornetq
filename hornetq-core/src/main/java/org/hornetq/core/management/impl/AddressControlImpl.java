@@ -36,9 +36,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class AddressControlImpl extends AbstractControl implements AddressControl
 {
@@ -95,7 +95,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
                queueNames.add(binding.getUniqueName().toString());
             }
          }
-         return (String[])queueNames.toArray(new String[queueNames.size()]);
+         return queueNames.toArray(new String[queueNames.size()]);
       }
       catch (Throwable t)
       {
@@ -106,7 +106,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          blockOnIO();
       }
    }
-   
+
    public String[] getBindingNames() throws Exception
    {
       clearIO();
@@ -192,7 +192,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          blockOnIO();
       }
    }
-   
+
    public boolean isPaging() throws Exception
    {
       clearIO();
@@ -212,7 +212,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       try
       {
          PagingStore pageStore = pagingManager.getPageStore(address);
-         
+
          if (!pageStore.isPaging())
          {
             return 0;
