@@ -44,16 +44,6 @@ public class JGroupsFileEndpointFactory implements BroadcastEndpointFactory
 
     public BroadcastEndpoint createBroadcastEndpoint() throws Exception
     {
-       //  I don't want any possible hard coded dependency on JGroups,
-       //       for that reason we use reflection here, to avoid the compiler to bring any dependency here
-       return AccessController.doPrivileged(new PrivilegedAction<BroadcastEndpoint>()
-       {
-            public BroadcastEndpoint run()
-            {
-                BroadcastEndpoint endpoint = (BroadcastEndpoint) ClassloadingUtil.
-                       newInstanceFromClassLoader("org.hornetq.api.core.JGroupsBroadcastEndpointWithFile", fileName, channelName);
-                return endpoint;
-            }
-        });
+       return new JGroupsBroadcastEndpointWithFile(fileName, channelName);
     }
 }
