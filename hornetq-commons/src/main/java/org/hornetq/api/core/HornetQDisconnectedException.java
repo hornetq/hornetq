@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.DISCONNECTED;
  *
  * A client was disconnected from HornetQ server when the server has shut down.
  */
-public class HornetQDisconnectedException extends HornetQException
+public final class HornetQDisconnectedException extends HornetQException
 {
    private static final long serialVersionUID = 7414966383933311627L;
 

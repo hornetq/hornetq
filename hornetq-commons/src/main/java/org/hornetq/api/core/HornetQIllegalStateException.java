@@ -30,7 +30,7 @@ import static org.hornetq.api.core.HornetQExceptionType.ILLEGAL_STATE;
  * A HornetQ resource is not in a legal state (e.g. calling
  * ClientConsumer.receive() if a MessageHandler is set)
  */
-public class HornetQIllegalStateException extends HornetQException
+public final class HornetQIllegalStateException extends HornetQException
 {
    private static final long serialVersionUID = -4480125401057788511L;
 

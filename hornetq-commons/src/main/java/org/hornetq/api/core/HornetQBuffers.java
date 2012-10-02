@@ -24,11 +24,11 @@ import org.jboss.netty.buffer.ChannelBuffers;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class HornetQBuffers
-{   
+public final class HornetQBuffers
+{
    /**
     * Creates a <em>self-expanding</em> HornetQBuffer with the given initial size
-    * 
+    *
     * @param size the initial size of the created HornetQBuffer
     * @return a self-expanding HornetQBuffer starting with the given size
     */
@@ -39,7 +39,7 @@ public class HornetQBuffers
 
    /**
     * Creates a <em>self-expanding</em> HornetQBuffer filled with the given byte array
-    * 
+    *
     * @param bytes the created buffer will be initially filled with this byte array
     * @return a self-expanding HornetQBuffer filled with the given byte array
     */
@@ -54,9 +54,9 @@ public class HornetQBuffers
 
    /**
     * Creates a HornetQBuffer wrapping an underlying NIO ByteBuffer
-    * 
+    *
     * The position on this buffer won't affect the position on the inner buffer
-    * 
+    *
     * @param underlying the underlying NIO ByteBuffer
     * @return a HornetQBuffer wrapping the underlying NIO ByteBuffer
     */
@@ -82,7 +82,7 @@ public class HornetQBuffers
 
    /**
     * Creates a <em>fixed</em> HornetQBuffer of the given size
-    * 
+    *
     * @param size the size of the created HornetQBuffer
     * @return a fixed HornetQBuffer with the given size
     */
@@ -90,7 +90,7 @@ public class HornetQBuffers
    {
       return new ChannelBufferWrapper(ChannelBuffers.buffer(size));
    }
-   
+
    private HornetQBuffers()
    {
    }
