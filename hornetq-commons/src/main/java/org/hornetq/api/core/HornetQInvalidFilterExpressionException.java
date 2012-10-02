@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.INVALID_FILTER_EXPRESSIO
  *
  * An filter expression has not been validated
  */
-public class HornetQInvalidFilterExpressionException extends HornetQException
+public final class HornetQInvalidFilterExpressionException extends HornetQException
 {
    private static final long serialVersionUID = 7188625553939665128L;
 

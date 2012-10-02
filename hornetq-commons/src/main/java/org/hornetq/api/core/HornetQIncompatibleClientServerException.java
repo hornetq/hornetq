@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERV
  *
  * A incompatibility between HornetQ versions on the client and the server has been detected
  */
-public class HornetQIncompatibleClientServerException extends HornetQException
+public final class HornetQIncompatibleClientServerException extends HornetQException
 {
    private static final long serialVersionUID = -1662999230291452298L;
 

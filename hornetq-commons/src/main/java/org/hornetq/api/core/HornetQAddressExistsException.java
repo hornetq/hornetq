@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_EXISTS;
  *
  * An operation failed because an address exists on the server.
  */
-public class HornetQAddressExistsException extends HornetQException
+public final class HornetQAddressExistsException extends HornetQException
 {
    private static final long serialVersionUID = 3032730450033992367L;
 

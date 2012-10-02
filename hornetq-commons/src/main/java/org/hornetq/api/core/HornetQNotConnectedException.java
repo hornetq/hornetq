@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.NOT_CONNECTED;
  *
  * A client is not able to connect to HornetQ server.
  */
-public class HornetQNotConnectedException extends HornetQException
+public final class HornetQNotConnectedException extends HornetQException
 {
    private static final long serialVersionUID = -3489189971813613325L;
 

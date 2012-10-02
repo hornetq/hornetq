@@ -566,24 +566,6 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return JMSFactoryType.CF.intValue();
    }
 
-   /**
-    * @deprecated use {@link ServerLocator#createSessionFactory()}
-    */
-   @Deprecated
-   public ClientSessionFactory getCoreFactory() throws JMSException
-   {
-      try
-      {
-         return serverLocator.createSessionFactory();
-      }
-      catch (Exception e)
-      {
-         JMSException ex = new JMSException (e.getMessage());
-         ex.initCause(e);
-         throw ex;
-      }
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
