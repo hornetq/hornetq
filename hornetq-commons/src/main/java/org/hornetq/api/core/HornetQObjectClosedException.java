@@ -30,7 +30,7 @@ import static org.hornetq.api.core.HornetQExceptionType.OBJECT_CLOSED;
  * A client operation failed because the calling resource
  * (ClientSession, ClientProducer, etc.) is closed.
  */
-public class HornetQObjectClosedException extends HornetQException
+public final class HornetQObjectClosedException extends HornetQException
 {
    private static final long serialVersionUID = 809024052184914812L;
 

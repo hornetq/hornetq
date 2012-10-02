@@ -106,7 +106,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          HornetQJournalLogger.LOGGER.errorDeletingFile(this);
       }
    }
-   
+
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       HornetQJournalLogger.LOGGER.debug("Copying "  + this + " as " + newFileName);
@@ -114,15 +114,15 @@ public abstract class AbstractSequentialFile implements SequentialFile
       {
          newFileName.open();
       }
-      
+
       if (!isOpen())
       {
          this.open();
       }
-      
-      
+
+
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-      
+
       for (;;)
       {
          buffer.rewind();
@@ -293,11 +293,11 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    // Inner classes -------------------------------------------------
 
-   protected static class DelegateCallback implements IOAsyncTask
+   private static final class DelegateCallback implements IOAsyncTask
    {
       final List<IOAsyncTask> delegates;
 
-      DelegateCallback(final List<IOAsyncTask> delegates)
+      private DelegateCallback(final List<IOAsyncTask> delegates)
       {
          this.delegates = delegates;
       }

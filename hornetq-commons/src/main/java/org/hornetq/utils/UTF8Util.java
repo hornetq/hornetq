@@ -40,7 +40,8 @@ public final class UTF8Util
 
    private static final boolean isTrace = HornetQUtilLogger.LOGGER.isTraceEnabled();
 
-   private static ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer = new ThreadLocal<SoftReference<StringUtilBuffer>>();
+   private static final ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer =
+            new ThreadLocal<SoftReference<StringUtilBuffer>>();
 
    public static void saveUTF(final HornetQBuffer out, final String str)
    {

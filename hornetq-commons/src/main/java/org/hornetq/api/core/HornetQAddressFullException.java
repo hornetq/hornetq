@@ -28,7 +28,7 @@ import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_FULL;
  *
  * An address is full.
  */
-public class HornetQAddressFullException extends HornetQException
+public final class HornetQAddressFullException extends HornetQException
 {
    private static final long serialVersionUID = 0;
 

@@ -22,16 +22,12 @@ import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * 
  * A ChannelBufferWrapper
- *
  * @author Tim Fox
- *
- *
  */
 public class ChannelBufferWrapper implements HornetQBuffer
 {
-   protected ChannelBuffer buffer;
+   protected ChannelBuffer buffer; // NO_UCD (use final)
 
    public ChannelBufferWrapper(final ChannelBuffer buffer)
    {
@@ -50,10 +46,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       {
          return null;
       }
-      else
-      {
-         return readSimpleStringInternal();
-      }
+      return readSimpleStringInternal();
    }
 
    public String readNullableString()
@@ -63,10 +56,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       {
          return null;
       }
-      else
-      {
-         return readStringInternal();
-      }
+      return readStringInternal();
    }
 
    public SimpleString readSimpleString()

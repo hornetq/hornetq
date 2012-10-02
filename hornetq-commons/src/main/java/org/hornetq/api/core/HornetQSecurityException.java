@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.SECURITY_EXCEPTION;
  *
  * A security problem occurred (authentication issues, permission issues,...)
  */
-public class HornetQSecurityException extends HornetQException
+public final class HornetQSecurityException extends HornetQException
 {
    private static final long serialVersionUID = 3291210307590756881L;
 

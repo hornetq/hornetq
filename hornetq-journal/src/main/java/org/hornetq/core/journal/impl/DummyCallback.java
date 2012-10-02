@@ -24,7 +24,7 @@ import org.hornetq.journal.HornetQJournalLogger;
  */
 class DummyCallback extends SyncIOCompletion
 {
-   private static DummyCallback instance = new DummyCallback();
+   private static final DummyCallback instance = new DummyCallback();
 
    public static DummyCallback getInstance()
    {

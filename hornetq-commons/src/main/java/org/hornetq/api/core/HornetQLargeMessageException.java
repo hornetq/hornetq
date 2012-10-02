@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY
  *
  * An problem occurred while manipulating the body of a large message.
  */
-public class HornetQLargeMessageException extends HornetQException
+public final class HornetQLargeMessageException extends HornetQException
 {
    private static final long serialVersionUID = 1087867463974768491L;
 

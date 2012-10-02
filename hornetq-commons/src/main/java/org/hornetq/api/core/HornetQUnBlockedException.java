@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.UNBLOCKED;
  *
  * A blocking call from a client was unblocked during failover.
  */
-public class HornetQUnBlockedException extends HornetQException
+public final class HornetQUnBlockedException extends HornetQException
 {
    private static final long serialVersionUID = -4507889261891160608L;
 
