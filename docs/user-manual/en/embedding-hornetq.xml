@@ -88,10 +88,12 @@ ClientMessage msgReceived = consumer.receive();
 System.out.println("message = " + msgReceived.getBody().readString());
 
 session.close();
-</programlisting><parameter>The <literal>EmbeddedHornetQ</literal> class has a
+</programlisting>
+
+<para>The <literal>EmbeddedHornetQ</literal> class has a
       few additional setter methods that allow you to specify a different
       config file name as well as other properties. See the javadocs for this
-      class for more details.</parameter></para>
+      class for more details.</para></para>
     </section>
 
     <section id="simple.embedded.jms">
@@ -103,7 +105,9 @@ session.close();
       <literal>hornetq-jms.xml</literal>, and a
       <literal>hornetq-users.xml</literal> if you have security enabled. Let's
       also assume that a queue and connection factory has been defined in the
-      <literal>hornetq-jms.xml</literal> config file.<programlisting>import org.hornetq.jms.server.embedded.EmbeddedJMS;
+      <literal>hornetq-jms.xml</literal> config file.</para>
+
+      <programlisting>import org.hornetq.jms.server.embedded.EmbeddedJMS;
 
 ...
 
@@ -117,14 +121,14 @@ Destination destination = jms.lookup("/example/queue");
 ... regular JMS code ...
 
 
-</programlisting><parameter>By default, the <literal>EmbeddedJMS</literal>
+</programlisting><para>By default, the <literal>EmbeddedJMS</literal>
       class will store component entries defined within your
       <literal>hornetq-jms.xml</literal> file in an internal concurrent hash
       map. The <literal>EmbeddedJMS.lookup()</literal> method returns
       components stored in this map. If you want to use JNDI, call the
       <literal>EmbeddedJMS.setContext()</literal> method with the root JNDI
       context you want your components bound into. See the javadocs for this
-      class for more details on other config options.</parameter></para>
+      class for more details on other config options.</para>
     </section>
   </section>
 
@@ -247,7 +251,7 @@ jmsServer.start();</programlisting>
          class="org.hornetq.core.config.impl.FileConfiguration"&gt;
    &lt;/bean&gt;
 
-   	&lt;!-- The core server --&gt;
+     &lt;!-- The core server --&gt;
    &lt;bean name="HornetQServer" 
          class="org.hornetq.core.server.impl.HornetQServerImpl"&gt;      
       &lt;constructor&gt;
