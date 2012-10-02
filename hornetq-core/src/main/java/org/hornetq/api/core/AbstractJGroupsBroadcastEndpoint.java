@@ -38,15 +38,15 @@ public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpo
 
    protected JChannel channel;
 
-   public AbstractJGroupsBroadcastEndpoint(final JChannel channel, final String channelName)
-   {
-      this.channelName = channelName;
-      this.channel = channel;
-   }
-
    public AbstractJGroupsBroadcastEndpoint(final String channelName)
    {
       this.channelName = channelName;
+   }
+
+   public AbstractJGroupsBroadcastEndpoint(final JChannel channel, final String channelName)
+   {
+      this(channelName);
+      this.channel = channel;
    }
 
    public void broadcast(byte[] data) throws Exception
@@ -63,8 +63,7 @@ public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpo
    {
       if (clientOpened)
       {
-         byte[] msg = dequeue.take();
-         return msg;
+         return dequeue.take();
       }
       else
       {
@@ -76,8 +75,7 @@ public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpo
    {
       if (clientOpened)
       {
-         byte[] msg = dequeue.poll(time, unit);
-         return msg;
+         return dequeue.poll(time, unit);
       }
       else
       {
@@ -103,12 +101,12 @@ public abstract class AbstractJGroupsBroadcastEndpoint implements BroadcastEndpo
       broadcastOpened = true;
    }
 
-   /**
-    * There's no difference between the broadcaster and client on the JGropus implementation,
-    * for that reason we can have a single internal method to open it
-    * @throws Exception
-    */
-   protected abstract void internalOpen() throws Exception;
+
+   protected void internalOpen() throws Exception
+   {
+      if (channel.isConnected()) return;
+      channel.connect(this.channelName);
+   }
 
    public synchronized void close(boolean isBroadcast) throws Exception
    {

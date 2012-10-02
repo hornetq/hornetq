@@ -26,32 +26,14 @@ import org.jgroups.JChannel;
  */
 public class JGroupsBroadcastEndpointWithFile extends AbstractJGroupsBroadcastEndpoint
 {
-   private final String fileName;
-
-   public JGroupsBroadcastEndpointWithFile(final String fileName, final String channelName)
+   public JGroupsBroadcastEndpointWithFile(final String fileName, final String channelName) throws Exception
    {
       super(channelName);
-      this.fileName = fileName;
-   }
-
-   /**
-    * There's no difference between the broadcaster and client on the JGropus implementation,
-    * for that reason we can have a single internal method to open it
-    * @throws Exception
-    */
-   protected void internalOpen() throws Exception
-   {
-      if (channel == null)
+      URL configURL = Thread.currentThread().getContextClassLoader().getResource(fileName);
+      if (configURL == null)
       {
-         URL configURL = Thread.currentThread().getContextClassLoader().getResource(this.fileName);
-         if (configURL == null)
-         {
-            throw new RuntimeException("couldn't find JGroups configuration " + fileName);
-         }
-         channel = new JChannel(configURL);
+         throw new RuntimeException("couldn't find JGroups configuration " + fileName);
       }
-
-      if (channel.isConnected()) return;
-      channel.connect(this.channelName);
+      channel = new JChannel(configURL);
    }
 }

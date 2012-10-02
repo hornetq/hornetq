@@ -27,15 +27,11 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.*;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConfigurationUtils;

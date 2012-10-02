@@ -13,12 +13,6 @@
 
 package org.hornetq.api.core;
 
-import java.util.List;
-
-import org.hornetq.api.core.BroadcastEndpoint;
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
-import org.hornetq.core.cluster.JGroupsFileEndpointFactory;
-
 
 /**
  * The configuration used to determine how the server will broadcast members
