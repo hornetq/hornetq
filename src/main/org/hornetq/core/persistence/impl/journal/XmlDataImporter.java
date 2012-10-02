@@ -74,6 +74,8 @@ public class XmlDataImporter
 
    Map<String, String> addressMap = new HashMap<String, String>();
 
+   Map<String, Long> queueIDs = new HashMap<String, Long>();
+
    String tempFileName = "";
 
    // Static --------------------------------------------------------
@@ -200,6 +202,7 @@ public class XmlDataImporter
          if (localSession)
          {
             session.close();
+            managementSession.close();
          }
       }
    }
@@ -321,15 +324,29 @@ public class XmlDataImporter
 
       for (String queue : queues)
       {
-         // Get the ID of the queues involved so the message can be routed properly.  This is done because we cannot
-         // send directly to a queue, we have to send to an address instead but not all the queues related to the
-         // address may need the message
-         ClientRequestor requestor = new ClientRequestor(managementSession, "jms.queue.hornetq.management");
-         ClientMessage managementMessage = managementSession.createMessage(false);
-         ManagementHelper.putAttribute(managementMessage, "core.queue." + queue, "ID");
-         managementSession.start();
-         ClientMessage reply = requestor.request(managementMessage);
-         long queueID = (Integer) ManagementHelper.getResult(reply);
+         long queueID = 0;
+
+         if (queueIDs.containsKey(queue))
+         {
+            queueID = queueIDs.get(queue);
+         }
+         else
+         {
+            // Get the ID of the queues involved so the message can be routed properly.  This is done because we cannot
+            // send directly to a queue, we have to send to an address instead but not all the queues related to the
+            // address may need the message
+            ClientRequestor requestor = new ClientRequestor(managementSession, "jms.queue.hornetq.management");
+            ClientMessage managementMessage = managementSession.createMessage(false);
+            ManagementHelper.putAttribute(managementMessage, "core.queue." + queue, "ID");
+            managementSession.start();
+            log.debug("Requesting ID for: " + queue);
+            ClientMessage reply = requestor.request(managementMessage);
+            queueID = (Integer) ManagementHelper.getResult(reply);
+            requestor.close();
+            log.debug("ID for " + queue + " is: " + queueID);
+            queueIDs.put(queue, queueID);  // store it so we don't have to look it up every time
+         }
+
          logMessage.append(queue).append(", ");
          buffer.putLong(queueID);
       }
