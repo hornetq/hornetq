@@ -439,7 +439,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       if ("generic".equals(type))
       {
          //generic
-         assertTrue(conn instanceof Connection);
          assertFalse(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
@@ -448,7 +447,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
       else if ("queue".equals(type))
       {
-         assertTrue(conn instanceof Connection);
          assertFalse(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
@@ -457,7 +455,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
       else if ("topic".equals(type))
       {
-         assertTrue(conn instanceof Connection);
          assertFalse(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
@@ -466,7 +463,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
       else if ("xa".equals(type))
       {
-         assertTrue(conn instanceof Connection);
          assertTrue(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
@@ -475,7 +471,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
       else if ("xa-queue".equals(type))
       {
-         assertTrue(conn instanceof Connection);
          assertTrue(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertTrue(conn instanceof XAQueueConnection);
@@ -484,7 +479,6 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
       else if ("xa-topic".equals(type))
       {
-         assertTrue(conn instanceof Connection);
          assertTrue(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);

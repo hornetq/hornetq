@@ -52,7 +52,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /** This definition needs to match Version.h on the native sources.
        Or else the native module won't be loaded because of version mismatches */
-   private static int EXPECTED_NATIVE_VERSION = 31;
+   private static final int EXPECTED_NATIVE_VERSION = 31;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);

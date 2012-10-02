@@ -23,12 +23,12 @@ import org.hornetq.api.core.SimpleString;
  * A SimpleStringReader
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 31 oct. 2008 14:41:18
  *
  *
  */
-public class SimpleStringReader extends Reader
+final class SimpleStringReader extends Reader
 {
 
    // Constants -----------------------------------------------------
@@ -43,7 +43,7 @@ public class SimpleStringReader extends Reader
 
    // Constructors --------------------------------------------------
 
-   public SimpleStringReader(final SimpleString simpleString)
+   SimpleStringReader(final SimpleString simpleString)
    {
       this.simpleString = simpleString;
    }
@@ -81,13 +81,4 @@ public class SimpleStringReader extends Reader
    public void close() throws IOException
    {
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

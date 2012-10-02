@@ -55,7 +55,7 @@ import org.hornetq.utils.ExecutorFactory;
  *
  *
  */
-public class PrintPages
+public class PrintPages // NO_UCD (unused code)
 {
 
    // Constants -----------------------------------------------------

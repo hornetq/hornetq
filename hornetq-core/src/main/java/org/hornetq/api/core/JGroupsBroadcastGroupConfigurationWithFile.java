@@ -13,7 +13,6 @@
 
 package org.hornetq.api.core;
 
-
 /**
  * The configuration used to determine how the server will broadcast members
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
@@ -27,9 +26,9 @@ public class JGroupsBroadcastGroupConfigurationWithFile implements BroadcastEndp
 {
    private static final long serialVersionUID = 8952238567248461285L;
 
-   private String jgroupsFile;
+   private final String jgroupsFile;
 
-   private String jgroupsChannel;
+   private final String jgroupsChannel;
 
    public JGroupsBroadcastGroupConfigurationWithFile(final String jgroupsFile, final String jgroupsChannel)
    {

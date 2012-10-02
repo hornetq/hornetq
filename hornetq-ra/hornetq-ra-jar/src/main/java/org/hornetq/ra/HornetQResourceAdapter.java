@@ -1603,10 +1603,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          return raProperties.equals(((HornetQResourceAdapter)obj).getProperties());
       }
-      else
-      {
-         return false;
-      }
+      return false;
    }
 
    /**

@@ -13,11 +13,6 @@
 
 package org.hornetq.jms.example;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.client.impl.DelegatingSession;
-import org.hornetq.jms.client.HornetQConnection;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -27,6 +22,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -39,7 +36,7 @@ public class MultipleFailoverFailbackExample extends HornetQExample
    {
       new MultipleFailoverFailbackExample().run(args);
    }
-   
+
    @Override
    public boolean runExample() throws Exception
    {

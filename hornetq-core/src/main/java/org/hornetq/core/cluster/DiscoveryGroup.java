@@ -47,7 +47,7 @@ import org.hornetq.utils.TypedProperties;
  * Created 17 Nov 2008 13:21:45
  *
  */
-public class DiscoveryGroup
+public final class DiscoveryGroup
 {
    private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 

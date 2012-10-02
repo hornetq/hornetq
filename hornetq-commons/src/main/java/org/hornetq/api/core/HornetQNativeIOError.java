@@ -26,7 +26,7 @@ package org.hornetq.api.core;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/4/12
  */
-public class HornetQNativeIOError extends HornetQException
+public final class HornetQNativeIOError extends HornetQException
 {
    private static final long serialVersionUID = 2355120980683293085L;
 

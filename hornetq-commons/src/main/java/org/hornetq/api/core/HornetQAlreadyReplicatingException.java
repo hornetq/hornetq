@@ -27,7 +27,7 @@ import static org.hornetq.api.core.HornetQExceptionType.ALREADY_REPLICATING;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/2/12
  */
-public class HornetQAlreadyReplicatingException extends HornetQException
+public final class HornetQAlreadyReplicatingException extends HornetQException
 {
    private static final long serialVersionUID = -7352538521961996152L;
 

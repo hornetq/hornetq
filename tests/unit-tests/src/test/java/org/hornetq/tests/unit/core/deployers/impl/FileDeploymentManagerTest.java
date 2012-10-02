@@ -15,11 +15,13 @@ package org.hornetq.tests.unit.core.deployers.impl;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Map;
 
 import junit.framework.Assert;
 
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
+import org.hornetq.core.deployers.impl.FileDeploymentManager.DeployInfo;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.Pair;
@@ -283,7 +285,8 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
          Assert.assertEquals(1, fdm.getDeployers().size());
          Assert.assertTrue(fdm.getDeployers().contains(deployer));
-         Assert.assertEquals(1, fdm.getDeployed().size());
+         Map<Pair<URI, Deployer>, DeployInfo> info = fdm.getDeployed();
+         Assert.assertEquals(1, info.size());
          URI expected = file.toURI();
          URI deployedUrl = deployer.deployedUri;
          Assert.assertTrue(expected.toString().equalsIgnoreCase(deployedUrl.toString()));

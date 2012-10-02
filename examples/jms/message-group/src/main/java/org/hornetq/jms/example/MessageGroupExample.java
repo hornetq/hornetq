@@ -28,7 +28,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * A simple JMS Queue example that sends and receives message groups.

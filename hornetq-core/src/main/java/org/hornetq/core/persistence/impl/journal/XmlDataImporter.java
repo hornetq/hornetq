@@ -17,7 +17,6 @@ package org.hornetq.core.persistence.impl.journal;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,94 +56,87 @@ import org.hornetq.utils.Base64;
  *
  * @author Justin Bertram
  */
-public class XmlDataImporter
+public final class XmlDataImporter
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   XMLStreamReader reader;
-
-   ClientSession session;
+   private final XMLStreamReader reader;
 
    // this session is really only needed if the "session" variable does not auto-commit sends
-   ClientSession managementSession;
+   final ClientSession managementSession;
 
-   boolean localSession = false;
+   final boolean localSession;
 
-   Map<String, String> addressMap = new HashMap<String, String>();
+   final Map<String, String> addressMap = new HashMap<String, String>();
 
-   Map<String, Long> queueIDs = new HashMap<String, Long>();
+   final Map<String, Long> queueIDs = new HashMap<String, Long>();
 
    String tempFileName = "";
+
+   private final ClientSession session;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    /**
-    * This is the normal constructor for programmatic access to the <code>org.hornetq.core.persistence.impl.journal.XmlDataImporter</code>
-    * if the session passed in uses auto-commit for sends.  If the session needs to be transactional then use the
-    * constructor which takes 2 sessions.
-    *
+    * This is the normal constructor for programmatic access to the
+    * <code>org.hornetq.core.persistence.impl.journal.XmlDataImporter</code> if the session passed
+    * in uses auto-commit for sends.
+    * <p>
+    * If the session needs to be transactional then use the constructor which takes 2 sessions.
     * @param inputStream the stream from which to read the XML for import
-    * @param session     used for sending messages, must use auto-commit for sends
+    * @param session used for sending messages, must use auto-commit for sends
+    * @throws Exception
     */
-   public XmlDataImporter(InputStream inputStream, ClientSession session)
+   public XmlDataImporter(InputStream inputStream, ClientSession session) throws Exception
    {
       this(inputStream, session, null);
    }
 
    /**
-    * This is the constructor to use if you wish to import all messages transactionally.  Pass in a session which doesn't
-    * use auto-commit for sends, and one that does (for management operations necessary during import).
-    *
-    * @param inputStream       the stream from which to read the XML for import
-    * @param session           used for sending messages, doesn't need to auto-commit sends
+    * This is the constructor to use if you wish to import all messages transactionally.
+    * <p>
+    * Pass in a session which doesn't use auto-commit for sends, and one that does (for management
+    * operations necessary during import).
+    * @param inputStream the stream from which to read the XML for import
+    * @param session used for sending messages, doesn't need to auto-commit sends
     * @param managementSession used for management queries, must use auto-commit for sends
     */
-   public XmlDataImporter(InputStream inputStream, ClientSession session, ClientSession managementSession)
+   public XmlDataImporter(InputStream inputStream, ClientSession session, ClientSession managementSession) throws Exception
    {
-      try
+      reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+      this.session = session;
+      if (managementSession != null)
       {
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
-         this.session = session;
-         if (managementSession != null)
-         {
-            this.managementSession = managementSession;
-         }
-         else
-         {
-            this.managementSession = session;
-         }
+         this.managementSession = managementSession;
       }
-      catch (Exception e)
+      else
       {
-         e.printStackTrace();
+         this.managementSession = session;
       }
+      localSession = false;
    }
 
-   public XmlDataImporter(InputStream inputStream, String host, String port, boolean transactional)
+   public XmlDataImporter(InputStream inputStream, String host, String port, boolean transactional) throws Exception
    {
-      try
-      {
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
-         HashMap<String, Object> connectionParams = new HashMap<String, Object>();
-         connectionParams.put(TransportConstants.HOST_PROP_NAME, host);
-         connectionParams.put(TransportConstants.PORT_PROP_NAME, port);
-         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), connectionParams));
-         ClientSessionFactory sf = serverLocator.createSessionFactory();
-         session = sf.createSession(false, !transactional, true);
-         managementSession = sf.createSession(false, true, true);
-         localSession = true;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+      HashMap<String, Object> connectionParams = new HashMap<String, Object>();
+      connectionParams.put(TransportConstants.HOST_PROP_NAME, host);
+      connectionParams.put(TransportConstants.PORT_PROP_NAME, port);
+      ServerLocator serverLocator =
+               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                     NettyConnectorFactory.class.getName(),
+                                                                                     connectionParams));
+      ClientSessionFactory sf = serverLocator.createSessionFactory();
+      session = sf.createSession(false, !transactional, true);
+      managementSession = sf.createSession(false, true, true);
+      localSession = true;
    }
 
-   public XmlDataImporter(String inputFile, String host, String port, boolean transactional) throws FileNotFoundException
+   public XmlDataImporter(String inputFile, String host, String port, boolean transactional) throws Exception
    {
       this(new FileInputStream(inputFile), host, port, transactional);
    }

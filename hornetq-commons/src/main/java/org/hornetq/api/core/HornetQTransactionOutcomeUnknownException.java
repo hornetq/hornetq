@@ -29,7 +29,7 @@ import static org.hornetq.api.core.HornetQExceptionType.TRANSACTION_OUTCOME_UNKN
  *
  * The outcome of a tx is unknown
  */
-public class HornetQTransactionOutcomeUnknownException extends HornetQException
+public final class HornetQTransactionOutcomeUnknownException extends HornetQException
 {
    private static final long serialVersionUID = 7940794286427650558L;
 

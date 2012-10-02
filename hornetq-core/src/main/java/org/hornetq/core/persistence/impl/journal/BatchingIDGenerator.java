@@ -113,7 +113,7 @@ public class BatchingIDGenerator implements IDGenerator
 
    protected static final class IDCounterEncoding implements EncodingSupport
    {
-      long id;
+      private long id;
 
       @Override
       public String toString()
@@ -121,7 +121,7 @@ public class BatchingIDGenerator implements IDGenerator
          return "IDCounterEncoding [id=" + id + "]";
       }
 
-      IDCounterEncoding(final long id)
+      private IDCounterEncoding(final long id)
       {
          this.id = id;
       }

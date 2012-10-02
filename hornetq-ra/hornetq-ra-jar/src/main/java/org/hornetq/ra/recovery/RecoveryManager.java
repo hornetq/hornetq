@@ -26,25 +26,23 @@ import java.security.PrivilegedAction;
 import java.util.Set;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.HornetQRecoveryRegistry;
 import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         9/21/11
  */
-public class RecoveryManager
+public final class RecoveryManager
 {
    private HornetQRegistryBase registry;
 
-   private String resourceRecoveryClassNames = "org.jboss.as.messaging.jms.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
-   
-   private final Set<XARecoveryConfig> resources = new ConcurrentHashSet<XARecoveryConfig>(); 
+   private final String resourceRecoveryClassNames = "org.jboss.as.messaging.jms.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
+
+   private final Set<XARecoveryConfig> resources = new ConcurrentHashSet<XARecoveryConfig>();
 
    public void start(final boolean useAutoRecovery)
    {
@@ -61,7 +59,7 @@ public class RecoveryManager
    public XARecoveryConfig register(HornetQConnectionFactory factory, String userName, String password)
    {
       HornetQRALogger.LOGGER.debug("registering recovery for factory : " + factory);
-      
+
       XARecoveryConfig config = newResourceConfig(factory, userName, password);
       resources.add(config);
       if (registry != null)
@@ -115,15 +113,15 @@ public class RecoveryManager
    {
       String locatorClasses[] = resourceRecoveryClassNames.split(";");
 
-      for (int i = 0 ; i < locatorClasses.length; i++)
+      for (String locatorClasse : locatorClasses)
       {
          try
          {
-            registry = (HornetQRegistryBase) safeInitNewInstance(locatorClasses[i]);
+            registry = (HornetQRegistryBase) safeInitNewInstance(locatorClasse);
          }
          catch (Throwable e)
          {
-            HornetQRALogger.LOGGER.debug("unable to load  recovery registry " + locatorClasses[i], e);
+            HornetQRALogger.LOGGER.debug("unable to load  recovery registry " + locatorClasse, e);
          }
          if (registry != null)
          {

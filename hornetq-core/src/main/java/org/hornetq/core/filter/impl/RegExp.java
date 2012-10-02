@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  *
  * $Id: RegExp.java 2681 2007-05-15 00:09:10Z timfox $
  */
-public class RegExp
+final class RegExp
 {
    private final Pattern re;
 

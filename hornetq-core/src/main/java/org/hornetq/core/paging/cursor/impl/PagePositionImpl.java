@@ -121,14 +121,6 @@ public class PagePositionImpl implements PagePosition
       return new PagePositionImpl(this.pageNr + 1, 0);
    }
 
-   public boolean isNextSequenceOf(PagePosition pos)
-   {
-      return this.pageNr == pos.getPageNr() && this.getRecordID() - pos.getRecordID() == 1;
-   }
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
    @Override
    public int hashCode()
    {
@@ -139,9 +131,6 @@ public class PagePositionImpl implements PagePosition
       return result;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
    @Override
    public boolean equals(Object obj)
    {
