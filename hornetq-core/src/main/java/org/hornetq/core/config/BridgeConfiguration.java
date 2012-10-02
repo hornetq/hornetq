@@ -73,45 +73,6 @@ public class BridgeConfiguration implements Serializable
    // The bridge shouldn't be sending blocking anyways
    private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
 
-   /**
-    *  For backward compatibility on the API... no MinLargeMessage on this constructor
-    */
-   public BridgeConfiguration(final String name,
-                              final String queueName,
-                              final String forwardingAddress,
-                              final String filterString,
-                              final String transformerClassName,
-                              final long retryInterval,
-                              final double retryIntervalMultiplier,
-                              final int reconnectAttempts,
-                              final boolean useDuplicateDetection,
-                              final int confirmationWindowSize,
-                              final long clientFailureCheckPeriod,
-                              final List<String> staticConnectors,
-                              final boolean ha,
-                              final String user,
-                              final String password)
-   {
-      this(name,
-           queueName,
-           forwardingAddress,
-           filterString,
-           transformerClassName,
-           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           clientFailureCheckPeriod,
-           HornetQClient.DEFAULT_CONNECTION_TTL,
-           retryInterval,
-           retryInterval,
-           retryIntervalMultiplier,
-           reconnectAttempts,
-           useDuplicateDetection,
-           confirmationWindowSize,
-           staticConnectors,
-           ha,
-           user,
-           password);
-   }
-
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
@@ -149,46 +110,6 @@ public class BridgeConfiguration implements Serializable
       this.connectionTTL = connectionTTL;
       this.maxRetryInterval = maxRetryInterval;
       discoveryGroupName = null;
-   }
-
-   /**
-    *  For backward compatibility on the API... no MinLareMessage, checkPeriod and TTL  on this constructor
-    */            
-   
-    public BridgeConfiguration(final String name,
-                              final String queueName,
-                              final String forwardingAddress,
-                              final String filterString,
-                              final String transformerClassName,
-                              final long retryInterval,
-                              final double retryIntervalMultiplier,
-                              final int reconnectAttempts,
-                              final boolean useDuplicateDetection,
-                              final int confirmationWindowSize,
-                              final long clientFailureCheckPeriod,
-                              final String discoveryGroupName,
-                              final boolean ha,
-                              final String user,
-                              final String password)
-   {
-      this(name,
-           queueName,
-           forwardingAddress,
-           filterString,
-           transformerClassName,
-           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           clientFailureCheckPeriod,
-           HornetQClient.DEFAULT_CONNECTION_TTL,
-           retryInterval,
-           retryInterval,
-           retryIntervalMultiplier,
-           reconnectAttempts,
-           useDuplicateDetection,
-           confirmationWindowSize,
-           discoveryGroupName,
-           ha,
-           user,
-           password);
    }
 
    public BridgeConfiguration(final String name,
