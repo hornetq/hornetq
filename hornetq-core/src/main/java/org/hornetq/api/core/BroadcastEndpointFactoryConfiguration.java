@@ -23,8 +23,6 @@ package org.hornetq.api.core;
 
 import java.io.Serializable;
 
-import org.hornetq.core.cluster.BroadcastEndpointFactory;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         9/25/12

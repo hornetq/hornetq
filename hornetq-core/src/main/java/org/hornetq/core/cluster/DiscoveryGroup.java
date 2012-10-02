@@ -13,7 +13,6 @@
 
 package org.hornetq.core.cluster;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.BroadcastEndpoint;
+import org.hornetq.api.core.BroadcastEndpointFactory;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
