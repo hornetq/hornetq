@@ -78,21 +78,18 @@ NB for this make sure you have installed examples/common.
 
 ## Eclipse
 
-We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to
-the improved Maven and Git support. Note that there are still some
-Maven plugins used by sub-projects (e.g. documentation) which are not
-supported even in Eclipse Juno (4.2).
+We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to the improved
+Maven and Git support. Note that there are still some Maven plugins used by
+sub-projects (e.g. documentation) which are not supported even in Eclipse Juno (4.2).
 
-Eclipse code formatting and (basic) project configuration files can be
-found at the ```etc/``` folder. You need to manually copy them or use
-a plugin.
+Eclipse code formatting and (basic) project configuration files can be found at the
+```etc/``` folder. You need to manually copy them or use a plugin.
 
 ### Annotation Pre-Processing
 
-HornetQ uses [JBoss Logging] and that requires source code generation
-from Java annotations. In order for it to 'just work' in Eclipse you
-need to install the _Maven Integration for Eclipse JDT Annotation
-Processor Toolkit_ [m2e-apt].
+HornetQ uses [JBoss Logging] and that requires source code generation from Java
+annotations. In order for it to 'just work' in Eclipse you need to install the _Maven
+Integration for Eclipse JDT Annotation Processor Toolkit_ [m2e-apt].
 
 [JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
 [m2e-apt]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out
@@ -101,18 +98,30 @@ Processor Toolkit_ [m2e-apt].
 
 Eclipse Indigo (3.7) has out-of-the-box support for it.
 
-As of this writing, Eclipse Juno (4.2) still lacks support for Maven's
-javacc plugin. See this post on the [m2e connector for
-javacc-maven-plugin] for manual installation instructions.
+As of this writing, Eclipse Juno (4.2) still lacks support for Maven's javacc
+plugin. See this post on the [m2e connector for javacc-maven-plugin] for manual
+installation instructions.
 
 [m2e connector for javacc-maven-plugin]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
 
+### Use _Project Working Sets_
 
+Importing all HornetQ subprojects will create _too many_ projects in Eclipse,
+cluttering your _Package Explorer_ and _Project Explorer_ views. One way to address
+that is to use [Eclipse's Working Sets] feature. A good introduction to it can be
+found at a [Dzone article on Eclipse Working Sets].
+
+[Eclipse's Working Sets]: http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Fconcepts%2Fcworkset.htm
+[Dzone article on Eclipse Working Sets]: http://eclipse.dzone.com/articles/categorise-projects-package
 
 ## Github procedures
 
-HornetQ accepts committs by pull requests. After evaluated pull requests are either merged or rejected.
+HornetQ accepts contributions through pull requests on GitHub. After review a pull
+request should either get merged or be rejected.
 
-When a pull request needs to be reworked as when say you have missed something, the pull request is then closed, at the time you finished the required changes you should reopen your original Pull Request and it will then be re-evaluated. At that point if the request is aproved we will then merge it.
+When a pull request needs to be reworked, say you have missed something, the pull
+request is then closed, at the time you finished the required changes you should
+reopen your original Pull Request and it will then be re-evaluated. At that point if
+the request is aproved we will then merge it.
 
 Make sure you always rebase your branch on master before submitting pull requests.
