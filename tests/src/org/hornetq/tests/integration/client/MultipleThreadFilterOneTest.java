@@ -120,7 +120,6 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
 
             if (i % 100 == 0)
             {
-               System.out.println("Sent " + i);
                prodSession.commit();
             }
          }
@@ -186,16 +185,24 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
          }
          finally
          {
-            try
-            {
-               consumerSession.close();
-               locator.close();
-            }
-            catch (Throwable ignored)
-            {
-               ignored.printStackTrace();
-            }
+            close();
 
+         }
+      }
+
+      /**
+       * 
+       */
+      public void close()
+      {
+         try
+         {
+            consumerSession.close();
+            locator.close();
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
          }
       }
    }
@@ -222,6 +229,7 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
 
    private void testSending(boolean isNetty, boolean isPaging) throws Exception
    {
+      boolean useDeadConsumer = true;
       this.isNetty = isNetty;
       HornetQServer server;
 
@@ -233,11 +241,16 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       {
          server = createServer(true, isNetty);
       }
+      
+      server.getConfiguration().setMessageExpiryScanPeriod(1000);
 
       server.start();
 
       SomeConsumer[] consumers = new SomeConsumer[nThreads];
       SomeProducer[] producers = new SomeProducer[nThreads];
+      
+      SomeConsumer[] deadConsumers = null;
+      
       try
       {
 
@@ -251,6 +264,15 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
             producers[i] = new SomeProducer();
          }
 
+         if (useDeadConsumer)
+         {
+            deadConsumers = new SomeConsumer[20];
+            for (int i = 0; i < 20; i++)
+            {
+               deadConsumers[i] = new SomeConsumer(i + nThreads);
+            }
+         }
+                  
          for (int i = 0; i < nThreads; i++)
          {
             consumers[i].start();
@@ -269,6 +291,14 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
             assertEquals(0, consumer.errors.get());
          }
          
+         if (useDeadConsumer)
+         {
+            for (SomeConsumer cons : deadConsumers)
+            {
+               cons.close();
+            }
+         }
+         
          waitForNotPaging(server.locateQueue(new SimpleString("Q1")));
 
       }
@@ -278,11 +308,6 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       }
    }
 
-   @Override
-   public void tearDown()
-   {
-      // replace the tearDown back
-   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
