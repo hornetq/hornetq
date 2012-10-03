@@ -36,7 +36,7 @@ import javax.transaction.xa.XAResource;
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.JGroupsBroadcastGroupConfigurationWithFile;
+import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -1833,7 +1833,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
          else
          {
-            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFileName, jgroupsChannel);
+            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
          }
 
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
@@ -1955,7 +1955,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
          else
          {
-            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFileName, jgroupsChannel);
+            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
          }
 
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()

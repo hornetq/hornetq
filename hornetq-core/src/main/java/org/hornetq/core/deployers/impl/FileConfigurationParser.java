@@ -994,7 +994,7 @@ public final class FileConfigurationParser
 
       if (jgroupsFile != null)
       {
-         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFile, jgroupsChannel);
+         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFile, jgroupsChannel);
       }
       else
       {
@@ -1036,7 +1036,7 @@ public final class FileConfigurationParser
       BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
       if (jgroupsFile != null)
       {
-         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfigurationWithFile(jgroupsFile, jgroupsChannel);
+         endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFile, jgroupsChannel);
       }
       else
       {
