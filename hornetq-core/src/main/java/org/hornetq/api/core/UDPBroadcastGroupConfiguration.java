@@ -13,6 +13,19 @@
 
 package org.hornetq.api.core;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
+
+import org.hornetq.core.server.HornetQLogger;
+
 
 /**
  * The configuration used to determine how the server will broadcast members
@@ -48,7 +61,15 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
 
    public BroadcastEndpointFactory createBroadcastEndpointFactory()
    {
-      return new UDPBroadcastEndpointFactory(groupAddress, groupPort, localBindAddress, localBindPort);
+      return new BroadcastEndpointFactory() {
+         @Override
+         public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
+            return new UDPBroadcastEndpoint(groupAddress != null ? InetAddress.getByName(groupAddress) : null,
+                  groupPort,
+                  localBindAddress != null ? InetAddress.getByName(localBindAddress) : null,
+                  localBindPort);
+         }
+      };
    }
 
    public String getGroupAddress()
@@ -69,5 +90,180 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
    public String getLocalBindAddress()
    {
       return localBindAddress;
+   }
+
+   /**
+    * <p> This is the member discovery implementation using direct UDP. It was extracted as a refactoring from
+    * {@link org.hornetq.core.cluster.DiscoveryGroup}</p>
+    * @author Tomohisa
+    * @author Howard Gao
+    * @author Clebert Suconic
+    */
+   private static class UDPBroadcastEndpoint implements BroadcastEndpoint
+   {
+      private static final int SOCKET_TIMEOUT = 500;
+
+      private final InetAddress localAddress;
+
+      private final int localBindPort;
+
+      private final InetAddress groupAddress;
+
+      private final int groupPort;
+
+      private DatagramSocket broadcastingSocket;
+
+      private MulticastSocket receivingSocket;
+
+      private volatile boolean open;
+
+      public UDPBroadcastEndpoint(final InetAddress groupAddress,
+                                  final int groupPort,
+                                  final InetAddress localBindAddress,
+                                  final int localBindPort) throws UnknownHostException
+      {
+         this.groupAddress = groupAddress;
+         this.groupPort = groupPort;
+         this.localAddress = localBindAddress;
+         this.localBindPort = localBindPort;
+      }
+
+
+      public void broadcast(byte[] data) throws Exception
+      {
+         DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
+         broadcastingSocket.send(packet);
+      }
+
+      public byte[] receiveBroadcast() throws Exception
+      {
+         final byte[] data = new byte[65535];
+         final DatagramPacket packet = new DatagramPacket(data, data.length);
+
+         while (open)
+         {
+            try
+            {
+               receivingSocket.receive(packet);
+            }
+            // TODO: Do we need this?
+            catch (InterruptedIOException e)
+            {
+               continue;
+            }
+            catch (IOException e)
+            {
+               if (open)
+               {
+                  HornetQLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
+               }
+            }
+            break;
+         }
+         return data;
+      }
+
+      public byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception
+      {
+         // We just use the regular method on UDP, there's no timeout support
+         // and this is basically for tests only
+         return receiveBroadcast();
+      }
+
+      public void openBroadcaster() throws Exception
+      {
+         if (localBindPort != -1)
+         {
+            broadcastingSocket = new DatagramSocket(localBindPort, localAddress);
+         }
+         else
+         {
+            if (localAddress != null)
+            {
+               HornetQLogger.LOGGER.broadcastGroupBindError();
+            }
+            broadcastingSocket = new DatagramSocket();
+         }
+
+         open = true;
+      }
+
+      public void openClient() throws Exception
+      {
+         // HORNETQ-874
+         if (checkForLinux() || checkForSolaris() || checkForHp())
+         {
+            try
+            {
+               receivingSocket = new MulticastSocket(new InetSocketAddress(groupAddress, groupPort));
+            }
+            catch (IOException e)
+            {
+               HornetQLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
+
+               receivingSocket = new MulticastSocket(groupPort);
+            }
+         }
+         else
+         {
+            receivingSocket = new MulticastSocket(groupPort);
+         }
+
+         if (localAddress != null)
+         {
+            receivingSocket.setInterface(localAddress);
+         }
+
+         receivingSocket.joinGroup(groupAddress);
+
+         receivingSocket.setSoTimeout(SOCKET_TIMEOUT);
+
+         open = true;
+      }
+
+      //@Todo: using isBroadcast to share endpoint between broadcast and receiving
+      public void close(boolean isBroadcast) throws Exception
+      {
+         open = false;
+
+         if (broadcastingSocket != null)
+         {
+            broadcastingSocket.close();
+         }
+
+         if (receivingSocket != null)
+         {
+            receivingSocket.close();
+         }
+      }
+
+      private static boolean checkForLinux()
+      {
+         return checkForPresence("os.name", "linux");
+      }
+
+      private static boolean checkForHp()
+      {
+         return checkForPresence("os.name", "hp");
+      }
+
+      private static boolean checkForSolaris()
+      {
+         return checkForPresence("os.name", "sun");
+      }
+
+      private static boolean checkForPresence(String key, String value)
+      {
+         try
+         {
+            String tmp=System.getProperty(key);
+            return tmp != null && tmp.trim().toLowerCase().startsWith(value);
+         }
+         catch(Throwable t)
+         {
+            return false;
+         }
+      }
+
    }
 }
