@@ -20,8 +20,6 @@
          to make sure this deployment is done before any other deployment -->
    <name>HornetQ.main.config</name>
 
-   <clustered>true</clustered>
-
    <bindings-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/bindings</bindings-directory>
 
    <journal-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/journal</journal-directory>
