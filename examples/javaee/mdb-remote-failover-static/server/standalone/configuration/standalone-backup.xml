@@ -220,7 +220,6 @@
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
                 <persistence-enabled>true</persistence-enabled>
-                <clustered>true</clustered>
                 <backup>true</backup>
                 <shared-store>true</shared-store>
                 <journal-directory path="../../../journal"/>
