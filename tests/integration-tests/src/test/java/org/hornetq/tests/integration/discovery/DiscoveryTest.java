@@ -30,7 +30,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.HornetQIllegalStateException;
-import org.hornetq.api.core.JGroupsBroadcastGroupConfigurationWithFile;
+import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
@@ -153,7 +153,7 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID), "broadcast", 100, null,
-         new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory());
+         new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -162,7 +162,7 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = new DiscoveryGroup(nodeID + "1", "broadcast", 5000l,
-            new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory(),
+            new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory(),
             null);
 
       dg.start();
@@ -183,7 +183,7 @@ public class DiscoveryTest extends UnitTestCase
       BroadcastEndpoint client = null;
       try
       {
-         JGroupsBroadcastGroupConfigurationWithFile jgroupsConfig = new JGroupsBroadcastGroupConfigurationWithFile("test-jgroups-file_ping.xml", "tst");
+         JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
          broadcaster = jgroupsConfig.createBroadcastEndpointFactory().createBroadcastEndpoint();
 
          broadcaster.openBroadcaster();
