@@ -48,22 +48,39 @@ public class ConfigurationImpl implements Configuration
 
    private static final long serialVersionUID = 4077088945050267843L;
 
-   static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
-   static final boolean DEFAULT_BACKUP = false;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_BACKUP = false;
 
-   private static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
 
-   static final boolean DEFAULT_SHARED_STORE = true;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_SHARED_STORE = true;
 
    static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
-   static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
    static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
+   /**
+    * Used by the JBoss-AS integration code.
+    * <p>
+    * <a href=
+    * "https://github.com/jbossas/jboss-as/blob/master/messaging/src/main/java/org/jboss/as/messaging/CommonAttributes.java"
+    * >CommonAttributes</a>
+    */
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
+   /**
+    * Used by the JBoss-AS integration code.
+    * "https://github.com/jbossas/jboss-as/blob/master/messaging/src/main/java/org/jboss/as/messaging/CommonAttributes.java"
+    * >CommonAttributes</a>
+    */
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = 30;
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
@@ -88,7 +105,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
-   private static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
+   /** Used by the JBoss-AS integration code. */
+   public static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
 
@@ -110,21 +128,26 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
 
-   private static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+   /** Used by the JBoss-AS integration code. */
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
 
-   private static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   /** Used by the JBoss-AS integration code. */
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
 
    public static final int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
 
-   private static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+   /** Used by the JBoss-AS integration code. */
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
 
-   private static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+   /** Used by the JBoss-AS integration code. */
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
    public static final int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
 
-   private static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -187,13 +210,29 @@ public class ConfigurationImpl implements Configuration
 
    private static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
+   /**
+    * Used by the JBoss-AS integration code.
+    * <p>
+    * <a href=
+    * "https://github.com/jbossas/jboss-as/blob/master/messaging/src/main/java/org/jboss/as/messaging/CommonAttributes.java"
+    * >CommonAttributes</a>
+    */
    public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
 
+   /**
+    * Used by the JBoss-AS integration code.
+    * <p>
+    * <a href=
+    * "https://github.com/jbossas/jboss-as/blob/master/messaging/src/main/java/org/jboss/as/messaging/CommonAttributes.java"
+    * >CommonAttributes</a>
+    */
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
-   private static final long DEFAULT_FAILBACK_DELAY = 5000; // in milliseconds
+   /** Used by the JBoss-AS integration code. */
+   public static final long DEFAULT_FAILBACK_DELAY = 5000; // in milliseconds
 
-   private static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
+   /** Used by the JBoss-AS integration code. */
+   public static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
 
    private static final boolean DEFAULT_MASK_PASSWORD = false;
 
