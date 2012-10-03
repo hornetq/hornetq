@@ -647,4 +647,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledge(long)
+    */
+   public void deleteCursorAcknowledge(long ackID) throws Exception
+   {
+   }
+
  }

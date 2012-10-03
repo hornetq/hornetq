@@ -46,6 +46,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -120,12 +121,17 @@ public abstract class ServiceTestBase extends UnitTestCase
     */
    protected void waitForNotPaging(Queue queue) throws InterruptedException
    {
+      waitForNotPaging(queue.getPageSubscription().getPagingStore());
+   }
+
+   protected void waitForNotPaging(PagingStore store) throws InterruptedException
+   {
       long timeout = System.currentTimeMillis() + 10000;
-      while (timeout > System.currentTimeMillis() && queue.getPageSubscription().getPagingStore().isPaging())
+      while (timeout > System.currentTimeMillis() && store.isPaging())
       {
          Thread.sleep(100);
       }
-      assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
+      assertFalse(store.isPaging());
    }
 
    protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
