@@ -17,8 +17,6 @@
 
    <name>HornetQ.main.config</name>
 
-   <clustered>true</clustered>
-
    <failover-on-shutdown>true</failover-on-shutdown>
 
    <backup>true</backup>
@@ -43,7 +41,7 @@
          <factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
          <param key="server-id" value="${hornetq.server-id:0}"/>
       </connector>
-   </connectors>      
+   </connectors>
 
    <!-- Acceptors -->
    <acceptors>
