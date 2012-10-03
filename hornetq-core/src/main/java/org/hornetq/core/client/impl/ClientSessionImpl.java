@@ -1170,7 +1170,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }
- }
+   }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
