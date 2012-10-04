@@ -88,21 +88,25 @@ Eclipse code formatting and (basic) project configuration files can be found at 
 ### Annotation Pre-Processing
 
 HornetQ uses [JBoss Logging] and that requires source code generation from Java
-annotations. In order for it to 'just work' in Eclipse you need to install the _Maven
-Integration for Eclipse JDT Annotation Processor Toolkit_ [m2e-apt].
+annotations. In order for it to 'just work' in Eclipse you need to install the
+_Maven Integration for Eclipse JDT Annotation Processor Toolkit_ [m2e-apt]. See
+this [JBoss blog post] for details.
 
 [JBoss Logging]: <https://community.jboss.org/wiki/JBossLoggingTooling>
-[m2e-apt]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out
+[m2e-apt]: https://github.com/jbosstools/m2e-apt
+[JBoss blog post]: https://community.jboss.org/en/tools/blog/2012/05/20/annotation-processing-support-in-m2e-or-m2e-apt-100-is-out
 
 ### M2E Connector for Javacc-Maven-Plugin
 
 Eclipse Indigo (3.7) has out-of-the-box support for it.
 
 As of this writing, Eclipse Juno (4.2) still lacks support for Maven's javacc
-plugin. See this post on the [m2e connector for javacc-maven-plugin] for manual
-installation instructions.
+plugin. See [this post] on the [m2e connector for javacc-maven-plugin] for
+manual installation instructions (as of this writing you need to use the
+development update site).
 
-[m2e connector for javacc-maven-plugin]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
+[this post]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
+[m2e connector for javacc-maven-plugin]: https://github.com/objectledge/maven-extensions
 
 ### Use _Project Working Sets_
 
