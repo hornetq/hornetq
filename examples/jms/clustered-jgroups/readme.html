@@ -15,37 +15,32 @@
      in a round-robin fashion.</p>
      <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
      JNDI, these could be instantiated directly.</p>
-     <p>To enable HornetQ to use JGroups in its broadcasting and discovery, first you need to implement the 
-     org.hornetq.core.cluster.BroadcastEndpoint interface. Then you need to define it in the server configuration
-     file. For details please read the user's manual.</p>     
-     <p>Here's the relevant snippet from the server configuration defining a JGroupsBroadcastEndpoint.</p>     
+     <p>To enable HornetQ to use JGroups you need to configure JGroups configuration file and make sure it is on the classpath
+         by placing in the configuration directory, the file test-jgroups-file_ping.xml is the configuration used in this
+     exaample</p>
+     <p>You then configure the jgroups file used by the broadcast and discovery groups in the configuration along with the
+         channel name which you want this cluster to share.</p>
      <pre class="prettyprint">
-     <code>&lt;broadcast-endpoints&gt;
-      &lt;broadcast-endpoint name="jgroups" class="org.hornetq.integration.discovery.jgroups.JGroupsBroadcastEndpoint"&gt;
-         &lt;param key="jgroups-configuration-file" value="test-jgroups-file_ping.xml"/&gt;
-         &lt;param key="jgroups-channel-name" value="hornetq_broadcast_channel"/&gt;
-      &lt;/broadcast-endpoint&gt;
-   &lt;/broadcast-endpoints&gt;
-     </code>
-     </pre>    
-     <p>And here's the relevant snippet from the server configuration enabling the discovery/broadcasting groups
-      to use the above endpoint.</p>     
-     <pre class="prettyprint">
-     <code>&lt;broadcast-groups&gt;
-      &lt;broadcast-group name="my-broadcast-group" endpoint="jgroups"&gt;
-         &lt;broadcast-period&gt;5000&lt;/broadcast-period&gt;
-         &lt;connector-ref&gt;netty-connector&lt;/connector-ref&gt;
-      &lt;/broadcast-group&gt;
+     <code>
+   &lt;broadcast-groups&gt;
+      &lt;broadcast-group name="my-broadcast-group">
+         &lt;broadcast-period>5000&lt;/broadcast-period>
+         &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+         &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+         &lt;connector-ref>netty-connector&lt;/connector-ref>
+      &lt;/broadcast-group>
    &lt;/broadcast-groups&gt;
 
    &lt;discovery-groups&gt;
-      &lt;discovery-group name="my-discovery-group" endpoint="jgroups"&gt;
-         &lt;refresh-timeout&gt;10000&lt;/refresh-timeout&gt;
-      &lt;/discovery-group&gt;
+      &lt;discovery-group name="my-discovery-group">
+         &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+         &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+         &lt;refresh-timeout>10000&lt;/refresh-timeout>
+      &lt;/discovery-group>
    &lt;/discovery-groups&gt;
      </code>
      </pre>    
-     <p>For more information on HornetQ load balancing, and clustering in general, please see the clustering
+     <p>For more information on HornetQ clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
