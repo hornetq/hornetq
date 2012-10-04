@@ -14,15 +14,12 @@
          using a transaction as this MDB does not support them.
      </p>
      
-     <h2>JBoss AS configuration</h2>
-     
-     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
-     
+     <p>The example leverages the JBoss Arquillian framework to run an AS 7 instance and deploy the MDB.</p>
+
      <h2>Example step-by-step</h2>
-     <p><i>To deploy and start the server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from the example directory</i></p>
-     <p><i>To run the example, simply type <code>mvn verify</code> from the example directory</i></p>
-     <p><i>To remove the example profile, simply type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) from the example directory</i></p>
-     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
+     <p><i>download AS 7.1.1.final from <a href="http://www.jboss.org/jbossas/downloads/">here</a> and install.</i></p>
+     <p><i>set the JBOSS_HOME property to point to AS7 install directory</i></p>
+     <p><i>To run the example simply type <code>mvn test</code>from the example directory</i></p>
 
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
