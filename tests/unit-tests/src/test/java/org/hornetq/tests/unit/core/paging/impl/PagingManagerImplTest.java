@@ -76,7 +76,8 @@ public class PagingManagerImplTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null), lock));
+      RoutingContextImpl ctx = new RoutingContextImpl(null);
+      Assert.assertFalse(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
 
       store.startPaging();
 
