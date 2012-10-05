@@ -23,7 +23,7 @@ public class FindDestinationTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
@@ -34,7 +34,7 @@ public class FindDestinationTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
@@ -53,13 +53,13 @@ public class FindDestinationTest extends MessageTestBase
       server.getHornetqServer().createQueue(new SimpleString("testTopic"), new SimpleString("testTopic"), null, false, false);
       ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
-      ClientResponse res = subscriptions.request().post();
+     ClientResponse<?> res = subscriptions.request().post();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocation();
       res.releaseConnection();

@@ -43,6 +43,7 @@ import org.hornetq.core.filter.impl.SimpleStringReader;
  * @author adrian@jboss.org
  * @version $Revision: 2681 $
  */
+@SuppressWarnings(value = { "unused", "rawtypes", "unchecked" })
 public class FilterParser
 {
    private static final String LOFFER_L = "l";
