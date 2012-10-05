@@ -28,7 +28,7 @@ public class DupQueueTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -38,7 +38,7 @@ public class DupQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       Assert.assertEquals(307, res.getStatus());
       sender = res.getLocation();
       res.releaseConnection();
@@ -93,7 +93,7 @@ public class DupQueueTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create-with-id");
@@ -104,7 +104,7 @@ public class DupQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-      ClientResponse res = sender.request().pathParameter("id", "1").body("text/plain", Integer.toString(1)).post();
+     ClientResponse<?> res = sender.request().pathParameter("id", "1").body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       res = sender.request().body("text/plain", Integer.toString(1)).pathParameter("id", "1").post();
