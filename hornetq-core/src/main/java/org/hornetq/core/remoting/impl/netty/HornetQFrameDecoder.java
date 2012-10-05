@@ -55,13 +55,10 @@ public class HornetQFrameDecoder extends FrameDecoder
       {
          return null;
       }
-      
-      ChannelBuffer buffer = in.readBytes(length);
 
-      ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(buffer.writerIndex());
+      ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(length);
+      newBuffer.writeBytes(in, length);
 
-      newBuffer.writeBytes(buffer);
-      
       return newBuffer;
    }
 }
