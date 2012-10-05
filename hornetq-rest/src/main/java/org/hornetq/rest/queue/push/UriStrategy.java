@@ -83,7 +83,7 @@ public class UriStrategy implements PushStrategy
             request.header(header.getName(), header.getValue());
          }
          HttpMessageHelper.buildMessage(message, request, contentType);
-         ClientResponse res = null;
+        ClientResponse<?> res = null;
          try
          {
             HornetQRestLogger.LOGGER.debug(method + " " + uri);

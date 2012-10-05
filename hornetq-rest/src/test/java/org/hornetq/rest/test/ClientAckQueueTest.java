@@ -49,7 +49,7 @@ public class ClientAckQueueTest extends MessageTestBase
       System.out.println("testAckTimeout");
       ClientRequest request = new ClientRequest(generateURL("/queues/testAck"));
 
-      ClientResponse response = Util.head(request);
+      ClientResponse<?> response = Util.head(request);
 
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
@@ -60,7 +60,7 @@ public class ClientAckQueueTest extends MessageTestBase
       System.out.println("poller: " + consumeNext);
 
       {
-         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
@@ -87,7 +87,7 @@ public class ClientAckQueueTest extends MessageTestBase
          System.out.println("consumeNext: " + consumeNext);
       }
       {
-         ClientResponse res = consumeNext.request().header(Constants.WAIT_HEADER, "2").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header(Constants.WAIT_HEADER, "2").post(String.class);
          res.releaseConnection();
          Assert.assertEquals(200, res.getStatus());
          Link ack = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "acknowledgement");
@@ -131,7 +131,7 @@ public class ClientAckQueueTest extends MessageTestBase
       System.out.println("testSuccessFirst");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
-      ClientResponse response = Util.head(request);
+      ClientResponse<?> response = Util.head(request);
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
@@ -142,7 +142,7 @@ public class ClientAckQueueTest extends MessageTestBase
 
       String data = Integer.toString(start);
       System.out.println("Sending: " + data);
-      ClientResponse res = sender.request().body("text/plain", data).post();
+     ClientResponse<?> res = sender.request().body("text/plain", data).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
@@ -213,7 +213,7 @@ public class ClientAckQueueTest extends MessageTestBase
       System.out.println("testPull");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
-      ClientResponse response = Util.head(request);
+      ClientResponse<?> response = Util.head(request);
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
@@ -300,7 +300,7 @@ public class ClientAckQueueTest extends MessageTestBase
       System.out.println("testReconnect");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
-      ClientResponse response = Util.head(request);
+      ClientResponse<?> response = Util.head(request);
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
@@ -309,7 +309,7 @@ public class ClientAckQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "acknowledge-next");
       System.out.println("poller: " + consumeNext);
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
