@@ -79,7 +79,7 @@ public class EmbeddedTest
 
       ClientRequest request = new ClientRequest(generateURL("/queues/jms.queue.exampleQueue"));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = response.getLinkHeader().getLinkByTitle("create");
@@ -97,7 +97,7 @@ public class EmbeddedTest
          order.setAmount("$5.00");
          publish("/queue/exampleQueue", order, null);
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
@@ -114,7 +114,7 @@ public class EmbeddedTest
          order.setAmount("$5.00");
          publish("/queue/exampleQueue", order, null);
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
@@ -131,7 +131,7 @@ public class EmbeddedTest
          order.setAmount("$15.00");
          publish("/queue/exampleQueue", order, "application/xml");
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);

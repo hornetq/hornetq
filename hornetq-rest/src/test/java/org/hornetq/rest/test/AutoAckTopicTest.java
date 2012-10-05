@@ -27,14 +27,14 @@ public class AutoAckTopicTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
 
-      ClientResponse res = subscriptions.request().post();
+     ClientResponse<?> res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocation();
