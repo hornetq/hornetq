@@ -33,7 +33,7 @@ public class HornetQPushStrategy extends UriTemplateStrategy
       {
          request.header(header.getName(), header.getValue());
       }
-      ClientResponse res = request.head();
+     ClientResponse<?> res = request.head();
       if (res.getStatus() != 200)
       {
          throw new RuntimeException("Failed to query HornetQ REST destination for init information.  Status: " + res.getStatus());

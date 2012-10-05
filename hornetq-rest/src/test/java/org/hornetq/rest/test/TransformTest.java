@@ -118,7 +118,7 @@ public class TransformTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
@@ -219,7 +219,7 @@ public class TransformTest extends MessageTestBase
 
          ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
-         ClientResponse response = request.head();
+         ClientResponse<?> response = request.head();
          response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");

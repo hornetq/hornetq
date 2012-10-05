@@ -115,7 +115,7 @@ public class PersistentPushTopicConsumerTest
          Link pushSubscription = response.getLocation();
          response.releaseConnection();
 
-         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
@@ -154,7 +154,7 @@ public class PersistentPushTopicConsumerTest
 
          ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
 
-         ClientResponse response = request.head();
+         ClientResponse<?> response = request.head();
          response.releaseConnection();
          Assert.assertEquals(200, response.getStatus());
          Link sender = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "create");
@@ -187,7 +187,7 @@ public class PersistentPushTopicConsumerTest
          startup();
          deployTopic(testName);
 
-         ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 

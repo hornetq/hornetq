@@ -69,7 +69,7 @@ public class PushQueueConsumerTest extends MessageTestBase
    {
       if (pushSubscription != null)
       {
-         ClientResponse response = pushSubscription.request().delete();
+         ClientResponse<?> response = pushSubscription.request().delete();
          response.releaseConnection();
          Assert.assertEquals(204, response.getStatus());
       }
@@ -243,7 +243,7 @@ public class PushQueueConsumerTest extends MessageTestBase
       if (consumerResponse != null)
       {
          Link consumer = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), consumerResponse, "consumer");
-         ClientResponse response = consumer.request().delete();
+         ClientResponse<?> response = consumer.request().delete();
          response.releaseConnection();
          Assert.assertEquals(204, response.getStatus());
       }
