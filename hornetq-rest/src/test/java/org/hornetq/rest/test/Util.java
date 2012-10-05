@@ -10,7 +10,7 @@ public class Util
 {
    static ClientResponse head(ClientRequest request) throws Exception
    {
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       return response;

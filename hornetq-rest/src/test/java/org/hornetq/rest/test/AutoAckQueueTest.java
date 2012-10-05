@@ -28,7 +28,7 @@ public class AutoAckQueueTest extends MessageTestBase
 
       ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
 
-      ClientResponse response = request.head();
+      ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
@@ -39,7 +39,7 @@ public class AutoAckQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 

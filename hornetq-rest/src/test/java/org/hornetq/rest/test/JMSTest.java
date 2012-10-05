@@ -256,7 +256,7 @@ public class JMSTest extends MessageTestBase
          order.setAmount("$5.00");
          publish(queueName, order, null);
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);
@@ -273,7 +273,7 @@ public class JMSTest extends MessageTestBase
          order.setAmount("$15.00");
          publish(queueName, order, "application/xml");
 
-         ClientResponse res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
+        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);
