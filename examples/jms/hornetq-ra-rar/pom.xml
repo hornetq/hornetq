@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-rar-pom</artifactId>
+      <groupId>org.hornetq.examples.jms</groupId>
+      <artifactId>jms-examples</artifactId>
       <version>2.3.0.BETA1</version>
    </parent>
 
