@@ -42,6 +42,8 @@ import org.hornetq.utils.ClassloadingUtil;
  */
 public class SSLSupport
 {
+   public static final String KEYSTORE_PROP = "javax.net.ssl.keyStore";
+   public static final String KEYSTORE_PASSWORD_PROP = "javax.net.ssl.keyStorePassword";
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -67,9 +69,20 @@ public class SSLSupport
       return sslContext;
    }
 
-   public static SSLContext createClientContext(final String keystorePath, final String keystorePassword) throws Exception
+   public static SSLContext createClientContext(String keystorePath, String keystorePassword) throws Exception
    {
       SSLContext context = SSLContext.getInstance("TLS");
+
+      // HORNETQ-680 - override the server-side config if client-side system properties are set
+      if (System.getProperty(KEYSTORE_PROP) != null)
+      {
+         keystorePath = System.getProperty(KEYSTORE_PROP);
+      }
+      if (System.getProperty(KEYSTORE_PASSWORD_PROP) != null)
+      {
+         keystorePassword = System.getProperty(KEYSTORE_PASSWORD_PROP);
+      }
+
       KeyManager[] keyManagers = SSLSupport.loadKeyManagers(keystorePath, keystorePassword);
       TrustManager[] trustManagers = SSLSupport.loadTrustManager(true, null, null);
       context.init(keyManagers, trustManagers, new SecureRandom());
