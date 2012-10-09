@@ -38,7 +38,7 @@ import org.hornetq.jms.server.recovery.XARecoveryConfig;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class HornetQRAManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
+public final class HornetQRAManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
 {
    /**
     * Serial version UID

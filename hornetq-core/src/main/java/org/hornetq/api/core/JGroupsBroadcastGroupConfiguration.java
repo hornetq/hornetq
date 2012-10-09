@@ -24,7 +24,7 @@ import org.jgroups.ReceiverAdapter;
 
 /**
  */
-public class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
+public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
 {
    private static final long serialVersionUID = 8952238567248461285L;
 
@@ -62,7 +62,7 @@ public class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFact
     */
    private static class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    {
-      private BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
+      private final BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
 
       private boolean clientOpened;
 
@@ -164,6 +164,7 @@ public class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFact
 
       private class JGroupsReceiver extends ReceiverAdapter
       {
+         @Override
          public void receive(org.jgroups.Message msg)
          {
             dequeue.add(msg.getBuffer());

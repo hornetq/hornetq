@@ -26,13 +26,13 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * Helper class to use HornetQ Core messages to manage server resources.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
-public class ManagementHelper
+public final class ManagementHelper
 {
    // Constants -----------------------------------------------------
 
@@ -84,11 +84,11 @@ public class ManagementHelper
 
    /**
     * Stores a resource attribute in a message to retrieve the value from the server resource.
-    * 
+    *
     * @param message message
     * @param resourceName the name of the resource
     * @param attribute the name of the attribute
-    * 
+    *
     * @see ResourceNames
     */
    public static void putAttribute(final Message message, final String resourceName, final String attribute)
@@ -99,7 +99,7 @@ public class ManagementHelper
 
    /**
     * Stores a operation invocation in a message to invoke the corresponding operation the value from the server resource.
-    * 
+    *
     * @param message  message
     * @param resourceName the name of the resource
     * @param operationName the name of the operation to invoke on the resource
@@ -115,7 +115,7 @@ public class ManagementHelper
 
    /**
     * Stores a operation invocation in a  message to invoke the corresponding operation the value from the server resource.
-    * 
+    *
     * @param message  message
     * @param resourceName the name of the server resource
     * @param operationName the name of the operation to invoke on the server resource
@@ -420,7 +420,7 @@ public class ManagementHelper
 
    /**
     * Used by HornetQ management service.
-    */   
+    */
    public static Map<String, Object> fromCommaSeparatedKeyValues(final String str) throws Exception
    {
       if (str == null || str.trim().length() == 0)

@@ -48,7 +48,7 @@ import org.hornetq.utils.TokenBucketLimiter;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 3603 $</tt> $Id: ClientConsumerImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientConsumerImpl implements ClientConsumerInternal
+public final class ClientConsumerImpl implements ClientConsumerInternal
 {
    // Constants
    // ------------------------------------------------------------------------------------
@@ -456,7 +456,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void interruptHandlers() throws HornetQException
    {
       closing = true;
-      
+
       resetLargeMessageController();
 
       Thread onThread = onMessageThread;
@@ -509,7 +509,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void clearAtFailover()
    {
       clearBuffer();
-      
+
       resetLargeMessageController();
 
       lastAckedMessage = null;
@@ -631,7 +631,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       ClientSessionFactory sf = session.getSessionFactory();
       ServerLocator locator = sf.getServerLocator();
       long callTimeout = locator.getCallTimeout();
-      
+
       currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), callTimeout, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
@@ -714,7 +714,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void resetLargeMessageController()
    {
-      
+
       LargeMessageController controller = currentLargeMessageController;
       if (controller != null)
       {
@@ -1023,7 +1023,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                         return null;
                      }
                   });
-                  
+
                   onMessageThread = null;
                }
 

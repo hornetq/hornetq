@@ -21,7 +21,7 @@ package org.hornetq.api.core.management;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ResourceNames
+public final class ResourceNames
 {
 
    // Constants -----------------------------------------------------
@@ -61,7 +61,7 @@ public class ResourceNames
    private ResourceNames()
    {
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
