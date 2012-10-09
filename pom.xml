@@ -37,8 +37,9 @@ Copyright 2009 Red Hat, Inc.
    </organization>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/messaging/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/messaging/trunk</developerConnection>
+      <connection>scm:git:git://github.com/hornetq/hornetq.git</connection>
+      <developerConnection>scm:git://github.com/hornetq/hornetq.git</developerConnection>
+      <url>https://github.com/hornetq/hornetq</url>
    </scm>
 
    <profiles>
@@ -64,6 +65,7 @@ Copyright 2009 Red Hat, Inc.
          <plugin>
             <groupId>org.jboss.maven.plugins</groupId>
             <artifactId>maven-buildmagic-thirdparty-plugin</artifactId>
+            <version>2.2.1.Final</version>
             <executions>
                <execution>
                   <id>build-thirdparty</id>
