@@ -83,11 +83,10 @@ public interface ClientConsumer
 
    /**
     * Sets the MessageHandler for this consumer to consume messages asynchronously.
-    *
+    * <p>
     * Calling this method on a closed consumer will throw a HornetQException.
-    *
     * @param handler a MessageHandler
-    * @throws HornetQException  if an exception occurs while setting the MessageHandler
+    * @throws HornetQException if an exception occurs while setting the MessageHandler
     */
    void setMessageHandler(MessageHandler handler) throws HornetQException;
 

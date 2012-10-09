@@ -43,7 +43,7 @@ public interface JMSServerConfigParser
    /**
     * Parse the topic node as a TopicConfiguration object
     * @param node
-    * @return
+    * @return {@link TopicConfiguration} parsed from the node
     * @throws Exception
     */
    TopicConfiguration parseTopicConfiguration(final Node node) throws Exception;
@@ -51,7 +51,7 @@ public interface JMSServerConfigParser
    /**
     * Parse the Queue Configuration node as a QueueConfiguration object
     * @param node
-    * @return
+    * @return {@link JMSQueueConfiguration} parsed from the node
     * @throws Exception
     */
    JMSQueueConfiguration parseQueueConfiguration(final Node node) throws Exception;

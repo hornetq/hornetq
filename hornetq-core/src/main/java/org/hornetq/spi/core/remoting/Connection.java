@@ -79,7 +79,7 @@ public interface Connection
    /**
     * Generates a {@link TransportConfiguration} to be used to connect to the same target this is
     * connected to.
-    * @return
+    * @return TranportConfiguration
     */
    TransportConfiguration getConnectorConfig();
 

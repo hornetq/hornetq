@@ -178,12 +178,11 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
 
    /**
     * Returns a matched connection from the candidate set of connections.
-    *
     * @param connectionSet The candidate connection set
-    * @param subject       Caller's security information
+    * @param subject Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
     * @return The managed connection
-    * @throws ResourceException Thrown if no managed connection cant be found
+    * @throws ResourceException Thrown if the managed connection can not be found
     */
    public ManagedConnection matchManagedConnections(final Set connectionSet,
                                                     final Subject subject,

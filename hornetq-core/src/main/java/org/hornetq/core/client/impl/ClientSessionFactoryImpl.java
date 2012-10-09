@@ -32,9 +32,8 @@ import java.util.concurrent.locks.Lock;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.HornetQNotConnectedException;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -73,6 +72,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
@@ -538,6 +538,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       return closed || serverLocator.isClosed();
    }
 
+   @Override
    public ServerLocator getServerLocator()
    {
       return serverLocator;

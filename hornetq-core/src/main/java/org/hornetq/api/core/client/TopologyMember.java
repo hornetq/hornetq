@@ -27,8 +27,16 @@ public interface TopologyMember extends Serializable
     */
    public String getBackupGroupName();
 
+   /**
+    * @return configuration relative to the live server
+    */
    public TransportConfiguration getLive();
 
+   /**
+    * Returns the TransportConfiguration relative to the backup server if any.
+    * @return a {@link TransportConfiguration} for the backup, or null} if the live server has no
+    *         backup server.
+    */
    public TransportConfiguration getBackup();
 
    /**
@@ -38,7 +46,7 @@ public interface TopologyMember extends Serializable
    public String getNodeId();
 
    /**
-    * @return
+    * @return long value representing a unique event ID
     */
    public long getUniqueEventID();
 }

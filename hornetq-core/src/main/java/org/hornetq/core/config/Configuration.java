@@ -365,7 +365,8 @@ public interface Configuration extends Serializable
    /**
     * Returns the management address of this server. <br>
     * Clients can send management messages to this address to manage this server. <br>
-    * Default value is {@value hornetq.management}.
+    * Default value is
+    * {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_MANAGEMENT_ADDRESS}.
     */
     SimpleString getManagementAddress();
 
@@ -379,7 +380,7 @@ public interface Configuration extends Serializable
     * <br>
     * Clients can bind queues to this address to receive management notifications emitted by this server.
     * <br>
-    * Default value is "hornetq.notifications".
+    * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS}.
     */
    SimpleString getManagementNotificationAddress();
 
