@@ -91,6 +91,9 @@ import org.jboss.netty.util.VirtualExecutorService;
 public class NettyConnector extends AbstractConnector
 {
    // Constants -----------------------------------------------------
+   public static final String JAVAX_KEYSTORE_PATH_PROP_NAME = "javax.net.ssl.keyStore";
+   public static final String JAVAX_KEYSTORE_PASSWORD_PROP_NAME = "javax.net.ssl.keyStorePassword";
+
    // Attributes ----------------------------------------------------
 
    private ClientSocketChannelFactory channelFactory;
@@ -332,7 +335,18 @@ public class NettyConnector extends AbstractConnector
       {
          try
          {
-            context = SSLSupport.getInstance(true, keyStorePath, keyStorePassword, null, null);
+            // HORNETQ-680 - override the server-side config if client-side system properties are set
+            String realKeyStorePath = keyStorePath;
+            String realKeyStorePassword = keyStorePassword;
+            if (System.getProperty(JAVAX_KEYSTORE_PATH_PROP_NAME) != null)
+            {
+               realKeyStorePath = System.getProperty(JAVAX_KEYSTORE_PATH_PROP_NAME);
+            }
+            if (System.getProperty(JAVAX_KEYSTORE_PASSWORD_PROP_NAME) != null)
+            {
+               realKeyStorePassword = System.getProperty(JAVAX_KEYSTORE_PASSWORD_PROP_NAME);
+            }
+            context = SSLSupport.getInstance(true, realKeyStorePath, realKeyStorePassword, null, null);
          }
          catch (Exception e)
          {
