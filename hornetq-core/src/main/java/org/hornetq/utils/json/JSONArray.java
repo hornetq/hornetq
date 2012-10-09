@@ -177,7 +177,7 @@ public class JSONArray
     */
    public JSONArray(final Collection collection)
    {
-      myArrayList = collection == null ? new ArrayList() : new ArrayList(collection);
+      myArrayList = collection == null ? new ArrayList<Object>() : new ArrayList(collection);
    }
 
    /**
@@ -189,10 +189,10 @@ public class JSONArray
 
    public JSONArray(final Collection collection, final boolean includeSuperClass)
    {
-      myArrayList = new ArrayList();
+      myArrayList = new ArrayList<Object>();
       if (collection != null)
       {
-         Iterator iter = collection.iterator();;
+         Iterator<Object> iter = collection.iterator();;
          while (iter.hasNext())
          {
             Object o = iter.next();

@@ -140,23 +140,8 @@ public class ServerManagement
 
    }
 
-   public static Hashtable getJNDIEnvironment(final int serverIndex)
+   public static Hashtable<String, String> getJNDIEnvironment(final int serverIndex)
    {
       return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
    }
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

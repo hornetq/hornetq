@@ -53,7 +53,7 @@ public class InVMContext implements Context, Serializable
 
    // Attributes ----------------------------------------------------
 
-   protected Map map;
+   protected Map<String, Object> map;
 
    protected NameParser parser = new InVMNameParser();
 
@@ -63,7 +63,7 @@ public class InVMContext implements Context, Serializable
 
    public InVMContext()
    {
-      map = Collections.synchronizedMap(new HashMap());
+      map = Collections.synchronizedMap(new HashMap<String, Object>());
    }
 
    public InVMContext(final String nameInNamespace)
@@ -179,7 +179,7 @@ public class InVMContext implements Context, Serializable
       throw new UnsupportedOperationException();
    }
 
-   public NamingEnumeration listBindings(String contextName) throws NamingException
+   public NamingEnumeration<Binding> listBindings(String contextName) throws NamingException
    {
       contextName = trimSlashes(contextName);
       if (!"".equals(contextName) && !".".equals(contextName))
@@ -195,9 +195,8 @@ public class InVMContext implements Context, Serializable
       }
 
       List<Binding> l = new ArrayList<Binding>();
-      for (Iterator i = map.keySet().iterator(); i.hasNext();)
+      for (String name : map.keySet())
       {
-         String name = (String)i.next();
          Object object = map.get(name);
          l.add(new Binding(name, object));
       }
@@ -271,10 +270,10 @@ public class InVMContext implements Context, Serializable
       throw new UnsupportedOperationException();
    }
 
-   public Hashtable getEnvironment() throws NamingException
+   public Hashtable<String, String> getEnvironment() throws NamingException
    {
-      Hashtable env = new Hashtable();
-      env.put("java.naming.factory.initial", "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
+      Hashtable<String, String> env = new Hashtable<String, String>();
+      env.put("java.naming.factory.initial", InVMInitialContextFactory.class.getCanonicalName());
       env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
       return env;
    }
@@ -341,11 +340,11 @@ public class InVMContext implements Context, Serializable
 
    // Inner classes -------------------------------------------------
 
-   private class NamingEnumerationImpl implements NamingEnumeration
+   private static final class NamingEnumerationImpl implements NamingEnumeration<Binding>
    {
-      private final Iterator iterator;
+      private final Iterator<Binding> iterator;
 
-      NamingEnumerationImpl(final Iterator bindingIterator)
+      NamingEnumerationImpl(final Iterator<Binding> bindingIterator)
       {
          iterator = bindingIterator;
       }
@@ -360,7 +359,7 @@ public class InVMContext implements Context, Serializable
          return iterator.hasNext();
       }
 
-      public Object next() throws NamingException
+      public Binding next() throws NamingException
       {
          return iterator.next();
       }
@@ -370,7 +369,7 @@ public class InVMContext implements Context, Serializable
          return iterator.hasNext();
       }
 
-      public Object nextElement()
+      public Binding nextElement()
       {
          return iterator.next();
       }

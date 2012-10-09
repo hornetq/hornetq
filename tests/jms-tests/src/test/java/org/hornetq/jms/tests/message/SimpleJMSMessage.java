@@ -206,7 +206,7 @@ public class SimpleJMSMessage implements Message
       this.priority = priority;
    }
 
-   private final Map properties = new HashMap();
+   private final Map<String, Object> properties = new HashMap<String, Object>();
 
    public void clearProperties() throws JMSException
    {

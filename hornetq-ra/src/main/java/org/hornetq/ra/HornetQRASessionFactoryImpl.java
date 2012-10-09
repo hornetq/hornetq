@@ -44,9 +44,8 @@ import javax.resource.spi.ConnectionManager;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision:  $
  */
-public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Referenceable
+public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Referenceable
 {
    /** Trace enabled */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
@@ -79,13 +78,13 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
    private ConnectionManager cm;
 
    /** The sessions */
-   private final Set sessions = new HashSet();
+   private final Set<HornetQRASession> sessions = new HashSet<HornetQRASession>();
 
    /** The temporary queues */
-   private final Set tempQueues = new HashSet();
+   private final Set<TemporaryQueue> tempQueues = new HashSet<TemporaryQueue>();
 
    /** The temporary topics */
-   private final Set tempTopics = new HashSet();
+   private final Set<TemporaryTopic> tempTopics = new HashSet<TemporaryTopic>();
 
    /**
     * Constructor
@@ -548,17 +547,17 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             return;
          }
          started = true;
-         for (Iterator i = sessions.iterator(); i.hasNext();)
+         for (HornetQRASession session : sessions)
          {
-            HornetQRASession session = (HornetQRASession)i.next();
             session.start();
          }
       }
    }
 
    /**
-    * Stop -- throws IllegalStateException
-    * @exception JMSException Thrown if an error occurs
+    * Stop
+    * @throws IllegalStateException
+    * @throws JMSException Thrown if an error occurs
     */
    public void stop() throws JMSException
    {
@@ -590,9 +589,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
 
       synchronized (sessions)
       {
-         for (Iterator i = sessions.iterator(); i.hasNext();)
+         for (Iterator<HornetQRASession> i = sessions.iterator(); i.hasNext();)
          {
-            HornetQRASession session = (HornetQRASession)i.next();
+            HornetQRASession session = i.next();
             try
             {
                session.closeSession();
@@ -607,9 +606,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
 
       synchronized (tempQueues)
       {
-         for (Iterator i = tempQueues.iterator(); i.hasNext();)
+         for (Iterator<TemporaryQueue> i = tempQueues.iterator(); i.hasNext();)
          {
-            TemporaryQueue temp = (TemporaryQueue)i.next();
+            TemporaryQueue temp = i.next();
             try
             {
                if (HornetQRASessionFactoryImpl.trace)
@@ -628,9 +627,9 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
 
       synchronized (tempTopics)
       {
-         for (Iterator i = tempTopics.iterator(); i.hasNext();)
+         for (Iterator<TemporaryTopic> i = tempTopics.iterator(); i.hasNext();)
          {
-            TemporaryTopic temp = (TemporaryTopic)i.next();
+            TemporaryTopic temp = i.next();
             try
             {
                if (HornetQRASessionFactoryImpl.trace)
@@ -703,7 +702,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
    /**
     * Allocation a connection
     * @param sessionType The session type
-    * @return The session 
+    * @return The session
     * @exception JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
@@ -788,7 +787,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     * @param transacted Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @param sessionType The session type
-    * @return The session 
+    * @return The session
     * @exception JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException

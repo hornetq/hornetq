@@ -42,7 +42,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
       InVMInitialContextFactory.reset();
    }
 
-   public static Hashtable getJNDIEnvironment()
+   public static Hashtable<String, String> getJNDIEnvironment()
    {
       return InVMInitialContextFactory.getJNDIEnvironment(0);
    }
@@ -50,9 +50,9 @@ public class InVMInitialContextFactory implements InitialContextFactory
    /**
     * @return the JNDI environment to use to get this InitialContextFactory.
     */
-   public static Hashtable getJNDIEnvironment(final int serverIndex)
+   public static Hashtable<String, String> getJNDIEnvironment(final int serverIndex)
    {
-      Hashtable env = new Hashtable();
+      Hashtable<String, String> env = new Hashtable<String, String>();
       env.put("java.naming.factory.initial", "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
       env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
       // env.put("java.naming.factory.url.pkgs", "");

@@ -29,13 +29,13 @@ import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS QueueBrowser.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
  * $Id$
  */
-public class HornetQQueueBrowser implements QueueBrowser
+public final class HornetQQueueBrowser implements QueueBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -123,7 +123,7 @@ public class HornetQQueueBrowser implements QueueBrowser
 
    // Inner classes --------------------------------------------------------------------------------
 
-   private class BrowserEnumeration implements Enumeration
+   private final class BrowserEnumeration implements Enumeration<HornetQMessage>
    {
       ClientMessage current = null;
 
@@ -143,7 +143,7 @@ public class HornetQQueueBrowser implements QueueBrowser
          return current != null;
       }
 
-      public Object nextElement()
+      public HornetQMessage nextElement()
       {
          HornetQMessage msg;
          if (hasMoreElements())
