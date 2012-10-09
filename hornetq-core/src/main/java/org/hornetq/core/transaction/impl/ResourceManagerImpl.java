@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQLogger;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -39,7 +38,7 @@ import org.hornetq.core.transaction.Transaction;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ResourceManagerImpl implements ResourceManager, HornetQComponent
+public class ResourceManagerImpl implements ResourceManager
 {
    private final ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
 
@@ -66,6 +65,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    // HornetQComponent implementation
 
+   @Override
    public void start() throws Exception
    {
       if (started)
@@ -82,6 +82,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       started = true;
    }
 
+   @Override
    public void stop() throws Exception
    {
       if (!started)
@@ -96,6 +97,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       started = false;
    }
 
+   @Override
    public boolean isStarted()
    {
       return started;

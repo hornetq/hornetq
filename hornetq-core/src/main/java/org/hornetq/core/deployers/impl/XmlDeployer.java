@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQLogger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,7 +33,7 @@ import org.w3c.dom.NodeList;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public abstract class XmlDeployer implements Deployer, HornetQComponent
+public abstract class XmlDeployer implements Deployer
 {
    protected static final String NAME_ATTR = "name";
 
