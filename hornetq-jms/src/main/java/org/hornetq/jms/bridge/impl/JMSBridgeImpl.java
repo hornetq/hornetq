@@ -49,7 +49,6 @@ import javax.transaction.xa.XAResource;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.HornetQJMSBundle;
 import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
@@ -74,7 +73,7 @@ import org.hornetq.utils.SensitiveDataCodec;
  * $Id:JMSBridge.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
-public class JMSBridgeImpl implements HornetQComponent, JMSBridge
+public final class JMSBridgeImpl implements JMSBridge
 {
    private static boolean trace = HornetQJMSLogger.LOGGER.isTraceEnabled();
 

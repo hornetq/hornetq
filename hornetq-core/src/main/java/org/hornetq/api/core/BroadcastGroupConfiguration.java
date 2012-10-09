@@ -16,18 +16,16 @@ package org.hornetq.api.core;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
-
 
 /**
  * The basic configuration used to determine how the server will broadcast members
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:hgao@redhat.com">Howard Gao</a> 
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
-public class BroadcastGroupConfiguration implements Serializable
+public final class BroadcastGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 2335634694112319124L;
 

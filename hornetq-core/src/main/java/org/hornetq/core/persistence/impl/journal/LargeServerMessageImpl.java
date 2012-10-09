@@ -32,14 +32,9 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * A LargeServerMessageImpl
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
- * Created 30-Sep-08 12:02:45 PM
- *
- *
  */
-public class LargeServerMessageImpl extends ServerMessageImpl implements LargeServerMessage
+public final class LargeServerMessageImpl extends ServerMessageImpl implements LargeServerMessage
 {
    // Constants -----------------------------------------------------
    private static boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
@@ -47,14 +42,14 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    // Attributes ----------------------------------------------------
 
    private final JournalStorageManager storageManager;
-   
+
    private long pendingRecordID = -1;
-   
+
    private boolean paged;
 
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
-   
+
    // set when a copyFrom is called
    // The actual copy is done when finishCopy is called
    private SequentialFile pendingCopy;
@@ -96,7 +91,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       this.pendingRecordID = pendingRecordID;
    }
-   
+
    public long getPendingRecordID()
    {
       return this.pendingRecordID;
@@ -106,7 +101,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       paged = true;
    }
-   
+
    @Override
    public synchronized void addBytes(final byte[] bytes) throws Exception
    {
@@ -181,7 +176,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    public synchronized void decrementDelayDeletionCount() throws Exception
    {
       int count = delayDeletionCount.decrementAndGet();
-      
+
       decrementRefCount();
 
       if (count == 0)
@@ -189,7 +184,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          checkDelete();
       }
    }
-   
+
    @Override
    public BodyEncoder getBodyEncoder() throws HornetQException
    {
@@ -291,20 +286,21 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
       }
    }
-   
 
+
+   @Override
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
       super.setOriginalHeaders(other, expiry);
-      
+
       LargeServerMessageImpl otherLM = (LargeServerMessageImpl)other;
       this.paged = otherLM.paged;
       if (this.paged)
       {
-         this.removeProperty(Message.HDR_ORIG_MESSAGE_ID); 
+         this.removeProperty(Message.HDR_ORIG_MESSAGE_ID);
       }
    }
-   
+
    @Override
    public synchronized ServerMessage copy()
    {
@@ -322,8 +318,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       this.bodySize = -1;
       this.pendingCopy = fileSource;
    }
-   
-   
+
+
+   @Override
    public void finishCopy() throws Exception
    {
       if (pendingCopy != null)
@@ -334,7 +331,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             this.pendingRecordID = storageManager.storePendingLargeMessage(this.messageID);
             copyTo.open();
             pendingCopy.open();
-            pendingCopy.copyTo(copyTo);          
+            pendingCopy.copyTo(copyTo);
          }
          finally
          {
@@ -342,14 +339,14 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             pendingCopy.close();
             pendingCopy = null;
          }
-         
+
          closeFile();
          bodySize = -1;
          file = null;
       }
    }
 
-   /** 
+   /**
     * The copy of the file itself will be done later by {@link LargeServerMessageImpl#finishCopy()}
     * */
    @Override
@@ -382,7 +379,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    @Override
    public String toString()
    {
-      return "LargeServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() + 
+      return "LargeServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() +
       ",expiration=[" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : "null") + "]" +
       ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
@@ -415,7 +412,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             file = createFile();
 
             openFile();
-            
+
             bodySize = file.size();
          }
       }
@@ -427,13 +424,13 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    }
 
    /**
-    * 
+    *
     */
    protected SequentialFile createFile()
    {
       return storageManager.createFileForLargeMessage(getMessageID(), durable);
    }
-   
+
    protected void openFile() throws Exception
    {
 	  if (file == null)
@@ -446,7 +443,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          file.open();
       }
    }
-   
+
    protected void closeFile() throws Exception
    {
 	  if (file != null && file.isOpen())

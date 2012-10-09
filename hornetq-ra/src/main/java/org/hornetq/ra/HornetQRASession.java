@@ -45,12 +45,12 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.jms.TransactionInProgressException;
 import javax.jms.XAQueueSession;
-import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ManagedConnection;
 import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 import javax.transaction.xa.XAResource;
 
 
@@ -61,7 +61,7 @@ import javax.transaction.xa.XAResource;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQRASession implements Session, QueueSession, TopicSession, XASession, XAQueueSession, XATopicSession
+public final class HornetQRASession implements QueueSession, TopicSession, XAQueueSession, XATopicSession
 {
    /** Trace enabled */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();

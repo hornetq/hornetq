@@ -13,9 +13,9 @@
 
 package org.hornetq.core.settings.impl;
 
-import org.hornetq.core.server.HornetQMessageBundle;
-
 import java.util.regex.Pattern;
+
+import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
     a Match is the holder for the match string and the object to hold against it.
@@ -96,6 +96,7 @@ public class Match<T>
          return false;
       }
 
+      @SuppressWarnings("rawtypes")
       Match that = (Match)o;
 
       return !(match != null ? !match.equals(that.match) : that.match != null);

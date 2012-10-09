@@ -23,6 +23,10 @@ package org.hornetq.api.core.client.loadbalance;
  */
 public final class FirstElementConnectionLoadBalancingPolicy implements ConnectionLoadBalancingPolicy
 {
+   /**
+    * @param max param is ignored
+    * @return 0
+    */
    public int select(final int max)
    {
       return 0;

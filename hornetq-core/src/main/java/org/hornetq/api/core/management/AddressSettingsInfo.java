@@ -22,7 +22,7 @@ import org.hornetq.utils.json.JSONObject;
  *
  *
  */
-public class AddressSettingsInfo
+public final class AddressSettingsInfo
 {
 
    // Constants -----------------------------------------------------
@@ -38,10 +38,10 @@ public class AddressSettingsInfo
    private int pageCacheMaxSize;
 
    private final int maxDeliveryAttempts;
-   
-   private double redeliveryMultiplier;
-   
-   private long maxRedeliveryDelay;
+
+   private final double redeliveryMultiplier;
+
+   private final long maxRedeliveryDelay;
 
    private final long redeliveryDelay;
 
@@ -177,14 +177,5 @@ public class AddressSettingsInfo
    {
       return maxRedeliveryDelay;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
 

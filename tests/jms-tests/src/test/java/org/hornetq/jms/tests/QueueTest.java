@@ -175,7 +175,7 @@ public class QueueTest extends JMSTestCase
             // There is a possibility the messages arrive out of order if they hit the closed
             // consumer and are cancelled back before delivery to the other consumer has finished.
             // There is nothing much we can do about this
-            Set texts = new HashSet();
+            Set<String> texts = new HashSet<String>();
 
             for (int i = 0; i < 20; i++)
             {

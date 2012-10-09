@@ -13,9 +13,9 @@
 
 package org.hornetq.api.core;
 
-import org.hornetq.utils.UUIDGenerator;
-
 import java.io.Serializable;
+
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * This file represents how we are using Discovery.
@@ -30,7 +30,7 @@ import java.io.Serializable;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
  */
-public class DiscoveryGroupConfiguration implements Serializable
+public final class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = -788378590243304842L;
 

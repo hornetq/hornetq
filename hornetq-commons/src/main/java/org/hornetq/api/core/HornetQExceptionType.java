@@ -1,12 +1,11 @@
 package org.hornetq.api.core;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum HornetQExceptionType implements Serializable
+public enum HornetQExceptionType
 {
 
    // Error codes -------------------------------------------------

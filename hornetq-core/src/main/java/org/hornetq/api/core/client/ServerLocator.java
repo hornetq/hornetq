@@ -82,22 +82,33 @@ public interface ServerLocator
     */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception;
 
+   /**
+    * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
+    * about by this ServerLocator. This method allows the user to make a connection to a specific
+    * server bypassing any load balancing policy in force
+    * @param transportConfiguration
+    * @param reconnectAttempts number of attempts of reconnection to perform
+    * @param failoverOnInitialConnection
+    * @return a {@link ClientSessionFactory} instance
+    * @throws Exception if a failure happened in creating the ClientSessionFactory or the
+    *            ServerLocator does not know about the passed in transportConfiguration
+    */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration, int reconnectAttempts, boolean failoverOnInitialConnection) throws Exception;
 
    /**
     * Returns the period used to check if a client has failed to receive pings from the server.
-    *
-    * Period is in milliseconds, default value is {@link HornetQClient#DEFAULT_CLIENT_FAILURE_CHECK_PERIOD}.
-    *
+    * <p>
+    * Period is in milliseconds, default value is
+    * {@link HornetQClient#DEFAULT_CLIENT_FAILURE_CHECK_PERIOD}.
     * @return the period used to check if a client has failed to receive pings from the server
     */
    long getClientFailureCheckPeriod();
 
    /**
-    * Sets the period (in milliseconds) used to check if a client has failed to receive pings from the server.
-    *
+    * Sets the period (in milliseconds) used to check if a client has failed to receive pings from
+    * the server.
+    * <p>
     * Value must be -1 (to disable) or greater than 0.
-    *
     * @param clientFailureCheckPeriod the period to check failure
     */
    void setClientFailureCheckPeriod(long clientFailureCheckPeriod);
@@ -123,10 +134,10 @@ public interface ServerLocator
 
    /**
     * Returns the connection <em>time-to-live</em>.
-    * This TTL determines how long the server will keep a connection alive in the absence of any data arriving from the client.
-    *
-    * Value is in milliseconds, default value is {@link HornetQClient#DEFAULT_CONNECTION_TTL}.
-    *
+    * <p>
+    * This TTL determines how long the server will keep a connection alive in the absence of any
+    * data arriving from the client. Value is in milliseconds, default value is
+    * {@link HornetQClient#DEFAULT_CONNECTION_TTL}.
     * @return the connection time-to-live in milliseconds
     */
    long getConnectionTTL();

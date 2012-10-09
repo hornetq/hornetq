@@ -504,11 +504,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   /**
-    * @param message
-    * @return
-    */
-   public static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
+   public final static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
    {
       byte[] bytes = new byte[24];
 

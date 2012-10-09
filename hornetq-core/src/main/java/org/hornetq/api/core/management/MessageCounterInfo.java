@@ -25,7 +25,7 @@ import org.hornetq.utils.json.JSONObject;
  *
  *  @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class MessageCounterInfo
+public final class MessageCounterInfo
 {
    // Constants -----------------------------------------------------
 
