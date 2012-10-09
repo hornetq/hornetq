@@ -137,6 +137,42 @@ public class SSLSupportTest extends UnitTestCase
       }
    }
 
+   public void testClientContextWithRightParameters() throws Exception
+   {
+      SSLSupport.createClientContext(keyStorePath, keyStorePassword);
+   }
+
+   public void testClientContextWithBadKeyStorePassword() throws Exception
+   {
+      try
+      {
+         SSLSupport.createClientContext(keyStorePath, "bad password");
+         Assert.fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testClientContextWithBadKeyStorePath() throws Exception
+   {
+      try
+      {
+         SSLSupport.createClientContext("not a keystore", keyStorePassword);
+         Assert.fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testClientContextWithSystemPropertyOverrides() throws Exception
+   {
+      System.setProperty(SSLSupport.KEYSTORE_PROP, keyStorePath);
+      System.setProperty(SSLSupport.KEYSTORE_PASSWORD_PROP, keyStorePassword);
+      SSLSupport.createClientContext("not a keystore", "bad password");
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

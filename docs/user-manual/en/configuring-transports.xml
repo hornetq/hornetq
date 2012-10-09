@@ -310,11 +310,14 @@ etc
                 </listitem>
                 <listitem>
                     <para><literal>key-store-path</literal>. This is the path to the SSL key store
-                        on the client which holds the client certificates.</para>
+                        on the client which holds the client certificates. This can be overridden
+                        on the client by using the traditional "javax.net.ssl.keyStore" system
+                        property.</para>
                 </listitem>
                 <listitem>
                     <para><literal>key-store-password</literal>. This is the password for the client
-                        certificate key store on the client.</para>
+                        certificate key store on the client. This can be overridden on the client by
+                        using the traditional "javax.net.ssl.keyStorePassword" system property.</para>
                 </listitem>
                 <listitem>
                     <para><literal>trust-store-path</literal>. This is the path to the trusted
