@@ -16,7 +16,6 @@ package org.hornetq.jms.client;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
@@ -34,11 +33,11 @@ import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS MessageConsumer.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
+public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscriber
 {
    // Constants -----------------------------------------------------
 
@@ -63,7 +62,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
    private final String selector;
 
    private final SimpleString autoDeleteQueueName;
-   
+
    private boolean closed = false;
 
    // Constructors --------------------------------------------------
@@ -145,7 +144,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
          if (autoDeleteQueueName != null)
          {
-            // If non durable subscriber need to delete subscription too  
+            // If non durable subscriber need to delete subscription too
             session.deleteQueue(autoDeleteQueueName);
          }
 
@@ -213,7 +212,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       try
       {
          ClientMessage message;
-         
+
          if (noWait)
          {
             message = consumer.receiveImmediate();

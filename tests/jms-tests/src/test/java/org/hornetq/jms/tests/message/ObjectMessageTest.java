@@ -101,7 +101,7 @@ public class ObjectMessageTest extends MessageTestBase
 
    public void testVectorOnObjectMessage() throws Exception
    {
-      java.util.Vector vectorOnMessage = new java.util.Vector();
+      java.util.Vector<String> vectorOnMessage = new java.util.Vector<String>();
       vectorOnMessage.add("world!");
       ((ObjectMessage)message).setObject(vectorOnMessage);
 
@@ -118,7 +118,7 @@ public class ObjectMessageTest extends MessageTestBase
    public void testObjectIsolation() throws Exception
    {
       ObjectMessage msgTest = session.createObjectMessage();
-      ArrayList list = new ArrayList();
+      ArrayList<String> list = new ArrayList<String>();
       list.add("hello");
       msgTest.setObject(list);
 

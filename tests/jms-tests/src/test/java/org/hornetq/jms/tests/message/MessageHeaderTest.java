@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -306,7 +307,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       ProxyAssertSupport.assertFalse(m2.propertyExists("sausages"));
 
-      HashSet propNames = new HashSet();
+      Set<String> propNames = new HashSet<String>();
       Enumeration en = m2.getPropertyNames();
       while (en.hasMoreElements())
       {

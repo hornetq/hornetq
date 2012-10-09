@@ -25,7 +25,7 @@ import org.hornetq.utils.json.JSONObject;
  *
  *  @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class DayCounterInfo
+public final class DayCounterInfo
 {
 
    private final String date;
@@ -100,12 +100,4 @@ public class DayCounterInfo
    {
       return counters;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

@@ -614,7 +614,8 @@ public class ReplicationManager implements HornetQComponent
    }
 
    /**
-    * @return
+    * Used while stopping the server to ensure that we freeze communications with the backup.
+    * @return remoting connection with the backup
     */
    public CoreRemotingConnection getBackupTransportConnection()
    {

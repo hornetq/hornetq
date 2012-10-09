@@ -14,7 +14,6 @@
 package org.hornetq.jms.tests.stress;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -94,10 +93,10 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
    {
       Context ctx = createContext();
 
-      HashSet threads = new HashSet();
+      HashSet<SeveralClientsStressTest.Worker> threads = new HashSet<SeveralClientsStressTest.Worker>();
 
       // A chhanel of communication between workers and the test method
-      LinkedBlockingQueue testChannel = new LinkedBlockingQueue();
+      LinkedBlockingQueue<InternalMessage> testChannel = new LinkedBlockingQueue<InternalMessage>();
 
       for (int i = 0; i < SeveralClientsStressTest.NUMBER_OF_PRODUCERS; i++)
       {
@@ -109,9 +108,8 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
          threads.add(new SeveralClientsStressTest.Consumer(i, testChannel));
       }
 
-      for (Iterator iter = threads.iterator(); iter.hasNext();)
+      for (Worker worker : threads)
       {
-         Worker worker = (Worker)iter.next();
          worker.start();
       }
 
@@ -122,7 +120,7 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
 
       while (threads.size() > 0)
       {
-         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(2000,
+         SeveralClientsStressTest.InternalMessage msg = testChannel.poll(2000,
                                                                                                                    TimeUnit.MILLISECONDS);
 
          log.info("Produced:" + SeveralClientsStressTest.producedMessages.get() +
@@ -245,7 +243,7 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
 
    // Inner classes --------------------------------------------------------------------------------
 
-   class Worker extends Thread
+   private class Worker extends Thread
    {
 
       protected JmsTestLogger log = JmsTestLogger.LOGGER;
@@ -256,7 +254,7 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
 
       private Exception ex;
 
-      LinkedBlockingQueue messageQueue;
+      LinkedBlockingQueue<InternalMessage> messageQueue;
 
       public int getWorkerId()
       {
@@ -301,7 +299,8 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
          }
       }
 
-      public Worker(final String name, final int workerId, final LinkedBlockingQueue messageQueue)
+      public Worker(final String name, final int workerId,
+                    final LinkedBlockingQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
       {
          super(name);
          this.workerId = workerId;
@@ -316,9 +315,10 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
       }
    }
 
-   class Producer extends SeveralClientsStressTest.Worker
+   final class Producer extends SeveralClientsStressTest.Worker
    {
-      public Producer(final int producerId, final LinkedBlockingQueue messageQueue)
+      public Producer(final int producerId,
+                      final LinkedBlockingQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
       {
          super("Producer:" + producerId, producerId, messageQueue);
       }
@@ -409,9 +409,10 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
       }
    }
 
-   class Consumer extends SeveralClientsStressTest.Worker
+   final class Consumer extends SeveralClientsStressTest.Worker
    {
-      public Consumer(final int consumerId, final LinkedBlockingQueue messageQueue)
+      public Consumer(final int consumerId,
+                      final LinkedBlockingQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
       {
          super("ClientConsumer:" + consumerId, consumerId, messageQueue);
       }

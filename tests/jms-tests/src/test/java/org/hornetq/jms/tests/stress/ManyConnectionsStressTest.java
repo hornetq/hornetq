@@ -32,9 +32,9 @@ import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * Create 500 connections each with a consumer, consuming from a topic
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>4 Jul 2007
  *
@@ -59,7 +59,7 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
 
    private volatile boolean failed;
 
-   private final Set listeners = new HashSet();
+   private final Set<MyListener> listeners = new HashSet<MyListener>();
 
    // Constructors --------------------------------------------------
 
@@ -218,7 +218,7 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
       }
    }
 
-   private class MyListener implements MessageListener
+   private final class MyListener implements MessageListener
    {
       public void onMessage(final Message msg)
       {

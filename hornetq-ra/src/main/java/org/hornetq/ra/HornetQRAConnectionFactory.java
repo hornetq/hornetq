@@ -15,10 +15,6 @@ package org.hornetq.ra;
 
 import java.io.Serializable;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
 import javax.resource.Referenceable;
@@ -30,8 +26,8 @@ import javax.resource.Referenceable;
  * @author <a href="mailto:jesper.pedersen@jboss.com">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public interface HornetQRAConnectionFactory extends ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable
+public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory,
+         XATopicConnectionFactory, Serializable, Referenceable
 {
    /** Connection factory capable of handling connections */
    public static final int CONNECTION = 0;

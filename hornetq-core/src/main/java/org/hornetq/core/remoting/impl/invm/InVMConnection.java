@@ -244,19 +244,15 @@ public class InVMConnection implements Connection
    {
       return executor;
    }
-   
-   
-   /**
-    * Generates a {@link TransportConfiguration} to be use to connect to the 
-    * same target this is connect to
-    * @return
-    */
+
+
+   @Override
    public TransportConfiguration getConnectorConfig()
    {
       Map<String, Object> params = new HashMap<String, Object>();
 
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, serverID);
-      
+
       return new TransportConfiguration(InVMConnectorFactory.class.getName(), params);
    }
 
@@ -265,6 +261,6 @@ public class InVMConnection implements Connection
    {
       return "InVMConnection [serverID=" + serverID + ", id=" + id + "]";
    }
-   
-   
+
+
 }

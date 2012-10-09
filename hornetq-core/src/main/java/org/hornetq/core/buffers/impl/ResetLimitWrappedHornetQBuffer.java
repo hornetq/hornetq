@@ -25,7 +25,7 @@ import org.hornetq.core.message.impl.MessageInternal;
  * @author Tim Fox
  *
  */
-public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
+public final class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 {
    private final int limit;
 
@@ -41,7 +41,7 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
       {
          writerIndex(limit);
       }
-      
+
       buffer.readerIndex(limit);
 
       this.message = message;
@@ -75,7 +75,7 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
    public void readerIndex(int readerIndex)
    {
       changed();
-      
+
       if (readerIndex < limit)
       {
          readerIndex = limit;
@@ -88,7 +88,7 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
    public void resetReaderIndex()
    {
       changed();
-      
+
       buffer.readerIndex(limit);
    }
 

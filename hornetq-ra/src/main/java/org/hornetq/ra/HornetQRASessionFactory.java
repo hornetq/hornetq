@@ -13,13 +13,9 @@
 
 package org.hornetq.ra;
 
-import javax.jms.Connection;
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
-import javax.jms.TopicConnection;
-import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
 
@@ -30,8 +26,7 @@ import javax.jms.XATopicConnection;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: 71554 $
  */
-public interface HornetQRASessionFactory extends Connection, TopicConnection, QueueConnection, XAConnection,
-         XATopicConnection, XAQueueConnection
+public interface HornetQRASessionFactory extends XATopicConnection, XAQueueConnection
 {
    /** Error message for strict behaviour */
    String ISE = "This method is not applicable inside the application server. See the J2EE spec, e.g. J2EE1.4 Section 6.6";
@@ -48,10 +43,10 @@ public interface HornetQRASessionFactory extends Connection, TopicConnection, Qu
     */
    void addTemporaryTopic(TemporaryTopic temp);
 
-   /** 
+   /**
     * Notification that a session is closed
     * @param session The session
-    * @throws JMSException for any error 
+    * @throws JMSException for any error
     */
    void closeSession(HornetQRASession session) throws JMSException;
 }

@@ -1,13 +1,13 @@
 package org.hornetq.jms.server.embedded;
 
+import javax.naming.Context;
+
 import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.registry.MapBindingRegistry;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.naming.BindingRegistry;
-
-import javax.naming.Context;
 
 /**
  * Simple bootstrap class that parses hornetq config files (server and jms and security) and starts
@@ -73,16 +73,17 @@ public class EmbeddedJMS extends EmbeddedHornetQ
    }
 
    /**
-    * Lookup in the registry for registered object, i.e. a ConnectionFactory.  This is a convenience method.
-    *
+    * Lookup in the registry for registered object, i.e. a ConnectionFactory.
+    * <p>
+    * This is a convenience method.
     * @param name
-    * @return
     */
    public Object lookup(String name)
    {
       return serverManager.getRegistry().lookup(name);
    }
 
+   @Override
    public void start() throws Exception
    {
       super.initStart();
@@ -92,7 +93,7 @@ public class EmbeddedJMS extends EmbeddedHornetQ
       }
       else if (jmsConfigResourcePath == null) serverManager = new JMSServerManagerImpl(hornetQServer);
       else serverManager = new JMSServerManagerImpl(hornetQServer, jmsConfigResourcePath);
-      
+
       if (registry == null)
       {
          if (context != null) registry = new JndiBindingRegistry(context);
@@ -102,6 +103,7 @@ public class EmbeddedJMS extends EmbeddedHornetQ
       serverManager.start();
    }
 
+   @Override
    public void stop() throws Exception
    {
       serverManager.stop();

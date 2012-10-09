@@ -37,9 +37,7 @@ public class MapBindingRegistry implements BindingRegistry
       return registry;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.naming.BindingRegistry#setContext(java.lang.Object)
-    */
+   @Override
    public void setContext(Object ctx)
    {
       registry = (ConcurrentMap)ctx;

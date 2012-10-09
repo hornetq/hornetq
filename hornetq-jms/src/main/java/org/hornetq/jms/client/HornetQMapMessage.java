@@ -22,8 +22,8 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.HornetQPropertyConversionException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -31,18 +31,18 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * HornetQ implementation of a JMS MapMessage.
- * 
+ *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * 
+ *
  * @version $Revision: 3412 $
  *
  * $Id: HornetQRAMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
-public class HornetQMapMessage extends HornetQMessage implements MapMessage
+public final class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
    // Constants -----------------------------------------------------
 
@@ -66,7 +66,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       super(HornetQMapMessage.TYPE, session);
 
       map = new TypedProperties();
-      
+
       invalid = true;
    }
 
@@ -76,7 +76,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    protected HornetQMapMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
-      
+
       invalid = false;
    }
 
@@ -86,7 +86,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    }
 
    /**
-    * 
+    *
     * Constructor for a foreign MapMessage
     * @param foreign
     * @throws JMSException
@@ -389,7 +389,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    public Enumeration getMapNames() throws JMSException
    {
-      Set propNames = new HashSet<String>();
+      Set<String> propNames = new HashSet<String>();
 
       for (SimpleString str : map.getPropertyNames())
       {
@@ -421,10 +421,10 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    {
       if (invalid)
       {
-         message.getBodyBuffer().resetWriterIndex(); 
-         
+         message.getBodyBuffer().resetWriterIndex();
+
          map.encode(message.getBodyBuffer());
-         
+
          invalid = false;
       }
 
@@ -447,7 +447,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    /**
     * Check the name
-    * 
+    *
     * @param name the name
     */
    private void checkName(final String name) throws JMSException

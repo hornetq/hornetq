@@ -32,7 +32,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
  * <p>
  * Its main purpose is to store the data as a Journal would, but without verifying records.
  */
-public class FileWrapperJournal extends JournalBase implements Journal
+public final class FileWrapperJournal extends JournalBase
 {
    private final ReentrantLock lockAppend = new ReentrantLock();
 

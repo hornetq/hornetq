@@ -13,13 +13,13 @@
 package org.hornetq.ra;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -178,7 +178,7 @@ public final class HornetQRaUtils
     * @param config
     * @return hash-table with configuration option pairs
     */
-   public static Hashtable<?,?> parseHashtableConfig(final String config)
+   public static Hashtable<String, String> parseHashtableConfig(final String config)
    {
       Hashtable<String,String> hashtable = new Hashtable<String, String>();
 
@@ -274,7 +274,7 @@ public final class HornetQRaUtils
          }
       });
    }
-   
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.
