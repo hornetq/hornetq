@@ -72,10 +72,11 @@ echo "Using the following ant version from ${ANT_HOME}:"
 
 $ANT_HOME/bin/ant -version
 
-$ANT_HOME/bin/ant "$@" -Dhornetq.run_script=true
+$ANT_HOME/bin/ant "$@" -Dhornetq.run_script=true; RC=$?
 
 
 # Restore the original path
 ANT_HOME=$ORIG_ANT_HOME
 
 export ANT_HOME
+exit $RC
