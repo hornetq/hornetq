@@ -103,9 +103,13 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createConnection(null, null);
    }
 
-   public Connection createConnection(final String username, final String password) throws JMSException
+   public synchronized Connection createConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      HornetQConnection connection =
+               new HornetQConnection(username, password, HornetQConnection.TYPE_GENERIC_CONNECTION,
+                                     createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // QueueConnectionFactory implementation --------------------------------------------------------
@@ -115,9 +119,12 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createQueueConnection(null, null);
    }
 
-   public QueueConnection createQueueConnection(final String username, final String password) throws JMSException
+   public synchronized QueueConnection
+            createQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_QUEUE_CONNECTION);
+      HornetQQueueConnection connection = new HornetQQueueConnection(username, password, createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // TopicConnectionFactory implementation --------------------------------------------------------
@@ -127,9 +134,12 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createTopicConnection(null, null);
    }
 
-   public TopicConnection createTopicConnection(final String username, final String password) throws JMSException
+   public synchronized TopicConnection
+            createTopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_TOPIC_CONNECTION);
+      HornetQTopicConnection connection = new HornetQTopicConnection(username, password, createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // XAConnectionFactory implementation -----------------------------------------------------------
@@ -139,9 +149,12 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createXAConnection(null, null);
    }
 
-   public XAConnection createXAConnection(final String username, final String password) throws JMSException
+   public synchronized XAConnection createXAConnection(final String username, final String password)
+                                                                                                    throws JMSException
    {
-      return (XAConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      HornetQXAConnection connection = new HornetQXAConnection(username, password, createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------
@@ -151,9 +164,12 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createXAQueueConnection(null, null);
    }
 
-   public XAQueueConnection createXAQueueConnection(final String username, final String password) throws JMSException
+   public synchronized XAQueueConnection
+            createXAQueueConnection(final String username, final String password) throws JMSException
    {
-      return (XAQueueConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
+      HornetQXAQueueConnection connection = new HornetQXAQueueConnection(username, password, createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // XATopicConnectionFactory implementation ------------------------------------------------------
@@ -163,9 +179,12 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createXATopicConnection(null, null);
    }
 
-   public XATopicConnection createXATopicConnection(final String username, final String password) throws JMSException
+   public synchronized XATopicConnection
+            createXATopicConnection(final String username, final String password) throws JMSException
    {
-      return (XATopicConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
+      HornetQXATopicConnection connection = new HornetQXATopicConnection(username, password, createFactory(), this);
+      authorizeConnection(connection);
+      return connection;
    }
 
    // Referenceable implementation -----------------------------------------------------------------
@@ -570,103 +589,9 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected synchronized HornetQConnection createConnectionInternal(final String username,
-                                                                     final String password,
-                                                                     final boolean isXA,
-                                                                     final int type) throws JMSException
+   private synchronized void authorizeConnection(HornetQConnection connection) throws JMSException
    {
       readOnly = true;
-
-      ClientSessionFactory factory;
-
-      try
-      {
-         factory = serverLocator.createSessionFactory();
-      }
-      catch (Exception e)
-      {
-         JMSException jmse = new JMSException("Failed to create session factory");
-
-         jmse.initCause(e);
-         jmse.setLinkedException(e);
-
-         throw jmse;
-      }
-
-      HornetQConnection connection = null;
-
-      if (isXA)
-      {
-         if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
-         {
-            connection = new HornetQXAConnection(username,
-                                                password,
-                                                type,
-                                                clientID,
-                                                dupsOKBatchSize,
-                                                transactionBatchSize,
-                                                factory);
-         }
-         else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
-         {
-            connection = new HornetQXAQueueConnection(username,
-                                                      password,
-                                                      type,
-                                                      clientID,
-                                                      dupsOKBatchSize,
-                                                      transactionBatchSize,
-                                                      factory);
-         }
-         else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
-         {
-            connection = new HornetQXATopicConnection(username,
-                                                      password,
-                                                      type,
-                                                      clientID,
-                                                      dupsOKBatchSize,
-                                                      transactionBatchSize,
-                                                      factory);
-         }
-      }
-      else
-      {
-         if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
-         {
-            connection = new HornetQConnection(username,
-                                               password,
-                                               type,
-                                               clientID,
-                                               dupsOKBatchSize,
-                                               transactionBatchSize,
-                                               factory);
-         }
-         else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
-         {
-            connection = new HornetQQueueConnection(username,
-                                                    password,
-                                                    type,
-                                                    clientID,
-                                                    dupsOKBatchSize,
-                                                    transactionBatchSize,
-                                                    factory);
-         }
-         else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
-         {
-            connection = new HornetQTopicConnection(username,
-                                                    password,
-                                                    type,
-                                                    clientID,
-                                                    dupsOKBatchSize,
-                                                    transactionBatchSize,
-                                                    factory);
-         }
-      }
-
-      if (connection == null)
-      {
-         throw new JMSException("Failed to create connection: invalid type " + type);
-      }
-      connection.setReference(this);
 
       try
       {
@@ -683,8 +608,28 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          }
          throw e;
       }
+   }
 
-      return connection;
+   /**
+    * @param factory
+    * @return
+    * @throws JMSException
+    */
+   private ClientSessionFactory createFactory() throws JMSException
+   {
+      try
+      {
+         return serverLocator.createSessionFactory();
+      }
+      catch (Exception e)
+      {
+         JMSException jmse = new JMSException("Failed to create session factory");
+
+         jmse.initCause(e);
+         jmse.setLinkedException(e);
+
+         throw jmse;
+      }
    }
 
    @Override

@@ -13,26 +13,45 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.ConnectionConsumer;
+import javax.jms.JMSException;
+import javax.jms.Queue;
 import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
+import javax.jms.ServerSessionPool;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS QueueConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQQueueConnection extends HornetQConnection implements QueueConnection
 {
    public HornetQQueueConnection(final String username,
                             final String password,
-                            final int connectionType,
-                            final String clientID,
-                            final int dupsOKBatchSize,
-                            final int transactionBatchSize,
-                            final ClientSessionFactory sessionFactory)
+
+                                 final ClientSessionFactory sessionFactory,
+                                 HornetQConnectionFactory hornetQConnectionFactory)
    {
-      super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
+      super(username, password, HornetQConnection.TYPE_QUEUE_CONNECTION, sessionFactory, hornetQConnectionFactory);
    }
 
+   @Override
+   public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+   }
+
+   @Override
+   public ConnectionConsumer
+            createConnectionConsumer(final Queue queue, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   {
+      checkClosed();
+      checkTempQueues(queue);
+      return null;
+   }
 }

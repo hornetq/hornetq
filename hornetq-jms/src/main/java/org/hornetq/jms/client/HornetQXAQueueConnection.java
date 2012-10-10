@@ -13,25 +13,54 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.ConnectionConsumer;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
 import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XAQueueConnection.
- * 
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAQueueConnection extends HornetQConnection implements XAQueueConnection
+public class HornetQXAQueueConnection extends HornetQXAConnection implements XAQueueConnection
 {
-   public HornetQXAQueueConnection(final String username,
-                                 final String password,
-                                 final int connectionType,
-                                 final String clientID,
-                                 final int dupsOKBatchSize,
-                                 final int transactionBatchSize,
-                                 final ClientSessionFactory sessionFactory)
-        {
-           super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
-        }
+   public HornetQXAQueueConnection(final String username, final String password,
+                                   final ClientSessionFactory sessionFactory,
+                                   HornetQConnectionFactory hornetQConnectionFactory)
+   {
+      super(username, password, HornetQConnection.TYPE_QUEUE_CONNECTION, sessionFactory,
+            hornetQConnectionFactory);
+   }
+
+   @Override
+   public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+   }
+
+   @Override
+   public ConnectionConsumer
+            createConnectionConsumer(final Queue queue, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   {
+      checkClosed();
+      checkTempQueues(queue);
+      return null;
+   }
+
+   @Override
+   public XAQueueSession createXAQueueSession() throws JMSException
+   {
+      checkClosed();
+      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                                   HornetQSession.TYPE_QUEUE_SESSION);
+
+   }
 }
