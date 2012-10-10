@@ -157,8 +157,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-
-      return (Session)createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -366,7 +365,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Queue queue,
@@ -384,7 +383,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Topic topic,
@@ -484,7 +483,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       }
    }
 
-   private Object createSessionInternal(final boolean transacted,
+   protected final HornetQSession createSessionInternal(final boolean transacted,
                                                   int acknowledgeMode,
                                                   final boolean isXA,
                                                   final int type) throws JMSException
@@ -596,7 +595,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
    // Private --------------------------------------------------------------------------------------
 
-   private void checkClosed() throws JMSException
+   protected final void checkClosed() throws JMSException
    {
       if (closed)
       {
