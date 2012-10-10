@@ -16,6 +16,11 @@
    <dependencies>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-commons</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-core</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -36,12 +41,13 @@
                      <createSourcesJar>true</createSourcesJar>
                      <artifactSet>
                         <includes>
+                            <include>org.hornetq:hornetq-commons</include>
                             <include>org.hornetq:hornetq-core</include>
                         </includes>
                      </artifactSet>
                      <filters>
                         <filter>
-                           <artifact>org.hornetq:hornetq-core</artifact>
+                           <artifact>org.hornetq:*</artifact>
                            <includes>
                               <include>hornetq-version.properties</include>
                               <include>org/hornetq/api/**/*.class</include>
