@@ -35,21 +35,10 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class SessionTest extends HornetQServerTestCase
 {
-   // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testCreateProducer() throws Exception
    {
@@ -119,7 +108,7 @@ public class SessionTest extends HornetQServerTestCase
 
    public void testCreateQueueOnATopicSession() throws Exception
    {
-      TopicConnection c = (TopicConnection)getConnectionFactory().createConnection();
+      TopicConnection c = getTopicConnectionFactory().createTopicConnection();
       TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
       try
@@ -187,7 +176,7 @@ public class SessionTest extends HornetQServerTestCase
 
    public void testCreateTopicOnAQueueSession() throws Exception
    {
-      QueueConnection c = (QueueConnection)getConnectionFactory().createConnection();
+      QueueConnection c = getQueueConnectionFactory().createQueueConnection();
       QueueSession s = c.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
       try

@@ -13,25 +13,43 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.ConnectionConsumer;
+import javax.jms.JMSException;
+import javax.jms.ServerSessionPool;
+import javax.jms.Topic;
 import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS TopicConnection.
- * 
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQTopicConnection extends HornetQConnection implements TopicConnection
 {
-   public HornetQTopicConnection(final String username,
-                                 final String password,
-                                 final int connectionType,
-                                 final String clientID,
-                                 final int dupsOKBatchSize,
-                                 final int transactionBatchSize,
-                                 final ClientSessionFactory sessionFactory)
-        {
-           super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
-        }
+   public HornetQTopicConnection(final String username, final String password,
+                                 final ClientSessionFactory sessionFactory,
+                                 HornetQConnectionFactory hornetQConnectionFactory)
+   {
+      super(username, password, HornetQConnection.TYPE_TOPIC_CONNECTION, sessionFactory, hornetQConnectionFactory);
+   }
+
+   @Override
+   public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+      return createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
+   }
+
+   @Override
+   public ConnectionConsumer
+            createConnectionConsumer(final Topic topic, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   {
+      checkClosed();
+      checkTempQueues(topic);
+      return null;
+   }
+
 }

@@ -29,6 +29,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
@@ -49,7 +51,6 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
@@ -87,9 +88,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    private FakeJMSStorageManager fakeJMSStorageManager;
 
-   // Static --------------------------------------------------------
-
-   private static String toCSV(final Object[] objects)
+   private static final String toCSV(final Object[] objects)
    {
       StringBuilder str = new StringBuilder();
       for (int i = 0; i < objects.length; i++)
@@ -102,10 +101,6 @@ public class JMSServerControlTest extends ManagementTestBase
       }
       return str.toString();
    }
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /** Number of consumers used by the test itself */
    protected int getNumberOfConsumers()
@@ -620,13 +615,13 @@ public class JMSServerControlTest extends ManagementTestBase
             .getConnectorConfigurations()
             .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");
@@ -652,7 +647,6 @@ public class JMSServerControlTest extends ManagementTestBase
       Xid xid = newXID();
 
       JMSServerControl control = createManagementControl();
-      TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getName());
       String cfJNDIBinding = "/cf";
       String cfName = "cf";
 
@@ -660,13 +654,13 @@ public class JMSServerControlTest extends ManagementTestBase
             .getConnectorConfigurations()
             .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");
@@ -846,7 +840,7 @@ public class JMSServerControlTest extends ManagementTestBase
       void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception;
    }
 
-   class FakeJMSStorageManager implements JMSStorageManager
+   final static class FakeJMSStorageManager implements JMSStorageManager
    {
       Map<String, PersistedDestination> destinationMap = new HashMap<String, PersistedDestination>();
 
