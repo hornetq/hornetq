@@ -852,7 +852,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          if (isClosed() || !receivedTopology)
          {
-            factory.cleanup();
+            if (factory != null)
+               factory.cleanup();
             throw HornetQMessageBundle.BUNDLE.connectionTimedOutOnReceiveTopology(discoveryGroup);
          }
 
