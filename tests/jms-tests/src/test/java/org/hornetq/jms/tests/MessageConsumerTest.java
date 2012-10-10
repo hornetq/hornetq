@@ -49,22 +49,9 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
  */
 public class MessageConsumerTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testReceiveWithClientAckThenCloseSession() throws Exception
    {
       Connection conn = null;
@@ -1591,14 +1578,13 @@ public class MessageConsumerTest extends JMSTestCase
 
    public void testGetNoLocalOnClosedConsumer() throws Exception
    {
-      Connection consumerConnection = null;
+      TopicConnection consumerConnection = null;
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
-         TopicConnection tc = (TopicConnection)consumerConnection;
+         consumerConnection = JMSTestCase.cf.createTopicConnection();
 
-         TopicSession consumerSession = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+         TopicSession consumerSession = consumerConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
          TopicSubscriber topicConsumer = consumerSession.createSubscriber(HornetQServerTestCase.topic1);
 

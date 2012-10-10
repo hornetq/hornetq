@@ -446,7 +446,7 @@ public class HornetQConnection implements Connection
       return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
    }
 
-   protected HornetQSession
+   protected final HornetQSession
             createSessionInternal(final boolean transacted, int acknowledgeMode,
                                           final int type) throws JMSException
    {
@@ -526,7 +526,7 @@ public class HornetQConnection implements Connection
       }
    }
 
-   protected void checkClosed() throws JMSException
+   protected final void checkClosed() throws JMSException
    {
       if (closed)
       {

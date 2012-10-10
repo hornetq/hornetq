@@ -26,6 +26,7 @@ import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnectionFactory;
@@ -39,6 +40,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.tests.tools.ServerManagement;
+import org.hornetq.jms.tests.tools.container.InVMInitialContextFactory;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
@@ -158,7 +160,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    public String getContextFactory()
    {
-      return "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory";
+      return InVMInitialContextFactory.class.getCanonicalName();
    }
 
    public void start() throws Exception
@@ -313,6 +315,11 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
    public ConnectionFactory getConnectionFactory() throws Exception
    {
       return (ConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
+   }
+
+   public QueueConnectionFactory getQueueConnectionFactory() throws Exception
+   {
+      return (QueueConnectionFactory)getInitialContext().lookup("/CF_QUEUE");
    }
 
    public TopicConnectionFactory getTopicConnectionFactory() throws Exception
