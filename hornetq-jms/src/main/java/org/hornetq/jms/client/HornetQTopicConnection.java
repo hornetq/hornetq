@@ -39,7 +39,7 @@ public class HornetQTopicConnection extends HornetQConnection implements TopicCo
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
+      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    @Override

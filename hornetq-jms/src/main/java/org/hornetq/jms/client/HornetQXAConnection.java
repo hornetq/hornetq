@@ -18,6 +18,7 @@ import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
@@ -43,7 +44,19 @@ public class HornetQXAConnection extends HornetQConnection implements XAConnecti
    public XASession createXASession() throws JMSException
    {
       checkClosed();
-      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                              HornetQSession.TYPE_GENERIC_SESSION);
+      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_GENERIC_SESSION);
+   }
+
+   @Override
+   protected final boolean isXa()
+   {
+      return true;
+   }
+
+   @Override
+   protected final HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session,
+                                                  int type)
+   {
+      return new HornetQXASession(this, transacted, acknowledgeMode, session, type);
    }
 }

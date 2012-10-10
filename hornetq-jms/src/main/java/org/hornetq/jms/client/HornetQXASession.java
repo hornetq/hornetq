@@ -21,10 +21,7 @@ import org.hornetq.api.core.client.ClientSession;
 
 /**
  * A HornetQXASession
- *
  * @author clebertsuconic
- *
- *
  */
 public class HornetQXASession extends HornetQSession implements XAQueueSession, XATopicSession, XASession
 {
@@ -37,32 +34,9 @@ public class HornetQXASession extends HornetQSession implements XAQueueSession, 
     * @param session
     * @param sessionType
     */
-   protected HornetQXASession(HornetQConnection connection,
-                              boolean transacted,
-                              boolean xa,
-                              int ackMode,
-                              ClientSession session,
+   protected HornetQXASession(HornetQConnection connection, boolean transacted, int ackMode, ClientSession session,
                               int sessionType)
    {
-      super(connection, transacted, xa, ackMode, session, sessionType);
+      super(connection, transacted, true, ackMode, session, sessionType);
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

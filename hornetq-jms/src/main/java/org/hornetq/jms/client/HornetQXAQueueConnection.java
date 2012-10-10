@@ -42,7 +42,7 @@ public class HornetQXAQueueConnection extends HornetQXAConnection implements XAQ
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    @Override
@@ -59,8 +59,7 @@ public class HornetQXAQueueConnection extends HornetQXAConnection implements XAQ
    public XAQueueSession createXAQueueSession() throws JMSException
    {
       checkClosed();
-      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                                   HornetQSession.TYPE_QUEUE_SESSION);
+      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_QUEUE_SESSION);
 
    }
 }

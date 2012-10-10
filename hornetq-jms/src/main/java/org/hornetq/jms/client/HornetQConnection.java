@@ -140,12 +140,11 @@ public class HornetQConnection implements Connection
    }
 
    @Override
-   public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   public final Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
 
-      return createSessionInternal(transacted, acknowledgeMode, false,
-                                            HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    @Override
@@ -437,7 +436,18 @@ public class HornetQConnection implements Connection
       }
    }
 
-   protected Session createSessionInternal(final boolean transacted, int acknowledgeMode, final boolean isXA,
+   protected boolean isXa()
+   {
+      return false;
+   }
+
+   protected HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session, int type)
+   {
+      return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
+   }
+
+   protected HornetQSession
+            createSessionInternal(final boolean transacted, int acknowledgeMode,
                                           final int type) throws JMSException
    {
       if (transacted)
@@ -452,36 +462,37 @@ public class HornetQConnection implements Connection
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, false, false,
+                     sessionFactory.createSession(username, password, isXa(), false, false,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, true,
+                     sessionFactory.createSession(username, password, isXa(), true, true,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(), 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, true,
+                     sessionFactory.createSession(username, password, isXa(), true, true,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(), dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, false,
+                     sessionFactory.createSession(username, password, isXa(), true, false,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
+            session =
+                     sessionFactory.createSession(username, password, isXa(), true, false, false, transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
+            session = sessionFactory.createSession(username, password, isXa(), true, false, true, transactionBatchSize);
          }
          else
          {
@@ -496,16 +507,7 @@ public class HornetQConnection implements Connection
          session.addFailureListener(listener);
          session.addFailoverListener(failoverListener);
 
-         HornetQSession jbs;
-
-         if (isXA)
-         {
-            jbs = new HornetQXASession(this, transacted, isXA, acknowledgeMode, session, type);
-         }
-         else
-         {
-            jbs = new HornetQSession(this, transacted, isXA, acknowledgeMode, session, type);
-         }
+         HornetQSession jbs = createHQSession(transacted, acknowledgeMode, session, type);
 
          sessions.add(jbs);
 
@@ -514,7 +516,7 @@ public class HornetQConnection implements Connection
             session.start();
          }
 
-         this.addSessionMetaData(session);
+         addSessionMetaData(session);
 
          return jbs;
       }

@@ -42,7 +42,7 @@ public final class HornetQXATopicConnection extends HornetQXAConnection implemen
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
+      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    @Override
@@ -59,8 +59,6 @@ public final class HornetQXATopicConnection extends HornetQXAConnection implemen
    public XATopicSession createXATopicSession() throws JMSException
    {
       checkClosed();
-      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
-                                                   HornetQSession.TYPE_TOPIC_SESSION);
-
+      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_TOPIC_SESSION);
    }
 }

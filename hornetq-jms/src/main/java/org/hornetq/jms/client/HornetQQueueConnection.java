@@ -42,7 +42,7 @@ public class HornetQQueueConnection extends HornetQConnection implements QueueCo
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    @Override
