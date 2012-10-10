@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.JMSException;
+import javax.jms.QueueSession;
 import javax.jms.XAQueueConnection;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -34,4 +36,11 @@ public class HornetQXAQueueConnection extends HornetQConnection implements XAQue
         {
            super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
         }
+
+
+   public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+      return createSessionInternal(transacted, acknowledgeMode, true, HornetQSession.TYPE_QUEUE_SESSION);
+   }
 }
