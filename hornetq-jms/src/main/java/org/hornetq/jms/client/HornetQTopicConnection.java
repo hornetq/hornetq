@@ -13,16 +13,14 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.TopicConnection;
-
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS TopicConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQTopicConnection extends HornetQConnection implements TopicConnection
+public class HornetQTopicConnection extends HornetQConnection
 {
    public HornetQTopicConnection(final String username,
                                  final String password,

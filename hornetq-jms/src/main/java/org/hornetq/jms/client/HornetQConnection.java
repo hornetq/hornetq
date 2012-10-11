@@ -17,7 +17,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
@@ -52,7 +51,7 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * HornetQ implementation of a JMS Connection.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -60,7 +59,7 @@ import org.hornetq.utils.VersionLoader;
  *          <p/>
  *          $Id$
  */
-public class HornetQConnection implements Connection, TopicConnection, QueueConnection
+public class HornetQConnection implements TopicConnection, QueueConnection
 {
    // Constants ------------------------------------------------------------------------------------
    public static final int TYPE_GENERIC_CONNECTION = 0;
@@ -88,7 +87,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    private volatile boolean hasNoLocal;
 
    private volatile ExceptionListener exceptionListener;
-   
+
    private volatile FailoverEventListener failoverEventListener;
 
    private volatile boolean justCreated = true;
@@ -110,7 +109,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    private final String password;
 
    private final SessionFailureListener listener = new JMSFailureListener(this);
-   
+
    private final FailoverEventListener failoverListener = new FailoverEventListenerImpl(this);
 
    private final Version thisVersion;
@@ -185,7 +184,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          throw new IllegalStateException("setClientID can only be called directly after the connection is created");
       }
-      
+
       try
       {
          initialSession.addUniqueMetaData("jms-client-id", clientID);
@@ -243,7 +242,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       exceptionListener = listener;
       justCreated = false;
    }
-   
+
    public synchronized void start() throws JMSException
    {
       checkClosed();
@@ -276,7 +275,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          return;
       }
-      
+
       sessionFactory.close();
 
       try
@@ -433,7 +432,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
     * Sets a FailureListener for the  session which is notified if a failure occurs on the session.
     *
     * @param listener the listener to add
-    * @throws JMSException 
+    * @throws JMSException
     */
    public void setFailoverListener(final FailoverEventListener listener) throws JMSException
    {
@@ -442,9 +441,9 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       justCreated = false;
 
       this.failoverEventListener = listener;
-	   
+
    }
-   
+
 	/**
 	* @return {@link FailoverEventListener} the current failover event listener for this connection
 	* @throws JMSException
@@ -458,8 +457,8 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       return failoverEventListener;
    }
 
-   
-   
+
+
    public void addTemporaryQueue(final SimpleString queueAddress)
    {
       tempQueues.add(queueAddress);
@@ -596,11 +595,11 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          // a set (no duplicates)
          session.addFailureListener(listener);
          session.addFailoverListener(failoverListener);
-         
-         
+
+
 
          HornetQSession jbs;
-         
+
          if (isXA)
          {
             jbs = new HornetQXASession(this, transacted, isXA, acknowledgeMode, session, type);
@@ -616,7 +615,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          {
             session.start();
          }
-         
+
          this.addSessionMetaData(session);
 
          return jbs;
@@ -721,11 +720,11 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
       public void beforeReconnect(final HornetQException me)
       {
-    	  
+
       }
 
    }
-   
+
    private static class FailoverEventListenerImpl implements FailoverEventListener
    {
 	   private final WeakReference<HornetQConnection> connectionRef;
@@ -747,7 +746,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
 	                if (failoverListener != null)
 	                {
-	    
+
 	                   new Thread(new Runnable()
 	                   {
 	                      public void run()
@@ -767,6 +766,6 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 	          }
 
 		}
-	   
+
    }
 }
