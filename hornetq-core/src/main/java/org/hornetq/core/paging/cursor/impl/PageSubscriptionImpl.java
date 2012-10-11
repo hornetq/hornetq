@@ -54,10 +54,12 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
+
 /**
  * A PageCursorImpl
- *
+ * <p/>
  * A page cursor will always store its
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 class PageSubscriptionImpl implements PageSubscription
@@ -104,12 +106,12 @@ class PageSubscriptionImpl implements PageSubscription
    // Constructors --------------------------------------------------
 
    PageSubscriptionImpl(final PageCursorProvider cursorProvider,
-                               final PagingStore pageStore,
-                               final StorageManager store,
-                               final Executor executor,
-                               final Filter filter,
-                               final long cursorId,
-                               final boolean persistent)
+                        final PagingStore pageStore,
+                        final StorageManager store,
+                        final Executor executor,
+                        final Filter filter,
+                        final long cursorId,
+                        final boolean persistent)
    {
       this.pageStore = pageStore;
       this.store = store;
@@ -519,7 +521,7 @@ class PageSubscriptionImpl implements PageSubscription
     */
    public long getFirstPage()
    {
-      for (;;)
+      for (; ; )
       {
          try
          {
@@ -864,7 +866,7 @@ class PageSubscriptionImpl implements PageSubscription
 
       getPageInfo(position).remove(position);
 
-      PageCursorTX cursorTX = (PageCursorTX)tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
+      PageCursorTX cursorTX = (PageCursorTX) tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
 
       if (cursorTX == null)
       {
@@ -890,7 +892,8 @@ class PageSubscriptionImpl implements PageSubscription
    }
 
    /**
-    *  A callback from the PageCursorInfo. It will be called when all the messages on a page have been acked
+    * A callback from the PageCursorInfo. It will be called when all the messages on a page have been acked
+    *
     * @param info
     */
    private void onPageDone(final PageCursorInfo info)
@@ -907,7 +910,7 @@ class PageSubscriptionImpl implements PageSubscription
     * This will hold information about the pending ACKs towards a page.
     * This instance will be released as soon as the entire page is consumed, releasing the memory at that point
     * The ref counts are increased also when a message is ignored for any reason.
-    * */
+    */
    private class PageCursorInfo
    {
       // Number of messages existent on this page
@@ -946,10 +949,10 @@ class PageSubscriptionImpl implements PageSubscription
       public String toString()
       {
          return "PageCursorInfo::PageID=" + pageId +
-                " numberOfMessage = " +
-                numberOfMessages +
-                ", confirmed = " +
-                confirmed;
+            " numberOfMessage = " +
+            numberOfMessages +
+            ", confirmed = " +
+            confirmed;
       }
 
       public PageCursorInfo(final long pageId, final int numberOfMessages, final PageCache cache)
@@ -1031,11 +1034,11 @@ class PageSubscriptionImpl implements PageSubscription
          if (isTrace)
          {
             HornetQLogger.LOGGER.trace("numberOfMessages =  " + getNumberOfMessages() +
-                    " confirmed =  " +
-                    (confirmed.get() + 1) +
-                    " pendingTX = " + pendingTX +
-                    ", page = " +
-                    pageId + " posACK = " + posACK);
+               " confirmed =  " +
+               (confirmed.get() + 1) +
+               " pendingTX = " + pendingTX +
+               ", page = " +
+               pageId + " posACK = " + posACK);
          }
 
          boolean added = internalAddACK(posACK);
@@ -1103,7 +1106,7 @@ class PageSubscriptionImpl implements PageSubscription
    private static class PageCursorTX extends TransactionOperationAbstract
    {
       private final Map<PageSubscriptionImpl, List<PagePosition>> pendingPositions =
-               new HashMap<PageSubscriptionImpl, List<PagePosition>>();
+         new HashMap<PageSubscriptionImpl, List<PagePosition>>();
 
       private void addPositionConfirmation(final PageSubscriptionImpl cursor, final PagePosition position)
       {
@@ -1154,8 +1157,10 @@ class PageSubscriptionImpl implements PageSubscription
 
       private volatile PagedReference lastRedelivery = null;
 
-      /** next element taken on hasNext test.
-       *  it has to be delivered on next next operation */
+      /**
+       * next element taken on hasNext test.
+       * it has to be delivered on next next operation
+       */
       private volatile PagedReference cachedNext;
 
       public CursorIterator()
@@ -1277,11 +1282,11 @@ class PageSubscriptionImpl implements PageSubscription
                if (valid && message.getPagedMessage().getTransactionID() >= 0)
                {
                   PageTransactionInfo tx = pageStore.getPagingManager().getTransaction(message.getPagedMessage()
-                                                                                              .getTransactionID());
+                     .getTransactionID());
                   if (tx == null)
                   {
                      HornetQLogger.LOGGER.pageSubscriptionCouldntLoad(message.getPagedMessage().getTransactionID(),
-                           message.getPosition(), pageStore.getAddress(), queue.getName());
+                        message.getPosition(), pageStore.getAddress(), queue.getName());
                      valid = false;
                      ignored = true;
                   }
@@ -1339,8 +1344,10 @@ class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      /** QueueImpl::deliver could be calling hasNext while QueueImpl.depage could be using next and hasNext as well.
-       *  It would be a rare race condition but I would prefer avoiding that scenario */
+      /**
+       * QueueImpl::deliver could be calling hasNext while QueueImpl.depage could be using next and hasNext as well.
+       * It would be a rare race condition but I would prefer avoiding that scenario
+       */
       public synchronized boolean hasNext()
       {
          // if an unbehaved program called hasNext twice before next, we only cache it once.
@@ -1363,7 +1370,7 @@ class PageSubscriptionImpl implements PageSubscription
       public void remove()
       {
          deliveredCount.incrementAndGet();
-         PageCursorInfo info =  PageSubscriptionImpl.this.getPageInfo(position);
+         PageCursorInfo info = PageSubscriptionImpl.this.getPageInfo(position);
          if (info != null)
          {
             info.remove(position);

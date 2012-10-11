@@ -36,13 +36,11 @@ import org.hornetq.utils.SoftValueHashMap;
 
 /**
  * A PageProviderIMpl
- *
+ * <p/>
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
- *       However I want to keep this isolated as much as possible during development
+ * However I want to keep this isolated as much as possible during development
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
- *
  */
 public class PageCursorProviderImpl implements PageCursorProvider
 {
@@ -89,7 +87,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       if (HornetQLogger.LOGGER.isDebugEnabled())
       {
-         HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+         HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception("trace"));
       }
 
       if (activeCursors.containsKey(cursorID))
@@ -98,7 +96,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
 
       PageSubscription activeCursor =
-               new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
+         new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
@@ -155,7 +153,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
-               if (!pagingStore.checkPageFileExists((int)pageId))
+               if (!pagingStore.checkPageFileExists((int) pageId))
                {
                   return null;
                }
@@ -167,7 +165,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                cache.lock();
                if (isTrace)
                {
-                  HornetQLogger.LOGGER.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
+                  HornetQLogger.LOGGER.trace("adding " + pageId + " into cursor = " + this.pagingStore.getAddress());
                }
                softCache.put(pageId, cache);
             }
@@ -180,7 +178,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             Page page = null;
             try
             {
-               page = pagingStore.createPage((int)pageId);
+               page = pagingStore.createPage((int) pageId);
 
                storageManager.beforePageRead();
                page.open();
@@ -457,7 +455,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             PagedMessage[] pgdMessages;
             synchronized (softCache)
             {
-               cache = softCache.get((long)depagedPage.getPageId());
+               cache = softCache.get((long) depagedPage.getPageId());
             }
 
             if (isTrace)
@@ -503,7 +501,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
             synchronized (softCache)
             {
-               softCache.remove((long)depagedPage.getPageId());
+               softCache.remove((long) depagedPage.getPageId());
             }
          }
       }
@@ -528,7 +526,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    protected void onDeletePage(Page deletedPage) throws Exception
    {
       List<PageSubscription> subscriptions = cloneSubscriptions();
-      for (PageSubscription subs: subscriptions)
+      for (PageSubscription subs : subscriptions)
       {
          subs.onDeletePage(deletedPage);
       }
@@ -579,7 +577,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    /* Protected as we may let test cases to instrument the test */
    protected PageCacheImpl createPageCache(final long pageId) throws Exception
    {
-      return new PageCacheImpl(pagingStore.createPage((int)pageId));
+      return new PageCacheImpl(pagingStore.createPage((int) pageId));
    }
 
    // Private -------------------------------------------------------

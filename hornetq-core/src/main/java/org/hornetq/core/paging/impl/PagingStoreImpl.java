@@ -155,11 +155,11 @@ public class PagingStoreImpl implements PagingStore
       if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
       {
          throw new IllegalStateException("pageSize for address " + address +
-               " >= maxSize. Normally pageSize should" +
-               " be significantly smaller than maxSize, ms: " +
-               maxSize +
-               " ps " +
-               pageSize);
+            " >= maxSize. Normally pageSize should" +
+            " be significantly smaller than maxSize, ms: " +
+            maxSize +
+            " ps " +
+            pageSize);
       }
 
       this.executor = executor;
@@ -816,7 +816,7 @@ public class PagingStoreImpl implements PagingStore
    @Override
    public boolean
    page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock)
-         throws Exception
+      throws Exception
    {
 
       if (!running)
@@ -902,7 +902,7 @@ public class PagingStoreImpl implements PagingStore
             if (isTrace)
             {
                HornetQLogger.LOGGER.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
-                     " pageId=" + currentPage.getPageId());
+                  " pageId=" + currentPage.getPageId());
             }
 
             if (tx != null)
