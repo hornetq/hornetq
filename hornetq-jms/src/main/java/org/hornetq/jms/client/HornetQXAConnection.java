@@ -13,13 +13,18 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.JMSException;
+import javax.jms.Session;
 import javax.jms.XAConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicSession;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XAConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQXAConnection extends HornetQConnection implements XAConnection
@@ -36,4 +41,32 @@ public class HornetQXAConnection extends HornetQConnection implements XAConnecti
       super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
    }
 
+   // XAConnection implementation ------------------------------------------------------------------
+
+   public XASession createXASession() throws JMSException
+   {
+      checkClosed();
+      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                              HornetQSession.TYPE_GENERIC_SESSION);
+   }
+
+   // XAQueueConnection implementation -------------------------------------------------------------
+
+   public XAQueueSession createXAQueueSession() throws JMSException
+   {
+      checkClosed();
+      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                                   HornetQSession.TYPE_QUEUE_SESSION);
+
+   }
+
+   // XATopicConnection implementation -------------------------------------------------------------
+
+   public XATopicSession createXATopicSession() throws JMSException
+   {
+      checkClosed();
+      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true,
+                                                   HornetQSession.TYPE_TOPIC_SESSION);
+
+   }
 }
