@@ -261,10 +261,10 @@ public class JSONObject
       this.map = new HashMap();
       if (map != null)
       {
-         Iterator i = map.entrySet().iterator();
+         Iterator<Map.Entry> i = map.entrySet().iterator();
          while (i.hasNext())
          {
-            Map.Entry e = (Map.Entry)i.next();
+            Map.Entry e = i.next();
             if (JSONObject.isStandardProperty(e.getValue().getClass()))
             {
                this.map.put(e.getKey(), e.getValue());
