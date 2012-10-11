@@ -241,6 +241,11 @@ public class Page implements Comparable<Page>
       file.close();
    }
 
+   public boolean isLive()
+   {
+      return pageCache != null;
+   }
+
    public boolean delete(final PagedMessage[] messages) throws Exception
    {
       if (storageManager != null)

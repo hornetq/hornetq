@@ -110,7 +110,6 @@ public class PagingStoreImpl implements PagingStore
 
    private volatile Page currentPage;
 
-   private final Object pagingGuard = new Object();
    private volatile boolean paging = false;
 
    private final PageCursorProvider cursorProvider;
@@ -181,7 +180,10 @@ public class PagingStoreImpl implements PagingStore
          this.syncTimer = null;
       }
 
-      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executor, addressSettings.getPageCacheMaxSize());
+      this.cursorProvider = new PageCursorProviderImpl(this,
+         this.storageManager,
+         executor,
+         addressSettings.getPageCacheMaxSize());
 
    }
 
@@ -286,7 +288,9 @@ public class PagingStoreImpl implements PagingStore
 
    public boolean isPaging()
    {
-      synchronized (pagingGuard)
+      lock.readLock().lock();
+
+      try
       {
          if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
          {
@@ -301,6 +305,10 @@ public class PagingStoreImpl implements PagingStore
             return isFull();
          }
          return paging;
+      }
+      finally
+      {
+         lock.readLock().unlock();
       }
    }
 
@@ -496,10 +504,8 @@ public class PagingStoreImpl implements PagingStore
       lock.writeLock().lock();
       try
       {
-         synchronized (pagingGuard)
-         {
-            paging = false;
-         }
+         paging = false;
+         this.cursorProvider.onPageModeCleared();
       }
       finally
       {
@@ -514,12 +520,23 @@ public class PagingStoreImpl implements PagingStore
          return false;
       }
 
-      synchronized (pagingGuard)
+      lock.readLock().lock();
+      try
       {
+         // I'm not calling isPaging() here because
+         // isPaging will perform extra steps.
+         // at this context it doesn't really matter what policy we are using
+         // since this method is only called when paging.
+         // Besides that isPaging() will perform lock.readLock() again which is not needed here
+         // for that reason the attribute is used directly here.
          if (paging)
          {
             return false;
          }
+      }
+      finally
+      {
+         lock.readLock().unlock();
       }
 
       // if the first check failed, we do it again under a global currentPageLock
@@ -528,32 +545,30 @@ public class PagingStoreImpl implements PagingStore
 
       try
       {
-         synchronized (pagingGuard)
+         // Same notes from previous if (paging) on this method will apply here
+         if (paging)
          {
-            if (paging)
+            return false;
+         }
+
+         if (currentPage == null)
+         {
+            try
             {
+               openNewPage();
+            }
+            catch (Exception e)
+            {
+               // If not possible to starting page due to an IO error, we will just consider it non paging.
+               // This shouldn't happen anyway
+               HornetQLogger.LOGGER.pageStoreStartIOError(e);
                return false;
             }
-
-            if (currentPage == null)
-            {
-               try
-               {
-                  openNewPage();
-               }
-               catch (Exception e)
-               {
-                  // If not possible to starting page due to an IO error, we will just consider it non paging.
-                  // This shouldn't happen anyway
-                  HornetQLogger.LOGGER.pageStoreStartIOError(e);
-                  return false;
-               }
-            }
-
-            paging = true;
-
-            return true;
          }
+
+         paging = true;
+
+         return true;
       }
       finally
       {
@@ -851,7 +866,9 @@ public class PagingStoreImpl implements PagingStore
       }
 
       // We need to ensure a read lock, as depage could change the paging state
-      synchronized (pagingGuard)
+      lock.readLock().lock();
+
+      try
       {
          // First check done concurrently, to avoid synchronization and increase throughput
          if (!paging)
@@ -859,6 +876,11 @@ public class PagingStoreImpl implements PagingStore
             return false;
          }
       }
+      finally
+      {
+         lock.readLock().unlock();
+      }
+
 
       managerLock.lock();
       try
@@ -867,15 +889,14 @@ public class PagingStoreImpl implements PagingStore
 
          try
          {
-            if (!isPaging())
+            if (!paging)
             {
                return false;
             }
 
             if (!message.isDurable())
             {
-               // The address should never be transient when paging (even for non-persistent
-               // messages when paging)
+               // The address should never be transient when paging (even for non-persistent messages when paging)
                // This will force everything to be persisted
                message.bodyChanged();
             }
@@ -938,12 +959,14 @@ public class PagingStoreImpl implements PagingStore
       for (org.hornetq.core.server.Queue q : durableQueues)
       {
          q.getPageSubscription().getCounter().increment(tx, 1);
+         q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }
 
       for (org.hornetq.core.server.Queue q : nonDurableQueues)
       {
          q.getPageSubscription().getCounter().increment(tx, 1);
+         q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }
       return ids;
@@ -951,7 +974,7 @@ public class PagingStoreImpl implements PagingStore
 
    private void installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
    {
-      FinishPageMessageOperation pgOper = (FinishPageMessageOperation) tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+      FinishPageMessageOperation pgOper = (FinishPageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
       if (pgOper == null)
       {
          PageTransactionInfo pgTX = new PageTransactionInfoImpl(tx.getID());
@@ -984,7 +1007,9 @@ public class PagingStoreImpl implements PagingStore
          this.usedStores.add(store);
       }
 
-      public FinishPageMessageOperation(final PageTransactionInfo pageTransaction, final StorageManager storageManager, final PagingManager pagingManager)
+      public FinishPageMessageOperation(final PageTransactionInfo pageTransaction,
+                                        final StorageManager storageManager,
+                                        final PagingManager pagingManager)
       {
          this.pageTransaction = pageTransaction;
          this.storageManager = storageManager;

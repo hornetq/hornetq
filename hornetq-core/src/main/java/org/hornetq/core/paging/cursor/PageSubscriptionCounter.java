@@ -48,4 +48,8 @@ public interface PageSubscriptionCounter
    // used when deleting the counter
    void delete() throws Exception;
 
+   // used when leaving page mode, so the counters are deleted in batches
+   // for each queue on the address
+   void delete(Transaction tx) throws Exception;
+
 }

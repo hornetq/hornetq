@@ -130,21 +130,26 @@ public class JournalStorageManager implements StorageManager
    // grouping journal record type
    private static final byte GROUP_RECORD = 20;
 
+   // These record IDs definitions are meant to be public.
+   // if any other component or any test needs to validate user-record-types from the Journal directly
+   // This is where the definitions will exist and this is what these tests should be using
+   // to verify the IDs
+
    // Bindings journal record type
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte ID_COUNTER_RECORD = 24;
 
-   private static final byte ADDRESS_SETTING_RECORD = 25;
+   public static final byte ADDRESS_SETTING_RECORD = 25;
 
-   private static final byte SECURITY_RECORD = 26;
+   public static final byte SECURITY_RECORD = 26;
 
    // Message journal record types
 
    // This is used when a large message is created but not yet stored on the system.
    // We use this to avoid temporary files missing
-   static final byte ADD_LARGE_MESSAGE_PENDING = 29;
+   public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
    public static final byte ADD_LARGE_MESSAGE = 30;
 
@@ -158,17 +163,17 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte PAGE_TRANSACTION = 35;
 
-   private static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
+   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
-   private static final byte DUPLICATE_ID = 37;
+   public static final byte DUPLICATE_ID = 37;
 
-   private static final byte HEURISTIC_COMPLETION = 38;
+   public static final byte HEURISTIC_COMPLETION = 38;
 
    public static final byte ACKNOWLEDGE_CURSOR = 39;
 
-   private static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
+   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
-   private static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
    public static final byte PAGE_CURSOR_COMPLETE = 42;
 
@@ -1123,6 +1128,11 @@ public class JournalStorageManager implements StorageManager
       {
          readUnLock();
       }
+   }
+
+   public void deleteCursorAcknowledge(long ackID) throws Exception
+   {
+      messageJournal.appendDeleteRecord(ackID, false);
    }
 
    public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
@@ -2640,6 +2650,7 @@ public class JournalStorageManager implements StorageManager
                   if (sub != null)
                   {
                      sub.getCounter().applyIncrement(tx, record.id, encoding.value);
+                     sub.notEmpty();
                   }
                   else
                   {

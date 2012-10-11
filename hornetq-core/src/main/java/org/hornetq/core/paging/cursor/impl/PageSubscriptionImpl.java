@@ -57,8 +57,6 @@ import org.hornetq.utils.LinkedListIterator;
 
 /**
  * A PageCursorImpl
- * <p/>
- * A page cursor will always store its
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -69,6 +67,11 @@ class PageSubscriptionImpl implements PageSubscription
    // Attributes ----------------------------------------------------
 
    private final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
+
+   private boolean empty = true;
+
+   // Number of scheduled cleanups, to avoid too many schedules
+   private final AtomicInteger scheduledCleanupCount = new AtomicInteger(0);
 
    private volatile boolean autoCleanup = true;
 
@@ -90,7 +93,7 @@ class PageSubscriptionImpl implements PageSubscription
 
    private List<PagePosition> recoveredACK;
 
-   private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
+   private final SortedMap<Long, PageCursorInfo> consumedPages = new TreeMap<Long, PageCursorInfo>();
 
    private final PageSubscriptionCounter counter;
 
@@ -160,6 +163,15 @@ class PageSubscriptionImpl implements PageSubscription
       return cursorProvider;
    }
 
+   public void notEmpty()
+   {
+      synchronized (consumedPages)
+      {
+         this.empty = false;
+      }
+
+   }
+
    public void bookmark(PagePosition position) throws Exception
    {
       PageCursorInfo cursorInfo = getPageInfo(position);
@@ -174,7 +186,14 @@ class PageSubscriptionImpl implements PageSubscription
 
    public long getMessageCount()
    {
-      return counter.getValue() - deliveredCount.get();
+      if (empty)
+      {
+         return 0;
+      }
+      else
+      {
+         return counter.getValue() - deliveredCount.get();
+      }
    }
 
    public PageSubscriptionCounter getCounter()
@@ -191,13 +210,22 @@ class PageSubscriptionImpl implements PageSubscription
    {
       PageCursorInfo info = new PageCursorInfo(position.getPageNr(), position.getMessageNr(), null);
       info.setCompleteInfo(position);
-      consumedPages.put(Long.valueOf(position.getPageNr()), info);
+      synchronized (consumedPages)
+      {
+         consumedPages.put(new Long(position.getPageNr()), info);
+      }
    }
 
    public void scheduleCleanupCheck()
    {
       if (autoCleanup)
       {
+         if (scheduledCleanupCount.get() > 2)
+         {
+            return;
+         }
+
+         scheduledCleanupCount.incrementAndGet();
          executor.execute(new Runnable()
          {
 
@@ -211,14 +239,28 @@ class PageSubscriptionImpl implements PageSubscription
                {
                   HornetQLogger.LOGGER.problemCleaningCursorPages(e);
                }
+               finally
+               {
+                  scheduledCleanupCount.decrementAndGet();
+               }
             }
          });
       }
    }
 
+   public void onPageModeCleared(Transaction tx) throws Exception
+   {
+      if (counter != null)
+      {
+         // this could be null on testcases
+         counter.delete(tx);
+      }
+      this.empty = true;
+   }
+
    /**
     * It will cleanup all the records for completed pages
-    */
+    * */
    public void cleanupEntries(final boolean completeDelete) throws Exception
    {
       if (completeDelete)
@@ -232,7 +274,7 @@ class PageSubscriptionImpl implements PageSubscription
       final ArrayList<PageCursorInfo> completedPages = new ArrayList<PageCursorInfo>();
 
       // First get the completed pages using a lock
-      synchronized (this)
+      synchronized (consumedPages)
       {
          // lastAckedPosition = null means no acks were done yet, so we are not ready to cleanup
          if (lastAckedPosition == null)
@@ -246,7 +288,10 @@ class PageSubscriptionImpl implements PageSubscription
 
             if (info.isDone() && !info.isPendingDelete())
             {
-               if (entry.getKey() == lastAckedPosition.getPageNr())
+               Page currentPage = pageStore.getCurrentPage();
+
+               if (currentPage != null && entry.getKey() == pageStore.getCurrentPage().getPageId() &&
+                  currentPage.isLive())
                {
                   HornetQLogger.LOGGER.trace("We can't clear page " + entry.getKey() +
                      " now since it's the current page");
@@ -285,7 +330,7 @@ class PageSubscriptionImpl implements PageSubscription
          // it will delete the page ack records
          for (PagePosition pos : infoPG.acks)
          {
-            if (pos.getRecordID() > 0)
+            if (pos.getRecordID() >= 0)
             {
                store.deleteCursorAcknowledgeTransactional(tx.getID(), pos.getRecordID());
                if (!persist)
@@ -296,6 +341,8 @@ class PageSubscriptionImpl implements PageSubscription
                }
             }
          }
+
+         infoPG.acks.clear();
       }
 
       tx.addOperation(new TransactionOperationAbstract()
@@ -345,32 +392,36 @@ class PageSubscriptionImpl implements PageSubscription
 
       PageCache cache = cursorProvider.getPageCache(pos);
 
-      if (cache == null || (!cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages()))
+      if (cache != null && !cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages())
       {
-         retPos = moveNextPage(pos);
-
-         cache = cursorProvider.getPageCache(retPos);
-
-         if (cache == null)
-         {
-            return null;
-         }
-
-         if (retPos.getMessageNr() >= cache.getNumberOfMessages())
-         {
-            return null;
-         }
+         // The next message is beyond what's available at the current page, so we need to move to the next page
+         cache = null;
       }
 
-      PagedMessage serverMessage = cache.getMessage(retPos.getMessageNr());
-
-      if (serverMessage != null)
+      // it will scan for the next available page
+      while (cache == null && retPos.getPageNr() <= pageStore.getCurrentWritingPage())
       {
-         return cursorProvider.newReference(retPos, serverMessage, this);
+         retPos = moveNextPage(retPos);
+
+         cache = cursorProvider.getPageCache(retPos);
+      }
+
+      if (cache == null)
+      {
+         return null;
       }
       else
       {
-         return null;
+         PagedMessage serverMessage = cache.getMessage(retPos.getMessageNr());
+
+         if (serverMessage != null)
+         {
+            return cursorProvider.newReference(retPos, serverMessage, this);
+         }
+         else
+         {
+            return null;
+         }
       }
    }
 
@@ -380,10 +431,14 @@ class PageSubscriptionImpl implements PageSubscription
       while (true)
       {
          retPos = retPos.nextPage();
-         PageCursorInfo pageInfo = consumedPages.get(Long.valueOf(retPos.getPageNr()));
-         if (pageInfo == null || (!pageInfo.isPendingDelete() && pageInfo.getCompleteInfo() == null))
+         synchronized (consumedPages)
          {
-            return retPos;
+            PageCursorInfo pageInfo = consumedPages.get((Long)retPos.getPageNr());
+            // any deleted or complete page will be ignored on the moveNextPage, we will just keep going
+            if (pageInfo == null || (!pageInfo.isPendingDelete() && pageInfo.getCompleteInfo() == null))
+            {
+               return retPos;
+            }
          }
       }
    }
@@ -407,40 +462,43 @@ class PageSubscriptionImpl implements PageSubscription
     */
    private synchronized PagePosition getStartPosition()
    {
-      // Get the first page not marked for deletion
-      // It's important to verify if it's not marked for deletion as you may have a pending request on the queue
-      for (Map.Entry<Long, PageCursorInfo> entry : consumedPages.entrySet())
+      synchronized (consumedPages)
       {
-         if (!entry.getValue().isPendingDelete())
+         // Get the first page not marked for deletion
+         // It's important to verify if it's not marked for deletion as you may have a pending request on the queue
+         for (Map.Entry<Long, PageCursorInfo> entry : consumedPages.entrySet())
          {
-            if (entry.getValue().acks.isEmpty())
+            if (!entry.getValue().isPendingDelete())
             {
-               return new PagePositionImpl(entry.getKey(), -1);
-            }
-            else
-            {
-               // The list is not ordered...
-               // This is only done at creation of the queue, so we just scan instead of keeping the list ordened
-               PagePosition retValue = null;
-
-               for (PagePosition pos : entry.getValue().acks)
+               if (entry.getValue().acks.isEmpty())
                {
+                  return new PagePositionImpl(entry.getKey(), -1);
+               }
+               else
+               {
+                  // The list is not ordered...
+                  // This is only done at creation of the queue, so we just scan instead of keeping the list ordened
+                  PagePosition retValue = null;
+
+                  for (PagePosition pos : entry.getValue().acks)
+                  {
+                     if (isTrace)
+                     {
+                        HornetQLogger.LOGGER.trace("Analizing " + pos);
+                     }
+                     if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
+                     {
+                        retValue = pos;
+                     }
+                  }
+
                   if (isTrace)
                   {
-                     HornetQLogger.LOGGER.trace("Analizing " + pos);
+                     HornetQLogger.LOGGER.trace("Returning initial position " + retValue);
                   }
-                  if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
-                  {
-                     retValue = pos;
-                  }
-               }
 
-               if (isTrace)
-               {
-                  HornetQLogger.LOGGER.trace("Returning initial position " + retValue);
+                  return retValue;
                }
-
-               return retValue;
             }
          }
       }
@@ -521,26 +579,22 @@ class PageSubscriptionImpl implements PageSubscription
     */
    public long getFirstPage()
    {
-      for (; ; )
+      synchronized (consumedPages)
       {
-         try
+         if (empty && consumedPages.isEmpty())
          {
-            long lastPageSeen = 0;
-            for (Map.Entry<Long, PageCursorInfo> info : consumedPages.entrySet())
+            return -1;
+         }
+         long lastPageSeen = 0;
+         for (Map.Entry<Long, PageCursorInfo> info : consumedPages.entrySet())
+         {
+            lastPageSeen = info.getKey();
+            if (!info.getValue().isDone() && !info.getValue().isPendingDelete())
             {
-               lastPageSeen = info.getKey();
-               if (!info.getValue().isDone() && !info.getValue().isPendingDelete())
-               {
-                  return info.getKey();
-               }
+               return info.getKey();
             }
-
-            return lastPageSeen;
          }
-         catch (ConcurrentModificationException ignored)
-         {
-            // it's ok, we will just retry on this case
-         }
+         return lastPageSeen;
       }
 
    }
@@ -556,6 +610,10 @@ class PageSubscriptionImpl implements PageSubscription
       synchronized (redeliveries)
       {
          redeliveries.add(position);
+      }
+
+      synchronized (consumedPages)
+      {
          PageCursorInfo pageInfo = consumedPages.get(position.getPageNr());
          if (pageInfo != null)
          {
@@ -611,7 +669,6 @@ class PageSubscriptionImpl implements PageSubscription
       processACK(position);
    }
 
-
    public void lateDeliveryRollback(PagePosition position)
    {
       PageCursorInfo cursorInfo = processACK(position);
@@ -621,8 +678,24 @@ class PageSubscriptionImpl implements PageSubscription
    @Override
    public boolean isComplete(long page)
    {
-      PageCursorInfo info = consumedPages.get(page);
-      return info != null && info.isDone();
+      synchronized (consumedPages)
+      {
+         if (empty && consumedPages.isEmpty())
+         {
+            return true;
+         }
+
+         PageCursorInfo info = consumedPages.get(page);
+
+         if (info == null && empty)
+         {
+            return true;
+         }
+         else
+         {
+            return info != null && info.isDone();
+         }
+      }
    }
 
    /**
@@ -636,17 +709,23 @@ class PageSubscriptionImpl implements PageSubscription
 
          boolean isPersistent = false;
 
-         synchronized (PageSubscriptionImpl.this)
+         synchronized (consumedPages)
          {
             for (PageCursorInfo cursor : consumedPages.values())
             {
                for (PagePosition info : cursor.acks)
                {
-                  if (info.getRecordID() != 0)
+                  if (info.getRecordID() >= 0)
                   {
                      isPersistent = true;
                      store.deleteCursorAcknowledgeTransactional(tx, info.getRecordID());
                   }
+               }
+               PagePosition completeInfo = cursor.getCompleteInfo();
+               if (completeInfo != null && completeInfo.getRecordID() >= 0)
+               {
+                  store.deletePageComplete(completeInfo.getRecordID());
+                  cursor.setCompleteInfo(null);
                }
             }
          }
@@ -759,7 +838,7 @@ class PageSubscriptionImpl implements PageSubscription
    public void onDeletePage(Page deletedPage) throws Exception
    {
       PageCursorInfo info;
-      synchronized (this)
+      synchronized (consumedPages)
       {
          info = consumedPages.remove(Long.valueOf(deletedPage.getPageId()));
       }
@@ -768,9 +847,31 @@ class PageSubscriptionImpl implements PageSubscription
          PagePosition completeInfo = info.getCompleteInfo();
          if (completeInfo != null)
          {
-            store.deletePageComplete(completeInfo.getRecordID());
+            try
+            {
+               store.deletePageComplete(completeInfo.getRecordID());
+            }
+            catch (Exception e)
+            {
+               HornetQLogger.LOGGER.warn("Error while deleting page-complete-record", e);
+            }
             info.setCompleteInfo(null);
          }
+         for (PagePosition deleteInfo : info.acks)
+         {
+            if (deleteInfo.getRecordID() >= 0)
+            {
+               try
+               {
+                  store.deleteCursorAcknowledge(deleteInfo.getRecordID());
+               }
+               catch (Exception e)
+               {
+                  HornetQLogger.LOGGER.warn("Error while deleting page-complete-record", e);
+               }
+            }
+         }
+         info.acks.clear();
       }
    }
 
@@ -784,22 +885,25 @@ class PageSubscriptionImpl implements PageSubscription
       return getPageInfo(pos, true);
    }
 
-   private synchronized PageCursorInfo getPageInfo(final PagePosition pos, boolean create)
+   private PageCursorInfo getPageInfo(final PagePosition pos, boolean create)
    {
-      PageCursorInfo pageInfo = consumedPages.get(pos.getPageNr());
-
-      if (create && pageInfo == null)
+      synchronized (consumedPages)
       {
-         PageCache cache = cursorProvider.getPageCache(pos);
-         if (cache == null)
+         PageCursorInfo pageInfo = consumedPages.get(pos.getPageNr());
+
+         if (create && pageInfo == null)
          {
-            return null;
+            PageCache cache = cursorProvider.getPageCache(pos);
+            if (cache == null)
+            {
+               return null;
+            }
+            pageInfo = new PageCursorInfo(pos.getPageNr(), cache.getNumberOfMessages(), cache);
+            consumedPages.put(pos.getPageNr(), pageInfo);
          }
-         pageInfo = new PageCursorInfo(pos.getPageNr(), cache.getNumberOfMessages(), cache);
-         consumedPages.put(pos.getPageNr(), pageInfo);
+         return pageInfo;
       }
 
-      return pageInfo;
    }
 
    // Package protected ---------------------------------------------
@@ -858,7 +962,7 @@ class PageSubscriptionImpl implements PageSubscription
     */
    private void installTXCallback(final Transaction tx, final PagePosition position)
    {
-      if (position.getRecordID() > 0)
+      if (position.getRecordID() >= 0)
       {
          // It needs to persist, otherwise the cursor will return to the fist page position
          tx.setContainsPersistent();
@@ -866,7 +970,7 @@ class PageSubscriptionImpl implements PageSubscription
 
       getPageInfo(position).remove(position);
 
-      PageCursorTX cursorTX = (PageCursorTX) tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
+      PageCursorTX cursorTX = (PageCursorTX)tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
 
       if (cursorTX == null)
       {
@@ -952,7 +1056,17 @@ class PageSubscriptionImpl implements PageSubscription
             " numberOfMessage = " +
             numberOfMessages +
             ", confirmed = " +
-            confirmed;
+            confirmed +
+            ", isDone=" +
+            this.isDone();
+      }
+
+      /**
+       * @return
+       */
+      public int getPendingTX()
+      {
+         return this.pendingTX.intValue();
       }
 
       public PageCursorInfo(final long pageId, final int numberOfMessages, final PageCache cache)
@@ -985,8 +1099,7 @@ class PageSubscriptionImpl implements PageSubscription
 
       public boolean isDone()
       {
-         return completePage != null ||
-            (getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0);
+         return completePage != null || (getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0);
       }
 
       public boolean isPendingDelete()
@@ -997,6 +1110,11 @@ class PageSubscriptionImpl implements PageSubscription
       public void setPendingDelete()
       {
          pendingDelete = true;
+      }
+
+      public int getConfirmed()
+      {
+         return confirmed.intValue();
       }
 
       /**
@@ -1083,17 +1201,14 @@ class PageSubscriptionImpl implements PageSubscription
          {
             // if the page was live at any point, we need to
             // get the number of messages from the page-cache
-            PageCache cache = this.cache.get();
-            if (cache != null)
+            PageCache localcache = this.cache.get();
+            if (localcache == null)
             {
-               return cache.getNumberOfMessages();
+               localcache = cursorProvider.getPageCache(new PagePositionImpl(pageId, 0));
+               this.cache = new WeakReference<PageCache>(localcache);
             }
-            else
-            {
-               cache = cursorProvider.getPageCache(new PagePositionImpl(pageId, 0));
-               this.cache = new WeakReference<PageCache>(cache);
-               return cache.getNumberOfMessages();
-            }
+
+            return localcache.getNumberOfMessages();
          }
          else
          {
@@ -1211,7 +1326,7 @@ class PageSubscriptionImpl implements PageSubscription
          }
          catch (Exception e)
          {
-            HornetQLogger.LOGGER.warn(e.getMessage(), e);
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);
          }
       }
