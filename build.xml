@@ -325,7 +325,10 @@ Copyright 2009 Red Hat, Inc.
 
    <target name="hudson-tests" depends="createthirdparty">
       <ant antfile="build-hornetq.xml" target="hudson-tests"/>
+   </target>
 
+   <target name="jenkins-fast-tests" depends="createthirdparty">
+     <ant antfile="build-hornetq.xml" target="jenkins-fast-tests"/>
    </target>
 
    <target name="dev-tests" depends="createthirdparty">
