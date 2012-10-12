@@ -197,7 +197,7 @@ Copyright 2009 Red Hat, Inc.
              <executable>./build.sh</executable>
              <!-- optional -->
              <arguments>
-               <argument>hudson-tests</argument>
+               <argument>jenkins-fast-tests</argument>
                <argument>-Dtest-udp-address=230.5.3.13</argument>
                <argument>-Dtest-udp-port=6521</argument>
              </arguments>
