@@ -122,12 +122,8 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public HornetQConnection(final String username,
-                            final String password,
-                            final int connectionType,
-                            final String clientID,
-                            final int dupsOKBatchSize,
-                            final int transactionBatchSize,
+   public HornetQConnection(final String username, final String password, final int connectionType,
+                            final String clientID, final int dupsOKBatchSize, final int transactionBatchSize,
                             final ClientSessionFactory sessionFactory)
    {
       this.username = username;
@@ -157,7 +153,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    {
       checkClosed();
 
-      return createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -297,7 +293,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
                      }
                      catch (HornetQException ignore)
                      {
-                        //Exception on deleting queue shouldn't prevent close from completing
+                        // Exception on deleting queue shouldn't prevent close from completing
                      }
                   }
                }
@@ -319,10 +315,9 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       }
    }
 
-   public ConnectionConsumer createConnectionConsumer(final Destination destination,
-                                                      final String messageSelector,
-                                                      final ServerSessionPool sessionPool,
-                                                      final int maxMessages) throws JMSException
+   public ConnectionConsumer
+            createConnectionConsumer(final Destination destination, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
 
@@ -330,23 +325,21 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return null;
    }
 
-   private void checkTempQueues(Destination destination)
-         throws JMSException
+   private void checkTempQueues(Destination destination) throws JMSException
    {
       HornetQDestination jbdest = (HornetQDestination)destination;
 
       if (jbdest.isTemporary() && !containsTemporaryQueue(jbdest.getSimpleAddress()))
       {
          throw new JMSException("Can not create consumer for temporary destination " + destination +
-                                " from another JMS connection");
+                  " from another JMS connection");
       }
    }
 
-   public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
-                                                             final String subscriptionName,
-                                                             final String messageSelector,
-                                                             final ServerSessionPool sessionPool,
-                                                             final int maxMessages) throws JMSException
+   public ConnectionConsumer
+            createDurableConnectionConsumer(final Topic topic, final String subscriptionName,
+                                            final String messageSelector, final ServerSessionPool sessionPool,
+                                            final int maxMessages) throws JMSException
    {
       checkClosed();
       // As spec. section 4.11
@@ -365,13 +358,12 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
-   public ConnectionConsumer createConnectionConsumer(final Queue queue,
-                                                      final String messageSelector,
-                                                      final ServerSessionPool sessionPool,
-                                                      final int maxMessages) throws JMSException
+   public ConnectionConsumer
+            createConnectionConsumer(final Queue queue, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
       checkTempQueues(queue);
@@ -383,25 +375,22 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
+      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
-   public ConnectionConsumer createConnectionConsumer(final Topic topic,
-                                                      final String messageSelector,
-                                                      final ServerSessionPool sessionPool,
-                                                      final int maxMessages) throws JMSException
+   public ConnectionConsumer
+            createConnectionConsumer(final Topic topic, final String messageSelector,
+                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
       checkTempQueues(topic);
       return null;
    }
 
-
    // Public ---------------------------------------------------------------------------------------
 
    /**
-    * Sets a FailureListener for the  session which is notified if a failure occurs on the session.
-    *
+    * Sets a FailureListener for the session which is notified if a failure occurs on the session.
     * @param listener the listener to add
     * @throws JMSException
     */
@@ -415,11 +404,11 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
    }
 
-	/**
-	* @return {@link FailoverEventListener} the current failover event listener for this connection
-	* @throws JMSException
-	*/
-	public FailoverEventListener getFailoverListener() throws JMSException
+   /**
+    * @return {@link FailoverEventListener} the current failover event listener for this connection
+    * @throws JMSException
+    */
+   public FailoverEventListener getFailoverListener() throws JMSException
    {
       checkClosed();
 
@@ -485,10 +474,13 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       }
    }
 
-   protected final Session createSessionInternal(final boolean transacted,
-                                                  int acknowledgeMode,
-                                                  final boolean isXA,
-                                                  final int type) throws JMSException
+   protected boolean isXA()
+   {
+      return false;
+   }
+
+   protected final Session
+            createSessionInternal(final boolean transacted, int acknowledgeMode, final int type) throws JMSException
    {
       if (transacted)
       {
@@ -501,57 +493,38 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
-            session = sessionFactory.createSession(username,
-                                                   password,
-                                                   isXA,
-                                                   false,
-                                                   false,
-                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                   transactionBatchSize);
+            session =
+                     sessionFactory.createSession(username, password, isXA(), false, false,
+                                                  sessionFactory.getServerLocator().isPreAcknowledge(),
+                                                  transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username,
-                                                   password,
-                                                   isXA,
-                                                   true,
-                                                   true,
-                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                   0);
+            session =
+                     sessionFactory.createSession(username, password, isXA(), true, true,
+                                                  sessionFactory.getServerLocator().isPreAcknowledge(), 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username,
-                                                   password,
-                                                   isXA,
-                                                   true,
-                                                   true,
-                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                   dupsOKBatchSize);
+            session =
+                     sessionFactory.createSession(username, password, isXA(), true, true,
+                                                  sessionFactory.getServerLocator().isPreAcknowledge(), dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username,
-                                                   password,
-                                                   isXA,
-                                                   true,
-                                                   false,
-                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                   transactionBatchSize);
+            session =
+                     sessionFactory.createSession(username, password, isXA(), true, false,
+                                                  sessionFactory.getServerLocator().isPreAcknowledge(),
+                                                  transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username,
-                                                   password,
-                                                   isXA,
-                                                   true,
-                                                   false,
-                                                   false,
-                                                   transactionBatchSize);
+            session =
+                     sessionFactory.createSession(username, password, isXA(), true, false, false, transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
+            session = sessionFactory.createSession(username, password, isXA(), true, false, true, transactionBatchSize);
          }
          else
          {
@@ -560,23 +533,13 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
          justCreated = false;
 
-         // Setting multiple times on different sessions doesn't matter since RemotingConnection maintains
+         // Setting multiple times on different sessions doesn't matter since RemotingConnection
+         // maintains
          // a set (no duplicates)
          session.addFailureListener(listener);
          session.addFailoverListener(failoverListener);
 
-
-
-         HornetQSession jbs;
-
-         if (isXA)
-         {
-            jbs = new HornetQXASession(this, transacted, isXA, acknowledgeMode, session, type);
-         }
-         else
-         {
-            jbs = new HornetQSession(this, transacted, isXA, acknowledgeMode, session, type);
-         }
+         HornetQSession jbs = createHQSession(transacted, acknowledgeMode, session, type);
 
          sessions.add(jbs);
 
@@ -596,6 +559,18 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    }
 
    // Private --------------------------------------------------------------------------------------
+
+   /**
+    * @param transacted
+    * @param acknowledgeMode
+    * @param session
+    * @param type
+    * @return
+    */
+   protected HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session, int type)
+   {
+      return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
+   }
 
    protected final void checkClosed() throws JMSException
    {
@@ -664,7 +639,8 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
                if (exceptionListener != null)
                {
-                  final JMSException je = new JMSException(me.toString(), failedOver?EXCEPTION_FAILOVER: EXCEPTION_DISCONNECT);
+                  final JMSException je =
+                           new JMSException(me.toString(), failedOver ? EXCEPTION_FAILOVER : EXCEPTION_DISCONNECT);
 
                   je.initCause(me);
 
@@ -696,45 +672,46 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
    private static class FailoverEventListenerImpl implements FailoverEventListener
    {
-	   private final WeakReference<HornetQConnection> connectionRef;
+      private final WeakReference<HornetQConnection> connectionRef;
 
-	    FailoverEventListenerImpl(final HornetQConnection connection)
-	    {
-	      connectionRef = new WeakReference<HornetQConnection>(connection);
-	    }
+      FailoverEventListenerImpl(final HornetQConnection connection)
+      {
+         connectionRef = new WeakReference<HornetQConnection>(connection);
+      }
 
-		@Override
-		public void failoverEvent(final FailoverEventType eventType) {
-	    	  HornetQConnection conn = connectionRef.get();
+      @Override
+      public void failoverEvent(final FailoverEventType eventType)
+      {
+         HornetQConnection conn = connectionRef.get();
 
-	          if (conn != null)
-	          {
-	             try
-	             {
-	                final FailoverEventListener failoverListener= conn.getFailoverListener();
+         if (conn != null)
+         {
+            try
+            {
+               final FailoverEventListener failoverListener = conn.getFailoverListener();
 
-	                if (failoverListener != null)
-	                {
+               if (failoverListener != null)
+               {
 
-	                   new Thread(new Runnable()
-	                   {
-	                      public void run()
-	                      {
-	                    	  failoverListener.failoverEvent(eventType);
-	                      }
-	                   }).start();
-	                }
-	             }
-	             catch (JMSException e)
-	             {
-	                if (!conn.closed)
-	                {
-	                   HornetQJMSLogger.LOGGER.errorCallingFailoverListener(e);
-	                }
-	             }
-	          }
+                  new Thread(new Runnable()
+                  {
+                     public void run()
+                     {
+                        failoverListener.failoverEvent(eventType);
+                     }
+                  }).start();
+               }
+            }
+            catch (JMSException e)
+            {
+               if (!conn.closed)
+               {
+                  HornetQJMSLogger.LOGGER.errorCallingFailoverListener(e);
+               }
+            }
+         }
 
-		}
+      }
 
    }
 }
