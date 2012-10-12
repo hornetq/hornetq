@@ -572,7 +572,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    protected synchronized HornetQConnection createConnectionInternal(final String username,
                                                                      final String password,
-                                                                     final boolean isXA,
+ final boolean isXA,
                                                                      final int type) throws JMSException
    {
       readOnly = true;
@@ -609,7 +609,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          }
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
-            connection = new HornetQXAQueueConnection(username,
+            connection =
+                     new HornetQXAConnection(username,
                                                       password,
                                                       type,
                                                       clientID,
@@ -619,7 +620,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          }
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
-            connection = new HornetQXATopicConnection(username,
+            connection =
+                     new HornetQXAConnection(username,
                                                       password,
                                                       type,
                                                       clientID,
