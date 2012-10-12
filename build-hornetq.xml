@@ -196,9 +196,9 @@
    <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
    <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
    <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
-	
-	
-   <property name="test-udp-address" value="230.1.2.3"/> 
+
+
+   <property name="test-udp-address" value="230.1.2.3"/>
    <property name="test-udp-port" value="6750"/>
 
    <!-- ======================================================================================== -->
@@ -217,7 +217,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="org.jboss.naming.classpath"/>
     </path>
-	
+
    <path id="jms.compilation.jdk15.classpath">
       <path location="${build.core.client.java5.classes.dir}"/>
    	  <path refid="org.jboss.netty.classpath"/>
@@ -226,7 +226,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="org.jboss.naming.classpath"/>
     </path>
-		
+
 
    <path id="jboss.integration.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
@@ -538,7 +538,7 @@
       </copy>
 
    </target>
-	
+
    <target name="compile-jms" depends="compile-core">
       <javac destdir="${build.jms.classes.dir}"
              target="${javac.target}"
@@ -580,7 +580,7 @@
 	         <classpath refid="jms.compilation.jdk15.classpath"/>
 	      </javac>
 	   </target>
-	
+
    <target name="compile-jboss-integration" depends="compile-core">
       <javac destdir="${build.jboss.integration.classes.dir}"
              target="${javac.target}"
@@ -1146,7 +1146,7 @@
          </fileset>
       </jar>
    </target>
-	
+
    <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
       <jar jarfile="${build.jars.dir}/${ra.jar.name}">
          <fileset dir="${build.ra.classes.dir}">
@@ -1214,7 +1214,7 @@
 	<property name="file-name" value="hornetq-jms"/>
       </ant>
    </target>
-      
+
 
    <target name="jar-rest" depends="jar-rest-init">
       <ant antfile="build-thirdparty.xml" target="maven-install">
@@ -1282,7 +1282,7 @@
          	<include name="${spring.integration.jar.name}"/>
          	<include name="${twitter.integration.jar.name}"/>
          </fileset>
-         <fileset dir="${org.jboss.naming.lib}">                                                   
+         <fileset dir="${org.jboss.naming.lib}">
             <include name="jnpserver.jar"/>
          </fileset>
          <fileset dir="${org.jboss.javaee.lib}">
@@ -1407,26 +1407,26 @@
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
    </target>
-	
+
    <target name="eap-examples" description="Generates a file with examples tuned for the JBoss EAP" depends="init">
    	  <mkdir dir="${build.dir}/eap-examples-tmp"/>
-   	   
-   	
+
+
    	  <copy todir="${build.dir}/eap-examples-tmp">
    	  	  <fileset dir="${examples.dir}" excludes="**/build.sh,**/build.bat, **/twitter-connector/**"/>
    	  </copy>
-   	
+
    	  <copy todir="${build.dir}/eap-examples-tmp" overwrite="true">
    	  	   <fileset dir="examples-eap"/>
    	  </copy>
-   	
+
    	  <replace dir="${build.dir}/eap-examples-tmp" token="hornetq-ra.rar" value="jms-ra.rar"></replace>
-   	
+
    	  <zip destfile="${build.jars.dir}/${eap.examples.zip.name}">
    	  	 <zipfileset dir="${build.dir}/eap-examples-tmp" prefix="examples/hornetq"/>
    	  </zip>
-   	
-   	  <delete dir="${build.dir}/eap-examples-tmp"/> 
+
+   	  <delete dir="${build.dir}/eap-examples-tmp"/>
 	</target>
 
 
@@ -1963,6 +1963,7 @@
    <target name="all-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests, rest-tests"/>
 
    <target name="hudson-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+   <target name="jenkins-fast-tests" depends="jar, unit-tests, concurrent-tests, jms-tests, joram-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>
