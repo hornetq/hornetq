@@ -44,5 +44,7 @@ public interface Page
 
    void close() throws Exception;
 
+   boolean isLive();
+   
    boolean delete(PagedMessage[] messages) throws Exception;
 }
