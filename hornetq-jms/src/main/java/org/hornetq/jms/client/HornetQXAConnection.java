@@ -13,27 +13,62 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.XAConnection;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
+import javax.jms.XATopicConnection;
+import javax.jms.XATopicSession;
 
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XAConnection.
- * 
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAConnection extends HornetQConnection implements XAConnection
+public class HornetQXAConnection extends HornetQConnection implements XATopicConnection, XAQueueConnection
 {
 
-   public HornetQXAConnection(final String username,
-                            final String password,
-                            final int connectionType,
-                            final String clientID,
-                            final int dupsOKBatchSize,
-                            final int transactionBatchSize,
-                            final ClientSessionFactory sessionFactory)
+   public HornetQXAConnection(final String username, final String password, final int connectionType,
+                              final String clientID, final int dupsOKBatchSize, final int transactionBatchSize,
+                              final ClientSessionFactory sessionFactory)
    {
       super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
    }
 
+   @Override
+   public XASession createXASession() throws JMSException
+   {
+      checkClosed();
+      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_GENERIC_SESSION);
+   }
+
+   @Override
+   public XAQueueSession createXAQueueSession() throws JMSException
+   {
+      checkClosed();
+      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_QUEUE_SESSION);
+
+   }
+
+   @Override
+   public XATopicSession createXATopicSession() throws JMSException
+   {
+      checkClosed();
+      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_TOPIC_SESSION);
+   }
+
+   @Override
+   protected final boolean isXA()
+   {
+      return true;
+   }
+
+   @Override
+   protected HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session, int type)
+   {
+      return new HornetQXASession(this, transacted, true, acknowledgeMode, session, type);
+   }
 }

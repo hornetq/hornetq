@@ -34,7 +34,7 @@ public interface ConnectorFactory
     * @param handler             the handler
     * @param listener            the listener
     * @param closeExecutor       the close executor
-    * @param threadPool          the threadpool
+    * @param threadPool          the thread pool
     * @param scheduledThreadPool the scheduled thread pool
     * @return a new connector
     */
