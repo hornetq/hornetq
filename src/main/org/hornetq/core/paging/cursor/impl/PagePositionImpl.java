@@ -36,7 +36,7 @@ public class PagePositionImpl implements PagePosition
    private int messageNr;
 
    /** ID used for storage */
-   private long recordID;
+   private long recordID = -1;
  
    /**
     * @param pageNr

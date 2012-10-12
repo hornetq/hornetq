@@ -5636,6 +5636,79 @@ public class PagingTest extends ServiceTestBase
    {
       testSpreadMessagesWithFilter(false);
    }
+   
+   public void testRouteOnTopWithMultipleQueues() throws Exception
+   {
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+                            config,
+                            PagingTest.PAGE_SIZE,
+                            PagingTest.PAGE_MAX,
+                            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnDurableSend(false);
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession session = sf.createSession(false, true, 0);
+      
+      
+      session.createQueue("Q", "Q1", "dest=1", true);
+      session.createQueue("Q", "Q2", "dest=2", true);
+      session.createQueue("Q", "Q3", "dest=3", true);
+      
+      Queue queue = server.locateQueue(new SimpleString("Q1"));
+      queue.getPageSubscription().getPagingStore().startPaging();
+      
+      ClientProducer prod = session.createProducer("Q");
+      ClientMessage msg = session.createMessage(true);
+      msg.putIntProperty("dest", 1);
+      prod.send(msg);
+      session.commit();
+
+      msg = session.createMessage(true);
+      msg.putIntProperty("dest", 2);
+      prod.send(msg);
+      session.commit();
+      
+      
+      session.start();
+      ClientConsumer cons1 = session.createConsumer("Q1");
+      msg = cons1.receive(5000);
+      assertNotNull(msg);
+      msg.acknowledge();
+      
+      ClientConsumer cons2 = session.createConsumer("Q2");
+      msg = cons2.receive(5000);
+      assertNotNull(msg);
+      
+      
+      queue.getPageSubscription().getPagingStore().forceAnotherPage();
+      
+      
+      msg = session.createMessage(true);
+      msg.putIntProperty("dest", 1);
+      prod.send(msg);
+      session.commit();
+
+      msg = cons1.receive(5000);
+      assertNotNull(msg);
+      msg.acknowledge();
+      
+      
+      queue.getPageSubscription().cleanupEntries(false);
+      
+      
+      System.out.println("Waiting there");
+      
+      server.stop();
+ 
+   }
 
    // https://issues.jboss.org/browse/HORNETQ-1042 - spread messages because of filters
    public void testSpreadMessagesWithFilter(boolean deadConsumer) throws Exception
@@ -5838,7 +5911,195 @@ public class PagingTest extends ServiceTestBase
          server.stop();
       }
    }
+   
+   // We send messages to pages, create a big hole (a few pages without any messages), ack everything
+   // and expect it to move to the next page
+   public void testPageHole() throws Throwable
+   {
+      clearData();
 
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+                            config,
+                            PagingTest.PAGE_SIZE,
+                            PagingTest.PAGE_MAX,
+                            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnDurableSend(true);
+         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSession session = sf.createSession(true,  true, 0);
+         
+         session.createQueue(ADDRESS.toString(), "Q1", "dest=1", true);
+         session.createQueue(ADDRESS.toString(), "Q2", "dest=2", true);
+         
+         PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
+         
+         store.startPaging();
+         
+         ClientProducer prod = session.createProducer(ADDRESS);
+         
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty("dest", 1);
+         prod.send(msg);
+
+         for (int i = 0; i < 100; i++)
+         {
+            msg = session.createMessage(true);
+            msg.putIntProperty("dest", 2);
+            prod.send(msg);
+            
+            if (i > 0 && i % 10 == 0)
+            {
+               store.forceAnotherPage();
+            }
+         }
+         
+         session.start();
+         
+         ClientConsumer cons1 = session.createConsumer("Q1");
+         
+         ClientMessage msgReceivedCons1 = cons1.receive(5000);
+         assertNotNull(msgReceivedCons1);
+         msgReceivedCons1.acknowledge();
+         
+         ClientConsumer  cons2 = session.createConsumer("Q2");
+         for (int i = 0 ; i < 100; i++)
+         {
+            ClientMessage msgReceivedCons2 = cons2.receive(1000);
+            assertNotNull(msgReceivedCons2);
+            msgReceivedCons2.acknowledge();
+            
+            session.commit();
+
+            // It will send another message when it's mid consumed
+            if (i==20)
+            {
+               // wait at least one page to be deleted before sending a new one
+               for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && store.checkPage(2);)
+               {
+                  Thread.sleep(10);
+               }
+               msg = session.createMessage(true);
+               msg.putIntProperty("dest", 1);
+               prod.send(msg);
+            }
+         }
+
+         msgReceivedCons1 = cons1.receive(5000);
+         assertNotNull(msgReceivedCons1);
+         msgReceivedCons1.acknowledge();
+         
+         assertNull(cons1.receiveImmediate());
+         assertNull(cons2.receiveImmediate());
+         
+         session.commit();
+         
+         session.close();
+         
+         waitForNotPaging(store);
+      }
+      finally
+      {
+         server.stop();
+      }
+      
+   }
+   
+   
+   
+   // Test a scenario where a page was complete and now needs to be cleared
+   public void testPageCompleteWasLive() throws Throwable
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+                            config,
+                            PagingTest.PAGE_SIZE,
+                            PagingTest.PAGE_MAX,
+                            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnDurableSend(false);
+         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSession session = sf.createSession(true,  true, 0);
+         
+         session.createQueue(ADDRESS.toString(), "Q1", "dest=1", true);
+         session.createQueue(ADDRESS.toString(), "Q2", "dest=2", true);
+         
+         PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
+         
+         store.startPaging();
+         
+         
+         ClientProducer prod = session.createProducer(ADDRESS);
+         
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty("dest", 1);
+         prod.send(msg);
+         
+         msg = session.createMessage(true);
+         msg.putIntProperty("dest", 2);
+         prod.send(msg);
+         
+         session.start();
+         
+         ClientConsumer cons1 = session.createConsumer("Q1");
+         
+         ClientMessage msgReceivedCons1 = cons1.receive(1000);
+
+         assertNotNull(msgReceivedCons1);
+         
+         ClientConsumer  cons2 = session.createConsumer("Q2");
+         ClientMessage msgReceivedCons2 = cons2.receive(1000);
+         assertNotNull(msgReceivedCons2);
+ 
+         store.forceAnotherPage();
+         
+         msg = session.createMessage(true);
+         
+         msg.putIntProperty("dest", 1);
+         
+         prod.send(msg);
+         
+         msgReceivedCons1.acknowledge();
+         
+         msgReceivedCons1 = cons1.receive(1000);
+         assertNotNull(msgReceivedCons1);
+         msgReceivedCons1.acknowledge();
+         msgReceivedCons2.acknowledge();
+         
+         assertNull(cons1.receiveImmediate());
+         assertNull(cons2.receiveImmediate());
+         
+         session.commit();
+         
+         session.close();
+         
+         
+         waitForNotPaging(store);
+      }
+      finally
+      {
+         server.stop();
+      }
+      
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

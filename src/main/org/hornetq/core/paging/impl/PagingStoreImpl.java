@@ -507,9 +507,15 @@ public class PagingStoreImpl implements TestSupportPageStore
    public void stopPaging()
    {
       lock.writeLock().lock();
-      paging = false;
-      this.cursorProvider.onPageModeCleared();
-      lock.writeLock().unlock();
+      try
+      {
+         paging = false;
+         this.cursorProvider.onPageModeCleared();
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    public boolean startPaging()

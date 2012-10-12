@@ -35,6 +35,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.SoftValueHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A PageProviderIMpl
@@ -55,6 +56,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
+   
+   /**
+    * As an optimization, avoid subsquent schedules as they are unecessary
+    */
+   private AtomicInteger scheduledCleanup = new AtomicInteger(0);
 
    private final PagingStore pagingStore;
 
@@ -301,6 +307,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    public void scheduleCleanup()
    {
+      
+      if (scheduledCleanup.intValue() > 2)
+      {
+         // Scheduled cleanup was already scheduled before.. never mind!
+         return;
+      }
+      
+      scheduledCleanup.incrementAndGet();
 
       executor.execute(new Runnable()
       {
@@ -314,6 +328,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             finally
             {
                storageManager.clearContext();
+               scheduledCleanup.decrementAndGet();
             }
          }
       });
