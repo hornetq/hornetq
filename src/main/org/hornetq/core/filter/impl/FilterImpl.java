@@ -65,8 +65,6 @@ public class FilterImpl implements Filter
 
    private final Map<SimpleString, Identifier> identifiers = new HashMap<SimpleString, Identifier>();
 
-   private final FilterParser parser = new FilterParser();
-
    private final Object result;
 
    private final Class<? extends Object> resultType;
@@ -106,7 +104,7 @@ public class FilterImpl implements Filter
 
       try
       {
-         result = parser.parse(sfilterString, identifiers);
+         result = new FilterParser().parse(sfilterString, identifiers);
 
          resultType = result.getClass();
       }
