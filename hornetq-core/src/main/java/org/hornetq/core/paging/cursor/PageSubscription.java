@@ -138,7 +138,7 @@ public interface PageSubscription
    PagedMessage queryMessage(PagePosition pos);
 
    /**
-    * @return
+    * @return executor used by the PageSubscription
     */
    Executor getExecutor();
 

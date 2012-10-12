@@ -19,10 +19,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XAQueueConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAQueueConnection extends HornetQConnection implements XAQueueConnection
+public final class HornetQXAQueueConnection extends HornetQXAConnection implements XAQueueConnection
 {
    public HornetQXAQueueConnection(final String username,
                                  final String password,

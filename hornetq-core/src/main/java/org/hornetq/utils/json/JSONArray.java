@@ -86,14 +86,14 @@ public class JSONArray
    /**
     * The arrayList where the JSONArray's properties are kept.
     */
-   private final ArrayList myArrayList;
+   private final ArrayList<Object> myArrayList;
 
    /**
     * Construct an empty JSONArray.
     */
    public JSONArray()
    {
-      myArrayList = new ArrayList();
+      myArrayList = new ArrayList<Object>();
    }
 
    /**
@@ -177,7 +177,7 @@ public class JSONArray
     */
    public JSONArray(final Collection collection)
    {
-      myArrayList = collection == null ? new ArrayList<Object>() : new ArrayList(collection);
+      myArrayList = collection == null ? new ArrayList<Object>() : new ArrayList<Object>(collection);
    }
 
    /**
@@ -196,9 +196,9 @@ public class JSONArray
          while (iter.hasNext())
          {
             Object o = iter.next();
-            if (o instanceof Map)
+            if (o instanceof Map<?, ?>)
             {
-               myArrayList.add(new JSONObject((Map)o, includeSuperClass));
+               myArrayList.add(new JSONObject((Map<?, ?>)o, includeSuperClass));
             }
             else if (!JSONObject.isStandardProperty(o.getClass()))
             {

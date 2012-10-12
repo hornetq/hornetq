@@ -642,7 +642,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          }
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
-            connection = new HornetQQueueConnection(username,
+            connection =
+                     new HornetQConnection(username,
                                                     password,
                                                     type,
                                                     clientID,
@@ -652,7 +653,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          }
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
-            connection = new HornetQTopicConnection(username,
+            connection =
+                     new HornetQConnection(username,
                                                     password,
                                                     type,
                                                     clientID,

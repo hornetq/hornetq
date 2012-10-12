@@ -21,7 +21,6 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
@@ -48,6 +47,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.Pair;
 
 /**
  *
@@ -184,11 +184,11 @@ public interface StorageManager extends HornetQComponent
    LargeServerMessage createLargeMessage();
 
    /**
-    *
+    * Creates a new LargeMessage with the given id.
     * @param id
-    * @param message This is a temporary message that holds the parsed properties.
-    *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
-    * @return
+    * @param message This is a temporary message that holds the parsed properties. The remoting
+    *           layer can't create a ServerMessage directly, then this will be replaced.
+    * @return a large message object
     * @throws Exception
     */
    LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
