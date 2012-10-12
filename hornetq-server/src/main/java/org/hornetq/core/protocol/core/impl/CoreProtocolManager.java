@@ -67,13 +67,17 @@ class CoreProtocolManager implements ProtocolManager
 
    private final HornetQServer server;
 
-   private final List<Interceptor> interceptors;
+   private final List<Interceptor> incomingInterceptors;
 
-   CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   private final List<Interceptor> outgoingInterceptors;
+
+   CoreProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {
       this.server = server;
 
-      this.interceptors = interceptors;
+      this.incomingInterceptors = incomingInterceptors;
+
+      this.outgoingInterceptors = outgoingInterceptors;
    }
 
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
@@ -83,11 +87,11 @@ class CoreProtocolManager implements ProtocolManager
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(ServerPacketDecoder.INSTANCE,
-                                                                   connection,
-                                                                   interceptors,
-                                                                   config.isAsyncConnectionExecutionEnabled() ? connectionExecutor
-                                                                                                             : null,
-                                                                                                             server.getNodeID());
+            connection,
+            incomingInterceptors,
+            outgoingInterceptors,
+            config.isAsyncConnectionExecutionEnabled() ? connectionExecutor : null,
+            server.getNodeID());
 
       Channel channel1 = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
 

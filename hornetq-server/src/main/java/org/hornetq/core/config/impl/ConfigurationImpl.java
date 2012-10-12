@@ -96,7 +96,9 @@ public class ConfigurationImpl implements Configuration
 
    private boolean persistIDCache = HornetQDefaultConfiguration.DEFAULT_PERSIST_ID_CACHE;
 
-   private List<String> interceptorClassNames = new ArrayList<String>();
+   private List<String> incomingInterceptorClassNames = new ArrayList<String>();
+
+   private List<String> outgoingInterceptorClassNames = new ArrayList<String>();
 
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
@@ -345,12 +347,32 @@ public class ConfigurationImpl implements Configuration
 
    public List<String> getInterceptorClassNames()
    {
-      return interceptorClassNames;
+      return getIncomingInterceptorClassNames();
    }
 
    public void setInterceptorClassNames(final List<String> interceptors)
    {
-      interceptorClassNames = interceptors;
+      setIncomingInterceptorClassNames(interceptors);
+   }
+
+   public List<String> getIncomingInterceptorClassNames()
+   {
+      return incomingInterceptorClassNames;
+   }
+
+   public void setIncomingInterceptorClassNames(final List<String> interceptors)
+   {
+      incomingInterceptorClassNames = interceptors;
+   }
+
+   public List<String> getOutgoingInterceptorClassNames()
+   {
+      return outgoingInterceptorClassNames;
+   }
+
+   public void setOutgoingInterceptorClassNames(final List<String> interceptors)
+   {
+      outgoingInterceptorClassNames = interceptors;
    }
 
    public Set<TransportConfiguration> getAcceptorConfigurations()

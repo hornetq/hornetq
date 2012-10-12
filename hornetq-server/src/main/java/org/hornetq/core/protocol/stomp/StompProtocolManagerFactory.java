@@ -30,9 +30,9 @@ import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
 public class StompProtocolManagerFactory implements ProtocolManagerFactory
 {
 
-   public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {
-      return new StompProtocolManager(server, interceptors);
+      return new StompProtocolManager(server, incomingInterceptors);
    }
 
 }

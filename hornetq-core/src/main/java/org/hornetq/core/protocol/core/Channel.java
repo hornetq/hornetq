@@ -44,22 +44,25 @@ public interface Channel
     * sends a packet on this channel.
     *
     * @param packet the packet to send
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
     */
-   void send(Packet packet);
+   boolean send(Packet packet);
 
    /**
     * sends a packet on this channel using batching algorithm if appropriate
     *
     * @param packet the packet to send
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
     */
-   void sendBatched(Packet packet);
+   boolean sendBatched(Packet packet);
 
    /**
     * sends a packet on this channel and then blocks until it has been written to the connection.
     *
     * @param packet the packet to send
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
     */
-   void sendAndFlush(Packet packet);
+   boolean sendAndFlush(Packet packet);
 
    /**
     * sends a packet on this channel and then blocks until a response is received or a timeout occurs.

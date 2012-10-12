@@ -29,8 +29,8 @@ import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
  */
 public class CoreProtocolManagerFactory implements ProtocolManagerFactory
 {
-   public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {
-      return new CoreProtocolManager(server, interceptors);
+      return new CoreProtocolManager(server, incomingInterceptors, outgoingInterceptors);
    }
 }

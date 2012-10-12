@@ -632,20 +632,64 @@ public interface ServerLocator
    void setInitialMessagePacketSize(int size);
 
    /**
+    * Adds an interceptor which will be executed <em>after packets are received from the server</em>. Invoking this
+    * method is the same as invoking <code>addIncomingInterceptor(Interceptor).</code>
+    *
+    * @param interceptor an Interceptor
+    *
+    * @deprecated As of HornetQ 2.3.0.Final, replaced by
+    * {@link #addIncomingInterceptor(Interceptor)} and
+    * {@link #addOutgoingInterceptor(Interceptor)}
+    */
+   @Deprecated
+   void addInterceptor(Interceptor interceptor);
+
+   /**
     * Adds an interceptor which will be executed <em>after packets are received from the server</em>.
     *
     * @param interceptor an Interceptor
     */
-   void addInterceptor(Interceptor interceptor);
+   void addIncomingInterceptor(Interceptor interceptor);
 
    /**
-    * Removes an interceptor.
+    * Adds an interceptor which will be executed <em>before packets are sent to the server</em>.
+    *
+    * @param interceptor an Interceptor
+    */
+   void addOutgoingInterceptor(Interceptor interceptor);
+
+   /**
+    * Removes an interceptor. Invoking this method is the same as invoking
+    * <code>removeIncomingInterceptor(Interceptor).</code>
     *
     * @param interceptor interceptor to remove
     *
     * @return <code>true</code> if the interceptor is removed from this factory, <code>false</code> else
+    *
+    * @deprecated As of HornetQ 2.3.0.Final, replaced by
+    * {@link #removeIncomingInterceptor(Interceptor)} and
+    * {@link #removeOutgoingInterceptor(Interceptor)}
     */
+   @Deprecated
    boolean removeInterceptor(Interceptor interceptor);
+
+   /**
+    * Removes an incoming interceptor.
+    *
+    * @param interceptor interceptor to remove
+    *
+    * @return <code>true</code> if the incoming interceptor is removed from this factory, <code>false</code> else
+    */
+   boolean removeIncomingInterceptor(Interceptor interceptor);
+
+   /**
+    * Removes an outgoing interceptor.
+    *
+    * @param interceptor interceptor to remove
+    *
+    * @return <code>true</code> if the outgoing interceptor is removed from this factory, <code>false</code> else
+    */
+   boolean removeOutgoingInterceptor(Interceptor interceptor);
 
    /**
     * Closes this factory and release all its resources

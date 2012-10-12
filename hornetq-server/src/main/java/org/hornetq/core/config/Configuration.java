@@ -224,16 +224,56 @@ public interface Configuration extends Serializable
    void setJMXDomain(String domain);
 
    /**
-    * Returns the list of interceptors classes used by this server.
+    * Returns the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
+    * the server from clients).  Invoking this method is the same as invoking <code>getIncomingInterceptorClassNames().</code>
+    *
+    * @deprecated As of HornetQ 2.3.0.Final, replaced by
+    * {@link #getIncomingInterceptorClassNames()} and
+    * {@link #getOutgoingInterceptorClassNames()}
     */
+   @Deprecated
    List<String> getInterceptorClassNames();
 
    /**
-    * Sets the list of interceptors classes used by this server.
+    * Returns the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
+    * the server from clients).
+    */
+   List<String> getIncomingInterceptorClassNames();
+
+   /**
+    * Returns the list of interceptors classes used by this server for outgoing messages (i.e. those being delivered to
+    * clients from the server).
+    */
+   List<String> getOutgoingInterceptorClassNames();
+
+   /**
+    * Sets the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
+    * the server from clients).  Invoking this method is the same as invoking <code>setIncomingInterceptorClassNames(List)</code>
+    * <br />
+    * Classes must implement {@link Interceptor}.
+    *
+    * @deprecated As of HornetQ 2.3.0.Final, replaced by
+    * {@link #setIncomingInterceptorClassNames(List)} and
+    * {@link #setOutgoingInterceptorClassNames(List)}
+    */
+   @Deprecated
+   void setInterceptorClassNames(List<String> interceptors);
+
+   /**
+    * Sets the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
+    * the server from clients).
     * <br />
     * Classes must implement {@link Interceptor}.
     */
-   void setInterceptorClassNames(List<String> interceptors);
+   void setIncomingInterceptorClassNames(List<String> interceptors);
+
+   /**
+    * Sets the list of interceptors classes used by this server for outgoing messages (i.e. those being delivered to
+    * clients from the server).
+    * <br />
+    * Classes must implement {@link Interceptor}.
+    */
+   void setOutgoingInterceptorClassNames(List<String> interceptors);
 
    /**
     * Returns the connection time to live.
