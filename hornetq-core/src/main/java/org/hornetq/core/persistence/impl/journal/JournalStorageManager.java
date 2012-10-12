@@ -3530,7 +3530,7 @@ public class JournalStorageManager implements StorageManager
       int deliveryCount;
    }
 
-   public static final class CursorAckRecordEncoding implements EncodingSupport
+   public static class CursorAckRecordEncoding implements EncodingSupport
    {
       public CursorAckRecordEncoding(final long queueID, final PagePosition position)
       {
@@ -3580,6 +3580,30 @@ public class JournalStorageManager implements StorageManager
          long pageNR = buffer.readLong();
          int messageNR = buffer.readInt();
          this.position = new PagePositionImpl(pageNR, messageNR);
+      }
+   }
+
+   public final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
+   {
+
+      public PageCompleteCursorAckRecordEncoding()
+      {
+         super();
+      }
+
+      /**
+       * @param queueID
+       * @param position
+       */
+      public PageCompleteCursorAckRecordEncoding(long queueID, PagePosition position)
+      {
+         super(queueID, position);
+      }
+
+      @Override
+      public String toString()
+      {
+         return "PGComplete [queueID=" + queueID + ", position=" + position + "]";
       }
    }
 
@@ -3761,7 +3785,7 @@ public class JournalStorageManager implements StorageManager
 
          case PAGE_CURSOR_COMPLETE:
          {
-            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+            CursorAckRecordEncoding encoding = new PageCompleteCursorAckRecordEncoding();
 
             encoding.decode(buffer);
 
