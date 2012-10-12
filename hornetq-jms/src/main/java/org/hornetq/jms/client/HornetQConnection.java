@@ -48,13 +48,12 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * HornetQ implementation of a JMS Connection.
- *
+ * <p>
+ * The flat implementation of {@link TopicConnection} and {@link QueueConnection} is per design,
+ * following the common usage of these as one flat API in JMS 1.1.
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
  */
 public class HornetQConnection implements TopicConnection, QueueConnection
 {
@@ -429,8 +428,6 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return failoverEventListener;
    }
 
-
-
    public void addTemporaryQueue(final SimpleString queueAddress)
    {
       tempQueues.add(queueAddress);
@@ -478,7 +475,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    // In case the user forgets to close the connection manually
 
    @Override
-   protected void finalize() throws Throwable
+   protected final void finalize() throws Throwable
    {
       if (!closed)
       {
