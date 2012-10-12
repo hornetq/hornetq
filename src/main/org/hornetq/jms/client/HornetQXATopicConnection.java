@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.JMSException;
-import javax.jms.TopicSession;
 import javax.jms.XATopicConnection;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -33,13 +31,7 @@ public class HornetQXATopicConnection extends HornetQConnection implements XATop
                                    final int dupsOKBatchSize,
                                    final int transactionBatchSize,
                                    final ClientSessionFactory sessionFactory)
-   {
-      super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
-   }
-
-   public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
-   {
-      checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, true, HornetQSession.TYPE_TOPIC_SESSION);
-   }
+          {
+             super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
+          }
 }
