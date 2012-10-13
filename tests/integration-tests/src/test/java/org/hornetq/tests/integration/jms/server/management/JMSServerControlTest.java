@@ -29,6 +29,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
@@ -49,7 +50,6 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
@@ -626,7 +626,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XAConnection conn = (XAConnection)cf.createConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");
@@ -666,7 +666,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XAConnection conn = (XAConnection)cf.createConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");
