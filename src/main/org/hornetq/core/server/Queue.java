@@ -25,9 +25,9 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.LinkedListIterator;
 
 /**
- * 
+ *
  * A Queue
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -40,7 +40,7 @@ public interface Queue extends Bindable
    long getID();
 
    Filter getFilter();
-   
+
    PageSubscription getPageSubscription();
 
    boolean isDurable();
@@ -52,15 +52,15 @@ public interface Queue extends Bindable
    void removeConsumer(Consumer consumer) throws Exception;
 
    int getConsumerCount();
-   
+
    void reload(MessageReference ref);
-   
+
    void addTail(MessageReference ref);
 
    void addTail(MessageReference ref, boolean direct);
 
    void addHead(MessageReference ref);
-   
+
    void addHead(final LinkedList<MessageReference> refs);
 
    void acknowledge(MessageReference ref) throws Exception;
@@ -74,14 +74,14 @@ public interface Queue extends Bindable
    void cancel(MessageReference reference, long timeBase) throws Exception;
 
    void deliverAsync();
-   
+
    /** This method will make sure that any pending message (including paged message) will be delivered  */
    void forceDelivery();
-   
+
    void destroyPaging() throws Exception;
 
    long getMessageCount();
-   
+
    /** Return the current message count without waiting for scheduled executors to finish */
    long getInstantMessageCount();
 
@@ -94,7 +94,7 @@ public interface Queue extends Bindable
    List<MessageReference> getScheduledMessages();
 
    long getMessagesAdded();
-   
+
    long getInstantMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
@@ -150,41 +150,41 @@ public interface Queue extends Bindable
 
    /**
     * Pauses the queue. It will receive messages but won't give them to the consumers until resumed.
-    * If a queue is paused, pausing it again will only throw a warning. 
+    * If a queue is paused, pausing it again will only throw a warning.
     * To check if a queue is paused, invoke <i>isPaused()</i>
     */
    void pause();
 
    /**
-    * Resumes the delivery of message for the queue. 
-    * If a queue is resumed, resuming it again will only throw a warning. 
+    * Resumes the delivery of message for the queue.
+    * If a queue is resumed, resuming it again will only throw a warning.
     * To check if a queue is resumed, invoke <i>isPaused()</i>
     */
    void resume();
 
    /**
-    * 
+    *
     * @return true if paused, false otherwise.
     */
    boolean isPaused();
-   
+
    Executor getExecutor();
-   
+
    void resetAllIterators();
 
    boolean flushExecutor();
-   
+
    void close() throws Exception;
-   
+
    boolean isDirectDeliver();
 
    SimpleString getAddress();
-   
+
    /**
     * We can't send stuff to DLQ on queues used on clustered-bridge-communication
     * @return
     */
    boolean isInternalQueue();
-   
+
    void setInternalQueue(boolean internalQueue);
 }

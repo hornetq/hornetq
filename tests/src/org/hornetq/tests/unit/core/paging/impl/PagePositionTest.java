@@ -34,10 +34,10 @@ public class PagePositionTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testNextSequenceOf()
    {
-      
+
    }
 
    // Package protected ---------------------------------------------

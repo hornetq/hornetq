@@ -40,7 +40,7 @@ public class MultipleFailoverExample extends HornetQExample
    {
       new MultipleFailoverExample().run(args);
    }
-   
+
    @Override
    public boolean runExample() throws Exception
    {

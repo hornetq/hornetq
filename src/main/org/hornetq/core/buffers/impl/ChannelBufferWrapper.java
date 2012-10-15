@@ -23,7 +23,7 @@ import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * 
+ *
  * A ChannelBufferWrapper
  *
  * @author Tim Fox

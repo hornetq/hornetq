@@ -24,10 +24,10 @@ import org.hornetq.api.core.management.Parameter;
  * <br>
  * HornetQ JMS ConnectionFactory uses an underlying ClientSessionFactory to connect to HornetQ servers.
  * Please refer to the ClientSessionFactory for a detailed description.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
- * 
+ *
  * @see ClientSessionFactory
  */
 public interface ConnectionFactoryControl
@@ -63,9 +63,9 @@ public interface ConnectionFactoryControl
    * Sets the Client ID for this connection factory.
    */
    void setClientID(String clientID);
-   
+
    boolean isCompressLargeMessages();
-   
+
    void setCompressLargeMessages(boolean compress);
 
    /**
@@ -90,7 +90,7 @@ public interface ConnectionFactoryControl
 
    /**
     * Returns the batch size (in bytes) between acknowledgements when using DUPS_OK_ACKNOWLEDGE mode.
-    * 
+    *
     * @see ClientSessionFactory#getAckBatchSize()
     * @see javax.jms.Session#DUPS_OK_ACKNOWLEDGE
     */
@@ -194,7 +194,7 @@ public interface ConnectionFactoryControl
 
    /**
     * Returns the batch size (in bytes) between acknowledgements when using a transacted session.
-    * 
+    *
     * @see ClientSessionFactory#getAckBatchSize()
     */
    int getTransactionBatchSize();
@@ -253,7 +253,7 @@ public interface ConnectionFactoryControl
     * @see ClientSessionFactory#setReconnectAttempts(int)
     */
    void setReconnectAttempts(int reconnectAttempts);
-   
+
    /**
     * @see ClientSessionFactory#isFailoverOnInitialConnection()
     */

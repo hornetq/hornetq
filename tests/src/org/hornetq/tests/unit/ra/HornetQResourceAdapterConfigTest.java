@@ -279,24 +279,24 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-type>long</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
          "      <config-property>\n" +
          "         <description>How many attempts should be made when connecting the MDB</description>\n" +
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
          "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
-         "      </config-property>"+ 
+         "      </config-property>"+
          "      <config-property>\n" +
          "         <description>Flag to control transaction auto recovery</description>\n" +
          "         <config-property-name>UseAutoRecovery</config-property-name>\n" +
@@ -315,53 +315,53 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-type>java.lang.String</config-property-type>\n" +
          "         <config-property-value>org.hornetq.utils.DefaultSensitiveStringCodec;key=clusterpassword;algorithm=ssss</config-property-value>\n" +
          "      </config-property>\n" +
-         "      <config-property>" + 
-         "         <description>some description</description>" + 
-         "         <config-property-name>InitialMessagePacketSize</config-property-name>" + 
-         "         <config-property-type>int</config-property-type>" + 
-         "         <config-property-value>1</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desc</description>" + 
-         "         <config-property-name>GroupID</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value>xx</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desc</description>" + 
-         "         <config-property-name>FailoverOnInitialConnection</config-property-name>" + 
-         "         <config-property-type>boolean</config-property-type>" + 
-         "         <config-property-value>true</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desk</description>" + 
-         "         <config-property-name>CompressLargeMessage</config-property-name>" + 
-         "         <config-property-type>boolean</config-property-type>" + 
-         "         <config-property-value>true</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desk</description>" + 
-         "         <config-property-name>MaxRetryInterval</config-property-name>" + 
-         "         <config-property-type>long</config-property-type>" + 
-         "         <config-property-value>1</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desc</description>" + 
-         "         <config-property-name>CacheLargeMessagesClient</config-property-name>" + 
-         "         <config-property-type>boolean</config-property-type>" + 
-         "         <config-property-value>true</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>1</description>" + 
-         "         <config-property-name>ProducerWindowSize</config-property-name>" + 
-         "         <config-property-type>int</config-property-type>" + 
-         "         <config-property-value>1</config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description>some desc</description>" + 
-         "         <config-property-name>InitialConnectAttempts</config-property-name>" + 
-         "         <config-property-type>int</config-property-type>" + 
-         "         <config-property-value>1</config-property-value>" + 
+         "      <config-property>" +
+         "         <description>some description</description>" +
+         "         <config-property-name>InitialMessagePacketSize</config-property-name>" +
+         "         <config-property-type>int</config-property-type>" +
+         "         <config-property-value>1</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desc</description>" +
+         "         <config-property-name>GroupID</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value>xx</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desc</description>" +
+         "         <config-property-name>FailoverOnInitialConnection</config-property-name>" +
+         "         <config-property-type>boolean</config-property-type>" +
+         "         <config-property-value>true</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desk</description>" +
+         "         <config-property-name>CompressLargeMessage</config-property-name>" +
+         "         <config-property-type>boolean</config-property-type>" +
+         "         <config-property-value>true</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desk</description>" +
+         "         <config-property-name>MaxRetryInterval</config-property-name>" +
+         "         <config-property-type>long</config-property-type>" +
+         "         <config-property-value>1</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desc</description>" +
+         "         <config-property-name>CacheLargeMessagesClient</config-property-name>" +
+         "         <config-property-type>boolean</config-property-type>" +
+         "         <config-property-value>true</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>1</description>" +
+         "         <config-property-name>ProducerWindowSize</config-property-name>" +
+         "         <config-property-type>int</config-property-type>" +
+         "         <config-property-value>1</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>some desc</description>" +
+         "         <config-property-name>InitialConnectAttempts</config-property-name>" +
+         "         <config-property-type>int</config-property-type>" +
+         "         <config-property-value>1</config-property-value>" +
          "      </config-property>";
 
 
@@ -433,7 +433,7 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
    private Class<?> lookupType(Method setter)
    {
       Class<?> clzz = setter.getParameterTypes()[0];
-      
+
       if (clzz == Boolean.class)
       {
          return Boolean.TYPE;

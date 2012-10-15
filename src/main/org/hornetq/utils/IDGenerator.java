@@ -17,7 +17,7 @@ package org.hornetq.utils;
  * A IDGenerator
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 25 Sep 2008 10:28:52
  *
  *

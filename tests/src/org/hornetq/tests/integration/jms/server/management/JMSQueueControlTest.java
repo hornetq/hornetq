@@ -62,7 +62,7 @@ import org.hornetq.utils.json.JSONArray;
  * A QueueControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 14 nov. 2008 13:35:10
  *
  *
@@ -443,10 +443,10 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
          exception = true;
       }
-      
+
       assertTrue(exception);
    }
-   
+
    public void testExpireMessage() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -782,7 +782,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
-   
+
    public void testMoveMessagesWithDuplicateIDSet() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -876,7 +876,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       ClientProducer prod1 = session.createProducer(queue.getAddress());
       ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
-      
+
       String [] ids = new String[10];
 
       for (int i = 0; i < 10; i++)
@@ -886,9 +886,9 @@ public class JMSQueueControlTest extends ManagementTestBase
          msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
 
          msg.setUserID(UUIDGenerator.getInstance().generateUUID());
-         
+
          prod1.send(msg);
-         
+
          ids[i] = "ID:" + msg.getUserID().toString();
          if (i < 5)
          {
@@ -1034,7 +1034,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.destroyQueue(otherQueueName);
    }
-   
+
    public void testDeleteWithPaging() throws Exception
    {
       AddressSettings pagedSetting = new AddressSettings();
@@ -1042,48 +1042,48 @@ public class JMSQueueControlTest extends ManagementTestBase
       pagedSetting.setPageSizeBytes(10 * 1024);
       pagedSetting.setMaxSizeBytes(100 * 1024);
       server.getAddressSettingsRepository().addMatch("#", pagedSetting);
-      
+
       serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
-      
+
       HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
-      
+
 
       ServerLocator locator = createInVMNonHALocator();
 
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true);
-      
+
       ClientProducer prod = session.createProducer(pagedQueue.getAddress());
-      
+
       ClientMessage msg = session.createMessage(true);
-      
+
       msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
       for (int i = 0 ; i < 100; i++)
       {
          prod.send(msg);
       }
-      
+
       JMSQueueControl control = createManagementControl(pagedQueue);
-      
+
       assertEquals(100, control.removeMessages("     "));
-      
-      
-      
+
+
+
       session.start();
-      
+
       ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
-      
+
       assertNull(consumer.receive(300));
 
-      
+
       session.close();
 
       sf.close();
       locator.close();
    }
 
-   
+
    public void testDeleteWithPagingAndFilter() throws Exception
    {
       AddressSettings pagedSetting = new AddressSettings();
@@ -1091,18 +1091,18 @@ public class JMSQueueControlTest extends ManagementTestBase
       pagedSetting.setPageSizeBytes(10 * 1024);
       pagedSetting.setMaxSizeBytes(100 * 1024);
       server.getAddressSettingsRepository().addMatch("#", pagedSetting);
-      
+
       serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
-      
+
       HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
-      
+
 
       ServerLocator locator = createInVMNonHALocator();
 
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true);
-      
+
       ClientProducer prod = session.createProducer(pagedQueue.getAddress());
       for (int i = 0 ; i < 200; i++)
       {
@@ -1111,17 +1111,17 @@ public class JMSQueueControlTest extends ManagementTestBase
          msg.putBooleanProperty("even", i % 2 == 0);
          prod.send(msg);
       }
-      
+
       JMSQueueControl control = createManagementControl(pagedQueue);
-      
+
       assertEquals(100, control.removeMessages("even=true"));
-      
+
       session.start();
-      
+
       ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
-      
-      
-      
+
+
+
       for (int i = 0 ; i < 100; i++)
       {
          ClientMessage msg = consumer.receive(1000);
@@ -1129,10 +1129,10 @@ public class JMSQueueControlTest extends ManagementTestBase
          msg.acknowledge();
          assertFalse(msg.getBooleanProperty("even").booleanValue());
       }
-      
+
       assertNull(consumer.receive(300));
 
-      
+
       session.close();
 
 
@@ -1228,7 +1228,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
       assertTrue(newBindingAdded);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

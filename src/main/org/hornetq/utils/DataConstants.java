@@ -14,9 +14,9 @@
 package org.hornetq.utils;
 
 /**
- * 
+ *
  * A DataConstants
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

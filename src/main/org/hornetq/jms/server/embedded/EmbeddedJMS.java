@@ -92,7 +92,7 @@ public class EmbeddedJMS extends EmbeddedHornetQ
       }
       else if (jmsConfigResourcePath == null) serverManager = new JMSServerManagerImpl(hornetQServer);
       else serverManager = new JMSServerManagerImpl(hornetQServer, jmsConfigResourcePath);
-      
+
       if (registry == null)
       {
          if (context != null) registry = new JndiBindingRegistry(context);

@@ -63,9 +63,9 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSBridgeImplTest extends UnitTestCase
 {
@@ -210,7 +210,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       Thread.sleep(50);
       Assert.assertFalse(bridge.isStarted());
       Assert.assertTrue(bridge.isFailed());
-      
+
       bridge.stop();
 
    }

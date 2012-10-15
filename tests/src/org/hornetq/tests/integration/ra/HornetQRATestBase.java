@@ -42,7 +42,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    protected Configuration configuration;
 
    protected HornetQServer server;
-   
+
    protected ServerLocator locator;
 
    protected static final String MDBQUEUE = "mdbQueue";
@@ -66,7 +66,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       locator = null;
       if (server != null)
       {
@@ -142,7 +142,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
 
       public void release()
       {
-         released = true;   
+         released = true;
       }
 
       public void onMessage(Message message)

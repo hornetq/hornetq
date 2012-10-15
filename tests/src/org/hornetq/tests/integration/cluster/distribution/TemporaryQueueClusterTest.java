@@ -64,7 +64,7 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
 
    /**
     * https://jira.jboss.org/jira/browse/HORNETQ-286
-    * 
+    *
     * the test checks that the temp queue is properly propagated to the cluster
     * (assuming we wait for the bindings)
     */
@@ -102,7 +102,7 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
          }
          message.acknowledge();
       }
-      
+
       consumer.close();
       session.deleteQueue(tempQueue);
       session.close();

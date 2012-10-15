@@ -35,14 +35,14 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A MessageBodyTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
- * 
+ *
  */
 public class MessageBodyTest extends HornetQServerTestCase
 {

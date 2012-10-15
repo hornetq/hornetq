@@ -43,8 +43,8 @@ public class RecoveryManager
    private HornetQRegistryBase registry;
 
    private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
-   
-   private final Set<XARecoveryConfig> resources = new ConcurrentHashSet<XARecoveryConfig>(); 
+
+   private final Set<XARecoveryConfig> resources = new ConcurrentHashSet<XARecoveryConfig>();
 
    public void start(final boolean useAutoRecovery)
    {
@@ -143,7 +143,7 @@ public class RecoveryManager
       {
          return null;
       }
-      
+
 
       /** no need to register any discovery since we woulnd't do anything with it */
       public void register(final XARecoveryConfig resourceConfig)

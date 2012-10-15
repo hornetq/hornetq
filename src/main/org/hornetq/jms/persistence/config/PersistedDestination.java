@@ -48,7 +48,7 @@ public class PersistedDestination implements EncodingSupport
    public PersistedDestination()
    {
    }
-   
+
    public PersistedDestination(final PersistedType type, final String name)
    {
       this(type, name, null, true);

@@ -35,11 +35,11 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A ClusterWithBackupFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Mar 2009 16:31:21
  *
  *
@@ -189,7 +189,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
          ClusterWithBackupFailoverTestBase.log.info("*** test done");
    }
-   
+
    public void testFailBackupNodes() throws Exception
    {
       setupCluster();
@@ -282,7 +282,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       send(2, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      
+
 
       removeConsumer(0);
       removeConsumer(1);
@@ -454,7 +454,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 1, 1, true);
       // live nodes
       waitForBindings(2, "queues.testaddress", 1, 0, false);
-     
+
       send(2, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
 

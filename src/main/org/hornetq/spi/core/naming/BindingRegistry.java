@@ -15,9 +15,9 @@ public interface BindingRegistry
     * @return
     */
    Object getContext();
-   
+
    void setContext(Object ctx);
-   
+
    Object lookup(String name);
 
    boolean bind(String name, Object obj);

@@ -25,9 +25,9 @@ import org.hornetq.core.transaction.impl.XidImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class RandomUtil
 {
@@ -73,7 +73,7 @@ public class RandomUtil
    {
       return Math.abs(RandomUtil.randomInt());
    }
-   
+
 
    public static HornetQBuffer randomBuffer(final int size, final long... data)
    {
@@ -93,22 +93,22 @@ public class RandomUtil
    }
 
 
-   
-   
+
+
    public static int randomInterval(final int min, final int max)
    {
       return min + randomMax(max - min);
    }
-   
+
    public static int randomMax(int max)
    {
       int value = randomPositiveInt() % max;
-      
+
       if (value == 0)
       {
          value = max;
       }
-      
+
       return value;
    }
 

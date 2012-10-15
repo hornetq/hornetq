@@ -56,7 +56,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * A joint interface for JMS sessions
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -543,7 +543,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * Create a topic subscriber
     * @param topic The topic
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
@@ -630,7 +630,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * @param topic The topic
     * @param name The name
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
@@ -1100,7 +1100,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * Create a message consumer
     * @param destination The destination
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection 
+    * @param noLocal If true inhibits the delivery of messages published by its own connection
     * @return The message consumer
     * @exception JMSException Thrown if an error occurs
     */
@@ -1339,7 +1339,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    {
       return mc;
    }
-   
+
    /**
     * Destroy
     */
@@ -1621,9 +1621,9 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
    }
 
    /**
-    * @throws SystemException 
-    * @throws RollbackException 
-    * 
+    * @throws SystemException
+    * @throws RollbackException
+    *
     */
    public void checkState() throws JMSException
    {

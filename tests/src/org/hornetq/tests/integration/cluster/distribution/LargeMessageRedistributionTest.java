@@ -22,7 +22,7 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class LargeMessageRedistributionTest extends MessageRedistributionTest
 {
-   
+
    public boolean isLargeMessage()
    {
       return true;

@@ -25,7 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A ReceiveNoWaitTest
  *
  * @author Tim Fox
@@ -41,18 +41,18 @@ public class ReceiveNoWaitTest extends JMSTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       queue = createQueue("TestQueue");
    }
-   
+
    protected void tearDown() throws Exception
    {
       jmsServer.destroyQueue("TestQueue");
-      
+
       super.tearDown();
    }
-   
-   
+
+
    /*
     * Test that after sending persistent messages to a queue (these will be sent blocking)
     * that all messages are available for consumption by receiveNoWait()
@@ -65,11 +65,11 @@ public class ReceiveNoWaitTest extends JMSTestBase
       for (int i = 0; i < 10; i++)
       {
          Connection connection = cf.createConnection();
-                          
+
          Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(queue);
-         
+
          producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          for (int j = 0; j < 100; j++)
@@ -77,27 +77,27 @@ public class ReceiveNoWaitTest extends JMSTestBase
             String text = "Message" + j;
 
             TextMessage message = session.createTextMessage();
-                     
+
             message.setText(text);
 
             producer.send(message);
          }
 
          connection.start();
-         
+
          MessageConsumer consumer = session.createConsumer(queue);
 
          for (int j = 0; j < 100; j++)
          {
             TextMessage m = (TextMessage)consumer.receiveNoWait();
-            
+
             if (m == null)
             {
                throw new IllegalStateException("msg null");
             }
-            
+
             assertEquals("Message" + j, m.getText());
-            
+
             m.acknowledge();
          }
 

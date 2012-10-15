@@ -66,12 +66,12 @@ import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 
 /**
- * 
+ *
  * A ClusterConnectionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 21 Jan 2009 14:43:05
  *
  *
@@ -143,7 +143,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
 
    private final ClusterManagerInternal manager;
-   
+
    private final int minLargeMessageSize;
 
 
@@ -242,7 +242,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.manager = manager;
 
       this.callTimeout = callTimeout;
-      
+
       this.minLargeMessageSize = minLargeMessageSize;
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
@@ -318,7 +318,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
       this.maxRetryInterval = maxRetryInterval;
-      
+
       this.minLargeMessageSize = minLargeMessageSize;
 
       this.reconnectAttempts = reconnectAttempts;
@@ -504,7 +504,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                   {
                      announceBackup();
                   }
-               
+
                }, retryInterval, TimeUnit.MILLISECONDS);
             }
          }
@@ -691,7 +691,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          serverLocator.setBlockOnDurableSend(!useDuplicateDetection);
          serverLocator.setBlockOnNonDurableSend(!useDuplicateDetection);
          serverLocator.setCallTimeout(callTimeout);
-         
+
          // No producer flow control on the bridges, as we don't want to lock the queues
          serverLocator.setProducerWindowSize(-1);
 

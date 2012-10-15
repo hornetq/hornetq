@@ -40,9 +40,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 {
@@ -91,7 +91,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    {
       jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.api.jms.management.TopicControl#removeJNDI(java.lang.String)

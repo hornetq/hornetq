@@ -20,7 +20,7 @@ import org.hornetq.utils.TypedProperties;
  * A Notification
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 22 Jan 2009 16:41:12
  *
  *

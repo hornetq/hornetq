@@ -21,9 +21,9 @@ import javax.jms.JMSSecurityException;
 import org.hornetq.api.core.HornetQException;
 
 /**
- * 
+ *
  * A JMSExceptionHelper
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

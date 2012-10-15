@@ -67,9 +67,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
 
    public void testFoo() throws Exception
    {
-      
+
    }
-   
+
    // https://jira.jboss.org/browse/HORNETQ-382
    public void _testReconnectWithPaging() throws Exception
    {
@@ -77,7 +77,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       for (int i=0; i < content.length; ++i) {
           content[i] = (byte) i;
       }
-      
+
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
@@ -135,20 +135,20 @@ public class BridgeWithPagingTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
-      
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setRedeliveryDelay(0);
       addressSettings.setMaxSizeBytes(10485760); // 1 MiB
       addressSettings.setPageSizeBytes(1048576); // 100 kiB
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      
+
       server0.getConfiguration().getAddressesSettings().put("#", addressSettings);
 
       CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-      
+
       server1.getConfiguration().getAddressesSettings().put("#", addressSettings);
 
       server1.start();
@@ -172,7 +172,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       final RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = Integer.MAX_VALUE;
-      
+
       Thread t = new Thread()
       {
          @Override
@@ -184,7 +184,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
          }
       };
       t.start();
-      
+
       final int numMessages = 5000;
 
       SimpleString propKey = new SimpleString("propkey");
@@ -198,9 +198,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
          prod0.send(message);
          System.out.println(">>>> " + i);
       }
-      
+
       InVMConnector.failOnCreateConnection = false;
-      
+
       Thread.sleep(200);
 
       for (int i = 0; i < numMessages; i++)

@@ -25,18 +25,18 @@ public interface ClientProducerCredits
    void acquireCredits(int credits) throws InterruptedException;
 
    void receiveCredits(int credits);
-   
+
    boolean isBlocked();
-   
+
    void init();
 
    void reset();
 
    void close();
-   
+
    void incrementRefCount();
-   
+
    int decrementRefCount();
-   
+
    void releaseOutstanding();
 }

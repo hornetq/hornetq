@@ -39,7 +39,7 @@ import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A ExceptionListenerTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -29,9 +29,9 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A NIOSequentialFile
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -97,9 +97,9 @@ public class NIOSequentialFile extends AbstractSequentialFile
       try
       {
          rfile = new RandomAccessFile(getFile(), "rw");
-   
+
          channel = rfile.getChannel();
-   
+
          fileSize = channel.size();
       }
       catch (IOException e)
@@ -207,7 +207,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          {
             callback.onError(HornetQException.IO_ERROR, e.getLocalizedMessage());
          }
-         
+
          factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
 
          throw e;

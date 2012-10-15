@@ -22,10 +22,10 @@ import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * Helper class to use JMS messages to manage HornetQ server resources.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class JMSManagementHelper
@@ -49,12 +49,12 @@ public class JMSManagementHelper
 
    /**
     * Stores a resource attribute in a JMS message to retrieve the value from the server resource.
-    * 
+    *
     * @param message JMS message
     * @param resourceName the name of the resource
     * @param attribute the name of the attribute
     * @throws JMSException if an exception occurs while putting the information in the message
-    * 
+    *
     * @see ResourceNames
     */
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException
@@ -64,7 +64,7 @@ public class JMSManagementHelper
 
    /**
     * Stores a operation invocation in a JMS message to invoke the corresponding operation the value from the server resource.
-    * 
+    *
     * @param message JMS message
     * @param resourceName the name of the resource
     * @param operationName the name of the operation to invoke on the resource
@@ -99,7 +99,7 @@ public class JMSManagementHelper
 
    /**
     * Stores a operation invocation in a JMS message to invoke the corresponding operation the value from the server resource.
-    * 
+    *
     * @param message JMS message
     * @param resourceName the name of the server resource
     * @param operationName the name of the operation to invoke on the server resource

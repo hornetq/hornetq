@@ -65,7 +65,7 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    public void afterRollback(Transaction tx)
    {
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
     */
@@ -73,7 +73,7 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    {
       return Collections.emptyList();
    }
-   
+
 
 
    // Package protected ---------------------------------------------

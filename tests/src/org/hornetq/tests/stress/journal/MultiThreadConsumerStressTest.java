@@ -29,7 +29,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A MultiThreadConsumerStressTest
- * 
+ *
  * This test validates consuming / sending messages while compacting is working
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

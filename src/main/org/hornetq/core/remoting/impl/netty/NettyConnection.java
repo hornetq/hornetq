@@ -37,7 +37,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class NettyConnection implements Connection
@@ -61,7 +61,7 @@ public class NettyConnection implements Connection
    private final boolean directDeliver;
 
    private volatile HornetQBuffer batchBuffer;
-   
+
    private final Map<String, Object> configuration;
 
    private final Semaphore writeLock = new Semaphore(1);
@@ -79,7 +79,7 @@ public class NettyConnection implements Connection
                           final boolean directDeliver)
    {
       this.configuration = configuration;
-      
+
       this.channel = channel;
 
       this.listener = listener;
@@ -277,10 +277,10 @@ public class NettyConnection implements Connection
          listener.readyForWriting(ready);
       }
    }
-   
-   
+
+
    /**
-    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * Generates a {@link TransportConfiguration} to be use to connect to the
     * same target this is connect to
     * @return
     */

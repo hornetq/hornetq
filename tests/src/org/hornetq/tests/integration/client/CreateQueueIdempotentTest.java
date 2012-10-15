@@ -85,7 +85,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
         locator.close();
 
         server.stop();
-        
+
         Assert.assertTrue(success);
     }
 
@@ -106,7 +106,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
 
         server.start();
         final int NUM_THREADS = 5;
-        
+
         QueueCreator[] queueCreators = new QueueCreator[NUM_THREADS];
 
 
@@ -138,7 +138,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
             e.printStackTrace();
             success = false;
         }
-        
+
         server.stop();
 
         Assert.assertTrue(success);

@@ -22,7 +22,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A TransportConfigurationTest
  *
  * @author jmesnil
- * 
+ *
  * Created 20 janv. 2009 14:46:35
  *
  *

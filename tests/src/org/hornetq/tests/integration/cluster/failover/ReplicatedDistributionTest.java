@@ -111,11 +111,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          fail(sessionThree);
 
          // sessionThree.close();
-         //         
+         //
          // setupSessionFactory(2, -1, true);
-         //         
+         //
          // sessionThree = sfs[2].createSession(true, true);
-         //         
+         //
          // sessionThree.start();
 
          // consThree = sessionThree.createConsumer(ADDRESS);

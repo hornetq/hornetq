@@ -73,12 +73,12 @@ public class LocalGroupingHandler implements GroupingHandler
    public Response propose(final Proposal proposal) throws Exception
    {
       OperationContext originalCtx = storageManager.getContext();
-      
+
       try
       {
          // the waitCompletion cannot be done inside an ordered executor or we would starve when the thread pool is full
          storageManager.setContext(storageManager.newSingleThreadContext());
-      
+
          if (proposal.getClusterName() == null)
          {
             GroupBinding original = map.get(proposal.getGroupId());

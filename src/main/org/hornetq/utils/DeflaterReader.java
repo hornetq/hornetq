@@ -33,9 +33,9 @@ public class DeflaterReader extends InputStream
    private boolean compressDone = false;
 
    private InputStream input;
-   
+
    private final AtomicLong bytesRead;
-   
+
    public DeflaterReader(final InputStream inData, final AtomicLong bytesRead)
    {
       input = inData;
@@ -61,10 +61,10 @@ public class DeflaterReader extends InputStream
    /**
     * Try to fill the buffer with compressed bytes. Except the last effective read,
     * this method always returns with a full buffer of compressed data.
-    * 
+    *
     * @param buffer the buffer to fill compressed bytes
     * @return the number of bytes really filled, -1 indicates end.
-    * @throws IOException 
+    * @throws IOException
     */
    @Override
    public int read(final byte[] buffer, int offset, int len) throws IOException
@@ -73,7 +73,7 @@ public class DeflaterReader extends InputStream
       {
          return -1;
       }
-      
+
       //buffer for reading input stream
       byte[] readBuffer = new byte[2 * len];
 
@@ -95,7 +95,7 @@ public class DeflaterReader extends InputStream
             {
                // read some data from inputstream
                int m = input.read(readBuffer);
-               
+
                if (m == -1)
                {
                   deflater.finish();
@@ -125,5 +125,5 @@ public class DeflaterReader extends InputStream
       }
       return read;
    }
-   
+
 }

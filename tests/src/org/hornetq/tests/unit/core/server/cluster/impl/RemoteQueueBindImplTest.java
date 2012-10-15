@@ -117,7 +117,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       public void setInternalQueue(boolean internalQueue)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -657,7 +657,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       public void forceDelivery()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -684,7 +684,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       public void addHead(LinkedList<MessageReference> refs)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -693,7 +693,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       public void destroyPaging()
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }

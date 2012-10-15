@@ -19,12 +19,12 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.postoffice.PostOffice;
 
 /**
- * 
+ *
  * A QueueFactory
- * 
+ *
  * Implementations of this class know how to create queues with the correct attribute values
  * based on default and overrides
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

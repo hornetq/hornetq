@@ -22,9 +22,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuation
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 
 /**
- * 
+ *
  * A ClientConsumerInternal
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -47,7 +47,7 @@ public interface ClientConsumerInternal extends ClientConsumer
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
    void clear(boolean waitForOnMessage) throws HornetQException;
-   
+
    /**
     * To be called by things like MDBs during shutdown of the server
     * @param interrupt
@@ -74,8 +74,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    void stop(boolean waitForOnMessage) throws HornetQException;
 
    void start();
-   
+
    SessionQueueQueryResponseMessage getQueueInfo();
-   
+
    ClientSessionInternal getSession();
 }

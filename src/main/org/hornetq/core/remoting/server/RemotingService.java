@@ -40,9 +40,9 @@ public interface RemotingService
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);
-   
+
    void stop(boolean criticalError) throws Exception;
-   
+
    void start() throws Exception;
 
    boolean isStarted();

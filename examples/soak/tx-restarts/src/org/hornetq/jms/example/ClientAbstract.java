@@ -32,10 +32,10 @@ import org.hornetq.utils.UUIDGenerator;
  * WARNING: This is not a sample on how you should handle XA.
  *          You are supposed to use a TransactionManager.
  *          This class is doing the job of a TransactionManager that fits for the purpose of this test only,
- *          however there are many more pitfalls to deal with Transactions. 
- *          
- *          This is just to stress and soak test Transactions with HornetQ. 
- *          
+ *          however there are many more pitfalls to deal with Transactions.
+ *
+ *          This is just to stress and soak test Transactions with HornetQ.
+ *
  *          And this is dealing with XA directly for the purpose testing only.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

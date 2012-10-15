@@ -707,7 +707,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
    /**
     * Allocation a connection
     * @param sessionType The session type
-    * @return The session 
+    * @return The session
     * @exception JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
@@ -792,7 +792,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
     * @param transacted Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @param sessionType The session type
-    * @return The session 
+    * @return The session
     * @exception JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException

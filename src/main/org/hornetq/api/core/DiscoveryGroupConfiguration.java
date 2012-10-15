@@ -23,7 +23,7 @@ import org.hornetq.utils.UUIDGenerator;
  * A DiscoveryGroupConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 08:47:30
  *
  *
@@ -31,12 +31,12 @@ import org.hornetq.utils.UUIDGenerator;
 public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
-   
+
    private static final Logger log = Logger.getLogger(DiscoveryGroupConfiguration.class);
 
 
    private String name;
-   
+
    private String localBindAddress;
 
    private String groupAddress;
@@ -44,7 +44,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    private int groupPort;
 
    private long refreshTimeout;
-   
+
    private long discoveryInitialWaitTimeout;
 
    public DiscoveryGroupConfiguration(final String name,
@@ -72,7 +72,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       return name;
    }
-   
+
    public String getLocalBindAddress()
    {
       return localBindAddress;
@@ -100,7 +100,7 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this.name = name;
    }
-   
+
    /**
     * @param localBindAddress the localBindAddress to set
     */
@@ -199,6 +199,6 @@ public class DiscoveryGroupConfiguration implements Serializable
              refreshTimeout +
              "]";
    }
-   
-   
+
+
 }

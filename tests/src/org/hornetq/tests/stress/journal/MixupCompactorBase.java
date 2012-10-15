@@ -164,17 +164,17 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
          }
       }
    }
-   
+
    protected int testMix(final int startAt, final int joinAt, final int secondAt) throws Exception
    {
       startCompactAt = startAt;
       joinCompactAt = joinAt;
       secondCompactAt = secondAt;
-      
+
       currentOperation = 0;
-      
+
       internalTest();
-      
+
       return currentOperation;
    }
 

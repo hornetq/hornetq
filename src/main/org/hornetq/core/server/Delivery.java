@@ -14,9 +14,9 @@
 package org.hornetq.core.server;
 
 /**
- * 
+ *
  * A Delivery
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

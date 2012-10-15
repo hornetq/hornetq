@@ -38,7 +38,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -463,10 +463,10 @@ public class AlignedJournalImplTest extends UnitTestCase
       {
          AlignedJournalImplTest.log.debug("Expected exception " + e, e);
       }
-      
+
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
-      
+
       journalImpl.forceMoveNextFile();
       journalImpl.checkReclaimStatus();
 

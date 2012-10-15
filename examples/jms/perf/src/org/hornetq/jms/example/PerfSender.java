@@ -15,7 +15,7 @@ package org.hornetq.jms.example;
 import java.util.logging.Logger;
 
 /**
- * 
+ *
  * A PerfSender
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

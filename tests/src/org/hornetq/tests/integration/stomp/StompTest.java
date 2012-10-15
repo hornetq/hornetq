@@ -81,13 +81,13 @@ public class StompTest extends StompTestBase
       frame = receiveFrame(10000);
 
       Assert.assertTrue(frame.startsWith("CONNECTED"));
- 
+
       frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName()+"IdontExist" + "\n\n" + "Hello World" + Stomp.NULL;
       sendFrame(frame);
-      
+
       String frameReceived = receiveFrame(1000);
       System.out.println(frameReceived);
-      
+
       Assert.assertTrue(frameReceived.startsWith("ERROR"));
    }
 
@@ -1079,7 +1079,7 @@ public class StompTest extends StompTestBase
               Stomp.NULL;
       sendFrame(frame);
       frame = receiveFrame(10000);
-      
+
       System.out.println(frame);
       Assert.assertTrue(frame.startsWith("ERROR"));
    }

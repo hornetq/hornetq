@@ -32,17 +32,17 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * A OpenCloseStressTest.
- * 
+ *
  * This stress test starts several publisher connections and several subscriber connections, then sends and consumes
  * messages while concurrently closing the sessions.
- * 
- * This test will help catch race conditions that occurred with rapid open/closing of sessions when messages are being 
+ *
+ * This test will help catch race conditions that occurred with rapid open/closing of sessions when messages are being
  * sent/received
- * 
+ *
  * E.g. http://jira.jboss.com/jira/browse/JBMESSAGING-982
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2349 $</tt>
  *

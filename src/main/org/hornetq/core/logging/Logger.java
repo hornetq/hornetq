@@ -23,11 +23,11 @@ import org.hornetq.spi.core.logging.LogDelegate;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
- * 
+ *
  * A Logger
- * 
+ *
  * This class allows us to isolate all our logging dependencies in one place
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -201,7 +201,7 @@ public class Logger
    {
       delegate.trace(message, t);
    }
-   
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.

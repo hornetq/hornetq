@@ -130,11 +130,11 @@ public class JournalCrashTest extends ServiceTestBase
          int start = Integer.parseInt(arg[1]);
 
          int end = Integer.parseInt(arg[2]);
-         
+
          long timeStart = Long.parseLong(arg[0]);
 
          JournalCrashTest restart = new JournalCrashTest();
-         
+
          restart.setTimeStart(timeStart);
 
          restart.startServer();

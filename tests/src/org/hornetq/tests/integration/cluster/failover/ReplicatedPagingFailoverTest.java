@@ -68,7 +68,7 @@ public class ReplicatedPagingFailoverTest extends PagingFailoverTest
       backupConfig.setSharedStore(false);
       backupConfig.setBackup(true);
       backupServer = createBackupServer();
-      
+
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
@@ -78,7 +78,7 @@ public class ReplicatedPagingFailoverTest extends PagingFailoverTest
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(false);
       liveServer = createLiveServer();
-      
+
       backupServer.start();
       liveServer.start();
    }

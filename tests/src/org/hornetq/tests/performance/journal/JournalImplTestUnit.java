@@ -27,9 +27,9 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 
 /**
- * 
+ *
  * A RealJournalImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:Clebert.Suconic@jboss.com">Clebert Suconic</a>
  *

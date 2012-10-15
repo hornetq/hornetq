@@ -240,7 +240,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
    }
-   
+
    public void testDeployFullConfiguration2() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
@@ -338,7 +338,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       config = createBasicConfig();
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      
+
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup", "172.16.8.10",
                                                                         "243.7.7.7", 12345,
                                                                         5432, 5432);

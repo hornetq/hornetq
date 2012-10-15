@@ -14,9 +14,9 @@
 package org.hornetq.core.journal;
 
 /**
- * 
+ *
  * A RecordInfo
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -40,7 +40,7 @@ public class RecordInfo
        After the record has reached 7 times, it will always be 7
        As we only store up to 0x7 binary, as part of the recordID (binary 111) */
    public final short compactCount;
-   
+
    public final long id;
 
    public final byte userRecordType;

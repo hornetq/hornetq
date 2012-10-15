@@ -33,7 +33,7 @@ import org.jboss.security.SecurityContextFactory;
 class SecurityActions
 {
    private static final Logger log = Logger.getLogger(JBossASSecurityManager.class);
-   
+
    interface PrincipalInfoAction
    {
       PrincipalInfoAction PRIVILEGED = new PrincipalInfoAction()
@@ -72,7 +72,7 @@ class SecurityActions
                      {
                         sc.getUtil().createSubjectInfo(principal, credential, subject);
                      }
-                     
+
                      SecurityContextAssociation.setSecurityContext(sc);
                      log.info("========================================================");
                   }
@@ -80,7 +80,7 @@ class SecurityActions
                   {
                      log.warn("An error happened while setting the context", t);
                   }
-                  
+
                   return null;
                }
             });

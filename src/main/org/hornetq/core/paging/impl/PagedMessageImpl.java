@@ -26,9 +26,9 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
 
 /**
- * 
+ *
  * This class represents a paged message
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
@@ -51,7 +51,7 @@ public class PagedMessageImpl implements PagedMessage
    private byte[] largeMessageLazyData;
 
    private ServerMessage message;
-   
+
    private long queueIDs[];
 
    private long transactionID = 0;
@@ -76,7 +76,7 @@ public class PagedMessageImpl implements PagedMessage
    {
       return message;
    }
-   
+
    public void initMessage(StorageManager storage)
    {
       if (largeMessageLazyData != null)
@@ -95,7 +95,7 @@ public class PagedMessageImpl implements PagedMessage
    {
       return transactionID;
    }
-   
+
    public long[] getQueueIDs()
    {
       return queueIDs;
@@ -125,11 +125,11 @@ public class PagedMessageImpl implements PagedMessage
 
          message.decode(buffer);
       }
-      
+
       int queueIDsSize = buffer.readInt();
-      
+
       queueIDs = new long[queueIDsSize];
-      
+
       for (int i = 0 ; i < queueIDsSize; i++)
       {
          queueIDs[i] = buffer.readLong();
@@ -145,9 +145,9 @@ public class PagedMessageImpl implements PagedMessage
       buffer.writeInt(message.getEncodeSize());
 
       message.encode(buffer);
-      
+
       buffer.writeInt(queueIDs.length);
-      
+
       for (int i = 0 ; i < queueIDs.length; i++)
       {
          buffer.writeLong(queueIDs[i]);
@@ -156,7 +156,7 @@ public class PagedMessageImpl implements PagedMessage
 
    public int getEncodeSize()
    {
-      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize() + 
+      return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize() +
              DataConstants.SIZE_INT + queueIDs.length * DataConstants.SIZE_LONG;
    }
 
@@ -173,8 +173,8 @@ public class PagedMessageImpl implements PagedMessage
              message +
              "]";
    }
-   
-   
+
+
 
    // Package protected ---------------------------------------------
 

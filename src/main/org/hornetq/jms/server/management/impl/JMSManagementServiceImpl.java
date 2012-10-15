@@ -42,7 +42,7 @@ import org.hornetq.jms.server.management.JMSManagementService;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class JMSManagementServiceImpl implements JMSManagementService
@@ -53,9 +53,9 @@ public class JMSManagementServiceImpl implements JMSManagementService
    // Attributes ----------------------------------------------------
 
    private final ManagementService managementService;
-   
+
    private final JMSServerManager jmsServerManager;
-   
+
    private final HornetQServer server;
 
    // Static --------------------------------------------------------

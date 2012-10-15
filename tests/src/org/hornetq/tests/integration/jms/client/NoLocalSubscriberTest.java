@@ -27,7 +27,7 @@ import org.hornetq.tests.util.RandomUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  */
 public class NoLocalSubscriberTest extends JMSTestBase
 {
@@ -66,7 +66,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
          MessageConsumer defaultConsumer = defaultSess.createConsumer(topic1);
          MessageConsumer noLocalConsumer = defaultSess.createConsumer(topic1, null, true);
          MessageProducer defaultProd = defaultSess.createProducer(topic1);
-         
+
          defaultConn.start();
 
          String text = RandomUtil.randomString();
@@ -74,7 +74,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
          TextMessage messageSent = defaultSess.createTextMessage(text);
          for (int i = 0; i < 10; i++)
          {
-            defaultProd.send(messageSent);            
+            defaultProd.send(messageSent);
          }
 
          Message received = null;
@@ -91,7 +91,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
          MessageConsumer newConsumer = newSession.createConsumer(topic1);
 
          newConn.start();
-         
+
          text = RandomUtil.randomString();
          messageSent.setText(text);
          defaultProd.send(messageSent);
@@ -105,7 +105,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
          // we send the message created at the start of the test but on the *newConn* this time
          newProd.send(messageSent);
          newConn.close();
-         
+
          received = noLocalConsumer.receive(5000);
          assertNotNull("nolocal consumer did not get message", received);
          assertEquals(text, ((TextMessage)received).getText());

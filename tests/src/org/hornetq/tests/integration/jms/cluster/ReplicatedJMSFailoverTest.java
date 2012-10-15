@@ -62,20 +62,20 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       backupConf.setPagingDirectory(getPageDir(0, true));
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir(0, true));
       backupService = HornetQServers.newHornetQServer(backupConf, true);
-      
+
       backupJMSService = new JMSServerManagerImpl(backupService);
-      
+
       backupJMSService.setContext(ctx2);
 
       backupJMSService.start();
-      
+
 
 
       liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.setJournalType(getDefaultJournalType());
-      
-      liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams)); 
+
+      liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams));
       //liveConf.setBackupConnectorName("toBackup");
 
       liveConf.getAcceptorConfigurations()
@@ -88,9 +88,9 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       liveConf.setLargeMessagesDirectory(getLargeMessagesDir(0, false));
 
       liveService = HornetQServers.newHornetQServer(liveConf, true);
-      
+
       liveJMSService = new JMSServerManagerImpl(liveService);
-      
+
       liveJMSService.setContext(ctx1);
 
       liveJMSService.start();

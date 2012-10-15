@@ -70,7 +70,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals("pagingdir", conf.getPagingDirectory());
       Assert.assertEquals("somedir", conf.getBindingsDirectory());
       Assert.assertEquals(false, conf.isCreateBindingsDir());
-      
+
       Assert.assertEquals(17, conf.getPageMaxConcurrentIO());
       Assert.assertEquals("somedir2", conf.getJournalDirectory());
       Assert.assertEquals(false, conf.isCreateJournalDir());
@@ -254,13 +254,13 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("dg1", ccc.getDiscoveryGroupName());
          }
       }
-      
-      
+
+
       assertEquals(2, conf.getAddressesSettings().size());
-      
+
       assertTrue(conf.getAddressesSettings().get("a1") != null);
       assertTrue(conf.getAddressesSettings().get("a2") != null);
-      
+
       assertEquals("a1.1", conf.getAddressesSettings().get("a1").getDeadLetterAddress().toString());
       assertEquals("a1.2", conf.getAddressesSettings().get("a1").getExpiryAddress().toString());
       assertEquals(1, conf.getAddressesSettings().get("a1").getRedeliveryDelay());
@@ -276,28 +276,28 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(7126716262626l, conf.getAddressesSettings().get("a2").getPageSizeBytes());
       assertEquals(20, conf.getAddressesSettings().get("a2").getPageCacheMaxSize());
       assertEquals(8, conf.getAddressesSettings().get("a2").getMessageCounterHistoryDayLimit());
-      
-      
+
+
       assertEquals(2, conf.getQueueConfigurations().size());
-      
+
       assertEquals("queue1", conf.getQueueConfigurations().get(0).getName());
       assertEquals("address1", conf.getQueueConfigurations().get(0).getAddress());
       assertEquals("color='red'", conf.getQueueConfigurations().get(0).getFilterString());
       assertEquals(false, conf.getQueueConfigurations().get(0).isDurable());
-      
+
       assertEquals("queue2", conf.getQueueConfigurations().get(1).getName());
       assertEquals("address2", conf.getQueueConfigurations().get(1).getAddress());
       assertEquals("color='blue'", conf.getQueueConfigurations().get(1).getFilterString());
       assertEquals(false, conf.getQueueConfigurations().get(1).isDurable());
-      
+
       assertEquals(2, conf.getSecurityRoles().size());
 
       assertTrue(conf.getSecurityRoles().containsKey("a1"));
-      
+
       assertTrue(conf.getSecurityRoles().containsKey("a2"));
-      
+
       Role a1Role = conf.getSecurityRoles().get("a1").toArray(new Role[1])[0];
-      
+
       assertFalse(a1Role.isSend());
       assertFalse(a1Role.isConsume());
       assertFalse(a1Role.isCreateDurableQueue());
@@ -305,9 +305,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertTrue(a1Role.isCreateNonDurableQueue());
       assertFalse(a1Role.isDeleteNonDurableQueue());
       assertFalse(a1Role.isManage());
-      
+
       Role a2Role = conf.getSecurityRoles().get("a2").toArray(new Role[1])[0];
-      
+
       assertFalse(a2Role.isSend());
       assertFalse(a2Role.isConsume());
       assertFalse(a2Role.isCreateDurableQueue());
@@ -315,7 +315,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertFalse(a2Role.isCreateNonDurableQueue());
       assertTrue(a2Role.isDeleteNonDurableQueue());
       assertFalse(a2Role.isManage());
-      
+
 
    }
 

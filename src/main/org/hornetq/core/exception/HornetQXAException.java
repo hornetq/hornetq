@@ -29,10 +29,10 @@ public class HornetQXAException extends XAException
    public HornetQXAException(final int errorCode, final String message)
    {
       super(message);
-      
+
       this.errorCode = errorCode;
    }
-   
+
    public HornetQXAException(final int errorCode)
    {
       super(errorCode);

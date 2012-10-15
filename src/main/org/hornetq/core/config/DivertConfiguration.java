@@ -22,7 +22,7 @@ import org.hornetq.utils.UUIDGenerator;
  * A DivertConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 13 Jan 2009 09:36:19
  *
  *

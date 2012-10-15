@@ -26,9 +26,9 @@ import org.hornetq.api.core.management.Parameter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class MBeanInfoHelper
 {

@@ -23,8 +23,8 @@ package org.hornetq.utils;
 public interface HQIterator<E>
 {
    E next();
-   
+
    void remove();
-   
+
    void prev();
 }

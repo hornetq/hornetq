@@ -25,9 +25,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A FileDeploymentManagerTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -74,7 +74,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
 
       System.out.println("========file name: " + file.getAbsolutePath());
-      
+
       file.createNewFile();
 
       FakeDeployer deployer = new FakeDeployer(filename);
@@ -231,7 +231,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          file2.delete();
          file3.delete();
       }
-      
+
       fdm.stop();
    }
 

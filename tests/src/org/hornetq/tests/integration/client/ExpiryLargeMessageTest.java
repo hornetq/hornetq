@@ -133,17 +133,17 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
             producer.send(message);
          }
-         
+
          session.close();
 
          server.stop();
          server.start();
-         
+
          Queue queueExpiry = server.locateQueue(EXPIRY);
          Queue myQueue = server.locateQueue(MY_QUEUE);
 
          sf = locator.createSessionFactory();
-         
+
          Thread.sleep(1500);
 
          long timeout = System.currentTimeMillis() + 5000;
@@ -153,7 +153,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
             myQueue.expireReferences();
             Thread.sleep(50);
          }
-         
+
          assertEquals(50, queueExpiry.getMessageCount());
 
          session = sf.createSession(false, false);
@@ -276,7 +276,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
       }
    }
 
-   /** 
+   /**
     * Tests if the system would still couple with old data where the LargeMessage was linked to its previous copy
     * @throws Exception
     */

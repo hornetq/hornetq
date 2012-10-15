@@ -25,7 +25,7 @@ import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple example that shows a JMS Durable Subscription across two nodes of a cluster.
- * 
+ *
  * The same durable subscription can exist on more than one node of the cluster, and messages
  * sent to the topic will be load-balanced in a round-robin fashion between the two nodes
  *

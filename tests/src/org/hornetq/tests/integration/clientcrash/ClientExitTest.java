@@ -81,7 +81,7 @@ public class ClientExitTest extends ClientTestBase
 
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       // Thread.sleep(1000);
-      //      
+      //
       // // the local session
       // assertActiveConnections(1);
       // // assertActiveSession(1);

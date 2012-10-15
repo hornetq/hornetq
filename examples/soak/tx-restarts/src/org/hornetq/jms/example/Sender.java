@@ -35,19 +35,19 @@ public class Sender extends ClientAbstract
 
    protected MessageProducer producer;
    protected Queue queue;
-   
+
    protected long msgs = TXRestartSoak.MIN_MESSAGES_ON_QUEUE;
    protected int pendingMsgs = 0;
-   
+
    protected final Receiver[] receivers;
-   
-   
+
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public Sender(final Receiver[] receivers)
    {
       this.receivers = receivers;
@@ -60,7 +60,7 @@ public class Sender extends ClientAbstract
       producer = sess.createProducer(queue);
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
    }
-   
+
    public void run()
    {
       super.run();
@@ -97,11 +97,11 @@ public class Sender extends ClientAbstract
       {
          rec.messageProduced(pendingMsgs);
       }
-      
+
       pendingMsgs = 0;
       System.out.println("commit on sender msgs = " + msgs );
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.jms.example.ClientAbstract#onRollback()
     */
@@ -111,11 +111,11 @@ public class Sender extends ClientAbstract
       pendingMsgs = 0;
       System.out.println("Rolled back msgs=" + msgs);
    }
-   
+
    public String toString()
    {
       return "Sender, msgs=" + msgs + ", pending=" + pendingMsgs;
-      
+
    }
 
    // Package protected ---------------------------------------------

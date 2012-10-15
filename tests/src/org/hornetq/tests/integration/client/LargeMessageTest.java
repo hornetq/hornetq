@@ -44,7 +44,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A LargeMessageTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created 29-Sep-08 4:04:10 PM
  *
  *
@@ -76,7 +76,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    /**
-    * 
+    *
     */
    public LargeMessageTest()
    {
@@ -974,7 +974,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
-   
+
    public void testSentWithDuplicateIDBridge() throws Exception
    {
       internalTestSentWithDuplicateID(true);
@@ -1022,28 +1022,28 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(clientFile);
          }
-         
+
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
+
          session.start();
-         
+
          ClientMessage msg = consumer.receive(10000);
-         
+
          for (int i = 0 ; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
-         
+
          assertNotNull(msg);
-         
+
          msg.acknowledge();
-         
+
          assertNull(consumer.receiveImmediate());
-         
+
          session.commit();
-         
+
          validateNoFilesOnLargeDir();
-         
+
       }
       finally
       {

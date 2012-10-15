@@ -848,7 +848,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
    public void testMixupIterator2()
    {
       list.addTail(c, 5);
-      
+
       list.addTail(k, 0);
 
       list.addTail(a, 2);
@@ -859,21 +859,21 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       assertTrue(iter.hasNext());
       assertEquals(c, iter.next());
       iter.remove();
-      
+
       assertTrue(iter.hasNext());
       assertEquals(a, iter.next());
       iter.remove();
-      
+
       assertTrue(iter.hasNext());
       assertEquals(b, iter.next());
       iter.remove();
-      
+
       assertTrue(iter.hasNext());
       assertEquals(k, iter.next());
       iter.remove();
-      
+
       list.addTail(d, 2);
-      
+
       assertTrue(iter.hasNext());
       assertEquals(d, iter.next());
       iter.remove();

@@ -82,7 +82,7 @@ import org.hornetq.utils.TypedProperties;
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class ManagementServiceImpl implements ManagementService
@@ -90,7 +90,7 @@ public class ManagementServiceImpl implements ManagementService
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    private final MBeanServer mbeanServer;
@@ -447,7 +447,7 @@ public class ManagementServiceImpl implements ManagementService
                Object result = getAttribute(resourceName, attribute);
 
                ManagementHelper.storeResult(reply, result);
-               
+
                reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
             }
             catch (Exception e)
@@ -627,9 +627,9 @@ public class ManagementServiceImpl implements ManagementService
 
          messageCounterManager.clear();
       }
-      
+
       listeners.clear();
-      
+
       registry.clear();
 
       messagingServer = null;
@@ -643,11 +643,11 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager = null;
 
       postOffice = null;
-      
+
       pagingManager = null;
-      
+
       storageManager = null;
-      
+
       messagingServer = null;
 
       registeredNames.clear();
@@ -670,8 +670,8 @@ public class ManagementServiceImpl implements ManagementService
    {
       if (isTrace)
       {
-         log.trace("Sending Notification = "  + notification + 
-                   ", notificationEnabled=" + notificationsEnabled + 
+         log.trace("Sending Notification = "  + notification +
+                   ", notificationEnabled=" + notificationsEnabled +
                    " messagingServerControl=" + messagingServerControl);
       }
       if (messagingServerControl != null && notificationsEnabled)

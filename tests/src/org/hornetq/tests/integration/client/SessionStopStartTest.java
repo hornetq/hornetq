@@ -52,7 +52,7 @@ public class SessionStopStartTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       server.stop();
 
       server = null;

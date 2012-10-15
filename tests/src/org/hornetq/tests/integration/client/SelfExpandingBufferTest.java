@@ -28,7 +28,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A SelfExpandingBufferTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 23, 2009 4:27:16 PM
  *
  *
@@ -118,9 +118,9 @@ public class SelfExpandingBufferTest extends ServiceTestBase
          byte[] receivedBytes = new byte[bytes.length];
 
          // log.info("buffer start pos should be at " + PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT);
-         //         
+         //
          // log.info("buffer pos at " + msg2.getBodyBuffer().readerIndex());
-         //         
+         //
          // log.info("buffer length should be " + msg2.getBodyBuffer().readInt(PacketImpl.PACKET_HEADERS_SIZE));
 
          msg2.getBodyBuffer().readBytes(receivedBytes);

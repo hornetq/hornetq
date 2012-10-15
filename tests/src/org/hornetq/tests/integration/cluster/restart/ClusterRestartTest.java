@@ -26,7 +26,7 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 public class ClusterRestartTest extends ClusterTestBase
 {
    Logger log = Logger.getLogger(ClusterRestartTest.class);
-     
+
    public void testRestartWithQueuesCreateInDiffOrder() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -79,13 +79,13 @@ public class ClusterRestartTest extends ClusterTestBase
          // Waiting some time after stopped
          Thread.sleep(2000);
          startServers(0);
-         
+
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);
 
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
-         
+
          printBindings(2);
 
          sendInRange(1, "queues.testaddress", 10, 20, false, null);
@@ -160,7 +160,7 @@ public class ClusterRestartTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 0, true);
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 0, false);
-         
+
          printBindings(2);
          addConsumer(0, 1, "queue10", null);
          addConsumer(1, 0, "queue10", null);

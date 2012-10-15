@@ -34,7 +34,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example demonstrates the ability of HornetQ to send and consume a very large message, much
  * bigger than can fit in RAM.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */

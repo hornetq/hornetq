@@ -17,19 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ *
  * This class converts a JMS selector expression into a HornetQ core filter expression.
- * 
+ *
  * JMS selector and HornetQ filters use the same syntax but have different identifiers.
- * 
+ *
  * We basically just need to replace the JMS header and property Identifier names
  * with the corresponding HornetQ field and header Identifier names.
- * 
+ *
  * We must be careful not to substitute any literals, or identifers whose name contains the name
  * of one we want to substitute.
- * 
+ *
  * This makes it less trivial than a simple search and replace.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

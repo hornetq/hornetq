@@ -20,13 +20,13 @@ import org.hornetq.core.client.impl.ClientMessageImpl;
 /**
  * The ClientRequestor class helps making requests.
  * <br>
- * The ClientRequestor constructor is given a ClientSession and a request address. 
+ * The ClientRequestor constructor is given a ClientSession and a request address.
  * It creates a temporary queue for the responses and provides a request method that sends the request message and waits for its reply.
  *
  * @apiviz.uses org.hornetq.api.core.client.ClientSession
  * @apiviz.owns org.hornetq.api.core.client.ClientProducer
  * @apiviz.owns org.hornetq.api.core.client.ClientConsumer
- * 
+ *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ClientRequestor
@@ -41,10 +41,10 @@ public class ClientRequestor
 
    /**
     * Constructor for the ClientRequestor.
-    * 
+    *
     * The implementation expects a ClientSession with automatic commits of sends and acknowledgements
-    * 
-    * @param session a ClientSession uses to handle requests and replies 
+    *
+    * @param session a ClientSession uses to handle requests and replies
     * @param requestAddress the address to send request messages to
     * @throws Exception
     */
@@ -82,7 +82,7 @@ public class ClientRequestor
    /**
     * Sends a message to the request address and wait for the given timeout for a reply.
     * The temporary queue is used for the REPLYTO_HEADER_NAME, and only one reply per request is expected
-    * 
+    *
     * @param request  the message to send
     * @param timeout the timeout to wait for a reply (in milliseconds)
     * @return the reply message or <code>null</code> if no message is replied before the timeout elapses
@@ -97,7 +97,7 @@ public class ClientRequestor
 
    /**
     * Closes the ClientRequestor and its session.
-    * 
+    *
     * @throws Exception if an exception occurs while closing the ClientRequestor
     */
    public void close() throws Exception
