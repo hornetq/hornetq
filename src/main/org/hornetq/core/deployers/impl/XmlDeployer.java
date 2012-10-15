@@ -169,10 +169,10 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
          for (int i = 0; i < children.getLength(); i++)
          {
             Node node = children.item(i);
-            
+
             String keyAttr = getKeyAttribute();
             String name = null;
-            
+
             if (keyAttr != null)
             {
                Node keyNode = node.getAttributes().getNamedItem(getKeyAttribute());
@@ -279,7 +279,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    public abstract void deploy(final Node node) throws Exception;
 
    /**
-    * Validate the DOM 
+    * Validate the DOM
     */
    public abstract void validate(final Node rootNode) throws Exception;
 

@@ -18,7 +18,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A SessionAddMetaDataMessage
- * 
+ *
  * Packet deprecated: It exists only to support old formats
  *
  * @author <a href="mailto:hgao@redhat.com>Howard Gao</a>
@@ -34,7 +34,7 @@ public class SessionAddMetaDataMessage extends PacketImpl
    {
       super(PacketImpl.SESS_ADD_METADATA);
    }
-   
+
    public SessionAddMetaDataMessage(String k, String d)
    {
       this();

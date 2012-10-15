@@ -22,7 +22,7 @@ import org.hornetq.core.logging.Logger;
  * HornetQ implementation of a JMS Queue.
  * <br>
  * This class can be instantiated directly.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 8737 $</tt>
@@ -52,8 +52,8 @@ public class HornetQQueue extends HornetQDestination implements Queue
    {
       super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name, false, true, null);
    }
-   
-   
+
+
 
    /**
     * @param address

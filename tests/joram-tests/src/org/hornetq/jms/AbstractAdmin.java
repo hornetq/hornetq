@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.   
+ * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -21,7 +21,7 @@ import org.objectweb.jtests.jms.admin.Admin;
 
 /**
  * AbstractAdmin.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */

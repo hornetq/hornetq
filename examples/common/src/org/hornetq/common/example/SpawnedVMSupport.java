@@ -77,7 +77,7 @@ public class SpawnedVMSupport
 
       String osName = System.getProperty("os.name");
       osName = (osName != null) ? osName.toLowerCase() : "";
-      boolean isWindows = osName.contains("win");      
+      boolean isWindows = osName.contains("win");
       if (isWindows)
       {
          vmarg = vmarg.replaceAll("/", "\\\\");

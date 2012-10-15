@@ -128,7 +128,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -267,12 +267,12 @@ public class ResourceAdapterTest extends HornetQRATestBase
       long initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
       int port = factory.getDiscoveryGroupConfiguration().getGroupPort();
-      
+
       //defaults
       assertEquals(10000l, refresh);
       assertEquals(10000l, initWait);
       assertEquals(9876, port);
-      
+
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
@@ -284,7 +284,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       //override refresh timeout
       assertEquals(1234l, refresh);
       assertEquals(10000l, initWait);
-      
+
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
@@ -292,11 +292,11 @@ public class ResourceAdapterTest extends HornetQRATestBase
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
-      
+
       //override initial wait
       assertEquals(10000l, refresh);
       assertEquals(9999l, initWait);
-      
+
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
@@ -304,7 +304,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
-      
+
       //override initial wait
       assertEquals(10000l, refresh);
       assertEquals(9999l, initWait);
@@ -318,7 +318,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -343,7 +343,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -369,7 +369,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setDiscoveryRefreshTimeout(1l);
       qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -389,10 +389,10 @@ public class ResourceAdapterTest extends HornetQRATestBase
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setDiscoveryAddress("231.7.7.7");
-      
+
       //qResourceAdapter.getTransactionManagerLocatorClass
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
 
       qResourceAdapter.start(ctx);
@@ -421,7 +421,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectionParameters("server-id=0");
       qResourceAdapter.setHA(true);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -444,7 +444,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -468,7 +468,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -492,7 +492,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectionParameters("server-id=0");
       qResourceAdapter.setReconnectAttempts(100);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -515,7 +515,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -538,7 +538,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -554,24 +554,24 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.stop();
       assertTrue(spec.isHasBeenUpdated());
    }
-   
+
    public void testMaskPassword() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-     
+
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
       String mask = (String)codec.encode("helloworld");
 
       qResourceAdapter.setUseMaskedPassword(true);
       qResourceAdapter.setPassword(mask);
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
-      
+
       assertEquals("helloworld", qResourceAdapter.getPassword());
-      
+
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
@@ -585,37 +585,37 @@ public class ResourceAdapterTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      
+
       assertEquals("mdbpassword", spec.getPassword());
-      
+
       qResourceAdapter.stop();
       assertTrue(endpoint.released);
    }
-   
+
    public void testMaskPassword2() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
-     
+
       qResourceAdapter.setUseMaskedPassword(true);
       qResourceAdapter.setPasswordCodec(DefaultSensitiveStringCodec.class.getName() + ";key=anotherkey");
 
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
       Map<String, String> prop = new HashMap<String, String>();
-      
+
       prop.put("key", "anotherkey");
       codec.init(prop);
-      
+
       String mask = (String)codec.encode("helloworld");
 
       qResourceAdapter.setPassword(mask);
-      
+
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
-      
+
       assertEquals("helloworld", qResourceAdapter.getPassword());
-      
+
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
@@ -629,9 +629,9 @@ public class ResourceAdapterTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      
+
       assertEquals("mdbpassword", spec.getPassword());
-      
+
       qResourceAdapter.stop();
       assertTrue(endpoint.released);
    }

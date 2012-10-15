@@ -43,7 +43,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A ProducerFlowControlTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox

@@ -20,7 +20,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -29,7 +29,7 @@ public interface PageTransactionInfo extends EncodingSupport
    boolean isCommit();
 
    boolean isRollback();
-   
+
    void setCommitted(boolean committed);
 
    void commit();
@@ -41,20 +41,20 @@ public interface PageTransactionInfo extends EncodingSupport
    void setRecordID(long id);
 
    long getTransactionID();
-   
+
    void store(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
-   
+
    void storeUpdate(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
-   
+
    void reloadUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int increment) throws Exception;
-   
+
    void storeUpdate(StorageManager storageManager, PagingManager pagingManager) throws Exception;
 
    // To be used after the update was stored or reload
    void onUpdate(int update, StorageManager storageManager, PagingManager pagingManager);
 
    void increment(boolean persistent);
-   
+
    void increment(int durableSize, int nonDurableSize);
 
    int getNumberOfMessages();

@@ -32,9 +32,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- * 
+ *
  * An abstract SequentialFileFactory containing basic functionality for both AIO and NIO SequentialFactories
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -52,12 +52,12 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    protected final TimedBuffer timedBuffer;
 
    protected final int bufferSize;
-   
-   protected final long bufferTimeout;
-   
-   private final IOCriticalErrorListener critialErrorListener;  
 
-   /** 
+   protected final long bufferTimeout;
+
+   private final IOCriticalErrorListener critialErrorListener;
+
+   /**
     * Asynchronous writes need to be done at another executor.
     * This needs to be done at NIO, or else we would have the callers thread blocking for the return.
     * At AIO this is necessary as context switches on writes would fire flushes at the kernel.
@@ -110,7 +110,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
          }
       }
    }
-   
+
    public String getDirectory()
    {
       return journalDir;
@@ -142,7 +142,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
          critialErrorListener.onIOException(errorCode, message, file);
       }
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -178,7 +178,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    {
    }
 
-   /** 
+   /**
     * Create the directory if it doesn't exist yet
     */
    public void createDirs() throws Exception

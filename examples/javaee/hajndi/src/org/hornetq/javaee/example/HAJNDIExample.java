@@ -19,11 +19,11 @@ import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 
 /**
- * 
+ *
  * This example demonstrates the use of HA-JNDI to look-up JMS Connection Factories from JNDI.
- * 
+ *
  * For more information please see the readme.html file.
- * 
+ *
  * @author <a href="mailto:csuconic@jboss.org">Clebert Suconic</a>
  */
 public class HAJNDIExample

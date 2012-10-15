@@ -16,7 +16,7 @@
  * <br>
  * This package contains classes to create
  * HornetQ JMS managed resources (ConnectionFactory, Queue and Topic).
- * 
+ *
  */
 package org.hornetq.api.jms;
 

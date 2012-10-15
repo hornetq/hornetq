@@ -28,9 +28,9 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A AIOSequentialFile
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -268,7 +268,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    {
       factory.onIOError(code, message, this);
    }
-   
+
 
    public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
    {
@@ -287,7 +287,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    }
 
    /**
-    * 
+    *
     * @param sync Not used on AIO
     *  */
    public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
@@ -332,5 +332,5 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
          throw new IllegalStateException("File not opened");
       }
    }
-   
+
 }

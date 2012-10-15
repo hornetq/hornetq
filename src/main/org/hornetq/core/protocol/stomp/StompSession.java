@@ -140,7 +140,7 @@ class StompSession implements SessionCallback
       {
          headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
       }
-      
+
       HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
 
       int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
@@ -203,12 +203,12 @@ class StompSession implements SessionCallback
       {
          long consumerID = pair.getA();
          int credits = pair.getB();
-   
+
          if (this.consumerCredits != -1)
          {
             session.receiveConsumerCredits(consumerID, credits);
          }
-         
+
          session.acknowledge(consumerID, id);
          session.commit();
       }
@@ -249,7 +249,7 @@ class StompSession implements SessionCallback
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack.equals(Stomp.Headers.Subscribe.AckModeValues.AUTO));
       subscriptions.put(consumerID, subscription);
-      
+
       if (subscription.isAutoACK())
       {
          session.receiveConsumerCredits(consumerID, -1);

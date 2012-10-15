@@ -27,10 +27,10 @@ import org.jboss.tm.XAResourceRecovery;
 
 /**
  * <p>This class is used by the Resource Adapter to register RecoveryDiscovery, which is based on the {@link XARecoveryConfig}</p>
- * 
+ *
  * <p>Each outbound or inboud connection will pass the configuration here through by calling the method {@link HornetQRecoveryRegistry#register(XARecoveryConfig)}</p>
- * 
- * <p>Later the {@link RecoveryDiscovery} will call {@link HornetQRecoveryRegistry#nodeUp(String, Pair, String, String)} 
+ *
+ * <p>Later the {@link RecoveryDiscovery} will call {@link HornetQRecoveryRegistry#nodeUp(String, Pair, String, String)}
  * so we will keep a track of nodes on the cluster
  * or nodes where this server is connected to. </p>
  *

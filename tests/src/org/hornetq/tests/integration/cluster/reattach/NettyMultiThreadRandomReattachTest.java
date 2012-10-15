@@ -27,7 +27,7 @@ import org.hornetq.core.server.HornetQServers;
  * A NettyMultiThreadRandomReattachTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Feb 2009 08:01:20
  *
  *
@@ -41,7 +41,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       liveConf.setJMXManagementEnabled(false);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();
-      
+
       Map<String, Object> connectionParams = new HashMap<String, Object>();
       connectionParams.put(TransportConstants.USE_NIO_PROP_NAME, true);
 
@@ -64,5 +64,5 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       locator.setAckBatchSize(0);
       return  locator;
    }
-   
+
 }

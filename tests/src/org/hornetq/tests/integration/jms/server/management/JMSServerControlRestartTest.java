@@ -87,7 +87,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       serverManager.stop();
-      
+
       checkNoBinding(context, binding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -100,7 +100,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
-   
+
    public void testCreateDurableQueueUsingJMSAndRestartServer() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -165,12 +165,12 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer);
 
       context = new InVMContext();
-      
+
       serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
       return serverManager;
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {

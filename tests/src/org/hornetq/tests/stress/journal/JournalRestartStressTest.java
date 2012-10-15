@@ -28,7 +28,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * Simulates the journal being updated, compacted cleared up, 
+ * Simulates the journal being updated, compacted cleared up,
  * and having multiple restarts,
  * To make sure the journal would survive at multiple restarts of the server
  *
@@ -61,7 +61,7 @@ public class JournalRestartStressTest extends ServiceTestBase
       for (int i = 0; i < 10; i++)
       {
          server2.start();
-         
+
          ServerLocator locator = createFactory(false);
          locator.setMinLargeMessageSize(1024 * 1024);
          locator.setBlockOnDurableSend(false);

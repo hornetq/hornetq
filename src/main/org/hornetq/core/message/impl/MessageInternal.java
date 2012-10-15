@@ -26,7 +26,7 @@ import org.hornetq.utils.TypedProperties;
  * A MessageInternal
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * TODO - this can be refactored further to separate out large message specific stuff
  *
  *
@@ -44,11 +44,11 @@ public interface MessageInternal extends Message
    void bodyChanged();
 
    void resetCopied();
-   
+
    boolean isServerMessage();
 
    HornetQBuffer getEncodedBuffer();
-   
+
    int getHeadersAndPropertiesEncodeSize();
 
    HornetQBuffer getWholeBuffer();
@@ -57,11 +57,11 @@ public interface MessageInternal extends Message
 
    void decodeHeadersAndProperties(HornetQBuffer buffer);
 
-   BodyEncoder getBodyEncoder() throws HornetQException;  
-   
+   BodyEncoder getBodyEncoder() throws HornetQException;
+
    InputStream getBodyInputStream();
 
    void setAddressTransient(SimpleString address);
-   
+
    TypedProperties getTypedProperties();
 }

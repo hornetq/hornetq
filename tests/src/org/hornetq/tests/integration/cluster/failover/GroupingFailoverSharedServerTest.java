@@ -25,4 +25,4 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
    {
       return true;
    }
-}  
+}

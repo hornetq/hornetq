@@ -16,7 +16,7 @@ import org.hornetq.api.core.SimpleString;
 
 /**
  * A remote Grouping handler configuration
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class GroupingHandlerConfiguration

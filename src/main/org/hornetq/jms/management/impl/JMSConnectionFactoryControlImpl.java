@@ -28,9 +28,9 @@ import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSConnectionFactoryControlImpl extends StandardMBean implements ConnectionFactoryControl
 {
@@ -39,11 +39,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    // Attributes ----------------------------------------------------
 
    private final ConnectionFactoryConfiguration cfConfig;
-   
+
    private HornetQConnectionFactory cf;
 
    private final String name;
-   
+
    private final JMSServerManager jmsManager;
 
    // Static --------------------------------------------------------
@@ -70,12 +70,12 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       return jmsManager.getJNDIOnConnectionFactory(name);
    }
-   
+
    public boolean isCompressLargeMessages()
    {
       return cf.isCompressLargeMessage();
    }
-   
+
    public void setCompressLargeMessages(final boolean compress)
    {
       cfConfig.setCompressLargeMessages(compress);
@@ -237,7 +237,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       cfConfig.setReconnectAttempts(reconnectAttempts);
       recreateCF();
    }
-   
+
    public void setFailoverOnInitialConnection(boolean failover)
    {
       cfConfig.setFailoverOnInitialConnection(failover);
@@ -308,7 +308,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       return cfConfig.getLoadBalancingPolicyClassName();
    }
-   
+
    public void setConnectionLoadBalancingPolicyClassName(String name)
    {
       cfConfig.setLoadBalancingPolicyClassName(name);
@@ -399,7 +399,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       return cfConfig.getReconnectAttempts();
    }
-   
+
    public boolean isFailoverOnInitialConnection()
    {
       return cfConfig.isFailoverOnInitialConnection();
@@ -457,7 +457,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
          throw new RuntimeException (e.getMessage(), e);
       }
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

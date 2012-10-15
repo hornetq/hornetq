@@ -37,7 +37,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
 
    /**
     * Create a new wrapper
-    * 
+    *
     * @param message the message
     * @param session the session
     */
@@ -54,7 +54,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public boolean getBoolean(final String name) throws JMSException
@@ -70,7 +70,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public byte getByte(final String name) throws JMSException
@@ -86,7 +86,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public byte[] getBytes(final String name) throws JMSException
@@ -102,7 +102,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public char getChar(final String name) throws JMSException
@@ -118,7 +118,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public double getDouble(final String name) throws JMSException
@@ -134,7 +134,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public float getFloat(final String name) throws JMSException
@@ -150,7 +150,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public int getInt(final String name) throws JMSException
@@ -166,7 +166,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public long getLong(final String name) throws JMSException
@@ -181,7 +181,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
 
    /**
     * Get the map names
-    * @return The values 
+    * @return The values
     * @exception JMSException Thrown if an error occurs
     */
    public Enumeration getMapNames() throws JMSException
@@ -197,7 +197,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public Object getObject(final String name) throws JMSException
@@ -213,7 +213,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public short getShort(final String name) throws JMSException
@@ -229,7 +229,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Get
     * @param name The name
-    * @return The value 
+    * @return The value
     * @exception JMSException Thrown if an error occurs
     */
    public String getString(final String name) throws JMSException
@@ -261,7 +261,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setBoolean(final String name, final boolean value) throws JMSException
@@ -277,7 +277,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setByte(final String name, final byte value) throws JMSException
@@ -293,7 +293,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @param offset The offset
     * @param length The length
     * @exception JMSException Thrown if an error occurs
@@ -311,7 +311,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setBytes(final String name, final byte[] value) throws JMSException
@@ -327,7 +327,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setChar(final String name, final char value) throws JMSException
@@ -343,7 +343,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setDouble(final String name, final double value) throws JMSException
@@ -359,7 +359,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setFloat(final String name, final float value) throws JMSException
@@ -375,7 +375,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setInt(final String name, final int value) throws JMSException
@@ -391,7 +391,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setLong(final String name, final long value) throws JMSException
@@ -407,7 +407,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setObject(final String name, final Object value) throws JMSException
@@ -423,7 +423,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setShort(final String name, final short value) throws JMSException
@@ -439,7 +439,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    /**
     * Set
     * @param name The name
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void setString(final String name, final String value) throws JMSException

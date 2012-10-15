@@ -60,7 +60,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
@@ -87,7 +87,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {

@@ -38,7 +38,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 public class ChannelImpl implements Channel
 {
    private static final Logger log = Logger.getLogger(ChannelImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    private volatile long id;
@@ -94,11 +94,11 @@ public class ChannelImpl implements Channel
          resendCache = null;
       }
    }
-   
+
    public boolean supports(final byte packetType)
    {
       int version = connection.getClientVersion();
-      
+
       switch (packetType)
       {
          case PacketImpl.CLUSTER_TOPOLOGY_V2:
@@ -174,7 +174,7 @@ public class ChannelImpl implements Channel
       synchronized (sendLock)
       {
          packet.setChannelID(id);
-         
+
          if (isTrace)
          {
             log.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
@@ -213,7 +213,7 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
-         
+
          if (isTrace)
          {
             log.trace("Writing buffer for channelID=" + id);

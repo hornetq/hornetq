@@ -22,9 +22,9 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 
 /**
- * 
+ *
  * A QueueStressTest.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2349 $</tt>
  *
@@ -36,7 +36,7 @@ public class QueueStressTest extends JMSStressTestBase
     * Stress a queue with transational, non transactional and 2pc senders sending both persistent
     * and non persistent messages
     * Transactional senders go through a cycle of sending and rolling back
-    * 
+    *
     */
    public void testQueueMultipleSenders() throws Exception
    {

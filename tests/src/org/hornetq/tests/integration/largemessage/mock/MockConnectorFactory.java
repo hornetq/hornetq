@@ -28,7 +28,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
  * A MockConnectorFactory
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Oct 22, 2008 12:04:11 PM
  *
  *

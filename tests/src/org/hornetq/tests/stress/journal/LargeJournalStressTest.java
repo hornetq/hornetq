@@ -257,7 +257,7 @@ public class LargeJournalStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
-      
+
       locator.setBlockOnAcknowledge(false);
       locator.setBlockOnNonDurableSend(false);
       locator.setBlockOnDurableSend(false);
@@ -312,7 +312,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       if (sf != null)
       {
          sf.close();

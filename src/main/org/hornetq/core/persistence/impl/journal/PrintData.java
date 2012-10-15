@@ -35,8 +35,8 @@ public class PrintData
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
+
    public static void main(String arg[])
    {
       if (arg.length != 2)
@@ -44,9 +44,9 @@ public class PrintData
          System.out.println("Use: java -cp hornetq-core.jar <bindings directory> <message directory>");
          System.exit(-1);
       }
-      
+
       File serverLockFile = new File(arg[1], "server.lock");
-      
+
       if (serverLockFile.isFile())
       {
          try
@@ -63,11 +63,11 @@ public class PrintData
             e.printStackTrace();
          }
       }
-      
+
       System.out.println("********************************************");
       System.out.println("B I N D I N G S  J O U R N A L");
       System.out.println("********************************************");
-      
+
       try
       {
          JournalStorageManager.describeBindingJournal(arg[0]);
@@ -76,11 +76,11 @@ public class PrintData
       {
          e.printStackTrace();
       }
-      
+
       System.out.println("********************************************");
       System.out.println("M E S S A G E S   J O U R N A L");
       System.out.println("********************************************");
-      
+
       try
       {
          JournalStorageManager.describeMessagesJournal(arg[1]);

@@ -72,7 +72,7 @@ public class StompDecoder
    private static final String COMMAND_CONNECTED = "CONNECTED";
 
    private static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
-   
+
    private static final String COMMAND_MESSAGE = "MESSAGE";
 
    private static final int COMMAND_MESSAGE_LENGTH = COMMAND_MESSAGE.length();
@@ -99,7 +99,7 @@ public class StompDecoder
    private static final byte M = (byte)'M';
 
    private static final byte S = (byte)'S';
-   
+
    private static final byte R = (byte)'R';
 
    private static final byte U = (byte)'U';
@@ -160,9 +160,9 @@ public class StompDecoder
    public synchronized StompFrame decode(final HornetQBuffer buffer) throws Exception
    {
       //log.info("got buff " + buffer.readableBytes());
-      
+
       long start = System.nanoTime();
-      
+
       int readable = buffer.readableBytes();
 
       if (data + readable >= workingBuffer.length)
@@ -253,7 +253,7 @@ public class StompDecoder
                   command = COMMAND_COMMIT;
                }
                /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-               else if (workingBuffer[offset+7]==E) 
+               else if (workingBuffer[offset+7]==E)
                {
                   if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
                   {
@@ -261,7 +261,7 @@ public class StompDecoder
                   }
 
                   // CONNECTED
-                  command = COMMAND_CONNECTED;                  
+                  command = COMMAND_CONNECTED;
                }
                /**** end ****/
                else
@@ -375,7 +375,7 @@ public class StompDecoder
             throwInvalid();
          }
       }
-      
+
       long commandTime = System.nanoTime() - start;
 
       if (readingHeaders)
@@ -482,7 +482,7 @@ public class StompDecoder
             }
          }
       }
-      
+
       long headersTime = System.nanoTime() - start - commandTime;
 
       // Now the body
@@ -525,8 +525,8 @@ public class StompDecoder
             }
          }
       }
-      
-      
+
+
 
       if (content != null)
       {
@@ -546,11 +546,11 @@ public class StompDecoder
          StompFrame ret = new StompFrame(command, headers, content);
 
          init();
-         
+
         // log.info("decoded");
-         
+
          long bodyTime = System.nanoTime() - start - headersTime - commandTime;
-         
+
         // log.info("command: "+ commandTime + " headers: " + headersTime + " body: " + bodyTime);
 
          return ret;
@@ -621,11 +621,11 @@ public class StompDecoder
       for (int i = 0; i < data; i++)
       {
          char b = (char)bytes[i];
-         
+
          if (b < 33 || b > 136)
          {
             //Unreadable characters
-            
+
             str.append(bytes[i]);
          }
          else

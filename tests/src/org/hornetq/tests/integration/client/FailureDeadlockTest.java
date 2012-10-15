@@ -36,7 +36,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A FailureDeadlockTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -98,7 +98,7 @@ public class FailureDeadlockTest extends ServiceTestBase
       cf1.close();
 
       cf2.close();
-      
+
       server = null;
 
       jmsServer = null;

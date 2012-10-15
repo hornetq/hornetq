@@ -45,14 +45,14 @@ import org.hornetq.utils.TypedProperties;
  * A DiscoveryGroupImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 17 Nov 2008 13:21:45
  *
  */
 public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 {
    private static final Logger log = Logger.getLogger(DiscoveryGroupImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    private static final int SOCKET_TIMEOUT = 500;
@@ -200,7 +200,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       try
       {
          socket.close();
-   
+
          socket = null;
       }
       catch (Throwable ignored)
@@ -252,9 +252,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    public synchronized List<DiscoveryEntry> getDiscoveryEntries()
    {
       List<DiscoveryEntry> list = new ArrayList<DiscoveryEntry>();
-      
+
       list.addAll(connectors.values());
-      
+
       return list;
    }
 
@@ -376,7 +376,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                {
                   callListeners();
                }
-               
+
                // Ignore traffic from own node
                continue;
             }
@@ -392,7 +392,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   TransportConfiguration connector = new TransportConfiguration();
 
                   connector.decode(buffer);
-                 
+
                   DiscoveryEntry entry = new DiscoveryEntry(originatingNodeID, connector, System.currentTimeMillis());
 
                   DiscoveryEntry oldVal = connectors.put(originatingNodeID, entry);
@@ -488,7 +488,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             changed = true;
          }
       }
-      
+
       return changed;
    }
 

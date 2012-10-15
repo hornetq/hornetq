@@ -41,21 +41,21 @@ public interface JMSStorageManager extends HornetQComponent
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    void load() throws Exception;
-  
+
    void storeDestination(PersistedDestination destination) throws Exception;
 
    void deleteDestination(PersistedType type, String name) throws Exception;
-   
+
    List<PersistedDestination> recoverDestinations();
-   
+
    void deleteConnectionFactory(String connectionFactory) throws Exception;
-   
+
    void storeConnectionFactory(PersistedConnectionFactory connectionFactory) throws Exception;
-   
+
    List<PersistedConnectionFactory> recoverConnectionFactories();
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -65,17 +65,17 @@ public interface JMSStorageManager extends HornetQComponent
    // Inner classes -------------------------------------------------
 
    void addJNDI(PersistedType type, String name, String ... address) throws Exception;
-   
+
    List<PersistedJNDI> recoverPersistedJNDI() throws Exception;
-   
+
    void deleteJNDI(PersistedType type, String name, String address) throws Exception;
-   
+
    void deleteJNDI(PersistedType type, String name) throws Exception;
 
    /**
     * Add the journal here to the replication endpoint
     * @param replicationEndpoint
-    * @throws Exception 
+    * @throws Exception
     */
    void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception;
 }

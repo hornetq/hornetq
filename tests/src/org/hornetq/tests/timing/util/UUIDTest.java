@@ -16,7 +16,7 @@ package org.hornetq.tests.timing.util;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

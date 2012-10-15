@@ -34,7 +34,7 @@ public class AddressSettingsInfo
    private long maxSizeBytes;
 
    private int pageSizeBytes;
-   
+
    private int pageCacheMaxSize;
 
    private int maxDeliveryAttempts;

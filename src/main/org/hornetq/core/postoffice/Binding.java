@@ -20,9 +20,9 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 
 /**
- * 
+ *
  * A Binding
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -51,6 +51,6 @@ public interface Binding
    int getDistance();
 
    void route(ServerMessage message, RoutingContext context) throws Exception;
-   
+
    void close() throws Exception;
 }

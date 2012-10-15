@@ -75,9 +75,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter
 {
@@ -1290,7 +1290,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.api.core.management.HornetQServerControl#listProducersInfoAsJSON()
@@ -1298,13 +1298,13 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    public String listProducersInfoAsJSON() throws Exception
    {
       JSONArray producers = new JSONArray();
-      
-      
+
+
       for (ServerSession session : server.getSessions())
       {
          session.describeProducersInfo(producers);
       }
-      
+
       return producers.toString();
    }
 
@@ -1506,7 +1506,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       return jsonObject.toString();
    }
 
-   
+
     public void addAddressSettings(final String address,
                                   final String DLA,
                                   final String expiryAddress,
@@ -1527,7 +1527,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          throw new IllegalStateException("pageSize has to be lower than maxSizeBytes. Invalid argument (" + pageSizeBytes + " < " + maxSizeBytes + ")");
       }
-      
+
       if (maxSizeBytes < -1 )
       {
     	  throw new IllegalStateException("Invalid argument on maxSizeBytes");

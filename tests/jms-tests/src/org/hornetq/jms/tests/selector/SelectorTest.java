@@ -82,7 +82,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          prod.send(redMessage);
          prod.send(blueMessage);
-         
+
          log.info("sent message");
 
          Message rec = redConsumer.receive();
@@ -92,7 +92,7 @@ public class SelectorTest extends HornetQServerTestCase
          ProxyAssertSupport.assertNull(redConsumer.receive(3000));
 
          redConsumer.close();
-         
+
          log.info("closed first consumer");
 
          MessageConsumer universalConsumer = session.createConsumer(HornetQServerTestCase.queue1);
@@ -174,7 +174,7 @@ public class SelectorTest extends HornetQServerTestCase
       try
       {
          conn = getConnectionFactory().createConnection();
-         
+
          conn.start();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -188,7 +188,7 @@ public class SelectorTest extends HornetQServerTestCase
             Message m = sess.createMessage();
 
             m.setStringProperty("beatle", "john");
-            
+
             m.setIntProperty("wibble", j);
 
             prod.send(m);
@@ -196,7 +196,7 @@ public class SelectorTest extends HornetQServerTestCase
             m = sess.createMessage();
 
             m.setStringProperty("beatle", "kermit the frog");
-            
+
             m.setIntProperty("wibble", j);
 
             prod.send(m);
@@ -205,13 +205,13 @@ public class SelectorTest extends HornetQServerTestCase
          for (int j = 0; j < 100; j++)
          {
             Message m = cons1.receive(1000);
-            
+
             ProxyAssertSupport.assertNotNull(m);
-            
+
             assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("john", m.getStringProperty("beatle"));
-            
+
             log.info("Got message " + j);
          }
 
@@ -228,14 +228,14 @@ public class SelectorTest extends HornetQServerTestCase
             m = cons2.receive(1000);
 
             ProxyAssertSupport.assertNotNull(m);
-            
+
             assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("kermit the frog", m.getStringProperty("beatle"));
          }
 
 //         m = cons2.receiveNoWait();
-//         
+//
 //         if (m != null)
 //         {
 //            log.info("got " + m.getStringProperty("beatle") + " j: " + m.getIntProperty("wibble"));
@@ -550,7 +550,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testManyConsumersWithDifferentSelectors() throws Exception
    {
       Connection conn = null;
@@ -714,7 +714,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSMessageIDOnSelector() throws Exception
    {
       Connection conn = null;
@@ -725,29 +725,29 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          prod.send(msg1);
 
          TextMessage msg2 = session.createTextMessage("msg2");
          prod.send(msg2);
-         
+
          String selector = "JMSMessageID = '" + msg2.getJMSMessageID() + "'";
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -757,7 +757,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSPriorityOnSelector() throws Exception
    {
       Connection conn = null;
@@ -768,29 +768,29 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          prod.send(msg1, DeliveryMode.NON_PERSISTENT, 8, 0);
 
          TextMessage msg2 = session.createTextMessage("msg2");
          prod.send(msg2, DeliveryMode.NON_PERSISTENT, 2, 0);
-         
+
          String selector = "JMSPriority = 2";
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -800,7 +800,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSTimestampOnSelector() throws Exception
    {
       Connection conn = null;
@@ -811,31 +811,31 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          prod.send(msg1);
-         
+
          Thread.sleep(2);
 
          TextMessage msg2 = session.createTextMessage("msg2");
          prod.send(msg2);
-         
+
          String selector = "JMSTimestamp = " + msg2.getJMSTimestamp();
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -845,7 +845,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSExpirationOnSelector() throws Exception
    {
       Connection conn = null;
@@ -856,34 +856,34 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          prod.send(msg1);
-         
+
          prod.setTimeToLive(100000);
-         
+
          TextMessage msg2 = session.createTextMessage("msg2");
-                           
+
          prod.send(msg2);
-         
+
          long expire = msg2.getJMSExpiration();
-         
+
          String selector = "JMSExpiration = " + expire;
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -893,7 +893,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSTypeOnSelector() throws Exception
    {
       Connection conn = null;
@@ -904,9 +904,9 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          msg1.setJMSType("type1");
          prod.send(msg1);
@@ -914,21 +914,21 @@ public class SelectorTest extends HornetQServerTestCase
          TextMessage msg2 = session.createTextMessage("msg2");
          msg2.setJMSType("type2");
          prod.send(msg2);
-         
+
          String selector = "JMSType = 'type2'";
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -938,7 +938,7 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
+
    public void testJMSCorrelationIDOnSelector() throws Exception
    {
       Connection conn = null;
@@ -949,9 +949,9 @@ public class SelectorTest extends HornetQServerTestCase
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage msg1 = session.createTextMessage("msg1");
          msg1.setJMSCorrelationID("cid1");
          prod.send(msg1);
@@ -959,21 +959,21 @@ public class SelectorTest extends HornetQServerTestCase
          TextMessage msg2 = session.createTextMessage("msg2");
          msg2.setJMSCorrelationID("cid2");
          prod.send(msg2);
-         
+
          String selector = "JMSCorrelationID = 'cid2'";
-         
+
          MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
-         
+
          conn.start();
 
          TextMessage rec = (TextMessage)cons.receive(10000);
-         
+
          assertNotNull(rec);
-         
+
          assertEquals("msg2", rec.getText());
-         
+
          assertNull(cons.receiveNoWait());
-         
+
       }
       finally
       {
@@ -983,11 +983,11 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
-   
-  
+
+
    // Test case proposed by a customer on this user forum:
    // http://community.jboss.org/thread/153426?tstart=0
-   // This test needs to be moved away 
+   // This test needs to be moved away
    public void disabled_testMultipleConsumers() throws Exception
    {
       Connection conn = null;
@@ -996,19 +996,19 @@ public class SelectorTest extends HornetQServerTestCase
       {
          ConnectionFactory factory = getConnectionFactory();
          HornetQConnectionFactory hcf = (HornetQConnectionFactory) factory;
-         
+
          hcf.setConsumerWindowSize(0);
-         
+
          conn = hcf.createConnection();
-         
+
          conn.setClientID("SomeClientID");
 
          conn.start();
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
+
          MessageProducer msgProducer = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          TextMessage tm;
          /* Publish messages */
          tm = session.createTextMessage();
@@ -1049,56 +1049,56 @@ public class SelectorTest extends HornetQServerTestCase
          System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
          msgProducer.close();
          msgProducer = null;
-         
-         
+
+
          MessageConsumer msgConsumer = session.createConsumer(HornetQServerTestCase.queue1, "PROP2 = 'VALUE2'");
-         
+
          tm = (TextMessage) msgConsumer.receive(5000);
-         
+
          assertNotNull(tm);
-         
+
          assertEquals("3", tm.getText());
          assertEquals("VALUE2", tm.getStringProperty("PROP2"));
-         
+
          tm.acknowledge();
-         
+
          conn.close(); // this should close the consumer, producer and session associated with the connection
 
-         
+
          // Reopen the connection and consumer
-         
+
          conn = getConnectionFactory().createConnection();
          conn.start();
- 
+
          session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
+
          msgConsumer = session.createConsumer(HornetQServerTestCase.queue1);
-         
+
          tm = (TextMessage)msgConsumer.receive(5000);
          assertEquals("1", tm.getText());
          assertEquals("VALUE1", tm.getStringProperty("PROP1"));
-         
-         
+
+
          tm = (TextMessage)msgConsumer.receive(5000);
          assertEquals("2", tm.getText());
          assertEquals("VALUE1", tm.getStringProperty("PROP1"));
-         
+
          tm = (TextMessage)msgConsumer.receive(5000);
          assertEquals("4", tm.getText());
          assertEquals("VALUE2", tm.getStringProperty("PROP2"));
-         
-         
+
+
          tm = (TextMessage)msgConsumer.receive(5000);
          assertEquals("5", tm.getText());
          assertEquals("VALUE1", tm.getStringProperty("PROP1"));
-         
+
          tm = (TextMessage)msgConsumer.receive(5000);
          assertEquals("6", tm.getText());
          assertEquals("VALUE1", tm.getStringProperty("PROP1"));
          assertEquals("VALUE2", tm.getStringProperty("PROP2"));
-         
+
          tm.acknowledge();
-         
+
       }
       finally
       {
@@ -1107,7 +1107,7 @@ public class SelectorTest extends HornetQServerTestCase
             conn.close();
          }
       }
-      
+
    }
 
    // Package protected ---------------------------------------------

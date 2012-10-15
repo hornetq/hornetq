@@ -84,7 +84,7 @@ public class NettyAcceptorTest extends UnitTestCase
          public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
          {
          }
-         
+
          public void connectionReadyForWrites(Object connectionID, boolean ready)
          {
          }
@@ -109,10 +109,10 @@ public class NettyAcceptorTest extends UnitTestCase
       acceptor.stop();
       Assert.assertFalse(acceptor.isStarted());
       UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
-      
+
       pool1.shutdown();
       pool2.shutdown();
-      
+
       pool1.awaitTermination(1, TimeUnit.SECONDS);
       pool2.awaitTermination(1, TimeUnit.SECONDS);
    }

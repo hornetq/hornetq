@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A PageProviderIMpl
- * 
+ *
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
  *       However I want to keep this isolated as much as possible during development
  *
@@ -52,11 +52,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageCursorProviderImpl.class);
-   
+
    boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
-   
+
    /**
     * As an optimization, avoid subsquent schedules as they are unecessary
     */
@@ -307,13 +307,13 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    public void scheduleCleanup()
    {
-      
+
       if (scheduledCleanup.intValue() > 2)
       {
          // Scheduled cleanup was already scheduled before.. never mind!
          return;
       }
-      
+
       scheduledCleanup.incrementAndGet();
 
       executor.execute(new Runnable()
@@ -333,8 +333,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
          }
       });
    }
-   
-   
+
+
    /**
     * Delete everything associated with any queue on this address.
     * This is to be called when the address is about to be released from paging.
@@ -344,7 +344,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    public void onPageModeCleared()
    {
       ArrayList<PageSubscription> subscriptions = cloneSubscriptions();
-      
+
       Transaction tx = new TransactionImpl(storageManager);
       for (PageSubscription sub : subscriptions)
       {
@@ -357,7 +357,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             log.warn("Error while cleaning paging on queue " + sub.getQueue().getName(), e);
          }
       }
-      
+
       try
       {
          tx.commit();
@@ -387,7 +387,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
-            
+
             if (log.isDebugEnabled())
             {
                log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
@@ -411,7 +411,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      {
                         log.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
                      }
-                     
+
                      complete = false;
                      break;
                   }
@@ -424,7 +424,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   }
                }
 
-               
+
                // All the pages on the cursor are complete.. so we will cleanup everything and store a bookmark
                if (complete)
                {
@@ -434,7 +434,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      log.debug("Address " + pagingStore.getAddress() +
                            " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   }
-                  
+
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();
@@ -494,7 +494,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                cache = softCache.get((long)depagedPage.getPageId());
             }
-            
+
             if (isTrace)
             {
                log.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
@@ -506,7 +506,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // We need to read the page-file before deleting it
                // to make sure we remove any large-messages pending
                storageManager.beforePageRead();
-               
+
                List<PagedMessage> pgdMessagesList = null;
                try
                {
@@ -522,7 +522,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   catch (Exception e)
                   {
                   }
-                  
+
                   storageManager.afterPageRead();
                }
                depagedPage.close();
@@ -535,7 +535,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
             depagedPage.delete(pgdMessages);
             onDeletePage(depagedPage);
-            
+
             synchronized (softCache)
             {
                softCache.remove((long)depagedPage.getPageId());
@@ -559,7 +559,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       cursorList.addAll(activeCursors.values());
       return cursorList;
    }
-   
+
    protected void onDeletePage(Page deletedPage) throws Exception
    {
       List<PageSubscription> subscriptions = cloneSubscriptions();
@@ -633,7 +633,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          {
             log.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
          }
-         
+
          // the cursor will return -1 if the cursor is empty
          if (firstPage >= 0 && firstPage < minPage)
          {

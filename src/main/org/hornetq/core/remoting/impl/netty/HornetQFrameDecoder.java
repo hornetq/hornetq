@@ -47,20 +47,20 @@ public class HornetQFrameDecoder extends FrameDecoder
 
    @Override
    protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer in) throws Exception
-   {    
+   {
       int start = in.readerIndex();
 
       int length = decoder.isReadyToHandle(new ChannelBufferWrapper(in));
-      
+
       in.readerIndex(start);
-      
+
       if (length == -1)
       {
          return null;
       }
       ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(length);
       newBuffer.writeBytes(in, length);
-      
+
       return newBuffer;
    }
 }

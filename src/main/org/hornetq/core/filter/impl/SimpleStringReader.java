@@ -24,7 +24,7 @@ import org.hornetq.core.logging.Logger;
  * A SimpleStringReader
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 31 oct. 2008 14:41:18
  *
  *
@@ -33,7 +33,7 @@ public class SimpleStringReader extends Reader
 {
 
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(SimpleStringReader.class);
 
    // Attributes ----------------------------------------------------

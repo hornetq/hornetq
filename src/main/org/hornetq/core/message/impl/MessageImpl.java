@@ -196,7 +196,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       return DataConstants.SIZE_LONG + // Message ID
              DataConstants.SIZE_BYTE + // user id null?
-             (userID == null ? 0 : 16) + 
+             (userID == null ? 0 : 16) +
              /* address */SimpleString.sizeofNullableString(address) +
              DataConstants./* Type */SIZE_BYTE +
              DataConstants./* Durable */SIZE_BOOLEAN +

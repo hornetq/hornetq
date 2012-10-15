@@ -28,7 +28,7 @@ public interface TestableServer
 {
 
    HornetQServer getServer();
-   
+
    public void setIdentity(String identity);
 
    public void start() throws Exception;
@@ -36,7 +36,7 @@ public interface TestableServer
    public void stop() throws Exception;
 
    public void crash(ClientSession... sessions) throws Exception;
-   
+
    public void crash(boolean waitFailure, ClientSession... sessions) throws Exception;
 
    public boolean isInitialised();

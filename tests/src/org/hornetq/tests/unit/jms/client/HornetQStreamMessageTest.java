@@ -26,9 +26,9 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class HornetQStreamMessageTest extends UnitTestCase
 {
@@ -340,7 +340,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
 
       Assert.assertEquals(value, message.readChar());
    }
-   
+
    public void testReadCharFromNull() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
@@ -587,7 +587,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       // we can read the String without resetting the message
       Assert.assertEquals(value, message.readString());
    }
-   
+
    public void testReadStringFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();

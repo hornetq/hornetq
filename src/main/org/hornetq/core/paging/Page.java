@@ -19,7 +19,7 @@ import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
 
 /**
- * 
+ *
  * @see PagingManager
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -31,7 +31,7 @@ public interface Page
    void write(PagedMessage message) throws Exception;
 
    List<PagedMessage> read(StorageManager storage) throws Exception;
-   
+
    void setLiveCache(LivePageCache pageCache);
 
    int getSize();
@@ -45,6 +45,6 @@ public interface Page
    void close() throws Exception;
 
    boolean isLive();
-   
+
    boolean delete(PagedMessage[] messages) throws Exception;
 }

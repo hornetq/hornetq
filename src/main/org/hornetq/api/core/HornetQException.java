@@ -14,9 +14,9 @@
 package org.hornetq.api.core;
 
 /**
- * 
- * HornetQException is the root exception for HornetQ API. 
- * 
+ *
+ * HornetQException is the root exception for HornetQ API.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -83,7 +83,7 @@ public class HornetQException extends Exception
    public static final int INVALID_FILTER_EXPRESSION = 103;
 
    /**
-    * A HornetQ resource is not in a legal state (e.g. calling 
+    * A HornetQ resource is not in a legal state (e.g. calling
     * ClientConsumer.receive() if a MessageHandler is set)
     */
    public static final int ILLEGAL_STATE = 104;
@@ -128,19 +128,19 @@ public class HornetQException extends Exception
     * server is starting and has not finish to be initialized)
     */
    public static final int SESSION_CREATION_REJECTED = 112;
-   
+
    /**
     * A DuplicateID was rejected.
     */
    public static final int DUPLICATE_ID_REJECTED = 113;
 
-   
+
    /**
-    * A Session Metadata was set in duplication 
+    * A Session Metadata was set in duplication
     */
    public static final int DUPLICATE_METADATA = 114;
 
-   
+
    // Native Error codes ----------------------------------------------
 
    /**

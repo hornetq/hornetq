@@ -201,7 +201,7 @@ public class PreACKJMSTest extends JMSTestBase
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
       int callTimeout = 30000;
-     
+
       ArrayList<String> connectors = registerConnectors(server, connectorConfigs);
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",

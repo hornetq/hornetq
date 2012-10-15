@@ -74,7 +74,7 @@ public class TemporaryTopicTest extends PubSubTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

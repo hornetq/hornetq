@@ -31,11 +31,11 @@ public class NodeAnnounceMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private String nodeID;
-   
+
    private boolean backup;
-   
+
    private long currentEventID;
-   
+
    private TransportConfiguration connector;
 
    private TransportConfiguration backupConnector;
@@ -49,16 +49,16 @@ public class NodeAnnounceMessage extends PacketImpl
       super(PacketImpl.NODE_ANNOUNCE);
 
       this.currentEventID = currentEventID;
-      
+
       this.nodeID = nodeID;
-      
+
       this.backup = backup;
-      
+
       this.connector = tc;
-      
+
       this.backupConnector = backupConnector;
    }
-   
+
    public NodeAnnounceMessage()
    {
       super(PacketImpl.NODE_ANNOUNCE);
@@ -71,17 +71,17 @@ public class NodeAnnounceMessage extends PacketImpl
    {
       return nodeID;
    }
-   
+
    public boolean isBackup()
    {
       return backup;
    }
-   
+
    public TransportConfiguration getConnector()
    {
       return connector;
    }
-   
+
    public TransportConfiguration getBackupConnector()
    {
       return backupConnector;

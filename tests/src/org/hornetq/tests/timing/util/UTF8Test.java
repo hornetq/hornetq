@@ -21,11 +21,11 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UTF8Util;
 
 /**
- * 
+ *
  * A UTF8Test
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 23, 2009 11:57:55 AM
  *
  *

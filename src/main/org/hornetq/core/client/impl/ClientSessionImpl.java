@@ -130,7 +130,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean xa;
 
    private final Executor executor;
-   
+
    // to be sent to consumers as consumers will need a separate consumer for flow control
    private final Executor flowControlExecutor;
 
@@ -142,7 +142,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Map<Long, ClientConsumerInternal> consumers = new LinkedHashMap<Long, ClientConsumerInternal>();
 
    private volatile boolean closed;
-   
+
    private volatile boolean closing;
 
    private final boolean autoCommitAcks;
@@ -246,7 +246,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.remotingConnection = remotingConnection;
 
       this.executor = executor;
-      
+
       this.flowControlExecutor = flowControlExecutor;
 
       this.xa = xa;
@@ -294,7 +294,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // ClientSession implementation
    // -----------------------------------------------------------------
-   
+
    public Channel getChannel()
    {
       return channel;
@@ -546,7 +546,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.trace("calling commit()");
       }
-      
+
       if (rollbackOnly)
       {
          rollbackOnFailover(true);
@@ -606,7 +606,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          stop();
       }
 
-      
+
       // We need to make sure we don't get any inflight messages
       for (ClientConsumerInternal consumer : cloneConsumers())
       {
@@ -897,7 +897,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          log.debug("Session was already closed, giving up now, this=" + this);
          return;
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("Calling close on session "  + this);
@@ -1160,12 +1160,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       HashMap<String, String> metaDataToSend;
-      
+
       synchronized (metadata)
       {
          metaDataToSend = new HashMap<String, String>(metadata);
       }
-      
+
       // Resetting the metadata after failover
       for (Map.Entry<String, String> entries : metaDataToSend.entrySet())
       {
@@ -1190,7 +1190,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
-   
+
    public void addUniqueMetaData(String key, String data) throws HornetQException
    {
       channel.sendBlocking(new SessionUniqueAddMetaDataMessage(key, data));
@@ -1294,7 +1294,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             sendAckHandler.sendAcknowledged(scm.getMessage());
          }
       }
-      
+
    }
 
    // XAResource implementation
@@ -1329,7 +1329,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             throw new XAException(response.getResponseCode());
          }
-         
+
          if (trace)
          {
             log.trace("finished commit on " + convert(xid) + " with response = " + response);
@@ -1353,7 +1353,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.trace("Calling end:: " + convert(xid) + ", flags=" + convertTXFlag(flags));
       }
-      
+
       checkXA();
 
       if (rollbackOnly)
@@ -1457,11 +1457,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
-      if (trace) 
+      if (trace)
       {
          log.trace("Calling prepare:: " + convert(xid));
       }
-      
+
 
       if (rollbackOnly)
       {
@@ -1564,12 +1564,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-      
-      if (trace) 
+
+      if (trace)
       {
          log.trace("Calling rollback:: " + convert(xid));
       }
-      
+
       try
       {
          boolean wasStarted = started;
@@ -1611,7 +1611,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             // Unblocked on failover
             throw new XAException(XAException.XA_RETRY);
          }
-         
+
          log.warn("Sending XAER_RMERR " + convert(xid));
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1641,7 +1641,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.trace("Calling start:: " + convert(xid) + " clientXID=" + xid + " flags = " + convertTXFlag(flags));
       }
-      
+
       checkXA();
 
       Packet packet = null;
@@ -1730,7 +1730,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return remotingConnection;
    }
-   
+
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -1915,7 +1915,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          throw new HornetQException(HornetQException.OBJECT_CLOSED, "Session is closed");
       }
    }
-   
+
    private ClassLoader lookupTCCL()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
@@ -1927,7 +1927,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       });
 
    }
-   
+
    /**
     * @param consumerID
     * @return
@@ -1947,7 +1947,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          remotingConnection.removeFailureListener(this);
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("calling cleanup on " + this);
@@ -1958,7 +1958,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          closed = true;
 
          channel.close();
-         
+
          // if the server is sending a disconnect
          // any pending blocked operation could hang without this
          channel.returnBlocking();
@@ -1990,7 +1990,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private Set<ClientProducerInternal> cloneProducers()
    {
       Set<ClientProducerInternal> producersClone;
-      
+
       synchronized (producers)
       {
          producersClone = new HashSet<ClientProducerInternal>(producers);
@@ -2120,15 +2120,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
    }
-   
-   
+
+
    /**
     * If you ever tried to debug XIDs you will know what this is about.
-    * This will serialize and deserialize the XID to the same way it's going to be printed on server logs 
+    * This will serialize and deserialize the XID to the same way it's going to be printed on server logs
     * or print-data.
-    * 
+    *
     * This will convert to the same XID deserialized on the Server, hence we will be able to debug eventual stuff
-    * 
+    *
     * @param xid
     * @return
     */
@@ -2136,9 +2136,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(200);
       XidCodecSupport.encodeXid(xid, buffer);
-      
+
       Object obj = XidCodecSupport.decodeXid(buffer);
-      
+
       return "xid=" + obj + ",clientXID=" + xid;
    }
 
@@ -2174,8 +2174,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return "XAER_INVAL(" + flags + ")";
       }
-      
+
    }
-   
+
 
 }

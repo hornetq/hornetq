@@ -39,28 +39,28 @@ public class ConnectionTest extends JMSTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
 
    public void testGetSetConnectionFactory() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       conn.getClientID();
-      
+
       conn.setClientID("somethingElse");
 
       conn.close();
    }
-   
+
    public void testXAInstanceof() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       assertFalse(conn instanceof XAConnection);
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       assertFalse(sess instanceof XASession);
-      
+
       conn.close();
    }
 

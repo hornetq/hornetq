@@ -22,7 +22,7 @@ import org.hornetq.api.core.management.Parameter;
 
 /**
  * A TopicControl is used to manage a JMS Topic.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface TopicControl extends DestinationControl
@@ -59,17 +59,17 @@ public interface TopicControl extends DestinationControl
     */
    @Operation(desc = "Returns the list of JNDI bindings associated")
    String[] getJNDIBindings();
-   
+
    /**
     * Add the JNDI binding to this destination
     */
    @Operation(desc = "Add the queue to another JNDI binding")
    void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
-   
+
    @Operation(desc = "Add the queue to another JNDI binding")
    void removeJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
-   
-   
+
+
 
 
 

@@ -51,8 +51,8 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
    {
       super.setUp();
    }
-   
-   
+
+
 
    public void testClusteredQueue() throws Exception
    {
@@ -65,7 +65,7 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
       Connection conn2 = cf2.createConnection();
 
       conn1.start();
-      
+
       conn2.start();
 
       try

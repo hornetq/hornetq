@@ -23,11 +23,11 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- * 
+ *
  * <p>The implementation will take care of details such as PageSize.</p>
  * <p>The producers will write directly to PagingStore and that will decide what
  * Page file should be used based on configured size</p>
- * 
+ *
  * @see PagingManager
 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -38,33 +38,33 @@ public interface PagingStore extends HornetQComponent
    SimpleString getAddress();
 
    int getNumberOfPages();
-   
+
    // The current page in which the system is writing files
    int getCurrentWritingPage();
 
    SimpleString getStoreName();
-   
+
    String getFolder();
 
    AddressFullMessagePolicy getAddressFullMessagePolicy();
-   
+
    long getFirstPage();
-   
+
    long getTopPage();
 
    long getPageSizeBytes();
 
    long getAddressSize();
-   
+
    long getMaxSize();
-   
+
    void applySetting(AddressSettings addressSettings);
 
    boolean isPaging();
 
    // It will schedule sync to the file storage
    void sync() throws Exception;
-   
+
    // It will perform a real sync on the current IO file
    void ioSync() throws Exception;
 
@@ -73,23 +73,23 @@ public interface PagingStore extends HornetQComponent
    boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
 
    Page createPage(final int page) throws Exception;
-   
+
    boolean checkPage(final int page) throws Exception;
-   
+
    PagingManager getPagingManager();
-   
+
    PageCursorProvider getCursorProvier();
-   
+
    void processReload() throws Exception;
-   
-   /** 
+
+   /**
     * Remove the first page from the Writing Queue.
-    * The file will still exist until Page.delete is called, 
+    * The file will still exist until Page.delete is called,
     * So, case the system is reloaded the same Page will be loaded back if delete is not called.
     *
     * @throws Exception
-    * 
-    * Note: This should still be part of the interface, even though HornetQ only uses through the 
+    *
+    * Note: This should still be part of the interface, even though HornetQ only uses through the
     */
    Page depage() throws Exception;
 
@@ -105,16 +105,16 @@ public interface PagingStore extends HornetQComponent
    void stopPaging() throws Exception;
 
    void addSize(int size);
-   
+
    void executeRunnableWhenMemoryAvailable(Runnable runnable);
-   
+
    /** This method will hold and producer, but it wait operations to finish before locking (write lock) */
    void lock();
-   
-   /** 
-    * 
+
+   /**
+    *
     * Call this method using the same thread used by the last call of {@link PagingStore#lock()}
-    * 
+    *
     */
     void unlock();
 

@@ -328,9 +328,9 @@ public class PersistedRoles implements EncodingSupport
              manageRoles +
              "]";
    }
-   
-   
-   
+
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

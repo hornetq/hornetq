@@ -1623,7 +1623,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
    }
-   
+
    public void testGetTopic() throws Exception
    {
       Connection consumerConnection = null;

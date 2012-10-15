@@ -34,7 +34,7 @@ import org.hornetq.core.logging.Logger;
 public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBackupTest
 {
    private Logger log = Logger.getLogger(NettySymmetricClusterWithBackupTest.class);
-   
+
    @Override
    protected boolean isNetty()
    {

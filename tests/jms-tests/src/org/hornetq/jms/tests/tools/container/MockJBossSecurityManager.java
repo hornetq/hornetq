@@ -41,7 +41,7 @@ import org.jboss.security.SimplePrincipal;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * 
+ *
  */
 public class MockJBossSecurityManager implements AuthenticationManager, RealmMapping
 {

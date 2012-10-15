@@ -50,28 +50,28 @@ import org.hornetq.utils.ExecutorFactory;
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
  * external management interface of the HornetQ Server is defined by the HornetQServerManagement interface This
  * interface is never exposed outside the HornetQ server, e.g. by JMX or other means
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface HornetQServer extends HornetQComponent
 {
-   
-   /** This method was created mainly for testing but it may be used in scenarios where 
+
+   /** This method was created mainly for testing but it may be used in scenarios where
     *  you need to have more than one Server inside the same VM.
     *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
    void setIdentity(String identity);
-   
+
    String getIdentity();
-   
+
    String describe();
-   
+
    Configuration getConfiguration();
 
    RemotingService getRemotingService();
 
    StorageManager getStorageManager();
-   
+
    PagingManager getPagingManager();
 
    ManagementService getManagementService();
@@ -81,12 +81,12 @@ public interface HornetQServer extends HornetQComponent
    MBeanServer getMBeanServer();
 
    Version getVersion();
-   
+
    NodeManager getNodeManager();
 
    /**
     * Returns the resource to manage this HornetQ server.
-    * 
+    *
     * Using this control will throw IllegalStateException if the
     * server is not properly started.
     */
@@ -96,7 +96,7 @@ public interface HornetQServer extends HornetQComponent
 
    void unregisterActivateCallback(ActivateCallback callback);
 
-   /** The journal at the backup server has to be equivalent as the journal used on the live node. 
+   /** The journal at the backup server has to be equivalent as the journal used on the live node.
     *  Or else the backup node is out of sync. */
    ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
@@ -117,7 +117,7 @@ public interface HornetQServer extends HornetQComponent
    Set<ServerSession> getSessions();
 
    boolean isStarted();
-   
+
    boolean isStopped();
 
    HierarchicalRepository<Set<Role>> getSecurityRepository();
@@ -154,43 +154,43 @@ public interface HornetQServer extends HornetQComponent
                      SimpleString filterString,
                      boolean durable,
                      boolean temporary) throws Exception;
-   
+
    Queue locateQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
-   
+
    String destroyConnectionWithSessionMetadata(String metaKey, String metaValue) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
-   
+
    ExecutorService getThreadPool();
-   
+
    ExecutorFactory getExecutorFactory();
 
    void setGroupingHandler(GroupingHandler groupingHandler);
 
    GroupingHandler getGroupingHandler();
-   
+
    ReplicationEndpoint getReplicationEndpoint();
-   
+
    ReplicationManager getReplicationManager();
 
-   boolean checkActivate() throws Exception;      
-   
+   boolean checkActivate() throws Exception;
+
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;
 
    ConnectorsService getConnectorsService();
-   
+
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
 
    ServerSession getSessionByID(String sessionID);
-   
+
    void threadDump(String reason);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;

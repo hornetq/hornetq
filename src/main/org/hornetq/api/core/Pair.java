@@ -16,9 +16,9 @@ package org.hornetq.api.core;
 import java.io.Serializable;
 
 /**
- * 
+ *
  * A Pair is a holder for 2 objects.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

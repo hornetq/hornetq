@@ -39,7 +39,7 @@ import org.hornetq.utils.UUIDGenerator;
  * A BroadcastGroupImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 15 Nov 2008 09:45:32
  *
  */
@@ -64,9 +64,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
    private boolean started;
-   
+
    private final long broadCastPeriod;
-   
+
    private final ScheduledExecutorService scheduledExecutor;
 
    private ScheduledFuture<?> future;
@@ -102,9 +102,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
-      
+
       this.scheduledExecutor = scheduledExecutor;
-      
+
       this.broadCastPeriod = broadcastPeriod;
 
       uniqueID = UUIDGenerator.getInstance().generateStringUUID();
@@ -130,7 +130,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       {
          if (localAddress != null)
          {
-            log.warn("local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound " + 
+            log.warn("local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound " +
                      "to a local address/port");
          }
          socket = new DatagramSocket();
@@ -145,7 +145,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
          notificationService.sendNotification(notification);
       }
-      
+
       activate();
    }
 

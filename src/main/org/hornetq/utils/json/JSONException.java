@@ -32,7 +32,7 @@ package org.hornetq.utils.json;
 public class JSONException extends Exception
 {
    /**
-   * 
+   *
    */
    private static final long serialVersionUID = -3940674325153571604L;
 

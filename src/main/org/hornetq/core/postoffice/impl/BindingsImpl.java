@@ -510,7 +510,7 @@ public class BindingsImpl implements Bindings
          }
       }
    }
-   
+
    private String debugBindings()
    {
       StringWriter writer = new StringWriter();
@@ -533,9 +533,9 @@ public class BindingsImpl implements Bindings
 //         }
          out.println();
       }
-      
+
       out.println();
-      
+
       out.println("RoutingNamePositions:");
       if (routingNamePositions.isEmpty())
       {
@@ -545,11 +545,11 @@ public class BindingsImpl implements Bindings
       {
          out.println("key=" + entry.getKey() + ", value=" + entry.getValue());
       }
-      
+
       out.println();
-      
+
       out.println("BindingsMap:");
-      
+
       if (bindingsMap.isEmpty())
       {
          out.println("EMPTY!");
@@ -558,15 +558,15 @@ public class BindingsImpl implements Bindings
       {
          out.println("Key=" + entry.getKey() + ", value=" + entry.getValue());
       }
-      
+
       out.println();
-      
+
       out.println("ExclusiveBindings:");
       if (exclusiveBindings.isEmpty())
       {
          out.println("EMPTY!");
       }
-      
+
       for (Binding binding: exclusiveBindings)
       {
          out.println(binding);

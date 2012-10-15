@@ -34,7 +34,7 @@ public interface PagePosition extends Comparable<PagePosition>
    long getPageNr();
 
    int getMessageNr();
-   
+
    PagePosition nextMessage();
 
    PagePosition nextPage();

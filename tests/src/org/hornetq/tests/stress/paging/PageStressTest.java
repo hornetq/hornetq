@@ -32,7 +32,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * This is an integration-tests that will take some time to run.
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class PageStressTest extends ServiceTestBase
@@ -299,7 +299,7 @@ public class PageStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
-      
+
       locator.setBlockOnAcknowledge(true);
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnNonDurableSend(false);

@@ -34,7 +34,7 @@ import org.jboss.util.NestedRuntimeException;
  * that JMS administrated objects and  other "ready to use" JMS objects (that is to say destinations,
  * sessions, producers and consumers) are available conveniently for the test cases.
  * <br />
- * Classes which want that convenience should extend <code>UnifiedTestCase</code> instead of 
+ * Classes which want that convenience should extend <code>UnifiedTestCase</code> instead of
  * <code>JMSTestCase</code>.
  *
  * @author Jeff Mesnil (jmesnil@gmail.com)

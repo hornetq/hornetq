@@ -35,28 +35,28 @@ import org.hornetq.core.logging.Logger;
  */
 public class RecoveryDiscovery implements SessionFailureListener
 {
-   
+
    private static final Logger log = Logger.getLogger(RecoveryDiscovery.class);
-   
+
    private ServerLocator locator;
    private ClientSessionFactoryInternal sessionFactory;
    private final XARecoveryConfig config;
    private final AtomicInteger usage = new AtomicInteger(0);
    private boolean started = false;
-   
-   
+
+
    public RecoveryDiscovery(XARecoveryConfig config)
    {
       this.config = config;
    }
-   
+
    public synchronized void start()
    {
       if (!started)
       {
          log.debug("Starting RecoveryDiscovery on " + config);
          started = true;
-         
+
          locator = config.createServerLocator();
          locator.disableFinalizeCheck();
          locator.addClusterTopologyListener(new InternalListener());
@@ -67,7 +67,7 @@ public class RecoveryDiscovery implements SessionFailureListener
             // on the session as all we want here is to get the topology
             // in case of failure we will retry
             sessionFactory.addFailureListener(this);
-            
+
             log.debug("RecoveryDiscovery started fine on " + config);
          }
          catch (Exception startupError)
@@ -76,15 +76,15 @@ public class RecoveryDiscovery implements SessionFailureListener
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
-         
+
       }
    }
-   
+
    public synchronized void stop()
    {
       internalStop();
    }
-  
+
    /** we may have several connection factories referencing the same connection recovery entry.
     *  Because of that we need to make a count of the number of the instances that are referencing it,
     *  so we will remove it as soon as we are done */
@@ -98,7 +98,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       return usage.incrementAndGet();
    }
 
-   
+
    protected void finalize()
    {
       // I don't think it's a good thing to synchronize a method on a finalize,
@@ -122,7 +122,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          {
             log.debug(ignored, ignored);
          }
-         
+
          try
          {
             locator.close();
@@ -131,12 +131,12 @@ public class RecoveryDiscovery implements SessionFailureListener
          {
             log.debug(ignored, ignored);
          }
-         
+
          sessionFactory = null;
          locator = null;
       }
    }
-   
+
 
    class InternalListener implements ClusterTopologyListener
    {
@@ -158,7 +158,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       {
          // I'm not putting any node down, since it may have previous transactions hanging
       }
-      
+
    }
 
 

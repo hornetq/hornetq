@@ -15,9 +15,9 @@ package org.hornetq.core.example;
 import java.io.Serializable;
 
 /**
- * 
+ *
  * Class that holds the parameters used in the performance examples
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class PerfParams implements Serializable
@@ -63,7 +63,7 @@ public class PerfParams implements Serializable
    private boolean blockOnPersistent = true;
 
    private boolean blockOnACK = true;
-   
+
    private boolean useSendAcks;
 
    public boolean isBlockOnPersistent()

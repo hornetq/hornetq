@@ -59,10 +59,10 @@ import org.hornetq.utils.LinkedListIterator;
 /**
  * A PageCursorImpl
  *
- * A page cursor will always store its 
+ * A page cursor will always store its
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
- * 
+ *
  */
 public class PageSubscriptionImpl implements PageSubscription
 {
@@ -77,9 +77,9 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       PageSubscriptionImpl.log.trace(message);
    }
-   
+
    private boolean empty = true;
-   
+
    // Number of scheduled cleanups, to avoid too many schedules
    private final AtomicInteger scheduledCleanupCount = new AtomicInteger(0);
 
@@ -106,15 +106,15 @@ public class PageSubscriptionImpl implements PageSubscription
    private final SortedMap<Long, PageCursorInfo> consumedPages = new TreeMap<Long, PageCursorInfo>();
 
    private final PageSubscriptionCounter counter;
-   
+
    private final Executor executor;
 
    private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
-   
-   
+
+
 
    // Static --------------------------------------------------------
 
@@ -174,14 +174,14 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       return cursorProvider;
    }
-   
+
    public void notEmpty()
    {
    	  synchronized (consumedPages)
    	  {
       	this.empty = false;
       }
-      
+
    }
 
    public void bookmark(PagePosition position) throws Exception
@@ -212,7 +212,7 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       return counter;
    }
-   
+
    /**
     * A page marked as complete will be ignored until it's cleared.
     * Usually paging is a stream of messages but in certain scenarios (such as a pending prepared TX) we may have big holes on the page
@@ -236,7 +236,7 @@ public class PageSubscriptionImpl implements PageSubscription
          {
             return;
          }
-         
+
          scheduledCleanupCount.incrementAndGet();
          executor.execute(new Runnable()
          {
@@ -259,7 +259,7 @@ public class PageSubscriptionImpl implements PageSubscription
          });
       }
    }
-   
+
    public void onPageModeCleared(Transaction tx) throws Exception
    {
 	  if (counter != null)
@@ -270,7 +270,7 @@ public class PageSubscriptionImpl implements PageSubscription
 	  this.empty = true;
    }
 
-   /** 
+   /**
     * It will cleanup all the records for completed pages
     * */
    public void cleanupEntries(final boolean completeDelete) throws Exception
@@ -293,15 +293,15 @@ public class PageSubscriptionImpl implements PageSubscription
          {
             return;
          }
-         
-         for (Entry<Long, PageCursorInfo> entry : consumedPages.entrySet()) 
+
+         for (Entry<Long, PageCursorInfo> entry : consumedPages.entrySet())
          {
             PageCursorInfo info = entry.getValue();
 
             if (info.isDone() && !info.isPendingDelete())
             {
                Page currentPage = pageStore.getCurrentPage();
-               
+
                if (currentPage != null && entry.getKey() == pageStore.getCurrentPage().getPageId() && currentPage.isLive())
                {
                    PageSubscriptionImpl.trace("We can't clear page " + entry.getKey() +
@@ -320,10 +320,10 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          // HORNETQ-1017: There are a few cases where a pending transaction might set a big hole on the page system
          //               where we need to ignore these pages in case of a restart.
-         //               for that reason when we delete complete ACKs we store a single record per page file that will 
+         //               for that reason when we delete complete ACKs we store a single record per page file that will
          //               be removed once the page file is deleted
          //               notice also that this record is added as part of the same transaction where the information is deleted.
-         //               In case of a TX Failure (a crash on the server) this will be recovered on the next cleanup once the 
+         //               In case of a TX Failure (a crash on the server) this will be recovered on the next cleanup once the
          //               server is restarted.
          // first will mark the page as complete
          if (isPersistent())
@@ -352,7 +352,7 @@ public class PageSubscriptionImpl implements PageSubscription
                }
             }
          }
-         
+
          infoPG.acks.clear();
       }
 
@@ -367,7 +367,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
                public void run()
                {
-                  if (!completeDelete) 
+                  if (!completeDelete)
                   {
                      cursorProvider.scheduleCleanup();
                   }
@@ -379,7 +379,7 @@ public class PageSubscriptionImpl implements PageSubscription
       tx.commit();
 
    }
-   
+
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -408,7 +408,7 @@ public class PageSubscriptionImpl implements PageSubscription
       PagePosition retPos = pos.nextMessage();
 
       PageCache cache = cursorProvider.getPageCache(pos);
-      
+
       if (cache != null && !cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages())
       {
          // The next message is beyond what's available at the current page, so we need to move to the next page
@@ -422,7 +422,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
          cache = cursorProvider.getPageCache(retPos);
       }
-      
+
       if (cache == null)
       {
          return null;
@@ -430,7 +430,7 @@ public class PageSubscriptionImpl implements PageSubscription
       else
       {
          PagedMessage serverMessage = cache.getMessage(retPos.getMessageNr());
-   
+
          if (serverMessage != null)
          {
             return cursorProvider.newReference(retPos, serverMessage, this);
@@ -479,7 +479,7 @@ public class PageSubscriptionImpl implements PageSubscription
    }
 
    /**
-    * 
+    *
     */
    private synchronized PagePosition getStartPosition()
    {
@@ -500,7 +500,7 @@ public class PageSubscriptionImpl implements PageSubscription
                   // The list is not ordered...
                   // This is only done at creation of the queue, so we just scan instead of keeping the list ordened
                   PagePosition retValue = null;
-   
+
                   for (PagePosition pos : entry.getValue().acks)
                   {
                      if (isTrace)
@@ -512,12 +512,12 @@ public class PageSubscriptionImpl implements PageSubscription
                         retValue = pos;
                      }
                   }
-   
-                  if (isTrace) 
+
+                  if (isTrace)
                   {
                      trace("Returning initial position " + retValue);
                   }
-   
+
                   return retValue;
                }
             }
@@ -606,7 +606,7 @@ public class PageSubscriptionImpl implements PageSubscription
          }
          return lastPageSeen;
       }
-      
+
    }
 
    public void addPendingDelivery(final PagePosition position)
@@ -623,7 +623,7 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          redeliveries.add(position);
       }
-      
+
       synchronized (consumedPages)
       {
          PageCursorInfo pageInfo = consumedPages.get(position.getPageNr());
@@ -654,7 +654,7 @@ public class PageSubscriptionImpl implements PageSubscription
       }
    }
 
-   /** 
+   /**
     * Theres no need to synchronize this method as it's only called from journal load on startup
     */
    public void reloadACK(final PagePosition position)
@@ -684,7 +684,7 @@ public class PageSubscriptionImpl implements PageSubscription
       processACK(position);
    }
 
-   
+
    public void lateDeliveryRollback(PagePosition position)
    {
       PageCursorInfo cursorInfo = processACK(position);
@@ -702,9 +702,9 @@ public class PageSubscriptionImpl implements PageSubscription
          {
             return true;
          }
-         
+
          PageCursorInfo info = consumedPages.get(page);
-         
+
          if (info == null && empty)
          {
             return true;
@@ -724,9 +724,9 @@ public class PageSubscriptionImpl implements PageSubscription
       final long tx = store.generateUniqueID();
       try
       {
-   
+
          boolean isPersistent = false;
-   
+
          synchronized (consumedPages)
          {
             for (PageCursorInfo cursor : consumedPages.values())
@@ -747,12 +747,12 @@ public class PageSubscriptionImpl implements PageSubscription
                }
             }
          }
-    
+
          if (isPersistent)
          {
             store.commit(tx);
          }
-   
+
          cursorProvider.close(this);
       }
       catch (Exception e)
@@ -797,7 +797,7 @@ public class PageSubscriptionImpl implements PageSubscription
          {
             lastAckedPosition = pos;
             PageCursorInfo pageInfo = getPageInfo(pos);
-            
+
             if (pageInfo == null)
             {
                log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal");
@@ -812,7 +812,7 @@ public class PageSubscriptionImpl implements PageSubscription
                pageInfo.loadACK(pos);
             }
          }
-         
+
          if (txDeleteCursorOnReload >= 0)
          {
             store.commit(txDeleteCursorOnReload);
@@ -851,8 +851,8 @@ public class PageSubscriptionImpl implements PageSubscription
          System.out.println(info);
       }
    }
-   
-   
+
+
    public void onDeletePage(Page deletedPage) throws Exception
    {
       PageCursorInfo info;
@@ -915,7 +915,7 @@ public class PageSubscriptionImpl implements PageSubscription
       synchronized (consumedPages)
       {
          PageCursorInfo pageInfo = consumedPages.get(pos.getPageNr());
-   
+
          if (create && pageInfo == null)
          {
             PageCache cache = cursorProvider.getPageCache(pos);
@@ -965,7 +965,7 @@ public class PageSubscriptionImpl implements PageSubscription
             {
                log.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
             }
-            
+
             // there's a different page being acked, we will do the check right away
             if (autoCleanup)
             {
@@ -977,7 +977,7 @@ public class PageSubscriptionImpl implements PageSubscription
       PageCursorInfo info = getPageInfo(pos);
 
       info.addACK(pos);
-      
+
       return info;
    }
 
@@ -1034,7 +1034,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
    // Inner classes -------------------------------------------------
 
-   /** 
+   /**
     * This will hold information about the pending ACKs towards a page.
     * This instance will be released as soon as the entire page is consumed, releasing the memory at that point
     * The ref counts are increased also when a message is ignored for any reason.
@@ -1063,7 +1063,7 @@ public class PageSubscriptionImpl implements PageSubscription
       // We're holding this object to avoid delete the pages before the IO is complete,
       // however we can't delete these records again
       private boolean pendingDelete;
-      
+
       /**
        * This is to be set when all the messages are complete on a given page, and we cleanup the records that are marked on it
        */
@@ -1080,7 +1080,7 @@ public class PageSubscriptionImpl implements PageSubscription
                 " numberOfMessage = " +
                 numberOfMessages +
                 ", confirmed = " +
-                confirmed + 
+                confirmed +
                 ", isDone=" + this.isDone();
       }
 
@@ -1114,7 +1114,7 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          this.completePage = completePage;
       }
-      
+
       public PagePosition getCompleteInfo()
       {
          return completePage;
@@ -1135,7 +1135,7 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          pendingDelete = true;
       }
-      
+
       public int getConfirmed()
       {
          return confirmed.intValue();
@@ -1192,7 +1192,7 @@ public class PageSubscriptionImpl implements PageSubscription
             checkDone();
          }
       }
-      
+
       // To be called during reload
       public void loadACK(final PagePosition posACK)
       {
@@ -1209,7 +1209,7 @@ public class PageSubscriptionImpl implements PageSubscription
       }
 
       /**
-       * 
+       *
        */
       protected void checkDone()
       {
@@ -1223,7 +1223,7 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          if (wasLive)
          {
-            // if the page was live at any point, we need to 
+            // if the page was live at any point, we need to
             // get the number of messages from the page-cache
             PageCache localcache = this.cache.get();
             if (localcache == null)
@@ -1416,9 +1416,9 @@ public class PageSubscriptionImpl implements PageSubscription
                {
                   ignored = true;
                }
-               
+
                PageCursorInfo info = getPageInfo(message.getPosition(), false);
-               
+
                if (info != null && info.isRemoved(message.getPosition()))
                {
                   continue;
@@ -1454,7 +1454,7 @@ public class PageSubscriptionImpl implements PageSubscription
                   // Say you have a Browser that will only read the files... there's no need to control PageCursors is
                   // nothing
                   // is being changed. That's why the false is passed as a parameter here
-                 
+
                   if (info != null && info.isRemoved(message.getPosition()))
                   {
                      valid = false;
@@ -1491,7 +1491,7 @@ public class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      /** QueueImpl::deliver could be calling hasNext while QueueImpl.depage could be using next and hasNext as well. 
+      /** QueueImpl::deliver could be calling hasNext while QueueImpl.depage could be using next and hasNext as well.
        *  It would be a rare race condition but I would prefer avoiding that scenario */
       public synchronized boolean hasNext()
       {

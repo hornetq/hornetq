@@ -58,7 +58,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       super.setUp();
 
       server = createServer(true, true);
-      
+
       AddressSettings settings = new AddressSettings();
       settings.setRedeliveryDelay(100);
       server.getConfiguration().getAddressesSettings().put("#", settings);
@@ -77,7 +77,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
       session.close();
    }
- 
+
    protected void tearDown() throws Exception
    {
       try
@@ -111,34 +111,34 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       ClientSession session = factory.createTransactedSession();
 
       sendMessages(numberOfMessages, session);
-      
+
       AtomicInteger count = new AtomicInteger(0);
       CountDownLatch commitLatch = new CountDownLatch (numberOfMessages);
-      
+
       LocalConsumer[] consumers = new LocalConsumer[numberOfConsumers];
-      
+
       for (int i = 0 ; i < numberOfConsumers; i++)
       {
          consumers[i] = new LocalConsumer(count, commitLatch);
          consumers[i].start();
       }
-      
-      
+
+
       commitLatch.await(2, TimeUnit.MINUTES);
-      
-      
+
+
       for (LocalConsumer consumer : consumers)
       {
          consumer.stop();
       }
-      
-      
+
+
       ClientConsumer consumer = session.createConsumer(outQueue);
-      
+
       session.start();
-      
+
       HashSet<Integer> values = new HashSet<Integer>();
-      
+
       for (int i = 0 ; i < numberOfMessages; i++)
       {
          ClientMessage msg = consumer.receive(1000);
@@ -148,17 +148,17 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
          assertFalse("msg " + value + " received in duplicate", values.contains(value));
          values.add(value);
       }
-      
-      
+
+
       assertNull(consumer.receiveImmediate());
-      
+
       for (int i = 0 ; i < numberOfMessages; i++)
       {
          assertTrue(values.contains(i));
       }
-      
+
       assertEquals(numberOfMessages, values.size());
-      
+
       session.close();
 
    }
@@ -190,14 +190,14 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
    private class LocalConsumer implements MessageHandler
    {
-      
+
       // One of the tests will need this
       boolean rollbackFirstMessage = true;
 
       ServerLocator consumerLocator;
-      
+
       ClientSessionFactory factoryLocator;
-      
+
       ClientSession session;
 
       ClientConsumer consumer;
@@ -205,7 +205,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       ClientProducer producer;
 
       AtomicInteger counter;
-      
+
       CountDownLatch commitLatch;
 
       public LocalConsumer(AtomicInteger counter, CountDownLatch commitLatch)
@@ -224,9 +224,9 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       public void start() throws Exception
       {
          consumerLocator = createNettyNonHALocator();
-  
+
          factoryLocator = consumerLocator.createSessionFactory();
-         
+
          session = factoryLocator.createTransactedSession();
 
          consumer = session.createConsumer(inQueue);
@@ -251,7 +251,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
             producer.send(outmsg);
 
-            
+
             if (rollbackFirstMessage)
             {
                session.rollback();

@@ -29,7 +29,7 @@ public class SessionIndividualAcknowledgeMessage extends PacketImpl
    private long consumerID;
 
    private long messageID;
-   
+
    private boolean requiresResponse;
 
    // Static --------------------------------------------------------

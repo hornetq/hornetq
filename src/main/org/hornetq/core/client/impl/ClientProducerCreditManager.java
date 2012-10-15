@@ -25,7 +25,7 @@ import org.hornetq.api.core.SimpleString;
 public interface ClientProducerCreditManager
 {
    ClientProducerCredits getCredits(SimpleString address, boolean anon);
-   
+
    void returnCredits(SimpleString address);
 
    void receiveCredits(SimpleString address, int credits);
@@ -33,8 +33,8 @@ public interface ClientProducerCreditManager
    void reset();
 
    void close();
-   
+
    int creditsMapSize();
-   
+
    int unReferencedCreditsSize();
 }

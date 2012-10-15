@@ -35,12 +35,12 @@ public class GroupIDTest extends GroupingTest
    protected ConnectionFactory getCF() throws Exception
    {
       HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       cf.setGroupID("wibble");
-      
+
       return cf;
    }
-   
+
 
    @Override
    protected void setProperty(Message message)

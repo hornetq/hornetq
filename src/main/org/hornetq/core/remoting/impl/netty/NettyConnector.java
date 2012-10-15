@@ -149,9 +149,9 @@ public class NettyConnector extends AbstractConnector
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Executor closeExecutor;
-   
+
    private BatchFlusher flusher;
-   
+
    private ScheduledFuture<?> batchFlusherFuture;
 
    // Static --------------------------------------------------------
@@ -384,7 +384,7 @@ public class NettyConnector extends AbstractConnector
                handlers.add(new HttpRequestEncoder());
 
                handlers.add(new HttpResponseDecoder());
-               
+
                handlers.add(new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.add(new HttpHandler());
@@ -403,7 +403,7 @@ public class NettyConnector extends AbstractConnector
       if (batchDelay > 0)
       {
          flusher = new BatchFlusher();
-         
+
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
@@ -416,22 +416,22 @@ public class NettyConnector extends AbstractConnector
       }
       NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
    }
-   
+
    public synchronized void close()
    {
       if (channelFactory == null)
       {
          return;
       }
-      
+
       if (batchFlusherFuture != null)
       {
          batchFlusherFuture.cancel(false);
-         
+
          flusher.cancel();
-         
+
          flusher = null;
-         
+
          batchFlusherFuture = null;
       }
 
@@ -582,7 +582,7 @@ public class NettyConnector extends AbstractConnector
       private String cookie;
 
       private final CookieEncoder cookieEncoder = new CookieEncoder(false);
-      
+
       public HttpHandler() throws Exception
       {
          url = new URI("http", null, host, port, servletPath, null, null).toString();
@@ -754,10 +754,10 @@ public class NettyConnector extends AbstractConnector
       public void connectionReadyForWrites(Object connectionID, boolean ready)
       {
       }
-      
-      
+
+
    }
-   
+
    private class BatchFlusher implements Runnable
    {
       private boolean cancelled;
@@ -789,11 +789,11 @@ public class NettyConnector extends AbstractConnector
       Integer port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
                                                 TransportConstants.DEFAULT_PORT,
                                                 configuration);
-      
+
       if (!port.equals(this.port)) return false;
-      
+
       if (host.equals(this.host)) return true;
-      
+
       //The host may be an alias. We need to compare raw IP address.
       boolean result = false;
       try
@@ -803,14 +803,14 @@ public class NettyConnector extends AbstractConnector
          String ip1 = inetAddr1.getHostAddress();
          String ip2 = inetAddr2.getHostAddress();
          log.debug("host 1: " + host + " ip address: " + ip1 + " host 2: " + this.host + " ip address: " + ip2);
-         
+
          result = ip1.equals(ip2);
       }
       catch (UnknownHostException e)
       {
          log.error("Cannot resolve host", e);
       }
-      
+
       return result;
    }
 

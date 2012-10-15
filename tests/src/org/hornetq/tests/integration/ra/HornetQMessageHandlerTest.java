@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
-   
+
    @Override
    public boolean isSecure()
    {

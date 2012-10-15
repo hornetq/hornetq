@@ -40,7 +40,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -64,13 +64,13 @@ public class PagingManagerImplTest extends UnitTestCase
       AddressSettings settings = new AddressSettings();
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.setDefault(settings);
-      
-      
+
+
       PagingStoreFactoryNIO storeFactory = new PagingStoreFactoryNIO(getPageDir(),
                                                                      100, null,
                                 new OrderedExecutorFactory(Executors.newCachedThreadPool()),
                                 true);
-      
+
       storeFactory.setPostOffice(new FakePostOffice());
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory,

@@ -29,7 +29,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A SymmetricClusterWithBackupTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 13 Mar 2009 11:00:31
  *
  *

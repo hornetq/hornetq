@@ -46,7 +46,7 @@ public abstract class HornetQExample
    private boolean logServerOutput;
 
    protected String[] configs;
-   
+
    protected boolean runServer;
 
    protected void run(final String[] configs)
@@ -111,7 +111,7 @@ public abstract class HornetQExample
       File file = new File("server" + id + "/KILL_ME");
 
       file.createNewFile();
-      
+
       // Sleep longer than the KillChecker check period
       Thread.sleep(3000);
    }
@@ -242,7 +242,7 @@ public abstract class HornetQExample
       }
       return null;
    }
-   
+
    private void reportResultAndExit()
    {
       if (failure)

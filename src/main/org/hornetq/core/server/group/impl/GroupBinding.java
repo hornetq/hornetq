@@ -16,7 +16,7 @@ import org.hornetq.api.core.SimpleString;
 
 /**
  * A group binding
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Oct 19, 2009
  */

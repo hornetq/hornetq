@@ -43,63 +43,63 @@ public class TopicClusterTest extends JMSClusteredTestBase
 
    // Public --------------------------------------------------------
 
-   
+
    protected void tearDown() throws Exception
    {
       super.tearDown();
    }
-   
-   
+
+
    protected void setUp() throws Exception
    {
       super.setUp();
    }
-   
+
    public void testDeleteTopicAfterClusteredSend() throws Exception
    {
       Connection conn1 = cf1.createConnection();
-      
+
       conn1.setClientID("someClient1");
 
       Connection conn2 = cf2.createConnection();
-      
+
       conn2.setClientID("someClient2");
-      
+
       conn1.start();
-      
+
       conn2.start();
 
       try
       {
-         
+
          Topic topic1 = createTopic("t1");
-         
+
          Topic topic2 = (Topic)context1.lookup("topic/t1");
-   
+
          Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         // topic1 and 2 should be the same. 
+
+         // topic1 and 2 should be the same.
          // Using a different instance here just to make sure it is implemented correctly
          MessageConsumer cons2 = session2.createDurableSubscriber(topic2, "sub2");
          Thread.sleep(500);
          MessageProducer prod1 = session1.createProducer(topic1);
-         
+
          prod1.setDeliveryMode(DeliveryMode.PERSISTENT);
-         
-         
+
+
          for (int i = 0 ; i < 2; i++)
          {
             prod1.send(session1.createTextMessage("someMessage"));
          }
-         
+
          TextMessage received = (TextMessage)cons2.receive(5000);
-         
+
          assertNotNull(received);
-         
+
          assertEquals("someMessage", received.getText());
-         
+
          cons2.close();
        }
       finally
@@ -110,8 +110,8 @@ public class TopicClusterTest extends JMSClusteredTestBase
 
       jmsServer1.destroyTopic("t1");
       jmsServer2.destroyTopic("t1");
-      
-    
+
+
    }
 
    // Package protected ---------------------------------------------

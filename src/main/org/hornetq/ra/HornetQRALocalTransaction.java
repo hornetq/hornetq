@@ -21,7 +21,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * JMS Local transaction
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -61,7 +61,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALocalTransaction.log.trace("begin()");
       }
-      
+
      // mc.setInManagedTx(true);
    }
 
@@ -75,7 +75,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALocalTransaction.log.trace("commit()");
       }
-      
+
       mc.lock();
       try
       {
@@ -105,7 +105,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALocalTransaction.log.trace("rollback()");
       }
-      
+
       mc.lock();
       try
       {

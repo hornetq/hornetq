@@ -36,7 +36,7 @@ import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 public class SameProcessHornetQServer implements TestableServer
 {
    private static Logger log = Logger.getLogger(SameProcessHornetQServer.class);
-   
+
    private HornetQServer server;
 
    public SameProcessHornetQServer(HornetQServer server)
@@ -58,7 +58,7 @@ public class SameProcessHornetQServer implements TestableServer
    {
       server.setIdentity(identity);
    }
-   
+
    public boolean isStarted()
    {
       return server.isStarted();
@@ -142,7 +142,7 @@ public class SameProcessHornetQServer implements TestableServer
 
    // Public --------------------------------------------------------
 
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -125,7 +125,7 @@ public class SimpleJMSMessage implements Message
 
    public String getJMSCorrelationID() throws JMSException
    {
-      
+
       return correlationIDString;
    }
 

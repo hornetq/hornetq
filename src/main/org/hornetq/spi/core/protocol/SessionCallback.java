@@ -33,10 +33,10 @@ public interface SessionCallback
    int sendLargeMessage(ServerMessage message, long consumerID, long bodySize, int deliveryCount);
 
    int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse);
-   
+
    void closed();
-   
+
    void addReadyListener(ReadyListener listener);
-   
+
    void removeReadyListener(ReadyListener listener);
 }

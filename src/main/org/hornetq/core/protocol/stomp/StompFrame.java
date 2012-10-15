@@ -29,7 +29,7 @@ import org.hornetq.core.logging.Logger;
  *
  * @author <a href="http://hiramchirino.com">chirino</a>
  * @author Tim Fox
- * 
+ *
  */
 class StompFrame
 {
@@ -48,7 +48,7 @@ class StompFrame
    private HornetQBuffer buffer = null;
 
    private int size;
-   
+
    public StompFrame(String command, Map<String, Object> headers, byte[] data)
    {
       this.command = command;
@@ -72,7 +72,7 @@ class StompFrame
    {
       return content;
    }
-   
+
    public Map<String, Object> getHeaders()
    {
       return headers;
@@ -105,7 +105,7 @@ class StompFrame
       return out;
    }
 
- 
+
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
       if (buffer == null)
