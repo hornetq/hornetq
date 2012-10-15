@@ -36,7 +36,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A CloseDestroyedConnectionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

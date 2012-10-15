@@ -26,9 +26,9 @@ import org.hornetq.utils.DataConstants;
 
 /**
  * This class contains the configuration properties of a connection factory.
- * 
+ *
  * It is also persisted on the journal at the time of management is used to created a connection factory and set to store.
- * 
+ *
  * Every property on this class has to be also set through encoders through EncodingSupport implementation at this class.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -42,13 +42,13 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    // Attributes ----------------------------------------------------
 
    private String name;
-   
+
    private boolean persisted;
 
    private String[] bindings;
 
    private List<String> connectorNames;
-   
+
    private String discoveryGroupName;
 
    private String clientID = null;
@@ -64,7 +64,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-   
+
    private boolean compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
 
    private int consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -157,7 +157,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       return name;
    }
-   
+
    public boolean isPersisted()
    {
       return persisted;
@@ -507,11 +507,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void decode(final HornetQBuffer buffer)
    {
       persisted = true;
-      
+
       name = buffer.readSimpleString().toString();
 
       discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer);
-      
+
       int nConnectors = buffer.readInt();
 
       if (nConnectors > 0)
@@ -521,11 +521,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
          for (int i = 0; i < nConnectors; i++)
          {
             SimpleString str = buffer.readSimpleString();
-            
+
             connectorNames.add(str.toString());
          }
       }
-      
+
       ha = buffer.readBoolean();
 
       clientID = BufferHelper.readNullableSimpleStringAsString(buffer);
@@ -583,7 +583,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       reconnectAttempts = buffer.readInt();
 
       failoverOnInitialConnection = buffer.readBoolean();
-      
+
       compressLargeMessage = buffer.readBoolean();
 
       groupID = BufferHelper.readNullableSimpleStringAsString(buffer);
@@ -597,11 +597,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void encode(final HornetQBuffer buffer)
    {
       persisted = true;
-      
+
       BufferHelper.writeAsSimpleString(buffer, name);
 
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryGroupName);
-      
+
       if (this.connectorNames == null)
       {
          buffer.writeInt(0);
@@ -615,7 +615,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             BufferHelper.writeAsSimpleString(buffer, tc);
          }
       }
-      
+
       buffer.writeBoolean(ha);
 
       BufferHelper.writeAsNullableSimpleString(buffer, clientID);
@@ -673,7 +673,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       buffer.writeInt(reconnectAttempts);
 
       buffer.writeBoolean(failoverOnInitialConnection);
-      
+
       buffer.writeBoolean(compressLargeMessage);
 
       BufferHelper.writeAsNullableSimpleString(buffer, groupID);
@@ -689,20 +689,20 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       int size = BufferHelper.sizeOfSimpleString(name) +
 
       BufferHelper.sizeOfNullableSimpleString(discoveryGroupName);
-      
+
       size += DataConstants.SIZE_INT;
 
       if (this.connectorNames != null)
       {
          for (String tc : connectorNames)
          {
-            size += BufferHelper.sizeOfSimpleString(tc); 
+            size += BufferHelper.sizeOfSimpleString(tc);
          }
       }
-      
+
       size += BufferHelper.sizeOfNullableSimpleString(clientID) +
-      
-              DataConstants.SIZE_BOOLEAN + 
+
+              DataConstants.SIZE_BOOLEAN +
               // ha
 
               DataConstants.SIZE_LONG +
@@ -784,8 +784,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
               DataConstants.SIZE_BOOLEAN +
               // failoverOnInitialConnection
-              
-              DataConstants.SIZE_BOOLEAN + 
+
+              DataConstants.SIZE_BOOLEAN +
               // compress-large-message
 
               BufferHelper.sizeOfNullableSimpleString(groupID) +

@@ -30,13 +30,13 @@ import org.hornetq.api.core.client.ClientSession;
  * HornetQ implementation of a JMS ObjectMessage.
  * <br>
  * Don't used ObjectMessage if you want good performance!
- * 
+ *
  * Serialization is slooooow!
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * 
+ *
  * @version $Revision: 3412 $
  *
  * $Id: HornetQRAObjectMessage.java 3412 2007-12-05 19:41:47Z timfox $

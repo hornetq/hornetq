@@ -24,17 +24,17 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * 
+ *
  * A PostOffice instance maintains a mapping of a String address to a Queue. Multiple Queue instances can be bound
  * with the same String address.
- * 
+ *
  * Given a message and an address a PostOffice instance will route that message to all the Queue instances that are
  * registered with that address.
- * 
+ *
  * Addresses can be any String instance.
- * 
+ *
  * A Queue instance can only be bound against a single address in the post office.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -43,7 +43,7 @@ public interface PostOffice extends HornetQComponent
    void addBinding(Binding binding) throws Exception;
 
    Binding removeBinding(SimpleString uniqueName) throws Exception;
-   
+
    /**
     * It will lookup the Binding without creating an item on the Queue if non-existent
     * @param address
@@ -63,7 +63,7 @@ public interface PostOffice extends HornetQComponent
    Binding getBinding(SimpleString uniqueName);
 
    Bindings getMatchingBindings(SimpleString address) throws Exception;
-   
+
    void route(ServerMessage message, boolean direct) throws Exception;
 
    void route(ServerMessage message, Transaction tx, boolean direct) throws Exception;
@@ -77,7 +77,7 @@ public interface PostOffice extends HornetQComponent
    MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;
 
    Pair<RoutingContext, ServerMessage> redistribute(ServerMessage message, final Queue originatingQueue, Transaction tx) throws Exception;
-   
+
    void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception;
 
    PagingManager getPagingManager();

@@ -399,7 +399,7 @@ public class SendTest
       for (int i = 0; i < warmup; i++)
       {
          // ObjectMessage om = sess.createObjectMessage(str);
-         //         
+         //
          // prod.send(om);
 
          TextMessage tm = sess.createTextMessage(str);
@@ -423,7 +423,7 @@ public class SendTest
       for (int i = 0; i < numMessages; i++)
       {
          // ObjectMessage om = sess.createObjectMessage(str);
-         //         
+         //
          // prod.send(om);
 
          TextMessage tm = sess.createTextMessage(str);

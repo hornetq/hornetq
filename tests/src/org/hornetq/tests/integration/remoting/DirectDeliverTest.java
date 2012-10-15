@@ -38,7 +38,7 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A DirectDeliverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -55,7 +55,7 @@ public class DirectDeliverTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
-   
+
    private ServerLocator locator;
 
    // Static --------------------------------------------------------
@@ -84,7 +84,7 @@ public class DirectDeliverTest extends ServiceTestBase
       config.setSecurityEnabled(false);
       server = createServer(false, config);
       server.start();
-      
+
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
    }
 
@@ -92,7 +92,7 @@ public class DirectDeliverTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       server.stop();
 
       server = null;
@@ -108,7 +108,7 @@ public class DirectDeliverTest extends ServiceTestBase
    public void testDirectDeliver() throws Exception
    {
       final String foo = "foo";
-      
+
       ClientSessionFactory sf = createSessionFactory();
 
       ClientSession session = sf.createSession();
@@ -116,11 +116,11 @@ public class DirectDeliverTest extends ServiceTestBase
       session.createQueue(foo, foo);
 
       Binding binding = server.getPostOffice().getBinding(new SimpleString(foo));
-      
+
       Queue queue = (Queue)binding.getBindable();
-      
+
       assertTrue(queue.isDirectDeliver());
-           
+
       ClientProducer prod = session.createProducer(foo);
 
       ClientConsumer cons = session.createConsumer(foo);
@@ -133,12 +133,12 @@ public class DirectDeliverTest extends ServiceTestBase
 
          prod.send(msg);
       }
-      
+
       queue.flushExecutor();
-      
+
       //Consumer is not started so should go queued
       assertFalse(queue.isDirectDeliver());
-      
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
@@ -149,18 +149,18 @@ public class DirectDeliverTest extends ServiceTestBase
 
          msg.acknowledge();
       }
-      
+
       Thread.sleep((long)(QueueImpl.CHECK_QUEUE_SIZE_PERIOD * 1.5));
-      
+
       //Add another message, should go direct
       ClientMessage msg = session.createMessage(true);
 
       prod.send(msg);
-      
+
       queue.flushExecutor();
-            
+
       assertTrue(queue.isDirectDeliver());
-      
+
       //Send some more
       for (int i = 0; i < numMessages; i++)
       {
@@ -168,7 +168,7 @@ public class DirectDeliverTest extends ServiceTestBase
 
          prod.send(msg);
       }
-      
+
       for (int i = 0; i < numMessages + 1; i++)
       {
          msg = cons.receive(10000);
@@ -177,20 +177,20 @@ public class DirectDeliverTest extends ServiceTestBase
 
          msg.acknowledge();
       }
-      
+
       assertTrue(queue.isDirectDeliver());
-      
+
       session.stop();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          msg = session.createMessage(true);
 
          prod.send(msg);
       }
-      
+
       assertFalse(queue.isDirectDeliver());
-      
+
 
       sf.close();
    }

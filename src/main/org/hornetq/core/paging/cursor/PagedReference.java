@@ -26,6 +26,6 @@ import org.hornetq.core.server.MessageReference;
 public interface PagedReference extends MessageReference
 {
      PagePosition getPosition();
-     
+
      PagedMessage getPagedMessage();
 }

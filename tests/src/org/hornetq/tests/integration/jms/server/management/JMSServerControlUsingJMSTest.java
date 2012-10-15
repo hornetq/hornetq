@@ -58,7 +58,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       }
       return names;
    }
-   
+
    // The JMS test won't support the server being restarted, hence we have to do a slight different test on that case
    public void testCreateConnectionFactory_CompleteList() throws Exception
    {
@@ -97,10 +97,10 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                       1, // reconnectAttempts
                                       true, // failoverOnInitialConnection
                                       "tst"); // groupID
-      
-      
+
+
       HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -129,7 +129,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
    }
    // Constructors --------------------------------------------------
 

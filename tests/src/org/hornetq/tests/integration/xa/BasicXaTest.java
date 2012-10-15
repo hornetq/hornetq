@@ -133,102 +133,102 @@ public class BasicXaTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
-   
+
+
    public void testSendWithoutXID() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
 
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory factory = locator.createSessionFactory();
-      
+
       ClientSession session = null;
-      
+
       try
       {
-         
+
          session = factory.createSession(true, false, false);
 
          session.createQueue("Test", "Test");
-         
+
          ClientProducer prod = session.createProducer("Test");
 
          prod.send(session.createMessage(true));
-         
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer("Test");
-         
+
          assertNotNull("Send went through an invalid XA Session", cons.receiveImmediate());
       }
       finally
       {
          factory.close();
-         
+
          session.close();
       }
    }
 
-   
+
    public void testACKWithoutXID() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
 
 
       ClientSessionFactory factory = locator.createSessionFactory();
-      
+
       ClientSession session = null;
-      
+
       try
       {
-         
+
          session = factory.createSession(false, true, true);
 
          session.createQueue("Test", "Test");
-         
+
          ClientProducer prod = session.createProducer("Test");
 
          prod.send(session.createMessage(true));
-         
-         session.close();
-         
-         session = factory.createSession(true, false, false);
-         
-         session.start();
-         
-         ClientConsumer cons = session.createConsumer("Test");
-         
-         ClientMessage msg = cons.receive(5000);
-         
-         assertNotNull(msg);
-         
-         msg.acknowledge();
-         
+
          session.close();
 
-      
-         session = factory.createSession(false, false, false);
-         
+         session = factory.createSession(true, false, false);
+
          session.start();
-         
+
+         ClientConsumer cons = session.createConsumer("Test");
+
+         ClientMessage msg = cons.receive(5000);
+
+         assertNotNull(msg);
+
+         msg.acknowledge();
+
+         session.close();
+
+
+         session = factory.createSession(false, false, false);
+
+         session.start();
+
          cons = session.createConsumer("Test");
-         
+
          msg = cons.receiveImmediate();
-         
+
          assertNull("Acknowledge went through invalid XA Session", msg);
 
-         
-         
+
+
       }
       finally
       {
          factory.close();
-         
+
          session.close();
       }
    }
 
-   
+
 
    public void testIsSameRM() throws Exception
    {
@@ -258,7 +258,7 @@ public class BasicXaTest extends ServiceTestBase
       session2.close();
    }
 
-   
+
 
    public void testXAInterleaveResourceSuspendWorkCommit() throws Exception
    {
@@ -315,7 +315,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.prepare(xid3);
       clientSession.commit(xid3, false);
    }
-   
+
    public void testSendPrepareDoesntRollbackOnClose() throws Exception
    {
       Xid xid = newXID();
@@ -338,7 +338,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession = sessionFactory.createSession(true, false, false);
 
       log.info("committing");
-      
+
       clientSession.commit(xid, false);
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
@@ -406,7 +406,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession2.close();
 
    }
-   
+
    public void testReceiveRollback() throws Exception
    {
       int numSessions = 100;

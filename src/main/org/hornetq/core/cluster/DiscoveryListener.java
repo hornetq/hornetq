@@ -17,7 +17,7 @@ package org.hornetq.core.cluster;
  * A DiscoveryListener
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 17 Nov 2008 14:30:39
  *
  *

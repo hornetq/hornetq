@@ -64,7 +64,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       final String extension = "hq";
       final int maxIO = 500;
 
-      final String journalDir = getTestDir(); 
+      final String journalDir = getTestDir();
       final int bufferSize = 490 * 1024;
       final int bufferTimeout = (int)(1000000000d / 2000);
       final boolean logRates = true;
@@ -143,7 +143,7 @@ public class JournalPerfTuneTest extends UnitTestCase
       public void done()
       {
          latch.countDown();
-         
+
          log.info(latch.getCount());
       }
 

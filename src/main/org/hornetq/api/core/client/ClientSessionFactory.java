@@ -22,28 +22,28 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
  * <br>
  * It is possible to configure a factory using the setter methods only if no session has been created.
  * Once a session is created, the configuration is fixed and any call to a setter method will throw a IllegalStateException.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface ClientSessionFactory
 {
    /**
     * Creates a session with XA transaction semantics.
-    * 
+    *
     * @return a ClientSession with XA transaction semantics
-    * 
+    *
     * @throws HornetQException if an exception occurs while creating the session
     */
    ClientSession createXASession() throws HornetQException;
 
    /**
     * Creates a <em>transacted</em> session.
-    * 
+    *
     * It is up to the client to commit when sending and acknowledging messages.
 
     * @return a transacted ClientSession
     * @throws HornetQException if an exception occurs while creating the session
-    * 
+    *
     * @see ClientSession#commit()
     */
    ClientSession createTransactedSession() throws HornetQException;
@@ -52,7 +52,7 @@ public interface ClientSessionFactory
    /**
     * Creates a <em>non-transacted</em> session.
     * Message sends and acknowledgements are automatically committed by the session. <em>This does not
-    * mean that messages are automatically acknowledged</em>, only that when messages are acknowledged, 
+    * mean that messages are automatically acknowledged</em>, only that when messages are acknowledged,
     * the session will automatically commit the transaction containing the acknowledgements.
 
     * @return a non-transacted ClientSession
@@ -62,7 +62,7 @@ public interface ClientSessionFactory
 
    /**
     * Creates a session.
-    * 
+    *
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
     * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
     * @return a ClientSession
@@ -72,7 +72,7 @@ public interface ClientSessionFactory
 
    /**
     * Creates a session.
-    * 
+    *
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
     * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
     * @param ackBatchSize the batch size of the acknowledgements
@@ -83,7 +83,7 @@ public interface ClientSessionFactory
 
    /**
     * Creates a session.
-    * 
+    *
     * @param xa whether the session support XA transaction semantic or not
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
     * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
@@ -94,11 +94,11 @@ public interface ClientSessionFactory
 
    /**
     * Creates a session.
-    * 
+    *
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
-    * 
+    *
     * @param xa whether the session support XA transaction semantic or not
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
     * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
@@ -110,11 +110,11 @@ public interface ClientSessionFactory
 
    /**
     * Creates an <em>authenticated</em> session.
-    * 
+    *
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
-    * 
+    *
     * @param username the user name
     * @param password the user password
     * @param xa whether the session support XA transaction semantic or not
@@ -138,9 +138,9 @@ public interface ClientSessionFactory
     * Opposed to close, will call cleanup only on every created session and children objects.
     */
    void cleanup();
-   
+
    ServerLocator getServerLocator();
-   
+
    CoreRemotingConnection getConnection();
 
     boolean isClosed();

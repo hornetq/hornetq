@@ -24,13 +24,13 @@ import java.util.List;
  */
 public interface RouteContextList
 {
-   
+
    int getNumberOfNonDurableQueues();
 
    int getNumberOfDurableQueues();
 
    List<Queue> getDurableQueues();
-   
+
    List<Queue> getNonDurableQueues();
 
 }

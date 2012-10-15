@@ -20,12 +20,12 @@ import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
- * 
+ *
  * Ping is sent on the client side at {@link ClientSessionFactoryImpl}
  * At the server's side is treated at {@link RemotingServiceImpl}
- * 
+ *
  * @See {@link RemotingConnection#checkDataReceived()}
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

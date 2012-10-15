@@ -32,7 +32,7 @@ public class MultipleFailoverFailbackExample extends HornetQExample
    {
       new MultipleFailoverFailbackExample().run(args);
    }
-   
+
    @Override
    public boolean runExample() throws Exception
    {

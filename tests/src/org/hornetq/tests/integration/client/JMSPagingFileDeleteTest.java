@@ -28,7 +28,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * This will perform cleanup tests on paging while using JMS topics
  *
  * @author clebertsuconic
@@ -38,7 +38,7 @@ import org.hornetq.tests.util.JMSTestBase;
 public class JMSPagingFileDeleteTest extends JMSTestBase
 {
    static Logger log = Logger.getLogger(JMSPagingFileDeleteTest.class);
-   
+
    Topic topic1;
 
    Connection connection;
@@ -72,7 +72,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    {
       clearData();
       super.setUp();
- 
+
       topic1 = createTopic("topic1");
 
       // Paging Setting
@@ -89,7 +89,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
       topic1 = null;
       super.tearDown();
    }
-   
+
    /**
     * Test replicating issue JBPAPP-9603
     * @throws Exception
@@ -120,22 +120,22 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
                producer.send(bytesMessage);
             }
             System.out.println("Sent " + JMSPagingFileDeleteTest.MESSAGE_NUM + " messages.");
-   
+
             pagingStore = server.getPagingManager().getPageStore(new SimpleString("jms.topic.topic1"));
             printPageStoreInfo(pagingStore);
-   
+
             assertTrue(pagingStore.isPaging());
-   
+
             // -----------------(Step2) Closing the connection alone should cleanup pages -------
             connection.close();
-            
+
             // note that if we closed subscriber or session the bug wouldn't happen
             // as they were already deleting the page-subscription properly
             // So, you can't close subscriber1 or session as that would change the test
             //subscriber1.close(); // << you can't call this on this test
             //session.close(); // << can't call this on this test
 
-            
+
             long timeout = System.currentTimeMillis() + 5000;
             while (timeout > System.currentTimeMillis() && pagingStore.isPaging())
             {
@@ -208,7 +208,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
             Thread.sleep(100);
          }
          assertFalse(pagingStore.isPaging());
-         
+
          printPageStoreInfo(pagingStore);
 
          assertEquals(0, pagingStore.getAddressSize());
@@ -223,9 +223,9 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
          producer.send(bytesMessage);
 
          printPageStoreInfo(pagingStore);
-         
+
          timeout = System.currentTimeMillis() + 10000;
-         
+
          while (timeout > System.currentTimeMillis() && pagingStore.getNumberOfPages() != 1)
          {
             Thread.sleep(100);

@@ -25,11 +25,11 @@ import java.io.IOException;
 public interface LockFile
 {
    void lock() throws IOException;
-   
+
    boolean unlock() throws IOException;
-   
+
    String getFileName();
-   
+
    String getDirectory();
-   
+
 }

@@ -52,15 +52,15 @@ public class ExtraStompTest extends StompTestBase
          String f = receiveFrame(10000);
          Assert.assertTrue(f.startsWith("CONNECTED"));
          Assert.assertTrue(f.indexOf("response-id:1") >= 0);
-         
+
          String frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 1" + Stomp.NULL;
          sendFrame(frame);
-         
+
          //sleep to let the connection die
          Thread.sleep(8000);
-         
+
          frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 2" + Stomp.NULL;
-         
+
          try
          {
             sendFrame(frame);
@@ -75,7 +75,7 @@ public class ExtraStompTest extends StompTestBase
 
          TextMessage message = (TextMessage)consumer.receive(1000);
          Assert.assertNotNull(message);
-         
+
          message = (TextMessage)consumer.receive(2000);
          Assert.assertNull(message);
       }
@@ -85,17 +85,17 @@ public class ExtraStompTest extends StompTestBase
          server.stop();
       }
    }
-   
+
    public void testEnableMessageID() throws Exception
    {
       enableMessageIDTest(true);
    }
-   
+
    public void testDisableMessageID() throws Exception
    {
       enableMessageIDTest(false);
    }
-   
+
    public void testDefaultEnableMessageID() throws Exception
    {
       enableMessageIDTest(null);
@@ -117,18 +117,18 @@ public class ExtraStompTest extends StompTestBase
          String f = receiveFrame(10000);
          Assert.assertTrue(f.startsWith("CONNECTED"));
          Assert.assertTrue(f.indexOf("response-id:1") >= 0);
-         
+
          String frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 1" + Stomp.NULL;
          sendFrame(frame);
-         
+
          frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 2" + Stomp.NULL;
-         
+
          sendFrame(frame);
 
          QueueBrowser browser = session.createBrowser(queue);
-         
+
          Enumeration<Message> enu = browser.getEnumeration();
-         
+
          while (enu.hasMoreElements())
          {
             Message msg = enu.nextElement();
@@ -143,17 +143,17 @@ public class ExtraStompTest extends StompTestBase
                assertNull(msgId);
             }
          }
-         
+
          browser.close();
-         
+
          MessageConsumer consumer = session.createConsumer(queue);
 
          TextMessage message = (TextMessage)consumer.receive(1000);
          Assert.assertNotNull(message);
-         
+
          message = (TextMessage)consumer.receive(1000);
          Assert.assertNotNull(message);
-         
+
          message = (TextMessage)consumer.receive(2000);
          Assert.assertNull(message);
       }
@@ -163,7 +163,7 @@ public class ExtraStompTest extends StompTestBase
          server.stop();
       }
    }
-   
+
    protected JMSServerManager createServerWithTTL(String ttl) throws Exception
    {
       return createServerWithExtraStompOptions(ttl, null);

@@ -58,22 +58,22 @@ public class StoreConfigTest extends JMSTestBase
    public void testCreateCF() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       List<String> transportConfigurations = new ArrayList<String>();
       transportConfigurations.add("tst");
       ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst", false, transportConfigurations);
-      
+
       jmsServer.createConnectionFactory(true, factCFG, "/someCF", "/someCF2" );
-      
-      
+
+
       ConnectionFactoryConfigurationImpl nonPersisted = new ConnectionFactoryConfigurationImpl("np", false, transportConfigurations);
 
-      
+
       jmsServer.createConnectionFactory(false, nonPersisted, "/nonPersisted" );
-      
-      
+
+
       boolean ex = false;
       try
       {
@@ -83,7 +83,7 @@ public class StoreConfigTest extends JMSTestBase
       {
          ex = true;
       }
-      
+
       assertTrue(ex);
 
 
@@ -100,11 +100,11 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/nonPersisted");
 
       jmsServer.stop();
-      
+
       jmsServer.start();
-      
+
       jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
-      
+
       ex = false;
       try
       {
@@ -115,19 +115,19 @@ public class StoreConfigTest extends JMSTestBase
          ex = true;
       }
       assertTrue(ex);
-      
+
       openCon("/someCF");
       openCon("/someCF2");
       openCon("/newJNDI");
       assertNullJNDI("/nonPersisted");
-      
-      
+
+
       jmsServer.stop();
-      
+
       assertNullJNDI("/newJNDI");
-      
+
       jmsServer.start();
-      
+
       openCon("/someCF");
       openCon("/someCF2");
       openCon("/newJNDI");
@@ -136,25 +136,25 @@ public class StoreConfigTest extends JMSTestBase
    public void testCreateTopic() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       List<String> transportConfigurations = new ArrayList<String>();
       transportConfigurations.add("tst");
 
       ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst", false, transportConfigurations);
 
       jmsServer.createConnectionFactory(true, factCFG, "/someCF");
-      
+
       assertTrue(jmsServer.createTopic(true, "topicOne", "/t1", "/t.1"));
-      
+
       assertTrue(jmsServer.createTopic(false, "topicTwo", "/t2", "/t.2"));
-      
+
       assertFalse(jmsServer.createTopic(false, "topicOne", "/z1", "z2"));
-      
+
       assertNullJNDI("/z1");
       assertNullJNDI("/z2");
-      
+
       checkDestination("/t1");
       checkDestination("/t.1");
 
@@ -162,7 +162,7 @@ public class StoreConfigTest extends JMSTestBase
       checkDestination("/t.2");
 
       jmsServer.stop();
-      
+
       assertNullJNDI("/t1");
       assertNullJNDI("/t.1");
 
@@ -172,7 +172,7 @@ public class StoreConfigTest extends JMSTestBase
 
       jmsServer.start();
 
-      
+
       checkDestination("/t1");
       checkDestination("/t.1");
 
@@ -180,7 +180,7 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/t.2");
 
       jmsServer.addTopicToJndi("topicOne", "/tI");
-      
+
       jmsServer.stop();
       jmsServer.start();
 
@@ -191,9 +191,9 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/t2");
       assertNullJNDI("/t.2");
 
-      
+
       assertTrue(jmsServer.removeTopicFromJNDI("topicOne", "/tI"));
-      
+
       assertFalse(jmsServer.removeTopicFromJNDI("topicOne","nothing"));
       assertFalse(jmsServer.removeTopicFromJNDI("nothing","nothing"));
       assertFalse(jmsServer.removeTopicFromJNDI("nothing"));
@@ -203,35 +203,35 @@ public class StoreConfigTest extends JMSTestBase
       checkDestination("/t.1");
 
       jmsServer.stop();
-      
+
       jmsServer.start();
 
       assertNullJNDI("/tI");
       checkDestination("/t1");
       checkDestination("/t.1");
 
-      
+
       jmsServer.removeTopicFromJNDI("topicOne");
-      
+
       assertTrue(jmsServer.createTopic(true, "topicOne", "/topicx.1", "/topicx.2"));
 
       jmsServer.stop();
-      
+
       jmsServer.start();
-      
+
       checkDestination("/topicx.1");
       checkDestination("/topicx.2");
    }
-   
-   
-   
+
+
+
    private void checkDestination(String name) throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory) context.lookup("/someCF");
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Destination dest = (Destination)context.lookup(name);
-      
+
       conn.start();
       MessageConsumer cons = sess.createConsumer(dest);
 
@@ -239,7 +239,7 @@ public class StoreConfigTest extends JMSTestBase
       prod.send(sess.createMessage());
       assertNotNull(cons.receiveNoWait());
       conn.close();
-      
+
    }
 
 
@@ -248,9 +248,9 @@ public class StoreConfigTest extends JMSTestBase
    public void testCreateQueue() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
 //      server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+
       List<String> transportConfigurations = new ArrayList<String>();
       transportConfigurations.add("tst");
 
@@ -258,17 +258,17 @@ public class StoreConfigTest extends JMSTestBase
 
 
       jmsServer.createConnectionFactory(true, factCFG, "/someCF");
-      
+
       assertTrue(jmsServer.createQueue(true, "queue1", null, true, "/q1", "/q.1"));
 
       assertFalse(jmsServer.createQueue(true, "queue1", "someWeirdThing", true, "/qx", "/qz"));
-      
+
       assertNullJNDI("/qx");
-      
+
       assertNullJNDI("/qz");
-      
+
       assertTrue(jmsServer.createQueue(false, "queue2", null, true, "/q2", "/q.2"));
-      
+
       checkDestination("/q1");
       checkDestination("/q.1");
 
@@ -276,7 +276,7 @@ public class StoreConfigTest extends JMSTestBase
       checkDestination("/q.2");
 
       jmsServer.stop();
-      
+
       assertNullJNDI("/q1");
       assertNullJNDI("/q1.1");
       assertNullJNDI("/qI");
@@ -286,7 +286,7 @@ public class StoreConfigTest extends JMSTestBase
 
       jmsServer.start();
 
-      
+
       checkDestination("/q1");
       checkDestination("/q.1");
 
@@ -294,7 +294,7 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/q.2");
 
       jmsServer.addQueueToJndi("queue1", "/qI");
-      
+
       jmsServer.stop();
       jmsServer.start();
 
@@ -305,9 +305,9 @@ public class StoreConfigTest extends JMSTestBase
       assertNullJNDI("/q2");
       assertNullJNDI("/q.2");
 
-      
+
       assertTrue(jmsServer.removeQueueFromJNDI("queue1", "/q1"));
-      
+
       assertFalse(jmsServer.removeQueueFromJNDI("queue1","nothing"));
 
       assertNullJNDI("/q1");
@@ -315,30 +315,30 @@ public class StoreConfigTest extends JMSTestBase
       checkDestination("/qI");
 
       jmsServer.stop();
-      
+
       jmsServer.start();
 
       assertNullJNDI("/q1");
       checkDestination("/q.1");
       checkDestination("/qI");
-      
+
       jmsServer.removeQueueFromJNDI("queue1");
-      
-      
+
+
       assertTrue(jmsServer.createQueue(true, "queue1", null, true, "/newq1", "/newq.1"));
       assertNullJNDI("/q1");
       assertNullJNDI("/q.1");
       assertNullJNDI("/qI");
-      
+
       checkDestination("/newq1");
       checkDestination("newq.1");
-      
+
 
       jmsServer.stop();
    }
 
    /**
-    * 
+    *
     */
    private void assertNullJNDI(String name)
    {
@@ -350,7 +350,7 @@ public class StoreConfigTest extends JMSTestBase
       catch (Exception expected)
       {
       }
-      
+
       assertNull(obj);
    }
     /**

@@ -21,7 +21,7 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class SessionXARollbackMessage extends PacketImpl
@@ -54,7 +54,7 @@ public class SessionXARollbackMessage extends PacketImpl
    {
       return xid;
    }
-   
+
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -67,7 +67,7 @@ public class SessionXARollbackMessage extends PacketImpl
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
-   
+
    public boolean isAsyncExec()
    {
       return true;

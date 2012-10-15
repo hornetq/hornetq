@@ -19,9 +19,9 @@ import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A SelectorTranslatorTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -141,7 +141,7 @@ public class SelectorTranslatorTest extends UnitTestCase
                           SelectorTranslator.convertToHornetQFilterString(selector));
 
    }
-   
+
    public void testParseJMSExpiration()
    {
       String selector = "JMSExpiration=12345678";
@@ -215,8 +215,8 @@ public class SelectorTranslatorTest extends UnitTestCase
 
       checkNoSubstitute("JMSType");
    }
-   
-   
+
+
 
    // Private -------------------------------------------------------------------------------------
 

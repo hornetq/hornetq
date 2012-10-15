@@ -34,7 +34,7 @@ public class SessionCommitMessage extends PacketImpl
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    /**
     * @param type
     */

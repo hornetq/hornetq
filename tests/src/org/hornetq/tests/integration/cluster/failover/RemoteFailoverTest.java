@@ -42,7 +42,7 @@ public class RemoteFailoverTest extends FailoverTest
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
 
@@ -82,7 +82,7 @@ public class RemoteFailoverTest extends FailoverTest
          }
          catch (Exception e)
          {
-            e.printStackTrace(); 
+            e.printStackTrace();
          }
       }
    }
@@ -92,13 +92,13 @@ public class RemoteFailoverTest extends FailoverTest
    {
       return new RemoteProcessHornetQServer(SharedLiveServerConfiguration.class.getName());
    }
-   
+
    @Override
    protected TestableServer createBackupServer()
    {
       return new SameProcessHornetQServer(HornetQServers.newHornetQServer(backupConfig));
    }
-   
+
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live) {
       Map<String, Object> params = null;
       if (live)
@@ -110,7 +110,7 @@ public class RemoteFailoverTest extends FailoverTest
       }
       return createTransportConfiguration(true, false, params);
    }
-   
+
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
    {

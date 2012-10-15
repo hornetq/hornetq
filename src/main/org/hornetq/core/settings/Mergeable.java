@@ -15,7 +15,7 @@ package org.hornetq.core.settings;
 
 /**
  * Used when merging objects together.
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface Mergeable<T>

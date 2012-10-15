@@ -1065,7 +1065,7 @@ public class ReplicationTest extends ServiceTestBase
       public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1074,7 +1074,7 @@ public class ReplicationTest extends ServiceTestBase
       public void lineUpContex(IOCompletion callback)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }

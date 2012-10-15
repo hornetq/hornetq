@@ -31,11 +31,11 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A PredefinedQueueTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 19 Jan 2009 15:44:52
  *
  *

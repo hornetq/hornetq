@@ -36,7 +36,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class PingStressTest extends ServiceTestBase
@@ -186,9 +186,9 @@ public class PingStressTest extends ServiceTestBase
                   Thread.sleep(PingStressTest.PING_INTERVAL * (threadNumber % 3));
 
                   session.close();
-                  
+
                   csf2.close();
-                  
+
                   locator.close();
                }
             }
@@ -225,9 +225,9 @@ public class PingStressTest extends ServiceTestBase
       {
          throw new Exception("Test Failed", e);
       }
-      
+
       csf1.close();
-      
+
       locator.close();
 
    }

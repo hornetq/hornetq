@@ -19,7 +19,7 @@ import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
  * A RandomFailoverSoakTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Oct 2008 17:33:05
  *
  *

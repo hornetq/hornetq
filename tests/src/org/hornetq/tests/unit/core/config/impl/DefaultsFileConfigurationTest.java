@@ -22,9 +22,9 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 
 /**
- * 
+ *
  * A DefaultsFileConfigurationTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *

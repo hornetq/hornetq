@@ -17,9 +17,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A ReattachSessionResponseMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

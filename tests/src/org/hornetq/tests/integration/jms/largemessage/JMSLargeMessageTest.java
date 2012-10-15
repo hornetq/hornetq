@@ -356,23 +356,23 @@ public class JMSLargeMessageTest extends JMSTestBase
          MessageProducer prod = session.createProducer(queue1);
 
          TextMessage m = session.createTextMessage();
-         
+
          StringBuffer buffer = new StringBuffer();
          while(buffer.length() < msgSize)
          {
             buffer.append(UUIDGenerator.getInstance().generateStringUUID());
          }
-         
+
          final String originalString = buffer.toString();
-         
+
          m.setText(originalString);
-         
+
          buffer = null;
 
          prod.send(m);
 
          conn.close();
-         
+
          validateNoFilesOnLargeDir(1);
 
          conn = cf.createConnection();
@@ -397,7 +397,7 @@ public class JMSLargeMessageTest extends JMSTestBase
             conn.close();
          }
       }
-      
+
       validateNoFilesOnLargeDir(0);
 
    }

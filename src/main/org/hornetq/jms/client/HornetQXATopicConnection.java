@@ -19,7 +19,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XATopicConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQXATopicConnection extends HornetQConnection implements XATopicConnection

@@ -97,7 +97,7 @@ public class RemoteProcessHornetQServerSupport
       }
    }
 
-   
+
    public static Process start(String serverClassName, final RemoteProcessHornetQServer remoteProcessHornetQServer) throws Exception
    {
       String[] vmArgs = new String[] {};
@@ -191,7 +191,7 @@ public class RemoteProcessHornetQServerSupport
       osw.write("INIT?\n");
       osw.flush();
    }
-   
+
    public static void crash(Process serverProcess) throws Exception
    {
       OutputStreamWriter osw = new OutputStreamWriter(serverProcess.getOutputStream());

@@ -33,7 +33,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A DivertTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 14 Jan 2009 14:05:01
  *
  *
@@ -73,7 +73,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -169,7 +169,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -976,11 +976,11 @@ public class DivertTest extends ServiceTestBase
       // for (int i = 0; i < numMessages; i++)
       // {
       // ClientMessage message = consumer1.receive(200);
-      //         
+      //
       // assertNotNull(message);
-      //         
+      //
       // assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-      //         
+      //
       // message.acknowledge();
       // }
 

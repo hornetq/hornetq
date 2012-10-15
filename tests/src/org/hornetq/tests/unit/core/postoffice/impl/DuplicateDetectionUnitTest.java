@@ -326,9 +326,9 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          return null;
       }
 
-      
-      
-      
+
+
+
       /* (non-Javadoc)
        * @see org.hornetq.core.paging.PagingManager#processReload()
        */

@@ -39,7 +39,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A HornetQConnectionFactoryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

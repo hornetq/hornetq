@@ -157,7 +157,7 @@ public class SelectorTest extends MessageTestBase
       @Path("two")
       public void two(Order order)
       {
-         twoOrder = order;   
+         twoOrder = order;
       }
 
 

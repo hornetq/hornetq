@@ -40,7 +40,7 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A FloodServerTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

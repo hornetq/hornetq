@@ -55,9 +55,9 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSServerControlImpl extends AbstractControl implements JMSServerControl, NotificationEmitter
 {
@@ -381,7 +381,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          configuration.setReconnectAttempts(reconnectAttempts);
          configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
          configuration.setGroupID(groupId);
-         
+
          server.createConnectionFactory(true, configuration, bindings);
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -396,7 +396,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
     * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    *  
+    *
     */
    public void createConnectionFactory(String name,
                                        boolean ha,
@@ -1004,7 +1004,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
       return array.toString();
    }
-   
+
    public String closeConnectionWithClientID(final String clientID) throws Exception
    {
       return server.getHornetQServer().destroyConnectionWithSessionMetadata("jms-client-id", clientID);

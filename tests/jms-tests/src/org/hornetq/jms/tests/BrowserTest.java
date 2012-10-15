@@ -53,7 +53,7 @@ public class BrowserTest extends JMSTestCase
 
    // Public ---------------------------------------------------------------------------------------
 
-   
+
    public void testCreateBrowserOnNullDestination() throws Exception
    {
       Connection conn = null;
@@ -115,7 +115,7 @@ public class BrowserTest extends JMSTestCase
          }
       }
    }
-   
+
    public void testBrowse2() throws Exception
    {
       Connection conn = null;
@@ -127,32 +127,32 @@ public class BrowserTest extends JMSTestCase
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
-         
+
          HornetQConnectionFactory cf = (HornetQConnectionFactory) getConnectionFactory();
 
          ClientSession coreSession = cf.getCoreFactory().createSession(true, true);
 
          coreSession.start();
-         
+
          ClientConsumer browser = coreSession.createConsumer("jms.queue.Queue1", true);
-       
+
          conn.start();
 
          Message m = session.createMessage();
          m.setIntProperty("cnt", 0);
          producer.send(m);
-         
-          
+
+
          assertNotNull(browser.receive(5000));
-         
+
          Thread.sleep(5000);
-         
+
          coreSession.close();
-         
-         
+
+
          System.out.println("Draining destination...");
          drainDestination(getConnectionFactory(), queue1);
-         
+
       }
       finally
       {
@@ -189,13 +189,13 @@ public class BrowserTest extends JMSTestCase
          m.setIntProperty("cnt", 0);
          producer.send(m);
          Message m2 = en.nextElement();
-         
+
          assertNotNull(m2);
-         
-         
+
+
          System.out.println("Draining destination...");
          drainDestination(getConnectionFactory(), queue1);
-         
+
       }
       finally
       {

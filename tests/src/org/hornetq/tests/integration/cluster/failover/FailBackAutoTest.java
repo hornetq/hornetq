@@ -70,7 +70,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
       super.tearDown();
    }
- 
+
    public void testAutoFailback() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -78,26 +78,26 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
       ((ServerLocatorInternal)locator).setIdentity("testAutoFailback");
-       
+
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
-      
+
       System.out.println(locator.getTopology().describe());
 
       MyListener listener = new MyListener(latch);
 
       session.addFailureListener(listener);
-      
+
       System.out.println(locator.getTopology().describe());
 
       liveServer.crash();
-      
+
       assertTrue(latch.await(5, TimeUnit.SECONDS));
-      
+
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection(null).getTopology().describe());
-      
+
       log.info("Server Crash!!!");
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -111,7 +111,7 @@ public class FailBackAutoTest extends FailoverTestBase
       verifyMessageOnServer(1, 1);
 
       System.out.println(locator.getTopology().describe());
-      
+
 
       session.removeFailureListener(listener);
 
@@ -123,9 +123,9 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("******* starting live server back");
       liveServer.start();
-      
+
       Thread.sleep(1000);
-      
+
       System.out.println("After failback: " + locator.getTopology().describe());
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
@@ -207,7 +207,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("restarting live node now");
       liveServer.start();
-      
+
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
@@ -333,7 +333,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
 
       ClientMessage message3 = consumer.receiveImmediate();
-      
+
       consumer.close();
 
       Assert.assertNull(message3);

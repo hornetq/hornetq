@@ -89,7 +89,7 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
-   
+
    public static final int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
@@ -160,7 +160,7 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_ID_CACHE_SIZE = 20000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-   
+
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
 
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
@@ -170,13 +170,13 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
 
    public static final int DEFAULT_CLUSTER_RECONNECT_ATTEMPTS = -1;
-   
+
    public static final long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-   
+
    public static final long DEFAULT_CLUSTER_CONNECTION_TTL = HornetQClient.DEFAULT_CONNECTION_TTL;
-   
+
    public static final double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-   
+
    public static final long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
@@ -194,13 +194,13 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
    public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
-   
+
    public static final boolean DEFAULT_MASK_PASSWORD = false;
 
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
-   
+
    protected String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
@@ -246,7 +246,7 @@ public class ConfigurationImpl implements Configuration
    protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
-   
+
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
@@ -270,7 +270,7 @@ public class ConfigurationImpl implements Configuration
    protected String pagingDirectory = ConfigurationImpl.DEFAULT_PAGING_DIR;
 
    // File related attributes -----------------------------------------------------------
-   
+
    protected int maxConcurrentPageIO = ConfigurationImpl.DEFAULT_MAX_CONCURRENT_PAGE_IO;
 
    protected String largeMessagesDirectory = ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR;
@@ -355,9 +355,9 @@ public class ConfigurationImpl implements Configuration
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
 
    private long failbackDelay = ConfigurationImpl.DEFAULT_FAILBACK_DELAY;
-   
+
    private boolean maskPassword = ConfigurationImpl.DEFAULT_MASK_PASSWORD;
-   
+
    private transient String passwordCodec;
 
    // Public -------------------------------------------------------------------------
@@ -534,7 +534,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.liveConnectorName = liveConnectorName;
    }
-   
+
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
@@ -634,7 +634,7 @@ public class ConfigurationImpl implements Configuration
    {
       bindingsDirectory = dir;
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.config.Configuration#getPageMaxConcurrentIO()
@@ -1461,7 +1461,7 @@ public class ConfigurationImpl implements Configuration
    {
       passwordCodec = codec;
    }
-   
+
    public String getPasswordCodec()
    {
       return passwordCodec;

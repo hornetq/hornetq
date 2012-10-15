@@ -28,7 +28,7 @@ import org.hornetq.utils.HornetQBufferInputStream;
 public class HornetQBufferInputStreamTest extends UnitTestCase
 {
 
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -46,16 +46,16 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
       {
          bytes[i] = getSamplebyte(i);
       }
-      
+
       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bytes);
       HornetQBufferInputStream is = new HornetQBufferInputStream(buffer);
-      
+
       // First read byte per byte
       for (int i = 0 ; i < 1024; i++)
       {
          assertEquals(getSamplebyte(i), is.read());
       }
-      
+
       // Second, read in chunks
       for (int i = 1; i < 10; i++)
       {
@@ -65,20 +65,20 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
          {
             assertEquals(getSamplebyte(i * 1024 + j), bytes[j]);
          }
-         
+
       }
-      
+
       assertEquals(-1, is.read());
-      
-      
+
+
       bytes = new byte[1024];
-      
+
       int sizeRead = is.read(bytes);
-      
+
       assertEquals(-1, sizeRead);
-      
+
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

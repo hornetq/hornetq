@@ -52,15 +52,15 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    private volatile long recordID = -1;
 
    private volatile boolean committed = false;
-   
+
    private volatile boolean useRedelivery = false;
 
    private volatile boolean rolledback = false;
 
    private AtomicInteger numberOfMessages = new AtomicInteger(0);
-   
+
    private AtomicInteger numberOfPersistentMessages = new AtomicInteger(0);
-   
+
    private List<Pair<PageSubscription, PagePosition>> lateDeliveries;
 
    // Static --------------------------------------------------------
@@ -120,7 +120,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       }
       numberOfMessages.incrementAndGet();
    }
-   
+
    public void increment(final int durableSize, final int nonDurableSize)
    {
       numberOfPersistentMessages.addAndGet(durableSize);
@@ -173,7 +173,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       storageManager.storePageTransaction(tx.getID(), this);
    }
 
-   /* 
+   /*
     * This is to be used after paging. We will update the PageTransactions until they get all the messages delivered. On that case we will delete the page TX
     * (non-Javadoc)
     * @see org.hornetq.core.paging.PageTransactionInfo#storeUpdate(org.hornetq.core.persistence.StorageManager, org.hornetq.core.transaction.Transaction, int)
@@ -182,7 +182,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       internalUpdatePageManager(storageManager, pagingManager, tx, 1);
    }
-   
+
    public void reloadUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int increment) throws Exception
    {
       UpdatePageTXOperation updt = internalUpdatePageManager(storageManager, pagingManager, tx, increment);
@@ -200,21 +200,21 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
                                             final int increment)
    {
       UpdatePageTXOperation pgtxUpdate = (UpdatePageTXOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION_UPDATE);
-      
+
       if (pgtxUpdate == null)
       {
          pgtxUpdate = new UpdatePageTXOperation(storageManager, pagingManager);
          tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION_UPDATE, pgtxUpdate);
          tx.addOperation(pgtxUpdate);
       }
-      
+
       tx.setContainsPersistent();
-      
+
       pgtxUpdate.addUpdate(this, increment);
-      
+
       return pgtxUpdate;
    }
-   
+
    public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager) throws Exception
    {
       storageManager.updatePageTransaction(this, 1);
@@ -223,7 +223,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          public void onError(int errorCode, String errorMessage)
          {
          }
-         
+
          public void done()
          {
             PageTransactionInfoImpl.this.onUpdate(1, storageManager, pagingManager);
@@ -235,14 +235,14 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          }
       });
    }
-   
-   
+
+
 
    public boolean isCommit()
    {
       return committed;
    }
-   
+
    public void setCommitted(final boolean committed)
    {
       this.committed = committed;
@@ -320,52 +320,52 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
-   
+
+
    static class UpdatePageTXOperation extends TransactionOperationAbstract
    {
       private HashMap<PageTransactionInfo, AtomicInteger> countsToUpdate = new HashMap<PageTransactionInfo, AtomicInteger>();
-      
+
       private boolean stored = false;
-      
+
       private final StorageManager storageManager;
-      
+
       private final PagingManager pagingManager;
-      
+
       public UpdatePageTXOperation(final StorageManager storageManager, final PagingManager pagingManager)
       {
          this.storageManager = storageManager;
          this.pagingManager = pagingManager;
       }
-      
+
       public void setStored()
       {
          stored = true;
       }
-      
+
       public void addUpdate(final PageTransactionInfo info, final int increment)
       {
          AtomicInteger counter = countsToUpdate.get(info);
-         
+
          if (counter == null)
          {
             counter = new AtomicInteger(0);
             countsToUpdate.put(info, counter);
          }
-         
+
          counter.addAndGet(increment);
       }
-      
+
       public void beforePrepare(Transaction tx) throws Exception
       {
          storeUpdates(tx);
       }
-      
+
       public void beforeCommit(Transaction tx) throws Exception
       {
          storeUpdates(tx);
       }
-      
+
       public void afterCommit(Transaction tx)
       {
          for (Map.Entry<PageTransactionInfo, AtomicInteger> entry : countsToUpdate.entrySet())
@@ -373,7 +373,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
             entry.getKey().onUpdate(entry.getValue().intValue(), storageManager, pagingManager);
          }
       }
-      
+
       private void storeUpdates(Transaction tx) throws Exception
       {
          if (!stored)
@@ -385,8 +385,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
             }
          }
       }
-      
 
-      
+
+
    }
 }

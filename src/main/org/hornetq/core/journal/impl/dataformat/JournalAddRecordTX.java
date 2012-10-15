@@ -75,7 +75,7 @@ public class JournalAddRecordTX extends JournalInternalRecord
       }
 
       buffer.writeInt(fileID);
-      
+
       buffer.writeByte(compactCount);
 
       buffer.writeLong(txID);

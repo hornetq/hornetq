@@ -34,7 +34,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS MessageConsumer.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
@@ -65,7 +65,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
    private final String selector;
 
    private final SimpleString autoDeleteQueueName;
-   
+
    private boolean closed = false;
 
    // Constructors --------------------------------------------------
@@ -147,7 +147,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
          if (autoDeleteQueueName != null)
          {
-            // If non durable subscriber need to delete subscription too  
+            // If non durable subscriber need to delete subscription too
             session.deleteQueue(autoDeleteQueueName);
          }
 
@@ -215,7 +215,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       try
       {
          ClientMessage message;
-         
+
          if (noWait)
          {
             message = consumer.receiveImmediate();

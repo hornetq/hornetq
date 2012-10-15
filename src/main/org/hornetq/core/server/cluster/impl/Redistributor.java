@@ -35,7 +35,7 @@ import org.hornetq.utils.Future;
  * A Redistributor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 8 Feb 2009 14:23:41
  *
  *
@@ -79,7 +79,7 @@ public class Redistributor implements Consumer
    {
       return null;
    }
-   
+
    public String debug()
    {
       return toString();
@@ -128,7 +128,7 @@ public class Redistributor implements Consumer
       {
          return HandleStatus.BUSY;
       }
-      
+
       final Transaction tx = new TransactionImpl(storageManager);
 
       final Pair<RoutingContext, ServerMessage> routingInfo = postOffice.redistribute(reference.getMessage(), queue, tx);
@@ -137,7 +137,7 @@ public class Redistributor implements Consumer
       {
          return HandleStatus.BUSY;
       }
-      
+
       if (!reference.getMessage().isLargeMessage())
       {
          routingInfo.getB().finishCopy();
@@ -158,15 +158,15 @@ public class Redistributor implements Consumer
                   routingInfo.getB().finishCopy();
 
                   postOffice.processRoute(routingInfo.getB(), routingInfo.getA(), false);
-      
+
                   ackRedistribution(reference, tx);
-                  
+
                   synchronized (Redistributor.this)
                   {
                      active = true;
-                     
+
                      count++;
-                     
+
                      queue.deliverAsync();
                   }
                }

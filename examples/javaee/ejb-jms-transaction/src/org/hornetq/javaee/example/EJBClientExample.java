@@ -24,7 +24,7 @@ import org.hornetq.javaee.example.server.SendMessageService;
 
 /**
  * An example showing how to invoke a EJB which sends a JMS message and update a JDBC table in the same transaction.
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

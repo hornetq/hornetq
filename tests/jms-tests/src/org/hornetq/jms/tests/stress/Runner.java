@@ -18,11 +18,11 @@ import javax.jms.Session;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A Runner.
- * 
+ *
  * Base class for running components of a stress test
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

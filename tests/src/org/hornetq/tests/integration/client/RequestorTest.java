@@ -92,20 +92,20 @@ public class RequestorTest extends UnitTestCase
    {
       final SimpleString key = RandomUtil.randomSimpleString();
       long value = RandomUtil.randomLong();
-      
+
       AddressSettings settings = new AddressSettings();
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
       settings.setMaxSizeBytes(1024);
       service.getAddressSettingsRepository().addMatch("#", settings);
 
       SimpleString requestAddress = new SimpleString("RequestAddress");
-      
+
       SimpleString requestQueue = new SimpleString("RequestAddress Queue");
 
       final ClientSession sessionRequest = sf.createSession(false, true, true);
-      
+
       sessionRequest.createQueue(requestAddress, requestQueue);
-       
+
       sessionRequest.start();
 
       ClientConsumer requestConsumer = sessionRequest.createConsumer(requestQueue);
@@ -119,13 +119,13 @@ public class RequestorTest extends UnitTestCase
             System.out.println(i);
          }
          final ClientSession session = sf.createSession(false, true, true);
-   
+
          session.start();
-   
+
          ClientRequestor requestor = new ClientRequestor(session, requestAddress);
          ClientMessage request = session.createMessage(false);
          request.putLongProperty(key, value);
-   
+
          ClientMessage reply = requestor.request(request, 5000);
          Assert.assertNotNull("reply was not received", reply);
          reply.acknowledge();
@@ -133,7 +133,7 @@ public class RequestorTest extends UnitTestCase
          requestor.close();
          session.close();
       }
-      
+
       sessionRequest.close();
 
    }

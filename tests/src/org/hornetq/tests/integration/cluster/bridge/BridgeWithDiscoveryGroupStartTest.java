@@ -45,7 +45,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A BridgeWithDiscoveryGroupStartTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  */
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 {

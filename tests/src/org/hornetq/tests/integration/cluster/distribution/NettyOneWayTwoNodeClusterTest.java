@@ -19,7 +19,7 @@ import org.hornetq.core.logging.Logger;
  * A NettyOneWayTwoNodeClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 2 Feb 2009 20:53:33
  *
  *

@@ -26,11 +26,11 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ClusterTopologyChangeMessage extends PacketImpl
 {
    protected boolean exit;
-   
+
    protected String nodeID;
-   
+
    protected Pair<TransportConfiguration, TransportConfiguration> pair;
-   
+
    protected boolean last;
 
    // Static --------------------------------------------------------
@@ -42,20 +42,20 @@ public class ClusterTopologyChangeMessage extends PacketImpl
       super(PacketImpl.CLUSTER_TOPOLOGY);
 
       this.nodeID = nodeID;
-      
+
       this.pair = pair;
-      
+
       this.last = last;
-      
+
       this.exit = false;
    }
-   
+
    public ClusterTopologyChangeMessage(final String nodeID)
    {
       super(PacketImpl.CLUSTER_TOPOLOGY);
-      
+
       this.exit = true;
-      
+
       this.nodeID = nodeID;
    }
 
@@ -83,12 +83,12 @@ public class ClusterTopologyChangeMessage extends PacketImpl
    {
       return pair;
    }
-   
+
    public boolean isLast()
    {
       return last;
    }
-   
+
    public boolean isExit()
    {
       return exit;

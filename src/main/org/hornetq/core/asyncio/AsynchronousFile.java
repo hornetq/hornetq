@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 import org.hornetq.api.core.HornetQException;
 
 /**
- * 
+ *
  * @author clebert.suconic@jboss.com
  *
  */
@@ -27,26 +27,26 @@ public interface AsynchronousFile
    void close() throws Exception;
 
    /**
-    * 
-    * Note: If you are using a native Linux implementation, maxIO can't be higher than what's defined on /proc/sys/fs/aio-max-nr, or you would get an error 
+    *
+    * Note: If you are using a native Linux implementation, maxIO can't be higher than what's defined on /proc/sys/fs/aio-max-nr, or you would get an error
     * @param fileName
     * @param maxIO The number of max concurrent asynchronous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
-    * @throws HornetQException 
+    * @throws HornetQException
     */
    void open(String fileName, int maxIO) throws HornetQException;
 
-   /** 
+   /**
     * Warning: This function will perform a synchronous IO, probably translating to a fstat call
-    * @throws HornetQException 
+    * @throws HornetQException
     * */
    long size() throws HornetQException;
 
    /** Any error will be reported on the callback interface */
    void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback);
-   
+
    /**
-    * Performs an internal direct write. 
-    * @throws HornetQException 
+    * Performs an internal direct write.
+    * @throws HornetQException
     */
    void writeInternal(long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
 

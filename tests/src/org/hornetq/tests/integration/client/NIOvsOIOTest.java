@@ -53,129 +53,129 @@ public class NIOvsOIOTest extends UnitTestCase
    {
       testPerf(true);
    }
-   
+
    public void testOIOPerf() throws Exception
    {
       testPerf(false);
    }
-   
+
    private void doTest(String dest) throws Exception
    {
-      
+
       final int numSenders = 1;
 
       final int numReceivers = 1;
-      
+
       final int numMessages = 20000;
-      
+
       Receiver[] receivers = new Receiver[numReceivers];
-      
+
       Sender[] senders = new Sender[numSenders];
-      
+
       List<ClientSessionFactory> factories = new ArrayList<ClientSessionFactory>();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+
       for (int i = 0; i < numReceivers; i++)
       {
 
          ClientSessionFactory sf = locator.createSessionFactory();
-         
+
          factories.add(sf);
 
          receivers[i] = new Receiver(i, sf, numMessages * numSenders, dest);
-         
+
          receivers[i].prepare();
-         
+
          receivers[i].start();
       }
-      
+
       for (int i = 0; i < numSenders; i++)
       {
          ClientSessionFactory sf = locator.createSessionFactory();
 
          factories.add(sf);
-         
+
          senders[i] = new Sender(i, sf, numMessages, dest);
-         
+
          senders[i].prepare();
       }
-      
+
       long start = System.currentTimeMillis();
-      
+
       for (int i = 0; i < numSenders; i++)
-      {         
+      {
          senders[i].start();
       }
-      
+
       for (int i = 0; i < numSenders; i++)
-      {         
+      {
          senders[i].join();
       }
-        
+
       for (int i = 0; i < numReceivers; i++)
-      {         
+      {
          receivers[i].await();
       }
-      
+
       long end = System.currentTimeMillis();
-      
+
       double rate = 1000 * (double)(numMessages * numSenders) / (end - start);
-      
+
       logAndSystemOut("Rate is " + rate + " msgs sec");
-      
+
       for (int i = 0; i < numSenders; i++)
-      {         
+      {
          senders[i].terminate();
       }
-      
+
       for (int i = 0; i < numReceivers; i++)
-      {         
+      {
          receivers[i].terminate();
       }
-      
+
       for (ClientSessionFactory sf: factories)
-      {      
+      {
          sf.close();
       }
-      
+
       locator.close();
    }
 
    private void testPerf(boolean nio) throws Exception
    {
       String acceptorFactoryClassName = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
-      
+
       Configuration conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
-      
+
       Map<String, Object> params = new HashMap<String, Object>();
-      
+
       params.put(TransportConstants.USE_NIO_PROP_NAME, nio);
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName, params));
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
-      
+
       AddressSettings addressSettings = new AddressSettings();
-      
+
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
-      
+
       addressSettings.setMaxSizeBytes(10 * 1024 * 1024);
-      
+
       final String dest = "test-destination";
-      
+
       HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
-      
+
       repos.addMatch(dest, addressSettings);
 
       server.start();
-      
+
       for (int i = 0; i < 2; i++)
       {
          doTest(dest);
-      }      
+      }
 
       server.stop();
    }
@@ -185,21 +185,21 @@ public class NIOvsOIOTest extends UnitTestCase
       private ClientSessionFactory sf;
 
       private int numMessages;
-      
+
       private String dest;
 
       private ClientSession session;
 
       private ClientProducer producer;
-      
+
       private int id;
 
       Sender(int id, ClientSessionFactory sf, final int numMessages, final String dest)
       {
          this.id = id;
-         
+
          this.sf = sf;
-         
+
          this.numMessages = numMessages;
 
          this.dest = dest;
@@ -215,7 +215,7 @@ public class NIOvsOIOTest extends UnitTestCase
       public void run()
       {
          ClientMessage msg = session.createMessage(false);
-         
+
          for (int i = 0; i < numMessages; i++)
          {
             try
@@ -226,12 +226,12 @@ public class NIOvsOIOTest extends UnitTestCase
             {
                log.error("Caught exception", e);
             }
-            
+
             //log.info(id + " sent message " + i);
-            
+
          }
       }
-      
+
       public void terminate() throws Exception
       {
          session.close();
@@ -249,17 +249,17 @@ public class NIOvsOIOTest extends UnitTestCase
       private ClientSession session;
 
       private ClientConsumer consumer;
-      
+
       private int id;
-      
+
       private String queueName;
 
       Receiver(int id, ClientSessionFactory sf, final int numMessages, final String dest)
       {
          this.id = id;
-         
+
          this.sf = sf;
-         
+
          this.numMessages = numMessages;
 
          this.dest = dest;
@@ -302,24 +302,24 @@ public class NIOvsOIOTest extends UnitTestCase
          {
             log.error("Caught exception", e);
          }
-         
+
          count++;
-         
+
          if (count == numMessages)
          {
             latch.countDown();
          }
-         
+
          //log.info(id + " got msg " + count);
-         
+
       }
-      
+
       public void terminate() throws Exception
       {
          consumer.close();
-         
+
          session.deleteQueue(queueName);
-         
+
          session.close();
       }
    }

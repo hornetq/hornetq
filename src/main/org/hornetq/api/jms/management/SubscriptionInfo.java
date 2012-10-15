@@ -19,7 +19,7 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * Helper class to create Java Objects from the
  * JSON serialization returned by {@link TopicControl#listAllSubscriptionsAsJSON()} and related methods.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class SubscriptionInfo
@@ -41,7 +41,7 @@ public class SubscriptionInfo
    private final int messageCount;
 
    private final int deliveringCount;
-   
+
    // Static --------------------------------------------------------
 
    /**
@@ -136,7 +136,7 @@ public class SubscriptionInfo
    {
       return messageCount;
    }
-   
+
    /**
     * Returns the number of messages currently delivered to this subscription.
     */

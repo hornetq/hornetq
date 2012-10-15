@@ -29,7 +29,7 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
  * A MockConnector
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Oct 22, 2008 11:23:18 AM
  *
  *

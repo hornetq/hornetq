@@ -35,7 +35,7 @@ import org.hornetq.tests.util.JMSTestBase;
 
 /**
  * A DivertAndACKClientTest
- * 
+ *
  * https://jira.jboss.org/jira/browse/HORNETQ-165
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

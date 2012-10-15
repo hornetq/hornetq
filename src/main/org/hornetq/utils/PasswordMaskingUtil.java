@@ -31,11 +31,11 @@ public class PasswordMaskingUtil
 {
    /*
     * Loading the codec class.
-    * 
+    *
     * @param codecDesc This parameter must have the following format:
-    * 
+    *
     * <full qualified class name>;key=value;key1=value1;...
-    * 
+    *
     * Where only <full qualified class name> is required. key/value pairs are optional
     */
    public static SensitiveDataCodec<String> getCodec(String codecDesc) throws HornetQException

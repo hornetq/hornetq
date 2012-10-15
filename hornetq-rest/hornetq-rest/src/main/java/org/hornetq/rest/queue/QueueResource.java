@@ -45,7 +45,7 @@ public class QueueResource extends DestinationResource
               .append("<atom:link rel=\"push-consumers\" href=\"").append(createPushConsumersLink(uriInfo)).append("\"/>")
 
          .append("</queue>");
-      
+
       Response.ResponseBuilder builder = Response.ok(msg.toString());
       setSenderLink(builder, uriInfo);
       setSenderWithIdLink(builder, uriInfo);

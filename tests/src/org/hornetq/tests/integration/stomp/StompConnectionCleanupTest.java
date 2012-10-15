@@ -37,7 +37,7 @@ public class StompConnectionCleanupTest extends StompTestBase
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
       sendFrame(frame);
       frame = receiveFrame(10000);
-      
+
       //We send and consumer a message to ensure a STOMP connection and server session is created
 
       Assert.assertTrue(frame.startsWith("CONNECTED"));
@@ -51,7 +51,7 @@ public class StompConnectionCleanupTest extends StompTestBase
       frame = receiveFrame(10000);
       Assert.assertTrue(frame.startsWith("MESSAGE"));
       Assert.assertTrue(frame.indexOf("destination:") > 0);
-    
+
       // Now we wait until the connection is cleared on the server, which will happen some time after ttl, since no data
       // is being sent
 
@@ -62,67 +62,67 @@ public class StompConnectionCleanupTest extends StompTestBase
          int connCount = server.getHornetQServer().getRemotingService().getConnections().size();
 
          int sessionCount = server.getHornetQServer().getSessions().size();
-         
+
          // All connections and sessions should be timed out including STOMP + JMS connection
 
          if (connCount == 0 && sessionCount == 0)
          {
             break;
          }
-         
+
          Thread.sleep(10);
 
          if (System.currentTimeMillis() - start > 10000)
          {
             fail("Timed out waiting for connection to be cleared up");
          }
-      }      
+      }
    }
-   
+
    public void testConnectionNotCleanedUp() throws Exception
    {
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
       sendFrame(frame);
       frame = receiveFrame(10000);
-      
+
       //We send and consumer a message to ensure a STOMP connection and server session is created
 
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 
       MessageConsumer consumer = session.createConsumer(queue);
-      
+
       long time = CONNECTION_TTL * 3;
-      
+
       long start = System.currentTimeMillis();
-      
+
       //Send msgs for an amount of time > connection_ttl make sure connection is not closed
       while (true)
       {
          //Send and receive a msg
-         
+
          frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World" + Stomp.NULL;
          sendFrame(frame);
 
          Message msg = consumer.receive(1000);
          assertNotNull(msg);
-                
+
          Thread.sleep(100);
-         
+
          if (System.currentTimeMillis() - start > time)
          {
             break;
          }
       }
-    
+
    }
-   
+
    @Override
    protected JMSServerManager createServer() throws Exception
    {
       JMSServerManager s = super.createServer();
-      
+
       s.getHornetQServer().getConfiguration().setConnectionTTLOverride(CONNECTION_TTL);
-      
+
       return s;
    }
 }

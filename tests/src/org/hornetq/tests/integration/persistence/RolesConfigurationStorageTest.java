@@ -57,7 +57,7 @@ public class RolesConfigurationStorageTest extends StorageManagerTestBase
    public void testStoreSecuritySettings() throws Exception
    {
       createStorage();
-      
+
 
       addSetting(new PersistedRoles("a#",
                             "a1",
@@ -111,7 +111,7 @@ public class RolesConfigurationStorageTest extends StorageManagerTestBase
       createStorage();
 
       checkSettings();
-      
+
       journal.stop();
 
       journal = null;

@@ -57,7 +57,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A PagingOrderTest.
- * 
+ *
  * PagingTest has a lot of tests already. I decided to create a newer one more specialized on Ordering and counters
  *
  * @author clebertsuconic
@@ -210,7 +210,7 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          session.close();
-         
+
          session = null;
 
          sf.close();
@@ -231,9 +231,9 @@ public class PagingOrderTest extends ServiceTestBase
             assertEquals(i, message.getIntProperty("id").intValue());
             message.acknowledge();
          }
-         
+
          session.close();
-         
+
          sf.close();
 
       }
@@ -886,12 +886,12 @@ public class PagingOrderTest extends ServiceTestBase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Topic topic = (Topic)context.lookup("/topic/TT");
       sess.createDurableSubscriber(topic, "t1");
-      
+
       MessageProducer prod = sess.createProducer(topic);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       TextMessage txt = sess.createTextMessage("TST");
       prod.send(txt);
-      
+
       PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.topic.TT"));
 
       assertEquals(1024 * 1024, store.getMaxSize());
@@ -913,11 +913,11 @@ public class PagingOrderTest extends ServiceTestBase
       assertEquals(AddressFullMessagePolicy.PAGE, settings.getAddressFullMessagePolicy());
 
       store = server.getPagingManager().getPageStore(new SimpleString("TT"));
-      
+
       conn.close();
 
       server.stop();
-      
+
       jmsServer.stop();
 
    }
@@ -958,18 +958,18 @@ public class PagingOrderTest extends ServiceTestBase
       conn.setClientID("tst");
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       javax.jms.Queue queue = (javax.jms.Queue)context.lookup("/queue/Q1");
-      
+
       MessageProducer prod = sess.createProducer(queue);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       BytesMessage bmt = sess.createBytesMessage();
-      
+
       bmt.writeBytes(new byte[1024]);
-      
+
       for (int i = 0 ; i < 500; i++)
       {
          prod.send(bmt);
       }
-      
+
       PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.queue.Q1"));
 
       assertEquals(100 * 1024, store.getMaxSize());
@@ -998,7 +998,7 @@ public class PagingOrderTest extends ServiceTestBase
 
 
       server.stop();
-      
+
       jmsServer.stop();
 
    }

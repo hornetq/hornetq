@@ -48,7 +48,7 @@ public interface Connection
     * @param batched whether the packet is allowed to batched for better performance
     */
    void write(HornetQBuffer buffer, boolean flush, boolean batched);
-   
+
    /**
     * writes the buffer to the connection with no flushing or batching
     *
@@ -67,24 +67,24 @@ public interface Connection
     * @return the remote address
     */
    String getRemoteAddress();
-   
+
    /**
     * Called periodically to flush any data in the batch buffer
     */
    void checkFlushBatchBuffer();
-   
+
    void addReadyListener(ReadyListener listener);
-   
+
    void removeReadyListener(ReadyListener listener);
-   
-   
+
+
    /**
-    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * Generates a {@link TransportConfiguration} to be use to connect to the
     * same target this is connect to
     * @return
     */
    TransportConfiguration getConnectorConfig();
-   
+
    HornetQPrincipal getDefaultHornetQPrincipal();
 
 }

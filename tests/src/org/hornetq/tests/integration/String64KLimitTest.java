@@ -29,13 +29,13 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * There is a bug in JDK1.3, 1.4 whereby writeUTF fails if more than 64K bytes are written
  * we need to work with all size of strings
- * 
+ *
  * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4806007
  * http://jira.jboss.com/jira/browse/JBAS-2641
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 6016 $
  *

@@ -20,7 +20,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 
 /**
- * 
+ *
  * This exammple shows how to run a HornetQ core client and server embedded in your
  * own application
  *

@@ -63,7 +63,7 @@ import org.hornetq.utils.LinkedListIterator;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 14 Jan 2009 14:05:01
  *
  *
@@ -264,8 +264,8 @@ public class BridgeTest extends ServiceTestBase
          {
          }
       }
-      
-      
+
+
       assertEquals(0, loadQueues(server0).size());
 
    }
@@ -275,12 +275,12 @@ public class BridgeTest extends ServiceTestBase
    {
       internalTestMessageLoss(false);
    }
-   
+
    public void testLostMessageLargeMessage() throws Exception
    {
       internalTestMessageLoss(true);
    }
-   
+
    /** This test will ignore messages
        What will cause the bridge to fail with a timeout
        The bridge should still recover the failure and reconnect on that case */
@@ -290,7 +290,7 @@ public class BridgeTest extends ServiceTestBase
       {
          public boolean ignoreSends = true;
          public CountDownLatch latch;
-         
+
          MyInterceptor(int numberOfIgnores)
          {
             latch = new CountDownLatch(numberOfIgnores);
@@ -313,11 +313,11 @@ public class BridgeTest extends ServiceTestBase
                return true;
             }
          }
-         
+
       }
-      
+
       MyInterceptor myInterceptor = new MyInterceptor(3);
-      
+
       HornetQServer server0 = null;
       HornetQServer server1 = null;
       ServerLocator locator = null;
@@ -369,7 +369,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
-         
+
          bridgeConfiguration.setCallTimeout(500);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -387,7 +387,7 @@ public class BridgeTest extends ServiceTestBase
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
          server1.start();
-         
+
          server1.getRemotingService().addInterceptor(myInterceptor);
 
          server0.start();
@@ -425,7 +425,7 @@ public class BridgeTest extends ServiceTestBase
 
             producer0.send(message);
          }
-         
+
          myInterceptor.latch.await();
          myInterceptor.ignoreSends = false;
 
@@ -478,8 +478,8 @@ public class BridgeTest extends ServiceTestBase
          {
          }
       }
-      
-      
+
+
       assertEquals(0, loadQueues(server0).size());
 
    }
@@ -660,7 +660,7 @@ public class BridgeTest extends ServiceTestBase
             ClientMessage message = consumer1.receive(2000);
 
             Assert.assertNotNull(message);
-            
+
             Assert.assertEquals("goat", message.getStringProperty(selectorKey));
 
             Assert.assertEquals(i, message.getObjectProperty(propKey));
@@ -672,9 +672,9 @@ public class BridgeTest extends ServiceTestBase
                readMessages(message);
             }
          }
-         
+
          session0.commit();
-         
+
          session1.commit();
 
          Assert.assertNull(consumer1.receiveImmediate());
@@ -711,13 +711,13 @@ public class BridgeTest extends ServiceTestBase
          }
 
       }
-      
+
       if (useFiles)
       {
          Map<Long, AtomicInteger> counters = loadQueues(server0);
          assertEquals(1, counters.size());
          Long key = counters.keySet().iterator().next();
-         
+
          AtomicInteger value = counters.get(key);
          assertNotNull(value);
          assertEquals(numMessages, counters.get(key).intValue());
@@ -882,7 +882,7 @@ public class BridgeTest extends ServiceTestBase
          }
 
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -1071,7 +1071,7 @@ public class BridgeTest extends ServiceTestBase
          }
 
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -1233,7 +1233,7 @@ public class BridgeTest extends ServiceTestBase
 
          }
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -1367,7 +1367,7 @@ public class BridgeTest extends ServiceTestBase
             public void run()
             {
                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(server0tc);
-               
+
                locator.setBlockOnDurableSend(false);
                locator.setBlockOnNonDurableSend(false);
 
@@ -1391,8 +1391,8 @@ public class BridgeTest extends ServiceTestBase
                      ClientMessage message = session.createMessage(true);
 
                      message.putIntProperty("seq", i);
-                     
-                     
+
+
                      if (i % 100 == 0)
                      {
                         message.setPriority((byte)(RandomUtil.randomPositiveInt() % 9));
@@ -1433,7 +1433,7 @@ public class BridgeTest extends ServiceTestBase
          {
             System.out.println("Repeat " + repeat);
             ArrayList<Thread> threads = new ArrayList<Thread>();
-   
+
             threads.add(new ConsumerThread());
             threads.add(new ProducerThread(numMessages / 2));
             threads.add(new ProducerThread(numMessages / 2));
@@ -1442,12 +1442,12 @@ public class BridgeTest extends ServiceTestBase
             {
                t.start();
             }
-   
+
             for (Thread t : threads)
             {
                t.join();
             }
-   
+
             assertEquals(0, errors.get());
          }
       }
@@ -1471,7 +1471,7 @@ public class BridgeTest extends ServiceTestBase
 
          }
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -1620,8 +1620,8 @@ public class BridgeTest extends ServiceTestBase
          {
          }
       }
-      
-      
+
+
       assertEquals(0, loadQueues(server0).size());
 
 
@@ -1729,7 +1729,7 @@ public class BridgeTest extends ServiceTestBase
 
             producer0.send(message);
          }
-         
+
          session0.commit();
 
          for (int i = 0; i < numMessages; i++)
@@ -1739,9 +1739,9 @@ public class BridgeTest extends ServiceTestBase
             Assert.assertNotNull(message);
 
             Assert.assertEquals(i, message.getObjectProperty(propKey));
-            
+
             HornetQBuffer buff = message.getBodyBuffer();
-            
+
             for (int posMsg = 0 ; posMsg < LARGE_MESSAGE_SIZE; posMsg++)
             {
                assertEquals(getSamplebyte(posMsg), buff.readByte());
@@ -1749,7 +1749,7 @@ public class BridgeTest extends ServiceTestBase
 
             message.acknowledge();
          }
-         
+
          session1.commit();
 
          Assert.assertNull(consumer1.receiveImmediate());
@@ -1761,8 +1761,8 @@ public class BridgeTest extends ServiceTestBase
          sf0.close();
 
          sf1.close();
-         
- 
+
+
       }
       finally
       {
@@ -1786,7 +1786,7 @@ public class BridgeTest extends ServiceTestBase
          {
          }
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
    }
 
@@ -1938,7 +1938,7 @@ public class BridgeTest extends ServiceTestBase
          {
          }
       }
-      
+
       assertEquals(0, loadQueues(server0).size());
 
 

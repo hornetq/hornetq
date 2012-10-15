@@ -44,7 +44,7 @@ public class RemoteProcessHornetQServer implements TestableServer
    {
       this.configurationClassName = configurationClassName;
    }
-   
+
    public boolean isInitialised()
    {
       if (serverProcess == null)
@@ -53,7 +53,7 @@ public class RemoteProcessHornetQServer implements TestableServer
       }
       try
       {
-         initLatch = new CountDownLatch(1);         
+         initLatch = new CountDownLatch(1);
          RemoteProcessHornetQServerSupport.isInitialised(serverProcess);
          boolean ok = initLatch.await(10, TimeUnit.SECONDS);
          if (ok)
@@ -118,7 +118,7 @@ public class RemoteProcessHornetQServer implements TestableServer
    {
       crash(true, sessions);
    }
-   
+
    public void crash(final boolean waitFailure, ClientSession... sessions) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(sessions.length);
@@ -144,12 +144,12 @@ public class RemoteProcessHornetQServer implements TestableServer
          RemoteProcessHornetQServerSupport.crash(serverProcess);
          serverProcess = null;
       }
-      
+
       if (waitFailure)
       {
          // Wait to be informed of failure
          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
-   
+
          Assert.assertTrue(ok);
       }
    }

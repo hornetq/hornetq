@@ -166,7 +166,7 @@ public class FilterTest extends UnitTestCase
 
       testBoolean("MyBoolean", true);
    }
-   
+
    public void testDifferentNullString() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
@@ -238,31 +238,31 @@ public class FilterTest extends UnitTestCase
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT IN ('foo','jms','test')"));
 
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testNOT_LIKEWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT LIKE '1_3'"));
 
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testIS_NOT_NULLWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp IS NOT NULL"));
-      
+
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testStringLike() throws Exception
    {
       // test LIKE operator with no wildcards
@@ -668,7 +668,7 @@ public class FilterTest extends UnitTestCase
       doPutStringProperty("MyString", "(?!abc)");
       Assert.assertTrue(filter.match(message));
    }
-   
+
    public void testStringLongToken() throws Exception
    {
       String largeString;

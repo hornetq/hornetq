@@ -26,7 +26,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A ConcurrentSessionCloseTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -80,7 +80,7 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
                   try
                   {
                      con.start();
-                     
+
                      Session session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
                      session.close();

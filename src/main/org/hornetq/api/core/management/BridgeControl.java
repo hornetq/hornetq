@@ -76,9 +76,9 @@ public interface BridgeControl extends HornetQComponentControl
     * Returns whether this bridge is using duplicate detection.
     */
    boolean isUseDuplicateDetection();
-   
+
    /**
-    * Returns whether this bridge is using high availability    
+    * Returns whether this bridge is using high availability
     */
    boolean isHA();
 }

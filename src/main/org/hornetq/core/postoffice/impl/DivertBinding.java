@@ -26,7 +26,7 @@ import org.hornetq.core.server.ServerMessage;
  * A LocalQueueBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 28 Jan 2009 12:42:23
  *
  *
@@ -125,7 +125,7 @@ public class DivertBinding implements Binding
    }
 
 
-   
+
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -149,7 +149,7 @@ public class DivertBinding implements Binding
    }
 
    public void close() throws Exception
-   {    
+   {
    }
 
 }

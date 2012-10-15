@@ -14,10 +14,10 @@
 /**
  * This package is used to locate resources and connectors along the cluster set
  * I - JCA Connection Factories or InBound MDBs will call HornetQRegistryBase::register(XARecoveryConfig)
- * II - For each XARecoveryConfig the RegistryBase will instantiate a ResourceDiscoveryUnit which will 
+ * II - For each XARecoveryConfig the RegistryBase will instantiate a ResourceDiscoveryUnit which will
  *      connect using that configuration and inform the Registry of any topology members
- * III - For each topology member found on the DiscoveryUnits, the RegistryBase will registry a HornetQResourceRecovery 
- *       that will exist per server 
+ * III - For each topology member found on the DiscoveryUnits, the RegistryBase will registry a HornetQResourceRecovery
+ *       that will exist per server
   */
 package org.hornetq.jms.server.recovery;
 

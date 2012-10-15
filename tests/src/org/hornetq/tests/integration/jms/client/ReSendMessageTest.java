@@ -228,7 +228,7 @@ public class ReSendMessageTest extends JMSTestBase
    public static class SomeSerializable implements Serializable
    {
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = -8576054940441747312L;
 

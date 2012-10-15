@@ -18,7 +18,7 @@ import java.util.Hashtable;
 import javax.naming.InitialContext;
 
 /**
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>10 Oct 2007
  *

@@ -125,7 +125,7 @@ public class InVMNodeManager extends NodeManager
    @Override
    public boolean isAwaitingFailback() throws Exception
    {
-      return state == FAILING_BACK; 
+      return state == FAILING_BACK;
    }
 
    @Override

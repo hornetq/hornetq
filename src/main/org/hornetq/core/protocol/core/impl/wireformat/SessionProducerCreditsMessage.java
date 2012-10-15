@@ -19,7 +19,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  */
 public class SessionProducerCreditsMessage extends PacketImpl
 {
@@ -28,7 +28,7 @@ public class SessionProducerCreditsMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int credits;
-   
+
    private SimpleString address;
 
    // Static --------------------------------------------------------
@@ -40,7 +40,7 @@ public class SessionProducerCreditsMessage extends PacketImpl
       super(PacketImpl.SESS_PRODUCER_CREDITS);
 
       this.credits = credits;
-      
+
       this.address = address;
    }
 

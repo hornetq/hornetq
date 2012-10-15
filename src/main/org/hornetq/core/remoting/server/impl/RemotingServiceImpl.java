@@ -209,9 +209,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
 
             ProtocolManager manager = protocolMap.get(protocol);
-            
+
             ClusterConnection clusterConnection = lookupClusterConnection(info);
-            
+
             Acceptor acceptor = factory.createAcceptor(clusterConnection,
                                                        info.getParams(),
                                                        new DelegatingBufferHandler(),
@@ -306,9 +306,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       HashSet<ConnectionEntry> connectionEntries = new HashSet<ConnectionEntry>();
-      
+
       connectionEntries.addAll(connections.values());
-      
+
       // Now we ensure that no connections will process any more packets after this method is complete
       // then send a disconnect packet
       for (ConnectionEntry entry : connectionEntries)
@@ -338,11 +338,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       threadPool.shutdown();
-      
+
       if (!criticalError)
       {
          boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-   
+
          if (!ok)
          {
             log.warn("Timed out waiting for remoting thread pool to terminate");
@@ -501,23 +501,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private ClusterConnection lookupClusterConnection(TransportConfiguration acceptorConfig)
    {
       String clusterConnectionName = (String)acceptorConfig.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
-      
+
       ClusterConnection clusterConnection = null;
       if (clusterConnectionName != null)
       {
          clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
       }
-      
+
       // if not found we will still use the default name, even if a name was provided
       if (clusterConnection == null)
       {
          clusterConnection = clusterManager.getDefaultConnection(acceptorConfig);
       }
-      
+
       return clusterConnection;
    }
 
@@ -664,7 +664,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-   
+
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()

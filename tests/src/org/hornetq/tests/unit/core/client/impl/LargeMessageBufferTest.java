@@ -524,7 +524,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testStreamDataWaitCompletionOnInCompleteBuffer() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
-      
+
 
       class FakeOutputStream extends OutputStream
       {
@@ -533,9 +533,9 @@ public class LargeMessageBufferTest extends UnitTestCase
          {
          }
       }
-      
+
       outBuffer.setOutputStream(new FakeOutputStream());
-      
+
       long time = System.currentTimeMillis();
       try
       {
@@ -545,7 +545,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       catch (HornetQException e)
       {
       }
-      
+
       assertTrue("It was supposed to wait at least 1 second", System.currentTimeMillis() - time > 1000);
    }
 
@@ -553,7 +553,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testStreamDataWaitCompletionOnSlowComingBuffer() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
-      
+
 
       class FakeOutputStream extends OutputStream
       {
@@ -562,9 +562,9 @@ public class LargeMessageBufferTest extends UnitTestCase
          {
          }
       }
-      
+
       outBuffer.setOutputStream(new FakeOutputStream());
-      
+
       Thread sender = new Thread()
       {
          public void run()
@@ -583,7 +583,7 @@ public class LargeMessageBufferTest extends UnitTestCase
             }
          }
       };
-      
+
       sender.start();
       outBuffer.waitCompletion(0);
       sender.join();
@@ -644,9 +644,9 @@ public class LargeMessageBufferTest extends UnitTestCase
       for (int i = 100; i < byteArray.length; i += 10)
       {
          byte readBytes[] = new byte[10];
-         
+
          int size = is.read(readBytes);
-         
+
          for (int j = 0; j < size; j++)
          {
             assertEquals(getSamplebyte(i + j), readBytes[j]);
@@ -946,7 +946,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void individualAcknowledge(ClientMessage message) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }

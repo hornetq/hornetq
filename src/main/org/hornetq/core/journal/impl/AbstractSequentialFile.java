@@ -104,7 +104,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
       file.delete();
    }
-   
+
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       log.debug("Copying "  + this + " as " + newFileName);
@@ -112,15 +112,15 @@ public abstract class AbstractSequentialFile implements SequentialFile
       {
          newFileName.open();
       }
-      
+
       if (!isOpen())
       {
          this.open();
       }
-      
-      
+
+
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-      
+
       for (;;)
       {
          buffer.rewind();

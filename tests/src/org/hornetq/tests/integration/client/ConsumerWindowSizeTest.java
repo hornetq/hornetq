@@ -916,17 +916,17 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       internalTestFlowControlOnRollback(false);
    }
-   
+
    public void testFlowControlLargeMessage() throws Exception
    {
       internalTestFlowControlOnRollback(true);
    }
-   
+
    private void internalTestFlowControlOnRollback(final boolean isLargeMessage) throws Exception
    {
 
       HornetQServer server = createServer(false, isNetty());
-      
+
       AddressSettings settings = new AddressSettings();
       settings.setMaxDeliveryAttempts(-1);
       server.getAddressSettingsRepository().addMatch("#", settings);
@@ -940,7 +940,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          server.start();
 
          locator.setConsumerWindowSize(300000);
-         
+
          if (isLargeMessage)
          {
             // something to ensure we are using large messages
@@ -959,10 +959,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          SimpleString ADDRESS = new SimpleString("some-queue");
 
          session.createQueue(ADDRESS, ADDRESS, true);
-         
-         
+
+
          ClientProducer producer = session.createProducer(ADDRESS);
-         
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = session.createMessage(true);
@@ -970,11 +970,11 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             msg.getBodyBuffer().writeBytes(new byte[1024]);
             producer.send(msg);
          }
-         
+
          session.commit();
-         
+
          ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
-         
+
          session.start();
 
          for (int repeat = 0; repeat < 100; repeat ++)
@@ -987,15 +987,15 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                Thread.sleep(10);
             }
             assertTrue(consumer.getBufferSize() >= 10);
-            
+
             ClientMessage msg = consumer.receive(500);
             msg.getBodyBuffer().readByte();
             assertNotNull(msg);
             msg.acknowledge();
             session.rollback();
          }
-         
-         
+
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);

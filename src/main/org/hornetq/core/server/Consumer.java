@@ -16,9 +16,9 @@ package org.hornetq.core.server;
 import org.hornetq.core.filter.Filter;
 
 /**
- * 
+ *
  * A ClientConsumer
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -27,6 +27,6 @@ public interface Consumer
    HandleStatus handle(MessageReference reference) throws Exception;
 
    Filter getFilter();
-   
+
    String debug();
 }

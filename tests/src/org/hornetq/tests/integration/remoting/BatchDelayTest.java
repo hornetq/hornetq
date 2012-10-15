@@ -28,7 +28,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A BatchDelayTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -43,7 +43,7 @@ public class BatchDelayTest extends ServiceTestBase
    private static final Logger log = Logger.getLogger(BatchDelayTest.class);
 
    private static final long DELAY = 500;
-   
+
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
@@ -157,7 +157,7 @@ public class BatchDelayTest extends ServiceTestBase
       msg = cons.receive(10000);
 
       assertNotNull(msg);
-      
+
       msg.acknowledge();
 
       sf.close();

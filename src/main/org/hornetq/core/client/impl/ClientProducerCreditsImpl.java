@@ -34,7 +34,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final int windowSize;
 
    private volatile boolean closed;
-   
+
    private boolean blocked;
 
    private final SimpleString address;
@@ -59,7 +59,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore = new Semaphore(0, false);
    }
-   
+
    public void init()
    {
       // We initial request twice as many credits as we request in subsequent requests

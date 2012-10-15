@@ -25,9 +25,9 @@ public class SubscribeClusterTopologyUpdatesMessageV2 extends SubscribeClusterTo
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private int clientVersion;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -46,8 +46,8 @@ public class SubscribeClusterTopologyUpdatesMessageV2 extends SubscribeClusterTo
 
    // Public --------------------------------------------------------
 
-   
-   
+
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

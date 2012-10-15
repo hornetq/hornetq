@@ -31,9 +31,9 @@ public class TopicConnectionTest extends PubSubTestCase
 {
 
    /**
-    * Test that a call to <code>setClientID</code> will throw an 
+    * Test that a call to <code>setClientID</code> will throw an
     * <code>IllegalStateException</code> if a client ID has already been set
-    * see JMS javadoc 
+    * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
     */
    public void testSetClientID_1()
@@ -71,11 +71,11 @@ public class TopicConnectionTest extends PubSubTestCase
       }
    }
 
-   /** 
-    * Test that a call to <code>setClientID</code> can occur only after connection creation 
+   /**
+    * Test that a call to <code>setClientID</code> can occur only after connection creation
     * and before any other action on the connection.
     * <em>This test is relevant only if the ID is set by the JMS client</em>
-    * see JMS javadoc 
+    * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
     */
    public void testSetClientID_2()
@@ -114,13 +114,13 @@ public class TopicConnectionTest extends PubSubTestCase
    }
 
    /**
-    * Test that if another connection with the same clientID is already running when 
+    * Test that if another connection with the same clientID is already running when
     * <code>setClientID</code> is called, the JMS provider should detect the duplicate
     * ID and throw an <code>InvalidClientIDException</code>
     * <em>This test is relevant only if the ID is set by the JMS client</em>
-    * see JMS javadoc 
+    * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
-    * 
+    *
     *... This test is not valid... as getClientID is caleld before setClientID
     */
    /*public void testSetClientID_3()
@@ -156,7 +156,7 @@ public class TopicConnectionTest extends PubSubTestCase
       }
    }*/
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

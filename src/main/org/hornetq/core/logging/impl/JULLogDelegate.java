@@ -18,9 +18,9 @@ import java.util.logging.Level;
 import org.hornetq.spi.core.logging.LogDelegate;
 
 /**
- * 
+ *
  * A {@link LogDelegate} which delegates to java.util.logging
- * 
+ *
  * @author <a href="kenny.macleod@kizoom.com">Kenny MacLeod</a>
  *
  */

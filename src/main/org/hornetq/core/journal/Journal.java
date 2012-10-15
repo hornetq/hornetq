@@ -18,11 +18,11 @@ import java.util.List;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- * 
+ *
  * Most methods on the journal provide a blocking version where you select the sync mode and a non blocking mode where you pass a completion callback as a parameter.
- * 
+ *
  * Notice also that even on the callback methods it's possible to pass the sync mode. That will only make sense on the NIO operations.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -84,13 +84,13 @@ public interface Journal extends HornetQComponent
     */
    void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception;
 
-   /** 
-    * 
-    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
+   /**
+    *
+    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction
     *     back to a state it could be committed. </p>
-    * 
+    *
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
-    * 
+    *
     * @param txID
     * @param transactionData - extra user data for the prepare
     * @throws Exception
@@ -115,7 +115,7 @@ public interface Journal extends HornetQComponent
     *  This is only useful if you're using the journal but not interested on the current data.
     *  Useful in situations where the journal is being replicated, copied... etc. */
    JournalLoadInformation loadInternalOnly() throws Exception;
-   
+
    void lineUpContex(IOCompletion callback);
 
    JournalLoadInformation load(List<RecordInfo> committedRecords,
@@ -125,7 +125,7 @@ public interface Journal extends HornetQComponent
    int getAlignment() throws Exception;
 
    int getNumberOfRecords();
-   
+
    int getUserVersion();
 
    void perfBlast(int pages) throws Exception;

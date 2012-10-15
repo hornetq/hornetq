@@ -65,9 +65,9 @@ import org.hornetq.utils.PriorityLinkedListImpl;
 
 /**
  * Implementation of a Queue
- * 
+ *
  * Completely non blocking between adding to queue and delivering to consumers.
- * 
+ *
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -87,8 +87,8 @@ public class QueueImpl implements Queue
    public static final int MAX_DELIVERIES_IN_LOOP = 1000;
 
    public static final int CHECK_QUEUE_SIZE_PERIOD = 100;
-   
-   /** If The system gets slow for any reason, this is the maximum time an Delivery or 
+
+   /** If The system gets slow for any reason, this is the maximum time an Delivery or
        or depage executor should be hanging on
    */
    private static final int DELIVERY_TIMEOUT = 1000;
@@ -168,35 +168,35 @@ public class QueueImpl implements Queue
    private volatile int consumerWithFilterCount;
 
    private final Runnable concurrentPoller = new ConcurrentPoller();
-   
+
    private boolean internalQueue;
 
    private volatile boolean checkDirect;
 
    private volatile boolean directDeliver = true;
-   
+
    public String debug()
    {
       StringWriter str = new StringWriter();
       PrintWriter out = new PrintWriter(str);
-      
+
       out.println("queueMemorySize=" + queueMemorySize);
-      
+
       for (ConsumerHolder holder : consumerList)
       {
          out.println("consumer: " + holder.consumer.debug());
       }
-      
+
       for (MessageReference reference : intermediateMessageReferences)
       {
          out.print("Intermediate reference:" + reference);
       }
-      
+
       if (intermediateMessageReferences.isEmpty())
       {
          out.println("No intermediate references");
       }
-      
+
       boolean foundRef = false;
       Iterator<MessageReference> iter = messageReferences.iterator();
       while (iter.hasNext())
@@ -204,16 +204,16 @@ public class QueueImpl implements Queue
          foundRef = true;
          out.println("reference = " + iter.next());
       }
-      
+
       if (!foundRef)
       {
          out.println("No permanent references on queue");
       }
-      
-      
-      
+
+
+
       System.out.println(str.toString());
-      
+
       return str.toString();
    }
 
@@ -310,7 +310,7 @@ public class QueueImpl implements Queue
                // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
                // is empty
                // We don't want to evaluate that on every delivery since that's too expensive
-   
+
                checkDirect = true;
             }
          }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
@@ -400,9 +400,9 @@ public class QueueImpl implements Queue
       {
          addHead(ref);
       }
-      
+
       resetAllIterators();
-      
+
       deliverAsync();
    }
 
@@ -462,7 +462,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       // We only add queueMemorySize if not being delivered directly
       queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
 
@@ -483,15 +483,15 @@ public class QueueImpl implements Queue
          }
          scheduleDepage(false);
       }
-      
+
       if (isTrace)
       {
          log.trace("Force delivery deliverying async");
       }
-      
+
       deliverAsync();
    }
-   
+
    public void deliverAsync()
    {
       try
@@ -559,7 +559,7 @@ public class QueueImpl implements Queue
       {
          log.warn("Couldn't finish waiting executors. Try increasing the thread pool size", new Exception ("trace"));
       }
-      
+
       return ok;
    }
 
@@ -569,7 +569,7 @@ public class QueueImpl implements Queue
       {
          log.debug(this + " adding consumer " + consumer);
       }
-      
+
       cancelRedistributor();
 
       if (consumer.getFilter() != null)
@@ -822,7 +822,7 @@ public class QueueImpl implements Queue
    {
       final CountDownLatch latch = new CountDownLatch(1);
       final AtomicLong count = new AtomicLong(0);
-      
+
       getExecutor().execute(new Runnable()
       {
          public void run()
@@ -831,7 +831,7 @@ public class QueueImpl implements Queue
             latch.countDown();
          }
       });
-      
+
       try
       {
          if (!latch.await(10, TimeUnit.SECONDS))
@@ -843,10 +843,10 @@ public class QueueImpl implements Queue
       {
          log.warn(e.getMessage(), e);
       }
-      
+
       return count.get();
    }
-   
+
    public long getInstantMessageCount()
    {
       synchronized (this)
@@ -1015,7 +1015,7 @@ public class QueueImpl implements Queue
    {
       final CountDownLatch latch = new CountDownLatch(1);
       final AtomicLong count = new AtomicLong(0);
-      
+
       getExecutor().execute(new Runnable()
       {
          public void run()
@@ -1024,7 +1024,7 @@ public class QueueImpl implements Queue
             latch.countDown();
          }
       });
-      
+
       try
       {
          if (!latch.await(10, TimeUnit.SECONDS))
@@ -1036,10 +1036,10 @@ public class QueueImpl implements Queue
       {
          log.warn(e.getMessage(), e);
       }
-      
+
       return count.get();
   }
-   
+
    public long getInstantMessagesAdded()
    {
       synchronized (this)
@@ -1077,11 +1077,11 @@ public class QueueImpl implements Queue
             if (ref.isPaged() && pageIterator == null)
             {
                // this means the queue is being removed
-               // hence paged references are just going away through 
+               // hence paged references are just going away through
                // page cleanup
                continue;
             }
-            
+
             if (filter == null || filter.match(ref.getMessage()))
             {
                deliveringCount.incrementAndGet();
@@ -1099,8 +1099,8 @@ public class QueueImpl implements Queue
             acknowledge(tx, messageReference);
             count++;
          }
-         
-         
+
+
          if (pageIterator != null)
          {
             // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
@@ -1108,7 +1108,7 @@ public class QueueImpl implements Queue
             {
                PagedReference reference = pageIterator.next();
                pageIterator.remove();
-   
+
                if (filter == null || filter.match(reference.getMessage()))
                {
                   count++;
@@ -1122,8 +1122,8 @@ public class QueueImpl implements Queue
          }
 
          tx.commit();
-         
-         
+
+
          if (filter != null && pageIterator != null)
          {
             scheduleDepage(false);
@@ -1136,8 +1136,8 @@ public class QueueImpl implements Queue
          iter.close();
       }
    }
-   
-   
+
+
    public void destroyPaging() throws Exception
    {
 
@@ -1148,7 +1148,7 @@ public class QueueImpl implements Queue
          pageSubscription = null;
          pageIterator = null;
       }
-      
+
    }
 
    public synchronized boolean deleteReference(final long messageID) throws Exception
@@ -1252,7 +1252,7 @@ public class QueueImpl implements Queue
             synchronized (QueueImpl.this)
             {
                LinkedListIterator<MessageReference> iter = iterator();
-   
+
                try
                {
                   boolean expired = false;
@@ -1277,7 +1277,7 @@ public class QueueImpl implements Queue
                         log.warn("Error expiring reference " + ref, e);
                      }
                   }
-                  
+
                   // If empty we need to schedule depaging to make sure we would depage expired messages as well
                   if ((!hasElements || expired) && pageIterator != null && pageIterator.hasNext())
                   {
@@ -1827,7 +1827,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending) 
+      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
       {
          scheduleDepage(false);
       }
@@ -1879,17 +1879,17 @@ public class QueueImpl implements Queue
       }
 
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
-      
-      
+
+
       long timeout = System.currentTimeMillis() + DELIVERY_TIMEOUT;
 
       if (isTrace)
       {
          log.trace("QueueMemorySize before depage on queue=" + this.getName() + " is " + queueMemorySize.get());
       }
-      
+
       this.directDeliver = false;
-      
+
       int depaged = 0;
       while (timeout > System.currentTimeMillis() && queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
@@ -1902,14 +1902,14 @@ public class QueueImpl implements Queue
          addTail(reference, false);
          pageIterator.remove();
       }
-      
+
       if (log.isDebugEnabled())
       {
          if (depaged == 0 && queueMemorySize.get() >= maxSize)
          {
             log.debug("Couldn't depage any message as the maxSize on the queue was achieved. " + "There are too many pending messages to be acked in reference to the page configuration");
          }
-          
+
          if (log.isDebugEnabled())
          {
             log.debug("Queue Memory Size after depage on queue=" + this.getName() +
@@ -1919,14 +1919,14 @@ public class QueueImpl implements Queue
                       maxSize +
                       ". Depaged " +
                       depaged +
-                      " messages, pendingDelivery=" +  messageReferences.size() + ", intermediateMessageReferences= " + intermediateMessageReferences.size() + 
+                      " messages, pendingDelivery=" +  messageReferences.size() + ", intermediateMessageReferences= " + intermediateMessageReferences.size() +
                       ", queueDelivering=" + deliveringCount.get());
-            
+
          }
       }
-      
+
       deliverAsync();
-      
+
       if (depaged>0 && scheduleExpiry)
       {
          // This will just call an executor
@@ -1966,7 +1966,7 @@ public class QueueImpl implements Queue
          // no DLQ check on internal queues
          return true;
       }
-      
+
       if (!internalQueue && message.isDurable() && durable && !reference.isPaged())
       {
          storageManager.updateDeliveryCount(reference);
@@ -1999,7 +1999,7 @@ public class QueueImpl implements Queue
                log.trace("Setting redeliveryDelay=" + redeliveryDelay + " on reference=" + reference);
             }
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
-            
+
             if (!reference.isPaged() && message.isDurable() && durable)
             {
                storageManager.updateScheduledDeliveryTime(reference);
@@ -2078,12 +2078,12 @@ public class QueueImpl implements Queue
       }
    }
 
-   
+
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
       sendToDeadLetterAddress(ref, addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress());
    }
-   
+
    private void sendToDeadLetterAddress(final MessageReference ref, final  SimpleString deadLetterAddress) throws Exception
    {
       if (deadLetterAddress != null)
@@ -2299,7 +2299,7 @@ public class QueueImpl implements Queue
             // ack isn't committed, then the server crashes and on
             // recovery the message is deleted even though the other ack never committed
 
-            // also note then when this happens as part of a transaction it is the tx commit of the ack that is 
+            // also note then when this happens as part of a transaction it is the tx commit of the ack that is
             // important not this
 
             // Also note that this delete shouldn't sync to disk, or else we would build up the executor's queue
@@ -2368,7 +2368,7 @@ public class QueueImpl implements Queue
       public void afterRollback(final Transaction tx)
       {
          Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
-         
+
          long timeBase = System.currentTimeMillis();
 
          for (MessageReference ref : refsToAck)
@@ -2490,12 +2490,12 @@ public class QueueImpl implements Queue
    private class DepageRunner implements Runnable
    {
       final boolean scheduleExpiry;
-      
+
       public DepageRunner(boolean scheduleExpiry)
       {
          this.scheduleExpiry = scheduleExpiry;
       }
-      
+
       public void run()
       {
          try
