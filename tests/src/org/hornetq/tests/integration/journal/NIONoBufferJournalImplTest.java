@@ -21,9 +21,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
 
 /**
- * 
+ *
  * A RealJournalImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

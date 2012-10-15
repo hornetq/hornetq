@@ -149,7 +149,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       if (server != null && server.isStarted())
       {
          server.stop();

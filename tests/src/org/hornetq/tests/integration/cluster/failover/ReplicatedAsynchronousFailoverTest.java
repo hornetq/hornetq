@@ -40,7 +40,7 @@ public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected TestableServer createLiveServer()
    {
       return new SameProcessHornetQServer(createServer(true, liveConfig));
@@ -50,7 +50,7 @@ public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
    {
       return new SameProcessHornetQServer(createServer(true, backupConfig));
    }
-   
+
    @Override
    protected void createConfigs() throws Exception
    {
@@ -63,7 +63,7 @@ public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
       config1.setSharedStore(false);
       config1.setBackup(true);
       backupServer = createBackupServer();
-      
+
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
@@ -73,7 +73,7 @@ public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
       liveServer = createLiveServer();
-      
+
       backupServer.start();
       liveServer.start();
    }

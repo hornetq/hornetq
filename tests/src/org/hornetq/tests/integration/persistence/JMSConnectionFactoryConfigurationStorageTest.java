@@ -65,15 +65,15 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
    {
 
       createJMSStorage();
-      
+
       List<String> transportConfigs = new ArrayList<String>();
-      
+
       for (int i = 0 ; i < 5; i++)
       {
          transportConfigs.add("c1-" + i);
          transportConfigs.add("c2-" + i);
       }
-      
+
 
       ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false,  transportConfigs);
 
@@ -88,11 +88,11 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       assertEquals(1, cfs.size());
 
       assertEquals("some-name", cfs.get(0).getName());
-      
+
       PersistedConnectionFactory cf1 = cfs.get(0);
-      
+
       assertEquals(10, cf1.getConfig().getConnectorNames().size());
-      
+
       List<String> configs = cf1.getConfig().getConnectorNames();
       for (int i = 0, j = 0; i < 10; i+=2, j++)
       {
@@ -119,19 +119,19 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       config.encode(buffer);
 
       assertEquals(size, buffer.writerIndex());
-      
+
       PersistedConnectionFactory persistedCF = new PersistedConnectionFactory(config);
-      
+
       size = persistedCF.getEncodeSize();
 
       buffer = HornetQBuffers.fixedBuffer(size);
-      
+
       persistedCF.encode(buffer);
-      
+
       assertEquals(size, buffer.writerIndex());
-      
+
    }
-   
+
    public void testSettingsWithConnectorConfigs() throws Exception
    {
 
@@ -157,7 +157,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       connectors.add(new Pair<String, String>(RandomUtil.randomString(), null));
       //config.setConnectorNames(connectors);
       config.setCallTimeout(RandomUtil.randomPositiveLong());
-      
+
       addSetting(new PersistedConnectionFactory(config));
 
       jmsJournal.stop();

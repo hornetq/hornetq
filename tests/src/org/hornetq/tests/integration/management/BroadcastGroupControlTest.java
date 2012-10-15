@@ -36,7 +36,7 @@ import org.hornetq.utils.json.JSONObject;
  * A AcceptorControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  *
@@ -107,7 +107,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(1, array.length());
       Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0), array.getString(0));
-      
+
       Assert.assertTrue(broadcastGroupControl.isStarted());
    }
 

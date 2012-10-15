@@ -45,7 +45,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    private final ReferenceQueue<V> refQueue = new ReferenceQueue<V>();
 
    private final Map<K, AggregatedSoftReference> mapDelegate = new HashMap<K, AggregatedSoftReference>();
-   
+
    private final AtomicLong usedCounter = new AtomicLong(0);
 
    private int maxElements;
@@ -190,18 +190,18 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
                usedReferences.add(ref);
             }
          }
-         
+
          for (AggregatedSoftReference ref : usedReferences)
          {
             if (ref.used > 0)
             {
                Object removed = mapDelegate.remove(ref.key);
-               
+
                if (isTrace)
                {
                   log.trace("Removing " + removed + " with id = " + ref.key + " from SoftValueHashMap");
                }
-   
+
                if (mapDelegate.size() <= maxElements)
                {
                   break;
@@ -276,7 +276,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    }
 
    /**
-    * 
+    *
     * @see java.util.Map#clear()
     */
    public void clear()
@@ -401,7 +401,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          super(referent, refQueue);
          this.key = key;
       }
-      
+
       /* (non-Javadoc)
        * @see java.lang.Object#toString()
        */
@@ -411,7 +411,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          return "AggregatedSoftReference [key=" + key + ", used=" + used + "]";
       }
 
-      
+
    }
 
    static final class EntryElement<K, V> implements Map.Entry<K, V>

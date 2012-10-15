@@ -33,9 +33,9 @@ import org.hornetq.tests.util.RandomUtil;
  * A LargeMessageCompressTest
  *
  * Just extend the LargeMessageTest
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- * 
+ *
  *
  */
 public class LargeMessageCompressTest extends LargeMessageTest
@@ -85,7 +85,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
-         
+
          for (int i = 0 ; i < messageSize; i++)
          {
             byte b = msg1.getBodyBuffer().readByte();
@@ -152,17 +152,17 @@ public class LargeMessageCompressTest extends LargeMessageTest
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
-         
+
          String testDir = this.getTestDir();
          File testFile = new File(testDir, "async_large_message");
          FileOutputStream output = new FileOutputStream(testFile);
-         
+
          msg1.setOutputStream(output);
 
-         msg1.waitOutputStreamCompletion(0);      
-         
+         msg1.waitOutputStreamCompletion(0);
+
          output.close();
-         
+
          msg1.acknowledge();
 
          session.commit();
@@ -233,15 +233,15 @@ public class LargeMessageCompressTest extends LargeMessageTest
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
-         
+
          String testDir = this.getTestDir();
          File testFile = new File(testDir, "async_large_message");
          FileOutputStream output = new FileOutputStream(testFile);
 
          msg1.saveToOutputStream(output);
-         
+
          msg1.acknowledge();
-         
+
          output.close();
 
          session.commit();
@@ -258,7 +258,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
             assertEquals("position = "  + i, getSamplebyte(i), b);
          }
          input.close();
-         
+
          testFile.delete();
          validateNoFilesOnLargeDir();
       }
@@ -303,7 +303,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
          ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-         
+
          byte [] msgs = new byte[1024 * 1024];
          for (int i = 0 ; i < msgs.length; i++)
          {
@@ -315,23 +315,23 @@ public class LargeMessageCompressTest extends LargeMessageTest
          producer.send(clientFile);
 
          session.commit();
-         
+
          session.close();
-         
+
          sf.close();
-         
+
          locator.close();
-         
+
          server.stop();
-         
+
          server = createServer(true, isNetty());
-         
+
          server.start();
-         
+
          locator = createFactory(isNetty());
-         
+
          sf = locator.createSessionFactory();
-         
+
          session = sf.createSession();
 
          session.start();
@@ -339,15 +339,15 @@ public class LargeMessageCompressTest extends LargeMessageTest
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
-         
+
          assertEquals(messageSize, msg1.getBodySize());
-         
+
          String testDir = this.getTestDir();
          File testFile = new File(testDir, "async_large_message");
          FileOutputStream output = new FileOutputStream(testFile);
 
          msg1.saveToOutputStream(output);
-         
+
          msg1.acknowledge();
 
          session.commit();
@@ -364,7 +364,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
             assertEquals("position = "  + i, msgs[i], b);
          }
          input.close();
-         
+
          testFile.delete();
          validateNoFilesOnLargeDir();
       }

@@ -36,19 +36,19 @@ public class DestroyConsumerTest extends ServiceTestBase
    // {
    // HornetQServer server = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
    // server.start();
-   //      
+   //
    // SimpleString queue = new SimpleString("add1");
-   //      
+   //
    // ClientSessionFactory factory = createInVMFactory();
-   //      
+   //
    // ClientSession session = factory.createSession(false, false, false, false);
-   //      
+   //
    // session.createQueue(queue, queue, null, false, false);
-   //      
+   //
    // ClientConsumer consumer = session.createConsumer(queue);
-   //      
+   //
    // session.start();
-   //      
+   //
    // Binding binding = server.getServer().getPostOffice().getBindingsForAddress(queue).get(0);
    //
    // assertEquals(1, binding.getQueue().getConsumerCount());
@@ -57,12 +57,12 @@ public class DestroyConsumerTest extends ServiceTestBase
    //
    // // Simulating a CTRL-C what would close the Socket but not the ClientSession
    // impl.cleanUp();
-   //      
-   //      
+   //
+   //
    // assertEquals(0, binding.getQueue().getConsumerCount());
-   //      
-   //      
-   //      
+   //
+   //
+   //
    // }
 
    // Package protected ---------------------------------------------

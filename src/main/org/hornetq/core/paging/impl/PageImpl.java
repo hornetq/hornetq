@@ -32,7 +32,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -41,7 +41,7 @@ public class PageImpl implements Page, Comparable<Page>
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isDebug = log.isDebugEnabled();
 
@@ -62,7 +62,7 @@ public class PageImpl implements Page, Comparable<Page>
    private final SequentialFile file;
 
    private final SequentialFileFactory fileFactory;
-   
+
    /**
     * The page cache that will be filled with data as we write more data
     */
@@ -99,7 +99,7 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return pageId;
    }
-   
+
    public void setLiveCache(LivePageCache pageCache)
    {
       this.pageCache = pageCache;
@@ -202,7 +202,7 @@ public class PageImpl implements Page, Comparable<Page>
       buffer.rewind();
 
       file.writeDirect(buffer, false);
-      
+
       if (pageCache != null)
       {
          pageCache.addLiveMessage(message);
@@ -243,7 +243,7 @@ public class PageImpl implements Page, Comparable<Page>
       }
       file.close();
    }
-   
+
    public boolean isLive()
    {
       return pageCache != null;
@@ -255,7 +255,7 @@ public class PageImpl implements Page, Comparable<Page>
       {
          storageManager.pageDeleted(storeName, pageId);
       }
-      
+
       if (isDebug)
       {
          log.debug("Deleting pageId=" + pageId + " on store " + storeName);
@@ -268,7 +268,7 @@ public class PageImpl implements Page, Comparable<Page>
             if (msg.getMessage().isLargeMessage())
             {
                LargeServerMessage lmsg = (LargeServerMessage)msg.getMessage();
-               
+
                // Remember, cannot call delete directly here
                // Because the large-message may be linked to another message
                // or it may still being delivered even though it has been acked already
@@ -291,7 +291,7 @@ public class PageImpl implements Page, Comparable<Page>
          {
             file.delete();
          }
-         
+
          return true;
       }
       catch (Exception e)
@@ -310,12 +310,12 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return size.intValue();
    }
-   
+
    public String toString()
    {
       return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
    }
-   
+
 
    /* (non-Javadoc)
     * @see java.lang.Comparable#compareTo(java.lang.Object)
@@ -324,7 +324,7 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return otherPage.getPageId() - this.pageId;
    }
-   
+
    public void finalize()
    {
       try

@@ -39,29 +39,29 @@ public class PageSyncTimer
 
 
    // Attributes ----------------------------------------------------
-   
+
    private final PagingStore store;
-   
+
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private boolean pendingSync;
-   
+
    private final long timeSync;
-   
-   private final Runnable runnable = new Runnable() 
+
+   private final Runnable runnable = new Runnable()
    {
       public void run()
       {
          tick();
       }
    };
-   
+
    private List<OperationContext> syncOperations = new LinkedList<OperationContext>();
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public PageSyncTimer(PagingStore store, ScheduledExecutorService scheduledExecutor, long timeSync)
    {
       this.store = store;
@@ -81,19 +81,19 @@ public class PageSyncTimer
       }
       syncOperations.add(ctx);
    }
-   
+
    private void tick()
    {
       OperationContext [] pendingSyncsArray;
       synchronized (this)
       {
-         
+
          pendingSync = false;
          pendingSyncsArray = new OperationContext[syncOperations.size()];
          pendingSyncsArray = syncOperations.toArray(pendingSyncsArray);
          syncOperations.clear();
       }
-      
+
       try
       {
          if (pendingSyncsArray.length != 0)
@@ -119,9 +119,9 @@ public class PageSyncTimer
          }
       }
    }
-   
-   
-   
+
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

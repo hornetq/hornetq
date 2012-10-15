@@ -310,7 +310,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       while (en.hasMoreElements())
       {
          String propName = (String)en.nextElement();
-         
+
          propNames.add(propName);
       }
 
@@ -1388,7 +1388,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void createQueue(SimpleString address, SimpleString queueName) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1397,7 +1397,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void setClientID(String clientID)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1406,7 +1406,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addMetaData(String key, String data) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1415,7 +1415,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addMetaDataV1(String key, String data) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1424,7 +1424,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public void addUniqueMetaData(String key, String data) throws HornetQException
       {
          // TODO Auto-generated method stub
-         
+
       }
    }
 

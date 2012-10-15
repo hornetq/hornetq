@@ -55,9 +55,9 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.Future;
 
 /**
- * 
+ *
  * @see PagingStore
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -203,7 +203,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       pageSize = addressSettings.getPageSizeBytes();
 
       addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
-      
+
       if (cursorProvider != null)
       {
          cursorProvider.setCacheMaxSize(addressSettings.getPageCacheMaxSize());
@@ -268,7 +268,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return pageSize;
    }
-   
+
    public String getFolder()
    {
       SequentialFileFactory factoryUsed = this.fileFactory;
@@ -578,7 +578,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return currentPage;
    }
-   
+
    public boolean checkPage(final int pageNumber)
    {
       String fileName = createFileName(pageNumber);
@@ -614,13 +614,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       openNewPage();
    }
 
-   /** 
-    *  It returns a Page out of the Page System without reading it. 
+   /**
+    *  It returns a Page out of the Page System without reading it.
     *  The method calling this method will remove the page and will start reading it outside of any locks.
     *  This method could also replace the current file by a new file, and that process is done through acquiring a writeLock on currentPageLock
-    *   
-    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests, 
-    *               and that's why this method is part of the Testable Interface 
+    *
+    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests,
+    *               and that's why this method is part of the Testable Interface
     * */
    public Page depage() throws Exception
    {
@@ -838,7 +838,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
             }
-            
+
             if (log.isDebugEnabled())
             {
                log.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
@@ -893,7 +893,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
 
          PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
-         
+
          if (message.isLargeMessage())
          {
             ((LargeServerMessage)message).setPaged();
@@ -907,16 +907,16 @@ public class PagingStoreImpl implements TestSupportPageStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
- 
+
          currentPage.write(pagedMessage);
 
          if (isTrace)
          {
-            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() + 
+            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
                       " pageId=" + currentPage.getPageId());
          }
-         
-        
+
+
          if (tx != null)
          {
             installPageTransaction(tx, listCtx);
@@ -981,15 +981,15 @@ public class PagingStoreImpl implements TestSupportPageStore
    private static class FinishPageMessageOperation implements TransactionOperation
    {
       public final PageTransactionInfo pageTransaction;
-      
+
       private final StorageManager storageManager;
-      
+
       private final PagingManager pagingManager;
-      
+
       private final Set<PagingStore> usedStores = new HashSet<PagingStore>();
 
       private boolean stored = false;
-      
+
       public void addStore(PagingStore store)
       {
          this.usedStores.add(store);
@@ -1114,9 +1114,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    /**
-    * 
+    *
     * Note: Decimalformat is not thread safe, Use synchronization before calling this method
-    * 
+    *
     * @param pageID
     * @return
     */

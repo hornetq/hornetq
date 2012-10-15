@@ -27,7 +27,7 @@ public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
    public void internalTest() throws Exception
    {
       createJournal();
-      
+
       startJournal();
 
       loadAndCheck();
@@ -47,11 +47,11 @@ public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
       long addRecord4 = idGen.generateID();
 
       long addRecordStay = idGen.generateID();
-      
+
       long addRecord5 = idGen.generateID();
-      
+
       long rollbackTx = idGen.generateID();
-      
+
       long rollbackAdd = idGen.generateID();
 
       add(addRecordStay);
@@ -67,7 +67,7 @@ public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
       updateTx(consumerTX, addRecord4);
 
       addTx(consumerTX, addRecord5);
-      
+
       addTx(appendTX, addedRecord);
 
       commit(appendTX);
@@ -81,17 +81,17 @@ public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
       delete(addedRecord);
 
       add(addRecord3);
-      
+
       addTx(rollbackTx, rollbackAdd);
 
       long updateTX = idGen.generateID();
-      
+
       updateTx(updateTX, addRecord3);
-      
+
       commit(updateTX);
 
       updateTx(rollbackTx, rollbackAdd);
-      
+
       delete(addRecord5);
 
       rollback(rollbackTx);
@@ -105,7 +105,7 @@ public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
       startJournal();
 
       loadAndCheck();
-      
+
       stopJournal();
    }
 

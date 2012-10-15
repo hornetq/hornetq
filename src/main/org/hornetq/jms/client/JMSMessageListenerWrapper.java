@@ -24,9 +24,9 @@ import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A JMSMessageListenerWrapper
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -41,7 +41,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
    private final ClientConsumer consumer;
 
    private final boolean transactedOrClientAck;
-   
+
    private final boolean individualACK;
 
    protected JMSMessageListenerWrapper(final HornetQSession session,
@@ -56,7 +56,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       this.listener = listener;
 
       transactedOrClientAck = (ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE) || session.isXA();
-      
+
       individualACK = (ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
    }
 
@@ -67,7 +67,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
    public void onMessage(final ClientMessage message)
    {
       HornetQMessage msg = HornetQMessage.createMessage(message, session.getCoreSession());
-      
+
       if (individualACK)
       {
          msg.setIndividualAcknowledge();
@@ -114,7 +114,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
                {
                   message.individualAcknowledge();
                }
-               
+
                session.getCoreSession().rollback(true);
 
                session.setRecoverCalled(true);

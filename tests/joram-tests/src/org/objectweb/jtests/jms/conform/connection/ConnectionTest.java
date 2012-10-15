@@ -28,7 +28,7 @@ import org.objectweb.jtests.jms.framework.TestConfig;
 
 /**
  * Test connections.
- * 
+ *
  * See JMS specifications, sec. 4.3.5 Closing a Connection
  *
  * @author Jeff Mesnil (jmesnil@gmail.com)
@@ -38,7 +38,7 @@ public class ConnectionTest extends PTPTestCase
 {
 
    /**
-    * Test that invoking the <code>acknowledge()</code> method of a received message 
+    * Test that invoking the <code>acknowledge()</code> method of a received message
     * from a closed connection's session must throw an <code>IllegalStateException</code>.
     */
    public void testAcknowledge()
@@ -78,7 +78,7 @@ public class ConnectionTest extends PTPTestCase
    }
 
    /**
-    * Test that an attempt to use a <code>Connection</code> which has been closed 
+    * Test that an attempt to use a <code>Connection</code> which has been closed
     * throws a <code>javax.jms.IllegalStateException</code>.
     */
    public void testUseClosedConnection()
@@ -103,7 +103,7 @@ public class ConnectionTest extends PTPTestCase
    }
 
    /**
-    * Test that a <code>MessageProducer</code> can send messages while a 
+    * Test that a <code>MessageProducer</code> can send messages while a
     * <code>Connection</code> is stopped.
     */
    public void testMessageSentWhenConnectionClosed()
@@ -223,7 +223,7 @@ public class ConnectionTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

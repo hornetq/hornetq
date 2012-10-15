@@ -69,7 +69,7 @@ public class PersistedConnectionFactory implements EncodingSupport
    {
       this.id = id;
    }
-   
+
    public String getName()
    {
       return config.getName();

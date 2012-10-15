@@ -60,14 +60,14 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A JMSFailoverTest
  *
  * A simple test to test failover when using the JMS API.
  * Most of the failover tests are done on the Core API.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 7 Nov 2008 11:13:39
  *
  *

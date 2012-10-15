@@ -38,76 +38,76 @@ public class DuplicateCacheTest extends StorageManagerTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testDuplicate() throws Exception
    {
       createStorage();
-      
+
       DuplicateIDCache cache = new DuplicateIDCacheImpl(new SimpleString("test"), 2000, journal, true);
-      
+
       TransactionImpl tx = new TransactionImpl(journal);
-      
+
       for (int i = 0 ; i < 5000; i++)
       {
          byte [] bytes = RandomUtil.randomBytes();
-         
+
          cache.addToCache(bytes, tx);
       }
-      
+
       tx.commit();
-      
+
       tx = new TransactionImpl(journal);
-      
+
       for (int i = 0 ; i < 5000; i++)
       {
          byte [] bytes = RandomUtil.randomBytes();
-         
+
          cache.addToCache(bytes, tx);
       }
-      
+
       tx.commit();
-      
+
       byte[] id = RandomUtil.randomBytes();
-      
+
       assertFalse(cache.contains(id));
-      
+
       cache.addToCache(id, null);
-      
+
       assertTrue(cache.contains(id));
-      
+
       cache.deleteFromCache(id);
-      
+
       assertFalse(cache.contains(id));
-      
+
       cache.deleteFromCache(id);
-      
+
    }
 
-   
+
    public void testDuplicateNonPersistent() throws Exception
    {
       createStorage();
-      
+
       DuplicateIDCache cache = new DuplicateIDCacheImpl(new SimpleString("test"), 2000, journal, false);
-      
+
       TransactionImpl tx = new TransactionImpl(journal);
-      
+
       for (int i = 0 ; i < 5000; i++)
       {
          byte [] bytes = RandomUtil.randomBytes();
-         
+
          cache.addToCache(bytes, tx);
       }
-      
+
       tx.commit();
-      
+
       for (int i = 0 ; i < 5000; i++)
       {
          byte [] bytes = RandomUtil.randomBytes();
-         
+
          cache.addToCache(bytes, null);
       }
-      
+
    }
 
    // Package protected ---------------------------------------------

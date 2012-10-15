@@ -42,11 +42,11 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- * 
+ *
  * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
  * If you are running this test in eclipse you should do:
  *   I - Run->Open Run Dialog
- *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
+ *   II - Find the class on the list (you will find it if you already tried running this testcase before)
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
  *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
  *   */
@@ -91,7 +91,7 @@ public class AsynchronousFileTest extends AIOTestBase
       super.tearDown();
    }
 
-   /** 
+   /**
     * Opening and closing a file immediately can lead to races on the native layer,
     * creating crash conditions.
     * */
@@ -115,39 +115,39 @@ public class AsynchronousFileTest extends AIOTestBase
          controller.open(FILE_NAME, 10000);
          bufferCheck = new WeakReference<ByteBuffer>(controller.getHandler());
          controller.fill(0, 10, 1024, (byte)0);
-   
+
          ByteBuffer write = AsynchronousFileImpl.newBuffer(1024);
-   
+
          for (int i = 0; i < 1024; i++)
          {
             write.put(UnitTestCase.getSamplebyte(i));
          }
-   
+
          final CountDownLatch latch = new CountDownLatch(1);
-   
+
          controller.write(0, 1024, write, new AIOCallback()
          {
-   
+
             public void onError(final int errorCode, final String errorMessage)
             {
             }
-   
+
             public void done()
             {
                latch.countDown();
             }
          });
-   
+
          Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
-   
+
          WeakReference<ByteBuffer> bufferCheck2 = new WeakReference<ByteBuffer>(write);
-   
+
          AsynchronousFileImpl.destroyBuffer(write);
-   
+
          write = null;
-   
+
          UnitTestCase.forceGC(bufferCheck2, 5000);
-   
+
          Assert.assertNull(bufferCheck2.get());
       }
       finally
@@ -677,8 +677,8 @@ public class AsynchronousFileTest extends AIOTestBase
 
    }
 
-   /** 
-    *  This test will call file.close() when there are still callbacks being processed. 
+   /**
+    *  This test will call file.close() when there are still callbacks being processed.
     *  This could cause a crash or callbacks missing and this test is validating both situations.
     *  The file is also read after being written to validate its correctness */
    public void testConcurrentClose() throws Exception
@@ -921,8 +921,8 @@ public class AsynchronousFileTest extends AIOTestBase
       }
 
    }
-   
-   
+
+
    public void testInternalWrite() throws Exception
    {
       final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -935,21 +935,21 @@ public class AsynchronousFileTest extends AIOTestBase
          final int SIZE = 10 * 512;
 
          buffer = AsynchronousFileImpl.newBuffer(SIZE);
-         
+
          for (int i = 0 ; i < SIZE; i++)
          {
             buffer.put(getSamplebyte(i));
          }
 
          controller.writeInternal(0, SIZE, buffer);
-         
+
          InputStream fileInput = new BufferedInputStream(new FileInputStream(new File(FILE_NAME)));
-         
+
          for (int  i = 0 ; i < SIZE; i++)
          {
             assertEquals((int)getSamplebyte(i), (int)fileInput.read());
          }
-         
+
          assertEquals(-1, fileInput.read());
 
       }

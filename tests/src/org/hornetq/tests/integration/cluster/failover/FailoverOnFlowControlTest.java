@@ -41,7 +41,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 public class FailoverOnFlowControlTest extends FailoverTestBase
 {
 
-   
+
    private static Logger log = Logger.getLogger(FailoverOnFlowControlTest.class);
 
    // Constants -----------------------------------------------------
@@ -53,8 +53,8 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
+
    public void testOverflowSend() throws Exception
    {
       ServerLocator locator = getServerLocator();
@@ -70,18 +70,18 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             log.debug("Intercept..." + packet.getClass().getName());
-            
+
             if (packet instanceof SessionProducerCreditsMessage )
             {
                SessionProducerCreditsMessage credit = (SessionProducerCreditsMessage)packet;
-               
+
                log.debug("Credits: " + credit.getCredits());
                if (count.incrementAndGet() == 2)
                {
                   try
                   {
                      log.debug("### crashing server");
-                      
+
                      InVMConnection.flushEnabled = false;
                      try
                      {
@@ -102,7 +102,7 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
             return true;
          }
       };
-      
+
       locator.addInterceptor(interceptorClient);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
@@ -112,23 +112,23 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-      
+
 
       final int numMessages = 10;
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(true);
-         
+
          message.getBodyBuffer().writeBytes(new byte[5000]);
 
          message.putIntProperty("counter", i);
 
          producer.send(message);
       }
-      
+
       session.close();
-      
+
       locator.close();
    }
 

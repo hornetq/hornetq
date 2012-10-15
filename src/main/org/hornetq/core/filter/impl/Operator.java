@@ -370,13 +370,13 @@ public class Operator
 
    /**
     * Operation 3
-    * 
+    *
     * | OR   |   T   |   F   |   U
     * +------+-------+-------+--------
     * |  T   |   T   |   T   |   T
     * |  F   |   T   |   F   |   U
     * |  U   |   T   |   U   |   U
-    * +------+-------+-------+------- 
+    * +------+-------+-------+-------
     */
    Object or() throws Exception
    {

@@ -49,7 +49,7 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * HornetQ implementation of a JMS Connection.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -181,7 +181,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          throw new IllegalStateException("setClientID can only be called directly after the connection is created");
       }
-      
+
       try
       {
          initialSession.addUniqueMetaData("jms-client-id", clientID);
@@ -272,7 +272,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          return;
       }
-      
+
       sessionFactory.close();
 
       try
@@ -562,12 +562,12 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          // Setting multiple times on different sessions doesn't matter since RemotingConnection maintains
          // a set (no duplicates)
          session.addFailureListener(listener);
-         
-         
-         
+
+
+
 
          HornetQSession jbs;
-         
+
          if (isXA)
          {
             jbs = new HornetQXASession(this, transacted, isXA, acknowledgeMode, session, type);
@@ -583,7 +583,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          {
             session.start();
          }
-         
+
          this.addSessionMetaData(session);
 
          return jbs;

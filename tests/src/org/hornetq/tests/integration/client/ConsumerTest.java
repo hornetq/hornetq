@@ -66,8 +66,8 @@ public class ConsumerTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
-   
+
+
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -270,21 +270,21 @@ public class ConsumerTest extends ServiceTestBase
       sessionRec.close();
       locator.close();
    }
-   
+
    // https://jira.jboss.org/browse/HORNETQ-410
    public void testConsumeWithNoConsumerFlowControl() throws Exception
    {
-      
+
       ServerLocator locator = createInVMNonHALocator();
-      
+
       locator.setConsumerWindowSize(-1);
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
-      
+
       session.start();
 
       ClientProducer producer = session.createProducer(QUEUE);
@@ -296,20 +296,20 @@ public class ConsumerTest extends ServiceTestBase
          ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
-            
+
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(10000);
          assertNotNull(message);
          message.acknowledge();
       }
-      
+
       session.close();
       sf.close();
       locator.close();
-      
+
    }
 
    public void testClearListener() throws Exception

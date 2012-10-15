@@ -49,7 +49,7 @@ public class RawAckTest
       hornetqServer.start();
 
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
-      
+
       serverLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
       sessionFactory = serverLocator.createSessionFactory();
       consumerSessionFactory = serverLocator.createSessionFactory();

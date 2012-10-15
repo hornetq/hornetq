@@ -27,7 +27,7 @@ import org.hornetq.spi.core.remoting.Acceptor;
  * A AcceptorControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:09:04
  */
 public class AcceptorControlImpl extends AbstractControl implements AcceptorControl
@@ -133,7 +133,7 @@ public class AcceptorControlImpl extends AbstractControl implements AcceptorCont
          blockOnIO();
       }
    }
-   
+
    @Override
    protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {

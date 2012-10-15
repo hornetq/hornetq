@@ -20,7 +20,7 @@ import javax.management.MBeanOperationInfo;
 
 /**
  * A QueueControl is used to manage a queue.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface QueueControl
@@ -156,7 +156,7 @@ public interface QueueControl
     * Removes all the message corresponding to the specified filter.
     * <br>
     * Using {@code null} or an empty filter will remove <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of removed messages
     */
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = MBeanOperationInfo.ACTION)
@@ -166,7 +166,7 @@ public interface QueueControl
     * Expires all the message corresponding to the specified filter.
     * <br>
     * Using {@code null} or an empty filter will expire <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of expired messages
     */
    @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = MBeanOperationInfo.ACTION)
@@ -204,7 +204,7 @@ public interface QueueControl
     * RejectDuplicates = false on this case
     * <br>
     * Using {@code null} or an empty filter will move <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of moved messages
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages). RejectDuplicates=false on this case.", impact = MBeanOperationInfo.ACTION)
@@ -216,7 +216,7 @@ public interface QueueControl
     * Moves all the message corresponding to the specified filter  to the specified other queue.
     * <br>
     * Using {@code null} or an empty filter will move <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of moved messages
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
@@ -236,7 +236,7 @@ public interface QueueControl
     * Sends all the message corresponding to the specified filter to this queue's dead letter address.
     * <br>
     * Using {@code null} or an empty filter will send <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of sent messages
     */
    @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = MBeanOperationInfo.ACTION)
@@ -244,7 +244,7 @@ public interface QueueControl
 
    /**
     * Changes the message's priority corresponding to the specified message ID to the specified priority.
-    * 
+    *
     * @param newPriority between 0 and 9 inclusive.
     *
     * @return {@code true} if the message priority was changed
@@ -257,7 +257,7 @@ public interface QueueControl
     * Changes the priority for all the message corresponding to the specified filter to the specified priority.
     * <br>
     * Using {@code null} or an empty filter will change <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of changed messages
     */
    @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = MBeanOperationInfo.ACTION)
@@ -305,7 +305,7 @@ public interface QueueControl
     */
    @Operation(desc = "Resumes delivery of queued messages and gets the queue out of paused state.", impact = MBeanOperationInfo.ACTION)
    void resume() throws Exception;
-   
+
    @Operation(desc = "List all the existent consumers on the Queue")
    String listConsumersAsJSON() throws Exception;
 

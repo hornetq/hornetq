@@ -19,7 +19,7 @@ import org.hornetq.core.server.ServerMessage;
  * A Transformer
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 11:01:50
  *
  *

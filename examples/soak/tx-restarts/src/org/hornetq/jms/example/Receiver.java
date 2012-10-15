@@ -36,27 +36,27 @@ public class Receiver extends ClientAbstract
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private Queue queue;
-   
+
    // We should leave some messages on paging. We don't want to consume all for this test
    private final Semaphore minConsume = new Semaphore(0);
-   
+
    private final ReusableLatch latchMax = new ReusableLatch(0);
-   
+
    private static final int MAX_DIFF = 10000;
-   
+
    // The difference between producer and consuming
    private final AtomicInteger currentDiff = new AtomicInteger(0);
-   
+
    private final String queueJNDI;
-   
+
    protected long msgs = 0;
-   
+
    protected int pendingMsgs = 0;
-   
+
    protected int pendingSemaphores = 0;
-   
+
    protected MessageConsumer cons;
 
 
@@ -69,19 +69,19 @@ public class Receiver extends ClientAbstract
       super();
       this.queueJNDI = queueJNDI;
    }
-   
+
    // Public --------------------------------------------------------
 
    public void run()
    {
       super.run();
-      
+
       while (running)
       {
          try
          {
             beginTX();
-            
+
             for (int i = 0 ; i < 1000; i++)
             {
                Message msg = cons.receive(5000);
@@ -89,43 +89,43 @@ public class Receiver extends ClientAbstract
                {
                   break;
                }
-               
+
                if (msg.getLongProperty("count") != msgs + pendingMsgs)
                {
                   errors++;
                   System.out.println("count should be " + (msgs + pendingMsgs) + " when it was " + msg.getLongProperty("count") + " on " + queueJNDI);
                }
-               
+
                pendingMsgs++;
                if (!minConsume.tryAcquire(1, 5, TimeUnit.SECONDS))
                {
                   break;
                }
-               
+
             }
-            
+
             endTX();
          }
          catch (Exception e)
          {
             connect();
          }
-         
-         
+
+
       }
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.jms.example.ClientAbstract#connectClients()
     */
    @Override
    protected void connectClients() throws Exception
    {
-      
+
       queue = (Queue)ctx.lookup(queueJNDI);
-      
+
       cons = sess.createConsumer(queue);
-      
+
       conn.start();
    }
 
@@ -152,7 +152,7 @@ public class Receiver extends ClientAbstract
       minConsume.release(pendingMsgs);
       pendingMsgs = 0;
    }
-   
+
    public String toString()
    {
       return "Receiver::" + this.queueJNDI + ", msgs=" + msgs + ", pending=" + pendingMsgs;

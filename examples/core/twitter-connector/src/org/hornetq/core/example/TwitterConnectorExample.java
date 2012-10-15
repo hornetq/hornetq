@@ -32,7 +32,7 @@ public class TwitterConnectorExample extends HornetQExample
 {
    private static final String INCOMING_QUEUE = "queue.incomingQueue";
    private static final String OUTGOING_QUEUE = "queue.outgoingQueue";
-   
+
    public static void main(final String[] args)
    {
       new TwitterConnectorExample().run(args);
@@ -52,10 +52,10 @@ public class TwitterConnectorExample extends HornetQExample
          }
 
          // Step 1. Create a ClientSessionFactory
-         
-         
+
+
          locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-         
+
          csf = locator.createSessionFactory();
 
          // Step 2. Create a core session.
@@ -74,14 +74,14 @@ public class TwitterConnectorExample extends HornetQExample
          // Step 6. Send a message to queue.outgoingQueue.
          cp.send(cm);
          System.out.println("#### Sent a message to " + OUTGOING_QUEUE + ": " + testMessage);
-         
+
          // Step 7. Start the session.
          session.start();
 
          // Step 8. Receive a message from queue.incomingQueue.
          //         Outgoing connector forwards a message(sent at Step 6.) to twitter immediately.
          //         Since incoming connector consumes from twitter and forwards to queue.incomingQueue
-         //         every 60 seconds, It will be received in 60+x seconds. 
+         //         every 60 seconds, It will be received in 60+x seconds.
          System.out.println("#### A message will be received in 60 seconds. Please wait...");
          ClientMessage received = cc.receive(70 * 1000);
          received.acknowledge();
@@ -95,7 +95,7 @@ public class TwitterConnectorExample extends HornetQExample
                // no other tweets. test message has gone...
                return false;
             }
-            
+
             received.acknowledge();
             receivedText = received.getBodyBuffer().readString();
          }
@@ -105,7 +105,7 @@ public class TwitterConnectorExample extends HornetQExample
       }
       finally
       {
-         // Step 9. Be sure to close some resources. 
+         // Step 9. Be sure to close some resources.
          if(session != null)
          {
             session.close();
@@ -114,7 +114,7 @@ public class TwitterConnectorExample extends HornetQExample
          {
             csf.close();
          }
-         
+
          if (locator != null)
          {
             locator.close();

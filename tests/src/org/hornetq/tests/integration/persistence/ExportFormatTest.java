@@ -92,7 +92,7 @@ public class ExportFormatTest extends ServiceTestBase
    {
       HornetQServer server = createServer(true);
       server.start();
-      
+
       ServerLocator locator = createInVMNonHALocator();
 
       ClientSessionFactory factory = locator.createSessionFactory();
@@ -163,7 +163,7 @@ public class ExportFormatTest extends ServiceTestBase
       session.commit();
 
       locator.close();
-      
+
       server.stop();
    }
 

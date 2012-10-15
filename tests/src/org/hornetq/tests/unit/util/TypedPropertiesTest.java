@@ -26,9 +26,9 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class TypedPropertiesTest extends UnitTestCase
 {

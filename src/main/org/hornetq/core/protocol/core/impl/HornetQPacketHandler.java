@@ -41,7 +41,7 @@ import org.hornetq.core.version.Version;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -171,10 +171,10 @@ public class HornetQPacketHandler implements ChannelHandler
          else if (connection.getClientVersion() != request.getVersion())
          {
             log.warn("Client is not being consistent on the request versioning. " +
-            		   "It just sent a version id=" + request.getVersion() + 
+            		   "It just sent a version id=" + request.getVersion() +
             		   " while it informed " + connection.getClientVersion() + " previously");
          }
-         
+
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
          HornetQPrincipal hornetQPrincipal = null;
@@ -270,7 +270,7 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
-               
+
                log.warn("Reattach request from " + connection.getRemoteAddress() + " failed as there is no confirmationWindowSize configured, which may be ok for your system");
 
                sessionHandler.closeListeners();

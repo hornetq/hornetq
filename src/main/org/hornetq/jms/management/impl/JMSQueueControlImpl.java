@@ -37,9 +37,9 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSQueueControlImpl extends StandardMBean implements JMSQueueControl
 {
@@ -173,7 +173,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    {
       jmsServerManager.addQueueToJndi(managedQueue.getName(), jndi);
    }
-   
+
    public void removeJNDI(String jndi) throws Exception
    {
       jmsServerManager.removeQueueFromJNDI(managedQueue.getName(), jndi);

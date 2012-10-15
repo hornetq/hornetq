@@ -21,7 +21,7 @@ import org.hornetq.core.server.management.NotificationService;
  * A DiscoveryGroup
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 09:26:54
  *
  *

@@ -48,10 +48,10 @@ public interface HornetQRASessionFactory extends Connection, TopicConnection, Qu
     */
    void addTemporaryTopic(TemporaryTopic temp);
 
-   /** 
+   /**
     * Notification that a session is closed
     * @param session The session
-    * @throws JMSException for any error 
+    * @throws JMSException for any error
     */
    void closeSession(HornetQRASession session) throws JMSException;
 }

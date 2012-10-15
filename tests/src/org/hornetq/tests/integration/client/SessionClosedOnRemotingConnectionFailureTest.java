@@ -32,7 +32,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A SessionClosedOnRemotingConnectionFailureTest
  *
  * @author Tim Fox
- 
+
  */
 public class SessionClosedOnRemotingConnectionFailureTest extends UnitTestCase
 {

@@ -24,7 +24,7 @@ import org.hornetq.api.core.client.ServerLocator;
 
 /**
  * A class that represents a ConnectionFactory.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implements ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory
@@ -33,7 +33,7 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
    private final static long serialVersionUID = -2810634789345348326L;
 
    /**
-    * 
+    *
     */
    public HornetQJMSConnectionFactory()
    {

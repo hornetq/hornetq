@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * 
+ *
  * deployer for adding security loaded from the file "hornetq-users.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
@@ -73,22 +73,22 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    public void deploy(final Node node) throws Exception
    {
       String nodeName = node.getNodeName();
-      
+
       if (MASK_PASSWORD.equals(nodeName))
       {
          String value = node.getTextContent().trim();
 
          maskPassword = Boolean.parseBoolean(value);
-         
+
          if (maskPassword)
          {
             passwordCodec = PasswordMaskingUtil.getDefaultCodec();
          }
          return;
       }
-      
+
       if (PASSWORD_CODEC.equals(nodeName))
-      {         
+      {
          if (maskPassword)
          {
             String codecDesc = node.getTextContent();
@@ -97,12 +97,12 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
          }
          return;
       }
-      
+
       String username = node.getAttributes().getNamedItem("name").getNodeValue();
       String password = node.getAttributes()
                             .getNamedItem(BasicUserCredentialsDeployer.PASSWORD_ATTRIBUTE)
                             .getNodeValue();
-      
+
       if (maskPassword)
       {
          if ( (password != null) && (! "".equals(password.trim())) )

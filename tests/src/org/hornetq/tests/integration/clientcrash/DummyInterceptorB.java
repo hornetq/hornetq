@@ -22,7 +22,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

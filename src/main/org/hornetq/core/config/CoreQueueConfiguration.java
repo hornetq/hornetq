@@ -19,7 +19,7 @@ import java.io.Serializable;
  * A QueueConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 13 Jan 2009 09:39:21
  *
  *

@@ -20,11 +20,11 @@ import org.jboss.netty.buffer.ChannelBuffer;
 /**
  *
  * A HornetQBuffer wraps a Netty's ChannelBuffer and is used throughout HornetQ code base.
- * 
+ *
  * Much of it derived from Netty ChannelBuffer by Trustin Lee
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @see HornetQBuffers
  *
  */
@@ -32,7 +32,7 @@ public interface HornetQBuffer
 {
    /**
     * Returns the underlying Netty's ChannelBuffer
-    * 
+    *
     * @return the underlying Netty's ChannelBuffer
     */
    ChannelBuffer channelBuffer();
@@ -407,7 +407,7 @@ public interface HornetQBuffer
     * @throws IndexOutOfBoundsException
     *         if the specified {@code index} is less than {@code 0} or
     *         {@code index + 4} is greater than {@code this.capacity}
-    */  
+    */
    float getFloat(int index);
 
    /**
@@ -418,7 +418,7 @@ public interface HornetQBuffer
     * @throws IndexOutOfBoundsException
     *         if the specified {@code index} is less than {@code 0} or
     *         {@code index + 8} is greater than {@code this.capacity}
-    */    
+    */
    double getDouble(int index);
 
    /**

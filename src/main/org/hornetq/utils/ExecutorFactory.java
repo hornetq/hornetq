@@ -16,9 +16,9 @@ package org.hornetq.utils;
 import java.util.concurrent.Executor;
 
 /**
- * 
+ *
  * A ExecutorFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

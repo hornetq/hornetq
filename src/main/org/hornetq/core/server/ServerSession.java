@@ -43,13 +43,13 @@ public interface ServerSession
    int getMinLargeMessageSize();
 
    Object getConnectionID();
-   
+
    RemotingConnection getRemotingConnection();
 
    void removeConsumer(long consumerID) throws Exception;
 
    void acknowledge(long consumerID, long messageID) throws Exception;
-   
+
    void individualAcknowledge(long consumerID, long messageID) throws Exception;
 
    void expire(long consumerID, long messageID) throws Exception;
@@ -115,7 +115,7 @@ public interface ServerSession
    void requestProducerCredits(SimpleString address, int credits) throws Exception;
 
    void close(boolean failed) throws Exception;
-   
+
    void waitContextCompletion() throws Exception;
 
    void setTransferring(boolean transferring);
@@ -129,7 +129,7 @@ public interface ServerSession
    String getMetaData(String key);
 
    String[] getTargetAddresses();
-   
+
    /**
     * Add all the producers detail to the JSONArray object.
     * This is a method to be used by the management layer.
@@ -141,10 +141,10 @@ public interface ServerSession
    String getLastSentMessageID(String address);
 
    long getCreationTime();
-   
+
 
    OperationContext getSessionContext();
-   
+
    void setSessionContext(OperationContext context);
 
 }

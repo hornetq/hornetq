@@ -28,25 +28,25 @@ import java.util.zip.Inflater;
 public class InflaterReader extends InputStream
 {
    private Inflater inflater = new Inflater();
-   
+
    private InputStream input;
-   
+
    private byte[] readBuffer;
    private int pointer;
    private int length;
-   
+
    public InflaterReader(InputStream input)
    {
       this(input, 1024);
    }
-   
+
    public InflaterReader(InputStream input, int bufferSize)
    {
       this.input = input;
       this.readBuffer = new byte[bufferSize];
       this.pointer = -1;
    }
-   
+
    public int read() throws IOException
    {
       if (pointer == -1)
@@ -67,17 +67,17 @@ public class InflaterReader extends InputStream
             throw e2;
          }
       }
-      
+
       int value = readBuffer[pointer] & 0xFF;
       pointer++;
       if (pointer == length)
       {
          pointer = -1;
       }
-      
+
       return value;
    }
-   
+
    /*
     * feed inflater more bytes in order to get some
     * decompressed output.
@@ -88,7 +88,7 @@ public class InflaterReader extends InputStream
       int read = 0;
       int n = 0;
       byte[] inputBuffer = new byte[len];
-      
+
       while (len > 0)
       {
          n = inflater.inflate(buf, offset, len);
@@ -102,7 +102,7 @@ public class InflaterReader extends InputStream
             {
                //feeding
                int m = input.read(inputBuffer);
-               
+
                if (m == -1)
                {
                   //it shouldn't be here, throw exception

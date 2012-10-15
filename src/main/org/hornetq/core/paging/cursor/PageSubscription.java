@@ -35,23 +35,23 @@ public interface PageSubscription
    // Cursor query operations --------------------------------------
 
    PagingStore getPagingStore();
-   
+
    // To be called before the server is down
    void stop();
-   
+
    /** This is a callback to inform the PageSubscription that something was routed, so the empty flag can be cleared */
    void notEmpty();
 
    void bookmark(PagePosition position) throws Exception;
-   
+
    PageSubscriptionCounter getCounter();
-   
+
    long getMessageCount();
 
    long getId();
 
    boolean isPersistent();
-   
+
    /** Used as a delegate method to pageStore.isPaging() */
    boolean isPaging();
 
@@ -63,7 +63,7 @@ public interface PageSubscription
    void scheduleCleanupCheck();
 
    void cleanupEntries(boolean completeDelete) throws Exception;
-   
+
    void onPageModeCleared(Transaction tx) throws Exception;
 
    void disableAutoCleanup();
@@ -81,7 +81,7 @@ public interface PageSubscription
    void confirmPosition(Transaction tx, PagePosition position) throws Exception;
 
    /**
-    * 
+    *
     * @return the first page in use or MAX_LONG if none is in use
     */
    long getFirstPage();
@@ -92,16 +92,16 @@ public interface PageSubscription
     * @param position
     */
    void reloadACK(PagePosition position);
-   
+
    void reloadPageCompletion(PagePosition position);
 
    /**
     * To be called when the cursor decided to ignore a position.
-    * 
+    *
     * @param position
     */
    void positionIgnored(PagePosition position);
-   
+
    void lateDeliveryRollback(PagePosition position);
 
    /**
@@ -113,8 +113,8 @@ public interface PageSubscription
    void processReload() throws Exception;
 
    void addPendingDelivery(final PagePosition position);
-   
-   /**      
+
+   /**
     * To be used on redeliveries
     * @param position
     */
@@ -130,11 +130,11 @@ public interface PageSubscription
 
    /** wait all the scheduled runnables to finish their current execution */
    void flushExecutors();
-   
+
    void setQueue(Queue queue);
-   
+
    Queue getQueue();
-   
+
    /**
     * To be used to requery the reference case the Garbage Collection removed it from the PagedReference as it's using WeakReferences
     * @param pos
@@ -149,7 +149,7 @@ public interface PageSubscription
 
    /**
     * @param deletedPage
-    * @throws Exception 
+    * @throws Exception
     */
    void onDeletePage(Page deletedPage) throws Exception;
 }

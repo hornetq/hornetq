@@ -19,7 +19,7 @@ import java.io.Serializable;
  * A Random
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 28 Nov 2008 10:28:28
  *
  *

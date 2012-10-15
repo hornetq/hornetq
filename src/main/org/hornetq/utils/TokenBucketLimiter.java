@@ -14,14 +14,14 @@
 package org.hornetq.utils;
 
 /**
- * 
+ *
  * A TokenBucketLimiterImpl
- * 
+ *
  * This class can throttle to a specfic rate, using an algorithm based on the Token Bucket metaphor
  * http://en.wikipedia.org/wiki/Token_bucket
- * 
+ *
  * The rate is specified in Hertz
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

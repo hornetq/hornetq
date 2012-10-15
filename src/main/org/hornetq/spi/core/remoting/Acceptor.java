@@ -38,7 +38,7 @@ public interface Acceptor extends HornetQComponent
     * @return the cluster connection associated with this Acceptor
     */
    ClusterConnection getClusterConnection();
-   
+
    Map<String, Object> getConfiguration();
 
    /**

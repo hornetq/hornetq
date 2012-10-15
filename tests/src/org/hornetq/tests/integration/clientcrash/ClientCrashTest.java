@@ -113,18 +113,18 @@ public class ClientCrashTest extends ClientTestBase
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       assertActiveSession(0);
    }
-   
+
    public void testCrashClient2() throws Exception
-   {     
+   {
       assertActiveConnections(1);
 
       ClientSession session = sf.createSession(false, true, true);
-           
+
       session.createQueue(ClientCrashTest.QUEUE, ClientCrashTest.QUEUE, null, false);
-      
+
       // spawn a JVM that creates a Core client, which sends a message
       Process p = SpawnedVMSupport.spawnVM(CrashClient2.class.getName());
-      
+
       ClientCrashTest.log.debug("waiting for the client VM to crash ...");
       p.waitFor();
 
@@ -133,9 +133,9 @@ public class ClientCrashTest extends ClientTestBase
       System.out.println("VM Exited");
 
       Thread.sleep(3 * ClientCrashTest.CONNECTION_TTL);
-      
+
       ClientConsumer consumer = session.createConsumer(ClientCrashTest.QUEUE);
-      
+
       session.start();
 
       // receive a message from the queue
@@ -144,7 +144,7 @@ public class ClientCrashTest extends ClientTestBase
       Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
       assertEquals(2, messageFromClient.getDeliveryCount());
-      
+
       session.close();
 
    }

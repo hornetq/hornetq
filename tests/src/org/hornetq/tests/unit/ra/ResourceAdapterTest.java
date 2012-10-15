@@ -507,7 +507,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    {
 
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = 2893126091158533715L;
       /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,

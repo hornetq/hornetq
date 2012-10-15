@@ -38,29 +38,29 @@ public class BufferHelper
          return DataConstants.SIZE_BOOLEAN + sizeOfSimpleString(str);
       }
    }
-   
+
    /** Size of a String as it if was a Simple String*/
    public static int sizeOfSimpleString(String str)
    {
       return DataConstants.SIZE_INT + str.length() * 2;
    }
-   
+
    public static void writeAsNullableSimpleString(HornetQBuffer buffer, String str)
    {
       buffer.writeNullableSimpleString(SimpleString.toSimpleString(str));
    }
-   
+
    public static String readNullableSimpleStringAsString(HornetQBuffer buffer)
    {
       SimpleString str = buffer.readNullableSimpleString();
       return str != null ? str.toString() : null;
    }
-   
+
    public static void writeAsSimpleString(HornetQBuffer buffer, String str)
    {
       buffer.writeSimpleString(new SimpleString(str));
    }
-   
+
    /**
     * @param buffer
     */

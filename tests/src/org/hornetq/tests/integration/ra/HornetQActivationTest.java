@@ -46,12 +46,12 @@ public class HornetQActivationTest extends ServiceTestBase
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
       spec.setJndiParams("a=b;c=d;url=a1,a2,a3");
-      
+
       assertEquals("b", spec.getParsedJndiParams().get("a"));
       assertEquals("d", spec.getParsedJndiParams().get("c"));
       assertEquals("a1,a2,a3", spec.getParsedJndiParams().get("url"));
-      
-      
+
+
    }
 
 

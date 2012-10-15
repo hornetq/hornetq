@@ -42,7 +42,7 @@ public class NettyHAClientTopologyWithDiscoveryTest extends HAClientTopologyWith
    {
       return true;
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

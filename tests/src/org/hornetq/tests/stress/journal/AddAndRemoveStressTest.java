@@ -29,7 +29,7 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

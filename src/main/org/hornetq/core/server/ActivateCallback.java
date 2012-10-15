@@ -23,6 +23,6 @@ package org.hornetq.core.server;
 public interface ActivateCallback
 {
    void preActivate();
-   
+
    void activated();
 }

@@ -90,7 +90,7 @@ public class NettyAcceptor implements Acceptor
    static final Logger log = Logger.getLogger(NettyAcceptor.class);
 
    private ClusterConnection clusterConnection;
-   
+
    private ChannelFactory channelFactory;
 
    private volatile ChannelGroup serverChannelGroup;
@@ -140,11 +140,11 @@ public class NettyAcceptor implements Acceptor
    private final int nioRemotingThreads;
 
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
-   
+
    private HttpAcceptorHandler httpHandler = null;
 
    private final ConcurrentMap<Object, NettyConnection> connections = new ConcurrentHashMap<Object, NettyConnection>();
-   
+
    private final Map<String, Object> configuration;
 
    private final Executor threadPool;
@@ -164,7 +164,7 @@ public class NettyAcceptor implements Acceptor
    private final long batchDelay;
 
    private final boolean directDeliver;
-   
+
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -185,11 +185,11 @@ public class NettyAcceptor implements Acceptor
                         final Executor threadPool,
                         final ScheduledExecutorService scheduledThreadPool)
    {
-      
+
       this.clusterConnection = clusterConnection;
-      
+
       this.configuration = configuration;
-      
+
       this.handler = handler;
 
       this.decoder = decoder;
@@ -373,7 +373,7 @@ public class NettyAcceptor implements Acceptor
             if (httpEnabled)
             {
                handlers.put("http-decoder", new HttpRequestDecoder());
-               
+
                handlers.put("http-aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.put("http-encoder", new HttpResponseEncoder());
@@ -510,7 +510,7 @@ public class NettyAcceptor implements Acceptor
          serverChannelGroup.add(serverChannel);
       }
    }
-   
+
    public Map<String, Object> getConfiguration()
    {
       return this.configuration;
@@ -587,7 +587,7 @@ public class NettyAcceptor implements Acceptor
             e.printStackTrace();
          }
       }
-      
+
       if (httpHandler != null)
       {
          httpHandler.shutdown();
@@ -744,12 +744,12 @@ public class NettyAcceptor implements Acceptor
       public void connectionReadyForWrites(final Object connectionID, boolean ready)
       {
          NettyConnection conn = connections.get(connectionID);
-         
+
          if (conn != null)
          {
             conn.fireReady(ready);
-         }         
-      }            
+         }
+      }
    }
 
    private class BatchFlusher implements Runnable

@@ -28,7 +28,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A SynchronousCloseTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

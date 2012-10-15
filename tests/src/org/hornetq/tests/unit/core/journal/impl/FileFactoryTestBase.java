@@ -22,7 +22,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author clebert.suconic@jboss.org
  *
  */

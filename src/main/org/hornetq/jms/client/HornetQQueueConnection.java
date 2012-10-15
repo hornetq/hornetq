@@ -19,7 +19,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS QueueConnection.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQQueueConnection extends HornetQConnection implements QueueConnection

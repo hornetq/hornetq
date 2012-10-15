@@ -26,9 +26,9 @@ import org.hornetq.core.server.cluster.ClusterManager;
 public interface ClusterManagerInternal extends ClusterManager
 {
    void addClusterLocator(ServerLocatorInternal locator);
-   
+
    void removeClusterLocator(ServerLocatorInternal locator);
-   
+
    String getNodeId();
 
 }

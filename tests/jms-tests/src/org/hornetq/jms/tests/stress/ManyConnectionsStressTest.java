@@ -32,9 +32,9 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * Create 500 connections each with a consumer, consuming from a topic
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>4 Jul 2007
  *

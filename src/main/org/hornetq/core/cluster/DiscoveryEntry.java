@@ -50,7 +50,7 @@ public class DiscoveryEntry
    {
       return lastUpdate;
    }
-   
+
    @Override
    public String toString()
    {

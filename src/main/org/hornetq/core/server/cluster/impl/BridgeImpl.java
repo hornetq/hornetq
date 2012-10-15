@@ -445,7 +445,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return session.getConnection();
       }
    }
-   
+
    // for testing only
    public void setupRetry(final int currentCount, final int maxRetry)
    {

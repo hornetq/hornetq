@@ -27,9 +27,9 @@ import org.hornetq.utils.json.JSONObject;
 public class JMSSessionInfo
 {
    private final String sessionID;
-   
+
    private final long creationTime;
-   
+
    public JMSSessionInfo(String sessionID, long creationTime)
    {
       this.sessionID = sessionID;
@@ -50,7 +50,7 @@ public class JMSSessionInfo
       }
       return infos;
    }
-   
+
    public String getSessionID()
    {
       return sessionID;

@@ -23,9 +23,9 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
  * This is using the HornetQ Libaio Native to perform calls to flock on Linux system
  * At the current version of RHEL there's a bug on GFS2 and because of that fctl is not functional
  * what will cause issues on Failover over Shared Storage.
- * 
+ *
  * This will provide an alternative to perform locks through our native module until fctl is fixed on Linux.
- * 
+ *
  * https://bugzilla.redhat.com/show_bug.cgi?id=678585
  *
  * @author clebertsuconic

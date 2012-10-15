@@ -17,9 +17,9 @@ import org.hornetq.core.server.Delivery;
 import org.hornetq.core.server.MessageReference;
 
 /**
- * 
+ *
  * A DeliveryImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

@@ -49,7 +49,7 @@ import org.objectweb.jtests.jms.framework.JMSTestCase;
 
 /**
  * JoramAggregationTest.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.2 $
  */
@@ -60,8 +60,8 @@ public class JoramAggregationTest extends TestCase
       super(name);
    }
 
-   
-   
+
+
    /** Used to similuate tests while renaming its names. */
    private static class DummyTestCase extends TestCase
    {
@@ -70,7 +70,7 @@ public class JoramAggregationTest extends TestCase
            super (name);
        }
    }
- 
+
    /**
     * One of the goals of this class also is to keep original classNames into testNames. So, you will realize several proxies existent here to
     * keep these class names while executing method names.
@@ -155,9 +155,9 @@ public class JoramAggregationTest extends TestCase
        Test testcase;
    }
 
-   
 
-   
+
+
 
    public static junit.framework.Test suite() throws Exception
    {
@@ -181,11 +181,11 @@ public class JoramAggregationTest extends TestCase
       suite.addTest(new TestProxy(TopicSessionTest.suite(), TopicSessionTest.class.getName()));
       suite.addTest(new TestProxy(UnifiedSessionTest.suite(), UnifiedSessionTest.class.getName()));
       suite.addTest(new TestProxy(TemporaryTopicTest.suite(), TemporaryTopicTest.class.getName()));
-      
+
       return new TestAggregation(suite);
    }
    /**
-    * Should be overriden 
+    * Should be overriden
     * @return
     */
    protected static Properties getProviderProperties() throws IOException
@@ -195,10 +195,10 @@ public class JoramAggregationTest extends TestCase
       return props;
    }
 
-   
+
    static class TestAggregation extends TestSetup
    {
-      
+
       Admin admin;
 
       /**
@@ -208,7 +208,7 @@ public class JoramAggregationTest extends TestCase
       {
          super(test);
       }
-      
+
       public void setUp() throws Exception
       {
          JMSTestCase.startServer = false;
@@ -219,13 +219,13 @@ public class JoramAggregationTest extends TestCase
          admin.startServer();
 
       }
-      
+
       public void tearDown() throws Exception
       {
          System.out.println("TearDown");
          admin.stopServer();
          JMSTestCase.startServer = true;
       }
-      
+
    }
 }

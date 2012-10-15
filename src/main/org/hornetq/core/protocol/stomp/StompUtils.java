@@ -36,7 +36,7 @@ class StompUtils
 {
    // Constants -----------------------------------------------------
    private static final String DEFAULT_MESSAGE_PRIORITY= "4";
-   
+
    private static final Logger log = Logger.getLogger(StompUtils.class);
 
 
@@ -60,7 +60,7 @@ class StompUtils
       {
          msg.setDurable(Boolean.parseBoolean(persistent));
       }
-      
+
       // FIXME should use a proper constant
       msg.putObjectProperty("JMSCorrelationID", headers.remove(Stomp.Headers.Send.CORRELATION_ID));
       msg.putObjectProperty("JMSType", headers.remove(Stomp.Headers.Send.TYPE));
@@ -80,7 +80,7 @@ class StompUtils
       {
          msg.setExpiration(Long.parseLong(expiration));
       }
-      
+
       // now the general headers
       for (Iterator<Map.Entry<String, Object>> iter = headers.entrySet().iterator(); iter.hasNext();)
       {

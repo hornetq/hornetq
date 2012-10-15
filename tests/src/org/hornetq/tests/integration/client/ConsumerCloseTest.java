@@ -35,7 +35,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ConsumerCloseTest extends ServiceTestBase

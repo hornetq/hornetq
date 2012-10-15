@@ -26,7 +26,7 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 
 /**
  * A InVMAcceptorFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

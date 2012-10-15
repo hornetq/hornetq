@@ -19,7 +19,7 @@ import org.hornetq.core.server.Queue;
  * A QueueBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 30 Jan 2009 11:04:37
  *
  *

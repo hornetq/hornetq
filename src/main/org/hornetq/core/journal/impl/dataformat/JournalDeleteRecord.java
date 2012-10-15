@@ -44,7 +44,7 @@ public class JournalDeleteRecord extends JournalInternalRecord
       buffer.writeByte(JournalImpl.DELETE_RECORD);
 
       buffer.writeInt(fileID);
-      
+
       buffer.writeByte(compactCount);
 
       buffer.writeLong(id);

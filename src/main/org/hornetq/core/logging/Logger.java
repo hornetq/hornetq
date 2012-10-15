@@ -24,11 +24,11 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.utils.ClassloadingUtil;
 
 /**
- * 
+ *
  * A Logger
- * 
+ *
  * This class allows us to isolate all our logging dependencies in one place
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -202,8 +202,8 @@ public class Logger
    {
       delegate.trace(message, t);
    }
-   
-   
+
+
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()

@@ -391,7 +391,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    /**
     * This method performs a similar function to {@link String#getChars(int, int, char[], int)}.
     * This is mainly used by the Parsers on Filters
-    * 
+    *
     * @param srcBegin
     * @param srcEnd
     * @param dst dd
@@ -411,7 +411,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       {
          throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
       }
-      
+
       int j = srcBegin * 2;
       int d = dstPos;
 

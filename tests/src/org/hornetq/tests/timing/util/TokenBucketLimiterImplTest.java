@@ -20,9 +20,9 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TokenBucketLimiterImpl;
 
 /**
- * 
+ *
  * A TokenBucketLimiterImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

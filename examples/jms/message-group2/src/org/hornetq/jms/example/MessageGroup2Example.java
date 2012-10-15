@@ -118,7 +118,7 @@ public class MessageGroup2Example extends HornetQExample
          return result;
       }
       finally
-      {                                                                                     
+      {
          //Step 11. Be sure to close our JMS resources!
          if (initialContext != null)
          {

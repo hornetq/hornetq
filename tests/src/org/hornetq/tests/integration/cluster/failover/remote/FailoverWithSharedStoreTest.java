@@ -119,11 +119,11 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
    protected TestableServer createLiveServer() {
       return new RemoteProcessHornetQServer(SharedLiveServerConfiguration.class.getName());
    }
-   
+
    protected TestableServer createBackupServer() {
       return new RemoteProcessHornetQServer(SharedBackupServerConfiguration.class.getName());
    }
-   
+
    public void testCrashLiveServer() throws Exception
    {
       TestableServer liveServer = null;
@@ -132,10 +132,10 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
       {
          liveServer = createLiveServer();
          backupServer = createBackupServer();
-         
+
          liveServer.start();
          backupServer.start();
-         
+
          ServerLocator locator = HornetQClient.createServerLocatorWithHA(createTransportConfiguration(true,
                                                                                                       false,
                                                                                                       generateParams(0,

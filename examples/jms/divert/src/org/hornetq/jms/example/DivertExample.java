@@ -28,7 +28,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This examples demonstrates the use of HornetQ "Diverts" to transparently divert or copy messages
  * from one address to another.
- * 
+ *
  * Please see the readme.html for more information.
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

@@ -20,14 +20,14 @@ import javax.jms.Session;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A Receiver that receives messages from a destination in a JMS transaction
- * 
+ *
  * Receives <commitSize> messages then commits, then
  * Receives <rollbackSize> messages then rollsback until
  * a total of <numMessages> messages have been received (committed)
  * <nuMessages> must be a multiple of <commitSize>
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

@@ -72,7 +72,7 @@ public class SecurityTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       super.tearDown();
    }
 
@@ -493,52 +493,52 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          server.start();
-         
+
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         
+
          HornetQSecurityManager securityManager = server.getSecurityManager();
-         
+
          securityManager.addUser("auser", "pass");
-         
+
          Role role = new Role("arole", true, true, true, false, false, false, false);
-         
+
          Set<Role> roles = new HashSet<Role>();
-         
+
          roles.add(role);
-         
+
          securityRepository.addMatch(SecurityTest.addressA, roles);
-         
+
          securityManager.addRole("auser", "arole");
-         
+
          locator.setBlockOnNonDurableSend(true);
-         
+
          ClientSessionFactory cf = locator.createSessionFactory();
-         
+
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         
+
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         
+
          ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         
+
          cp.send(session.createMessage(false));
-         
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer(queueA);
-         
+
          ClientMessage receivedMessage = cons.receive(5000);
-         
+
          assertNotNull(receivedMessage);
-         
+
          receivedMessage.acknowledge();
-         
+
          role = new Role("arole", false, false, true, false, false, false, false);
-         
+
          roles = new HashSet<Role>();
-         
+
          roles.add(role);
-         
-         
+
+
          // This was added to validate https://issues.jboss.org/browse/SOA-3363
          securityRepository.addMatch(SecurityTest.addressA, roles);
          boolean failed = false;
@@ -551,12 +551,12 @@ public class SecurityTest extends ServiceTestBase
             failed = true;
          }
          // This was added to validate https://issues.jboss.org/browse/SOA-3363 ^^^^^
-         
+
          assertTrue("Failure expected on send after removing the match", failed);
-         
-         
+
+
          session.close();
-         
+
       }
       finally
       {

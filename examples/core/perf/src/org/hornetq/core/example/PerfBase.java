@@ -31,7 +31,7 @@ import org.hornetq.utils.TokenBucketLimiter;
 import org.hornetq.utils.TokenBucketLimiterImpl;
 
 /**
- * 
+ *
  * A PerfBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -377,7 +377,7 @@ public abstract class PerfBase
                   latch.countDown();
                }
             }
-            
+
             session.setSendAcknowledgementHandler(new MySendAckHandler());
 
             theLatch = latch;
@@ -431,13 +431,13 @@ public abstract class PerfBase
          {
             session.commit();
          }
-         
+
          session.close();
-         
+
          if (useSendAcks)
          {
             theLatch.await();
-         }       
+         }
       }
       finally
       {

@@ -18,11 +18,11 @@ import java.util.List;
 
 import org.hornetq.api.core.Pair;
 
-/** 
+/**
  * This holds the relationship a record has with other files in regard to reference counting.
  * Note: This class used to be called PosFiles
- * 
- * Used on the ref-count for reclaiming 
+ *
+ * Used on the ref-count for reclaiming
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * */

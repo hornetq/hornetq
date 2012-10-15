@@ -26,9 +26,9 @@ import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A AIOSequentialFileFactoryTest
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

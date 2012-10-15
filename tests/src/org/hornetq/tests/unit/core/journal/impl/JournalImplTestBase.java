@@ -38,9 +38,9 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
 
 /**
- * 
+ *
  * A JournalImplTestBase
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

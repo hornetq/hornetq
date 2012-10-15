@@ -28,11 +28,11 @@ import org.hornetq.spi.core.remoting.Connection;
 public interface ProtocolManager extends BufferDecoder
 {
    ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection);
-   
+
    public void removeHandler(final String name);
 
    public int isReadyToHandle(HornetQBuffer buffer);
-   
+
    void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
 
 }

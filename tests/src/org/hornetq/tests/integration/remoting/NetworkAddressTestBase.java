@@ -40,7 +40,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A NetworkAddressTest
  *
  * @author jmesnil
- * 
+ *
  * Created 26 janv. 2009 15:06:58
  *
  *

@@ -139,7 +139,7 @@ public class Jms
          }
       }
       BytesMessage bytesMessage = (BytesMessage)message;
-      
+
       try
       {
     	  long size = bytesMessage.getBodyLength();

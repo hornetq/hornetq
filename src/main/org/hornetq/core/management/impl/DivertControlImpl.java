@@ -24,7 +24,7 @@ import org.hornetq.core.server.Divert;
  * A DivertControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:09:04
  */
 public class DivertControlImpl extends AbstractControl implements DivertControl
@@ -143,7 +143,7 @@ public class DivertControlImpl extends AbstractControl implements DivertControl
          blockOnIO();
       }
    }
-   
+
    @Override
    protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {

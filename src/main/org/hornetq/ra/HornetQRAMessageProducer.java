@@ -22,7 +22,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQMessageProducer.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision:  $

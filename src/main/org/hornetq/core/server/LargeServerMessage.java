@@ -18,7 +18,7 @@ package org.hornetq.core.server;
  * A LargeMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created 30-Sep-08 10:58:04 AM
  *
  *
@@ -28,17 +28,17 @@ public interface LargeServerMessage extends ServerMessage
    void addBytes(byte[] bytes) throws Exception;
 
    void setPendingRecordID(long pendingRecordID);
-   
+
    long getPendingRecordID();
 
    boolean isFileExists() throws Exception;
-   
+
    /**
     * We have to copy the large message content in case of DLQ and paged messages
     * For that we need to pre-mark the LargeMessage with a flag when it is paged
     */
    void setPaged();
-   
+
    /** Close the files if opened */
    void releaseResources();
 

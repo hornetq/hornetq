@@ -136,7 +136,7 @@ public class MessageHandlerTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage(session, "m" + i);
-         
+
          message.putIntProperty(new SimpleString("i"), i);
 
          producer.send(message);
@@ -172,19 +172,19 @@ public class MessageHandlerTest extends ServiceTestBase
                {
                   failed = true;
                }
-               
+
                messageReceived++;
-               
+
                log.info("got message " + messageReceived);
-               
+
                latch.countDown();
 
                if (latch.getCount() == 0)
                {
                   message.acknowledge();
-                  
+
                   started = false;
-                  
+
                   consumer.setMessageHandler(null);
                }
 
@@ -198,7 +198,7 @@ public class MessageHandlerTest extends ServiceTestBase
       MyHandler handler = new MyHandler(latch);
 
       consumer.setMessageHandler(handler);
-      
+
       session.start();
 
 

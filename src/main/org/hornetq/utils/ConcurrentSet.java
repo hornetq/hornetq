@@ -16,9 +16,9 @@ package org.hornetq.utils;
 import java.util.Set;
 
 /**
- * 
+ *
  * A ConcurrentSet
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * @param <E>

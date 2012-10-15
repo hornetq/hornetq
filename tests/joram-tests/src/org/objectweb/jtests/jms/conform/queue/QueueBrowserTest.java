@@ -182,7 +182,7 @@ public class QueueBrowserTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

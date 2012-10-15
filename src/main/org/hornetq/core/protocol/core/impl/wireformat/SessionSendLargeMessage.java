@@ -22,7 +22,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class SessionSendLargeMessage extends PacketImpl
@@ -37,7 +37,7 @@ public class SessionSendLargeMessage extends PacketImpl
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    // To be used by the PacketDecoder
    public SessionSendLargeMessage()
    {

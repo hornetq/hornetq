@@ -73,7 +73,7 @@ public class AutogroupIdTest extends ServiceTestBase
          consumer2.setMessageHandler(myMessageHandler2);
 
          log.info("starting session");
-         
+
          session.start();
 
          final int numMessages = 100;
@@ -85,7 +85,7 @@ public class AutogroupIdTest extends ServiceTestBase
          latch.await();
 
          session.close();
-         
+
          log.info(myMessageHandler2.messagesReceived);
 
          Assert.assertEquals(100, myMessageHandler.messagesReceived);

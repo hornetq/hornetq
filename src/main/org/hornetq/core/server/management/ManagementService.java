@@ -51,9 +51,9 @@ import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public interface ManagementService extends NotificationService, HornetQComponent
 {

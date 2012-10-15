@@ -22,7 +22,7 @@ import org.hornetq.core.logging.Logger;
  * A BroadcastGroupConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 08:44:30
  *
  */
