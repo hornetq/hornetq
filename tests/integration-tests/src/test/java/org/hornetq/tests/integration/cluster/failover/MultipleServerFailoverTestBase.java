@@ -32,7 +32,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
@@ -257,7 +257,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
 
    protected void waitForDistribution(SimpleString address, HornetQServer server, int messageCount) throws Exception
    {
-      HornetQLogger.LOGGER.debug("waiting for distribution of messgaes on server " + server);
+      HornetQServerLogger.LOGGER.debug("waiting for distribution of messgaes on server " + server);
 
       long start = System.currentTimeMillis();
 

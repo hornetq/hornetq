@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -43,9 +42,9 @@ public class SessionReceiveMessage extends MessagePacket
       this.deliveryCount = deliveryCount;
    }
 
-   public SessionReceiveMessage()
+   public SessionReceiveMessage(final MessageInternal message)
    {
-      super(PacketImpl.SESS_RECEIVE_MSG, new ClientMessageImpl());
+      super(PacketImpl.SESS_RECEIVE_MSG, message);
    }
 
    // Public --------------------------------------------------------

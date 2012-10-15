@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -83,9 +84,9 @@ public class JournalCrashTest extends ServiceTestBase
    protected void startServer() throws Exception
    {
       Configuration config = createDefaultConfig();
-      config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
-      config.setJournalCompactMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
-      config.setJournalCompactPercentage(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
+      config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
+      config.setJournalCompactMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
+      config.setJournalCompactPercentage(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
       config.setJournalMinFiles(2);
 
       server = super.createServer(true, config);
@@ -266,7 +267,7 @@ public class JournalCrashTest extends ServiceTestBase
    private void printJournal() throws Exception
    {
       NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
-      JournalImpl journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
+      JournalImpl journal = new JournalImpl(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE,
                                             2,
                                             0,
                                             0,

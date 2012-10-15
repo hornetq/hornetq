@@ -20,6 +20,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.*;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -125,8 +126,8 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);

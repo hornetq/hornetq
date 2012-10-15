@@ -25,9 +25,16 @@
    <name>HornetQ soak Tests</name>
 
    <dependencies>
-         <dependency>
+      <dependency>
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-core</artifactId>
+         <version>${project.version}</version>
+         <scope>test</scope>
+         <type>test-jar</type>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-server</artifactId>
          <version>${project.version}</version>
          <scope>test</scope>
          <type>test-jar</type>

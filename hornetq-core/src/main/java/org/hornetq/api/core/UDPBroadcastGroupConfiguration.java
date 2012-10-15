@@ -24,7 +24,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.HornetQCoreLogger;
 
 
 /**
@@ -155,7 +155,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             {
                if (open)
                {
-                  HornetQLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
+                  HornetQCoreLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
                }
             }
             break;
@@ -180,7 +180,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
          {
             if (localAddress != null)
             {
-               HornetQLogger.LOGGER.broadcastGroupBindError();
+               HornetQCoreLogger.LOGGER.broadcastGroupBindError();
             }
             broadcastingSocket = new DatagramSocket();
          }
@@ -199,7 +199,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             }
             catch (IOException e)
             {
-               HornetQLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
+               HornetQCoreLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
 
                receivingSocket = new MulticastSocket(groupPort);
             }

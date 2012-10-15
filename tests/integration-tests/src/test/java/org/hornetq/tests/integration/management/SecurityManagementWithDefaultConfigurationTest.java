@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -30,8 +31,8 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
+      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                              HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD,
                               true);
    }
 
@@ -53,7 +54,7 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
    protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
       Configuration conf = createBasicConfig();
-      conf.setClusterPassword(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+      conf.setClusterPassword(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer server = addServer(HornetQServers.newHornetQServer(conf, false));

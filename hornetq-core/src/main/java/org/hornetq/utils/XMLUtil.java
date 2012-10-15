@@ -31,8 +31,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreLogger;
+import org.hornetq.core.HornetQCoreMessageBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -212,7 +212,7 @@ public class XMLUtil
             }
             catch (Exception e)
             {
-               HornetQLogger.LOGGER.errorOnXMLTransform(e, n);
+               HornetQCoreLogger.LOGGER.errorOnXMLTransform(e, n);
                return null;
             }
          }
@@ -267,17 +267,17 @@ public class XMLUtil
    {
       if (node == null)
       {
-         throw HornetQMessageBundle.BUNDLE.firstNodeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.firstNodeNull();
       }
 
       if (node2 == null)
       {
-         throw HornetQMessageBundle.BUNDLE.secondNodeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.secondNodeNull();
       }
 
       if (!node.getNodeName().equals(node2.getNodeName()))
       {
-         throw HornetQMessageBundle.BUNDLE.nodeHaveDifferentNames();
+         throw HornetQCoreMessageBundle.BUNDLE.nodeHaveDifferentNames();
       }
 
       int attrCount = 0;
@@ -296,7 +296,7 @@ public class XMLUtil
 
       if (attrCount != attrCount2)
       {
-         throw HornetQMessageBundle.BUNDLE.nodeHaveDifferentAttNumber();
+         throw HornetQCoreMessageBundle.BUNDLE.nodeHaveDifferentAttNumber();
       }
 
       outer: for (int i = 0; i < attrCount; i++)
@@ -316,14 +316,14 @@ public class XMLUtil
                continue outer;
             }
          }
-         throw HornetQMessageBundle.BUNDLE.attsDontMatch(name, value);
+         throw HornetQCoreMessageBundle.BUNDLE.attsDontMatch(name, value);
       }
 
       boolean hasChildren = node.hasChildNodes();
 
       if (hasChildren != node2.hasChildNodes())
       {
-         throw HornetQMessageBundle.BUNDLE.oneNodeHasChildren();
+         throw HornetQCoreMessageBundle.BUNDLE.oneNodeHasChildren();
       }
 
       if (hasChildren)
@@ -339,7 +339,7 @@ public class XMLUtil
 
          if (length != nodes2.size())
          {
-            throw HornetQMessageBundle.BUNDLE.nodeHasDifferentChildNumber();
+            throw HornetQCoreMessageBundle.BUNDLE.nodeHasDifferentChildNumber();
          }
 
          for (int i = 0; i < length; i++)
@@ -403,7 +403,7 @@ public class XMLUtil
             val = parts[1].trim();
          }
          String sysProp = System.getProperty(prop, val);
-         HornetQLogger.LOGGER.debug("replacing " + subString + " with " + sysProp);
+         HornetQCoreLogger.LOGGER.debug("replacing " + subString + " with " + sysProp);
          xml = xml.replace(subString, sysProp);
 
       }
@@ -420,7 +420,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw HornetQMessageBundle.BUNDLE.mustBeLong(elem, value);
+         throw HornetQCoreMessageBundle.BUNDLE.mustBeLong(elem, value);
       }
    }
 
@@ -434,7 +434,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw HornetQMessageBundle.BUNDLE.mustBeInteger(elem, value);
+         throw HornetQCoreMessageBundle.BUNDLE.mustBeInteger(elem, value);
       }
    }
 
@@ -448,7 +448,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw HornetQMessageBundle.BUNDLE.mustBeBoolean(elem, value);
+         throw HornetQCoreMessageBundle.BUNDLE.mustBeBoolean(elem, value);
       }
    }
 
@@ -462,7 +462,7 @@ public class XMLUtil
       }
       catch (NumberFormatException e)
       {
-         throw HornetQMessageBundle.BUNDLE.mustBeDouble(elem, value);
+         throw HornetQCoreMessageBundle.BUNDLE.mustBeDouble(elem, value);
       }
    }
 
@@ -480,7 +480,7 @@ public class XMLUtil
       }
       catch (SAXException e)
       {
-         HornetQLogger.LOGGER.errorOnXMLTransformInvalidConf(e);
+         HornetQCoreLogger.LOGGER.errorOnXMLTransformInvalidConf(e);
 
          throw new IllegalStateException("Invalid configuration", e);
       }

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -114,8 +115,8 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -285,8 +286,8 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1024,
                                                                         staticConnectors,
                                                                         false,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -503,8 +504,8 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -660,8 +661,8 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);

@@ -37,6 +37,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -586,7 +587,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       control.destroyConnectionFactory("test");
 
-      ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+      ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN);
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
 
       stopServer();

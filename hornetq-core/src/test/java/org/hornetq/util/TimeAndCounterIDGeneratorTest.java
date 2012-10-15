@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
 
@@ -102,7 +102,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
             try
             {
                latchAlign.countDown();
-               UnitTestCase.waitForLatch(latchStart);
+               CoreUnitTestCase.waitForLatch(latchStart);
 
                long lastValue = 0l;
                for (int i = 0; i < NUMBER_OF_IDS; i++)
@@ -133,7 +133,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
          arrays[i].start();
       }
 
-      UnitTestCase.waitForLatch(latchAlign);
+      CoreUnitTestCase.waitForLatch(latchAlign);
 
       latchStart.countDown();
 

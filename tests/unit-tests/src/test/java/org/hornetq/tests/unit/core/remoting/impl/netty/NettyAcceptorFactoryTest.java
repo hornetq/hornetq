@@ -18,11 +18,13 @@ import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -63,7 +65,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(HornetQComponent component, final Connection connection, final ProtocolType protocol)
          {
          }
 
@@ -80,7 +82,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
                                                  null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
+                                                 Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
       Assert.assertTrue(acceptor instanceof NettyAcceptor);
    }

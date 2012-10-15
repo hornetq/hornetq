@@ -13,7 +13,7 @@
 
 package org.hornetq.utils;
 
-import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.HornetQCoreLogger;
 
 import java.lang.ref.WeakReference;
 
@@ -106,7 +106,7 @@ public class MemorySize
          // throw new IllegalStateException("Warning: JVM allocated more data what would make results invalid " +
          // totalMemory1 + ":" + totalMemory2);
 
-         HornetQLogger.LOGGER.jvmAllocatedMoreMemory(totalMemory1, totalMemory2);
+         HornetQCoreLogger.LOGGER.jvmAllocatedMoreMemory(totalMemory1, totalMemory2);
       }
 
       return size;

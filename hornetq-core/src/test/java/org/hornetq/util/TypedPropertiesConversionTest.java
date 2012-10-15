@@ -18,8 +18,8 @@ import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -338,7 +338,7 @@ public class TypedPropertiesConversionTest extends TestCase
       byte[] val = RandomUtil.randomBytes();
       props.putBytesProperty(key, val);
 
-      UnitTestCase.assertEqualsByteArrays(val, props.getBytesProperty(key));
+      CoreUnitTestCase.assertEqualsByteArrays(val, props.getBytesProperty(key));
 
       try
       {

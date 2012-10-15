@@ -22,9 +22,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.security.HornetQPrincipal;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.core.HornetQCoreLogger;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
@@ -71,7 +69,6 @@ public class NettyConnection implements Connection
    // Constructors --------------------------------------------------
 
    public NettyConnection(final Map<String, Object> configuration,
-                           final Acceptor acceptor,
                            final Channel channel,
                            final ConnectionLifeCycleListener listener,
                            boolean batchingEnabled,
@@ -86,8 +83,6 @@ public class NettyConnection implements Connection
       this.batchingEnabled = batchingEnabled;
 
       this.directDeliver = directDeliver;
-
-      listener.connectionCreated(acceptor, this, ProtocolType.CORE);
    }
 
    // Public --------------------------------------------------------
@@ -110,7 +105,7 @@ public class NettyConnection implements Connection
 
             if (!sslCloseFuture.awaitUninterruptibly(10000))
             {
-               HornetQLogger.LOGGER.timeoutClosingSSL();
+               HornetQCoreLogger.LOGGER.timeoutClosingSSL();
             }
          }
          catch (Throwable t)
@@ -123,7 +118,7 @@ public class NettyConnection implements Connection
 
       if (!closeFuture.awaitUninterruptibly(10000))
       {
-         HornetQLogger.LOGGER.timeoutClosingNettyChannel();
+         HornetQCoreLogger.LOGGER.timeoutClosingNettyChannel();
       }
 
       closed = true;
@@ -227,7 +222,7 @@ public class NettyConnection implements Connection
 
                      if (!ok)
                      {
-                        HornetQLogger.LOGGER.timeoutFlushingPacket();
+                        HornetQCoreLogger.LOGGER.timeoutFlushingPacket();
                      }
 
                      break;

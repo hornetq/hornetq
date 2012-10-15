@@ -30,8 +30,8 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreLogger;
+import org.hornetq.core.HornetQCoreMessageBundle;
 
 /**
  * A ChannelImpl
@@ -72,7 +72,7 @@ public final class ChannelImpl implements Channel
       }
    }
 
-   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
+   private static final boolean isTrace = HornetQCoreLogger.LOGGER.isTraceEnabled();
 
    private volatile long id;
 
@@ -167,7 +167,7 @@ public final class ChannelImpl implements Channel
 
       try
       {
-         response = new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.unblockingACall());
+         response = new HornetQExceptionMessage(HornetQCoreMessageBundle.BUNDLE.unblockingACall());
 
          sendCondition.signal();
       }
@@ -207,7 +207,7 @@ public final class ChannelImpl implements Channel
 
          if (isTrace)
          {
-            HornetQLogger.LOGGER.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
+            HornetQCoreLogger.LOGGER.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
          }
 
          HornetQBuffer buffer = packet.encode(connection);
@@ -246,7 +246,7 @@ public final class ChannelImpl implements Channel
 
          if (isTrace)
          {
-            HornetQLogger.LOGGER.trace("Writing buffer for channelID=" + id);
+            HornetQCoreLogger.LOGGER.trace("Writing buffer for channelID=" + id);
          }
 
 
@@ -260,7 +260,7 @@ public final class ChannelImpl implements Channel
    {
       if (closed)
       {
-         throw HornetQMessageBundle.BUNDLE.connectionDestroyed();
+         throw HornetQCoreMessageBundle.BUNDLE.connectionDestroyed();
       }
 
       if (connection.getBlockingCallTimeout() == -1)
@@ -292,7 +292,7 @@ public final class ChannelImpl implements Channel
                   {
                      if (!failoverCondition.await(connection.getBlockingCallFailoverTimeout(), TimeUnit.MILLISECONDS))
                      {
-                        HornetQLogger.LOGGER.debug("timed-out waiting for failover condition");
+                        HornetQCoreLogger.LOGGER.debug("timed-out waiting for failover condition");
                      }
                   }
                }
@@ -338,7 +338,7 @@ public final class ChannelImpl implements Channel
 
             if (response == null)
             {
-               throw HornetQMessageBundle.BUNDLE.timedOutSendingPacket(packet.getType());
+               throw HornetQCoreMessageBundle.BUNDLE.timedOutSendingPacket(packet.getType());
             }
 
             if (response.getType() == PacketImpl.EXCEPTION)
@@ -387,7 +387,7 @@ public final class ChannelImpl implements Channel
 
       if (!connection.isDestroyed() && !connection.removeChannel(id))
       {
-         throw HornetQMessageBundle.BUNDLE.noChannelToClose(id);
+         throw HornetQCoreMessageBundle.BUNDLE.noChannelToClose(id);
       }
 
       if(failingOver)
@@ -423,7 +423,7 @@ public final class ChannelImpl implements Channel
       {
          if (isTrace)
          {
-            HornetQLogger.LOGGER.trace("Replaying commands on channelID=" + id);
+            HornetQCoreLogger.LOGGER.trace("Replaying commands on channelID=" + id);
          }
          clearUpTo(otherLastConfirmedCommandID);
 
@@ -563,7 +563,7 @@ public final class ChannelImpl implements Channel
 
       if (numberToClear == -1)
       {
-         throw HornetQMessageBundle.BUNDLE.invalidCommandID(lastReceivedCommandID);
+         throw HornetQCoreMessageBundle.BUNDLE.invalidCommandID(lastReceivedCommandID);
       }
 
       int sizeToFree = 0;
@@ -574,7 +574,7 @@ public final class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            HornetQLogger.LOGGER.cannotFindPacketToClear(lastReceivedCommandID, firstStoredCommandID);
+            HornetQCoreLogger.LOGGER.cannotFindPacketToClear(lastReceivedCommandID, firstStoredCommandID);
             firstStoredCommandID = lastReceivedCommandID + 1;
             return;
          }

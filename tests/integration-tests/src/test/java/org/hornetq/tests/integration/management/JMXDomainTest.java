@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.management;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.Configuration;
@@ -51,7 +52,7 @@ public class JMXDomainTest extends ManagementTestBase
       Configuration config_0 = createDefaultConfig();
       config_0.setJMXManagementEnabled(true);
 
-      String jmxDomain_1 = ConfigurationImpl.DEFAULT_JMX_DOMAIN + ".1";
+      String jmxDomain_1 = HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN + ".1";
 
       Configuration config_1 = createBasicConfig();
       Map<String, Object> params = new HashMap<String, Object>();
