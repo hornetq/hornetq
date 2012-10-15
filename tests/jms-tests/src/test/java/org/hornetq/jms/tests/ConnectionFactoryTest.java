@@ -41,27 +41,9 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
  */
 public class ConnectionFactoryTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp(); // To change body of overridden methods use File | Settings | File Templates.
-   }
-
-   // Public --------------------------------------------------------
 
    /**
     * Test that ConnectionFactory can be cast to QueueConnectionFactory and QueueConnection can be
@@ -327,72 +309,72 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
 
    }
-   
+
    public void testFactoryTypes() throws Exception
    {
       HornetQConnectionFactory factory = null;
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAConnectionFactory);
       assertEquals(6, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_XA_FALSE");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAConnectionFactory);
       assertEquals(6, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC_XA_FALSE");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE");
-      
+
       assertTrue(factory instanceof QueueConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAQueueConnectionFactory);
       assertEquals(4, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE_XA_FALSE");
-      
+
       assertTrue(factory instanceof QueueConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC");
-      
+
       assertTrue(factory instanceof TopicConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC_XA_TRUE");
-      
+
       assertTrue(factory instanceof XATopicConnectionFactory);
       assertEquals(4, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC_XA_FALSE");
-      
+
       assertTrue(factory instanceof TopicConnectionFactory);
       assertEquals(2, getTypes(factory));
    }
-   
+
    public void testConnectionTypes() throws Exception
    {
       Connection genericConnection = null;
@@ -436,7 +418,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    private void assertConnectionType(Connection conn, String type)
    {
-      if ("generic".equals(type))
+      if ("generic".equals(type) || "queue".equals(type) || "topic".equals(type))
       {
          //generic
          assertFalse(conn instanceof XAConnection);
@@ -445,43 +427,11 @@ public class ConnectionFactoryTest extends JMSTestCase
          assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
       }
-      else if ("queue".equals(type))
-      {
-         assertFalse(conn instanceof XAConnection);
-         assertTrue(conn instanceof QueueConnection);
-         assertFalse(conn instanceof XAQueueConnection);
-         assertTrue(conn instanceof TopicConnection);
-         assertFalse(conn instanceof XATopicConnection);
-      }
-      else if ("topic".equals(type))
-      {
-         assertFalse(conn instanceof XAConnection);
-         assertTrue(conn instanceof QueueConnection);
-         assertFalse(conn instanceof XAQueueConnection);
-         assertTrue(conn instanceof TopicConnection);
-         assertFalse(conn instanceof XATopicConnection);
-      }
-      else if ("xa".equals(type))
-      {
-         assertTrue(conn instanceof XAConnection);
-         assertTrue(conn instanceof QueueConnection);
-         assertFalse(conn instanceof XAQueueConnection);
-         assertTrue(conn instanceof TopicConnection);
-         assertFalse(conn instanceof XATopicConnection);
-      }
-      else if ("xa-queue".equals(type))
+      else if ("xa".equals(type) || "xa-queue".equals(type) || "xa-topic".equals(type))
       {
          assertTrue(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertTrue(conn instanceof XAQueueConnection);
-         assertTrue(conn instanceof TopicConnection);
-         assertFalse(conn instanceof XATopicConnection);
-      }
-      else if ("xa-topic".equals(type))
-      {
-         assertTrue(conn instanceof XAConnection);
-         assertTrue(conn instanceof QueueConnection);
-         assertFalse(conn instanceof XAQueueConnection);
          assertTrue(conn instanceof TopicConnection);
          assertTrue(conn instanceof XATopicConnection);
       }
