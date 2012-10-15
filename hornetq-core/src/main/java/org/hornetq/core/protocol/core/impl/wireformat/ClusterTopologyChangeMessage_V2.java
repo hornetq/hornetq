@@ -79,7 +79,6 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
    {
       buffer.writeBoolean(exit);
       buffer.writeString(nodeID);
-      buffer.writeNullableString(nodeName);
       buffer.writeLong(uniqueEventID);
       if (!exit)
       {
@@ -103,6 +102,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
          }
          buffer.writeBoolean(last);
       }
+      buffer.writeNullableString(nodeName);
    }
 
    @Override
@@ -110,7 +110,6 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
    {
       exit = buffer.readBoolean();
       nodeID = buffer.readString();
-      nodeName = buffer.readNullableString();
       uniqueEventID = buffer.readLong();
       if (!exit)
       {
@@ -139,6 +138,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
          pair = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
          last = buffer.readBoolean();
       }
+      nodeName = buffer.readNullableString();
    }
 
    @Override
