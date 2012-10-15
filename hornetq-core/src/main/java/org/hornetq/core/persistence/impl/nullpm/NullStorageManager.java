@@ -458,6 +458,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
+   @Override
+   public void deleteCursorAcknowledge(long ackID) throws Exception
+   {
+   }
+
    public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
    {
    }

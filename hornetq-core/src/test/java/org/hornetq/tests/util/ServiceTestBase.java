@@ -28,6 +28,8 @@ import javax.management.MBeanServer;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.server.Queue;
 import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -96,6 +98,25 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       sendMsgCount = 0;
       super.setUp();
+   }
+
+   /**
+    * @param queue
+    * @throws InterruptedException
+    */
+   protected void waitForNotPaging(Queue queue) throws InterruptedException
+   {
+      waitForNotPaging(queue.getPageSubscription().getPagingStore());
+   }
+
+   protected void waitForNotPaging(PagingStore store) throws InterruptedException
+   {
+      long timeout = System.currentTimeMillis() + 10000;
+      while (timeout > System.currentTimeMillis() && store.isPaging())
+      {
+         Thread.sleep(100);
+      }
+      assertFalse(store.isPaging());
    }
 
    protected Topology waitForTopology(final HornetQServer server, final int nodes) throws Exception

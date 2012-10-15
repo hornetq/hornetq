@@ -39,6 +39,9 @@ public interface PageSubscription
    // To be called before the server is down
    void stop();
 
+   /** This is a callback to inform the PageSubscription that something was routed, so the empty flag can be cleared */
+   void notEmpty();
+
    void bookmark(PagePosition position) throws Exception;
 
    PageSubscriptionCounter getCounter();
@@ -60,6 +63,8 @@ public interface PageSubscription
    void scheduleCleanupCheck();
 
    void cleanupEntries(final boolean completeDelete) throws Exception;
+
+   void onPageModeCleared(Transaction tx) throws Exception;
 
    void disableAutoCleanup();
 

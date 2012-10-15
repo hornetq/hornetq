@@ -30,10 +30,12 @@ import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;
-
+import java.util.concurrent.atomic.AtomicInteger;
+import org.hornetq.core.server.HornetQLogger;
 /**
  * A PageProviderIMpl
  *
@@ -51,6 +53,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
+
+   /**
+    * As an optimization, avoid subsquent schedules as they are unecessary
+    */
+   private AtomicInteger scheduledCleanup = new AtomicInteger(0);
 
    private final PagingStore pagingStore;
 
@@ -115,7 +122,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       PageCache cache = getPageCache(pos);
 
-      if (pos.getMessageNr() >= cache.getNumberOfMessages())
+      if (cache == null || pos.getMessageNr() >= cache.getNumberOfMessages())
       {
          // sanity check, this should never happen unless there's a bug
          throw new IllegalStateException("Invalid messageNumber passed = " + pos + " on " + cache);
@@ -292,6 +299,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
    public void scheduleCleanup()
    {
 
+      if (scheduledCleanup.intValue() > 2)
+      {
+         // Scheduled cleanup was already scheduled before.. never mind!
+         return;
+      }
+
+      scheduledCleanup.incrementAndGet();
+
       executor.execute(new Runnable()
       {
          public void run()
@@ -304,15 +319,43 @@ public class PageCursorProviderImpl implements PageCursorProvider
             finally
             {
                storageManager.clearContext();
+               scheduledCleanup.decrementAndGet();
             }
          }
-
-         @Override
-         public String toString()
-         {
-            return "PageCursorProvider:scheduleCleanup()";
-         }
       });
+   }
+
+   /**
+    * Delete everything associated with any queue on this address.
+    * This is to be called when the address is about to be released from paging.
+    * Hence the PagingStore will be holding a write lock, meaning no messages are going to be paged at this time.
+    * So, we shouldn't lock anything after this method, to avoid dead locks between the writeLock and any synchronization with the CursorProvider.
+    */
+   public void onPageModeCleared()
+   {
+      ArrayList<PageSubscription> subscriptions = cloneSubscriptions();
+
+      Transaction tx = new TransactionImpl(storageManager);
+      for (PageSubscription sub : subscriptions)
+      {
+         try
+         {
+            sub.onPageModeCleared(tx);
+         }
+         catch (Exception e)
+         {
+            HornetQLogger.LOGGER.warn("Error while cleaning paging on queue " + sub.getQueue().getName(), e);
+         }
+      }
+
+      try
+      {
+         tx.commit();
+      }
+      catch (Exception e)
+      {
+         HornetQLogger.LOGGER.warn("Error while cleaning page, during the commit", e);
+      }
    }
 
    public void cleanup()
@@ -401,13 +444,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   storeBookmark(cursorList, currentPage);
 
                   pagingStore.stopPaging();
-
-                  // This has to be called after we stopped paging
-                  for (PageSubscription cursor : cursorList)
-                  {
-                     cursor.scheduleCleanupCheck();
-                  }
-
                }
             }
 
@@ -598,7 +634,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
          {
             HornetQLogger.LOGGER.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
          }
-         if (firstPage < minPage)
+
+         // the cursor will return -1 if the cursor is empty
+         if (firstPage >= 0 && firstPage < minPage)
          {
             minPage = firstPage;
          }
