@@ -572,7 +572,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          spec.setUseJNDI(false);
 
-         spec.setClientId("my-client-id");
+         spec.setClientID("my-client-id");
 
          spec.setUser("user");
          spec.setPassword("password");

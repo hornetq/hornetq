@@ -358,7 +358,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer
@@ -375,7 +375,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer
@@ -479,7 +479,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return false;
    }
 
-   protected final Session
+   protected final HornetQSession
             createSessionInternal(final boolean transacted, int acknowledgeMode, final int type) throws JMSException
    {
       if (transacted)

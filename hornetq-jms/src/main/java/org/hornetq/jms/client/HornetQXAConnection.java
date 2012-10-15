@@ -26,9 +26,12 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 
 /**
  * HornetQ implementation of a JMS XAConnection.
+ * <p>
+ * The flat implementation of {@link XATopicConnection} and {@link XAQueueConnection} is per design,
+ * following common practices of JMS 1.1.
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAConnection extends HornetQConnection implements XATopicConnection, XAQueueConnection
+public final class HornetQXAConnection extends HornetQConnection implements XATopicConnection, XAQueueConnection
 {
 
    public HornetQXAConnection(final String username, final String password, final int connectionType,
