@@ -21,11 +21,11 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 /**
- * 
+ *
  * A DestinationObjectFactory.
- * 
+ *
  * Given a Reference - reconstructs a HornetQDestination
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *

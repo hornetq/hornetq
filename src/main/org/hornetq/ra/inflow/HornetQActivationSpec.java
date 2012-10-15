@@ -28,7 +28,7 @@ import org.hornetq.ra.Util;
 /**
  * The activation spec
  * These properties are set on the MDB ActivactionProperties
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -93,7 +93,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    // undefined by default, default is specified at the RA level in HornetQRAProperties
    private Integer setupAttempts;
-   
+
    // undefined by default, default is specified at the RA level in HornetQRAProperties
    private Long setupInterval;
 
@@ -477,7 +477,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
          return password;
       }
    }
-   
+
    public String getOwnPassword()
    {
       return password;
@@ -487,7 +487,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /**
     * Set the password
     * @param value The value
-    * @throws Exception 
+    * @throws Exception
     */
    public void setPassword(final String value) throws Exception
    {
@@ -720,7 +720,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setDLQJNDIName(final String name)
    {
    }
-   
+
    public void setDLQHandler(final String handler)
    {
    }
@@ -746,8 +746,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setKeepAliveMillis(long keepAliveMillis)
    {
    }
-   
-   
+
+
    public void setReconnectInterval(long interval)
    {
    }

@@ -83,7 +83,7 @@ public class ServerInfo
    private String appendPagingInfos()
    {
       String info = "";
-      
+
       for (SimpleString storeName : pagingManager.getStoreNames())
       {
          PagingStore pageStore;

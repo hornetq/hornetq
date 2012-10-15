@@ -30,7 +30,7 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private boolean clusterConnection;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -65,11 +65,11 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
    {
       return clusterConnection;
    }
-   
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeBoolean(clusterConnection);      
+      buffer.writeBoolean(clusterConnection);
    }
 
    @Override

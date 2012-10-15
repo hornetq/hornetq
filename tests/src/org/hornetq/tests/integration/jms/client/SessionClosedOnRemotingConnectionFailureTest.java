@@ -37,7 +37,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A SessionClosedOnRemotingConnectionFailureTest
  *
  * @author Tim Fox

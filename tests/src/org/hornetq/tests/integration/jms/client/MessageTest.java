@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A MessageTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -75,7 +75,7 @@ public class MessageTest extends JMSTestBase
          conn.start();
 
          StreamMessage msg = sess.createStreamMessage();
-         
+
          msg.writeInt(1);
          msg.writeInt(2);
          msg.writeInt(3);
@@ -88,116 +88,116 @@ public class MessageTest extends JMSTestBase
          assertEquals(1, received.readObject());
          assertEquals(2, received.readObject());
          assertEquals(3, received.readObject());
-         
+
          try
          {
             received.readObject();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readBoolean();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readByte();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readChar();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readDouble();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readFloat();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readInt();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readLong();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readShort();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
          }
-         
+
          try
          {
             received.readString();
-            
+
             fail("Should throw exception");
          }
          catch (MessageEOFException e)
          {
             //Ok
-         }                 
+         }
       }
       finally
       {
@@ -210,7 +210,7 @@ public class MessageTest extends JMSTestBase
          }
       }
    }
-   
+
    public void testNullProperties() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -228,21 +228,21 @@ public class MessageTest extends JMSTestBase
          conn.start();
 
          Message msg = sess.createMessage();
-         
+
          msg.setStringProperty("Test", "SomeValue");
-         
+
          assertEquals("SomeValue", msg.getStringProperty("Test"));
-         
+
          msg.setStringProperty("Test", null);
-         
+
          assertEquals(null, msg.getStringProperty("Test"));
 
          msg.setObjectProperty(MessageTest.propName1, null);
-         
+
          msg.setStringProperty(MessageTest.propName2, null);
-         
+
          msg.getStringProperty(MessageTest.propName1);
-         
+
          msg.setStringProperty("Test", null);
 
          Message received = sendAndConsumeMessage(msg, prod, cons);

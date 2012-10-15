@@ -31,7 +31,7 @@ import org.jboss.util.NestedRuntimeException;
  * that JMS administrated objects and  other "ready to use" Pub/Sub objects (that is to say topics,
  * sessions, publishers and subscribers) are available conveniently for the test cases.
  * <br />
- * Classes which want that convenience should extend <code>PubSubTestCase</code> instead of 
+ * Classes which want that convenience should extend <code>PubSubTestCase</code> instead of
  * <code>JMSTestCase</code>.
  *
  * @author Jeff Mesnil (jmesnil@gmail.com)

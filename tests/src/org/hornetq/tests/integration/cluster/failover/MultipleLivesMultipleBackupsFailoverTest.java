@@ -72,15 +72,15 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
 
       servers.get(3).start();
       waitForServer(servers.get(3).getServer());
-      
+
       servers.get(1).start();
       waitForServer(servers.get(1).getServer());
 
       servers.get(2).start();
-      
+
       servers.get(4).start();
       waitForServer(servers.get(4).getServer());
-      
+
       servers.get(5).start();
 
       waitForServer(servers.get(4).getServer());

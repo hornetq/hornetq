@@ -24,6 +24,6 @@ import org.hornetq.core.paging.PagedMessage;
  */
 public interface LivePageCache extends PageCache
 {
-   
+
    void addLiveMessage(PagedMessage message);
 }

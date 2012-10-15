@@ -24,7 +24,7 @@ import org.hornetq.utils.BufferHelper;
 
 /**
  * Configuration settings that are applied on the address level
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
@@ -44,7 +44,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
 
    public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
-   
+
    public static final int DEFAULT_PAGE_MAX_CACHE = 5;
 
    public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
@@ -62,7 +62,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    private Long maxSizeBytes = null;
 
    private Long pageSizeBytes = null;
-   
+
    private Integer pageMaxCache = null;
 
    private Boolean dropMessagesWhenFull = null;
@@ -113,12 +113,12 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    {
       pageSizeBytes = pageSize;
    }
-   
+
    public int getPageCacheMaxSize()
    {
       return pageMaxCache != null ? pageMaxCache : AddressSettings.DEFAULT_PAGE_MAX_CACHE;
    }
-   
+
    public void setPageCacheMaxSize(final int pageMaxCache)
    {
       this.pageMaxCache = pageMaxCache;
@@ -280,7 +280,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       maxSizeBytes = BufferHelper.readNullableLong(buffer);
 
       pageSizeBytes = BufferHelper.readNullableLong(buffer);
-      
+
       pageMaxCache = BufferHelper.readNullableInteger(buffer);
 
       dropMessagesWhenFull = BufferHelper.readNullableBoolean(buffer);

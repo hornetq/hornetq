@@ -34,9 +34,9 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class SSLSupport
 {
@@ -197,7 +197,7 @@ public class SSLSupport
 
       throw new Exception("Failed to find a store at " + storePath);
    }
-   
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.

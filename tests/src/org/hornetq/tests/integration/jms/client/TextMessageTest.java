@@ -31,7 +31,7 @@ import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A TextMessageTest
  *
  * @author Tim Fox
@@ -173,7 +173,7 @@ public class TextMessageTest extends JMSTestBase
          TextMessage received2 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received2);
          Assert.assertEquals(str, received2.getText());
-         
+
          assertEquals(str, msg2.getText());
 
          // Now resend it

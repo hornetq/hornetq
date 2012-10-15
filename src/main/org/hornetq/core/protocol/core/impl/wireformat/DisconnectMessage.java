@@ -18,9 +18,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A Ping
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -31,7 +31,7 @@ public class DisconnectMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString nodeID;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

@@ -45,7 +45,7 @@ public class JMSTransactionDetail extends TransactionDetail
    {
       super(xid,tx,creation);
    }
-   
+
    @Override
    public String decodeMessageType(ServerMessage msg)
    {

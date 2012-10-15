@@ -48,7 +48,7 @@ import org.hornetq.utils.json.JSONArray;
  * A BridgeControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  */
@@ -100,7 +100,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(1, array.length());
       Assert.assertEquals(clusterConnectionConfig1.getStaticConnectors().get(0), array.getString(0));
-      
+
       Assert.assertNull(clusterConnectionControl.getDiscoveryGroupName());
 
       Assert.assertTrue(clusterConnectionControl.isStarted());
@@ -202,7 +202,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                               false);
       List<String> connectors = new ArrayList<String>();
       connectors.add(connectorConfig.getName());
-      
+
       clusterConnectionConfig1 = new ClusterConnectionConfiguration(RandomUtil.randomString(),
                                                                     queueConfig.getAddress(),
                                                                     connectorConfig.getName(),
@@ -225,7 +225,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                     RandomUtil.randomPositiveInt(),
                                                                     RandomUtil.randomPositiveInt(),
                                                                     discoveryGroupName);
-      
+
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);

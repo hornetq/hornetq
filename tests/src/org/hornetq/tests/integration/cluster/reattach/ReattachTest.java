@@ -38,11 +38,11 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A ReattachTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 4 Nov 2008 16:54:50
  *
  *
@@ -168,11 +168,11 @@ public class ReattachTest extends ServiceTestBase
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             System.out.println("Intercept..." + packet.getClass().getName());
-            
+
             if (packet instanceof SessionProducerCreditsMessage )
             {
                SessionProducerCreditsMessage credit = (SessionProducerCreditsMessage)packet;
-               
+
                System.out.println("Credits: " + credit.getCredits());
                if (count.incrementAndGet() == 2)
                {
@@ -215,7 +215,7 @@ public class ReattachTest extends ServiceTestBase
    }
 
    /*
-    * Test failure on connection, simulate failure to create connection for a while, then 
+    * Test failure on connection, simulate failure to create connection for a while, then
     * allow connection to be recreated
     */
    public void testDelayedReattach() throws Exception

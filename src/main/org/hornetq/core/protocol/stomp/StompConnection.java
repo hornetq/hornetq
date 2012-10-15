@@ -56,11 +56,11 @@ public class StompConnection implements RemotingConnection
    private boolean valid;
 
    private boolean destroyed = false;
-   
+
    private final long creationTime;
 
    private StompDecoder decoder = new StompDecoder();
-   
+
    private final Acceptor acceptorUsed;
 
    private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
@@ -68,11 +68,11 @@ public class StompConnection implements RemotingConnection
    private final List<CloseListener> closeListeners = new CopyOnWriteArrayList<CloseListener>();
 
    private final Object failLock = new Object();
-   
+
    private final Executor executor;
-   
+
    private volatile boolean dataReceived;
-   
+
    private boolean enableMessageID;
 
    public StompDecoder getDecoder()
@@ -85,13 +85,13 @@ public class StompConnection implements RemotingConnection
       this.transportConnection = transportConnection;
 
       this.manager = manager;
-      
+
       this.creationTime = System.currentTimeMillis();
-      
+
       this.acceptorUsed = acceptorUsed;
-      
+
       this.executor = executor;
-      
+
       this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
                                                            false,
                                                            acceptorUsed.getConfiguration());
@@ -168,7 +168,7 @@ public class StompConnection implements RemotingConnection
 
       failureListeners.addAll(listeners);
    }
-   
+
    public void setDataReceived()
    {
       dataReceived = true;
@@ -204,7 +204,7 @@ public class StompConnection implements RemotingConnection
 
       callClosingListeners();
    }
-   
+
    Acceptor getAcceptorUsed()
    {
       return acceptorUsed;
@@ -242,7 +242,7 @@ public class StompConnection implements RemotingConnection
       callFailureListeners(me);
 
       callClosingListeners();
-      
+
       internalClose();
    }
 
@@ -266,7 +266,7 @@ public class StompConnection implements RemotingConnection
    {
       return transportConnection.getRemoteAddress();
    }
-   
+
    public long getCreationTime()
    {
       return creationTime;

@@ -566,7 +566,7 @@ public class NettyHttpTest extends UnitTestCase
       public void connectionReadyForWrites(Object connectionID, boolean ready)
       {
       }
-      
-      
+
+
    }
 }

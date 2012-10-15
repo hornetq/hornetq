@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
-   
+
    @Override
    public boolean isSecure()
    {
@@ -370,7 +370,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      
+
       ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
@@ -381,13 +381,13 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "1");
-      
+
       Map<ActivationSpec, HornetQActivation> activations = qResourceAdapter.getActivations();
       assertEquals(1,activations.size());
-      
+
       HornetQActivation activation = activations.values().iterator().next();
       SimpleString tempQueueName = activation.getTopicTemporaryQueue();
-      
+
       QueueQuery query = session.queueQuery(tempQueueName);
       assertTrue(query.isExists());
 
@@ -396,7 +396,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
 
       query = session.queueQuery(tempQueueName);
-      
+
       assertFalse(query.isExists());
    }
 

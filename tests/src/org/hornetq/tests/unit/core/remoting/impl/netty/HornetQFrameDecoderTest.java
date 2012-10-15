@@ -23,9 +23,9 @@ import org.jboss.netty.util.CharsetUtil;
 import junit.framework.TestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
- * 
+ *
  */
 public class HornetQFrameDecoderTest extends TestCase{
 
@@ -33,7 +33,7 @@ public class HornetQFrameDecoderTest extends TestCase{
         final ChannelBuffer buffer = ChannelBuffers.copiedBuffer("TestBytes", CharsetUtil.US_ASCII);
 
         DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder(new BufferDecoder() {
-            
+
             public int isReadyToHandle(HornetQBuffer buffer) {
                 if (buffer.readableBytes()  > 2) {
                     return 2;
@@ -41,7 +41,7 @@ public class HornetQFrameDecoderTest extends TestCase{
                 return -1;
             }
         }));
-        
+
         assertFalse("Should not readable", decoder.offer(buffer.duplicate().slice(0, 2)));
         assertTrue("Should be readable", decoder.offer(buffer.duplicate().slice(3, 2)));
 

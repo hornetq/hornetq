@@ -21,7 +21,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A SimpleSendMultipleQueues
  *
  * @author Tim Fox

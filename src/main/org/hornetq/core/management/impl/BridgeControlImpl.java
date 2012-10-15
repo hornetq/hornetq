@@ -24,7 +24,7 @@ import org.hornetq.core.server.cluster.Bridge;
  * A BridgeControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:09:04
  */
 public class BridgeControlImpl extends AbstractControl implements BridgeControl
@@ -58,7 +58,7 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
       clearIO();
       try
       {
-         return configuration.getStaticConnectors().toArray(new String[0]);                 
+         return configuration.getStaticConnectors().toArray(new String[0]);
       }
       finally
       {
@@ -208,7 +208,7 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
          blockOnIO();
       }
    }
-   
+
    public boolean isHA()
    {
       clearIO();
@@ -248,7 +248,7 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
          blockOnIO();
       }
    }
-   
+
    @Override
    protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {

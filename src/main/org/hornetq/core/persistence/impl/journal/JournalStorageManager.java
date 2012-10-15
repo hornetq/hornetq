@@ -102,9 +102,9 @@ import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
- * 
+ *
  * A JournalStorageManager
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -160,7 +160,7 @@ public class JournalStorageManager implements StorageManager
    public static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
    public static final byte PAGE_CURSOR_COMPLETE = 42;
-   
+
    private final Semaphore pageMaxConcurrentIO;
 
    private final BatchingIDGenerator idGenerator;
@@ -172,7 +172,7 @@ public class JournalStorageManager implements StorageManager
    private final Journal bindingsJournal;
 
    private final SequentialFileFactory largeMessagesFactory;
-   
+
    private SequentialFileFactory journalFF = null;
 
    private volatile boolean started;
@@ -334,7 +334,7 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
 
       perfBlastPages = config.getJournalPerfBlastPages();
-      
+
       if (config.getPageMaxConcurrentIO() != 1)
       {
          pageMaxConcurrentIO = new Semaphore(config.getPageMaxConcurrentIO());
@@ -721,7 +721,7 @@ public class JournalStorageManager implements StorageManager
                                                   PAGE_CURSOR_COMPLETE,
                                                   new CursorAckRecordEncoding(queueID, position));
    }
-   
+
    public void deletePageComplete(long ackID) throws Exception
    {
       messageJournal.appendDeleteRecord(ackID, false);
@@ -790,7 +790,7 @@ public class JournalStorageManager implements StorageManager
    {
       bindingsJournal.appendCommitRecord(txID, true);
    }
-   
+
    public void rollbackBindings(final long txID) throws Exception
    {
       // no need to sync, it's going away anyways
@@ -1186,7 +1186,7 @@ public class JournalStorageManager implements StorageManager
                {
                   log.info("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR, deleting record now");
                   messageJournal.appendDeleteRecord(record.id, false);
-                  
+
                }
 
                break;
@@ -1232,7 +1232,7 @@ public class JournalStorageManager implements StorageManager
 
                break;
             }
-            
+
             case PAGE_CURSOR_COMPLETE:
             {
                CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
@@ -1254,7 +1254,7 @@ public class JournalStorageManager implements StorageManager
 
                break;
              }
-               
+
             default:
             {
                throw new IllegalStateException("Invalid record type " + recordType);
@@ -1816,9 +1816,9 @@ public class JournalStorageManager implements StorageManager
       {
          // for compatibility: couple with old behaviour, copying the old file to avoid message loss
          long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
-         
+
          SequentialFile currentFile = createFileForLargeMessage(largeMessage.getMessageID(), true);
-         
+
          if (!currentFile.exists())
          {
             SequentialFile linkedFile = createFileForLargeMessage(originalMessageID, true);
@@ -1828,7 +1828,7 @@ public class JournalStorageManager implements StorageManager
                linkedFile.close();
             }
          }
-         
+
          currentFile.close();
       }
 
@@ -2032,7 +2032,7 @@ public class JournalStorageManager implements StorageManager
                                                             pageSubscriptions,
                                                             queueInfos,
                                                             pagingManager);
-                  
+
 
                   if (sub != null)
                   {
@@ -3065,11 +3065,11 @@ public class JournalStorageManager implements StorageManager
          this.position = new PagePositionImpl(pageNR, messageNR);
       }
    }
-   
-   
+
+
    public final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
    {
-      
+
       public PageCompleteCursorAckRecordEncoding()
       {
          super();
@@ -3275,7 +3275,7 @@ public class JournalStorageManager implements StorageManager
 
             return encoding;
          }
-         
+
          case PAGE_CURSOR_COMPLETE:
          {
             CursorAckRecordEncoding encoding = new PageCompleteCursorAckRecordEncoding();
@@ -3441,7 +3441,7 @@ public class JournalStorageManager implements StorageManager
    {
       return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }
-   
+
    private static Xid toXid(final byte[] data)
    {
       try

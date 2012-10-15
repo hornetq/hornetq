@@ -56,9 +56,9 @@ import org.hornetq.spi.core.remoting.Connection;
 public class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
-   
+
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -73,7 +73,7 @@ public class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
-      
+
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
@@ -119,12 +119,12 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-               
+
                if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
                {
                   channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
                }
-               
+
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
                   public void nodeUP(final long uniqueEventID,
@@ -171,7 +171,7 @@ public class CoreProtocolManager implements ProtocolManager
                         }
                      });
                   }
-                  
+
                   public String toString()
                   {
                      return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
@@ -181,7 +181,7 @@ public class CoreProtocolManager implements ProtocolManager
                if (acceptorUsed.getClusterConnection() != null)
                {
                   acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
-                  
+
                   rc.addCloseListener(new CloseListener()
                   {
                      public void connectionClosed()
@@ -210,7 +210,7 @@ public class CoreProtocolManager implements ProtocolManager
                         }
                      }
                   });
-                  
+
                }
             }
             else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
@@ -230,7 +230,7 @@ public class CoreProtocolManager implements ProtocolManager
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-               
+
                if (acceptorUsed != null)
                {
                   ClusterConnection clusterConn = acceptorUsed.getClusterConnection();

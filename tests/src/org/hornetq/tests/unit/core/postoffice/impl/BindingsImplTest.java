@@ -48,7 +48,7 @@ import org.hornetq.utils.UUID;
  * A BindingImplTest
  *
  * @author clebert
- * 
+ *
  * Created Mar 12, 2009 9:14:46 PM
  *
  *
@@ -137,7 +137,7 @@ public class BindingsImplTest extends UnitTestCase
 
       public boolean hasTimedOut(long currentTime, int defaultTimeout)
       {
-         return false;  
+         return false;
       }
 
       /* (non-Javadoc)
@@ -290,7 +290,7 @@ public class BindingsImplTest extends UnitTestCase
 
       public void setTimeout(int timeout)
       {
-         
+
       }
 
       public Transaction copy()
@@ -354,7 +354,7 @@ public class BindingsImplTest extends UnitTestCase
       public void setWaitBeforeCommit(boolean waitBeforeCommit)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }
@@ -964,7 +964,7 @@ public class BindingsImplTest extends UnitTestCase
       public void setAddressTransient(SimpleString address)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public UUID getUserID()
@@ -976,7 +976,7 @@ public class BindingsImplTest extends UnitTestCase
       public void setUserID(UUID userID)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1030,7 +1030,7 @@ public class BindingsImplTest extends UnitTestCase
       public void finishCopy() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }
@@ -1062,7 +1062,7 @@ public class BindingsImplTest extends UnitTestCase
       public void close() throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       final SimpleString name;

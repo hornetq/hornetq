@@ -48,12 +48,12 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /** Use Local TX instead of XA */
    private Boolean localTx = false;
-   
-   
+
+
    /** Class used to locate the Transaction Manager.
     *  Using JBoss5 as the default locator */
    private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator;org.hornetq.integration.jboss.tm.JBoss4TransactionManagerLocator";
-   
+
    /** Method used to locate the TM */
    private String transactionManagerLocatorMethod = "getTm;getTM";
 
@@ -68,13 +68,13 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private Hashtable<?,?> jndiParams;
 
    private boolean useJNDI;
-   
+
    private boolean useMaskedPassword = false;
-   
+
    private String passwordCodec;
-   
+
    private boolean initialized = false;
-   
+
    private transient SensitiveDataCodec<String> codecInstance;
 
    /**
@@ -247,27 +247,27 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       this.setupInterval = setupInterval;
    }
-   
+
    public boolean isUseMaskedPassword()
    {
       return useMaskedPassword;
    }
-   
+
    public void setUseMaskedPassword(boolean useMaskedPassword)
    {
       this.useMaskedPassword = useMaskedPassword;
    }
-   
+
    public String getPasswordCodec()
    {
       return passwordCodec;
    }
-   
+
    public void setPasswordCodec(String codecs)
    {
       passwordCodec = codecs;
    }
-   
+
    @Override
    public String toString()
    {
@@ -278,7 +278,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    public synchronized void init() throws HornetQException
    {
       if (initialized) return;
-      
+
       if (useMaskedPassword)
       {
          codecInstance = new DefaultSensitiveStringCodec();

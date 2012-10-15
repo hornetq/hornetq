@@ -32,7 +32,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A MultiThreadFailoverTest
- * 
+ *
  * Test Failover where failure is prompted by another thread
  *
  * @author Tim Fox

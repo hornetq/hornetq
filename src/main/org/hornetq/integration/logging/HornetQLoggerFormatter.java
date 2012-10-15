@@ -29,7 +29,7 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
    {
       return clazzName.substring(clazzName.lastIndexOf(".") + 1);
    }
-   
+
    private static String [] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
    @Override
@@ -37,11 +37,11 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
    {
       Calendar calendar = GregorianCalendar.getInstance();
       calendar.setTimeInMillis(record.getMillis());
-      
+
       StringBuffer sb = new StringBuffer();
-        
+
       sb.append("* [").append(Thread.currentThread().getName()).append("] ");
-      sb.append(calendar.get(GregorianCalendar.DAY_OF_MONTH) + "-" + MONTHS[calendar.get(GregorianCalendar.MONTH)] + " " + 
+      sb.append(calendar.get(GregorianCalendar.DAY_OF_MONTH) + "-" + MONTHS[calendar.get(GregorianCalendar.MONTH)] + " " +
                 calendar.get(GregorianCalendar.HOUR_OF_DAY) + ":" +
                 calendar.get(GregorianCalendar.MINUTE) +
                 ":" +
@@ -49,7 +49,7 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
                 "," +
                 calendar.get(GregorianCalendar.MILLISECOND) +
                 " ");
-      
+
       sb.append(record.getLevel()).append(" [");
       sb.append(stripPackage(record.getLoggerName())).append("]").append("  ");
       //sb.append(HornetQLoggerFormatter.LINE_SEPARATOR);
@@ -62,7 +62,7 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
          {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            
+
             pw.println(record.getThrown() );
             StackTraceElement[] trace = record.getThrown().getStackTrace();
             for (int i=0; i < trace.length; i++)
@@ -75,7 +75,7 @@ public class HornetQLoggerFormatter extends java.util.logging.Formatter
          {
          }
       }
-      
+
       sb.append(HornetQLoggerFormatter.LINE_SEPARATOR);
 
       return sb.toString();

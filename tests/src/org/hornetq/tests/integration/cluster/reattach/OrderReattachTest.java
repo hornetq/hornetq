@@ -79,7 +79,7 @@ public class OrderReattachTest extends ServiceTestBase
 
       final CountDownLatch ready = new CountDownLatch(1);
 
-      
+
       // this test will use a queue. Whenever the test wants a failure.. it can just send TRUE to failureQueue
       // This Thread will be reading the queue
       Thread failer = new Thread()
@@ -229,7 +229,7 @@ public class OrderReattachTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
-         
+
          Exception failure;
 
          public void onMessage(final ClientMessage message)
@@ -239,7 +239,7 @@ public class OrderReattachTest extends ServiceTestBase
                failure = new Exception("too many messages");
                latch.countDown();
             }
-            
+
             if (message.getIntProperty("count") != count)
             {
                failure = new Exception("counter " + count + " was not as expected (" + message.getIntProperty("count") + ")");
@@ -278,7 +278,7 @@ public class OrderReattachTest extends ServiceTestBase
          boolean ok = handler.latch.await(60000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          if (handler.failure != null)
          {
             throw handler.failure;

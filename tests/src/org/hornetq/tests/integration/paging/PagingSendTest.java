@@ -45,7 +45,7 @@ public class PagingSendTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    public static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-   
+
    private ServerLocator locator;
 
    // Static --------------------------------------------------------
@@ -92,7 +92,7 @@ public class PagingSendTest extends ServiceTestBase
       {
          ServerLocator locator = createFactory(isNetty());
          ClientSessionFactory sf;
-         
+
          // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
          // page mode
          // and we could only guarantee that by setting it to synchronous
@@ -167,7 +167,7 @@ public class PagingSendTest extends ServiceTestBase
       try
       {
          locator = createFactory(isNetty());
-         
+
          ClientSessionFactory sf = locator.createSessionFactory();;
 
          ClientSession sessionConsumer = sf.createSession(true, true, 0);
@@ -180,7 +180,7 @@ public class PagingSendTest extends ServiceTestBase
          final AtomicInteger errors = new AtomicInteger(0);
 
          final int TOTAL_MESSAGES = 1000;
-         
+
          // Consumer will be ready after we have commits
          final CountDownLatch ready = new CountDownLatch(1);
 
@@ -207,7 +207,7 @@ public class PagingSendTest extends ServiceTestBase
                         }
                      }
                   }
-                  
+
                   sessionProducer.commit();
 
                }
@@ -222,9 +222,9 @@ public class PagingSendTest extends ServiceTestBase
          ClientConsumer consumer = sessionConsumer.createConsumer(PagingSendTest.ADDRESS);
 
          sessionConsumer.start();
-         
+
          tProducer.start();
-         
+
          assertTrue(ready.await(10, TimeUnit.SECONDS));
 
          for (int i = 0; i < TOTAL_MESSAGES; i++)
@@ -232,18 +232,18 @@ public class PagingSendTest extends ServiceTestBase
             ClientMessage msg = consumer.receive(10000);
 
             Assert.assertNotNull(msg);
-            
+
             assertEquals(i, msg.getIntProperty("count").intValue());
-            
+
             msg.acknowledge();
          }
-         
+
          tProducer.join();
 
          sessionConsumer.close();
-         
+
          sessionProducer.close();
-         
+
          assertEquals(0, errors.get());
       }
       finally

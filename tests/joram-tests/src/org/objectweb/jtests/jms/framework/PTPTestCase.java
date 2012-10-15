@@ -31,7 +31,7 @@ import org.jboss.util.NestedRuntimeException;
  * that JMS administrated objects and  other "ready to use" PTP objects (that is to say queues,
  * sessions, senders and receviers) are available conveniently for the test cases.
  * <br />
- * Classes which want that convenience should extend <code>PTPTestCase</code> instead of 
+ * Classes which want that convenience should extend <code>PTPTestCase</code> instead of
  * <code>JMSTestCase</code>.
  *
  * @author Jeff Mesnil (jmesnil@gmail.com)

@@ -46,7 +46,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * StompProtocolManager
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 class StompProtocolManager implements ProtocolManager
@@ -65,7 +65,7 @@ class StompProtocolManager implements ProtocolManager
    // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
-   
+
    private final SimpleString managementAddress;
 
    private final Executor executor;
@@ -166,17 +166,17 @@ class StompProtocolManager implements ProtocolManager
    {
       long start = System.nanoTime();
       StompConnection conn = (StompConnection)connection;
-      
+
       conn.setDataReceived();
-      
+
       StompDecoder decoder = conn.getDecoder();
-      
+
      // log.info("in handle");
 
       do
       {
          StompFrame request;
-         
+
          try
          {
             request = decoder.decode(buffer);
@@ -187,7 +187,7 @@ class StompProtocolManager implements ProtocolManager
 
             return;
          }
-         
+
          if (request == null)
          {
             break;
@@ -278,9 +278,9 @@ class StompProtocolManager implements ProtocolManager
             server.getStorageManager().clearContext();
          }
       } while (decoder.hasBytes());
-      
+
       long end = System.nanoTime();
-      
+
      // log.info("handle took " + (end-start));
    }
 
@@ -360,7 +360,7 @@ class StompProtocolManager implements ProtocolManager
          }
          subscriptionID = "subscription/" + destination;
       }
-      
+
       validateDestination(new SimpleString(destination));
       StompSession stompSession = getSession(connection);
       stompSession.setNoLocal(noLocal);
@@ -550,7 +550,7 @@ class StompProtocolManager implements ProtocolManager
       cleanup(connection);
       return null;
    }
-   
+
    private StompFrame onSend(StompFrame frame, StompConnection connection) throws Exception
    {
       checkConnected(connection);
@@ -558,14 +558,14 @@ class StompProtocolManager implements ProtocolManager
       String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
       long timestamp = System.currentTimeMillis();
-      
+
       SimpleString address = SimpleString.toSimpleString(destination);
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
       message.setTimestamp(timestamp);
       message.setAddress(address);
 
       validateDestination(address);
-      
+
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
       if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
       {
@@ -592,8 +592,8 @@ class StompProtocolManager implements ProtocolManager
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
       }
-      stompSession.sendInternal(message, true);       
-      
+      stompSession.sendInternal(message, true);
+
       return null;
    }
 
@@ -625,7 +625,7 @@ class StompProtocolManager implements ProtocolManager
       String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
 
       HornetQSecurityManager sm = server.getSecurityManager();
-      
+
       if (sm != null && server.getConfiguration().isSecurityEnabled())
       {
          sm.validateUser(login, passcode);

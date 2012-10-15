@@ -22,9 +22,9 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 
 /**
- * 
+ *
  * A NIOSequentialFileFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -97,8 +97,8 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
    {
       return timedBuffer != null;
    }
-   
-   
+
+
    public ByteBuffer allocateDirectBuffer(final int size)
    {
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
@@ -126,13 +126,13 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
          catch (InterruptedException e)
          {
          }
-         
+
          buffer2 = ByteBuffer.allocateDirect(size);
-         
+
       }
       return buffer2;
    }
-   
+
    public void releaseDirectBuffer(ByteBuffer buffer)
    {
       // nothing we can do on this case. we can just have good faith on GC

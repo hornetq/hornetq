@@ -104,13 +104,13 @@ public class AddressControlTest extends ManagementTestBase
 
       session.deleteQueue(anotherQueue);
    }
-   
+
    public void testGetBindingNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
       String divertName = RandomUtil.randomString();
-      
+
       session.createQueue(address, queue, false);
 
       AddressControl addressControl = createManagementControl(address);
@@ -122,9 +122,9 @@ public class AddressControlTest extends ManagementTestBase
 
       bindingNames = addressControl.getBindingNames();
       Assert.assertEquals(2, bindingNames.length);
-      
+
       session.deleteQueue(queue);
-      
+
       bindingNames = addressControl.getBindingNames();
       assertEquals(1, bindingNames.length);
       assertEquals(divertName.toString(), bindingNames[0]);

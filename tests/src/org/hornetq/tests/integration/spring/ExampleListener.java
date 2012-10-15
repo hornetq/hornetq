@@ -14,7 +14,7 @@ import org.hornetq.utils.ReusableLatch;
 public class ExampleListener implements MessageListener
 {
    public static String lastMessage = null;
-   
+
    public static ReusableLatch latch = new ReusableLatch();
 
    public void onMessage(Message message)

@@ -29,13 +29,13 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A test where we validate the server being shutdown when the disk crashed
- * 
+ *
  * It's not possible to automate this test, for this reason follow these steps:
- * 
+ *
  * - you will need any sort of USB disk. I would recommend a real disk using ext4 (or any other linux file system)
  * - Change getTestDir()  to the mounted directory
  * - Run the test, and when the test prompts so, disconnect that disk
- * 
+ *
  *
  * @author clebert
  *

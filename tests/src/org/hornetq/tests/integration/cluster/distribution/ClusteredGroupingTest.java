@@ -777,11 +777,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
          stopServers(1);
 
          closeSessionFactory(1);
-         
+
          startServers(1);
 
          setupSessionFactory(1, isNetty());
-         
+
          Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                       TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);

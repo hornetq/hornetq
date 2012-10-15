@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * 
+ *
  * A SoakBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

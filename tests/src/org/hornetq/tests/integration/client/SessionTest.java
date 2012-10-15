@@ -52,7 +52,7 @@ public class SessionTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       super.tearDown();
    }
 

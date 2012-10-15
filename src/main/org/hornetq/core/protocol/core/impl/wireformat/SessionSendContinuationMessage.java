@@ -21,7 +21,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * A SessionSendContinuationMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Dec 4, 2008 12:25:14 PM
  *
  *
@@ -34,15 +34,15 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    // Attributes ----------------------------------------------------
 
    private boolean requiresResponse;
-   
+
    // Used on confirmation handling
    private MessageInternal message;
-   
+
    /**
     * to be sent on the last package
     */
    private long messageBodySize = -1;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -84,12 +84,12 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    {
       return requiresResponse;
    }
-   
+
    public long getMessageBodySize()
    {
       return messageBodySize;
    }
-   
+
 
    /**
     * @return the message

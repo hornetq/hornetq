@@ -74,7 +74,7 @@ import org.hornetq.utils.json.JSONArray;
  * A JMSServerControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 14 nov. 2008 13:35:10
  *
  *
@@ -520,10 +520,10 @@ public class JMSServerControlTest extends ManagementTestBase
                                       1, // reconnectAttempts
                                       true, // failoverOnInitialConnection
                                       "tst"); // groupID
-      
-      
+
+
       HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -552,15 +552,15 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
       stopServer();
-      
+
       startServer();
-      
+
       control = createManagementControl();
-     
+
       cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -589,19 +589,19 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
       control.destroyConnectionFactory("test");
-      
+
       ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
-      
+
       stopServer();
-      
+
       startServer();
-      
+
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
-      
-     
+
+
       try
       {
          cf = (HornetQQueueConnectionFactory)context.lookup("tst");
@@ -610,8 +610,8 @@ public class JMSServerControlTest extends ManagementTestBase
       catch (NamingException e)
       {
       }
-      
-    
+
+
    }
 
    public void testListPreparedTransactionDetails() throws Exception
@@ -693,8 +693,8 @@ public class JMSServerControlTest extends ManagementTestBase
      control.listPreparedTransactionDetailsAsHTML();
 
    }
-   
-   
+
+
    public void testRemoteClientIDConnection() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -702,12 +702,12 @@ public class JMSServerControlTest extends ManagementTestBase
       HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
                                                                  new TransportConfiguration(InVMConnectorFactory.class.getName()));
       Connection connection = cf.createConnection();
-      
+
       connection.setClientID("someID");
 
       Connection connection2 = cf.createConnection();
       boolean failed = false;
-      
+
       try
       {
          connection2.setClientID("someID");
@@ -716,14 +716,14 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          failed = true;
       }
-      
+
       assertTrue(failed);
-      
+
       System.out.println(control.closeConnectionWithClientID("someID"));
-      
+
       connection2.setClientID("someID");
-      
-      
+
+
       failed = false;
       Connection connection3 = cf.createConnection();
 
@@ -735,7 +735,7 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          failed = true;
       }
-      
+
       assertTrue(failed);
    }
 
@@ -774,9 +774,9 @@ public class JMSServerControlTest extends ManagementTestBase
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
-      
+
       this.fakeJMSStorageManager = new FakeJMSStorageManager(serverManager.getJMSStorageManager());
-      
+
       serverManager.replaceStorageManager(fakeJMSStorageManager);
    }
 
@@ -856,9 +856,9 @@ public class JMSServerControlTest extends ManagementTestBase
       Map<String, PersistedConnectionFactory> connectionFactoryMap = new HashMap<String, PersistedConnectionFactory>();
 
       ConcurrentHashMap<String, List<String>> persistedJNDIMap = new ConcurrentHashMap<String, List<String>>();
-      
+
       JMSStorageManager delegate;
-      
+
       public FakeJMSStorageManager(JMSStorageManager delegate)
       {
          this.delegate = delegate;

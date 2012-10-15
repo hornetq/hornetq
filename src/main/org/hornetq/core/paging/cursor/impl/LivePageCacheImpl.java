@@ -33,13 +33,13 @@ public class LivePageCacheImpl implements LivePageCache
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private final List<PagedMessage> messages = new LinkedList<PagedMessage>();
-   
+
    private final Page page;
-   
+
    private boolean isLive = true;
-   
+
    public String toString()
    {
       return "LivePacheCacheImpl::page=" + page.getPageId() + " number of messages=" + messages.size() + " isLive = " + isLive;
@@ -48,7 +48,7 @@ public class LivePageCacheImpl implements LivePageCache
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public LivePageCacheImpl(final Page page)
    {
       this.page = page;
@@ -63,7 +63,7 @@ public class LivePageCacheImpl implements LivePageCache
    {
       return page;
    }
-   
+
    public long getPageId()
    {
       return page.getPageId();

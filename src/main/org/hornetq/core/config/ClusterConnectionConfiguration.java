@@ -23,7 +23,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
  * A ClusterConnectionConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 13 Jan 2009 09:42:17
  *
  *

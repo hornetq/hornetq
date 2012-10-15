@@ -23,7 +23,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQXAResource.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -138,7 +138,7 @@ public class HornetQRAXAResource implements XAResource
    /**
     * Commit
     * @param xid A global transaction identifier
-    * @param onePhase If true, the resource manager should use a one-phase commit protocol to commit the work done on behalf of xid. 
+    * @param onePhase If true, the resource manager should use a one-phase commit protocol to commit the work done on behalf of xid.
     * @exception XAException An error has occurred
     */
    public void commit(final Xid xid, final boolean onePhase) throws XAException
@@ -193,8 +193,8 @@ public class HornetQRAXAResource implements XAResource
 
    /**
     * IsSameRM
-    * @param xaRes An XAResource object whose resource manager instance is to be compared with the resource manager instance of the target object. 
-    * @return True if its the same RM instance; otherwise false. 
+    * @param xaRes An XAResource object whose resource manager instance is to be compared with the resource manager instance of the target object.
+    * @return True if its the same RM instance; otherwise false.
     * @exception XAException An error has occurred
     */
    public boolean isSameRM(final XAResource xaRes) throws XAException
@@ -208,7 +208,7 @@ public class HornetQRAXAResource implements XAResource
    }
 
    /**
-    * Recover 
+    * Recover
     * @param flag One of TMSTARTRSCAN, TMENDRSCAN, TMNOFLAGS
     * @return Zero or more XIDs
     * @exception XAException An error has occurred
@@ -241,7 +241,7 @@ public class HornetQRAXAResource implements XAResource
    /**
     * Set the transaction timeout
     * @param seconds The number of seconds
-    * @return True if the transaction timeout value is set successfully; otherwise false. 
+    * @return True if the transaction timeout value is set successfully; otherwise false.
     * @exception XAException An error has occurred
     */
    public boolean setTransactionTimeout(final int seconds) throws XAException

@@ -327,72 +327,72 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
 
    }
-   
+
    public void testFactoryTypes() throws Exception
    {
       HornetQConnectionFactory factory = null;
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/ConnectionFactory");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAConnectionFactory);
       assertEquals(6, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_XA_FALSE");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAConnectionFactory);
       assertEquals(6, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_GENERIC_XA_FALSE");
-      
+
       assertTrue(factory instanceof ConnectionFactory);
       assertEquals(3, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE");
-      
+
       assertTrue(factory instanceof QueueConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE_XA_TRUE");
-      
+
       assertTrue(factory instanceof XAQueueConnectionFactory);
       assertEquals(4, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE_XA_FALSE");
-      
+
       assertTrue(factory instanceof QueueConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC");
-      
+
       assertTrue(factory instanceof TopicConnectionFactory);
       assertEquals(2, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC_XA_TRUE");
-      
+
       assertTrue(factory instanceof XATopicConnectionFactory);
       assertEquals(4, getTypes(factory));
-      
+
       factory = (HornetQConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC_XA_FALSE");
-      
+
       assertTrue(factory instanceof TopicConnectionFactory);
       assertEquals(2, getTypes(factory));
    }
-   
+
    public void testConnectionTypes() throws Exception
    {
       Connection genericConnection = null;

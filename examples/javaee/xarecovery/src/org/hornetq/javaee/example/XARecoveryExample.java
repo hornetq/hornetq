@@ -29,7 +29,7 @@ import org.hornetq.javaee.example.server.XARecoveryExampleService;
  * transaction with a "buggy" XAResource to crash the server.
  * When the server is restarted, the recovery manager will recover the message
  * so that the consumer can receive it.
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

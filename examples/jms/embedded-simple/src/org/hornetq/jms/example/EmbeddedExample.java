@@ -27,7 +27,7 @@ import org.hornetq.jms.server.embedded.EmbeddedJMS;
 
 /**
  * This example demonstrates how to run a HornetQ embedded with JMS
- * 
+ *
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

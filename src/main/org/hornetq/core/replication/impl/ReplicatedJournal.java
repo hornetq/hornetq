@@ -30,7 +30,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager;
 
 /**
- * Used by the {@link JournalStorageManager} to replicate journal calls. 
+ * Used by the {@link JournalStorageManager} to replicate journal calls.
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -201,10 +201,10 @@ public class ReplicatedJournal implements Journal
       }
       replicationManager.appendCommitRecord(journalID, txID, lineUpContext);
       localJournal.appendCommitRecord(txID, sync, callback, lineUpContext);
-      
+
    }
 
-   
+
    /**
     * @param id
     * @param sync

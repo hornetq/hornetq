@@ -16,16 +16,16 @@ package org.hornetq.core.server;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * 
+ *
  * A QueueQueryResult
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class QueueQueryResult
 {
    private SimpleString name;
-   
+
    private boolean exists;
 
    private boolean durable;
@@ -37,11 +37,11 @@ public class QueueQueryResult
    private SimpleString filterString;
 
    private SimpleString address;
-   
+
    private boolean temporary;
 
    public QueueQueryResult(final SimpleString name,
-                                           final SimpleString address,                                           
+                                           final SimpleString address,
                                            final boolean durable,
                                            final boolean temporary,
                                            final SimpleString filterString,
@@ -66,7 +66,7 @@ public class QueueQueryResult
                                             final boolean exists)
    {
       this.durable = durable;
-      
+
       this.temporary = temporary;
 
       this.consumerCount = consumerCount;
@@ -76,7 +76,7 @@ public class QueueQueryResult
       this.filterString = filterString;
 
       this.address = address;
-      
+
       this.name = name;
 
       this.exists = exists;
@@ -111,12 +111,12 @@ public class QueueQueryResult
    {
       return address;
    }
-   
+
    public SimpleString getName()
    {
       return name;
    }
-   
+
    public boolean isTemporary()
    {
       return temporary;

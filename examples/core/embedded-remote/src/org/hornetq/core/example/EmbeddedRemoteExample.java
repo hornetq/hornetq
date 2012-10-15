@@ -26,7 +26,7 @@ import org.hornetq.common.example.SpawnedVMSupport;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
 /**
- * 
+ *
  * This example shows how to run a HornetQ core client and server embedded in your
  * own application
  *

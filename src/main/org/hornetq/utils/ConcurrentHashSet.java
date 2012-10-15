@@ -19,11 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * 
+ *
  * A ConcurrentHashSet.
- * 
+ *
  * Offers same concurrency as ConcurrentHashMap but for a Set
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1935 $</tt>
  *

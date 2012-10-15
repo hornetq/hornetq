@@ -4,14 +4,14 @@ package org.hornetq.utils;
  * <p>Encodes and decodes to and from Base64 notation.</p>
  * <p>Homepage: <a href="http://iharder.net/base64">http://iharder.net/base64</a>.</p>
  *
- * <p>The <tt>options</tt> parameter, which appears in a few places, is used to pass 
- * several pieces of information to the encoder. In the "higher level" methods such as 
- * encodeBytes( bytes, options ) the options parameter can be used to indicate such 
- * things as first gzipping the bytes before encoding them, not inserting linefeeds 
- * (though that breaks strict Base64 compatibility), and encoding using the URL-safe 
+ * <p>The <tt>options</tt> parameter, which appears in a few places, is used to pass
+ * several pieces of information to the encoder. In the "higher level" methods such as
+ * encodeBytes( bytes, options ) the options parameter can be used to indicate such
+ * things as first gzipping the bytes before encoding them, not inserting linefeeds
+ * (though that breaks strict Base64 compatibility), and encoding using the URL-safe
  * and Ordered dialects.</p>
  *
- * <p>The constants defined in Base64 can be OR-ed together to combine options, so you 
+ * <p>The constants defined in Base64 can be OR-ed together to combine options, so you
  * might make a call like this:</p>
  *
  * <code>String encoded = Base64.encodeBytes( mybytes, Base64.GZIP | Base64.DONT_BREAK_LINES );</code>
@@ -43,24 +43,24 @@ package org.hornetq.utils;
  *   Special thanks to Jim Kellerman at <a href="http://www.powerset.com/">http://www.powerset.com/</a>
  *   for contributing the new Base64 dialects.
  *  </li>
- * 
+ *
  *  <li>v2.1 - Cleaned up javadoc comments and unused variables and methods. Added
  *   some convenience methods for reading and writing to and from files.</li>
  *  <li>v2.0.2 - Now specifies UTF-8 encoding in places where the code fails on systems
  *   with other encodings (like EBCDIC).</li>
  *  <li>v2.0.1 - Fixed an error when decoding a single byte, that is, when the
  *   encoded data was a single byte.</li>
- *  <li>v2.0 - I got rid of methods that used booleans to set options. 
+ *  <li>v2.0 - I got rid of methods that used booleans to set options.
  *   Now everything is more consolidated and cleaner. The code now detects
  *   when data that's being decoded is gzip-compressed and will decompress it
  *   automatically. Generally things are cleaner. You'll probably have to
  *   change some method calls that you were making to support the new
  *   options format (<tt>int</tt>s that you "OR" together).</li>
- *  <li>v1.5.1 - Fixed bug when decompressing and decoding to a             
- *   byte[] using <tt>decode( String s, boolean gzipCompressed )</tt>.      
- *   Added the ability to "suspend" encoding in the Output Stream so        
- *   you can turn on and off the encoding if you need to embed base64       
- *   data in an otherwise "normal" stream (like an XML file).</li>  
+ *  <li>v1.5.1 - Fixed bug when decompressing and decoding to a
+ *   byte[] using <tt>decode( String s, boolean gzipCompressed )</tt>.
+ *   Added the ability to "suspend" encoding in the Output Stream so
+ *   you can turn on and off the encoding if you need to embed base64
+ *   data in an otherwise "normal" stream (like an XML file).</li>
  *  <li>v1.5 - Output stream pases on flush() command but doesn't do anything itself.
  *      This helps when using GZIP streams.
  *      Added the ability to GZip-compress objects before encoding them.</li>
@@ -104,11 +104,11 @@ public class Base64
    /** Don't break lines when encoding (violates strict Base64 specification) */
    public final static int DONT_BREAK_LINES = 8;
 
-   /** 
+   /**
     * Encode using Base64-like encoding that is URL- and Filename-safe as described
-    * in Section 4 of RFC3548: 
+    * in Section 4 of RFC3548:
     * <a href="http://www.faqs.org/rfcs/rfc3548.html">http://www.faqs.org/rfcs/rfc3548.html</a>.
-    * It is important to note that data encoded this way is <em>not</em> officially valid Base64, 
+    * It is important to note that data encoded this way is <em>not</em> officially valid Base64,
     * or at the very least should not be called Base64 without also specifying that is
     * was encoded using the URL- and Filename-safe dialect.
     */
@@ -210,7 +210,7 @@ public class Base64
                                                      (byte)'+',
                                                      (byte)'/' };
 
-   /** 
+   /**
     * Translates a Base64 value to either its 6-bit reconstruction value
     * or a negative number indicating some other meaning.
     **/
@@ -348,7 +348,7 @@ public class Base64
    /* ********  U R L   S A F E   B A S E 6 4   A L P H A B E T  ******** */
 
    /**
-    * Used in the URL- and Filename-safe dialect described in Section 4 of RFC3548: 
+    * Used in the URL- and Filename-safe dialect described in Section 4 of RFC3548:
     * <a href="http://www.faqs.org/rfcs/rfc3548.html">http://www.faqs.org/rfcs/rfc3548.html</a>.
     * Notice that the last two bytes become "hyphen" and "underscore" instead of "plus" and "slash."
     */
@@ -880,7 +880,7 @@ public class Base64
     * <p>Encodes up to three bytes of the array <var>source</var>
     * and writes the resulting four Base64 bytes to <var>destination</var>.
     * The source and destination arrays can be manipulated
-    * anywhere along their length by specifying 
+    * anywhere along their length by specifying
     * <var>srcOffset</var> and <var>destOffset</var>.
     * This method does not check to make sure your arrays
     * are large enough to accomodate <var>srcOffset</var> + 3 for
@@ -1261,17 +1261,17 @@ public class Base64
     * and writes the resulting bytes (up to three of them)
     * to <var>destination</var>.
     * The source and destination arrays can be manipulated
-    * anywhere along their length by specifying 
+    * anywhere along their length by specifying
     * <var>srcOffset</var> and <var>destOffset</var>.
     * This method does not check to make sure your arrays
     * are large enough to accomodate <var>srcOffset</var> + 4 for
     * the <var>source</var> array or <var>destOffset</var> + 3 for
     * the <var>destination</var> array.
-    * This method returns the actual number of bytes that 
+    * This method returns the actual number of bytes that
     * were converted from the Base64 encoding.
    * <p>This is the lowest level of the decoding methods with
    * all possible parameters.</p>
-    * 
+    *
     *
     * @param source the array to convert
     * @param srcOffset the index where conversion begins
@@ -2255,7 +2255,7 @@ public class Base64
       } // end write
 
       /**
-       * Calls {@link #write(int)} repeatedly until <var>len</var> 
+       * Calls {@link #write(int)} repeatedly until <var>len</var>
        * bytes are written.
        *
        * @param theBytes array from which to read bytes
@@ -2301,8 +2301,8 @@ public class Base64
 
       } // end flush
 
-      /** 
-       * Flushes and closes (I think, in the superclass) the stream. 
+      /**
+       * Flushes and closes (I think, in the superclass) the stream.
        *
        * @since 1.3
        */

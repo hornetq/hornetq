@@ -29,5 +29,5 @@ public interface BufferHandler
     * @param connectionID the connection the buffer was received on
     * @param buffer       the buffer to decode
     */
-   void bufferReceived(Object connectionID, HornetQBuffer buffer);   
+   void bufferReceived(Object connectionID, HornetQBuffer buffer);
 }

@@ -71,7 +71,7 @@ public class HornetQDestinationTest extends UnitTestCase
       Assert.assertTrue(destination instanceof Topic);
       Assert.assertEquals(destinationName, ((Topic)destination).getTopicName());
    }
-  
+
    public void testFromAddressWithInvalidPrefix() throws Exception
    {
       String invalidPrefix = "junk";

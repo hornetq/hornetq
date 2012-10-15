@@ -22,9 +22,9 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A JournalFileImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *

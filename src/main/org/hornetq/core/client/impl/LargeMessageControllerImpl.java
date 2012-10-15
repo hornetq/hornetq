@@ -62,7 +62,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private volatile SessionReceiveContinuationMessage currentPacket = null;
 
    private final long totalSize;
-   
+
    private final int bufferSize;
 
    private boolean streamEnded = false;
@@ -72,7 +72,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private final long readTimeout;
 
    private long readerIndex = 0;
-   
+
    /** This is to control if packets are arriving for a better timeout control */
    private boolean packetAdded = false;
 
@@ -132,7 +132,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    // Public --------------------------------------------------------
 
    /**
-    * 
+    *
     */
    public void discardUnusedPackets()
    {
@@ -208,7 +208,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                }
             }
 
-            
+
             packets.offer(packet);
          }
       }
@@ -240,7 +240,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          {
             totalSize += polledPacket.getPacketSize();
          }
-   
+
          try
          {
             consumerInternal.flowControl(totalSize, false);
@@ -250,11 +250,11 @@ public class LargeMessageControllerImpl implements LargeMessageController
             // what else can we do here?
             log.warn(ignored.getMessage(), ignored);
          }
-          
+
          packets.offer(new SessionReceiveContinuationMessage());
          streamEnded = true;
          streamClosed = true;
-   
+
          notifyAll();
       }
    }
@@ -315,7 +315,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    }
 
    /**
-    * 
+    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
@@ -328,7 +328,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
 
       long timeOut;
-      
+
       // If timeWait = 0, we will use the readTimeout
       // And we will check if no packets have arrived withing readTimeout milliseconds
       if (timeWait != 0)
@@ -339,7 +339,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       {
          timeOut = System.currentTimeMillis() + readTimeout;
       }
-      
+
       while (!streamEnded && handledException == null)
       {
          try
@@ -350,7 +350,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          {
             throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
          }
-         
+
          if (!streamEnded && handledException == null)
          {
             if (timeWait != 0 && System.currentTimeMillis() > timeOut)
@@ -1104,7 +1104,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    {
       return (char)readShort();
    }
-   
+
    public char getChar(final int index)
    {
       return (char)getShort(index);
@@ -1388,7 +1388,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       {
          throw new IllegalAccessError("Can't read the messageBody after setting outputStream");
       }
-      
+
       if (index >= totalSize)
       {
          throw new IndexOutOfBoundsException();
@@ -1454,7 +1454,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                }
 
                readCachePositionStart = position / bufferSize * bufferSize;
-               
+
                cachedChannel.position(readCachePositionStart);
 
                if (readCache == null)

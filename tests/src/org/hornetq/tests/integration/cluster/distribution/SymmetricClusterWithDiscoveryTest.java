@@ -24,9 +24,9 @@ import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 
 /**
  * A SymmetricClusterWithDiscoveryTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 3 Feb 2009 09:10:43
  *
  *
@@ -103,8 +103,8 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       waitForBindings(1, "queues.testaddress", 1, 1, false);
 
       System.out.println(clusterDescription(servers[0]));
-      
-      
+
+
       for (BroadcastGroup group: servers[1].getClusterManager().getBroadcastGroups())
       {
          group.stop();
@@ -121,13 +121,13 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
          }
          System.out.println("conn " + conn);
       }
-      
-      
+
+
       // More than 1 second timeout required to cleanup broadcasting
       Thread.sleep(1500);
-      
+
       waitForTopology(servers[0], 1);
-      
+
       waitForTopology(servers[1], 1);
 
 
@@ -136,8 +136,8 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
       waitForBindings(0, "queues.testaddress", 0, 0, false);
       waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-      
-      
+
+
       for (BroadcastGroup group: servers[1].getClusterManager().getBroadcastGroups())
       {
          group.start();
@@ -145,9 +145,9 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 
       waitForBindings(0, "queues.testaddress", 1, 1, false);
       waitForBindings(1, "queues.testaddress", 1, 1, false);
-      
+
       waitForTopology(servers[0], 2);
-      
+
       waitForTopology(servers[1], 2);
 
    }

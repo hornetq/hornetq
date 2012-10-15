@@ -17,26 +17,26 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
- * 
+ *
  * <p>This class will use the framework provided to by AbstractQueuedSynchronizer.</p>
  * <p>AbstractQueuedSynchronizer is the framework for any sort of concurrent synchronization, such as Semaphores, events, etc, based on AtomicIntegers.</p>
- * 
+ *
  * <p>This class works just like CountDownLatch, with the difference you can also increase the counter</p>
- * 
+ *
  * <p>It could be used for sync points when one process is feeding the latch while another will wait when everything is done. (e.g. waiting IO completions to finish)</p>
- * 
+ *
  * <p>On HornetQ we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown.</p>
- * 
+ *
  * <p>Note: This latch is reusable. Once it reaches zero, you can call up again, and reuse it on further waits.</p>
- * 
+ *
  * <p>For example: prepareTransaction will wait for the current completions, and further adds will be called on the latch. Later on when commit is called you can reuse the same latch.</p>
- * 
+ *
  * @author Clebert Suconic
  * */
 public class ReusableLatch
 {
-   /** 
-    * Look at the doc and examples provided by AbstractQueuedSynchronizer for more information 
+   /**
+    * Look at the doc and examples provided by AbstractQueuedSynchronizer for more information
     * @see AbstractQueuedSynchronizer*/
    @SuppressWarnings("serial")
    private static class CountSync extends AbstractQueuedSynchronizer
@@ -50,7 +50,7 @@ public class ReusableLatch
       {
          return getState();
       }
-      
+
       public void setCount(final int count)
       {
          setState(count);
@@ -87,7 +87,7 @@ public class ReusableLatch
             }
 
             int newState = actualState - numberOfReleases;
-            
+
             if (newState < 0)
             {
                newState = 0;
@@ -112,12 +112,12 @@ public class ReusableLatch
    {
       control = new CountSync(count);
    }
-   
+
    public int getCount()
    {
       return control.getCount();
    }
-   
+
    public void setCount(final int count)
    {
       control.setCount(count);

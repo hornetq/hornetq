@@ -106,7 +106,7 @@ public class ConsumerTest extends JMSTestBase
       }
 
       conn.start();
-      
+
       // Consume even numbers first
       for (int i = 0; i < noOfMessages; i++)
       {
@@ -117,13 +117,13 @@ public class ConsumerTest extends JMSTestBase
             m.acknowledge();
          }
       }
-      
+
       session.close();
-      
+
       session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
-      
+
       consumer = session.createConsumer(jBossQueue);
-      
+
       // Consume odd numbers first
       for (int i = 0; i < noOfMessages; i++)
       {
@@ -131,7 +131,7 @@ public class ConsumerTest extends JMSTestBase
          {
             continue;
          }
-         
+
          TextMessage m = (TextMessage) consumer.receive(1000);
          assertNotNull(m);
          m.acknowledge();
@@ -159,15 +159,15 @@ public class ConsumerTest extends JMSTestBase
       }
 
       conn.start();
-      
+
       final AtomicInteger errors = new AtomicInteger(0);
       final ReusableLatch latch = new ReusableLatch();
       latch.setCount(noOfMessages);
-      
+
       class MessageAckEven implements MessageListener
       {
          int count = 0;
-         
+
          public void onMessage(Message msg)
          {
             try
@@ -175,15 +175,15 @@ public class ConsumerTest extends JMSTestBase
                TextMessage txtmsg = (TextMessage)msg;
                if (!txtmsg.getText().equals("m" + count))
                {
-                  
+
                   errors.incrementAndGet();
                }
-               
+
                if (count % 2 == 0)
                {
                   msg.acknowledge();
                }
-               
+
                count ++;
             }
             catch (Exception e)
@@ -195,19 +195,19 @@ public class ConsumerTest extends JMSTestBase
                latch.countDown();
             }
          }
-         
+
       }
-      
+
       consumer.setMessageListener(new MessageAckEven());
-      
+
       assertTrue(latch.await(5000));
-      
+
       session.close();
-      
+
       session = conn.createSession(false, HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE);
-      
+
       consumer = session.createConsumer(jBossQueue);
-      
+
       // Consume odd numbers first
       for (int i = 0; i < noOfMessages; i++)
       {
@@ -215,7 +215,7 @@ public class ConsumerTest extends JMSTestBase
          {
             continue;
          }
-         
+
          TextMessage m = (TextMessage) consumer.receive(1000);
          assertNotNull(m);
          m.acknowledge();

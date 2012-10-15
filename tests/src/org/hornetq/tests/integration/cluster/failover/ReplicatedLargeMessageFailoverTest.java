@@ -34,7 +34,7 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
 
    // Constructors --------------------------------------------------
 
-  
+
    public ReplicatedLargeMessageFailoverTest()
    {
       super();

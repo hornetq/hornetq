@@ -31,10 +31,10 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
 /**
- * 
+ *
  * This example demonstrates how a JMS client can directly instantiate it's JMS Objects like
  * Queue, ConnectionFactory, etc. without having to use JNDI at all.
- * 
+ *
  * For more information please see the readme.html file.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

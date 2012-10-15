@@ -19,7 +19,7 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * A InVMRegistry
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

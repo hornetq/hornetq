@@ -17,9 +17,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A SessionConsumerForceDelivery
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */

@@ -32,6 +32,6 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
    @Override
    boolean isSharedServer()
    {
-      return false; 
+      return false;
    }
 }

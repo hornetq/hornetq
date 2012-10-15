@@ -25,7 +25,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A OperatorTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 3 nov. 2008 17:22:22
  *
  *

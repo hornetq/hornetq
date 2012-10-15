@@ -75,7 +75,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by AddressControl.
-    * 
+    *
     * @see AddressControl
     */
    public ObjectName getAddressObjectName(final SimpleString address) throws Exception
@@ -85,7 +85,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by QueueControl.
-    * 
+    *
     * @see QueueControl
     */
    public ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
@@ -100,7 +100,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by DivertControl.
-    * 
+    *
     * @see DivertControl
     */
    public ObjectName getDivertObjectName(final String name) throws Exception
@@ -110,7 +110,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by AcceptorControl.
-    * 
+    *
     * @see AcceptorControl
     */
    public ObjectName getAcceptorObjectName(final String name) throws Exception
@@ -120,7 +120,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by BroadcastGroupControl.
-    * 
+    *
     * @see BroadcastGroupControl
     */
    public ObjectName getBroadcastGroupObjectName(final String name) throws Exception
@@ -130,7 +130,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by BridgeControl.
-    * 
+    *
     * @see BridgeControl
     */
    public ObjectName getBridgeObjectName(final String name) throws Exception
@@ -140,7 +140,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by ClusterConnectionControl.
-    * 
+    *
     * @see ClusterConnectionControl
     */
    public ObjectName getClusterConnectionObjectName(final String name) throws Exception
@@ -150,7 +150,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by DiscoveryGroupControl.
-    * 
+    *
     * @see DiscoveryGroupControl
     */
    public ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
@@ -160,7 +160,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by JMSServerControl.
-    * 
+    *
     * @see JMSServerControl
     */
    public ObjectName getJMSServerObjectName() throws Exception
@@ -170,7 +170,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by JMSQueueControl.
-    * 
+    *
     * @see JMSQueueControl
     */
    public ObjectName getJMSQueueObjectName(final String name) throws Exception
@@ -180,7 +180,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by TopicControl.
-    * 
+    *
     * @see TopicControl
     */
    public ObjectName getJMSTopicObjectName(final String name) throws Exception
@@ -190,7 +190,7 @@ public class ObjectNameBuilder
 
    /**
     * Returns the ObjectName used by ConnectionFactoryControl.
-    * 
+    *
     * @see ConnectionFactoryControl
     */
    public ObjectName getConnectionFactoryObjectName(final String name) throws Exception

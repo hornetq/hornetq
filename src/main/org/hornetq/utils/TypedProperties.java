@@ -37,14 +37,14 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * Property Value Conversion.
  * <p>
  * This implementation follows section 3.5.4 of the <i>Java Message Service<i>
  * specification (Version 1.1 April 12, 2002).
  * <p>
  * TODO - should have typed property getters and do conversions herein
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @see <i>Java Message Service<i> specification (Version 1.1 April 12, 2002), section 3.5.4.
@@ -138,7 +138,7 @@ public class TypedProperties
       checkCreateProperties();
       doPutValue(key, value == null ? new NullValue() : new StringValue(value));
    }
-   
+
    public void putNullValue(final SimpleString key)
    {
       checkCreateProperties();

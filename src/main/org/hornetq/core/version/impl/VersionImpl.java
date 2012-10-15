@@ -46,7 +46,7 @@ public class VersionImpl implements Version, Serializable
    private final int incrementingVersion;
 
    private final String versionSuffix;
-   
+
    private final String nettyVersion;
 
    private final int[] compatibleVersionList;
@@ -75,7 +75,7 @@ public class VersionImpl implements Version, Serializable
       this.versionSuffix = versionSuffix;
 
       this.nettyVersion = nettyVersion;
-      
+
       this.compatibleVersionList = compatibleVersionList;
    }
 

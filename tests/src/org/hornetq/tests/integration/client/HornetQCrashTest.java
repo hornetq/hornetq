@@ -25,9 +25,9 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * From https://jira.jboss.org/jira/browse/HORNETQ-144
- * 
+ *
  */
 public class HornetQCrashTest extends UnitTestCase
 {

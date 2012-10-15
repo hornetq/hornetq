@@ -77,10 +77,10 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /*
- * Session implementation 
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
+ * Session implementation
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
@@ -377,7 +377,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
          }
-         
+
          if (log.isDebugEnabled())
          {
             log.debug("Session with user=" + username + ", connection=" + this.remotingConnection + " created a consumer on queue " + queueName + ", filter = " + filterString);
@@ -422,11 +422,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          tempQueueCleannerUppers.put(name, cleaner);
       }
-      
+
       if (log.isDebugEnabled())
       {
-         log.debug("Queue " + name + " created on address " + name + 
-                   " with filter=" + filterString + " temporary = " + 
+         log.debug("Queue " + name + " created on address " + name +
+                   " with filter=" + filterString + " temporary = " +
                   temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
       }
 
@@ -440,7 +440,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private static class TempQueueCleanerUpper implements CloseListener, FailureListener
    {
       private final SimpleString bindingName;
-      
+
       private final HornetQServer server;
 
       TempQueueCleanerUpper(final HornetQServer server, final SimpleString bindingName)
@@ -594,12 +594,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
+
       if (consumer == null)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server while acking messageID=" + messageID);
       }
-      
+
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
          // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
@@ -623,7 +623,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
       }
-      
+
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
           // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
@@ -672,7 +672,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    /**
-    * 
+    *
     * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
     * @param considerLastMessageAsDelivered
     * @throws Exception
@@ -704,7 +704,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private TransactionImpl newTransaction()
    {
       TransactionImpl tx = new TransactionImpl(storageManager, timeoutSeconds);
-      
+
       return tx;
    }
 
@@ -715,7 +715,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private TransactionImpl newTransaction(final Xid xid)
    {
       TransactionImpl tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
-      
+
       return tx;
    }
 
@@ -731,8 +731,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          Transaction theTx = resourceManager.removeTransaction(xid);
-         
-         
+
+
          if (isTrace)
          {
             log.trace("XAcommit into " + theTx + ", xid=" + xid);
@@ -793,7 +793,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (tx.getState() == Transaction.State.ROLLEDBACK)
          {
             final String msg = "Cannot end, transaction is rolled back";
-            
+
             tx = null;
 
             throw new HornetQXAException(XAException.XAER_PROTO, msg);
@@ -962,7 +962,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   log.warn(e.getMessage(), e);
                }
-               
+
                throw new HornetQXAException(XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
             }
          }
@@ -1207,7 +1207,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          return;
       }
-      
+
       consumer.receiveCredits(credits);
    }
 
@@ -1222,7 +1222,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.trace("sendLarge::" + largeMsg);
       }
-      
+
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage before sending was finished, current = " + currentLargeMessage + " new Large message = " + largeMsg);
@@ -1234,7 +1234,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
-      
+
       SimpleString address = message.getAddress();
 
       message.setMessageID(id);
@@ -1422,7 +1422,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          array.put(producerInfo);
       }
    }
-   
+
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();
@@ -1472,7 +1472,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Public
    // ----------------------------------------------------------------------------
-   
+
    public void clearLargeMessage()
    {
       currentLargeMessage = null;
@@ -1550,7 +1550,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          theTx.addOperation(new TransactionOperationAbstract()
          {
-            
+
             public void afterRollback(Transaction tx)
             {
                for (ServerConsumer consumer : consumers.values())
@@ -1558,10 +1558,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                   consumer.setStarted(true);
                }
             }
-            
+
          });
       }
-      
+
       theTx.rollback();
    }
 

@@ -97,13 +97,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
-      
-      
-      
+
+
+
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
-      
+
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
@@ -199,9 +199,9 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupServer.stop();
 
       liveServer.stop();
-      
+
       long timeout = System.currentTimeMillis() + 5000;
-      
+
       while (InVMRegistry.instance.size() > 0  && timeout > System.currentTimeMillis())
       {
          Thread.sleep(100);
@@ -225,7 +225,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         throw e; 
+         throw e;
       }
       try
       {

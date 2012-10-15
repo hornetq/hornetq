@@ -214,59 +214,59 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("foo", roles.get(1));
       Assert.assertEquals("bar", roles.get(2));
    }
-   
+
    public void testMaskedPassword() throws Exception
    {
       String password1 = "helloworld1";
       String password2 = "helloworld2";
       String password3 = "helloworld3";
-      
+
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
       String mask1 = (String)codec.encode(password1);
       String mask2 = (String)codec.encode(password2);
       String mask3 = (String)codec.encode(password3);
-      
+
       String config = maskedPasswordXml.replace("PASSWORD_TOKEN1", mask1);
       config = config.replace("PASSWORD_TOKEN2", mask2);
       config = config.replace("PASSWORD_TOKEN3", mask3);
-      
+
       deploy(config);
-      
+
       User user1 = securityManager.users.get("guest");
       User user2 = securityManager.users.get("user1");
       User user3 = securityManager.users.get("user2");
-      
+
       assertEquals(password1, user1.password);
       assertEquals(password2, user2.password);
       assertEquals(password3, user3.password);
    }
-   
+
    public void testPasswordCodec() throws Exception
    {
       String password1 = "helloworld1";
       String password2 = "helloworld2";
       String password3 = "helloworld3";
-      
+
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
       Map<String, String> prop = new HashMap<String, String>();
       prop.put("key", "blahblah");
       codec.init(prop);
-      
+
       String mask1 = (String)codec.encode(password1);
       String mask2 = (String)codec.encode(password2);
       String mask3 = (String)codec.encode(password3);
-      
+
       String config = passwordCodecXml.replace("PASSWORD_TOKEN1", mask1);
       config = config.replace("PASSWORD_TOKEN2", mask2);
       config = config.replace("PASSWORD_TOKEN3", mask3);
       config = config.replace("PASSWORD_CODEC_TOKEN", codec.getClass().getName() + ";key=blahblah");
-      
+
       deploy(config);
-      
+
       User user1 = securityManager.users.get("guest");
       User user2 = securityManager.users.get("user1");
       User user3 = securityManager.users.get("user2");
-      
+
       assertEquals(password1, user1.password);
       assertEquals(password2, user2.password);
       assertEquals(password3, user3.password);

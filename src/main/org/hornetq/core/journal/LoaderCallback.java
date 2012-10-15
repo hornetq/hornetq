@@ -14,9 +14,9 @@
 package org.hornetq.core.journal;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  */
 public interface LoaderCallback extends TransactionFailureCallback
 {

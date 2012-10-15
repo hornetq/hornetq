@@ -28,9 +28,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A ReclaimerTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -695,7 +695,7 @@ public class ReclaimerTest extends UnitTestCase
    private void setupPosNeg(final int fileNumber, final int pos, final int... neg)
    {
       JournalFile file = files[fileNumber];
-      
+
       int totalDep = file.getTotalNegativeToOthers();
 
       for (int i = 0; i < pos; i++)
@@ -713,7 +713,7 @@ public class ReclaimerTest extends UnitTestCase
             totalDep++;
          }
       }
-      
+
       assertEquals(totalDep, file.getTotalNegativeToOthers());
    }
 
@@ -764,7 +764,7 @@ public class ReclaimerTest extends UnitTestCase
       private boolean canDelete;
 
       private boolean needCleanup;
-      
+
       private int totalDep;
 
       public void extendOffset(final int delta)
@@ -811,7 +811,7 @@ public class ReclaimerTest extends UnitTestCase
          int c = count == null ? 1 : count.intValue() + 1;
 
          negCounts.put(file, c);
-         
+
          totalDep++;
       }
 
@@ -1008,7 +1008,7 @@ public class ReclaimerTest extends UnitTestCase
       public void setTotNeg(int totNeg)
       {
          // TODO Auto-generated method stub
-         
+
       }
    }
 }

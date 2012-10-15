@@ -25,9 +25,9 @@ package org.hornetq.core.filter.impl;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * 
+ *
  * A Identifier
- * 
+ *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

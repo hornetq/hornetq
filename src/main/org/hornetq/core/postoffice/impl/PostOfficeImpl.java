@@ -80,7 +80,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
@@ -473,7 +473,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
@@ -603,7 +603,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
       }
 
-      
+
       if (message.hasInternalProperties())
       {
          // We need to perform some cleanup on internal properties,
@@ -626,7 +626,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     	    log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
     	 }
       }
-      
+
       if (log.isTraceEnabled())
       {
          log.trace("Message after routed=" + message);
@@ -645,7 +645,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             // Send to the DLA for the address
 
             SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-            
+
             if (log.isDebugEnabled())
             {
                log.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
@@ -727,7 +727,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
       ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
-      
+
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       if (bindings != null)
@@ -785,7 +785,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
@@ -830,7 +830,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
 
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());   
+                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
@@ -1096,7 +1096,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
          else
          {
-  
+
             storageManager.confirmPendingLargeMessageTX(tx,
                                                         largeServerMessage.getMessageID(),
                                                         largeServerMessage.getPendingRecordID());
@@ -1176,12 +1176,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
             warnMessage.append(message.toString());
             PostOfficeImpl.log.warn(warnMessage.toString());
-            
+
             if (context.getTransaction() != null)
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
             }
-            
+
             message.decrementRefCount();
 
             return false;
@@ -1222,7 +1222,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
             }
-            
+
             message.decrementRefCount();
 
             return false;

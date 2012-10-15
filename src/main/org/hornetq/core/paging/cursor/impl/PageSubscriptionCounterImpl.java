@@ -42,7 +42,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    // Constants -----------------------------------------------------
    static final Logger log = Logger.getLogger(PageSubscriptionCounterImpl.class);
-   
+
    static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
@@ -55,11 +55,11 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    private long recordID = -1;
 
    private boolean persistent;
-   
+
    private final PageSubscription subscription;
 
    private final StorageManager storage;
-   
+
    private final Executor executor;
 
    private final AtomicLong value = new AtomicLong(0);
@@ -181,13 +181,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
 
    }
-   
+
    public void delete() throws Exception
    {
       Transaction tx = new TransactionImpl(storage);
-      
+
       delete(tx);
-      
+
       tx.commit();
    }
 
@@ -198,13 +198,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          storage.deleteIncrementRecord(tx.getID(), record.longValue());
          tx.setContainsPersistent();
       }
-      
+
       if (recordID >= 0)
       {
          storage.deletePageCounter(tx.getID(), this.recordID);
          tx.setContainsPersistent();
       }
-      
+
       recordID = -1;
       value.set(0);
       incrementRecords.clear();
@@ -236,7 +236,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
             // it could be null on testcases
             subscription.notEmpty();
          }
-         
+
          for (Pair<Long, Integer> incElement : loadList)
          {
             value.addAndGet(incElement.getB());
@@ -301,7 +301,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          }
 
          newRecordID = storage.storePageCounter(txCleanup, subscriptionID, valueReplace);
-         
+
          if (isTrace)
          {
             log.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());

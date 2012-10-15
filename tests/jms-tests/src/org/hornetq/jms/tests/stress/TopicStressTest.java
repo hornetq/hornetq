@@ -22,9 +22,9 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 
 /**
- * 
+ *
  * A TopicStressTest.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2349 $</tt>
  *
@@ -38,7 +38,7 @@ public class TopicStressTest extends JMSStressTestBase
     * Client ack receivers go through a cycle of receving a batch, acking and recovering
     * Transactional receivers go through a cycle of receiving commiting and rolling back.
     * Half the consumers are durable and half non durable.
-    * 
+    *
     */
    public void testTopicMultipleReceivers() throws Exception
    {

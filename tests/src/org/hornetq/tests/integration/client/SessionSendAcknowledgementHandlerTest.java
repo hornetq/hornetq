@@ -29,7 +29,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A SendAcknowledgementsTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Feb 2009 13:29:19
  *
  *

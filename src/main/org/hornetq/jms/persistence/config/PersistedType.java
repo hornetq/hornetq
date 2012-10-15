@@ -23,7 +23,7 @@ package org.hornetq.jms.persistence.config;
 public enum PersistedType
 {
     ConnectionFactory, Topic, Queue;
-    
+
     public byte getType()
     {
        switch (this)
@@ -34,7 +34,7 @@ public enum PersistedType
           default: return -1;
        }
     }
-    
+
     public static PersistedType getType(byte type)
     {
        switch (type)

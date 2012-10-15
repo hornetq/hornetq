@@ -55,25 +55,25 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
    private final byte CF_RECORD = 1;
 
    private final byte DESTINATION_RECORD = 2;
-   
+
    private final byte JNDI_RECORD = 3;
-   
+
    // Attributes ----------------------------------------------------
 
    private final IDGenerator idGenerator;
-   
+
    private final String journalDir;
-   
+
    private final boolean createDir;
-   
+
    private final Journal jmsJournal;
 
    private volatile boolean started;
-   
+
    private Map<String, PersistedConnectionFactory> mapFactories = new ConcurrentHashMap<String, PersistedConnectionFactory>();
 
    private Map<Pair<PersistedType, String>, PersistedDestination> destinations = new ConcurrentHashMap<Pair<PersistedType, String>, PersistedDestination>();
-   
+
    private Map<Pair<PersistedType, String>, PersistedJNDI> mapJNDI = new ConcurrentHashMap<Pair<PersistedType, String>, PersistedJNDI>();
 
    // Static --------------------------------------------------------
@@ -117,7 +117,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          jmsJournal = localJMS;
       }
-      
+
       this.idGenerator = idGenerator;
    }
 
@@ -144,7 +144,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       jmsJournal.appendAddRecord(id, CF_RECORD, connectionFactory, true);
       mapFactories.put(connectionFactory.getName(), connectionFactory);
    }
-   
+
    public void deleteConnectionFactory(final String cfName) throws Exception
    {
       PersistedConnectionFactory oldCF = mapFactories.remove(cfName);
@@ -175,22 +175,22 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       jmsJournal.appendAddRecord(id, DESTINATION_RECORD, destination, true);
       destinations.put(new Pair<PersistedType, String>(destination.getType(), destination.getName()), destination);
    }
-   
+
    public List<PersistedJNDI> recoverPersistedJNDI() throws Exception
    {
       ArrayList<PersistedJNDI> list = new ArrayList<PersistedJNDI>();
-      
+
       list.addAll(mapJNDI.values());
-      
+
       return list;
    }
-   
+
    public void addJNDI(PersistedType type, String name, String ... address) throws Exception
    {
       Pair<PersistedType, String> key = new Pair<PersistedType, String>(type, name);
 
       long tx = idGenerator.generateID();
-      
+
       PersistedJNDI currentJNDI = mapJNDI.get(key);
       if (currentJNDI != null)
       {
@@ -200,30 +200,30 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          currentJNDI = new PersistedJNDI(type, name);
       }
-      
+
       mapJNDI.put(key, currentJNDI);
-      
+
       for (String adItem : address)
       {
          currentJNDI.addJNDI(adItem);
       }
-      
+
 
       long newId = idGenerator.generateID();
-      
+
       currentJNDI.setId(newId);
-      
+
       jmsJournal.appendAddRecordTransactional(tx, newId, JNDI_RECORD, currentJNDI);
-      
+
       jmsJournal.appendCommitRecord(tx, true);
    }
-   
+
    public void deleteJNDI(PersistedType type, String name, String address) throws Exception
    {
       Pair<PersistedType, String> key = new Pair<PersistedType, String>(type, name);
 
       long tx = idGenerator.generateID();
-      
+
       PersistedJNDI currentJNDI = mapJNDI.get(key);
       if (currentJNDI == null)
       {
@@ -233,9 +233,9 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          jmsJournal.appendDeleteRecordTransactional(tx, currentJNDI.getId());
       }
-      
+
       currentJNDI.deleteJNDI(address);
-      
+
       if (currentJNDI.getJndi().size() == 0)
       {
          mapJNDI.remove(key);
@@ -246,15 +246,15 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
          currentJNDI.setId(newId);
          jmsJournal.appendAddRecordTransactional(tx, newId, JNDI_RECORD, currentJNDI);
       }
-      
+
       jmsJournal.appendCommitRecord(tx, true);
    }
 
-   
+
    public void deleteJNDI(PersistedType type, String name) throws Exception
    {
       Pair<PersistedType, String> key = new Pair<PersistedType, String>(type, name);
-      
+
       PersistedJNDI currentJNDI = mapJNDI.remove(key);
 
       if (currentJNDI != null)
@@ -290,7 +290,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       checkAndCreateDir(journalDir, createDir);
 
       jmsJournal.start();
-      
+
       started = true;
    }
 
@@ -305,7 +305,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       replicationEndpoint.registerJournal((byte)2, this.jmsJournal);
    }
 
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.HornetQComponent#stop()
     */
@@ -318,13 +318,13 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
    public void load() throws Exception
    {
       mapFactories.clear();
-      
+
       List<RecordInfo> data = new ArrayList<RecordInfo>();
-      
+
       ArrayList<PreparedTransactionInfo> list = new ArrayList<PreparedTransactionInfo>();
-      
+
       jmsJournal.load(data, list, null);
-      
+
       for (RecordInfo record : data)
       {
          long id = record.id;
@@ -332,7 +332,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
          HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(record.data);
 
          byte rec = record.getUserRecordType();
-         
+
          if (rec == CF_RECORD)
          {
             PersistedConnectionFactory cf = new PersistedConnectionFactory();
@@ -359,9 +359,9 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
          {
             throw new IllegalStateException("Invalid record type " + rec);
          }
-         
+
       }
-      
+
    }
 
    // Package protected ---------------------------------------------

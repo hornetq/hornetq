@@ -16,9 +16,9 @@ package org.hornetq.integration.logging;
 import org.hornetq.spi.core.logging.LogDelegate;
 
 /**
- * 
+ *
  * A {@link LogDelegate} which delegates to Apache Log4j
- * 
+ *
  * @author <a href="kenny.macleod@kizoom.com">Kenny MacLeod</a>
  *
  */

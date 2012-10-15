@@ -71,7 +71,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       server.start();
 
       ServerLocator locator = createFactory(IS_NETTY);
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
@@ -94,7 +94,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
    public void testSoakClientTransactions() throws Exception
    {
       final ServerLocator locator = createFactory(IS_NETTY);
-      
+
       final ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true);
@@ -127,7 +127,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
             msg.getBodyBuffer().writeBytes(new byte[10 * 1024]);
             producer.send(msg);
          }
-         
+
          for (int i = 0; i < MIN_MESSAGES_ON_QUEUE; i++)
          {
             ClientMessage msg = consumer.receive(5000);
@@ -143,7 +143,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       locator.close();
 
    }
-   
+
 
    // Package protected ---------------------------------------------
 

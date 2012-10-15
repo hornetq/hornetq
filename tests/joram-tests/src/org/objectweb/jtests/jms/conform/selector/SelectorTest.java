@@ -444,7 +444,7 @@ public class SelectorTest extends PTPTestCase
       Assert.assertEquals("testNull:2", msg.getText());
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

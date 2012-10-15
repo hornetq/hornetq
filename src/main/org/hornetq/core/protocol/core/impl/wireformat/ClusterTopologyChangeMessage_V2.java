@@ -23,7 +23,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public final class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessage
 {
- 
+
    private long uniqueEventID;
 
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
@@ -31,24 +31,24 @@ public final class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChange
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
 
       this.nodeID = nodeID;
-      
+
       this.pair = pair;
-      
+
       this.last = last;
-      
+
       this.exit = false;
-      
+
       this.uniqueEventID = uniqueEventID;
    }
-   
+
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID)
    {
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
-      
+
       this.exit = true;
-      
+
       this.nodeID = nodeID;
-      
+
       this.uniqueEventID = uniqueEventID;
    }
 
@@ -64,7 +64,7 @@ public final class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChange
    {
       return uniqueEventID;
    }
- 
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

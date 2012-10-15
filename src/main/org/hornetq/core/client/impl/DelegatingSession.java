@@ -38,7 +38,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * A DelegatingSession
- * 
+ *
  * We wrap the real session, so we can add a finalizer on this and close the session
  * on GC if it has not already been closed
  *
@@ -53,7 +53,7 @@ public class DelegatingSession implements ClientSessionInternal
    private final ClientSessionInternal session;
 
    private final Exception creationStack;
-   
+
    private volatile boolean closed;
 
    private static Set<DelegatingSession> sessions = new ConcurrentHashSet<DelegatingSession>();
@@ -74,7 +74,7 @@ public class DelegatingSession implements ClientSessionInternal
    protected void finalize() throws Throwable
    {
       // In some scenarios we have seen the JDK finalizing the DelegatingSession while the call to session.close() was still in progress
-      // 
+      //
       if (!closed && !session.isClosed())
       {
          DelegatingSession.log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope! " +
@@ -104,7 +104,7 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.acknowledge(consumerID, messageID);
    }
-   
+
    public void individualAcknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       session.individualAcknowledge(consumerID, messageID);
@@ -144,7 +144,7 @@ public class DelegatingSession implements ClientSessionInternal
    public void close() throws HornetQException
    {
       closed = true;
-      
+
       if (DelegatingSession.debug)
       {
          DelegatingSession.sessions.remove(this);
@@ -266,7 +266,7 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.createQueue(address, queueName);
    }
-   
+
    public void createQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
    {
       session.createQueue(address, queueName);
@@ -542,7 +542,7 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.getCredits(address, anon);
    }
-   
+
    public void returnCredits(final SimpleString address)
    {
       session.returnCredits(address);
@@ -572,7 +572,7 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.addMetaData(key, data);
    }
-   
+
    @Deprecated
    public void addMetaDataV1(String key, String data) throws HornetQException
    {
@@ -584,7 +584,7 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.isCompressLargeMessages();
    }
-   
+
    public String toString()
    {
       return "DelegatingSession [session=" + session + "]";
@@ -604,7 +604,7 @@ public class DelegatingSession implements ClientSessionInternal
    public void addUniqueMetaData(String key, String data) throws HornetQException
    {
       session.addUniqueMetaData(key, data);
-      
+
    }
 
 }

@@ -17,9 +17,9 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 
 /**
- * 
+ *
  * A FakeJournalImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

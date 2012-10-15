@@ -17,7 +17,7 @@ package org.hornetq.tests.integration.cluster.distribution;
  * A NettySymmetricClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 8 Feb 2009 10:45:12
  *
  *

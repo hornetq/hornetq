@@ -32,7 +32,7 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A XARecoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -58,11 +58,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it without restarting the server
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithoutRestart() throws Exception
    {
@@ -292,11 +292,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it without restarting the server, then rollback
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithoutRestartRollback() throws Exception
    {
@@ -542,11 +542,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it after restarting the server
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithRestart() throws Exception
    {
@@ -806,11 +806,11 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have two queues, each with four messages already in them.
-    * 
+    *
     * We send 4 more messages to each queue, and ack the original 4 in a tx
-    * 
+    *
     * Then recover it after restarting the server, then rollback
-    * 
+    *
     */
    public void testComplexTransactionalRecoveryWithRestartRollback() throws Exception
    {
@@ -1866,13 +1866,13 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
-    * 
+    *
     * We ack them, then add four more messages
-    * 
+    *
     * This test tests for the recovery when the same message is in multiple channels
-    * 
+    *
     * We don't restart in this test
-    * 
+    *
     */
    public void testRecoveryWithTwoDurableSubsWithoutRestart() throws Exception
    {
@@ -2122,13 +2122,13 @@ public class XARecoveryTest extends JMSTestCase
 
    /*
     * In this test, we have 4 messages in a 2 durable subs on the same topic.
-    * 
+    *
     * We ack them, then add four more messages
-    * 
+    *
     * This test tests for the recovery when the same message is in multiple channels
-    * 
+    *
     * We do restart in this test
-    * 
+    *
     */
    public void testRecoveryWithTwoDurableSubsWithRestart() throws Exception
    {
@@ -2394,8 +2394,8 @@ public class XARecoveryTest extends JMSTestCase
     * Crash the server
     * Restart the server
     * Make sure the messages can be received
-    * NOTE this test only tests transactional sends, not transactional acknowledgments 
-    * 
+    * NOTE this test only tests transactional sends, not transactional acknowledgments
+    *
     */
    public void testTransactionalDeliveryRecovery() throws Exception
    {
