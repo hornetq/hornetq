@@ -30,7 +30,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 
 /**
- * 
+ *
  * This exammple shows how to run a HornetQ core client and server embedded in your
  * own application
  *
@@ -58,7 +58,7 @@ public class EmbeddedExample
          // Step 3. As we are not using a JNDI environment we instantiate the objects directly
          ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
          ClientSessionFactory sf = serverLocator.createSessionFactory();
-         
+
          // Step 4. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
 

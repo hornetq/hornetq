@@ -33,7 +33,7 @@ public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
    {
       return false;
    }
-   
+
    protected boolean isFileStorage()
    {
       return false;

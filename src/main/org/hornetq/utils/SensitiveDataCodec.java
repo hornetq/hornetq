@@ -17,11 +17,11 @@ import java.util.Map;
 
 /**
  * A SensitiveDataCodec
- * 
+ *
  * This interface is used for implementing a value decoder.
- * 
- * It takes in a mask value and decode it. 
- * 
+ *
+ * It takes in a mask value and decode it.
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  *

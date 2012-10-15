@@ -49,9 +49,9 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A FailoverTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -274,7 +274,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
    }
-   
+
    public void testTimeoutOnFailoverConsumeBlocked() throws Exception
    {
       locator.setCallTimeout(5000);
@@ -344,7 +344,7 @@ public class FailoverTest extends FailoverTestBase
                   {
                      endLatch.countDown();
                   }
-                  
+
                   if (message.getBooleanProperty("end"))
                   {
                      break;
@@ -357,7 +357,7 @@ public class FailoverTest extends FailoverTestBase
             }
 
          }
-         
+
          private ClientMessage getMessage()
          {
             while (true)
@@ -2780,7 +2780,7 @@ public class FailoverTest extends FailoverTestBase
    /**
     * @param i
     * @param message
-    * @throws Exception 
+    * @throws Exception
     */
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {

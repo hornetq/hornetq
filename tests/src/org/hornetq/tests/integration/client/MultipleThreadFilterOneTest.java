@@ -191,7 +191,7 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       }
 
       /**
-       * 
+       *
        */
       public void close()
       {
@@ -241,16 +241,16 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       {
          server = createServer(true, isNetty);
       }
-      
+
       server.getConfiguration().setMessageExpiryScanPeriod(1000);
 
       server.start();
 
       SomeConsumer[] consumers = new SomeConsumer[nThreads];
       SomeProducer[] producers = new SomeProducer[nThreads];
-      
+
       SomeConsumer[] deadConsumers = null;
-      
+
       try
       {
 
@@ -272,7 +272,7 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
                deadConsumers[i] = new SomeConsumer(i + nThreads);
             }
          }
-                  
+
          for (int i = 0; i < nThreads; i++)
          {
             consumers[i].start();
@@ -290,7 +290,7 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
             consumer.join();
             assertEquals(0, consumer.errors.get());
          }
-         
+
          if (useDeadConsumer)
          {
             for (SomeConsumer cons : deadConsumers)
@@ -298,7 +298,7 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
                cons.close();
             }
          }
-         
+
          waitForNotPaging(server.locateQueue(new SimpleString("Q1")));
 
       }

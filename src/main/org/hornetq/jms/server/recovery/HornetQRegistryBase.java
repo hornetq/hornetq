@@ -28,9 +28,9 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  */
 public abstract class HornetQRegistryBase
 {
-   
+
    private final AtomicBoolean started = new AtomicBoolean(false);
-   
+
    public HornetQRegistryBase()
    {
    }

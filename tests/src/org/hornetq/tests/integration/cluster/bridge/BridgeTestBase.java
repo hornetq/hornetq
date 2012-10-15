@@ -34,7 +34,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 21 Nov 2008 10:32:23
  *
  *

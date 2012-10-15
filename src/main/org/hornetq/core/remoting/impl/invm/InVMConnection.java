@@ -33,7 +33,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A InVMConnection
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -41,7 +41,7 @@ public class InVMConnection implements Connection
 {
 
    private static final Logger log = Logger.getLogger(InVMConnection.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    private final BufferHandler handler;
@@ -51,17 +51,17 @@ public class InVMConnection implements Connection
    private final String id;
 
    private boolean closed;
-   
+
    // Used on tests
    public static boolean flushEnabled = true;
 
    private final int serverID;
 
    private final Executor executor;
-   
+
    private volatile boolean closing;
 
-   public InVMConnection(final Acceptor acceptor, 
+   public InVMConnection(final Acceptor acceptor,
                          final int serverID,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
@@ -70,7 +70,7 @@ public class InVMConnection implements Connection
       this(acceptor, serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
    }
 
-   public InVMConnection(final Acceptor acceptor, 
+   public InVMConnection(final Acceptor acceptor,
                          final int serverID,
                          final String id,
                          final BufferHandler handler,
@@ -119,7 +119,7 @@ public class InVMConnection implements Connection
    {
       return id;
    }
-   
+
    public void checkFlushBatchBuffer()
    {
    }
@@ -128,7 +128,7 @@ public class InVMConnection implements Connection
    {
       write(buffer, false, false);
    }
-   
+
    public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
    {
       final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
@@ -168,7 +168,7 @@ public class InVMConnection implements Connection
                }
             }
          });
-         
+
          if (flush && flushEnabled)
          {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -178,7 +178,7 @@ public class InVMConnection implements Connection
                   latch.countDown();
                }
             });
-            
+
             try
             {
                if (!latch.await(10, TimeUnit.SECONDS))
@@ -196,19 +196,19 @@ public class InVMConnection implements Connection
       {
          // Ignore - this can happen if server/client is shutdown and another request comes in
       }
-      
+
    }
 
    public String getRemoteAddress()
    {
       return "invm:" + serverID;
    }
-   
+
    public int getBatchingBufferSize()
    {
       return -1;
    }
-   
+
    public void addReadyListener(ReadyListener listener)
    {
    }
@@ -216,20 +216,20 @@ public class InVMConnection implements Connection
    public void removeReadyListener(ReadyListener listener)
    {
    }
-   
+
    public void disableFlush()
    {
       flushEnabled = false;
    }
-   
+
    public Executor getExecutor()
    {
       return executor;
    }
-   
-   
+
+
    /**
-    * Generates a {@link TransportConfiguration} to be use to connect to the 
+    * Generates a {@link TransportConfiguration} to be use to connect to the
     * same target this is connect to
     * @return
     */
@@ -238,7 +238,7 @@ public class InVMConnection implements Connection
       Map<String, Object> params = new HashMap<String, Object>();
 
       params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, serverID);
-      
+
       return new TransportConfiguration(InVMConnectorFactory.class.getName(), params);
    }
 
@@ -251,6 +251,6 @@ public class InVMConnection implements Connection
    {
       return "InVMConnection [serverID=" + serverID + ", id=" + id + "]";
    }
-   
-   
+
+
 }

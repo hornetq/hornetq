@@ -289,12 +289,12 @@ public class LocalTestServer implements Server, Runnable
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
       connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      
+
       ArrayList<String> connectors = new ArrayList<String>();
       connectors.add("netty");
 
       getJMSServerManager().createConnectionFactory(objectName,
-                                                    false, 
+                                                    false,
                                                     JMSFactoryType.CF,
                                                     connectors,
                                                     clientId,

@@ -21,7 +21,7 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class SessionXAPrepareMessage extends PacketImpl
@@ -66,7 +66,7 @@ public class SessionXAPrepareMessage extends PacketImpl
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
-   
+
    public boolean isAsyncExec()
    {
       return true;

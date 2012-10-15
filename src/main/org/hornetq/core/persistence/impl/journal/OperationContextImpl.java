@@ -27,16 +27,16 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * 
+ *
  * Each instance of OperationContextImpl is associated with an executor (usually an ordered Executor).
- * 
- * Tasks are hold until the operations are complete and executed in the natural order as soon as the operations are returned 
+ *
+ * Tasks are hold until the operations are complete and executed in the natural order as soon as the operations are returned
  * from replication and storage.
- * 
+ *
  * If there are no pending IO operations, the tasks are just executed at the callers thread without any context switch.
- * 
+ *
  * So, if you are doing operations that are not dependent on IO (e.g NonPersistentMessages) you wouldn't have any context switch.
- * 
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class OperationContextImpl implements OperationContext
@@ -49,12 +49,12 @@ public class OperationContextImpl implements OperationContext
    {
       OperationContextImpl.threadLocalContext.set(null);
    }
-   
+
    public static OperationContext getContext()
    {
       return getContext(null);
    }
-   
+
    public static OperationContext getContext(final ExecutorFactory executorFactory)
    {
       OperationContext token = OperationContextImpl.threadLocalContext.get();
@@ -83,19 +83,19 @@ public class OperationContextImpl implements OperationContext
    private int minimalStore = Integer.MAX_VALUE;
 
    private int minimalReplicated = Integer.MAX_VALUE;
-   
+
    private int minimalPage = Integer.MAX_VALUE;
 
    private volatile int storeLineUp = 0;
 
    private volatile int replicationLineUp = 0;
-   
+
    private volatile int pageLineUp = 0;
 
    private int stored = 0;
 
    private int replicated = 0;
-   
+
    private int paged = 0;
 
    private int errorCode = -1;
@@ -111,12 +111,12 @@ public class OperationContextImpl implements OperationContext
       super();
       this.executor = executor;
    }
-   
+
    public void pageSyncLineUp()
    {
       pageLineUp++;
    }
-   
+
    public synchronized void pageSyncDone()
    {
       paged++;
@@ -283,9 +283,9 @@ public class OperationContextImpl implements OperationContext
 
    class TaskHolder
    {
-      
-      
-      
+
+
+
       /* (non-Javadoc)
        * @see java.lang.Object#toString()
        */
@@ -305,7 +305,7 @@ public class OperationContextImpl implements OperationContext
       int storeLined;
 
       int replicationLined;
-      
+
       int pageLined;
 
       IOAsyncTask task;
@@ -360,7 +360,7 @@ public class OperationContextImpl implements OperationContext
             buffer.append("Task = " + hold + "\n");
          }
       }
-      
+
       return "OperationContextImpl [minimalStore=" + minimalStore +
              ", storeLineUp=" +
              storeLineUp +
@@ -388,6 +388,6 @@ public class OperationContextImpl implements OperationContext
              "]" + buffer.toString();
    }
 
-   
+
 
 }

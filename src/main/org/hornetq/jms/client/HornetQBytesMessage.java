@@ -26,15 +26,15 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * HornetQ implementation of a JMS BytesMessage.
- * 
+ *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * 
+ *
  * @version $Revision: 3412 $
- * 
+ *
  * $Id: HornetQRABytesMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQBytesMessage extends HornetQMessage implements BytesMessage

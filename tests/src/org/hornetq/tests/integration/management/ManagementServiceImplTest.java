@@ -37,7 +37,7 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class ManagementServiceImplTest extends UnitTestCase
@@ -133,7 +133,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Assert.assertTrue((Boolean)ManagementHelper.getResult(reply));
       server.stop();
    }
-   
+
    public void testHandleManagementMessageWithKnownAttribute() throws Exception
    {
       Configuration conf = createBasicConfig();

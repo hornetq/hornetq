@@ -360,7 +360,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       sf.close();
    }
-   
+
    public void testBrowseWithZeroConsumerWindowSize() throws Exception
    {
       locator.setConsumerWindowSize(0);
@@ -376,23 +376,23 @@ public class QueueBrowserTest extends ServiceTestBase
       final int numMessages = 100;
 
       byte[] bytes = new byte[240];
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
-         
+
          message.getBodyBuffer().writeBytes(bytes);
-         
+
          message.putIntProperty("foo", i);
-         
+
          producer.send(message);
       }
 
       //Create a normal non browsing consumer
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       session.start();
-      
+
       ClientConsumer browser = session.createConsumer(QUEUE, true);
 
       for (int i = 0; i < numMessages; i++)

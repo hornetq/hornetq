@@ -24,7 +24,7 @@ import org.hornetq.jms.client.HornetQDestination;
  * HornetQ implementation of a JMS Topic.
  * <br>
  * This class can be instantiated directly.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 8737 $</tt>
@@ -51,7 +51,7 @@ public class HornetQTopic extends HornetQDestination implements Topic
    {
       super(HornetQQueue.JMS_TOPIC_ADDRESS_PREFIX + name, name, false, false, null);
    }
-   
+
 
    /**
     * @param address
@@ -64,7 +64,7 @@ public class HornetQTopic extends HornetQDestination implements Topic
    {
       super(address, name, temporary, false, session);
    }
-  
+
 
    // Topic implementation ------------------------------------------
 

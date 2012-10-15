@@ -42,7 +42,7 @@ public class PostOrder
       create = res.getHeaderAsLink("msg-create-next");
 
       if (res.getStatus() != 201) throw new RuntimeException("Failed to post");
-      
+
       System.out.println("Send Monica's order...");
       order.setName("Monica");
 

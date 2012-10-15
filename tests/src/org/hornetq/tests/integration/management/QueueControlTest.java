@@ -291,7 +291,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientMessage message = session.createMessage(false);
       message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       producer.send(message);
-      
+
       long timeout = System.currentTimeMillis() + 5000;
       while (timeout > System.currentTimeMillis() && queueControl.getScheduledCount() != 1)
       {
@@ -904,15 +904,15 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send messages on queue
-      
+
       for (int i = 0 ; i < 100; i++)
       {
-         
+
          ClientMessage msg = session.createMessage(false);
          msg.putIntProperty("count", i);
          producer.send(msg);
       }
-      
+
       ClientConsumer cons = session.createConsumer(queue);
       session.start();
       LinkedList<ClientMessage> msgs = new LinkedList<ClientMessage>();
@@ -935,7 +935,7 @@ public class QueueControlTest extends ManagementTestBase
       boolean deleted = queueControl.removeMessage(messageID);
       Assert.assertTrue(deleted);
       Assert.assertEquals(99, queueControl.getMessageCount());
-      
+
       cons.close();
 
       // check there is a single message to consume from queue
@@ -1413,7 +1413,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientSession session = sf.createSession(true, true);
 
       ClientProducer prod1 = session.createProducer("q1");
-      
+
       int NUMBER_OF_MSGS = 10;
 
       for (int i = 0; i < NUMBER_OF_MSGS; i++)
@@ -1444,9 +1444,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(NUMBER_OF_MSGS, q1Control.moveMessages(null, "q2"));
 
       long messageIDs[] = new long[NUMBER_OF_MSGS];
-      
+
       consumer = session.createConsumer("q2", true);
-      
+
       for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
       {
          ClientMessage msg = consumer.receive(5000);
@@ -1457,7 +1457,7 @@ public class QueueControlTest extends ManagementTestBase
       assertNull(consumer.receiveImmediate());
 
       consumer.close();
-      
+
       for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
       {
          q2Control.moveMessage(messageIDs[i], "q1");

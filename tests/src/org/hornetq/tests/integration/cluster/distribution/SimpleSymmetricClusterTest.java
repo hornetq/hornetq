@@ -121,7 +121,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
          log.info(debugBindings(servers[i], servers[i].getConfiguration().getManagementNotificationAddress().toString()));
       }
       log.info("");
- 
+
       log.info("");
       for (int i = 0; i <= 5; i++)
       {
@@ -129,14 +129,14 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
          log.info(debugBindings(servers[i], servers[i].getConfiguration().getManagementNotificationAddress().toString()));
       }
       log.info("");
-      
 
-      
+
+
       stopServers(0, 1, 2, 3, 4, 5);
 
    }
-   
-   
+
+
    public void testSimple() throws Exception
    {
       setupServer(0, true, isNetty());
@@ -148,11 +148,11 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
 
       startServers(0, 1, 2);
-      
+
       waitForTopology(servers[0], 3);
       waitForTopology(servers[1], 3);
       waitForTopology(servers[2], 3);
-      
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -174,7 +174,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 2, 2, false);
 
    }
-   
+
    public void testSimple_TwoNodes() throws Exception
    {
       setupServer(0, false, isNetty());
@@ -199,7 +199,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       waitForBindings(0, "queues.testaddress", 1, 1, false);
       waitForBindings(1, "queues.testaddress", 1, 1, false);
-      
+
       closeAllConsumers();
 
    }
@@ -218,7 +218,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
    }
 
 
-   
+
 
    public void testSimple2() throws Exception
    {
@@ -239,12 +239,12 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupClusterConnection("cluster4", "queues", false, 1, isNetty(), 4, 0, 1, 2, 3);
 
       startServers(0, 1, 2, 3, 4);
-      
+
       for (int i = 0 ; i <= 4; i++)
       {
          waitForTopology(servers[i], 5);
       }
-      
+
       log.info("All the servers have been started already!");
 
       for (int i = 0; i <= 4; i++)
@@ -271,10 +271,10 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 4, 4, false);
 
    }
-   
+
    public void testSimpleRoundRobbin() throws Exception
    {
-      
+
       //TODO make this test to crash a node
       setupServer(0, true, isNetty());
       setupServer(1, true, isNetty());
@@ -290,7 +290,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
 
-      // Need to wait some time so the bridges and 
+      // Need to wait some time so the bridges and
       // connectors had time to connect properly between the nodes
 
       createQueue(0, "queues.testaddress", "queue0", null, true);
@@ -312,7 +312,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 33, true, null);
 
       verifyReceiveRoundRobin(33, 0, 1, 2);
-      
+
       stopServers(2);
 
 
@@ -323,17 +323,17 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 100, true, null);
 
       verifyReceiveRoundRobin(100, 0, 1);
-      
+
       sfs[2] = null;
       consumers[2] = null;
-      
-      
+
+
       startServers(2);
-      
+
       setupSessionFactory(2, isNetty());
 
       addConsumer(2, 2, "queue0", null);
-      
+
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(2, "queues.testaddress", 1, 1, true);
@@ -346,12 +346,12 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       verifyReceiveRoundRobin(33, 0, 1, 2);
 
-      
-      
+
+
 
    }
 
-   
+
    public void _testSimpleRoundRobbinNoFailure() throws Exception
    {
       //TODO make this test to crash a node
@@ -388,23 +388,23 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 33, true, null);
 
       verifyReceiveRoundRobin(33, 0, 1, 2);
-      
+
       stopServers(2);
 
 
       send(0, "queues.testaddress", 100, true, null);
-      
+
       verifyReceiveRoundRobin(100, 0, 1, -1);
-      
+
       sfs[2] = null;
       consumers[2] = null;
-      
+
       startServers(2);
-      
+
       setupSessionFactory(2, isNetty());
 
       addConsumer(2, 2, "queue0", null);
-      
+
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(2, "queues.testaddress", 1, 1, true);
@@ -415,8 +415,8 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       verifyReceiveRoundRobin(100, -1, -1, 2);
 
-      
-      
+
+
 
    }
 

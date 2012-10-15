@@ -19,7 +19,7 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * Helper class to create Java Objects from the
  * JSON serialization returned by {@link AddressControl#getRolesAsJSON()}.
- * 
+ *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class RoleInfo

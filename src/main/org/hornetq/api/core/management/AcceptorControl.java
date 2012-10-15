@@ -22,7 +22,7 @@ import org.hornetq.spi.core.remoting.AcceptorFactory;
  * An AcceptorControl is used to manage Acceptors.
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @see Acceptor
  */
 public interface AcceptorControl extends HornetQComponentControl
@@ -35,7 +35,7 @@ public interface AcceptorControl extends HornetQComponentControl
    /**
     * Returns the class name of the AcceptorFactory implementation
     * used by this acceptor.
-    * 
+    *
     * @see AcceptorFactory
     */
    String getFactoryClassName();

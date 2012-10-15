@@ -48,7 +48,7 @@ import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
  * A BridgeReconnectTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 20 Jan 2009 19:20:41
  *
  *
@@ -576,7 +576,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          server1.start();
          server0.start();
-         
+
          waitForServerStart(server0);
          waitForServerStart(server1);
 
@@ -646,7 +646,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
-   
+
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -735,7 +735,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
          forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-         
+
          final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
@@ -792,7 +792,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                supposed = i;
             }
          }
-         
+
 
          session0.close();
          session1.close();

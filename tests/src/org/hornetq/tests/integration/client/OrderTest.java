@@ -288,11 +288,11 @@ public class OrderTest extends ServiceTestBase
          session.close();
 
          session = sf.createSession(false, false);;
-         
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer("queue");
-         
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons.receive(5000);
@@ -301,14 +301,14 @@ public class OrderTest extends ServiceTestBase
          }
          session.close();
 
-         
+
          session = sf.createSession(false, false);;
-         
+
          session.start();
-         
+
          cons = session.createConsumer("queue");
-         
-         
+
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons.receive(5000);
@@ -316,7 +316,7 @@ public class OrderTest extends ServiceTestBase
             msg.acknowledge();
             assertEquals(i, msg.getIntProperty("id").intValue());
          }
-         
+
          // receive again
          session.commit();
          session.close();

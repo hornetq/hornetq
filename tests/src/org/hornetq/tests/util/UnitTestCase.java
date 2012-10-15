@@ -114,14 +114,14 @@ public class UnitTestCase extends TestCase
    private final String baseDir = System.getProperty("java.io.tmpdir", "/tmp") + File.separator + "hornetq-unit-test";
 
    private long timeStart = System.currentTimeMillis();
-   
+
    public long getTimeStart()
    {
       return timeStart;
    }
-   
+
    private String testDir = baseDir + File.separator + timeStart;
-   
+
    public void setTimeStart(long time)
    {
       timeStart = time;
@@ -130,16 +130,16 @@ public class UnitTestCase extends TestCase
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
-   
+
    private boolean checkThread = true;
-   
+
    protected void disableCheckThread()
    {
       checkThread = false;
    }
 
    private String osType = System.getProperty("os.name").toLowerCase();
-   
+
    protected boolean isWindows()
    {
       return (osType.indexOf("win") >= 0);
@@ -934,7 +934,7 @@ public class UnitTestCase extends TestCase
    protected void tearDown() throws Exception
    {
       cleanupPools();
-      
+
       deleteDirectory(new File(baseDir));
 
 
@@ -976,15 +976,15 @@ public class UnitTestCase extends TestCase
           StringBuffer buffer = null;
 
           boolean failed = true;
-          
+
 
          long timeout = System.currentTimeMillis() + 60000;
          while (failed && timeout > System.currentTimeMillis())
          {
             buffer = new StringBuffer();
-   
+
             failed = checkThread(buffer);
-   
+
             if (failed)
             {
                forceGC();
@@ -1010,7 +1010,7 @@ public class UnitTestCase extends TestCase
       {
          checkThread = true;
       }
-      
+
 
       super.tearDown();
    }
@@ -1054,7 +1054,7 @@ public class UnitTestCase extends TestCase
    }
 
    /**
-    * 
+    *
     */
    protected void cleanupPools()
    {
@@ -1198,7 +1198,7 @@ public class UnitTestCase extends TestCase
          {
             try
             {
-               
+
                File fileTmp = new File(directory, files[j]);
                if (!deleteDirectory(fileTmp))
                {

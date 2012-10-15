@@ -16,15 +16,15 @@ package org.hornetq.core.client.impl;
 import org.hornetq.api.core.client.ClientProducer;
 
 /**
- * 
+ *
  * A ClientProducerInternal
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface ClientProducerInternal extends ClientProducer
 {
    void cleanUp();
-   
+
    ClientProducerCredits getProducerCredits();
 }

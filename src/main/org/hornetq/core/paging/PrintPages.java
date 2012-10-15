@@ -80,7 +80,7 @@ public class PrintPages
       {
 
          PageCursorsInfo cursorACKs = PrintPages.loadCursorACKs(arg[1]);
-         
+
          Set<Long> pgTXs = cursorACKs.getPgTXs();
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
@@ -107,7 +107,7 @@ public class PrintPages
          {
             PagingStore pgStore = manager.getPageStore(store);
             String folder = null;
-            
+
             if (pgStore != null)
             {
                folder = pgStore.getFolder();
@@ -149,12 +149,12 @@ public class PrintPages
                      {
                         System.out.print(" (ACK)");
                      }
-                     
+
                      if (cursorACKs.getCompletePages(q[i]).contains(new Long(pgid)))
                      {
                         System.out.println(" (PG-COMPLETE)");
                      }
-                              
+
 
                      if (i + 1 < q.length)
                      {
@@ -180,20 +180,20 @@ public class PrintPages
          e.printStackTrace();
       }
    }
-   
+
    private static class PageCursorsInfo
    {
       private final Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
-      
+
       private final Set<Long> pgTXs = new HashSet<Long>();
-      
+
       private final  Map<Long, Set<Long>> completePages = new HashMap<Long, Set<Long>>();
 
       public PageCursorsInfo()
       {
       }
-      
-      
+
+
       /**
        * @return the pgTXs
        */
@@ -219,17 +219,17 @@ public class PrintPages
       {
          return completePages;
       }
-      
+
       public Set<Long> getCompletePages(Long queueID)
       {
          Set<Long> completePagesSet = completePages.get(queueID);
-         
+
          if (completePagesSet == null)
          {
             completePagesSet = new HashSet<Long>();
             completePages.put(queueID, completePagesSet);
          }
-         
+
          return completePagesSet;
       }
 
@@ -262,7 +262,7 @@ public class PrintPages
       ArrayList<PreparedTransactionInfo> txs = new ArrayList<PreparedTransactionInfo>();
 
       messagesJournal.load(records, txs, null, false);
-      
+
       PageCursorsInfo cursorInfo = new PageCursorsInfo();
 
 
@@ -291,10 +291,10 @@ public class PrintPages
          {
             CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
             encoding.decode(buff);
-            
+
             Long queueID = new Long(encoding.queueID);
             Long pageNR = new Long(encoding.position.getPageNr());
-            
+
             if (!cursorInfo.getCompletePages(queueID).add(pageNR))
             {
                System.err.println("Page " + pageNR + " has been already set as complete on queue " + queueID);
@@ -320,7 +320,7 @@ public class PrintPages
             }
          }
       }
-      
+
       return cursorInfo;
    }
 

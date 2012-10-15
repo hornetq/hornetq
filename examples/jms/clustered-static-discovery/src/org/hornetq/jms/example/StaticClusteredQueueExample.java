@@ -24,7 +24,7 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * A simple example that demonstrates server side load-balancing of messages between the queue instances on different 
+ * A simple example that demonstrates server side load-balancing of messages between the queue instances on different
  * nodes of the cluster. The cluster is created from a static list of nodes.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

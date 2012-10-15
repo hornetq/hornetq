@@ -59,7 +59,7 @@ public class SimpleAddressManager implements AddressManager
       {
          throw new HornetQException(HornetQException.QUEUE_EXISTS, "Binding already exists " + binding);
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("Adding binding " + binding + " with address = " + binding.getUniqueName(), new Exception ("trace"));

@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * A QueueDeployerTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  */
 public class QueueDeployerTest extends ServiceTestBase
 {
@@ -53,7 +53,7 @@ public class QueueDeployerTest extends ServiceTestBase
 
    public void testParseQueueConfiguration() throws Exception
    {
-      String xml = "<configuration xmlns='urn:hornetq'>" 
+      String xml = "<configuration xmlns='urn:hornetq'>"
                    + "   <queues>"
                    + "      <queue name='foo'>"
                    + "         <address>bar</address>"
@@ -88,7 +88,7 @@ public class QueueDeployerTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       server = createServer(true);
       DeploymentManager deploymentManager = new FileDeploymentManager(500);
       deployer = new QueueDeployer(deploymentManager, server);
@@ -100,7 +100,7 @@ public class QueueDeployerTest extends ServiceTestBase
    {
       deployer = null;
       server.stop();
-      
+
       super.tearDown();
    }
 

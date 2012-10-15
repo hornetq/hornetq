@@ -18,9 +18,9 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.ServerMessage;
 
 /**
- * 
+ *
  * A FakeFilter
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

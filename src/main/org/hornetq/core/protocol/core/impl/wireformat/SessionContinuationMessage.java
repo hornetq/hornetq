@@ -21,7 +21,7 @@ import org.hornetq.utils.DataConstants;
  * A SessionContinuationMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Dec 5, 2008 10:08:40 AM
  *
  *
@@ -39,7 +39,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
    protected byte[] body;
 
    protected boolean continues;
-   
+
 
    // Static --------------------------------------------------------
 

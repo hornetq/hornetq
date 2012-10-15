@@ -26,7 +26,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example demonstrates a core bridge set-up between two nodes, consuming messages from a queue
  * on one node and forwarding them to an address on the second node.
- * 
+ *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
 public class BridgeExample extends HornetQExample

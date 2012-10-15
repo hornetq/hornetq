@@ -22,7 +22,7 @@ import org.hornetq.api.core.SimpleString;
  * A QueueInfo
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 21 Jan 2009 20:55:06
  *
  *
@@ -153,6 +153,6 @@ public class QueueInfo implements Serializable
              distance +
              "]";
    }
-   
-   
+
+
 }

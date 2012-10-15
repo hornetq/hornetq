@@ -87,7 +87,7 @@ public abstract class StompTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       forceGC();
 
       if (autoCreateServer)
@@ -123,7 +123,7 @@ public abstract class StompTestBase extends UnitTestCase
 
    /**
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
    protected JMSServerManager createServer() throws Exception
    {

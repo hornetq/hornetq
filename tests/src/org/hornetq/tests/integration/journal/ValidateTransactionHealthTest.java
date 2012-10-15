@@ -35,9 +35,9 @@ import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * This test spawns a remote VM, as we want to "crash" the VM right after the journal is filled with data
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

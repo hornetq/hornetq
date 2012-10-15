@@ -105,7 +105,7 @@ public class LinkedListTest extends UnitTestCase
          iter.next();
          iter.remove();
       }
-      
+
       assertCount(0, count);
 
    }
@@ -128,7 +128,7 @@ public class LinkedListTest extends UnitTestCase
          {
             count.decrementAndGet();
          }
-         
+
          public String toString()
          {
             return "" + payload;
@@ -156,11 +156,11 @@ public class LinkedListTest extends UnitTestCase
             iter.remove();
          }
       }
-      
+
       iter.close();
-      
+
       iter = objs.iterator();
-      
+
       countLoop = 0;
       while (iter.hasNext())
       {
@@ -173,9 +173,9 @@ public class LinkedListTest extends UnitTestCase
          assertEquals(countLoop, obj.payload);
          countLoop++;
       }
-      
-      
-      
+
+
+
       assertCount(999, count);
 
    }
@@ -186,7 +186,7 @@ public class LinkedListTest extends UnitTestCase
    private void assertCount(final int expected, final AtomicInteger count)
    {
       long timeout = System.currentTimeMillis() + 15000;
-      
+
       int seqCount = 0;
       while (timeout > System.currentTimeMillis() && count.get() != expected)
       {
@@ -206,7 +206,7 @@ public class LinkedListTest extends UnitTestCase
             catch (Throwable expectedThrowable)
             {
             }
-            
+
             toOME.clear();
          }
          forceGC();

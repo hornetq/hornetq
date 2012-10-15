@@ -20,13 +20,13 @@ import java.util.zip.Inflater;
 
 /**
  * A InflaterWriter
- * 
- * This class takes an OutputStream. Compressed bytes 
+ *
+ * This class takes an OutputStream. Compressed bytes
  * can directly be written into this class. The class will
  * decompress the bytes and write them to the output stream.
- * 
+ *
  * Not for concurrent use.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */

@@ -22,8 +22,8 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 
 /**
- * 
- * 
+ *
+ *
 <PRE>
 
 +------------+      1  +-------------+       N +------------+       N +-------+       1 +----------------+
@@ -35,11 +35,11 @@ import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
                               |                         | 1
                               |        N +---------+
                               +--------&gt; | Address |
-                                         +---------+   
+                                         +---------+
 
 </PRE>
 
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -67,18 +67,18 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
     * @param transactionID
     */
    void removeTransaction(long transactionID);
-   
+
    Map<Long, PageTransactionInfo> getTransactions();
 
    /**
     * Reload previously created PagingStores into memory
-    * @throws Exception 
+    * @throws Exception
     */
    void reloadStores() throws Exception;
 
    SimpleString[] getStoreNames();
 
    void deletePageStore(SimpleString storeName) throws Exception;
-   
+
    void processReload() throws Exception;
 }

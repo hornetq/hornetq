@@ -26,7 +26,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A ObjectMessageDeliveryTest
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
@@ -55,7 +55,7 @@ public class ObjectMessageDeliveryTest extends HornetQServerTestCase
    }
 
    /**
-    * 
+    *
     */
    public void testTopic() throws Exception
    {

@@ -21,7 +21,7 @@ import javax.jms.TemporaryQueue;
  * HornetQ implementation of a JMS TemporaryQueue.
  * <br>
  * This class can be instantiated directly.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3569 $</tt>
  *
@@ -38,7 +38,7 @@ public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueu
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
- 
+
 
    // TemporaryQueue implementation ------------------------------------------
 

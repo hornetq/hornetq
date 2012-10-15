@@ -111,7 +111,7 @@ public class NettySecurityClientTest extends UnitTestCase
                                            new String[] { NettyConnectorFactory.class.getName() });
 
       InputStreamReader isr = new InputStreamReader(p.getInputStream());
-      
+
       BufferedReader br = new BufferedReader(isr);
       String line = null;
       while ((line = br.readLine()) != null)

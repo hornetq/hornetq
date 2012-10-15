@@ -61,7 +61,7 @@ public class ResourceNames
    private ResourceNames()
    {
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

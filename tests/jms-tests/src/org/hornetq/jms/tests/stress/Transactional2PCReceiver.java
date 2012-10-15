@@ -23,14 +23,14 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * A receiver that receives messages in a XA transaction
- * 
+ *
  * Receives <commitSize> messages then prepares, commits, then
  * Receives <rollbackSize> messages then prepares, rollsback until
  * a total of <numMessages> messages have been received (committed)
  * <numMessages> must be a multiple of <commitSize>
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

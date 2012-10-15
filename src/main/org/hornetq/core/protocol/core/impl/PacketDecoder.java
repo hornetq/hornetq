@@ -169,7 +169,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 public class PacketDecoder
 {
    private static final Logger log = Logger.getLogger(PacketDecoder.class);
-   
+
    public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();

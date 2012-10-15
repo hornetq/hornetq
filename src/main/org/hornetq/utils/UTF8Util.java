@@ -19,13 +19,13 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A UTF8Util
- * 
+ *
  * This class will write UTFs directly to the ByteOutput (through the MessageBuffer interface)
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 20, 2009 1:37:18 PM
  *
  *

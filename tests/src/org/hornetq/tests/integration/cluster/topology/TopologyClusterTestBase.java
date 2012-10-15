@@ -204,7 +204,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       throw new IllegalStateException("Timed out waiting for cluster connections ");
    }
 
-   
+
    public void testReceiveNotificationsWhenOtherNodesAreStartedAndStopped() throws Throwable
    {
       startServers(0);

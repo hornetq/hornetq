@@ -60,7 +60,7 @@ public class OldFormatTest extends JournalImplTestBase
       for (long i = 0 ; i < 10; i++)
       {
          add(buffer, 1, i, record);
-   
+
          update(buffer, 1, i, record);
       }
 
@@ -75,10 +75,10 @@ public class OldFormatTest extends JournalImplTestBase
       createJournal();
       startJournal();
       loadAndCheck();
-      
+
       startCompact();
       finishCompact();
-      
+
       stopJournal();
       createJournal();
       startJournal();

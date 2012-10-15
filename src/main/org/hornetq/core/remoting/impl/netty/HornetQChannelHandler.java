@@ -58,19 +58,19 @@ class HornetQChannelHandler extends SimpleChannelHandler
       group.add(e.getChannel());
       ctx.sendUpstream(e);
    }
-         
+
    @Override
    public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
    {
-      listener.connectionReadyForWrites(e.getChannel().getId(), e.getChannel().isWritable());      
+      listener.connectionReadyForWrites(e.getChannel().getId(), e.getChannel().isWritable());
    }
 
    @Override
    public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
    {
       ChannelBuffer buffer = (ChannelBuffer)e.getMessage();
-      
-      handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));      
+
+      handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
    }
 
    @Override
@@ -107,7 +107,7 @@ class HornetQChannelHandler extends SimpleChannelHandler
 
       HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
       me.initCause(e.getCause());
-      
+
       synchronized (listener)
       {
          try
@@ -120,6 +120,6 @@ class HornetQChannelHandler extends SimpleChannelHandler
             HornetQChannelHandler.log.error("failed to notify the listener:", ex);
          }
       }
-   }   
-   
+   }
+
 }

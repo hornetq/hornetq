@@ -35,7 +35,7 @@ import org.jnp.server.NamingBeanImpl;
  * A SpawnedServer
  *
  * @author jmesnil
- * 
+ *
  */
 public class SpawnedJMSServer
 {
@@ -68,8 +68,8 @@ public class SpawnedJMSServer
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
          conf.setFileDeploymentEnabled(false);
-         
-         
+
+
          conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
          // disable server persistence since JORAM tests do not restart server

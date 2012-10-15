@@ -99,12 +99,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       return 500;
    }
-   
+
    protected boolean isLargeMessage()
    {
       return false;
    }
-   
+
 
    private static final long TIMEOUT_START_SERVER = 400;
 
@@ -112,7 +112,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       forceGC();
 
       UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
@@ -122,7 +122,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       consumers = new ConsumerHolder[ClusterTestBase.MAX_CONSUMERS];
 
       servers = new HornetQServer[ClusterTestBase.MAX_SERVERS];
-      
+
       timeStarts = new long[ClusterTestBase.MAX_SERVERS];
 
       sfs = new ClientSessionFactory[ClusterTestBase.MAX_SERVERS];
@@ -203,7 +203,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected ConsumerHolder[] consumers;
 
    protected HornetQServer[] servers;
-   
+
    protected long[] timeStarts;
 
    protected NodeManager[] nodeManagers;
@@ -617,7 +617,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
 
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
-            
+
             if (isLargeMessage())
             {
                message.setBodyInputStream(createFakeLargeStream(getLargeMessageSize()));
@@ -673,7 +673,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          for (int i = msgStart; i < msgEnd; i++)
          {
             ClientMessage message = session.createMessage(durable);
-            
+
             if (isLargeMessage())
             {
                message.setBodyInputStream(createFakeLargeStream(getLargeMessageSize()));
@@ -681,7 +681,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             message.putStringProperty(key, val);
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
-            
+
             producer.send(message);
          }
       }
@@ -874,7 +874,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             log.info("msg on ClusterTestBase = " + message);
 
-            
+
             if (isLargeMessage())
             {
                checkMessageBody(message);
@@ -1179,7 +1179,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (message != null)
             {
                int count = (Integer)message.getObjectProperty(ClusterTestBase.COUNT_PROP);
-               
+
                checkMessageBody(message);
 
 
@@ -1290,12 +1290,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
          message = consumer.consumer.receive(500);
          if (message != null)
          {
-            
+
             if (isLargeMessage())
             {
                checkMessageBody(message);
             }
-            
+
             if (ack)
             {
                message.acknowledge();
@@ -2050,7 +2050,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             Thread.sleep(TIMEOUT_START_SERVER);
          }
          timeStarts[node] = System.currentTimeMillis();
-         
+
          servers[node].setIdentity("server " + node);
          log.info("starting server " + servers[node]);
          servers[node].start();
@@ -2095,10 +2095,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
                   // We can't stop and start a node too fast (faster than what the Topology could realize about this
                  Thread.sleep(TIMEOUT_START_SERVER);
                }
-               
+
 
                timeStarts[node] = System.currentTimeMillis();
-               
+
                log.info("stopping server " + node);
                servers[node].stop();
                log.info("server " + node + " stopped");

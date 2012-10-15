@@ -29,7 +29,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    private static final Logger log = Logger.getLogger(AddressSettingsDeployer.class);
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
-   
+
    private final FileConfigurationParser parser = new FileConfigurationParser();
 
    public AddressSettingsDeployer(final DeploymentManager deploymentManager,
@@ -63,7 +63,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      
+
       Pair<String, AddressSettings> setting = parser.parseAddressSettings(node);
 
       addressSettingsRepository.addMatch(setting.getA(), setting.getB());

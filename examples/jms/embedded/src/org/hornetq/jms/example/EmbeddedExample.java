@@ -39,7 +39,7 @@ import org.hornetq.jms.server.embedded.EmbeddedJMS;
 
 /**
  * This example demonstrates how to run a HornetQ embedded with JMS
- * 
+ *
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:bburke@redhat.com">Bill Burke</a>
@@ -63,7 +63,7 @@ public class EmbeddedExample
 
          configuration.getConnectorConfigurations().put("connector", connectorConfig);
 
-         
+
          // Step 2. Create the JMS configuration
          JMSConfiguration jmsConfig = new JMSConfigurationImpl();
 

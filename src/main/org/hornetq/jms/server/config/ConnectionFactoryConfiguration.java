@@ -27,25 +27,25 @@ import org.hornetq.core.journal.EncodingSupport;
  */
 public interface ConnectionFactoryConfiguration extends EncodingSupport
 {
-   
+
    boolean isPersisted();
-   
+
    String getName();
 
    String[] getBindings();
 
    void setBindings(String[] bindings);
-   
+
    String getDiscoveryGroupName();
-   
+
    void setDiscoveryGroupName(String discoveryGroupName);
-   
+
    List<String> getConnectorNames();
 
    void setConnectorNames(List<String> connectorNames);
-   
+
    boolean isHA();
-   
+
    void setHA(boolean ha);
 
    String getClientID();
@@ -71,10 +71,10 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    int getMinLargeMessageSize();
 
    void setMinLargeMessageSize(int minLargeMessageSize);
-   
+
    boolean isCompressLargeMessages();
-   
-   void setCompressLargeMessages(boolean compress);   
+
+   void setCompressLargeMessages(boolean compress);
 
    int getConsumerWindowSize();
 
@@ -165,6 +165,6 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    void setGroupID(String groupID);
 
    void setFactoryType(JMSFactoryType factType);
-   
+
    JMSFactoryType getFactoryType();
 }

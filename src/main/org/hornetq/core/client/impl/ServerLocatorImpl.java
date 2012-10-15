@@ -543,9 +543,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       else
       {
          // Get from initialconnectors
-   
+
          int pos = loadBalancingPolicy.select(initialConnectors.length);
-   
+
          return initialConnectors[pos];
       }
    }
@@ -1483,7 +1483,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       List<DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntries();
 
-      
+
       TransportConfiguration[] newInitialconnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
                                                                            newConnectors.size());
 
@@ -1499,14 +1499,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             topology.updateMember(0, entry.getNodeID(), member);
          }
       }
-      
+
       this.initialConnectors = newInitialconnectors;
 
       if (clusterConnection && !receivedTopology && initialConnectors.length > 0)
       {
          // The node is alone in the cluster. We create a connection to the new node
          // to trigger the node notification to form the cluster.
-         
+
          Runnable connectRunnable = new Runnable()
          {
             public void run()
@@ -1537,13 +1537,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       synchronized (factories)
       {
          factories.remove(factory);
-   
+
          if (!clusterConnection && factories.isEmpty())
          {
             // Go back to using the broadcast or static list
-   
+
             receivedTopology = false;
-   
+
             topologyArray = null;
          }
       }

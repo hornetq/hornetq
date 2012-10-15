@@ -293,7 +293,7 @@ public class TimedBuffer
       flush(false);
    }
 
-   /** 
+   /**
     * force means the Journal is moving to a new file. Any pending write need to be done immediately
     * or data could be lost
     * */

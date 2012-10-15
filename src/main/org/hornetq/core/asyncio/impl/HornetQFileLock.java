@@ -27,7 +27,7 @@ public class HornetQFileLock extends FileLock
 {
 
    private final int handle;
-   
+
    /**
     * @param channel
     * @param position

@@ -19,7 +19,7 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * Helper class to create Java Objects from the
  * JSON serialization returned by {@link JMSServerControl#listConsumersAsJSON(String)} and related methods.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class JMSConsumerInfo
@@ -39,9 +39,9 @@ public class JMSConsumerInfo
    private final boolean browseOnly;
 
    private final long creationTime;
-   
+
    private final boolean durable;
-   
+
    private final String filter;
 
    // Static --------------------------------------------------------
@@ -98,32 +98,32 @@ public class JMSConsumerInfo
    {
       return consumerID;
    }
-   
+
    public String getConnectionID()
    {
       return connectionID;
    }
-   
+
    public String getDestinationName()
    {
       return destinationName;
    }
-   
+
    public String getDestinationType()
    {
       return destinationType;
    }
-   
+
    public boolean isBrowseOnly()
    {
       return browseOnly;
    }
-   
+
    public long getCreationTime()
    {
       return creationTime;
    }
-   
+
    /**
     * @return the durable
     */
@@ -131,7 +131,7 @@ public class JMSConsumerInfo
    {
       return durable;
    }
-   
+
    public String getFilter()
    {
       return filter;

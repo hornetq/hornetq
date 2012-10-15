@@ -29,9 +29,9 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
- * 
+ *
  * A Configuration is used to configure HornetQ servers.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -43,11 +43,11 @@ public interface Configuration extends Serializable
    static final String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
 
    // General attributes -------------------------------------------------------------------
-   
-   
+
+
    /** To be used on dependency management on the application server */
    String getName();
-   
+
    /** To be used on dependency management on the application server */
    void setName(String name);
 
@@ -209,7 +209,7 @@ public interface Configuration extends Serializable
     * Sets whether this server is manageable using JMX or not.
     */
    void setJMXManagementEnabled(boolean enabled);
-   
+
    /**
     * Returns the domain used by JMX MBeans (provided JMX management is enabled).
     * <br>
@@ -219,7 +219,7 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the domain used by JMX MBeans (provided JMX management is enabled).
-    * 
+    *
     * Changing this JMX domain is required if multiple HornetQ servers are run inside
     * the same JVM and all servers are using the same MBeanServer.
     */
@@ -285,7 +285,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the name of the connector used to connect to the live node - only used when using shared nothing (shared store = false).
-    * <br> 
+    * <br>
     */
    String getLiveConnectorName();
 
@@ -424,10 +424,10 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the cluster password for this server.
-    * @throws Exception 
+    * @throws Exception
     */
    void setClusterPassword(String password);
-   
+
    /**
     * Returns the size of the cache for pre-creating message IDs.
     * <br>
@@ -479,12 +479,12 @@ public interface Configuration extends Serializable
     * Sets the file system directory used to store bindings.
     */
    void setBindingsDirectory(String dir);
-   
+
    /** The max number of concurrent reads allowed on paging.
-    * 
+    *
     *  Default = 5 */
    int getPageMaxConcurrentIO();
-   
+
    /** The max number of concurrent reads allowed on paging.
     *  Default = 5 */
    void setPageMaxConcurrentIO(int maxIO);
@@ -752,7 +752,7 @@ public interface Configuration extends Serializable
    void setWildcardRoutingEnabled(boolean enabled);
 
    /**
-    * Returns the timeout (in milliseconds) after which transactions is removed 
+    * Returns the timeout (in milliseconds) after which transactions is removed
     * from the resource manager after it was created.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_TRANSACTION_TIMEOUT}.
@@ -760,7 +760,7 @@ public interface Configuration extends Serializable
    long getTransactionTimeout();
 
    /**
-    * Sets the timeout (in milliseconds) after which transactions is removed 
+    * Sets the timeout (in milliseconds) after which transactions is removed
     * from the resource manager after it was created.
     */
    void setTransactionTimeout(long timeout);
@@ -786,7 +786,7 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the sample period to take message counter snapshot.
-    * 
+    *
     * @param period value must be greater than 1000ms
     */
    void setMessageCounterSamplePeriod(long period);
@@ -800,13 +800,13 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the maximum number of days kept in memory for message counter.
-    * 
+    *
     * @param maxDayHistory value must be greater than 0
     */
    void setMessageCounterMaxDayHistory(int maxDayHistory);
 
    /**
-    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions 
+    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions
     * have timed out.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD}.
@@ -814,13 +814,13 @@ public interface Configuration extends Serializable
    long getTransactionTimeoutScanPeriod();
 
    /**
-    * Sets the frequency (in milliseconds)  to scan transactions to detect which transactions 
+    * Sets the frequency (in milliseconds)  to scan transactions to detect which transactions
     * have timed out.
     */
    void setTransactionTimeoutScanPeriod(long period);
 
    /**
-    * Returns the frequency (in milliseconds)  to scan messages to detect which messages 
+    * Returns the frequency (in milliseconds)  to scan messages to detect which messages
     * have expired.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD}.
@@ -828,7 +828,7 @@ public interface Configuration extends Serializable
    long getMessageExpiryScanPeriod();
 
    /**
-    * Sets the frequency (in milliseconds)  to scan messages to detect which messages 
+    * Sets the frequency (in milliseconds)  to scan messages to detect which messages
     * have expired.
     */
    void setMessageExpiryScanPeriod(long messageExpiryScanPeriod);
@@ -846,7 +846,7 @@ public interface Configuration extends Serializable
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
 
    /**
-    * 
+    *
     * @return A list of AddressSettings per matching to be deployed to the address settings repository
     */
    Map<String, AddressSettings> getAddressesSettings();
@@ -857,25 +857,25 @@ public interface Configuration extends Serializable
    void setAddressesSettings(Map<String, AddressSettings> addressesSettings);
 
    /**
-    * 
+    *
     * @param roles a list of roles per matching
     */
    void setSecurityRoles(Map<String, Set<Role>> roles);
 
    /**
-    * 
+    *
     * @return a list of roles per matching
     */
    Map<String, Set<Role>> getSecurityRoles();
 
    /**
-    * 
-    * @param 
+    *
+    * @param
     */
    void setConnectorServiceConfigurations(List<ConnectorServiceConfiguration> configs);
    /**
-    * 
-    * @return 
+    *
+    * @return
     */
    List<ConnectorServiceConfiguration> getConnectorServiceConfigurations();
 
@@ -893,7 +893,7 @@ public interface Configuration extends Serializable
     * The default password decoder
     */
    void setPasswordCodec(String codec);
-   
+
    /**
     * Gets the default password decoder
     */

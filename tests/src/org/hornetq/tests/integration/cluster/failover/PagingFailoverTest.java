@@ -39,7 +39,7 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A PagingFailoverTest
- * 
+ *
  * TODO: validate replication failover also
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -136,10 +136,10 @@ public class PagingFailoverTest extends FailoverTestBase
          {
             crash(session);
          }
-         
-         
+
+
          session.close();
-         
+
          session = sf.createSession(!transacted, !transacted, 0);
 
          session.start();
@@ -162,9 +162,9 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.commit();
-         
+
          cons.close();
-         
+
          Thread.sleep(1000);
 
          if (!failBeforeConsume)
@@ -174,7 +174,7 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.close();
-         
+
          session = sf.createSession(true, true, 0);
 
          cons = session.createConsumer(PagingFailoverTest.ADDRESS);
@@ -232,9 +232,9 @@ public class PagingFailoverTest extends FailoverTestBase
          crash(session);
 
          session.close();
-         
+
          Queue queue = backupServer.getServer().locateQueue(ADDRESS);
-         
+
          long timeout = System.currentTimeMillis() + 60000;
          System.out.println("Starting now");
          while (timeout > System.currentTimeMillis() && queue.getPageSubscription().isPaging())
@@ -243,7 +243,7 @@ public class PagingFailoverTest extends FailoverTestBase
             // Force what would happen on an expire
             queue.expireReferences();
          }
-         
+
          try
          {
             assertFalse(queue.getPageSubscription().isPaging());

@@ -43,7 +43,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A BridgeStartTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 14 Jan 2009 14:05:01
  *
  *
@@ -139,7 +139,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          server0.start();
          waitForServer(server0);
 
@@ -187,7 +187,7 @@ public class BridgeStartTest extends ServiceTestBase
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)
@@ -342,7 +342,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -559,7 +559,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          server1.start();
          waitForServer(server1);
-         
+
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -737,7 +737,7 @@ public class BridgeStartTest extends ServiceTestBase
          BridgeStartTest.log.info("stopping bridge manually");
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = numMessages; i < numMessages * 2; i++)
@@ -772,7 +772,7 @@ public class BridgeStartTest extends ServiceTestBase
          Assert.assertNull(consumer1.receiveImmediate());
 
          bridge.stop();
-         
+
          bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)

@@ -24,16 +24,16 @@ package org.hornetq.utils;
 public interface HQDeque<T>
 {
    void addFirst(T t);
-   
+
    void addLast(T t);
-   
+
    HQIterator<T> iterator();
-   
+
    boolean isEmpty();
-   
+
    T removeFirst();
-   
+
    T getFirst();
-   
+
    void clear();
 }

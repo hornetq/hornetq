@@ -19,7 +19,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class CreateSessionMessage extends PacketImpl
@@ -49,7 +49,7 @@ public class CreateSessionMessage extends PacketImpl
    private boolean preAcknowledge;
 
    private int windowSize;
-   
+
    private String defaultAddress;
 
    // Static --------------------------------------------------------
@@ -92,7 +92,7 @@ public class CreateSessionMessage extends PacketImpl
       this.windowSize = windowSize;
 
       this.preAcknowledge = preAcknowledge;
-      
+
       this.defaultAddress = defaultAddress;
    }
 
@@ -152,7 +152,7 @@ public class CreateSessionMessage extends PacketImpl
    {
       return windowSize;
    }
-   
+
    public String getDefaultAddress()
    {
       return defaultAddress;
@@ -211,7 +211,7 @@ public class CreateSessionMessage extends PacketImpl
                         (username == null ? r.username == null : username.equals(r.username)) &&
                         (password == null ? r.password == null : password.equals(r.password)) &&
                         (defaultAddress == null ? r.defaultAddress == null : defaultAddress.equals(r.defaultAddress));
-                        
+
 
       return matches;
    }

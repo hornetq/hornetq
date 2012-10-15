@@ -38,7 +38,7 @@ import org.hornetq.utils.LinkedListIterator;
  */
 public class FakeQueue implements Queue
 {
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#isInternalQueue()
     */
@@ -54,11 +54,11 @@ public class FakeQueue implements Queue
    public void setInternalQueue(boolean internalQueue)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    PageSubscription subs;
-   
+
    public boolean isDirectDeliver()
    {
       // TODO Auto-generated method stub
@@ -68,19 +68,19 @@ public class FakeQueue implements Queue
    public void close()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void forceCheckQueueSize()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void reload(MessageReference ref)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public boolean flushExecutor()
@@ -91,36 +91,36 @@ public class FakeQueue implements Queue
    public void addHead(MessageReference ref)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void addTail(MessageReference ref, boolean direct)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void addTail(MessageReference ref)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void resetAllIterators()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    private final SimpleString name;
-   
+
    private final long id;
 
    public FakeQueue(final SimpleString name)
    {
       this(name, 0);
    }
-   
+
    public FakeQueue(final SimpleString name, final long id)
    {
       this.name = name;
@@ -216,7 +216,7 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return false;
    }
-   
+
 /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#changeReferencesPriority(org.hornetq.core.filter.Filter, byte)
     */
@@ -383,7 +383,7 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return null;
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getID()
     */
@@ -560,7 +560,7 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return false;
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#sendMessagesToDeadLetterAddress(org.hornetq.core.filter.Filter)
     */
@@ -623,7 +623,7 @@ public class FakeQueue implements Queue
    public void addLast(MessageReference ref, boolean direct)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -633,7 +633,7 @@ public class FakeQueue implements Queue
    {
       return subs;
    }
-   
+
    public void setPageSubscription(PageSubscription sub)
    {
       this.subs = sub;
@@ -663,7 +663,7 @@ public class FakeQueue implements Queue
    public void forceDelivery()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -690,7 +690,7 @@ public class FakeQueue implements Queue
    public void addHead(LinkedList<MessageReference> refs)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -699,7 +699,7 @@ public class FakeQueue implements Queue
    public void destroyPaging()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
 }

@@ -38,7 +38,7 @@ public class NullJMSStorageManagerImpl implements JMSStorageManager
     */
    public void deleteConnectionFactory(String connectionFactory) throws Exception
    {
-      
+
    }
 
    /* (non-Javadoc)

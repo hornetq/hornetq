@@ -26,7 +26,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A SessionCloseOnGCTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -57,7 +57,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       //locator.close();
-      
+
       server.stop();
 
       server = null;

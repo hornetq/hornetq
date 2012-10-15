@@ -35,15 +35,15 @@ public class SessionCreateConsumerTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       locator = createInVMNonHALocator();
-      
-      super.setUp();   
+
+      super.setUp();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       super.tearDown();
    }
 

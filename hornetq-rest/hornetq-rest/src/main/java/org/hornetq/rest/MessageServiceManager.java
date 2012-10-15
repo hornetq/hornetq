@@ -33,7 +33,7 @@ public class MessageServiceManager
 {
    protected ExecutorService threadPool;
    protected QueueServiceManager queueManager = new QueueServiceManager();
-   protected TopicServiceManager topicManager = new TopicServiceManager();  
+   protected TopicServiceManager topicManager = new TopicServiceManager();
    protected TimeoutTask timeoutTask;
    protected int timeoutTaskInterval = 1;
    protected MessageServiceConfiguration configuration = new MessageServiceConfiguration();
@@ -142,17 +142,17 @@ public class MessageServiceManager
 
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
       transportConfig.put(TransportConstants.SERVER_ID_PROP_NAME, configuration.getInVmId());
-      
-      
+
+
       ServerLocator consumerLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
-      
+
       if (configuration.getConsumerWindowSize() != -1)
       {
     	  consumerLocator.setConsumerWindowSize(configuration.getConsumerWindowSize());
       }
 
       ClientSessionFactory consumerSessionFactory = consumerLocator.createSessionFactory();
-      
+
       ServerLocator defaultLocator =  new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
 
       ClientSessionFactory sessionFactory = defaultLocator.createSessionFactory();

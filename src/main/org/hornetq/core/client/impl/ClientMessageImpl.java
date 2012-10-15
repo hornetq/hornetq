@@ -28,9 +28,9 @@ import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
 
 /**
- * 
+ *
  * A ClientMessageImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
@@ -98,7 +98,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          consumer.acknowledge(this);
       }
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ClientMessage#individualAcknowledge()

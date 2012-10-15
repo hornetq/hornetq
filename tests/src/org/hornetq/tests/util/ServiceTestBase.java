@@ -67,9 +67,9 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * Base class with basic utilities on starting up a basic server
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -77,9 +77,9 @@ public abstract class ServiceTestBase extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
-   
+
    protected static final long WAIT_TIMEOUT = 10000;
-   
+
 
    // Attributes ----------------------------------------------------
 
@@ -144,9 +144,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       log.debug("waiting for " + nodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
-      
+
       Set<ClusterConnection> ccs = server.getClusterManager().getClusterConnections();
-      
+
       if (ccs.size() != 1)
       {
          throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
@@ -183,10 +183,10 @@ public abstract class ServiceTestBase extends UnitTestCase
       log.debug("waiting for " + nodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
-      
+
       ClusterConnection clusterConnection = server.getClusterManager().getClusterConnection(clusterConnectionName);
 
-      
+
       Topology topology = clusterConnection.getTopology();
 
       do
@@ -280,7 +280,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void waitForServer(HornetQServer server) throws InterruptedException
    {
       long timetowait = System.currentTimeMillis() + 5000;
@@ -288,13 +288,13 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          Thread.sleep(100);
       }
-      
+
       if (!server.isStarted())
       {
          log.info(threadDump("Server didn't start"));
          fail("server didnt start");
       }
-      
+
       if (!server.getConfiguration().isBackup())
       {
          timetowait = System.currentTimeMillis() + 5000;
@@ -302,7 +302,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          {
             Thread.sleep(100);
          }
-         
+
          if (!server.isInitialised())
          {
             fail("Server didn't initialize");
@@ -351,7 +351,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
    }
-   
+
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final int pageSize,
@@ -459,7 +459,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                          ManagementFactory.getPlatformMBeanServer(),
                                          securityManager,
                                          nodeManager);
-      
+
       server.setIdentity("Server " + id);
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -598,11 +598,11 @@ public abstract class ServiceTestBase extends UnitTestCase
       locators.add(locatorWithoutHA);
       return locatorWithoutHA;
    }
-   
+
    protected ServerLocator createInVMLocator(final int serverID)
    {
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
-      
+
       return HornetQClient.createServerLocatorWithHA(tnspConfig);
    }
 
@@ -622,7 +622,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       TransportConfiguration tnspConfig = new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params, name);
       return tnspConfig;
    }
- 
+
    protected ClientSessionFactoryImpl createFactory(final String connectorClass) throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorClass));
@@ -645,9 +645,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       message.getBodyBuffer().writeBytes(b);
       return message;
    }
-   
-   
-   
+
+
+
    /**
     * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
     * independent of being deleted or not
@@ -661,7 +661,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       try
       {
          SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
-   
+
          messagesJournal = new JournalImpl(config.getJournalFileSize(),
                                            config.getJournalMinFiles(),
                                            0,
@@ -672,11 +672,11 @@ public abstract class ServiceTestBase extends UnitTestCase
                                            1);
          final List<RecordInfo> committedRecords = new LinkedList<RecordInfo>();
          final List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
-         
+
          messagesJournal.start();
-         
+
          messagesJournal.load(committedRecords, preparedTransactions, null, false);
-         
+
          return new Pair<List<RecordInfo>, List<PreparedTransactionInfo>>(committedRecords, preparedTransactions);
       }
       finally
@@ -694,7 +694,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
 
    }
-   
+
    /**
     * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
     * independent of being deleted or not
@@ -781,7 +781,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
       return recordsType;
    }
-   
+
    /**
     * This method will load a journal and count the living records
     * @param config
@@ -802,14 +802,14 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                     "hq",
                                                     1);
       messagesJournal.start();
-      
-      
+
+
       final List<RecordInfo> committedRecords = new LinkedList<RecordInfo>();
       final List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
-      
-      
+
+
       messagesJournal.load(committedRecords, preparedTransactions, null, false);
-      
+
       for (RecordInfo info: committedRecords)
       {
          Integer ikey = new Integer(info.getUserRecordType());
@@ -820,9 +820,9 @@ public abstract class ServiceTestBase extends UnitTestCase
             recordsType.put(ikey, value);
          }
          value.incrementAndGet();
-         
+
       }
-      
+
       messagesJournal.stop();
       return recordsType;
    }
@@ -841,8 +841,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          Thread.sleep(100);
       }
-      
-      
+
+
       if (expect != largeMessagesFileDir.listFiles().length)
       {
          for (File file : largeMessagesFileDir.listFiles())

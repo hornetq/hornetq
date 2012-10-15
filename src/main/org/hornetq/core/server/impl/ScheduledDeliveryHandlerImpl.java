@@ -29,7 +29,7 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
 
 /**
  * Handles scheduling deliveries to a queue at the correct time.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -42,9 +42,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private static final boolean trace = ScheduledDeliveryHandlerImpl.log.isTraceEnabled();
 
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private final Object lockDelivery = new Object();
-   
+
    private LinkedList<MessageReference> scheduledReferences = new LinkedList<MessageReference>();
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
@@ -112,7 +112,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       synchronized (scheduledReferences)
       {
          Iterator<MessageReference> iter = scheduledReferences.iterator();
-         
+
          while (iter.hasNext())
          {
             MessageReference ref = iter.next();
@@ -141,7 +141,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             }
          }
       }
-      
+
       return null;
    }
 
@@ -150,7 +150,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       long now = System.currentTimeMillis();
 
       long delay = deliveryTime - now;
-      
+
       if (delay < 0)
       {
          delay = 0;
@@ -176,7 +176,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          {
             synchronized (scheduledReferences)
             {
-               
+
                Iterator<MessageReference> iter = scheduledReferences.iterator();
                while (iter.hasNext())
                {
@@ -184,17 +184,17 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
                   if (reference.getScheduledDeliveryTime() <= this.scheduledTime)
                   {
                      iter.remove();
-   
+
                      reference.setScheduledDeliveryTime(0);
-                     
+
                      LinkedList<MessageReference> references = refs.get(reference.getQueue());
-                     
+
                      if (references == null)
                      {
                         references = new LinkedList<MessageReference>();
                         refs.put(reference.getQueue(), references);
                      }
-                     
+
                      references.add(reference);
                   }
                }
@@ -204,7 +204,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             {
                entry.getKey().addHead(entry.getValue());
             }
-            
+
             // Just to speed up GC
             refs.clear();
          }

@@ -38,7 +38,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A ClientSessionFactoryTest
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -101,7 +101,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertNotNull(csi);
 
       csi.close();
-      
+
       locator.close();
    }
 
@@ -141,15 +141,15 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL,
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
-      
+
       ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
       testSettersThrowException(cf);
-      
+
       cf.close();
-      
+
       locator.close();
    }
 
@@ -182,13 +182,13 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL,
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
-      
+
       ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
       testSettersThrowException(cf);
-      
+
       cf.close();
    }
 

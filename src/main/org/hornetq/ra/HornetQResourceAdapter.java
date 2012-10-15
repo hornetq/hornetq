@@ -58,7 +58,7 @@ import org.hornetq.utils.SensitiveDataCodec;
 public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 {
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 4756893709825838770L;
 
@@ -81,7 +81,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties
     */
    private final HornetQRAProperties raProperties;
-   
+
    /**
     * The resource adapter properties before parsing
     */
@@ -106,7 +106,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private HornetQConnectionFactory defaultHornetQConnectionFactory;
 
    private HornetQConnectionFactory recoveryHornetQConnectionFactory;
-   
+
    private TransactionManager tm;
 
    private String unparsedJndiParams;
@@ -218,7 +218,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQResourceAdapter.log.trace("start(" + ctx + ")");
       }
-      
+
       locateTM();
 
       recoveryManager.start(useAutoRecovery);
@@ -351,7 +351,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       this.raProperties.setHA(ha);
    }
-   
+
    /**
     * Get the discovery group name
     *
@@ -1750,7 +1750,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
                                                                                 : getDiscoveryAddress();
-      
+
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
 
       if(ha == null)
@@ -1838,13 +1838,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
             transportConfigurations[i] = tc;
          }
-         
+
 
          if (log.isDebugEnabled())
          {
             log.debug("Creating Connection Factory on the resource adapter for transport=" + transportConfigurations + " with ha=" + ha);
          }
-         
+
          if (ha)
          {
             cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -1984,12 +1984,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
       return map;
    }
-   
+
    private void locateTM()
    {
       String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
       String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
-      
+
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
          tm = Util.locateTM(locatorClasses[i], locatorMethods[i]);
@@ -1998,7 +1998,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             break;
          }
       }
-      
+
       if (tm == null)
       {
          log.warn("It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod");

@@ -42,7 +42,7 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A RandomFailoverSoakTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class RandomReattachTest extends UnitTestCase
@@ -357,7 +357,7 @@ public class RandomReattachTest extends UnitTestCase
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(5000, TimeUnit.MILLISECONDS);
-         
+
          handler.checkAssertions();
 
          Assert.assertTrue("Didn't receive all messages", ok);
@@ -469,7 +469,7 @@ public class RandomReattachTest extends UnitTestCase
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
-         
+
          handler.checkAssertions();
 
          Assert.assertTrue(ok);
@@ -573,7 +573,7 @@ public class RandomReattachTest extends UnitTestCase
             Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
-            
+
             try
             {
                message.acknowledge();
@@ -607,7 +607,7 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          handler.checkAssertions();
       }
 
@@ -633,7 +633,7 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          handler.checkAssertions();
       }
 
@@ -765,7 +765,7 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          handler.checkAssertions();
       }
 
@@ -791,7 +791,7 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          handler.checkAssertions();
       }
 
@@ -1437,7 +1437,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       return 2;
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -1523,11 +1523,11 @@ public class RandomReattachTest extends UnitTestCase
    {
       abstract void run(final ClientSessionFactory sf) throws Exception;
    }
-   
+
    static abstract class AssertionCheckMessageHandler implements MessageHandler
    {
-      
-      
+
+
       public void checkAssertions()
       {
          for (AssertionFailedError e: errors)
@@ -1536,8 +1536,8 @@ public class RandomReattachTest extends UnitTestCase
             throw e;
          }
       }
-      
-      private ArrayList<AssertionFailedError> errors = new ArrayList<AssertionFailedError>(); 
+
+      private ArrayList<AssertionFailedError> errors = new ArrayList<AssertionFailedError>();
 
       /* (non-Javadoc)
        * @see org.hornetq.api.core.client.MessageHandler#onMessage(org.hornetq.api.core.client.ClientMessage)
@@ -1554,10 +1554,10 @@ public class RandomReattachTest extends UnitTestCase
             errors.add(e);
          }
       }
-      
+
       public abstract void onMessageAssert(ClientMessage message);
-      
+
    }
 
-   
+
 }

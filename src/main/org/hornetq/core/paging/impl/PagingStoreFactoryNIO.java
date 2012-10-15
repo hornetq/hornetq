@@ -41,7 +41,7 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * Integration point between Paging and NIO
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *

@@ -41,8 +41,8 @@ public interface ClientProducer
     *
     * <br><br>The address can be <code>null</code> if the ClientProducer
     *
-    * was creating without specifying an address, that is by using {@link ClientSession#createProducer()}. 
-    * 
+    * was creating without specifying an address, that is by using {@link ClientSession#createProducer()}.
+    *
     * @return the address where messages will be sent
     */
    SimpleString getAddress();
@@ -55,7 +55,7 @@ public interface ClientProducer
     * <br><br>This will block until confirmation that the message has reached the server has been received if
     * {@link ClientSessionFactory#setBlockOnDurableSend(boolean)} or {@link org.hornetq.api.core.client.ClientSessionFactory#setBlockOnNonDurableSend(boolean)}
     * are set to <code>true</code>  for the specified message type.
-    * 
+    *
     * @param message the message to send
     * @throws HornetQException if an exception occurs while sending the message
     */
@@ -89,35 +89,35 @@ public interface ClientProducer
 
    /**
     * Closes the ClientProducer. If already closed nothing is done.
-    * 
+    *
     * @throws HornetQException if an exception occurs while closing the producer
     */
    void close() throws HornetQException;
 
    /**
     * Returns whether the producer is closed or not.
-    * 
+    *
     * @return <code>true</code> if the producer is closed, <code>false</code> else
     */
    boolean isClosed();
 
    /**
     * Returns whether the producer will block when sending <em>durable</em> messages.
-    * 
+    *
     * @return <code>true</code> if the producer blocks when sending durable, <code>false</code> else
     */
    boolean isBlockOnDurableSend();
 
    /**
     * Returns whether the producer will block when sending <em>non-durable</em> messages.
-    * 
+    *
     * @return <code>true</code> if the producer blocks when sending non-durable, <code>false</code> else
     */
    boolean isBlockOnNonDurableSend();
 
    /**
     * Returns the maximum rate at which a ClientProducer can send messages per second.
-    * 
+    *
     * @return the producers maximum rate
     */
    int getMaxRate();

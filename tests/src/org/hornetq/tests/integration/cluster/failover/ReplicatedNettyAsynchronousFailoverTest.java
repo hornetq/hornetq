@@ -46,13 +46,13 @@ public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFa
    {
       return new SameProcessHornetQServer(createServer(true, liveConfig));
    }
-   
+
    @Override
    protected TestableServer createBackupServer()
    {
       return new SameProcessHornetQServer(createServer(true, backupConfig));
    }
-   
+
    @Override
    protected void createConfigs() throws Exception
    {
@@ -65,7 +65,7 @@ public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFa
       backupConfig.setSharedStore(false);
       backupConfig.setBackup(true);
       backupServer = createBackupServer();
-      
+
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
@@ -75,7 +75,7 @@ public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFa
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(false);
       liveServer = createLiveServer();
-      
+
       backupServer.start();
       liveServer.start();
    }

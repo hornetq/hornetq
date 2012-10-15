@@ -38,7 +38,7 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A JMSServerStartStopTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -146,7 +146,7 @@ public class JMSServerStartStopTest extends UnitTestCase
       Connection conn = jbcf.createConnection();
 
       stop();
-      
+
       Thread.sleep(1000);
 
       conn.close();

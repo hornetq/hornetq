@@ -100,7 +100,7 @@ public class ProducerTest extends ServiceTestBase
       server.getConfiguration().getAddressesSettings().clear();
       server.getConfiguration().getAddressesSettings().put(QUEUE.toString(), setting);
       server.start();
-      
+
       server.createQueue(QUEUE, QUEUE, null, true, false);
 
 
@@ -110,7 +110,7 @@ public class ProducerTest extends ServiceTestBase
          System.out.println("Try " + i);
          ClientSessionFactory cf = locator.createSessionFactory();
          final ClientSession session = cf.createSession(false, true, true);
-         
+
          Thread t = new Thread()
          {
             public void run()
@@ -118,7 +118,7 @@ public class ProducerTest extends ServiceTestBase
                try
                {
                   ClientProducer producer = session.createProducer();
-                  
+
                   for (int i = 0 ; i < 62; i++)
                   {
                      if (i == 61)
@@ -137,20 +137,20 @@ public class ProducerTest extends ServiceTestBase
                }
             }
          };
-         
+
          t.start();
          assertTrue(latch.await(5, TimeUnit.SECONDS));
          session.close();
-         
+
          t.join(5000);
-         
+
          if (!t.isAlive())
          {
             t.interrupt();
          }
-         
+
          assertFalse(t.isAlive());
-         
+
          ClientSession sessionConsumer = cf.createSession();
          sessionConsumer.start();
          ClientConsumer cons = sessionConsumer.createConsumer(QUEUE);
@@ -164,7 +164,7 @@ public class ProducerTest extends ServiceTestBase
             msg.acknowledge();
             sessionConsumer.commit();
          }
-         
+
          cf.close();
       }
    }

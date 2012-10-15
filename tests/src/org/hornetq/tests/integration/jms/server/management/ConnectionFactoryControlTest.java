@@ -30,7 +30,7 @@ import org.hornetq.tests.unit.util.InVMContext;
  * A Connection Factory Control Test
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
- * 
+ *
  * Created 13 nov. 2008 16:50:53
  *
  *
@@ -71,7 +71,7 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
       assertTrue(cf.isCompressLargeMessage());
 
       stopServer();
-      
+
       Thread.sleep(500);
 
       startServer();

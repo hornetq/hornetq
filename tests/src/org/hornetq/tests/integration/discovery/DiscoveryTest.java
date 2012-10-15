@@ -46,10 +46,10 @@ import org.hornetq.utils.UUIDGenerator;
  * A DiscoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 8 Dec 2008 12:36:26
- * 
- * 
+ *
+ *
  *
  *
  */

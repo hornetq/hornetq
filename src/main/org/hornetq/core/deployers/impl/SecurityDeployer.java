@@ -35,7 +35,7 @@ public class SecurityDeployer extends XmlDeployer
 
    private static final String MATCH = "match";
 
-   private final FileConfigurationParser parser = new FileConfigurationParser(); 
+   private final FileConfigurationParser parser = new FileConfigurationParser();
 
    /**
     * The repository to add to

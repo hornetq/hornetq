@@ -28,7 +28,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ProducerCloseTest extends ServiceTestBase
@@ -96,7 +96,7 @@ public class ProducerCloseTest extends ServiceTestBase
       sf.close();
 
       locator.close();
-      
+
       server.stop();
 
       server = null;

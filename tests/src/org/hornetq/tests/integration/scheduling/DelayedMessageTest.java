@@ -251,7 +251,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
       // Now rollback
       long now = System.currentTimeMillis();
-      
+
 
       session2.rollback();
 
@@ -268,9 +268,9 @@ public class DelayedMessageTest extends ServiceTestBase
       sessionFactory = locator.createSessionFactory();
 
       session2 = sessionFactory.createSession(false, false, false);
-      
+
       consumer2 = session2.createConsumer(qName);
-      
+
       Thread.sleep(3000);
 
       session2.start();

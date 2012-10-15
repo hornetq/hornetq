@@ -46,7 +46,7 @@ import org.objectweb.jtests.jms.framework.TestConfig;
  * <br />
  * For each of this type of message, we test that a message can be sent and received
  * with an empty body or not.
- * 
+ *
  * @author Jeff Mesnil (jmesnil@gmail.com)
  * @version $Id: MessageTypeTest.java,v 1.1 2007/03/29 04:28:37 starksm Exp $
  */
@@ -83,7 +83,7 @@ public class MessageTypeTest extends PTPTestCase
    /**
     * Send a <code>StreamMessage</code> with an empty body.
     * <br />
-    * Receive it and test if the message is effectively an instance of 
+    * Receive it and test if the message is effectively an instance of
     * <code>StreamMessage</code>
     */
    public void testStreamMessage_1()
@@ -128,7 +128,7 @@ public class MessageTypeTest extends PTPTestCase
    }
 
    /**
-    * Test that the if the name parameter of the set methods of a <code>MapMessage</code> is <code>null</code>, 
+    * Test that the if the name parameter of the set methods of a <code>MapMessage</code> is <code>null</code>,
     * the method must throw the error <code>java.lang.IllegalArgumentException</code>.
     * <br />
     * @since JMS 1.1
@@ -226,7 +226,7 @@ public class MessageTypeTest extends PTPTestCase
    /**
     * Send a <code>MapMessage</code> with an empty body.
     * <br />
-    * Receive it and test if the message is effectively an instance of 
+    * Receive it and test if the message is effectively an instance of
     * <code>MapMessage</code>
     */
    public void testMapMessage_1()
@@ -277,7 +277,7 @@ public class MessageTypeTest extends PTPTestCase
    /**
     * Send a <code>ObjectMessage</code> with an empty body.
     * <br />
-    * Receive it and test if the message is effectively an instance of 
+    * Receive it and test if the message is effectively an instance of
     * <code>ObjectMessage</code>
     */
    public void testObjectMessage_1()
@@ -329,7 +329,7 @@ public class MessageTypeTest extends PTPTestCase
    /**
     * Send a <code>BytesMessage</code> with an empty body.
     * <br />
-    * Receive it and test if the message is effectively an instance of 
+    * Receive it and test if the message is effectively an instance of
     * <code>BytesMessage</code>
     */
    public void testBytesMessage_1()
@@ -376,7 +376,7 @@ public class MessageTypeTest extends PTPTestCase
    /**
     * Send a <code>TextMessage</code> with an empty body.
     * <br />
-    * Receive it and test if the message is effectively an instance of 
+    * Receive it and test if the message is effectively an instance of
     * <code>TextMessage</code>
     */
    public void testTextMessage_1()
@@ -395,7 +395,7 @@ public class MessageTypeTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

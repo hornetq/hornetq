@@ -211,8 +211,8 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       }
 
    }
-   
-   
+
+
    public void shutdown()
    {
       executor.shutdown();

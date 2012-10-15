@@ -18,7 +18,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A SessionAddMetaDataMessage
- * 
+ *
  * This packet replaces {@link SessionAddMetaDataMessage}
  *
  * @author Clebert Suconic</a>
@@ -38,26 +38,26 @@ public class SessionAddMetaDataMessageV2 extends PacketImpl
    {
       super(PacketImpl.SESS_ADD_METADATA2);
    }
-   
+
    protected SessionAddMetaDataMessageV2(byte packetCode)
    {
       super(packetCode);
    }
-   
+
    public SessionAddMetaDataMessageV2(String k, String d)
    {
       this();
       key = k;
       data = d;
    }
-   
+
    protected SessionAddMetaDataMessageV2(final byte packetCode, String k, String d)
    {
       super(packetCode);
       key = k;
       data = d;
    }
-   
+
    public SessionAddMetaDataMessageV2(String k, String d, boolean requiresConfirmation)
    {
       this();
@@ -81,7 +81,7 @@ public class SessionAddMetaDataMessageV2 extends PacketImpl
       data = buffer.readString();
       requiresConfirmation = buffer.readBoolean();
    }
-   
+
    @Override
    public final boolean isRequiresConfirmations()
    {

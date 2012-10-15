@@ -26,7 +26,7 @@ import org.hornetq.utils.TimeAndCounterIDGenerator;
  * A JournalExample: Just an example on how to use the Journal Directly
  *
  * TODO: find a better place to store this example
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *

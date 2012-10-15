@@ -26,7 +26,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A NewDeadLetterAddressTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
