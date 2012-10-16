@@ -49,12 +49,14 @@ import org.jboss.netty.util.CharsetUtil;
 /**
  * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a
+ * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  */
 public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
     private static final String WEBSOCKET_PATH = "/stomp";
 
     private WebSocketServerHandshaker handshaker;
+    private final static BinaryWebSocketEncoder BINARY_WEBSOCKET_ENCODER = new BinaryWebSocketEncoder();
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -85,20 +87,20 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
             wsFactory.sendUnsupportedWebSocketVersionResponse(ctx.getChannel());
         } else {
             ChannelFuture handshake = this.handshaker.handshake(ctx.getChannel(), req);
-            if (handshake.isSuccess()) {
-                // we need to insert an encoder that takes the underlying ChannelBuffer of a StompFrame.toHornetQBuffer and
-                // wrap it in a binary web socket frame before letting the wsencoder send it on the wire
-                ctx.getPipeline().addAfter("wsencoder", "binary-websocket-encoder", new OneToOneEncoder() {
-                    @Override
-                    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-                        if (msg instanceof ChannelBuffer) {
-                            return new BinaryWebSocketFrame((ChannelBuffer) msg);
-                        }
-
-                        return msg;
+            handshake.addListener(new ChannelFutureListener() {
+                
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (future.isSuccess()) {
+                        // we need to insert an encoder that takes the underlying ChannelBuffer of a StompFrame.toHornetQBuffer and
+                        // wrap it in a binary web socket frame before letting the wsencoder send it on the wire
+                        future.getChannel().getPipeline().addAfter("wsencoder", "binary-websocket-encoder", BINARY_WEBSOCKET_ENCODER);
+                    } else {
+                        // Handshake failed, fire an exceptionCaught event
+                        Channels.fireExceptionCaught(future.getChannel(), future.getCause());
                     }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -140,5 +142,19 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 
     private String getWebSocketLocation(HttpRequest req) {
         return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
+    }
+
+    @Sharable
+    private final static class BinaryWebSocketEncoder extends OneToOneEncoder {
+
+        @Override
+        protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
+            if (msg instanceof ChannelBuffer) {
+                return new BinaryWebSocketFrame((ChannelBuffer) msg);
+            }
+
+            return msg;
+        }
+        
     }
 }
