@@ -48,7 +48,7 @@ import org.hornetq.utils.UUID;
  * <br>
  * JMS Messages only live on the client side - the server only deals with MessageImpl
  * instances
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:bershath@yahoo.com">Tyronne Wickramarathne</a> Partially ported from JBossMQ implementation
@@ -57,8 +57,8 @@ import org.hornetq.utils.UUID;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> 
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> 
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * $Id: HornetQRAMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
 public class HornetQMessage implements javax.jms.Message
@@ -269,7 +269,7 @@ public class HornetQMessage implements javax.jms.Message
       this(type, session);
 
       setJMSTimestamp(foreign.getJMSTimestamp());
-      
+
       String value = System.getProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME);
 
       boolean supportBytesId = !"false".equals(value);
@@ -882,7 +882,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       message.getBodyBuffer().resetReaderIndex();
    }
-   
+
    public void checkBuffer()
    {
       message.getBodyBuffer();

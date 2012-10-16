@@ -41,7 +41,7 @@ public interface HornetQServerControl
 
    /**
     * Returns the list of interceptors used by this server.
-    * 
+    *
     * @see Interceptor
     */
    String[] getInterceptorClassNames();
@@ -169,7 +169,7 @@ public interface HornetQServerControl
 
    /**
     * Sets the maximum number of days kept in memory for message counter.
-    * 
+    *
     * @param count value must be greater than 0
     */
    void setMessageCounterMaxDayCount(int count) throws Exception;
@@ -181,7 +181,7 @@ public interface HornetQServerControl
 
    /**
     * Sets the sample period to take message counter snapshot.
-    * 
+    *
     * @param newPeriod value must be greater than 1000ms
     */
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
@@ -250,19 +250,19 @@ public interface HornetQServerControl
    boolean isWildcardRoutingEnabled();
 
    /**
-    * Returns the timeout (in milliseconds) after which transactions is removed 
+    * Returns the timeout (in milliseconds) after which transactions is removed
     * from the resource manager after it was created.
     */
    long getTransactionTimeout();
 
    /**
-    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions 
+    * Returns the frequency (in milliseconds)  to scan transactions to detect which transactions
     * have timed out.
     */
    long getTransactionTimeoutScanPeriod();
 
    /**
-    * Returns the frequency (in milliseconds)  to scan messages to detect which messages 
+    * Returns the frequency (in milliseconds)  to scan messages to detect which messages
     * have expired.
     */
    long getMessageExpiryScanPeriod();
@@ -303,7 +303,7 @@ public interface HornetQServerControl
     * Create a durable queue.
     * <br>
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
-    * 
+    *
     * @param address address to bind the queue to
     * @param name name of the queue
     */
@@ -315,7 +315,7 @@ public interface HornetQServerControl
     * Create a queue.
     * <br>
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
-    * 
+    *
     * @param address address to bind the queue to
     * @param name name of the queue
     * @param filter of the queue
@@ -331,7 +331,7 @@ public interface HornetQServerControl
     * Create a queue.
     * <br>
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
-    * 
+    *
     * @param address address to bind the queue to
     * @param name name of the queue
     * @param durable whether the queue is durable
@@ -345,7 +345,7 @@ public interface HornetQServerControl
     * Deploy a durable queue.
     * <br>
     * This method will do nothing if the queue with the given name already exists on the server.
-    * 
+    *
     * @param address address to bind the queue to
     * @param name name of the queue
     * @param filter of the queue
@@ -359,7 +359,7 @@ public interface HornetQServerControl
     * Deploy a queue.
     * <br>
     * This method will do nothing if the queue with the given name already exists on the server.
-    * 
+    *
     * @param address address to bind the queue to
     * @param name name of the queue
     * @param filter of the queue
@@ -406,7 +406,7 @@ public interface HornetQServerControl
     * <br>
     * The Strings are Base-64 representation of the transaction XID and can be
     * used to heuristically commit or rollback the transactions.
-    * 
+    *
     * @see #commitPreparedTransaction(String)
     * @see #rollbackPreparedTransaction(String)
     */
@@ -439,10 +439,10 @@ public interface HornetQServerControl
 
    /**
     * Heuristically commits a prepared transaction.
-    * 
+    *
     * @param transactionAsBase64 base 64 representation of a prepare transaction
     * @return {@code true} if the transaction was successfully committed, {@code false} else
-    * 
+    *
     * @see #listPreparedTransactions()
     */
    @Operation(desc = "Commit a prepared transaction")
@@ -450,10 +450,10 @@ public interface HornetQServerControl
 
    /**
     * Heuristically rolls back a prepared transaction.
-    * 
+    *
     * @param transactionAsBase64 base 64 representation of a prepare transaction
     * @return {@code true} if the transaction was successfully rolled back, {@code false} else
-    * 
+    *
     * @see #listPreparedTransactions()
     */
    @Operation(desc = "Rollback a prepared transaction")
@@ -482,7 +482,7 @@ public interface HornetQServerControl
     */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
-   
+
    String listProducersInfoAsJSON() throws Exception;
 
    /**
@@ -498,7 +498,7 @@ public interface HornetQServerControl
 
    @Operation(desc= "Add security settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
    void addSecuritySettings(
-                            @Parameter(desc="an address match", name="addressMatch") String addressMatch, 
+                            @Parameter(desc="an address match", name="addressMatch") String addressMatch,
                             @Parameter(desc="a comma-separated list of roles allowed to send messages", name="send") String sendRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
                             @Parameter(desc="a comma-separated list of roles allowed to create durable queues", name="createDurableQueueRoles") String createDurableQueueRoles,
@@ -545,7 +545,7 @@ public interface HornetQServerControl
    String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 
    String[] getDivertNames();
-   
+
    @Operation(desc= "Create a Divert", impact = MBeanOperationInfo.ACTION)
    void createDivert(@Parameter(name="name", desc="Name of the divert") String name,
                      @Parameter(name="routingName", desc="Routing name of the divert") String routingName,
@@ -559,7 +559,7 @@ public interface HornetQServerControl
    void destroyDivert(@Parameter(name="name", desc="Name of the divert") String name) throws Exception;
 
    String[] getBridgeNames();
-   
+
    @Operation(desc= "Create a Bridge", impact = MBeanOperationInfo.ACTION)
    void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
                      @Parameter(name="queueName", desc="Name of the source queue") String queueName,

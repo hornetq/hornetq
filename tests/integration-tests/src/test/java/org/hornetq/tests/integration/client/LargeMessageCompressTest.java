@@ -158,7 +158,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
          msg1.waitOutputStreamCompletion(0);
 
          msg1.acknowledge();
-         
+
          output.close();
 
          session.commit();
@@ -231,7 +231,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
          msg1.acknowledge();
 
          output.close();
-         
+
          session.commit();
 
          consumer.close();

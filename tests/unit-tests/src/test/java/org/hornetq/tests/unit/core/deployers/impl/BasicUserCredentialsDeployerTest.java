@@ -63,7 +63,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
                                                  + "         <role name=\"bar\"/>\n"
                                                  + "      </user>\n"
                                                  + "</configuration>";
-   
+
    private static final String maskedPasswordXml = "<configuration>\n"
                                                    + "<mask-password>true</mask-password>\n"
                                                    + "<defaultuser name=\"guest\" password=\"PASSWORD_TOKEN1\">\n"

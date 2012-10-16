@@ -24,12 +24,12 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
 /**
  * HornetQServers is a factory class for instantiating HornetQServer instances.
- * 
+ *
  * This class should be used when you want to instantiate a HornetQServer instance for embedding in
  * your own application, as opposed to directly instantiating an implementing instance.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 24 Jan 2009 15:17:18
  *
  *
@@ -94,7 +94,7 @@ public class HornetQServers
          String defUser, String defPass)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
-      
+
       securityManager.addUser(defUser, defPass);
 
       HornetQServer server = HornetQServers.newHornetQServer(config,
@@ -112,7 +112,7 @@ public class HornetQServers
                                                 String password)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
-      
+
       securityManager.addUser(user, password);
 
       HornetQServer server = HornetQServers.newHornetQServer(config, mbeanServer, securityManager, enablePersistence);

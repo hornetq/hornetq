@@ -52,8 +52,8 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    private Filter filter = null;
 
    private boolean isStarted = false;
-   
-   
+
+
    public String debug()
    {
       return toString();
@@ -107,7 +107,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
                                                    new AccessToken(this.accessToken,
                                                                    this.accessTokenSecret));
       this.twitter.verifyCredentials();
-      
+
       // TODO make filter-string configurable
       // this.filter = FilterImpl.createFilter(filterString);
       this.filter = null;
@@ -143,7 +143,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    {
       return connectorName;
    }
-   
+
    public Filter getFilter()
    {
       return filter;

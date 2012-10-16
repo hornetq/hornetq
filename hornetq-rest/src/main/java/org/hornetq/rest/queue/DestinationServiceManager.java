@@ -77,21 +77,21 @@ public abstract class DestinationServiceManager
    {
       this.consumerSessionFactory = consumerSessionFactory;
    }
-   
+
     /**
 	 * @return the consumerServerLocator
 	 */
 	public ServerLocator getConsumerServerLocator() {
 		return consumerServerLocator;
 	}
-	
+
 	/**
 	 * @param consumerServerLocator the consumerServerLocator to set
 	 */
 	public void setConsumerServerLocator(ServerLocator consumerServerLocator) {
 		this.consumerServerLocator = consumerServerLocator;
 	}
-	
+
 	public TimeoutTask getTimeoutTask()
    {
       return timeoutTask;
@@ -111,12 +111,12 @@ public abstract class DestinationServiceManager
    {
       this.defaultSettings = defaultSettings;
    }
-   
+
    public ServerLocator getServerLocator()
    {
 	   return this.locator;
    }
-   
+
    public void setServerLocator(ServerLocator locator)
    {
 	   this.locator = locator;
@@ -159,7 +159,7 @@ public abstract class DestinationServiceManager
     		 throw new RuntimeException (e.getMessage(), e);
     	 }
       }
-      
+
       if (consumerSessionFactory == null) consumerSessionFactory = sessionFactory;
 
       if (timeoutTask == null) throw new RuntimeException("TimeoutTask is not set");

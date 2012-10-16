@@ -31,18 +31,18 @@ public class SessionUniqueAddMetaDataMessage extends SessionAddMetaDataMessageV2
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    public SessionUniqueAddMetaDataMessage()
    {
       super(SESS_UNIQUE_ADD_METADATA);
    }
-   
+
 
    public SessionUniqueAddMetaDataMessage(String key, String data)
    {
       super(SESS_UNIQUE_ADD_METADATA, key, data);
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

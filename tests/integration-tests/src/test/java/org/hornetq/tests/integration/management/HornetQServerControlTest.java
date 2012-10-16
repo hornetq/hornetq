@@ -55,7 +55,7 @@ import org.hornetq.utils.json.JSONObject;
  * A QueueControlTest
  *
  * @author jmesnil
- * 
+ *
  * Created 26 nov. 2008 14:18:48
  *
  *
@@ -417,7 +417,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       server.stop();
       server.start();
    }
-   
+
    public void testSecuritySettings() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -529,14 +529,14 @@ public class HornetQServerControlTest extends ManagementTestBase
       {
          ex=true;
       }
-      
+
       assertTrue("Exception expected", ex);
        //restartServer();
       serverControl = createManagementControl();
 
       String jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
       AddressSettingsInfo info = AddressSettingsInfo.from(jsonString);
-      
+
       assertEquals(DLA, info.getDeadLetterAddress());
       assertEquals(expiryAddress, info.getExpiryAddress());
       assertEquals(lastValueQueue, info.isLastValueQueue());
@@ -550,7 +550,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
-      
+
       serverControl.addAddressSettings(addressMatch,
                                        DLA,
                                        expiryAddress,
@@ -566,11 +566,11 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
                                        addressFullMessagePolicy);
-      
+
 
       jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
       info = AddressSettingsInfo.from(jsonString);
-      
+
       assertEquals(DLA, info.getDeadLetterAddress());
       assertEquals(expiryAddress, info.getExpiryAddress());
       assertEquals(lastValueQueue, info.isLastValueQueue());
@@ -584,8 +584,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
-      
-      
+
+
       ex = false;
       try
       {
@@ -609,8 +609,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       {
          ex = true;
       }
-      
-      
+
+
       assertTrue("Supposed to have an exception called", ex);
 
 
@@ -628,9 +628,9 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
       assertEquals(0, serverControl.getDivertNames().length);
-      
+
       serverControl.createDivert(name.toString(), routingName, address, forwardingAddress, true, null, null);
-      
+
       checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
       DivertControl divertControl = ManagementControlHelper.createDivertControl(name.toString(), mbeanServer);
       assertEquals(name.toString(), divertControl.getUniqueName());
@@ -643,10 +643,10 @@ public class HornetQServerControlTest extends ManagementTestBase
       String[] divertNames = serverControl.getDivertNames();
       assertEquals(1, divertNames.length);
       assertEquals(name, divertNames[0]);
-      
+
       // check that a message sent to the address is diverted exclusively
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession();
 
@@ -660,10 +660,10 @@ public class HornetQServerControlTest extends ManagementTestBase
       String text = RandomUtil.randomString();
       message.putStringProperty("prop", text);
       producer.send(message);
-      
+
       ClientConsumer consumer = session.createConsumer(queue);
       ClientConsumer divertedConsumer = session.createConsumer(divertQueue);
-      
+
       session.start();
 
       assertNull(consumer.receiveImmediate());
@@ -674,7 +674,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       serverControl.destroyDivert(name.toString());
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
-      assertEquals(0, serverControl.getDivertNames().length);      
+      assertEquals(0, serverControl.getDivertNames().length);
 
       // check that a message is no longer diverted
       message = session.createMessage(false);
@@ -692,9 +692,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       session.deleteQueue(queue);
       session.deleteQueue(divertQueue);
       session.close();
-      
+
       locator.close();
-      
+
    }
 
    public void testCreateAndDestroyBridge() throws Exception
@@ -716,13 +716,13 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       session.createQueue(sourceAddress, sourceQueue);
       session.createQueue(targetAddress, targetQueue);
-      
+
       serverControl.createBridge(name,
                                  sourceQueue,
                                  targetAddress,
                                  null, // forwardingAddress
                                  null, // filterString
-                                 HornetQClient.DEFAULT_RETRY_INTERVAL, 
+                                 HornetQClient.DEFAULT_RETRY_INTERVAL,
                                  HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                  HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                   false, // duplicateDetection
@@ -749,7 +749,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       String text = RandomUtil.randomString();
       message.putStringProperty("prop", text);
       producer.send(message);
-      
+
       session.start();
 
       ClientConsumer targetConsumer = session.createConsumer(targetQueue);
@@ -759,7 +759,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       ClientConsumer sourceConsumer = session.createConsumer(sourceQueue);
       assertNull(sourceConsumer.receiveImmediate());
-      
+
       serverControl.destroyBridge(name);
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(name));
@@ -778,12 +778,12 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       sourceConsumer.close();
       targetConsumer.close();
-      
+
       session.deleteQueue(sourceQueue);
       session.deleteQueue(targetQueue);
-      
+
       session.close();
-      
+
       locator.close();
    }
 
@@ -791,7 +791,7 @@ public class HornetQServerControlTest extends ManagementTestBase
    {
       SimpleString atestq = new SimpleString("BasicXaTestq");
       Xid xid = newXID();
-      
+
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession clientSession = csf.createSession(true, false, false);
@@ -815,9 +815,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       clientSession.prepare(xid);
 
       HornetQServerControl serverControl = createManagementControl();
-      
+
       JSONArray jsonArray = new JSONArray(serverControl.listProducersInfoAsJSON());
-      
+
       assertEquals(1, jsonArray.length());
       assertEquals(4, ((JSONObject)jsonArray.get(0)).getInt("msgSent"));
 
@@ -831,12 +831,12 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertTrue(txDetails.matches(".*m3.*"));
       Assert.assertTrue(txDetails.matches(".*m4.*"));
    }
-   
+
    public void testListPreparedTransactionDetailsAsHTML() throws Exception
    {
       SimpleString atestq = new SimpleString("BasicXaTestq");
       Xid xid = newXID();
-      
+
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession clientSession = csf.createSession(true, false, false);

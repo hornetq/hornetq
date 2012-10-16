@@ -52,18 +52,18 @@ public abstract class TransactionDetail
    public static final String KEY_MSG_TYPE = "message_type";
 
    public static final String KEY_MSG_PROPERTIES = "message_properties";
-   
+
    private Xid xid;
    private Transaction transaction;
    private Long creationTime;
-   
+
    public TransactionDetail(Xid xid, Transaction tx, Long creation)
    {
       this.xid = xid;
       this.transaction = tx;
       this.creationTime = creation;
    }
-   
+
    public JSONObject toJSON() throws Exception
    {
       DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
@@ -119,6 +119,6 @@ public abstract class TransactionDetail
    }
 
    public abstract String decodeMessageType(ServerMessage msg);
-    
+
    public abstract Map<String,Object> decodeMessageProperties(ServerMessage msg);
 }

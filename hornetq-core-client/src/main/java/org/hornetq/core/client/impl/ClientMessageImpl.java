@@ -28,9 +28,9 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 
 /**
- * 
+ *
  * A ClientMessageImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *

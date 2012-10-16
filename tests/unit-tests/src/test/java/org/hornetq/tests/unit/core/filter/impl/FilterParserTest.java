@@ -28,13 +28,13 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  Tests of the JavaCC LL(1) parser for the HornetQ filters
- 
+
  @author Scott.Stark@jboss.org
  @author d_jencks@users.sourceforge.net
  @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- 
+
  @version $Revision: 3465 $
- 
+
  * (david jencks)  Used constructor of SelectorParser taking a stream
  * to avoid reInit npe in all tests.  Changed to JBossTestCase and logging.
  */

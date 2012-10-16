@@ -393,9 +393,9 @@ public class XaTimeoutTest extends UnitTestCase
 
    public void testTimeoutOnConsumerResend() throws Exception
    {
-      
+
       int numberOfMessages = 100;
-      
+
       String outQueue = "outQueue";
       {
          ClientSession simpleTXSession = sessionFactory.createTransactedSession();
@@ -410,21 +410,21 @@ public class XaTimeoutTest extends UnitTestCase
 
          // This test needs 2 queues
          simpleTXSession.createQueue(outQueue, outQueue);
-         
+
          simpleTXSession.close();
       }
-      
+
       final ClientSession outProducerSession = sessionFactory.createSession(true, false, false);
       final ClientProducer outProducer = outProducerSession.createProducer(outQueue);
       final AtomicInteger errors = new AtomicInteger(0);
-      
+
       final AtomicInteger msgCount = new AtomicInteger(0);
-      
+
       final CountDownLatch latchReceives = new CountDownLatch(numberOfMessages + 1); // since the first message will be rolled back
 
       outProducerSession.setTransactionTimeout(2);
       clientSession.setTransactionTimeout(2);
-      
+
       MessageHandler handler = new MessageHandler()
       {
          public void onMessage(ClientMessage message)
@@ -432,21 +432,21 @@ public class XaTimeoutTest extends UnitTestCase
             try
             {
                latchReceives.countDown();
-               
+
                Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
                Xid xidOut = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-               
+
                clientSession.start(xid, XAResource.TMNOFLAGS);
                outProducerSession.start(xidOut, XAResource.TMNOFLAGS);
-               
+
                message.acknowledge();
-               
+
                int msgInt = message.getIntProperty("msg");
-              
+
                ClientMessage msgOut = createTextMessage(outProducerSession, "outMsg=" + msgInt);
                msgOut.putIntProperty("msg", msgInt);
                outProducer.send(msgOut);
-               
+
                boolean rollback = false;
                if (msgCount.getAndIncrement() == 0)
                {
@@ -454,7 +454,7 @@ public class XaTimeoutTest extends UnitTestCase
                   System.out.println("Forcing first message to time out");
                   Thread.sleep(5000);
                }
-               
+
                try
                {
                   clientSession.end(xid, XAResource.TMSUCCESS);
@@ -484,7 +484,7 @@ public class XaTimeoutTest extends UnitTestCase
                      e.printStackTrace();
                      clientSession.rollback();
                   }
-                  
+
                   try
                   {
                      outProducerSession.rollback(xidOut);
@@ -510,25 +510,25 @@ public class XaTimeoutTest extends UnitTestCase
             }
          }
       };
-      
+
       clientConsumer.setMessageHandler(handler);
-      
+
       clientSession.start();
-      
+
       assertTrue(latchReceives.await(20, TimeUnit.SECONDS));
-      
+
       clientConsumer.close();
-      
+
       clientConsumer = clientSession.createConsumer(this.atestq);
       assertNull(clientConsumer.receiveImmediate());
-      
-      
+
+
       clientConsumer.close();
-      
+
       clientConsumer = clientSession.createConsumer(outQueue);
-      
+
       HashSet<Integer> msgsIds = new HashSet<Integer>();
-      
+
       for (int i = 0 ; i < numberOfMessages; i++)
       {
          ClientMessage msg = clientConsumer.receive(1000);
@@ -536,16 +536,16 @@ public class XaTimeoutTest extends UnitTestCase
          msg.acknowledge();
          msgsIds.add(msg.getIntProperty("msg"));
       }
-      
+
       assertNull(clientConsumer.receiveImmediate());
-      
+
       for (int i = 0 ; i < numberOfMessages; i++)
       {
          assertTrue(msgsIds.contains(i));
       }
-      
+
       outProducerSession.close();
-      
+
     }
 
    public void testChangingTimeoutGetsPickedUp() throws Exception

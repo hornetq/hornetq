@@ -313,7 +313,7 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
 
       return hash;
    }
-   
+
    @Override
    public String toString()
    {

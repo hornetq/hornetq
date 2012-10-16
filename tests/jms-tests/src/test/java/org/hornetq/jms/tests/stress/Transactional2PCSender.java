@@ -23,15 +23,15 @@ import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * A Sender that sends messages to a destination in an XA transaction
- * 
+ *
  * Sends messages to a destination in a jms transaction.
  * Sends <commitSize> messages then prepares, commits, then
  * sends <rollbackSize> messages then prepares, rollsback until
  * a total of <numMessages> messages have been sent (commitSize)
  * <nuMessages> must be a multiple of <commitSize>
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

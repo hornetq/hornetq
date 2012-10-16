@@ -50,7 +50,7 @@ public class AllPossibilitiesCompactWithAddDeleteStressTest extends MixupCompact
       long tx2 = idGen.generateID();
 
       updateTx(tx2, add1, add2);
-      
+
       commit(tx2);
 
       delete(add1);

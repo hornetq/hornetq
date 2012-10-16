@@ -795,11 +795,11 @@ public class NettyConnector extends AbstractConnector
       Integer port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
                                                 TransportConstants.DEFAULT_PORT,
                                                 configuration);
-      
+
       if (!port.equals(this.port)) return false;
-      
+
       if (host.equals(this.host)) return true;
-      
+
       //The host may be an alias. We need to compare raw IP address.
       boolean result = false;
       try
@@ -809,14 +809,14 @@ public class NettyConnector extends AbstractConnector
          String ip1 = inetAddr1.getHostAddress();
          String ip2 = inetAddr2.getHostAddress();
          HornetQCoreLogger.LOGGER.debug(this + " host 1: " + host + " ip address: " + ip1 + " host 2: " + this.host + " ip address: " + ip2);
-         
+
          result = ip1.equals(ip2);
       }
       catch (UnknownHostException e)
       {
          HornetQCoreLogger.LOGGER.error("Cannot resolve host", e);
       }
-      
+
       return result;
    }
 

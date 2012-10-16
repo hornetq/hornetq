@@ -20,7 +20,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * A RollbackMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 18, 2009 2:11:17 PM
  *
  *
@@ -73,7 +73,7 @@ public class RollbackMessage extends PacketImpl
    {
       considerLastMessageAsDelivered = buffer.readBoolean();
    }
-   
+
    public boolean isAsyncExec()
    {
       return true;

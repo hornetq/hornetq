@@ -149,7 +149,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
          }
          else
          {
-         return configuration.getStaticConnectors().toArray(new String[0]);                 
+         return configuration.getStaticConnectors().toArray(new String[0]);
          }
       }
       finally
@@ -171,9 +171,9 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
          }
 
          JSONArray array = new JSONArray();
-         
+
          for (String connector : connectors)
-         {            
+         {
             array.put(connector);
          }
          return array.toString();

@@ -140,7 +140,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private final Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
 
    private final Set<FailoverEventListener> failoverListeners = new ConcurrentHashSet<FailoverEventListener>();
-   
+
    private Connector connector;
 
    private Future<?> pingerFuture;
@@ -446,12 +446,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       return listeners.remove(listener);
    }
-   
-	public void addFailoverListener(FailoverEventListener listener) 
+
+	public void addFailoverListener(FailoverEventListener listener)
 	{
 	  failoverListeners.add(listener);
 	}
-   
+
 	public boolean removeFailoverListener(FailoverEventListener listener)
 	{
 	  return failoverListeners.remove(listener);
@@ -694,10 +694,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   oldConnection.destroy();
                }
-               
+
                if (connection != null)
                {
-            	   callFailoverListeners(FailoverEventType.FAILOVER_COMPLETED); 
+            	   callFailoverListeners(FailoverEventType.FAILOVER_COMPLETED);
                }
             }
          }
@@ -952,8 +952,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
       }
    }
-   
-   private void callFailoverListeners(FailoverEventType type) 
+
+   private void callFailoverListeners(FailoverEventType type)
    {
 	      final List<FailoverEventListener> listenersClone = new ArrayList<FailoverEventListener>(failoverListeners);
 

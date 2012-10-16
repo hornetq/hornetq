@@ -24,7 +24,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * @author Francisco Borges
  *
  */

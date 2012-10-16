@@ -29,7 +29,7 @@ import org.objectweb.jtests.jms.framework.TestConfig;
  * Test sessions
  * <br />
  * See JMS specifications, sec. 4.4 Session
- * 
+ *
  * @author Jeff Mesnil (jmesnil@gmail.com)
  * @version $Id: SessionTest.java,v 1.2 2007/06/19 23:32:35 csuconic Exp $
  */
@@ -37,8 +37,8 @@ public class SessionTest extends PTPTestCase
 {
 
    /**
-    * Test that an attempt to call the <code>recover()</code> method on a 
-    * <strong>transacted </strong> <code>Session</code> throws a 
+    * Test that an attempt to call the <code>recover()</code> method on a
+    * <strong>transacted </strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
    public void testRecoverTransactedSession()
@@ -67,7 +67,7 @@ public class SessionTest extends PTPTestCase
    }
 
    /**
-    * Test that a call to the <code>rollback()</code> method on a 
+    * Test that a call to the <code>rollback()</code> method on a
     * <strong>transacted</strong> <code>Session</code> rollbacks all
     * the messages sent in the transaction.
     */
@@ -99,7 +99,7 @@ public class SessionTest extends PTPTestCase
    }
 
    /**
-    * Test that a call to the <code>rollback()</code> method on a 
+    * Test that a call to the <code>rollback()</code> method on a
     * <strong>transacted</strong> <code>Session</code> rollbacks all
     * the messages sent in the transaction.
     */
@@ -135,8 +135,8 @@ public class SessionTest extends PTPTestCase
    }
 
    /**
-    * Test that an attempt to call the <code>roolback()</code> method on a 
-    * <strong>non transacted</strong> <code>Session</code> throws a 
+    * Test that an attempt to call the <code>roolback()</code> method on a
+    * <strong>non transacted</strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
    public void testRollbackNonTransactedSession()
@@ -162,8 +162,8 @@ public class SessionTest extends PTPTestCase
    }
 
    /**
-    * Test that an attempt to call the <code>commit()</code> method on a 
-    * <strong>non transacted</strong> <code>Session</code> throws a 
+    * Test that an attempt to call the <code>commit()</code> method on a
+    * <strong>non transacted</strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
    public void testCommitNonTransactedSession()
@@ -209,7 +209,7 @@ public class SessionTest extends PTPTestCase
    }
 
    /**
-    * Test that invoking the <code>acknowledge()</code> method of a received message 
+    * Test that invoking the <code>acknowledge()</code> method of a received message
     * from a closed session must throw an <code>IllegalStateException</code>.
     */
    public void testAcknowledge()
@@ -245,7 +245,7 @@ public class SessionTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that it is valid to use message objects created or received via the [closed] session with the
     * exception of a received message <code>acknowledge()</code> method.
     */
@@ -312,7 +312,7 @@ public class SessionTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

@@ -269,7 +269,7 @@ public class UUIDTimer
     * Delay is kept to just a millisecond or two, to prevent excessive blocking;
     * but that should be enough to eventually synchronize physical clock with
     * virtual clock values used for UUIDs.
-    * 
+    *
     * @param msecs
     *           Number of milliseconds to wait for from current time point
     */

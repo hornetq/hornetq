@@ -19,7 +19,7 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 public class SpringIntegrationTest extends UnitTestCase
 {
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -27,7 +27,7 @@ public class SpringIntegrationTest extends UnitTestCase
       // otherwise the sprint thread may leak here
       forceGC();
    }
-   
+
    public void testSpring() throws Exception
    {
       System.out.println("Creating bean factory...");

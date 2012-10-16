@@ -31,10 +31,10 @@ import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * 
+ *
  * This example demonstrates the use of HornetQ "pre-acknowledge" functionality where
  * messages are acknowledged before they are delivered to the consumer.
- * 
+ *
  * Please see the readme.html for more details.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

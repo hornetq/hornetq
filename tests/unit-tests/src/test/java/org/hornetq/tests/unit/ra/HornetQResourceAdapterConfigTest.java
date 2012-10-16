@@ -279,24 +279,24 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-type>long</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
          "      <config-property>\n" +
          "         <description>How many attempts should be made when connecting the MDB</description>\n" +
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
          "         <config-property-type>int</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
-         "      </config-property>"+ 
+         "      </config-property>"+
          "      <config-property>\n" +
          "         <description>Add a new managed connection factory</description>\n" +
          "         <config-property-name>ManagedConnectionFactory</config-property-name>\n" +
@@ -457,7 +457,7 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
    private Class<?> lookupType(Method setter)
    {
       Class<?> clzz = setter.getParameterTypes()[0];
-      
+
       if (clzz == Boolean.class)
       {
          return Boolean.TYPE;

@@ -18,9 +18,9 @@ import java.util.List;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * 
+ *
  * A BindingQueryResult
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

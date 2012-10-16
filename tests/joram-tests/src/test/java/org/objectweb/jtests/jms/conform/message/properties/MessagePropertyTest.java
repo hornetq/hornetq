@@ -116,7 +116,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>double</code> property which does not exist throw
     * a <code>java.lang.NullPointerException</code>
     */
@@ -137,7 +137,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>float</code> property which does not exist throw
     * a <code>java.lang.NullPointerException</code>
     */
@@ -158,7 +158,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>long</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
@@ -179,7 +179,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>int</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
@@ -200,7 +200,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>short</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
@@ -221,7 +221,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Test that an attempt to get a <code>byte</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
@@ -242,8 +242,8 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
-    * Test that an attempt to get a <code>boolean</code> property which does not exist 
+   /**
+    * Test that an attempt to get a <code>boolean</code> property which does not exist
     * returns <code>false</code>
     */
    public void testGetBooleanProperty()
@@ -345,7 +345,7 @@ public class MessagePropertyTest extends PTPTestCase
    }
 
    /**
-    * Test that the <code>Message.clearProperties()</code> method deletes all the 
+    * Test that the <code>Message.clearProperties()</code> method deletes all the
     * properties of the Message.
     */
    public void testClearProperties_1()
@@ -365,7 +365,7 @@ public class MessagePropertyTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

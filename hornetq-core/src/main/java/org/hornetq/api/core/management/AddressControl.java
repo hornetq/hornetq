@@ -16,7 +16,7 @@ package org.hornetq.api.core.management;
 
 /**
  * An AddressControl is used to manage an address.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface AddressControl
@@ -50,7 +50,7 @@ public interface AddressControl
     * Returns the number of pages used by this address.
     */
    int getNumberOfPages() throws Exception;
-   
+
    boolean isPaging() throws Exception;
 
    /**

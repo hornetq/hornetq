@@ -26,17 +26,17 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 public class NettyFileStorageSymmetricClusterWithDiscoveryTest extends SymmetricClusterWithDiscoveryTest
 {
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-   
+
    @Override
    protected boolean isNetty()
    {
       return true;
    }
-   
+
    protected boolean isFileStorage()
    {
       return true;
    }
-   
+
 
 }

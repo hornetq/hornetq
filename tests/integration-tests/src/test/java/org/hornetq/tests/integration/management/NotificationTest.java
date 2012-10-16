@@ -163,7 +163,7 @@ public class NotificationTest extends UnitTestCase
             locator.getAckBatchSize());
 
       mySession.start();
-      
+
       SimpleString queue = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
       boolean durable = RandomUtil.randomBoolean();

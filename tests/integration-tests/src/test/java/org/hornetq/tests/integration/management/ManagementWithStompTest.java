@@ -56,7 +56,7 @@ public class ManagementWithStompTest extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    protected HornetQServer server;
-   
+
    protected ClientSession session;
 
    private Socket stompSocket;
@@ -99,13 +99,13 @@ public class ManagementWithStompTest extends ManagementTestBase
       assertTrue(frame.contains("_HQ_OperationSucceeded:true"));
       // the address will be returned in the message body in a JSON array
       Assert.assertTrue(frame.contains("[\"" + address + "\"]"));
-      
+
       frame = "UNSUBSCRIBE\n" + "destination:" + queue + "\n" +
          "receipt: 123\n\n" +
          Stomp.NULL;
       sendFrame(frame);
       waitForReceipt();
-      
+
       String disconnectFrame = "DISCONNECT\n\n" + Stomp.NULL;
       sendFrame(disconnectFrame);
 
@@ -142,13 +142,13 @@ public class ManagementWithStompTest extends ManagementTestBase
       assertTrue(frame.contains("_HQ_OperationSucceeded:true"));
       // there is no such messages => 0 returned in a JSON array
       assertTrue(frame.contains("[0]"));
-      
+
       frame = "UNSUBSCRIBE\n" + "destination:" + queue + "\n" +
          "receipt: 123\n\n" +
          Stomp.NULL;
       sendFrame(frame);
       waitForReceipt();
-      
+
       String disconnectFrame = "DISCONNECT\n\n" + Stomp.NULL;
       sendFrame(disconnectFrame);
 
@@ -196,7 +196,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       session.close();
 
       server.stop();
-      
+
       locator.close();
 
       session = null;
@@ -257,7 +257,7 @@ public class ManagementWithStompTest extends ManagementTestBase
          }
       }
    }
-   
+
    protected void waitForReceipt() throws Exception
    {
       String frame = receiveFrame(50000);

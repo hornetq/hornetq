@@ -65,7 +65,7 @@ public class ConsumerFilterTest extends ServiceTestBase
    public void testLargeToken() throws Exception
    {
       StringBuffer token = new StringBuffer();
-      
+
       token.append("'");
       for (int i = 0 ; i < 5000; i++)
       {
@@ -218,7 +218,7 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       session.close();
    }
-   
+
    public void testLinkedListOrder() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
@@ -228,47 +228,47 @@ public class ConsumerFilterTest extends ServiceTestBase
       ClientSession session = sf.createSession();
 
       session.start();
-      
+
       ClientProducer producer = session.createProducer("foo");
 
       ClientConsumer redConsumer = session.createConsumer("foo", "color='red'");
-      
+
       ClientConsumer anyConsumer = session.createConsumer("foo");
-      
+
       sendMessage(session, producer, "any", "msg1");
-      
+
       sendMessage(session, producer, "any", "msg2");
-      
+
       sendMessage(session, producer, "any", "msg3");
-      
+
       sendMessage(session, producer, "red", "msgRed4");
-      
+
       sendMessage(session, producer, "red", "msgRed5");
 
       readConsumer("anyConsumer", anyConsumer);
 
       readConsumer("anyConsumer", anyConsumer);
-      
+
       log.info("### closing consumer ###");
 
       anyConsumer.close();
-      
+
       readConsumer("redConsumer", redConsumer);
 
       readConsumer("redConsumer", redConsumer);
-      
+
       log.info("### recreating consumer ###");
-      
+
       anyConsumer = session.createConsumer("foo");
-      
+
       session.start();
-      
+
       readConsumer("anyConsumer", anyConsumer);
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       locator.close();
    }
 

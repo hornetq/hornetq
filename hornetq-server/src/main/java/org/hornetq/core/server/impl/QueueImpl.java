@@ -398,9 +398,9 @@ public class QueueImpl implements Queue
       {
          addHead(ref);
       }
-      
+
       resetAllIterators();
-      
+
       deliverAsync();
    }
 
@@ -1886,14 +1886,14 @@ public class QueueImpl implements Queue
          addTail(reference, false);
          pageIterator.remove();
       }
-      
+
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          if (depaged == 0 && queueMemorySize.get() >= maxSize)
          {
             HornetQServerLogger.LOGGER.debug("Couldn't depage any message as the maxSize on the queue was achieved. " + "There are too many pending messages to be acked in reference to the page configuration");
          }
-          
+
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
             HornetQServerLogger.LOGGER.debug("Queue Memory Size after depage on queue=" + this.getName() +
@@ -1961,7 +1961,7 @@ public class QueueImpl implements Queue
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
       long redeliveryDelay = addressSettings.getRedeliveryDelay();
       int deliveryCount = reference.getDeliveryCount();
-      
+
       // First check DLA
       if (maxDeliveries > 0 && deliveryCount >= maxDeliveries)
       {
@@ -1984,7 +1984,7 @@ public class QueueImpl implements Queue
             {
                HornetQServerLogger.LOGGER.trace("Setting redeliveryDelay=" + redeliveryDelay + " on reference=" + reference);
             }
-            
+
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
 
             if (!reference.isPaged() && message.isDurable() && durable)

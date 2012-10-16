@@ -30,7 +30,7 @@ import org.hornetq.utils.DataConstants;
 public abstract class VersionedStompFrameHandler
 {
    protected StompConnection connection;
-   
+
    public static VersionedStompFrameHandler getHandler(StompConnection connection, StompVersions version)
    {
       if (version == StompVersions.V1_0)
@@ -47,7 +47,7 @@ public abstract class VersionedStompFrameHandler
    public StompFrame handleFrame(StompFrame request)
    {
       StompFrame response = null;
-      
+
       if (Stomp.Commands.SEND.equals(request.getCommand()))
       {
          response = onSend(request);
@@ -108,7 +108,7 @@ public abstract class VersionedStompFrameHandler
             response.addHeader(Stomp.Headers.Response.RECEIPT_ID, request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
          }
       }
-      
+
       return response;
    }
 
@@ -118,29 +118,29 @@ public abstract class VersionedStompFrameHandler
    public abstract StompFrame onUnsubscribe(StompFrame request);
    public abstract StompFrame onStomp(StompFrame request);
    public abstract StompFrame onNack(StompFrame request);
-   
+
    public StompFrame onUnknown(String command)
    {
       StompFrame response = new HornetQStompException("Unsupported command " + command).getFrame();
       return response;
    }
-   
+
    public StompFrame handleReceipt(String receiptID)
    {
       StompFrame receipt = new StompFrame(Stomp.Responses.RECEIPT);
       receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
-      
+
       return receipt;
    }
 
    public abstract StompFrame createStompFrame(String command);
 
    public abstract StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException;
-   
+
    public StompFrame onCommit(StompFrame request)
    {
       StompFrame response = null;
-      
+
       String txID = request.getHeader(Stomp.Headers.TRANSACTION);
       if (txID == null)
       {
@@ -160,7 +160,7 @@ public abstract class VersionedStompFrameHandler
    }
 
    public StompFrame onSend(StompFrame frame)
-   {      
+   {
       StompFrame response = null;
       try
       {
@@ -232,7 +232,7 @@ public abstract class VersionedStompFrameHandler
          response = new HornetQStompException("transaction header is mandatory to ABORT a transaction").getFrame();
          return response;
       }
-      
+
       try
       {
          connection.abortTransaction(txID);
@@ -241,7 +241,7 @@ public abstract class VersionedStompFrameHandler
       {
          response = e.getFrame();
       }
-      
+
       return response;
    }
 
@@ -249,18 +249,18 @@ public abstract class VersionedStompFrameHandler
    {
       StompFrame response = null;
       String destination = request.getHeader(Stomp.Headers.Subscribe.DESTINATION);
-      
+
       String selector = request.getHeader(Stomp.Headers.Subscribe.SELECTOR);
       String ack = request.getHeader(Stomp.Headers.Subscribe.ACK_MODE);
       String id = request.getHeader(Stomp.Headers.Subscribe.ID);
       String durableSubscriptionName = request.getHeader(Stomp.Headers.Subscribe.DURABLE_SUBSCRIBER_NAME);
       boolean noLocal = false;
-      
+
       if (request.hasHeader(Stomp.Headers.Subscribe.NO_LOCAL))
       {
          noLocal = Boolean.parseBoolean(request.getHeader(Stomp.Headers.Subscribe.NO_LOCAL));
       }
-      
+
       try
       {
          connection.subscribe(destination, selector, ack, id, durableSubscriptionName, noLocal);
@@ -269,7 +269,7 @@ public abstract class VersionedStompFrameHandler
       {
          response = e.getFrame();
       }
-      
+
       return response;
    }
 
@@ -290,7 +290,7 @@ public abstract class VersionedStompFrameHandler
          if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
          {
             this.connection.disconnect(false);
-         }         
+         }
       }
       return response;
    }

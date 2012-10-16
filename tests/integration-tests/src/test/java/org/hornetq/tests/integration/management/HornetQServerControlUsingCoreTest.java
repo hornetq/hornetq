@@ -55,7 +55,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
    private ClientSession session;
    private ServerLocator locator;
-   
+
    @Override
    protected void setUp() throws Exception
    {
@@ -74,7 +74,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
       session.close();
 
       session = null;
-      
+
       locator.close();
 
       super.tearDown();

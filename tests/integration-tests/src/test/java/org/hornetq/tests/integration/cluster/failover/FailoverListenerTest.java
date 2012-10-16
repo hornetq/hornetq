@@ -53,11 +53,11 @@ public class FailoverListenerTest extends FailoverTestBase
    }
 
 	/**
-	 * Test if two servers is running and one of them is failing that we 
+	 * Test if two servers is running and one of them is failing that we
 	 * trigger the expected events for {@link FailoverEventListener}
 	 * @throws Exception
 	 */
-	public void testFailoverListerCall() throws Exception  
+	public void testFailoverListerCall() throws Exception
 	{
       createSessionFactory(2);
 
@@ -71,7 +71,7 @@ public class FailoverListenerTest extends FailoverTestBase
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection(null).getTopology().describe());
 
       log.info("Server Crash!!!");
-      
+
       Thread.sleep(1000);
       //the backup server should be online by now
       assertEquals(FailoverEventType.FAILOVER_COMPLETED,listener.getFailoverEventType().get(1));
@@ -158,7 +158,7 @@ public class FailoverListenerTest extends FailoverTestBase
       assertEquals(FailoverEventType.FAILURE_DETECTED,listener.getFailoverEventType().get(0));
 
       assertEquals(FailoverEventType.FAILOVER_FAILED,listener.getFailoverEventType().get(1));
-    
+
       assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getFailoverEventType().size());
       session.close();
 
@@ -273,19 +273,19 @@ public class FailoverListenerTest extends FailoverTestBase
 
       return session;
    }
-   
-   
+
+
    public class SessionFactoryFailoverListener implements FailoverEventListener {
 
 		private ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
 
-		public ArrayList<FailoverEventType> getFailoverEventType() 
+		public ArrayList<FailoverEventType> getFailoverEventType()
 		{
 			return this.failoverTypeEvent;
 		}
 
 		@Override
-		public void failoverEvent(FailoverEventType eventType) 
+		public void failoverEvent(FailoverEventType eventType)
 		{
 			this.failoverTypeEvent.add(eventType);
 			log.info("Failover event just happen : "+eventType.toString());

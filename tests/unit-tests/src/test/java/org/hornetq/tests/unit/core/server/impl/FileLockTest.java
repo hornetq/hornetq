@@ -36,8 +36,8 @@ public class FileLockTest extends UnitTestCase
       File file = new File(getTestDir());
       file.mkdirs();
    }
-   
-   
+
+
    public void testNIOLock() throws Exception
    {
       doTestLock(new FileLockNodeManager(getTestDir()), new FileLockNodeManager(getTestDir()));
@@ -75,25 +75,25 @@ public class FileLockTest extends UnitTestCase
             }
          }
       };
-      
+
       t.start();
-      
+
       assertTrue(lockManager1.isLiveLocked());
       Thread.sleep(500);
       assertFalse(lockManager2.isLiveLocked());
-      
+
       lockManager1.crashLiveServer();
-      
+
       t.join();
-      
+
       assertFalse(lockManager1.isLiveLocked());
       assertTrue(lockManager2.isLiveLocked());
-      
+
       lockManager2.crashLiveServer();
-      
+
       lockManager1.stop();
       lockManager2.stop();
-     
+
 
    }
 

@@ -54,7 +54,7 @@ public class SoftValueMapTest extends UnitTestCase
       }
 
       assertTrue(softCache.size() < MAX_ELEMENTS);
-      
+
       System.out.println("SoftCache.size " + softCache.size());
 
       System.out.println("Soft cache has " + softCache.size() + " elements");
@@ -66,66 +66,66 @@ public class SoftValueMapTest extends UnitTestCase
       forceGC();
 
       SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(200);
-      
+
       for (long i = 0 ; i < 100; i++)
       {
          Value v = new Value(new byte[1]);
          v.setLive(true);
          softCache.put(i, v);
       }
-      
+
       for (long i = 100; i < 200; i++)
       {
          Value v = new Value(new byte[1]);
          softCache.put(i, v);
       }
-      
+
       assertNotNull(softCache.get(100l));
-      
+
       softCache.put(300l, new Value(new byte[1]));
-      
+
       // these are live, so they shouldn't go
-      
+
       for (long i = 0; i < 100; i++)
       {
          assertNotNull(softCache.get(i));
       }
-      
+
       // this was accessed, so it shouldn't go
       assertNotNull(softCache.get(100l));
-      
+
       // this is the next one, so it should go
       assertNull(softCache.get(101l));
-      
+
       System.out.println("SoftCache.size " + softCache.size());
 
       System.out.println("Soft cache has " + softCache.size() + " elements");
    }
-   
+
    public void testEvictOldestElement()
    {
       Value one = new Value(new byte[100]);
       Value two = new Value(new byte[100]);
       Value three = new Value(new byte[100]);
-      
-      
+
+
       SoftValueHashMap<Integer, Value> softCache = new SoftValueHashMap<Integer, Value>(2);
       softCache.put(3, three);
       softCache.put(2, two);
       softCache.put(1, one);
-      
+
       assertNull(softCache.get(3));
       assertEquals(two, softCache.get(2));
       assertEquals(one, softCache.get(1));
-      
-      
-      
+
+
+
    }
-   
+
    class Value implements SoftValueHashMap.ValueCache
    {
       byte[] payload;
-      
+
       boolean live;
 
       Value(byte[] payload)
@@ -140,7 +140,7 @@ public class SoftValueMapTest extends UnitTestCase
       {
          return live;
       }
-      
+
       public void setLive(boolean live)
       {
          this.live = live;

@@ -24,19 +24,19 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * 
+ *
  * This example demonstrates a distributed topic, and needs three servers to be started before the example is run.
- * 
+ *
  * The example will not spawn the servers itself.
- * 
+ *
  * The servers should be started using ./run.sh ../config/stand-alone/clustered
- * 
+ *
  * If running on the same physical box, make sure that each server:
- * 
+ *
  * a) uses a different data directory
  * b) uses different ports for the netty acceptor
  * c) uses different ports for JNDI
- * 
+ *
  * Update server[0|1|2]/client-jndi.properties to the correct ports and hosts for the 3 servers
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

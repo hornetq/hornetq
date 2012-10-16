@@ -104,7 +104,7 @@ public class IncomingTweetsHandler implements ConnectorService
                                                    new AccessToken(this.accessToken,
                                                                    this.accessTokenSecret));
       this.twitter.verifyCredentials();
-      
+
       // getting latest ID
       this.paging.setCount(TwitterConstants.FIRST_ATTEMPT_PAGE_SIZE);
 

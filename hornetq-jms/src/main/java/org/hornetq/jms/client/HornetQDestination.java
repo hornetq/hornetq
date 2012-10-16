@@ -29,7 +29,7 @@ import org.hornetq.utils.Pair;
 
 /**
  * HornetQ implementation of a JMS Destination.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -42,20 +42,20 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    // Static --------------------------------------------------------
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 5027962425462382883L;
-   
+
    public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
-   
+
    public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
-   
+
    public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
 
    public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "jms.temptopic.";
 
    private static final char SEPARATOR = '.';
-      
+
    protected static String escape(final String input)
    {
       if (input == null)
@@ -96,12 +96,12 @@ public class HornetQDestination implements Destination, Serializable, Referencea
          throw new IllegalArgumentException("Invalid address " + address);
       }
    }
-   
+
    public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
    {
       return HornetQDestination.escape(clientID) + SEPARATOR + HornetQDestination.escape(subscriptionName);
    }
-   
+
    public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
    {
       StringBuffer[] parts = new StringBuffer[2];
@@ -149,48 +149,48 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
       return pair;
    }
-   
+
    public static SimpleString createQueueAddressFromName(final String name)
    {
       return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
    }
-   
+
    public static SimpleString createTopicAddressFromName(final String name)
    {
       return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
    }
-   
+
    public static HornetQQueue createQueue(final String name)
    {
       return new HornetQQueue(name);
    }
-   
+
    public static HornetQTopic createTopic(final String name)
    {
       return new HornetQTopic(name);
    }
-   
+
    public static HornetQTemporaryQueue createTemporaryQueue(final String name, final HornetQSession session)
    {
       return new HornetQTemporaryQueue(JMS_TEMP_QUEUE_ADDRESS_PREFIX.concat(name), name, session);
    }
-   
+
    public static HornetQTemporaryQueue createTemporaryQueue(final String name)
    {
       return createTemporaryQueue(name, null);
    }
-   
+
    public static HornetQTemporaryQueue createTemporaryQueue(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
-      
+
       return createTemporaryQueue(name, session);
    }
-   
+
    public static HornetQTemporaryTopic createTemporaryTopic(final HornetQSession session)
    {
       String name = UUID.randomUUID().toString();
-      
+
       return createTemporaryTopic(name, session);
    }
 
@@ -198,12 +198,12 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    {
       return new HornetQTemporaryTopic(JMS_TEMP_TOPIC_ADDRESS_PREFIX.concat(name), name, session);
    }
-   
+
    public static HornetQTemporaryTopic createTemporaryTopic(String name)
    {
       return createTemporaryTopic(name, null);
    }
-   
+
    // Attributes ----------------------------------------------------
 
    /**
@@ -220,13 +220,13 @@ public class HornetQDestination implements Destination, Serializable, Referencea
     * SimpleString version of address
     */
    private final SimpleString simpleAddress;
-   
+
    private final boolean temporary;
-   
+
    private final boolean queue;
-   
+
    private transient final HornetQSession session;
-   
+
    // Constructors --------------------------------------------------
 
    protected HornetQDestination(final String address, final String name,
@@ -239,14 +239,14 @@ public class HornetQDestination implements Destination, Serializable, Referencea
       this.name = name;
 
       simpleAddress = new SimpleString(address);
-      
+
       this.temporary = temporary;
-      
+
       this.queue = queue;
-      
+
       this.session = session;
    }
-   
+
    // Referenceable implementation ---------------------------------------
 
    public Reference getReference() throws NamingException
@@ -271,12 +271,12 @@ public class HornetQDestination implements Destination, Serializable, Referencea
          }
       }
    }
-   
+
    public boolean isQueue()
    {
       return queue;
    }
-   
+
    // Public --------------------------------------------------------
 
    public String getAddress()
@@ -298,7 +298,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    {
       return temporary;
    }
-      
+
    @Override
    public boolean equals(final Object o)
    {

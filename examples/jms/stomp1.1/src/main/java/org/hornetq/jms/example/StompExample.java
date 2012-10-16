@@ -54,7 +54,7 @@ public class StompExample extends HornetQExample
          Socket socket = new Socket("localhost", 61613);
 
          // Step 2. Send a CONNECT frame to connect to the server
-         String connectFrame = "CONNECT\n" + 
+         String connectFrame = "CONNECT\n" +
             "accept-version:1.1\n" +
             "host:localhost\n" +
             "login:guest\n" +
@@ -63,14 +63,14 @@ public class StompExample extends HornetQExample
             "\n" +
             END_OF_FRAME;
          sendFrame(socket, connectFrame);
-         
+
          String response = receiveFrame(socket);
          System.out.println("response: " + response);
 
          // Step 3. Send a SEND frame (a Stomp message) to the
          // jms.queue.exampleQueue address with a text body
          String text = "Hello World from Stomp 1.1 !";
-         String message = "SEND\n" + 
+         String message = "SEND\n" +
             "destination:jms.queue.exampleQueue\n" +
             "\n" +
             text +
@@ -134,19 +134,19 @@ public class StompExample extends HornetQExample
       }
       outputStream.flush();
    }
-   
+
    private static String receiveFrame(Socket socket) throws Exception
    {
       InputStream inputStream = socket.getInputStream();
       byte[] buffer = new byte[1024];
       int size = inputStream.read(buffer);
-      
+
       byte[] data = new byte[size];
       System.arraycopy(buffer, 0, data, 0, size);
-      
+
       String frame = new String(data, "UTF-8");
       return frame;
-      
+
    }
 
 }

@@ -57,7 +57,7 @@ public class HornetQAdmin implements Admin
    private Process serverProcess;
 
    private ClientSessionFactory sf;
-   
+
    ServerLocator serverLocator;
 
    public HornetQAdmin()
@@ -94,17 +94,17 @@ public class HornetQAdmin implements Admin
    public void stop() throws Exception
    {
       requestor.close();
-      
+
       if (sf != null)
       {
          sf.close();
       }
-      
+
       if (serverLocator != null)
       {
          serverLocator.close();
       }
-      
+
       sf = null;
       serverLocator = null;
    }
@@ -113,7 +113,7 @@ public class HornetQAdmin implements Admin
    {
       createConnection(name, 0);
    }
-   
+
    private void createConnection(final String name, final int cfType)
    {
       try

@@ -311,7 +311,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       inManagedTx = false;
 
       inManagedTx = false;
-      
+
       // I'm recreating the lock object when we return to the pool
       // because it looks too nasty to expect the connection handle
       // to unlock properly in certain race conditions
@@ -343,7 +343,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          throw new IllegalStateException("ManagedConnection in an illegal state");
       }
    }
-   
+
    public void checkTransactionActive() throws JMSException
    {
       // don't bother looking at the transaction if there's an active XID
@@ -600,7 +600,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    /**
     * Get the session for this connection.
     * @return The session
-    * @throws JMSException 
+    * @throws JMSException
     */
    protected Session getSession() throws JMSException
    {
@@ -612,7 +612,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          }
 
          return xaSession.getSession();
-      } 
+      }
       else
       {
          if (HornetQRAManagedConnection.trace)
@@ -776,7 +776,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          connectionFactory = ra.createHornetQConnectionFactory(mcf.getProperties());
          boolean transacted = cri.isTransacted();
          int acknowledgeMode =  Session.AUTO_ACKNOWLEDGE;
-         
+
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
          {
             if (userName != null && password != null)
@@ -831,7 +831,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          throw new ResourceException(je.getMessage(), je);
       }
    }
-   
+
    protected void setInManagedTx(boolean inManagedTx)
    {
       this.inManagedTx = inManagedTx;

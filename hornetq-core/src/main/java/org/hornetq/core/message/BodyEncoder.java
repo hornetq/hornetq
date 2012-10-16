@@ -22,7 +22,7 @@ import org.hornetq.api.core.HornetQException;
  * Class used to encode message body into buffers.
  * <br>
  * Used to send large streams over the wire
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */

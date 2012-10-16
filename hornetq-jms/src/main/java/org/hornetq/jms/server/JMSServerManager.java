@@ -29,7 +29,7 @@ import org.hornetq.spi.core.naming.BindingRegistry;
 
 /**
  * The JMS Management interface.
- * 
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -40,14 +40,14 @@ public interface JMSServerManager extends HornetQComponent
 
    /**
     * Has the Server been started.
-    * 
+    *
     * @return true if the server us running
     */
    boolean isStarted();
 
    /**
     * Creates a JMS Queue.
-    * 
+    *
     * @param queueName
     *           The name of the queue to create
     * @param selectorString
@@ -58,7 +58,7 @@ public interface JMSServerManager extends HornetQComponent
     *            if problems were encountered creating the queue.
     */
    boolean createQueue(boolean storeConfig, String queueName, String selectorString, boolean durable, String ...bindings) throws Exception;
-   
+
    boolean addTopicToJndi(final String topicName, final String binding) throws Exception;
 
    boolean addQueueToJndi(final String queueName, final String binding) throws Exception;
@@ -67,7 +67,7 @@ public interface JMSServerManager extends HornetQComponent
 
    /**
     * Creates a JMS Topic
-    * 
+    *
     * @param topicName
     *           the name of the topic
     * @param bindings
@@ -82,7 +82,7 @@ public interface JMSServerManager extends HornetQComponent
    /**
     * Remove the topic from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
-    * 
+    *
     * @param name
     *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
@@ -94,7 +94,7 @@ public interface JMSServerManager extends HornetQComponent
    /**
     * Remove the topic from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
-    * 
+    *
     * @param name
     *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
@@ -106,7 +106,7 @@ public interface JMSServerManager extends HornetQComponent
    /**
     * Remove the queue from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
-    * 
+    *
     * @param name
     *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
@@ -118,7 +118,7 @@ public interface JMSServerManager extends HornetQComponent
    /**
     * Remove the queue from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
-    * 
+    *
     * @param name
     *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
@@ -133,7 +133,7 @@ public interface JMSServerManager extends HornetQComponent
 
    /**
     * destroys a queue and removes it from JNDI or BindingRegistry
-    * 
+    *
     * @param name
     *           the name of the queue to destroy
     * @return true if destroyed
@@ -141,16 +141,16 @@ public interface JMSServerManager extends HornetQComponent
     *            if a problem occurred destroying the queue
     */
    boolean destroyQueue(String name) throws Exception;
-   
+
    String[] getJNDIOnQueue(String queue);
-   
+
    String[] getJNDIOnTopic(String topic);
-   
+
    String[] getJNDIOnConnectionFactory(String factoryName);
 
    /**
     * destroys a topic and removes it from JNDI  or BindingRegistry
-    * 
+    *
     * @param name
     *           the name of the topic to destroy
     * @return true if the topic was destroyed
@@ -158,8 +158,8 @@ public interface JMSServerManager extends HornetQComponent
     *            if a problem occurred destroying the topic
     */
    boolean destroyTopic(String name) throws Exception;
-   
-   /** Call this method to have a CF rebound to JNDI and stored on the Journal 
+
+   /** Call this method to have a CF rebound to JNDI and stored on the Journal
     * @throws Exception */
    HornetQConnectionFactory recreateCF(String name,  ConnectionFactoryConfiguration cf) throws Exception;
 
@@ -167,14 +167,14 @@ public interface JMSServerManager extends HornetQComponent
 
    void createConnectionFactory(String name,
                                 boolean ha,
-                                JMSFactoryType cfType, 
+                                JMSFactoryType cfType,
                                 List<String> connectorNames,
                                 String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 boolean ha,
-                                JMSFactoryType cfType, 
-                                List<String> connectorNames,                                
+                                JMSFactoryType cfType,
+                                List<String> connectorNames,
                                 String clientID,
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
@@ -209,7 +209,7 @@ public interface JMSServerManager extends HornetQComponent
 
    void createConnectionFactory(String name,
                                 boolean ha,
-                                JMSFactoryType cfType, 
+                                JMSFactoryType cfType,
                                 String discoveryGroupName,
                                 String clientID,
                                 long clientFailureCheckPeriod,
@@ -231,7 +231,7 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean preAcknowledge,
                                 String loadBalancingPolicyClassName,
                                 int transactionBatchSize,
-                                int dupsOKBatchSize,                        
+                                int dupsOKBatchSize,
                                 boolean useGlobalPools,
                                 int scheduledThreadPoolMaxSize,
                                 int threadPoolMaxSize,
@@ -242,12 +242,12 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean failoverOnInitialConnection,
                                 String groupId,
                                 String ... bindings) throws Exception;
-   
+
    void createConnectionFactory(boolean storeConfig, ConnectionFactoryConfiguration cfConfig, String... bindings) throws Exception;
 
    /**
     * destroys a connection factory.
-    * 
+    *
     * @param name
     *           the name of the connection factory to destroy
     * @return true if the connection factory was destroyed
@@ -267,9 +267,9 @@ public interface JMSServerManager extends HornetQComponent
    String[] listSessions(String connectionID) throws Exception;
 
    String listPreparedTransactionDetailsAsJSON() throws Exception;
-   
+
    String listPreparedTransactionDetailsAsHTML() throws Exception;
-   
+
    void setContext(final Context context);
 
    HornetQServer getHornetQServer();

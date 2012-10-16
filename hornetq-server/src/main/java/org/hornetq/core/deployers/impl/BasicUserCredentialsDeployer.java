@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * 
+ *
  * deployer for adding security loaded from the file "hornetq-users.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */

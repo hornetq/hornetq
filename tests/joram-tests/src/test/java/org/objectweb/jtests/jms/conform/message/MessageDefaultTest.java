@@ -51,7 +51,7 @@ public class MessageDefaultTest extends JMSTestCase
       Assert.assertEquals("The default priority is 4.\n", 4, Message.DEFAULT_PRIORITY);
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

@@ -573,7 +573,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
 
    /**
     * Check the name
-    * 
+    *
     * @param name the name
     */
    private void checkName(final String name)

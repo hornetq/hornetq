@@ -20,7 +20,7 @@ import javax.resource.spi.LocalTransaction;
 
 /**
  * JMS Local transaction
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -57,7 +57,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALogger.LOGGER.trace("begin()");
       }
-      
+
      // mc.setInManagedTx(true);
    }
 
@@ -71,7 +71,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALogger.LOGGER.trace("commit()");
       }
-      
+
       mc.lock();
       try
       {
@@ -101,7 +101,7 @@ public class HornetQRALocalTransaction implements LocalTransaction
       {
          HornetQRALogger.LOGGER.trace("rollback()");
       }
-      
+
       mc.lock();
       try
       {

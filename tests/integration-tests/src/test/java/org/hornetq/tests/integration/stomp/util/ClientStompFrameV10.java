@@ -13,7 +13,7 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * pls use factory to create frames.
@@ -31,5 +31,5 @@ public class ClientStompFrameV10 extends AbstractClientStompFrame
    {
       return false;
    }
-   
+
 }

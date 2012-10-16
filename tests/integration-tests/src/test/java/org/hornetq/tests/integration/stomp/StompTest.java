@@ -406,9 +406,9 @@ public class StompTest extends StompTestBase
       sendMessage(payload, queue);
 
       frame = receiveFrame(10000);
-      
+
       System.out.println("Message: " + frame);
-      
+
       Assert.assertTrue(frame.startsWith("MESSAGE"));
 
       Pattern cl = Pattern.compile("Content-length:\\s*(\\d+)", Pattern.CASE_INSENSITIVE);

@@ -21,7 +21,7 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
  * A TransportConstants
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -68,19 +68,19 @@ public class TransportConstants
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
 
    public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "tcp-receive-buffer-size";
-   
+
    public static final String NIO_REMOTING_THREADS_PROPNAME = "nio-remoting-threads";
-   
+
    public static final String BATCH_DELAY = "batch-delay";
-   
+
    public static final String DIRECT_DELIVER = "direct-deliver";
-   
+
    public static final String CLUSTER_CONNECTION = "cluster-connection";
-   
+
    public static final String STOMP_CONSUMERS_CREDIT = "stomp-consumer-credits";
-   
+
    public static final int STOMP_DEFAULT_CONSUMERS_CREDIT = 10 * 1024; // 10K
-   
+
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO_SERVER = false;
@@ -113,7 +113,7 @@ public class TransportConstants
    public static final int DEFAULT_TCP_SENDBUFFER_SIZE = 32768;
 
    public static final int DEFAULT_TCP_RECEIVEBUFFER_SIZE = 32768;
-   
+
    public static final boolean DEFAULT_HTTP_ENABLED = false;
 
    public static final long DEFAULT_HTTP_CLIENT_IDLE_TIME = 500;
@@ -127,9 +127,9 @@ public class TransportConstants
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 
    public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
-   
+
    public static final long DEFAULT_BATCH_DELAY = 0;
-   
+
    public static final boolean DEFAULT_DIRECT_DELIVER = true;
 
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;

@@ -34,7 +34,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  * A MessageRedistributionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 10 Feb 2009 18:41:57
  *
  *
@@ -831,7 +831,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       setupSessionFactory(0, isNetty());
 
       setupSessionFactory(1, isNetty());
-      
+
       createQueue(0, "queues.testaddress", "queue0", null, true);
 
       createQueue(1, "queues.testaddress", "queue0", null, true);
@@ -839,40 +839,40 @@ public class MessageRedistributionTest extends ClusterTestBase
       waitForBindings(1, "queues.testaddress", 1, 0, true);
 
       waitForBindings(0, "queues.testaddress", 1, 0, false);
-      
+
       getServer(0).getPagingManager().getPageStore(new SimpleString("queues.testaddress")).startPaging();
-      
+
       ClientSession session0 = sfs[0].createSession(true, true, 0);
       ClientProducer producer0 = session0.createProducer("queues.testaddress");
-                                                   
+
       ClientConsumer consumer0 = session0.createConsumer("queue0");
       session0.start();
-      
-      
+
+
       ClientSession session1 = sfs[1].createSession(true, true, 0);
       ClientConsumer consumer1 = session1.createConsumer("queue0");
       session1.start();
-      
-      
+
+
       for (int i = 0 ; i < 10; i++)
       {
          ClientMessage msg = session0.createMessage(true);
          msg.putIntProperty("i", i);
-         // send two identical messages so they are routed on the cluster 
+         // send two identical messages so they are routed on the cluster
          producer0.send(msg);
          producer0.send(msg);
-         
+
          msg = consumer0.receive(5000);
          assertNotNull(msg);
          assertEquals(i, msg.getIntProperty("i").intValue());
          // msg.acknowledge(); // -- do not ack message on consumer0, to make sure the messages will be paged
-         
+
          msg = consumer1.receive(5000);
          assertNotNull(msg);
          assertEquals(i, msg.getIntProperty("i").intValue());
          msg.acknowledge();
       }
-      
+
       session0.close();
       session1.close();
    }

@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.stomp.util;
 import java.io.IOException;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * pls use factory to create frames.
@@ -33,9 +33,9 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
       frame.addHeader(LOGIN_HEADER, username);
       frame.addHeader(PASSCODE_HEADER, passcode);
-      
+
       ClientStompFrame response = this.sendFrame(frame);
-      
+
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          connected = true;
@@ -53,9 +53,9 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       frame.addHeader(LOGIN_HEADER, username);
       frame.addHeader(PASSCODE_HEADER, passcode);
       frame.addHeader(CLIENT_ID_HEADER, clientID);
-      
+
       ClientStompFrame response = this.sendFrame(frame);
-      
+
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          connected = true;
@@ -72,9 +72,9 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
    {
       ClientStompFrame frame = factory.newFrame(DISCONNECT_COMMAND);
       this.sendFrame(frame);
-      
+
       close();
-      
+
       connected = false;
    }
 

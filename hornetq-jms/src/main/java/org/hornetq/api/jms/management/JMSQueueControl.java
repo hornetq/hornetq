@@ -22,7 +22,7 @@ import org.hornetq.api.core.management.Parameter;
 
 /**
  * A JMSQueueControl is used to manage a JMS queue.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface JMSQueueControl extends DestinationControl
@@ -116,7 +116,7 @@ public interface JMSQueueControl extends DestinationControl
     * Removes all the message corresponding to the specified filter.
     * <br>
     * Using {@code null} or an empty filter will remove <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of removed messages
     */
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = MBeanOperationInfo.ACTION)
@@ -126,7 +126,7 @@ public interface JMSQueueControl extends DestinationControl
     * Expires all the message corresponding to the specified filter.
     * <br>
     * Using {@code null} or an empty filter will expire <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of expired messages
     */
    @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = MBeanOperationInfo.ACTION)
@@ -152,7 +152,7 @@ public interface JMSQueueControl extends DestinationControl
     * Sends all the message corresponding to the specified filter to this queue's dead letter address.
     * <br>
     * Using {@code null} or an empty filter will send <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of sent messages
     */
    @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = MBeanOperationInfo.ACTION)
@@ -160,7 +160,7 @@ public interface JMSQueueControl extends DestinationControl
 
    /**
     * Changes the message's priority corresponding to the specified message ID to the specified priority.
-    * 
+    *
     * @param newPriority between 0 and 9 inclusive.
     *
     * @return {@code true} if the message priority was changed
@@ -173,7 +173,7 @@ public interface JMSQueueControl extends DestinationControl
     * Changes the priority for all the message corresponding to the specified filter to the specified priority.
     * <br>
     * Using {@code null} or an empty filter will change <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of changed messages
     */
    @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = MBeanOperationInfo.ACTION)
@@ -204,7 +204,7 @@ public interface JMSQueueControl extends DestinationControl
     * RejectDuplicates=false on this case
     * <br>
     * Using {@code null} or an empty filter will move <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of moved messages
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages). rejectDuplicates=false on this case", impact = MBeanOperationInfo.ACTION)
@@ -215,7 +215,7 @@ public interface JMSQueueControl extends DestinationControl
     * Moves all the message corresponding to the specified filter  to the specified other queue.
     * <br>
     * Using {@code null} or an empty filter will move <em>all</em> messages from this queue.
-    * 
+    *
     * @return the number of moved messages
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)

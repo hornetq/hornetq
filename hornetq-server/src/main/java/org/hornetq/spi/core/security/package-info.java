@@ -14,7 +14,7 @@
 /**
  * Security SPI.
  * <br>
- * This package defines the Service Provide Interface 
+ * This package defines the Service Provide Interface
  * that secuity providers can implement to plug their
  * implementation into HornetQ.
  */

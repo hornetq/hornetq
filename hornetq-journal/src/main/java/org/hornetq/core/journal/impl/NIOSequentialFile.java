@@ -96,9 +96,9 @@ public class NIOSequentialFile extends AbstractSequentialFile
       try
       {
          rfile = new RandomAccessFile(getFile(), "rw");
-   
+
          channel = rfile.getChannel();
-   
+
          fileSize = channel.size();
       }
       catch (IOException e)
@@ -206,7 +206,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          {
             callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getLocalizedMessage());
          }
-         
+
          factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
 
          throw e;

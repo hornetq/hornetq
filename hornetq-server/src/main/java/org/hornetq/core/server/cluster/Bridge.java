@@ -25,7 +25,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 15 Nov 2008 09:42:31
  *
  *
@@ -43,9 +43,9 @@ public interface Bridge extends Consumer, HornetQComponent
    boolean isUseDuplicateDetection();
 
    void activate();
-   
+
    void flushExecutor();
-   
+
    void setNotificationService(NotificationService notificationService);
 
    RemotingConnection getForwardingConnection();

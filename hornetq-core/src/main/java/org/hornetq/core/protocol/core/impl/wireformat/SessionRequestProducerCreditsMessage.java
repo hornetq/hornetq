@@ -19,7 +19,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  */
 public class SessionRequestProducerCreditsMessage extends PacketImpl
 {

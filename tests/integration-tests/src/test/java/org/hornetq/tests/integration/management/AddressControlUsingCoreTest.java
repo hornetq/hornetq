@@ -35,7 +35,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A AddressControlUsingCoreTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -98,13 +98,13 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
 
       session.deleteQueue(anotherQueue);
    }
-   
+
    public void testGetBindingNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
       String divertName = RandomUtil.randomString();
-      
+
       session.createQueue(address, queue, false);
 
       CoreMessagingProxy proxy = createProxy(address);
@@ -114,11 +114,11 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
 
       server.getHornetQServerControl().createDivert(divertName, randomString(), address.toString(), RandomUtil.randomString(), false, null, null);
 
-      bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");   
+      bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");
       assertEquals(2, bindingNames.length);
-      
+
       session.deleteQueue(queue);
-      
+
       bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");
       assertEquals(1, bindingNames.length);
       assertEquals(divertName.toString(), bindingNames[0]);

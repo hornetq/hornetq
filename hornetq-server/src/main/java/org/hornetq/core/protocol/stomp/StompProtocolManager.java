@@ -39,7 +39,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * StompProtocolManager
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 class StompProtocolManager implements ProtocolManager
@@ -75,10 +75,10 @@ class StompProtocolManager implements ProtocolManager
 
       // Note that STOMP 1.0 has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
-      
+
       String ttlStr = (String)acceptorUsed.getConfiguration().get("connection-ttl");
       Long ttl = ttlStr == null ? null : Long.valueOf(ttlStr);
-      
+
       if (ttl != null)
       {
          if (ttl > 0)
@@ -115,9 +115,9 @@ class StompProtocolManager implements ProtocolManager
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
-      
+
       conn.setDataReceived();
-      
+
       StompDecoder decoder = conn.getDecoder();
 
       do
@@ -132,7 +132,7 @@ class StompProtocolManager implements ProtocolManager
             HornetQServerLogger.LOGGER.errorDecodingPacket(e);
             return;
          }
-         
+
          if (request == null)
          {
             break;
@@ -287,7 +287,7 @@ class StompProtocolManager implements ProtocolManager
          public void onError(final int errorCode, final String errorMessage)
          {
             HornetQServerLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
-            
+
             HornetQStompException e = new HornetQStompException("Error sending reply",
                   HornetQExceptionType.createException(errorCode, errorMessage));
 
@@ -315,14 +315,14 @@ class StompProtocolManager implements ProtocolManager
    public boolean validateUser(String login, String passcode)
    {
       boolean validated = true;
-      
+
       HornetQSecurityManager sm = server.getSecurityManager();
-      
+
       if (sm != null && server.getConfiguration().isSecurityEnabled())
       {
          validated = sm.validateUser(login, passcode);
       }
-      
+
       return validated;
    }
 

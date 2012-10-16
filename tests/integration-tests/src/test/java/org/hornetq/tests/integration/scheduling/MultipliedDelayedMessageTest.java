@@ -101,7 +101,7 @@ public class MultipliedDelayedMessageTest extends ServiceTestBase
       session.start();
       tm = consumer.receive(500);
       Assert.assertNotNull(tm);
-     
+
       for (int i = 1; i <= 6; i++)
       {
          // Ack the message, but rollback the session to trigger redelivery with increasing delivery count

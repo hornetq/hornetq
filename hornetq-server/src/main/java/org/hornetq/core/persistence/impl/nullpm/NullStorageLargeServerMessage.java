@@ -22,7 +22,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  * A NullStorageLargeServerMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created 30-Sep-08 1:51:42 PM
  *
  *

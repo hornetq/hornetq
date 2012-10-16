@@ -28,6 +28,6 @@ public abstract class RemoteServerConfiguration
 
    public RemoteServerConfiguration() {
    }
-   
+
    public abstract Configuration getConfiguration();
 }
