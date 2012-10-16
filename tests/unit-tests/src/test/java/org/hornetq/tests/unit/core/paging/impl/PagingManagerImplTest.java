@@ -76,12 +76,12 @@ public class PagingManagerImplTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      RoutingContextImpl ctx = new RoutingContextImpl(null);
+      final RoutingContextImpl ctx = new RoutingContextImpl(null);
       Assert.assertFalse(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
 
       store.startPaging();
 
-      Assert.assertTrue(store.page(msg, new RoutingContextImpl(null), lock));
+      Assert.assertTrue(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
 
       Page page = store.depage();
 
@@ -103,7 +103,9 @@ public class PagingManagerImplTest extends UnitTestCase
 
       Assert.assertNull(store.depage());
 
-      Assert.assertFalse(store.page(msg, new RoutingContextImpl(null), lock));
+      final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+      Assert.assertFalse(store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()), lock));
+
    }
 
    @Override
