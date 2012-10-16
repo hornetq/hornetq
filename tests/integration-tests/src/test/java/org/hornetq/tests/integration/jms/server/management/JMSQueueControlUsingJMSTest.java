@@ -29,7 +29,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
 
 /**
- * 
+ *
  * A JMSQueueControlUsingJMSTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

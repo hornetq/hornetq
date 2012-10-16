@@ -43,7 +43,7 @@ import org.hornetq.utils.DataConstants;
  * A LargeMessageTestBase
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Oct 29, 2008 11:43:52 AM
  *
  *
@@ -147,7 +147,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
       {
 
          if (sendingBlocking)
-         {            
+         {
             locator.setBlockOnNonDurableSend(true);
             locator.setBlockOnDurableSend(true);
             locator.setBlockOnAcknowledge(true);
@@ -159,7 +159,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          }
 
          locator.setMinLargeMessageSize(minSize);
-         
+
          ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session;
@@ -523,7 +523,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
          }
 
          session.close();
-         
+
          Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 

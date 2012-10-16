@@ -18,9 +18,9 @@ import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
 
 /**
- * 
+ *
  * A ServerMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -40,7 +40,7 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
    int decrementDurableRefCount();
 
    ServerMessage copy(long newID);
-   
+
    void finishCopy() throws Exception;
 
    ServerMessage copy();
@@ -56,15 +56,15 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
    void setPagingStore(PagingStore store);
 
    PagingStore getPagingStore();
-   
+
    // Is there any _HQ_ property being used
    boolean hasInternalProperties();
 
    boolean storeIsPaging();
 
    void encodeMessageIDToBuffer();
-   
+
    byte [] getDuplicateIDBytes();
-   
+
    Object getDuplicateProperty();
 }

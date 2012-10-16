@@ -25,9 +25,9 @@ import org.hornetq.core.server.cluster.Transformer;
 
 /**
  * A DivertImpl simply diverts a message to a different forwardAddress
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 19 Dec 2008 10:57:49
  *
  *
@@ -82,14 +82,14 @@ public class DivertImpl implements Divert
       // properly on ack, since the original address will be overwritten
 
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
-      
+
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
          HornetQServerLogger.LOGGER.trace("Diverting message " + message + " into " + this);
       }
 
       long id = storageManager.generateUniqueID();
-      
+
       ServerMessage copy = message.copy(id);
       copy.finishCopy();
 

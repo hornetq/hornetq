@@ -26,7 +26,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
  * The HornetQ server is configured to use JAAS.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class JAASExample extends HornetQExample

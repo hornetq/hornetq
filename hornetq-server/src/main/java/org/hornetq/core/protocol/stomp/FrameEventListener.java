@@ -18,7 +18,7 @@
 package org.hornetq.core.protocol.stomp;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public interface FrameEventListener

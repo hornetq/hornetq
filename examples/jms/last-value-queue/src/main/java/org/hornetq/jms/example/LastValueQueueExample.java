@@ -29,7 +29,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example shows how to configure and use a <em>Last-Value</em> queues.
  * Only the last message with a well-defined property is hold by the queue.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */

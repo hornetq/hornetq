@@ -32,9 +32,9 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A MinaConnectorTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -78,7 +78,7 @@ public class NettyConnectorTest extends UnitTestCase
       };
 
       NettyConnector connector = new NettyConnector(params,
-                                                    handler,                                                    
+                                                    handler,
                                                     listener,
                                                     Executors.newCachedThreadPool(),
                                                     Executors.newCachedThreadPool(),
@@ -112,7 +112,7 @@ public class NettyConnectorTest extends UnitTestCase
          public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
          {
          }
-         
+
          public void connectionReadyForWrites(Object connectionID, boolean ready)
          {
          }

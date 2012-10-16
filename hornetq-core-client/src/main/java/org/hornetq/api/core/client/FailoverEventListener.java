@@ -18,13 +18,13 @@ package org.hornetq.api.core.client;
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
 public interface FailoverEventListener {
-	
+
 	/**
 	 * Notifies that a connection state has changed according the specified event type. <br>
 	 * This method is called when failover is detected, if it fails and when it's completed
-	 * 
+	 *
 	 * @param eventType The type of event
 	 */
 	void failoverEvent(FailoverEventType eventType);
-	
+
 }

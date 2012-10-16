@@ -71,7 +71,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    private final long readTimeout;
 
    private long readerIndex = 0;
-   
+
    /** This is to control if packets are arriving for a better timeout control */
    private boolean packetAdded = false;
 
@@ -237,7 +237,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          {
             totalSize += polledPacket.getPacketSize();
          }
-   
+
          try
          {
             consumerInternal.flowControl(totalSize, false);
@@ -247,11 +247,11 @@ public class LargeMessageControllerImpl implements LargeMessageController
             // what else can we do here?
             HornetQClientLogger.LOGGER.errorCallingCancel(ignored);
          }
-          
+
          packets.offer(new SessionReceiveContinuationMessage());
          streamEnded = true;
          streamClosed = true;
-   
+
          notifyAll();
       }
    }
@@ -324,7 +324,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
 
       long timeOut;
-      
+
       // If timeWait = 0, we will use the readTimeout
       // And we will check if no packets have arrived withing readTimeout milliseconds
       if (timeWait != 0)
@@ -335,7 +335,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       {
          timeOut = System.currentTimeMillis() + readTimeout;
       }
-      
+
       while (!streamEnded && handledException == null)
       {
          try
@@ -346,12 +346,12 @@ public class LargeMessageControllerImpl implements LargeMessageController
          {
             throw HornetQClientMessageBundle.BUNDLE.largeMessageControllerInterrupted(e);
          }
-         
+
          if (!streamEnded && handledException == null)
          {
             if (timeWait != 0 && System.currentTimeMillis() > timeOut)
             {
-               
+
                // TODO: what to do here?
                //throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                //         "Timeout waiting for LargeMessage Body");

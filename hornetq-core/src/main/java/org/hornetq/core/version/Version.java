@@ -14,9 +14,9 @@
 package org.hornetq.core.version;
 
 /**
- * 
+ *
  * A VersionImpl
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -35,7 +35,7 @@ public interface Version
    String getVersionSuffix();
 
    int getIncrementingVersion();
-   
+
    int[] getCompatibleVersionList();
 
    String getNettyVersion();

@@ -32,7 +32,7 @@ import org.objectweb.jtests.jms.framework.UnifiedTestCase;
  * Test unified JMS 1.1 sessions.
  * <br />
  * See JMS 1.1 specifications
- * 
+ *
  * @author Jeff Mesnil (jmesnil@gmail.com)
  * @version $Id: UnifiedSessionTest.java,v 1.1 2007/03/29 04:28:37 starksm Exp $
  * @since JMS 1.1
@@ -61,11 +61,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    protected TopicSession topicSession;
 
    /**
-    * Test that a call to <code>createDurableConnectionConsumer()</code> method 
-    * on a <code>QueueConnection</code> throws a 
+    * Test that a call to <code>createDurableConnectionConsumer()</code> method
+    * on a <code>QueueConnection</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateDurableConnectionConsumerOnQueueConnection()
@@ -85,11 +85,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createDurableSubscriber()</code> method 
-    * on a <code>QueueSession</code> throws a 
+    * Test that a call to <code>createDurableSubscriber()</code> method
+    * on a <code>QueueSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateDurableSubscriberOnQueueSession()
@@ -109,11 +109,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createTemporaryTopic()</code> method 
-    * on a <code>QueueSession</code> throws a 
+    * Test that a call to <code>createTemporaryTopic()</code> method
+    * on a <code>QueueSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateTemporaryTopicOnQueueSession()
@@ -133,11 +133,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createTopic()</code> method 
-    * on a <code>QueueSession</code> throws a 
+    * Test that a call to <code>createTopic()</code> method
+    * on a <code>QueueSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateTopicOnQueueSession()
@@ -157,11 +157,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>unsubscribe()</code> method 
-    * on a <code>QueueSession</code> throws a 
+    * Test that a call to <code>unsubscribe()</code> method
+    * on a <code>QueueSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testUnsubscribeOnQueueSession()
@@ -181,11 +181,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createBrowser()</code> method 
-    * on a <code>TopicSession</code> throws a 
+    * Test that a call to <code>createBrowser()</code> method
+    * on a <code>TopicSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateBrowserOnTopicSession()
@@ -205,11 +205,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createQueue()</code> method 
-    * on a <code>TopicSession</code> throws a 
+    * Test that a call to <code>createQueue()</code> method
+    * on a <code>TopicSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateQueueOnTopicSession()
@@ -229,11 +229,11 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    /**
-    * Test that a call to <code>createTemporaryQueue()</code> method 
-    * on a <code>TopicSession</code> throws a 
+    * Test that a call to <code>createTemporaryQueue()</code> method
+    * on a <code>TopicSession</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     * (see JMS 1.1 specs, table 4-1).
-    * 
+    *
     * @since JMS 1.1
     */
    public void testCreateTemporaryQueueOnTopicSession()
@@ -293,7 +293,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

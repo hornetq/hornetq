@@ -28,7 +28,7 @@ import org.hornetq.ra.HornetQRaUtils;
 /**
  * The activation spec
  * These properties are set on the MDB ActivactionProperties
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -38,7 +38,7 @@ import org.hornetq.ra.HornetQRaUtils;
 public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
 {
    private static final int DEFAULT_MAX_SESSION = 15;
-   
+
    /** Whether trace is enabled */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
@@ -90,7 +90,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    // undefined by default, default is specified at the RA level in HornetQRAProperties
    private Integer setupAttempts;
-   
+
    // undefined by default, default is specified at the RA level in HornetQRAProperties
    private Long setupInterval;
 
@@ -715,7 +715,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setDLQJNDIName(final String name)
    {
    }
-   
+
    public void setDLQHandler(final String handler)
    {
    }
@@ -741,8 +741,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setKeepAliveMillis(long keepAliveMillis)
    {
    }
-   
-   
+
+
    public void setReconnectInterval(long interval)
    {
    }

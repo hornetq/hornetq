@@ -37,7 +37,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A SessionClosedOnRemotingConnectionFailureTest
  *
  * @author Tim Fox

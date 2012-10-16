@@ -46,7 +46,7 @@ public class ConcurrentStompTest extends StompTestBase
 
       stompSocket_2 = createSocket();
       inputBuffer_2 = new ByteArrayOutputStream();
-      
+
       sendFrame(stompSocket_2, connect);
       connected = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
       Assert.assertTrue(connected.startsWith("CONNECTED"));
@@ -95,15 +95,15 @@ public class ConcurrentStompTest extends StompTestBase
       }
 
       assertTrue(latch.await(60, TimeUnit.SECONDS));
-      
+
       }
       finally
       {
          stompSocket_2.close();
          inputBuffer_2.close();
       }
-      
-      
+
+
 
    }
 
@@ -119,7 +119,7 @@ public class ConcurrentStompTest extends StompTestBase
       }
       outputStream.flush();
    }
-   
+
    public String receiveFrame(Socket socket, ByteArrayOutputStream input, long timeOut) throws Exception
    {
       socket.setSoTimeout((int)timeOut);

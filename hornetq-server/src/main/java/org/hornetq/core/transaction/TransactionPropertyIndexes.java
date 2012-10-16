@@ -17,27 +17,27 @@ package org.hornetq.core.transaction;
  * A TransactionPropertyIndexes
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 2 Jan 2009 19:48:07
  *
  *
  */
 public class TransactionPropertyIndexes
 {
-   
+
    public static final int LARGE_MESSAGE_CONFIRMATIONS = 1;
 
    public static final int PAGE_SYNC = 2;
-   
+
    public static final int PAGE_COUNT_INC = 3;
-   
+
    public static final int PAGE_TRANSACTION_UPDATE = 4;
-   
+
    public static final int PAGE_TRANSACTION = 5;
 
    public static final int REFS_OPERATION = 6;
 
    public static final int PAGE_DELIVERY = 7;
-   
+
    public static final int PAGE_CURSOR_POSITIONS = 8;
 }

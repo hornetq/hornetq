@@ -32,7 +32,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
                                + "<deployment xmlns=\"urn:jboss:bean-deployer:2.0\">\n"
                                + "   <bean name=\"bean\" class=\"org.hornetq.tests.unit.microcontainer.DummyBean\"/>\n"
                                + "</deployment>";
-/* 
+/*
  * TODO: This test is leaking a thread:
    public void testMain() throws Exception
    {

@@ -35,11 +35,11 @@ import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * A ReferenceableTest.
- * 
+ *
  * All administered objects should be referenceable and serializable as per spec 4.2
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
@@ -129,7 +129,7 @@ public class ReferenceableTest extends JMSTestCase
       Object instance = factory.getObjectInstance(topicRef, null, null, null);
 
       ProxyAssertSupport.assertTrue(instance instanceof HornetQDestination);
-      
+
       HornetQTopic topic2 = (HornetQTopic)instance;
 
       ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1.getTopicName(), topic2.getTopicName());

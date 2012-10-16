@@ -64,7 +64,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    private final SimpleString atestq = new SimpleString("atestq");
 
    private ServerLocator locator;
-   
+
    private MBeanServer mbeanServer;
 
    @Override
@@ -79,7 +79,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
       configuration.setJMXManagementEnabled(true);
-      
+
       mbeanServer = MBeanServerFactory.createMBeanServer();
 
       server = createServer(true, configuration, -1, -1, addressSettings, mbeanServer);
@@ -946,7 +946,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
-      
+
       //check deliveringCount Zero
       checkQueueDeliveryCount(atestq, 0);
    }
@@ -956,7 +956,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       QueueControl queueControl = ManagementControlHelper.createQueueControl(thequeue, thequeue, mbeanServer);
 
       int actualCount = queueControl.getDeliveringCount();
-      
+
       assertEquals(expectedCount, actualCount);
    }
 

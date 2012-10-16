@@ -44,7 +44,7 @@ public class ConnectionFactoryObjectFactoryTest extends UnitTestCase
    // Reference reference = cf.getReference();
    //
    // ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
-   //      
+   //
    // Object object = factory.getObjectInstance(reference, null, null, null);
    // assertNotNull(object);
    // assertTrue(object instanceof HornetQRAConnectionFactory);

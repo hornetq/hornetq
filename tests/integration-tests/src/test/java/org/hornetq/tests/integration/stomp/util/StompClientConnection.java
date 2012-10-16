@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.stomp.util;
 import java.io.IOException;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * pls use factory to create frames.
@@ -23,7 +23,7 @@ import java.io.IOException;
 public interface StompClientConnection
 {
    ClientStompFrame sendFrame(ClientStompFrame frame) throws IOException, InterruptedException;
-   
+
    ClientStompFrame receiveFrame() throws InterruptedException;
 
    ClientStompFrame receiveFrame(long timeout) throws InterruptedException;;
@@ -54,6 +54,6 @@ public interface StompClientConnection
    ClientStompFrame sendWickedFrame(ClientStompFrame frame) throws IOException, InterruptedException;
 
    int getServerPingNumber();
-   
+
 }
 

@@ -15,19 +15,19 @@ package org.hornetq.tests.integration.stomp.util;
 import java.io.IOException;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
 public class StompClientConnectionV11 extends AbstractStompClientConnection
 {
    public static final String STOMP_COMMAND = "STOMP";
-   
+
    public static final String ACCEPT_HEADER = "accept-version";
    public static final String HOST_HEADER = "host";
    public static final String VERSION_HEADER = "version";
    public static final String RECEIPT_HEADER = "receipt";
-   
+
    private Pinger pinger;
    private volatile int serverPingCounter;
 
@@ -48,12 +48,12 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       }
 
       ClientStompFrame response = this.sendFrame(frame);
-      
+
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
          assert(version.equals("1.1"));
-         
+
          this.username = username;
          this.passcode = passcode;
          this.connected = true;
@@ -63,14 +63,14 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          connected = false;
       }
    }
-   
+
    public void connect(String username, String passcode, String clientID) throws IOException, InterruptedException
    {
       ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
       frame.addHeader(ACCEPT_HEADER, "1.1");
       frame.addHeader(HOST_HEADER, "localhost");
       frame.addHeader(CLIENT_ID_HEADER, clientID);
-      
+
       if (username != null)
       {
          frame.addHeader(LOGIN_HEADER, username);
@@ -78,12 +78,12 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       }
 
       ClientStompFrame response = this.sendFrame(frame);
-      
+
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
          assert(version.equals("1.1"));
-         
+
          this.username = username;
          this.passcode = passcode;
          this.connected = true;
@@ -106,12 +106,12 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       }
 
       ClientStompFrame response = this.sendFrame(frame);
-      
+
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
          assert(version.equals("1.1"));
-         
+
          this.username = username;
          this.passcode = passcode;
          this.connected = true;
@@ -127,19 +127,19 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public void disconnect() throws IOException, InterruptedException
    {
       stopPinger();
-      
+
       ClientStompFrame frame = factory.newFrame(DISCONNECT_COMMAND);
       frame.addHeader("receipt", "1");
-      
+
       ClientStompFrame result = this.sendFrame(frame);
-      
+
       if (result == null || (!"RECEIPT".equals(result.getCommand())) || (!"1".equals(result.getHeader("receipt-id"))))
       {
          throw new IOException("Disconnect failed! " + result);
       }
-      
+
       close();
-      
+
       connected = false;
    }
 
@@ -173,13 +173,13 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          pinger = null;
       }
    }
-   
+
    private class Pinger extends Thread
    {
       long pingInterval;
       ClientStompFrameV11 pingFrame;
       volatile boolean stop = false;
-      
+
       public Pinger(long interval)
       {
          this.pingInterval = interval;
@@ -188,18 +188,18 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          pingFrame.setForceOneway();
          pingFrame.setPing(true);
       }
-      
+
       public void startPing()
       {
          start();
       }
-      
+
       public synchronized void stopPing()
       {
          stop = true;
          this.notify();
       }
-      
+
       public void run()
       {
          synchronized (this)
@@ -209,7 +209,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
                try
                {
                   sendFrame(pingFrame);
-                  
+
                   this.wait(pingInterval);
                }
                catch (Exception e)
@@ -227,7 +227,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    {
       return serverPingCounter;
    }
-   
+
    protected void incrementServerPing()
    {
       serverPingCounter++;

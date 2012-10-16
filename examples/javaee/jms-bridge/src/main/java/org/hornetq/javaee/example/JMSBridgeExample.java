@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * An example which sends a message to a source queue and consume from a target queue.
  * The source and target queues are bridged by a JMS Bridge configured and running in JBoss AS 5.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class JMSBridgeExample

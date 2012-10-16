@@ -52,7 +52,7 @@ public class StompExample extends HornetQExample
          Socket socket = new Socket("localhost", 61613);
 
          // Step 2. Send a CONNECT frame to connect to the server
-         String connectFrame = "CONNECT\n" + 
+         String connectFrame = "CONNECT\n" +
             "login: guest\n" +
             "passcode: guest\n" +
             "request-id: 1\n" +
@@ -63,7 +63,7 @@ public class StompExample extends HornetQExample
          // Step 3. Send a SEND frame (a Stomp message) to the
          // jms.queue.exampleQueue address with a text body
          String text = "Hello, world from Stomp!";
-         String message = "SEND\n" + 
+         String message = "SEND\n" +
             "destination: jms.queue.exampleQueue\n" +
             "\n" +
             text +

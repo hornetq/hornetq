@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * This class is not thread safe.
  *
  * @author Tim Fox
- * 
+ *
  *
  */
 public class LinkedListImpl<E> implements LinkedList<E>
@@ -52,7 +52,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
    public void addHead(E e)
    {
       Node<E> node = new Node<E>(e);
-      
+
       node.next = head.next;
 
       node.prev = head;
@@ -145,7 +145,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
 
       return str.toString();
    }
-   
+
    public int numIters()
    {
       return numIters;
@@ -178,7 +178,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       {
          LinkedListImpl.this.nudgeIterators(toRemove);
       }
-      
+
       //Help GC - otherwise GC potentially has to traverse a very long list to see if elements are reachable, this can result in OOM
       //https://jira.jboss.org/browse/HORNETQ-469
       toRemove.next = toRemove.prev = null;
@@ -187,7 +187,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
    private synchronized void nudgeIterators(Node<E> node)
    {
       for (int i = 0; i < numIters; i++)
-      {        
+      {
          Iterator iter = iters[i];
          if (iter != null)
          {
@@ -244,7 +244,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
             return;
          }
       }
-      
+
       throw new IllegalStateException("Cannot find iter to remove");
    }
 
@@ -274,7 +274,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       Node<E> last;
 
       Node<E> current = head.next;
-      
+
       boolean repeat;
 
       Iterator()
@@ -286,7 +286,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
 
          addIter(this);
       }
-      
+
       public void repeat()
       {
          repeat = true;
@@ -295,7 +295,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       public boolean hasNext()
       {
          Node<E> e = getNode();
-                  
+
          if (e != null && (e != last || repeat))
          {
             return true;
@@ -311,7 +311,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
          if (repeat)
          {
             repeat = false;
-            
+
             if (e != null)
             {
                return e.val;
@@ -323,7 +323,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
                   advance();
 
                   e = getNode();
-                  
+
                   return e.val;
                }
                else
@@ -332,7 +332,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
                }
             }
          }
-         
+
          if (e == null || e == last)
          {
             if (canAdvance())
@@ -348,7 +348,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
          }
 
          last = e;
-         
+
          repeat = false;
 
          return e.val;
@@ -401,7 +401,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
             }
          }
       }
-      
+
       private Node<E> getNode()
       {
          if (current == null)
@@ -423,7 +423,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
             return null;
          }
       }
-      
+
       private boolean canAdvance()
       {
          if (current == null)

@@ -28,7 +28,7 @@ public interface JournalReaderCallback
 
    /**
     * @param recordInfo
-    * @throws Exception 
+    * @throws Exception
     */
    void onReadUpdateRecord(RecordInfo recordInfo) throws Exception;
 
@@ -40,14 +40,14 @@ public interface JournalReaderCallback
    /**
     * @param transactionID
     * @param recordInfo
-    * @throws Exception 
+    * @throws Exception
     */
    void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception;
 
    /**
     * @param transactionID
     * @param recordInfo
-    * @throws Exception 
+    * @throws Exception
     */
    void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception;
 

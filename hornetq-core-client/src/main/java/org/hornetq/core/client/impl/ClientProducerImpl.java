@@ -36,7 +36,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * The client-side Producer connectionFactory class.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -405,7 +405,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             lastChunk = pos >= bodySize;
 
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(msgI, 
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(msgI,
                                                                                             bodyBuffer.toByteBuffer()
                                                                                                       .array(),
                                                                                             !lastChunk,

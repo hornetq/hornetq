@@ -17,9 +17,9 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * This tests is placed in duplication here to validate that the libaio module is properly loaded on this 
+ * This tests is placed in duplication here to validate that the libaio module is properly loaded on this
  * test module.
- * 
+ *
  * This test should be placed on each one of the tests modules to make sure the library is loaded correctly.
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

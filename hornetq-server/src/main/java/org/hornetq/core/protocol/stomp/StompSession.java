@@ -168,7 +168,7 @@ public class StompSession implements SessionCallback
       {
          session.receiveConsumerCredits(consumerID, credits);
       }
-      
+
       if (sub.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.CLIENT_INDIVIDUAL))
       {
          session.individualAcknowledge(consumerID, id);
@@ -216,7 +216,7 @@ public class StompSession implements SessionCallback
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
-      
+
       if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
       {
          session.receiveConsumerCredits(consumerID, -1);

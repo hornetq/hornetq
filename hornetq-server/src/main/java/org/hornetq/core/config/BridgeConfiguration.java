@@ -22,7 +22,7 @@ import org.hornetq.api.core.client.HornetQClient;
  * A BridgeConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 13 Jan 2009 09:32:43
  *
  *
@@ -68,7 +68,7 @@ public class BridgeConfiguration implements Serializable
    private final long maxRetryInterval;
 
    private final int minLargeMessageSize;
-   
+
    // At this point this is only changed on testcases
    // The bridge shouldn't be sending blocking anyways
    private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
@@ -295,7 +295,7 @@ public class BridgeConfiguration implements Serializable
    }
 
    /**
-    * 
+    *
     * @param ha is the bridge supporting HA?
     */
    public void setHA(final boolean ha)
@@ -370,7 +370,7 @@ public class BridgeConfiguration implements Serializable
    {
       this.password = password;
    }
-   
+
 
    /**
     * @return the callTimeout
@@ -381,7 +381,7 @@ public class BridgeConfiguration implements Serializable
    }
 
    /**
-    * 
+    *
     * At this point this is only changed on testcases
     * The bridge shouldn't be sending blocking anyways
     * @param callTimeout the callTimeout to set

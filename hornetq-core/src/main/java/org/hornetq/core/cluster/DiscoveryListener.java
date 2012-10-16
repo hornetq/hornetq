@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 17 Nov 2008 14:30:39
  *
  *

@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.stomp.util;
 import java.io.IOException;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
@@ -38,15 +38,15 @@ public class StompClientConnectionFactory
    public static void main(String[] args) throws Exception
    {
       StompClientConnection connection = StompClientConnectionFactory.createClientConnection("1.0", "localhost", 61613);
-      
+
       System.out.println("created a new connection: " + connection);
-      
+
       connection.connect();
-      
+
       System.out.println("connected.");
-      
+
       connection.disconnect();
       System.out.println("Simple stomp client works.");
-      
+
    }
 }

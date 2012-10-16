@@ -46,7 +46,7 @@ public class SecurityDeployerTest extends UnitTestCase
    "<permission type=\"createNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
    + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
                                               + "      <permission type=\"deleteDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              
+
                                               + "      <permission type=\"consume\" roles=\"guest, publisher, durpublisher\"/>\n"
                                               + "      <permission type=\"send\" roles=\"guest, publisher, durpublisher\"/>\n"
                                               + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
@@ -58,13 +58,13 @@ public class SecurityDeployerTest extends UnitTestCase
    "<permission type=\"createNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
    + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
                                               + "      <permission type=\"deleteDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
-                                              
+
                                               + "      <permission type=\"consume\" roles=\"guest , publisher , durpublisher\"/>\n"
                                               + "      <permission type=\"send\" roles=\"guest , publisher , durpublisher\"/>\n"
                                               + "      <permission type=\"manage\" roles=\"guest , publisher , durpublisher\"/>\n"
                                               + "   </security-setting>";
 
-   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + 
+   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" +
    "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
                                 + "      <permission type=\"deleteNonDurableQueue\" roles=\"durpublisher\"/>\n"
                                 + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
@@ -130,12 +130,12 @@ public class SecurityDeployerTest extends UnitTestCase
          }
       }
    }
-   
+
    public void testWithWhiteSpace1() throws Exception
    {
       testWithWhiteSpace(confWithWhiteSpace1);
    }
-   
+
    public void testWithWhiteSpace2() throws Exception
    {
       testWithWhiteSpace(confWithWhiteSpace2);

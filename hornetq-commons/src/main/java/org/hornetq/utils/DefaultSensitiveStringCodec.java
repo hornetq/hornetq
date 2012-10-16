@@ -26,12 +26,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * A DefaultSensitiveDataCodec
- * 
+ *
  * The default implementation of SensitiveDataCodec.
  * This class is used when the user indicates in the config
- * file to use a masked password but doesn't give a 
- * codec implementation. 
- * 
+ * file to use a masked password but doesn't give a
+ * codec implementation.
+ *
  * The decode() and encode() method is copied originally from
  * JBoss AS code base.
  *
@@ -104,5 +104,5 @@ public class DefaultSensitiveStringCodec implements SensitiveDataCodec<String>
       this.internalKey = key.getBytes();
    }
 
-   
+
 }

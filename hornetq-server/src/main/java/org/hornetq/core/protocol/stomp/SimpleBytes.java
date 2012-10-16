@@ -8,7 +8,7 @@ public class SimpleBytes
    private int step;
    private byte[] contents;
    private int index;
-   
+
    public SimpleBytes(int initCapacity)
    {
       this.step = initCapacity;
@@ -21,10 +21,10 @@ public class SimpleBytes
       if (index == 0) return "";
       byte[] realData = new byte[index];
       System.arraycopy(contents, 0, realData, 0, realData.length);
-      
+
       return new String(realData, "UTF-8");
    }
-   
+
    public void reset()
    {
       index = 0;

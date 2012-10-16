@@ -91,7 +91,7 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
       createStorage();
 
       checkAddresses(journal);
-      
+
       journal.stop();
 
       journal = null;

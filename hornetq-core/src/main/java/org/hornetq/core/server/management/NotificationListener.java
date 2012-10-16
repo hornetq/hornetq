@@ -18,7 +18,7 @@ package org.hornetq.core.server.management;
  * A NotificationListener
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 22 Jan 2009 16:48:27
  *
  *

@@ -149,7 +149,7 @@ public class HornetQPacketHandler implements ChannelHandler
          {
             HornetQServerLogger.LOGGER.incompatibleVersionAfterConnect(request.getVersion(), connection.getClientVersion());
          }
-         
+
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
          HornetQPrincipal hornetQPrincipal = null;

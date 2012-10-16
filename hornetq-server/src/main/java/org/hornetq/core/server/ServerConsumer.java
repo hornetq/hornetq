@@ -18,16 +18,16 @@ import java.util.List;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * 
+ *
  * A ServerConsumer
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface ServerConsumer extends Consumer
 {
    long getID();
-   
+
    Object getConnectionID();
 
    void close(boolean failed) throws Exception;
@@ -43,11 +43,11 @@ public interface ServerConsumer extends Consumer
    MessageReference removeReferenceByID(long messageID) throws Exception;
 
    void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
-   
+
    void individualAcknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
 
-   void forceDelivery(long sequence);   
-   
+   void forceDelivery(long sequence);
+
    void setTransferring(boolean transferring);
 
    boolean isBrowseOnly();

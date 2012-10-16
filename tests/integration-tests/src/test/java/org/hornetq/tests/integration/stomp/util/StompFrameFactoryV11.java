@@ -15,11 +15,11 @@ package org.hornetq.tests.integration.stomp.util;
 import java.util.StringTokenizer;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * 1.1 frames
- * 
+ *
  * 1. CONNECT/STOMP(new)
  * 2. CONNECTED
  * 3. SEND
@@ -44,27 +44,27 @@ public class StompFrameFactoryV11 implements StompFrameFactory
    {
       //split the string at "\n\n"
       String[] dataFields = data.split("\n\n");
-      
+
       StringTokenizer tokenizer = new StringTokenizer(dataFields[0], "\n");
-      
+
       String command = tokenizer.nextToken();
       ClientStompFrame frame = new ClientStompFrameV11(command);
-      
+
       while (tokenizer.hasMoreTokens())
       {
          String header = tokenizer.nextToken();
          String[] fields = splitHeader(header);
          frame.addHeader(fields[0], fields[1]);
       }
-      
+
       //body (without null byte)
       if (dataFields.length == 2)
       {
-         frame.setBody(dataFields[1]);      
+         frame.setBody(dataFields[1]);
       }
       return frame;
    }
-   
+
    //find true :
    private String[] splitHeader(String header)
    {
@@ -72,7 +72,7 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       StringBuffer sbVal = new StringBuffer();
       boolean isEsc = false;
       boolean isKey = true;
-      
+
       for (int i = 0; i < header.length(); i++)
       {
          char b = header.charAt(i);
@@ -165,7 +165,7 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       String[] result = new String[2];
       result[0] = sbKey.toString();
       result[1] = sbVal.toString();
-      
+
       return result;
    }
 

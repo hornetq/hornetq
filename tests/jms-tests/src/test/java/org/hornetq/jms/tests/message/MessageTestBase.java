@@ -140,7 +140,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       ProxyAssertSupport.assertNull(queueCons.receive(100));
 
    }
-   
+
    public void testSendMoreThanOnce() throws Exception
    {
       prepareMessage(message);
@@ -159,11 +159,11 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       Message r = queueCons.receive(500);
 
       assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
-      
+
       r = queueCons.receive(500);
 
       assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
-      
+
       r = queueCons.receive(500);
 
       assertEquivalent(r, DeliveryMode.NON_PERSISTENT);

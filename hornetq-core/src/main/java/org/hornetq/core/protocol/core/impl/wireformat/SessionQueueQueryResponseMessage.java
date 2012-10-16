@@ -19,16 +19,16 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.QueueQueryResult;
 
 /**
- * 
+ *
  * A SessionQueueQueryResponseMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class SessionQueueQueryResponseMessage extends PacketImpl
 {
    private SimpleString name;
-   
+
    private boolean exists;
 
    private boolean durable;
@@ -40,7 +40,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    private SimpleString filterString;
 
    private SimpleString address;
-   
+
    private boolean temporary;
 
    public SessionQueueQueryResponseMessage(final QueueQueryResult result)
@@ -66,7 +66,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       super(PacketImpl.SESS_QUEUEQUERY_RESP);
 
       this.durable = durable;
-      
+
       this.temporary = temporary;
 
       this.consumerCount = consumerCount;
@@ -76,7 +76,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       this.filterString = filterString;
 
       this.address = address;
-      
+
       this.name = name;
 
       this.exists = exists;
@@ -117,12 +117,12 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    {
       return address;
    }
-   
+
    public SimpleString getName()
    {
       return name;
    }
-   
+
    public boolean isTemporary()
    {
       return temporary;

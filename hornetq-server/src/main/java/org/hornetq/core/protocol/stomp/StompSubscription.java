@@ -27,7 +27,7 @@ public class StompSubscription
    // Attributes ----------------------------------------------------
 
    private final String subID;
-   
+
    private final String ack;
 
    // Static --------------------------------------------------------
@@ -57,7 +57,7 @@ public class StompSubscription
    {
       return "StompSubscription[id=" + subID + ", ack=" + ack + "]";
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

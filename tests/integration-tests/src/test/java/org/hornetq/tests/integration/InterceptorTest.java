@@ -122,12 +122,12 @@ public class InterceptorTest extends ServiceTestBase
          {
             return true;
          }
-         
+
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             return false;
          }
-         
+
          return true;
       }
 
@@ -145,7 +145,7 @@ public class InterceptorTest extends ServiceTestBase
             return true;
          }
       }
-      
+
       return false;
    }
 
@@ -236,12 +236,12 @@ public class InterceptorTest extends ServiceTestBase
 
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
-         
+
          if (isForceDeliveryResponse(packet))
          {
             return true;
          }
-         
+
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
@@ -280,7 +280,7 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
-         
+
          message.putIntProperty("count", i);
 
          message.putStringProperty(InterceptorTest.key, "apple");
@@ -295,11 +295,11 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
+
          assertNotNull(message);
-         
+
          assertEquals(i, message.getIntProperty("count").intValue());
-         
+
          Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
       }
 
@@ -437,7 +437,7 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
-         
+
          producer.send(message);
       }
 
@@ -446,7 +446,7 @@ public class InterceptorTest extends ServiceTestBase
       session.start();
 
       ClientMessage message = consumer.receive(100);
-      
+
       Assert.assertNull(message);
 
       session.close();

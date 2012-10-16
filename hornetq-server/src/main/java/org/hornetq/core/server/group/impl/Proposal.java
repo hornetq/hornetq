@@ -16,7 +16,7 @@ import org.hornetq.api.core.SimpleString;
 
 /**
  * A proposal to select a group id
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class Proposal

@@ -19,7 +19,7 @@ import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
  * A RandomFailoverStressTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Jan 22, 2009 8:32:59 PM
  *
  *

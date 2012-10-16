@@ -64,9 +64,9 @@ public class HornetQMessageHandler implements MessageHandler
    private final HornetQActivation activation;
 
    private boolean useLocalTx;
-   
+
    private boolean transacted;
-   
+
    private boolean useXA = false;
 
    private final int sessionNr;
@@ -192,7 +192,7 @@ public class HornetQMessageHandler implements MessageHandler
       }
       consumer.setMessageHandler(this);
    }
-   
+
    public void interruptConsumer()
    {
       try
@@ -294,21 +294,21 @@ public class HornetQMessageHandler implements MessageHandler
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
          msg.doBeforeReceive();
-         
+
          //In the transacted case the message must be acked *before* onMessage is called
-         
+
          if (transacted)
          {
             message.acknowledge();
          }
-         
+
          ((MessageListener)endpoint).onMessage(msg);
-         
+
          if (!transacted)
          {
             message.acknowledge();
          }
-         
+
          try
          {
             endpoint.afterDelivery();
@@ -322,7 +322,7 @@ public class HornetQMessageHandler implements MessageHandler
          {
             session.commit();
          }
-         
+
          if (trace)
          {
             HornetQRALogger.LOGGER.trace("finished onMessage on " + message);

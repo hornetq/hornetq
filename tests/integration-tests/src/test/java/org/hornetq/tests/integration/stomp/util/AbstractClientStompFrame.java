@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
 public abstract class AbstractClientStompFrame implements ClientStompFrame
 {
    protected static final String HEADER_RECEIPT = "receipt";
-   
+
    protected String command;
    protected List<Header> headers = new ArrayList<Header>();
    protected Set<String> headerKeys = new HashSet<String>();
@@ -38,7 +38,7 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
    {
       this.command = command;
    }
-   
+
    public String toString()
    {
       StringBuffer sb = new StringBuffer("Frame: <" + command + ">" + "\n");
@@ -76,14 +76,14 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
          sb.append(body);
       }
       sb.append((char)0);
-      
+
       String data = sb.toString();
-      
+
       byte[] byteValue = data.getBytes("UTF-8");
-      
+
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);
       buffer.put(byteValue);
-      
+
       buffer.rewind();
       return buffer;
    }
@@ -105,14 +105,14 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
       }
       sb.append((char)0);
       sb.append(str);
-      
+
       String data = sb.toString();
-      
+
       byte[] byteValue = data.getBytes("UTF-8");
-      
+
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);
       buffer.put(byteValue);
-      
+
       buffer.rewind();
       return buffer;
    }
@@ -145,18 +145,18 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
    {
       this.body = body;
    }
-   
+
    @Override
    public String getBody()
    {
       return body;
    }
-   
+
    private class Header
    {
       public String key;
       public String val;
-      
+
       public Header(String key, String val)
       {
          this.key = key;

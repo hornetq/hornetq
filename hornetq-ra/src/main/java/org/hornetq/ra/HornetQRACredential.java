@@ -27,7 +27,7 @@ import javax.security.auth.Subject;
 
 /**
  * Credential information
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: 71554 $
@@ -36,7 +36,7 @@ public class HornetQRACredential implements Serializable
 {
    /** Serial version UID */
    static final long serialVersionUID = 210476602237497193L;
-   
+
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    /** The user name */

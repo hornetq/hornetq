@@ -46,7 +46,7 @@ import org.hornetq.utils.json.JSONArray;
  * A TopicControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 13 nov. 2008 16:50:53
  *
  *
@@ -151,11 +151,11 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(3, topicControl.listAllSubscriptions().length);
       Assert.assertEquals(1, topicControl.listNonDurableSubscriptions().length);
       Assert.assertEquals(2, topicControl.listDurableSubscriptions().length);
-      
+
       String json = topicControl.listAllSubscriptionsAsJSON();
       System.out.println("Json: " + json);
       JSONArray jsonArray = new JSONArray(json);
-      
+
       assertEquals(3, jsonArray.length());
 
       connection_1.close();
@@ -307,19 +307,19 @@ public class TopicControlTest extends ManagementTestBase
       connection_2.setClientID(clientID + "2");
       Session sess2 = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       TopicSubscriber durableSubscriber_2 = sess2.createDurableSubscriber(topic, subscriptionName + "2");
-      
+
       connection_1.start();
       connection_2.start();
 
       Session sess = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess.createProducer(topic);
-      
+
       TextMessage msg1 = sess.createTextMessage("tst1");
       prod.send(msg1);
-      
+
       assertNotNull(durableSubscriber_1.receive(5000));
       assertNotNull(durableSubscriber_2.receive(5000));
-      
+
       connection_1.close();
       connection_2.close();
 
@@ -336,7 +336,7 @@ public class TopicControlTest extends ManagementTestBase
       prod = sess.createProducer(topic);
       TextMessage msg2 = sess.createTextMessage("tst2");
       prod.send(msg2);
-      
+
    }
 
    public void testRemoveAllMessages() throws Exception
@@ -430,7 +430,7 @@ public class TopicControlTest extends ManagementTestBase
       {
       }
    }
-   
+
    public void testGetMessagesAdded() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -452,7 +452,7 @@ public class TopicControlTest extends ManagementTestBase
       connection_2.close();
       connection_3.close();
    }
-   
+
    public void testGetMessagesDelivering() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -469,7 +469,7 @@ public class TopicControlTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 2);
 
       assertEquals(0, topicControl.getDeliveringCount());
-      
+
       connection_1.start();
       connection_2.start();
       connection_3.start();
@@ -483,7 +483,7 @@ public class TopicControlTest extends ManagementTestBase
          assertNotNull(msg_1);
          msg_2 = cons_2.receive(5000);
          assertNotNull(msg_2);
-         msg_3 = cons_3.receive(5000);         
+         msg_3 = cons_3.receive(5000);
          assertNotNull(msg_3);
       }
 
@@ -495,7 +495,7 @@ public class TopicControlTest extends ManagementTestBase
       assertEquals(1 * 2, topicControl.getDeliveringCount());
       msg_3.acknowledge();
       assertEquals(0, topicControl.getDeliveringCount());
-      
+
       connection_1.close();
       connection_2.close();
       connection_3.close();

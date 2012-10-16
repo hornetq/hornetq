@@ -21,11 +21,11 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 /**
- * 
+ *
  * A ConnectionFactoryObjectFactory.
- * 
+ *
  * Given a reference - reconstructs a HornetQRAConnectionFactory
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *

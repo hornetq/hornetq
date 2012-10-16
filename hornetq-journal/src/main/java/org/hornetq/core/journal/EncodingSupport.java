@@ -16,10 +16,10 @@ package org.hornetq.core.journal;
 import org.hornetq.api.core.HornetQBuffer;
 
 /**
- * 
+ *
  * This interface provides encoding support for the Journal.
- * 
- * 
+ *
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

@@ -25,7 +25,7 @@ import java.util.Set;
  * A OneWayChainClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 7 Feb 2009 15:23:08
  *
  *
@@ -73,7 +73,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       addConsumer(1, 4, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
-      
+
       waitForBindings(0, "queues.testaddress", 1, 1, false);
 
       send(0, "queues.testaddress", 10, false, null);
@@ -312,7 +312,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       log.info(clusterDescription(servers[4]));
 
       startServers(2);
-      
+
 
       Thread.sleep(1000);
 
@@ -325,7 +325,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       log.info(clusterDescription(servers[3]));
       log.info(clusterDescription(servers[4]));
 
-      
+
       send(0, "queues.testaddress", 10, false, null);
 
       verifyReceiveRoundRobin(10, 0, 1);

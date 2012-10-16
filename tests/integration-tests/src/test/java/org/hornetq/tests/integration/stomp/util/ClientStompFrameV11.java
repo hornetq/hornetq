@@ -13,7 +13,7 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * pls use factory to create frames.
@@ -22,12 +22,12 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
 {
    boolean forceOneway = false;
    boolean isPing = false;
-   
+
    public ClientStompFrameV11(String command)
    {
       super(command);
    }
-   
+
    public void setForceOneway()
    {
       forceOneway = true;
@@ -37,7 +37,7 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
    public boolean needsReply()
    {
       if (forceOneway) return false;
-      
+
       if ("CONNECT".equals(command) || "STOMP".equals(command) || headerKeys.contains(HEADER_RECEIPT))
       {
          return true;
@@ -49,7 +49,7 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
    {
       isPing = b;
    }
-   
+
    public boolean isPing()
    {
       return isPing;

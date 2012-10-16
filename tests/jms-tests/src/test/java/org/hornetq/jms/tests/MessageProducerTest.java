@@ -88,7 +88,7 @@ public class MessageProducerTest extends JMSTestCase
    {
 
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = -2553676986492799801L;
    }

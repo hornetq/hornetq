@@ -19,7 +19,7 @@ import org.hornetq.core.server.HornetQMessageBundle;
  * A BindingType
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 22 Dec 2008 13:37:23
  *
  *

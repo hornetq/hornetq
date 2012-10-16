@@ -98,7 +98,7 @@ public class SecurityTest extends ServiceTestBase
 
    /**
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    private HornetQServer createServer() throws Exception
    {

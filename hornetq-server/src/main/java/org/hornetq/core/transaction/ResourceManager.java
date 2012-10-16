@@ -21,9 +21,9 @@ import javax.transaction.xa.Xid;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- * 
+ *
  * A ResourceManager
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

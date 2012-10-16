@@ -25,7 +25,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A MessageConcurrencyTest
  *
  * @author Tim Fox
@@ -39,7 +39,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    private HornetQServer server;
 
    private final SimpleString ADDRESS = new SimpleString("MessageConcurrencyTestAddress");
-   
+
    private final SimpleString QUEUE_NAME = new SimpleString("MessageConcurrencyTestQueue");
 
    private ServerLocator locator;
@@ -74,38 +74,38 @@ public class MessageConcurrencyTest extends ServiceTestBase
       ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession createSession = sf.createSession();
-      
+
       Set<ClientSession> sendSessions = new HashSet<ClientSession>();
 
       Set<Sender> senders = new HashSet<Sender>();
 
       final int numSessions = 100;
-      
+
       final int numMessages = 1000;
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession sendSession = sf.createSession();
-         
+
          sendSessions.add(sendSession);
 
          ClientProducer producer = sendSession.createProducer(ADDRESS);
-         
+
          Sender sender = new Sender(numMessages, producer);
-         
+
          senders.add(sender);
-         
+
          sender.start();
       }
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          byte[] body = RandomUtil.randomBytes(1000);
 
          ClientMessage message = createSession.createMessage(false);
-         
+
          message.getBodyBuffer().writeBytes(body);
-         
+
          for (Sender sender: senders)
          {
             sender.queue.add(message);
@@ -115,35 +115,35 @@ public class MessageConcurrencyTest extends ServiceTestBase
       for (Sender sender: senders)
       {
          sender.join();
-         
+
          assertFalse(sender.failed);
       }
-      
+
       for (ClientSession sendSession: sendSessions)
       {
          sendSession.close();
       }
-       
+
       createSession.close();
 
-      sf.close();      
+      sf.close();
    }
-   
+
    // Test that a created message can be sent via multiple producers after being consumed from a single consumer
    public void testMessageConcurrencyAfterConsumption() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession consumeSession = sf.createSession();
-      
+
       final ClientProducer mainProducer = consumeSession.createProducer(ADDRESS);
-      
+
       consumeSession.createQueue(ADDRESS, QUEUE_NAME);
-                  
+
       ClientConsumer consumer = consumeSession.createConsumer(QUEUE_NAME);
-      
-      
-      
+
+
+
       consumeSession.start();
 
       Set<ClientSession> sendSessions = new HashSet<ClientSession>();
@@ -151,24 +151,24 @@ public class MessageConcurrencyTest extends ServiceTestBase
       final Set<Sender> senders = new HashSet<Sender>();
 
       final int numSessions = 100;
-      
+
       final int numMessages = 1000;
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession sendSession = sf.createSession();
-         
+
          sendSessions.add(sendSession);
 
          ClientProducer producer = sendSession.createProducer(ADDRESS);
-         
+
          Sender sender = new Sender(numMessages, producer);
-         
+
          senders.add(sender);
-         
+
          sender.start();
       }
-      
+
       consumer.setMessageHandler(new MessageHandler()
       {
          public void onMessage(ClientMessage message)
@@ -179,54 +179,54 @@ public class MessageConcurrencyTest extends ServiceTestBase
             }
          }
       });
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          byte[] body = RandomUtil.randomBytes(1000);
 
          ClientMessage message = consumeSession.createMessage(false);
-         
+
          message.getBodyBuffer().writeBytes(body);
-         
+
          mainProducer.send(message);
       }
 
       for (Sender sender: senders)
       {
          sender.join();
-         
+
          assertFalse(sender.failed);
       }
-      
+
       for (ClientSession sendSession: sendSessions)
       {
          sendSession.close();
       }
-      
+
       consumer.close();
-      
+
       consumeSession.deleteQueue(QUEUE_NAME);
-      
+
       consumeSession.close();
 
-      sf.close();      
+      sf.close();
    }
-   
+
    private class Sender extends Thread
    {
       private final BlockingQueue<ClientMessage> queue = new LinkedBlockingQueue<ClientMessage>();
 
       private final ClientProducer producer;
-      
+
       private final int numMessages;
 
       Sender(final int numMessages, final ClientProducer producer)
       {
          this.numMessages = numMessages;
-         
+
          this.producer = producer;
       }
-      
+
       volatile boolean failed;
 
       public void run()

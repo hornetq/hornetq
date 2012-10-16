@@ -18,9 +18,9 @@ import java.util.List;
 import org.hornetq.core.server.MessageReference;
 
 /**
- * 
+ *
  * A TransactionOperation
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -40,6 +40,6 @@ public interface TransactionOperation
 
    /** After rollback shouldn't throw any exception. Any verification has to be done on before rollback */
    void afterRollback(Transaction tx);
-   
-   List<MessageReference> getRelatedMessageReferences();   
+
+   List<MessageReference> getRelatedMessageReferences();
 }
