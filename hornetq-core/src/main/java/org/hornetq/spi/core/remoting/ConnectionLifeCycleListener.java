@@ -24,29 +24,33 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 public interface ConnectionLifeCycleListener
 {
    /**
-    * This method is used both by client connector creation and server connection creation through acceptors.
-    * the acceptor will be set to null on client operations
-    *
-    * @param component This will probably be the Acceptor and only used on the server side.
+    * This method is used both by client connector creation and server connection creation through
+    * acceptors. On the client side the {@code component} parameter is normally passed as
+    * {@code null}.
+    * <p>
+    * Leaving this method here and adding a different one at
+    * {@code ServerConnectionLifeCycleListener} is a compromise for a reasonable split between the
+    * hornetq-server and hornetq-client packages while avoiding to pull too much into hornetq-core.
+    * The pivotal point keeping us from removing the method is {@link ConnectorFactory} and the
+    * usage of it.
+    * @param component This will probably be an {@code Acceptor} and only used on the server side.
     * @param connection the connection that has been created
     */
    void connectionCreated(HornetQComponent component, Connection connection, ProtocolType protocol);
 
    /**
-    * called when a connection is destroyed.
-    *
+    * Called when a connection is destroyed.
     * @param connectionID the connection being destroyed.
     */
    void connectionDestroyed(Object connectionID);
 
 
    /**
-    * called when an error occurs on the connection.
-    *
+    * Called when an error occurs on the connection.
     * @param connectionID the id of the connection.
-    * @param me           the exception.
+    * @param me the exception.
     */
    void connectionException(Object connectionID, HornetQException me);
-   
+
    void connectionReadyForWrites(Object connectionID, boolean ready);
 }
