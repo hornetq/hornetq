@@ -14,7 +14,7 @@ package org.hornetq.javaee.example.server;
 
 /**
  * An interface for the XARecoveryExampleBean EJB.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface XARecoveryExampleService

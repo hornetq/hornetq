@@ -168,7 +168,7 @@ public class AcknowledgeTest extends ServiceTestBase
          session.close();
    }
 
-   
+
    /**
     * This is validating a case where a consumer will try to ack a message right after failover, but the consumer at the target server didn't
     * receive the message yet.
@@ -178,43 +178,43 @@ public class AcknowledgeTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
          server.start();
-         
+
          ServerLocator locator = createInVMNonHALocator();
-         
+
          locator.setAckBatchSize(0);
-         
+
          locator.setBlockOnAcknowledge(true);
-         
+
          ClientSessionFactory cf = createSessionFactory(locator);
-         
+
          int numMessages = 100;
-         
-         ClientSession sessionConsumer = cf.createSession(true, true, 0); 
-         
+
+         ClientSession sessionConsumer = cf.createSession(true, true, 0);
+
          sessionConsumer.start();
-         
+
          sessionConsumer.createQueue(addressA, queueA, true);
-         
+
          ClientConsumer consumer = sessionConsumer.createConsumer(queueA);
 
          // sending message
          {
             ClientSession sendSession = cf.createSession(false, true, true);
-            
+
             ClientProducer cp = sendSession.createProducer(addressA);
-            
+
             for (int i = 0; i < numMessages; i++)
             {
                ClientMessage msg = sendSession.createMessage(true);
                msg.putIntProperty("seq", i);
                cp.send(msg);
             }
-   
+
             sendSession.close();
          }
-         
+
          {
-            
+
             ClientMessage msg = consumer.receive(5000);
 
             // need to way some time before all the possible references are sent to the consumer
@@ -241,12 +241,12 @@ public class AcknowledgeTest extends ServiceTestBase
             {
                e.printStackTrace();
             }
-            
+
             consumer.close();
-            
+
             consumer = sessionConsumer.createConsumer(queueA);
-            
-            
+
+
             for (int i = 0 ; i < numMessages; i++)
             {
                msg = consumer.receive(5000);
@@ -257,7 +257,7 @@ public class AcknowledgeTest extends ServiceTestBase
          }
    }
 
-   
+
 
    public void testAsyncConsumerAckLastMessageOnly() throws Exception
    {

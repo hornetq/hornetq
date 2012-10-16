@@ -26,7 +26,7 @@ public interface Packet
    /**
     * Sets the channel id that should be used once the packet has been successfully decoded it is
     * sent to the correct channel.
-    * 
+    *
     * @param channelID the id of the channel to handle the packet
     */
    void setChannelID(long channelID);

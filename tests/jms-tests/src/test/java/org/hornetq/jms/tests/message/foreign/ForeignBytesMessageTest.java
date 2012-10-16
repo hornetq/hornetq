@@ -21,9 +21,9 @@ import org.hornetq.jms.tests.message.SimpleJMSBytesMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- * 
+ *
  * Tests the delivery/receipt of a foreign byte message
- * 
+ *
  *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
  * @version <tt>$Revision$</tt>

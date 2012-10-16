@@ -24,7 +24,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
  * A InVMConnectorFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

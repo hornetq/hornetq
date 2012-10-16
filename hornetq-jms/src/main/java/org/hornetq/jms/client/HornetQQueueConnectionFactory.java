@@ -22,7 +22,7 @@ import org.hornetq.api.jms.JMSFactoryType;
 
 /**
  * A class that represents a QueueConnectionFactory.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
@@ -31,7 +31,7 @@ public class HornetQQueueConnectionFactory extends HornetQConnectionFactory impl
    private static final long serialVersionUID = 5312455021322463546L;
 
    /**
-    * 
+    *
     */
    public HornetQQueueConnectionFactory()
    {

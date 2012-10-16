@@ -24,7 +24,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A CloseConnectionOnGCTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

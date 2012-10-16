@@ -67,7 +67,7 @@ public class AppletExample extends JApplet implements ActionListener
    // Constructors --------------------------------------------------
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = -2129589098734805722L;
 

@@ -29,7 +29,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Pair;
 
 /**
- * 
+ *
  * Super class for Journal maintenances such as clean up and Compactor
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

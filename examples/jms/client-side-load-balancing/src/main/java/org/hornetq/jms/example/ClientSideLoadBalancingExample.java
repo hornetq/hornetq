@@ -27,7 +27,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example demonstrates how sessions created from a single connection can be load
  * balanced across the different nodes of the cluster.
- * 
+ *
  * In this example there are three nodes and we use a round-robin client side load-balancing
  * policy.
  *
@@ -68,7 +68,7 @@ public class ClientSideLoadBalancingExample extends HornetQExample
          connectionA = connectionFactory.createConnection();
          connectionB = connectionFactory.createConnection();
          connectionC = connectionFactory.createConnection();
-         conn.close();         
+         conn.close();
 
          // Step 5. We create JMS Sessions
          Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -101,15 +101,15 @@ public class ClientSideLoadBalancingExample extends HornetQExample
             producerC.send(messageC);
             System.out.println("Sent message: " + messageC.getText());
          }
-         
+
          // Step 8. We start the connection to consume messages
          connectionA.start();
          connectionB.start();
          connectionC.start();
-         
+
          // Step 9. We consume messages from the 3 session, one at a time.
          // We try to consume one more message than expected from each session. If
-         // the session were not properly load-balanced, we would be missing a 
+         // the session were not properly load-balanced, we would be missing a
          // message from one of the sessions at the end.
          consume(sessionA, queue, numMessages, "A");
          consume(sessionB, queue, numMessages, "B");
@@ -140,7 +140,7 @@ public class ClientSideLoadBalancingExample extends HornetQExample
          }
       }
    }
-   
+
    private void consume(Session session, Queue queue, int numMessages, String node) throws JMSException
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -150,7 +150,7 @@ public class ClientSideLoadBalancingExample extends HornetQExample
          TextMessage message = (TextMessage)consumer.receive(2000);
          System.out.println("Got message: " + message.getText() + " from node " + node);
       }
-      
+
       System.out.println("receive other message from node " + node + ": " + consumer.receive(2000));
 
    }

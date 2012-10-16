@@ -19,18 +19,18 @@ import org.hornetq.api.core.client.SessionFailureListener;
 
 /**
  * A ClientSessionFactoryInternal
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public interface ClientSessionFactoryInternal extends ClientSessionFactory
 {
    void causeExit();
-   
+
    void addFailureListener(SessionFailureListener listener);
 
    boolean removeFailureListener(SessionFailureListener listener);
-   
+
    void disableFinalizeCheck();
 
    // for testing
@@ -38,11 +38,11 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    int numConnections();
 
    int numSessions();
-   
+
    void removeSession(final ClientSessionInternal session, boolean failingOver);
 
    void connect(int reconnectAttempts, boolean failoverOnInitialConnection) throws HornetQException;
-   
+
    void sendNodeAnnounce(final long currentEventID, String nodeID, String nodeName, boolean isBackup, TransportConfiguration config, TransportConfiguration backupConfig);
 
    TransportConfiguration getConnectorConfiguration();

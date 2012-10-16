@@ -16,7 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  * pls use factory to create frames.
@@ -41,7 +41,7 @@ public interface ClientStompFrame
    public String getBody();
 
    public ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
-   
+
    public boolean isPing();
-   
+
 }

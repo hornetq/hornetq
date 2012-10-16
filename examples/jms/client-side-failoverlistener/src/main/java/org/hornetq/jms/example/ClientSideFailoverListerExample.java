@@ -28,9 +28,9 @@ import org.hornetq.jms.client.HornetQConnection;
 
 /**
  * This example demonstrates how you can listen on failover event on the client side
- * 
+ *
  * In this example there are two nodes running in a cluster, both server will be running for start,
- * but after a while the first server will crash. This will trigger an fail oever event 
+ * but after a while the first server will crash. This will trigger an fail oever event
  *
  * @author <a href="flemming.harms@gmail.com>Flemming Harms</a>
  */
@@ -59,7 +59,7 @@ public class ClientSideFailoverListerExample extends HornetQExample
          // Step 3. Look-up a JMS Connection Factory object from JNDI on server 0
          ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         // Step 4. We create 1 JMS connections from the same connection factory. 
+         // Step 4. We create 1 JMS connections from the same connection factory.
          // Wait a little while to make sure broadcasts from all nodes have reached the client
          Thread.sleep(5000);
          connectionA = connectionFactory.createConnection();
@@ -81,10 +81,10 @@ public class ClientSideFailoverListerExample extends HornetQExample
             System.out.println("Sent message: " + messageA.getText());
 
          }
-         
+
          // Step 8. We start the connection to consume messages
          connectionA.start();
-         
+
          // Step 9. We consume messages from the session A, one at a time.
          // We reached message no 5 the first server will crash
          consume(sessionA, queue, numMessages, "A");
@@ -106,7 +106,7 @@ public class ClientSideFailoverListerExample extends HornetQExample
          }
       }
    }
-   
+
    private void consume(Session session, Queue queue, int numMessages, String node) throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -115,22 +115,22 @@ public class ClientSideFailoverListerExample extends HornetQExample
       {
          TextMessage message = (TextMessage)consumer.receive(2000);
          System.out.println("Got message: " + message.getText() + " from node " + node);
-         if (i == 5) 
+         if (i == 5)
          {
         	 killServer(0);
          }
       }
-      
+
       System.out.println("receive other message from node " + node + ": " + consumer.receive(2000));
 
    }
-   
-   private class FailoverListenerImpl implements FailoverEventListener 
+
+   private class FailoverListenerImpl implements FailoverEventListener
    {
 
 	public void failoverEvent(FailoverEventType eventType) {
 		System.out.println("Failover event triggered :"+ eventType.toString());
 	}
-	   
+
    }
 }

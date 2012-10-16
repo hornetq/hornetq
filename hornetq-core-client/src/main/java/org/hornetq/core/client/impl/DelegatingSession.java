@@ -115,8 +115,8 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.addFailureListener(listener);
    }
-   
-   public void addFailoverListener(FailoverEventListener listener) 
+
+   public void addFailoverListener(FailoverEventListener listener)
    {
 	  session.addFailoverListener(listener);
    }
@@ -458,8 +458,8 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.removeFailureListener(listener);
    }
-   
-   public boolean removeFailoverListener(FailoverEventListener listener) 
+
+   public boolean removeFailoverListener(FailoverEventListener listener)
    {
 		return session.removeFailoverListener(listener);
    }

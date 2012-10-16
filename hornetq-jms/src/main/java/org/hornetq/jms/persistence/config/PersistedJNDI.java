@@ -34,13 +34,13 @@ public class PersistedJNDI implements EncodingSupport
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private long id;
-   
+
    private PersistedType type;
-   
+
    private String name;
-   
+
    private ArrayList<String> jndi = new ArrayList<String>();
 
    // Static --------------------------------------------------------
@@ -72,7 +72,7 @@ public class PersistedJNDI implements EncodingSupport
       name = buffer.readSimpleString().toString();
       int jndiArraySize = buffer.readInt();
       jndi = new ArrayList<String>(jndiArraySize);
-      
+
       for (int i = 0 ; i < jndiArraySize; i++)
       {
          jndi.add(buffer.readSimpleString().toString());
@@ -102,16 +102,16 @@ public class PersistedJNDI implements EncodingSupport
              BufferHelper.sizeOfSimpleString(name) +
              sizeOfJNDI();
    }
-   
+
    private int sizeOfJNDI()
    {
       int size = DataConstants.SIZE_INT; // for the number of elements written
-      
+
       for (String str : jndi)
       {
          size += BufferHelper.sizeOfSimpleString(str);
       }
-      
+
       return size;
    }
 
@@ -146,7 +146,7 @@ public class PersistedJNDI implements EncodingSupport
    {
       return name;
    }
-   
+
    /**
     * @return the jndi
     */
@@ -154,17 +154,17 @@ public class PersistedJNDI implements EncodingSupport
    {
       return jndi;
    }
-   
+
    public void addJNDI(String address)
    {
       jndi.add(address);
    }
-   
+
    public void deleteJNDI(String address)
    {
       jndi.remove(address);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

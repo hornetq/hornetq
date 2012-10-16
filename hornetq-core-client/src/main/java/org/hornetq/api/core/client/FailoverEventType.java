@@ -5,5 +5,5 @@ public enum FailoverEventType {
 	 FAILURE_DETECTED,
 	 FAILOVER_COMPLETED,
 	 FAILOVER_FAILED;
-	
+
 }

@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 /**
  * Simple Administration interface.
  * <br />
- * JMS Provider has to implement this 
+ * JMS Provider has to implement this
  * simple interface to be able to use the test suite.
  */
 public interface Admin
@@ -32,15 +32,15 @@ public interface Admin
     */
    public String getName();
 
-   /** 
+   /**
     * Returns an <code>Context</code> for the JMS Provider.
     *
     * @return an <code>Context</code> for the JMS Provider.
     */
    public Context createContext() throws NamingException;
 
-   /** 
-    * Creates a <code>ConnectionFactory</code> and makes it available 
+   /**
+    * Creates a <code>ConnectionFactory</code> and makes it available
     *from JNDI with name <code>name</code>.
     *
     * @since JMS 1.1
@@ -48,53 +48,53 @@ public interface Admin
     */
    public void createConnectionFactory(String name);
 
-   /** 
-    * Creates a <code>QueueConnectionFactory</code> and makes it available 
+   /**
+    * Creates a <code>QueueConnectionFactory</code> and makes it available
     *from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>QueueConnectionFactory</code>
     */
    public void createQueueConnectionFactory(String name);
 
-   /** 
-    * Creates a <code>TopicConnectionFactory</code> and makes it available 
+   /**
+    * Creates a <code>TopicConnectionFactory</code> and makes it available
     *from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>TopicConnectionFactory</code>
     */
    public void createTopicConnectionFactory(String name);
 
-   /** 
-    * Creates a <code>Queue</code> and makes it available 
+   /**
+    * Creates a <code>Queue</code> and makes it available
     *from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>Queue</code>
     */
    public void createQueue(String name);
 
-   /** 
-    * Creates a <code>Topic</code> and makes it available 
+   /**
+    * Creates a <code>Topic</code> and makes it available
     *from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>Topic</code>
     */
    public void createTopic(String name);
 
-   /** 
+   /**
     * Removes the <code>Queue</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>Queue</code>
     */
    public void deleteQueue(String name);
 
-   /** 
+   /**
     * Removes the <code>Topic</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>Topic</code>
     */
    public void deleteTopic(String name);
 
-   /** 
+   /**
     * Removes the <code>ConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
     * @since JMS 1.1
@@ -102,14 +102,14 @@ public interface Admin
     */
    public void deleteConnectionFactory(String name);
 
-   /** 
+   /**
     * Removes the <code>QueueConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>QueueConnectionFactory</code>
     */
    public void deleteQueueConnectionFactory(String name);
 
-   /** 
+   /**
     * Removes the <code>TopicConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>TopicConnectionFactory</code>

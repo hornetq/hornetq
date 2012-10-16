@@ -56,10 +56,10 @@ public class JMSDynamicConfigTest extends JMSTestBase
 
       ConnectionFactoryConfiguration cfg = new ConnectionFactoryConfigurationImpl("tst", false, connectors, "tt");
       jmsServer.createConnectionFactory(true, cfg, "tst");
-      
+
       assertNotNull(context.lookup("tst"));
       jmsServer.removeConnectionFactoryFromJNDI("tst");
-      
+
       try
       {
          context.lookup("tst");

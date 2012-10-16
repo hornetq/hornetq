@@ -69,14 +69,14 @@ class SecurityActions
                      {
                         sc.getUtil().createSubjectInfo(principal, credential, subject);
                      }
-                     
+
                      SecurityContextAssociation.setSecurityContext(sc);
                   }
                   catch (Throwable t)
                   {
                      HornetQJBossLogger.LOGGER.errorSettingSecurityContext(t);
                   }
-                  
+
                   return null;
                }
             });

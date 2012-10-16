@@ -22,7 +22,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  * A OnewayTwoNodeClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 30 Jan 2009 18:03:28
  *
  *
@@ -38,7 +38,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());
-      
+
       // server #0 is connected to server #1
       setupClusterConnection("cluster1", 0, 1, "queues", false, 1,  isNetty(), true);
       // server #1 is connected to nobody
@@ -88,7 +88,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    public void testStartSourceServerBeforeTargetServer() throws Exception
    {
       startServers(0, 1);
-      
+
       waitForTopology(servers[0], 2);
       waitForTopology(servers[1], 2);
 
@@ -110,11 +110,11 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
       verifyNotReceive(0);
    }
-   
+
    public void testStopAndStartTarget() throws Exception
    {
       startServers(0, 1);
-      
+
       waitForTopology(servers[0], 2);
       waitForTopology(servers[1], 2);
 
@@ -143,17 +143,17 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       OnewayTwoNodeClusterTest.log.info("stopping server 1");
 
       stopServers(1);
-      
+
       waitForTopology(servers[0], 1);
 
       OnewayTwoNodeClusterTest.log.info("restarting server 1(" + servers[1].getIdentity() + ")");
 
       startServers(1);
-      
+
       waitForTopology(servers[0], 2);
-      
+
       log.info("Server 1 id="  + servers[1].getNodeID());
-      
+
 
       long end = System.currentTimeMillis();
 

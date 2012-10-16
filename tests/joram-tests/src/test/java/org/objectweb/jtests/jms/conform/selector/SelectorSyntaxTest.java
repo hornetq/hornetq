@@ -32,9 +32,9 @@ public class SelectorSyntaxTest extends PTPTestCase
 {
    /**
     * Test that identifiers that start with a valid Java identifier start character are valid.
-    * A valid identifier means that the method <code>Character.isJavaIdentifierStart</code> returns 
+    * A valid identifier means that the method <code>Character.isJavaIdentifierStart</code> returns
     * <code>true</code> for this identifier first character.
-    * 
+    *
     * @see <a href="http://java.sun.com/j2se/1.3/docs/api/java/lang/Character.html#isJavaIdentifierStart(char)">Character.isJavaIdentifierStart(char)</a>
     */
    public void testValidIdentifiersStart()
@@ -59,8 +59,8 @@ public class SelectorSyntaxTest extends PTPTestCase
    }
 
    /**
-    * Test that identifiers that start with an invalid Java identifier start character are invalid.       
-    * 
+    * Test that identifiers that start with an invalid Java identifier start character are invalid.
+    *
     * @see #testValidIdentifiersStart()
     */
    public void testInvalidIdentifiersStart()
@@ -411,7 +411,7 @@ public class SelectorSyntaxTest extends PTPTestCase
       }
    }
 
-   /** 
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()

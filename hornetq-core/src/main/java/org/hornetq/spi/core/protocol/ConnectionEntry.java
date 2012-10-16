@@ -30,7 +30,7 @@ public class ConnectionEntry
    public volatile long lastCheck;
 
    public volatile long ttl;
-   
+
    public final Executor connectionExecutor;
 
    public ConnectionEntry(final RemotingConnection connection, final Executor connectionExecutor, final long lastCheck, final long ttl)
@@ -40,7 +40,7 @@ public class ConnectionEntry
       this.lastCheck = lastCheck;
 
       this.ttl = ttl;
-      
+
       this.connectionExecutor = connectionExecutor;
    }
 }

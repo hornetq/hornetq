@@ -26,16 +26,16 @@ import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.impl.QueueImpl;
 
 /**
- * 
+ *
  * A FakeQueueFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class FakeQueueFactory implements QueueFactory
 {
    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-   
+
    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
    private PostOffice postOffice;
@@ -71,7 +71,7 @@ public class FakeQueueFactory implements QueueFactory
    public void stop() throws Exception
    {
       scheduledExecutor.shutdown();
-      
+
       executor.shutdown();
    }
 

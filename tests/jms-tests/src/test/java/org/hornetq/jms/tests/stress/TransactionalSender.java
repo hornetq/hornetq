@@ -20,7 +20,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 /**
- * 
+ *
  * A Sender that sends messages to a destination in a JMS transaction.
  *
  * Sends messages to a destination in a jms transaction.
@@ -28,7 +28,7 @@ import javax.jms.Session;
  * sends <rollbackSize> messages then rollsback until
  * a total of <numMessages> messages have been sent (commitSize)
  * <numMessages> must be a multiple of <commitSize>
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

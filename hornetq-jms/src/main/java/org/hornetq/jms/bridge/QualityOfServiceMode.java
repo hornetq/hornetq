@@ -15,18 +15,18 @@ package org.hornetq.jms.bridge;
 
 /**
  * <h3>Quality of server (QoS) levels</h3>
- * 
+ *
  * <h4>QOS_AT_MOST_ONCE</h4>
- * 
+ *
  * With this QoS mode messages will reach the destination from the source at
  * most once. The messages are consumed from the source and acknowledged before
  * sending to the destination. Therefore there is a possibility that if failure
  * occurs between removing them from the source and them arriving at the
  * destination they could be lost. Hence delivery will occur at most once. This
  * mode is avilable for both persistent and non persistent messages.
- * 
+ *
  * <h4>QOS_DUPLICATES_OK</h4>
- * 
+ *
  * With this QoS mode, the messages are consumed from the source and then
  * acknowledged after they have been successfully sent to the destination.
  * Therefore there is a possibility that if failure occurs after sending to the
@@ -34,9 +34,9 @@ package org.hornetq.jms.bridge;
  * system recovers. I.e. the destination might receive duplicates after a
  * failure. This mode is available for both persistent and non persistent
  * messages.
- * 
+ *
  * <h4>QOS_ONCE_AND_ONLY_ONCE</h4>
- * 
+ *
  * This QoS mode ensures messages will reach the destination from the source
  * once and only once. (Sometimes this mode is known as "exactly once"). If both
  * the source and the destination are on the same HornetQ server
@@ -49,7 +49,7 @@ package org.hornetq.jms.bridge;
  * supplied connection factories need to be XAConnectionFactory implementations.
  * This mode is only available for persistent messages. This is likely to be the
  * slowest mode since it requires extra persistence for the transaction logging.
- * 
+ *
  * Note: For a specific application it may possible to provide once and only
  * once semantics without using the QOS_ONCE_AND_ONLY_ONCE QoS level. This can
  * be done by using the QOS_DUPLICATES_OK mode and then checking for duplicates
@@ -60,11 +60,11 @@ package org.hornetq.jms.bridge;
  * valid for a certain period of time so this approach is not as watertight as
  * using QOS_ONCE_AND_ONLY_ONCE but may be a good choice depending on your
  * specific application.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public enum QualityOfServiceMode
 {

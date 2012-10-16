@@ -22,7 +22,7 @@ import org.hornetq.core.server.management.NotificationService;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 18 Nov 2008 09:29:45
  *
  *

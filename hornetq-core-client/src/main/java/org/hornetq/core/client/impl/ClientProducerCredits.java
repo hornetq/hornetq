@@ -31,16 +31,16 @@ public interface ClientProducerCredits
    void receiveFailCredits(int credits);
 
    boolean isBlocked();
-   
+
    void init();
 
    void reset();
 
    void close();
-   
+
    void incrementRefCount();
-   
+
    int decrementRefCount();
-   
+
    void releaseOutstanding();
 }

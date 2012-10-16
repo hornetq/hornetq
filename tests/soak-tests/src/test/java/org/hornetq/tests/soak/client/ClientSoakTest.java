@@ -97,7 +97,7 @@ public class ClientSoakTest extends ServiceTestBase
       config.setDivertConfigurations(divertList);
 
       server.start();
-      
+
       ServerLocator locator = createFactory(IS_NETTY);
 
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -113,7 +113,7 @@ public class ClientSoakTest extends ServiceTestBase
       session.close();
 
       sf.close();
-      
+
       locator.close();
 
    }
@@ -184,7 +184,7 @@ public class ClientSoakTest extends ServiceTestBase
       assertEquals(0, send.getErrorsCount());
       assertEquals(0, rec1.getErrorsCount());
       assertEquals(0, rec2.getErrorsCount());
-      
+
       locator.close();
 
    }

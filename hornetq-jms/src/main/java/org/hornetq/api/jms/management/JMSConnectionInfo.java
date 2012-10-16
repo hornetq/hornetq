@@ -31,18 +31,18 @@ public class JMSConnectionInfo
    // Attributes ----------------------------------------------------
 
    private final String connectionID;
-   
+
    private final String clientAddress;
-   
+
    private final long creationTime;
-   
+
    private final String clientID;
-   
+
    private final String username;
-   
+
 
    // Static --------------------------------------------------------
-   
+
    public static JMSConnectionInfo[] from(final String jsonString) throws Exception
    {
       JSONArray array = new JSONArray(jsonString);
@@ -52,7 +52,7 @@ public class JMSConnectionInfo
          JSONObject obj = array.getJSONObject(i);
          String cid = obj.isNull("clientID") ? null : obj.getString("clientID");
          String uname = obj.isNull("principal") ? null : obj.getString("principal");
-         
+
          JMSConnectionInfo info = new JMSConnectionInfo(obj.getString("connectionID"),
                                                         obj.getString("clientAddress"),
                                                         obj.getLong("creationTime"),
@@ -77,34 +77,34 @@ public class JMSConnectionInfo
       this.clientID = clientID;
       this.username = username;
    }
-   
+
    // Public --------------------------------------------------------
 
    public String getConnectionID()
    {
       return connectionID;
    }
-   
+
    public String getClientAddress()
    {
       return clientAddress;
    }
-   
+
    public long getCreationTime()
    {
       return creationTime;
    }
-   
+
    public String getClientID()
    {
       return clientID;
    }
-   
+
    public String getUsername()
    {
       return username;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

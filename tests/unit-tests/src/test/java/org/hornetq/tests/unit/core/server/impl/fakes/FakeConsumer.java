@@ -22,9 +22,9 @@ import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 
 /**
- * 
+ *
  * A FakeConsumer
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

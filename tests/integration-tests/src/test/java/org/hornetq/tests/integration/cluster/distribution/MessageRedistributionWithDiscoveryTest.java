@@ -64,7 +64,7 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
 
    /**
     * @param forwardWhenNoConsumers
-    * @throws Exception 
+    * @throws Exception
     */
    protected void setServer(final boolean forwardWhenNoConsumers, int server) throws Exception
    {

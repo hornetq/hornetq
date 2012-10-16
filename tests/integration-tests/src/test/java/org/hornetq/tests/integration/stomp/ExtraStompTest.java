@@ -52,15 +52,15 @@ public class ExtraStompTest extends StompTestBase
          String f = receiveFrame(10000);
          Assert.assertTrue(f.startsWith("CONNECTED"));
          Assert.assertTrue(f.indexOf("response-id:1") >= 0);
-         
+
          String frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 1" + Stomp.NULL;
          sendFrame(frame);
-         
+
          //sleep to let the connection die
          Thread.sleep(8000);
-         
+
          frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 2" + Stomp.NULL;
-         
+
          try
          {
             sendFrame(frame);
@@ -75,7 +75,7 @@ public class ExtraStompTest extends StompTestBase
 
          TextMessage message = (TextMessage)consumer.receive(1000);
          Assert.assertNotNull(message);
-         
+
          message = (TextMessage)consumer.receive(2000);
          Assert.assertNull(message);
       }
@@ -165,12 +165,12 @@ public class ExtraStompTest extends StompTestBase
          server.stop();
       }
    }
-   
+
    protected JMSServerManager createServerWithTTL(String ttl) throws Exception
    {
       return createServerWithExtraStompOptions(ttl, null);
    }
-      
+
    protected JMSServerManager createServerWithExtraStompOptions(String ttl, Boolean enableMessageID) throws Exception
    {
       Configuration config = createBasicConfig();

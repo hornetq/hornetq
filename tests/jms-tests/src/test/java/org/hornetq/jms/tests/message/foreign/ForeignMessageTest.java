@@ -70,15 +70,15 @@ public class ForeignMessageTest extends MessageTestBase
       ProxyAssertSupport.assertNotNull(tm);
       ProxyAssertSupport.assertEquals("hello from Brazil!", txt.getText());
    }
-   
-   
-   
+
+
+
    public void testForeignMessageCorrelationIDBytesDisabled() throws Exception
    {
       System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "false");
-      
+
       SimpleJMSMessage msg = new SimpleJMSMessage();
-      
+
       msg.setJMSCorrelationID("mycorrelationid");
       byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
@@ -87,18 +87,18 @@ public class ForeignMessageTest extends MessageTestBase
 
       Message rec = queueCons.receive();
       ProxyAssertSupport.assertNotNull(rec);
-      
+
       assertNull(rec.getJMSCorrelationIDAsBytes());
-      
+
       assertEquals("mycorrelationid", msg.getJMSCorrelationID());
    }
-   
+
    public void testForeignMessageCorrelationID() throws Exception
    {
       System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "true");
-      
+
       SimpleJMSMessage msg = new SimpleJMSMessage();
-      
+
       msg.setJMSCorrelationID("mycorrelationid");
       byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
@@ -107,15 +107,15 @@ public class ForeignMessageTest extends MessageTestBase
 
       Message rec = queueCons.receive();
       ProxyAssertSupport.assertNotNull(rec);
-      
+
       //Bytes correlation id takes precedence
       byte[] bytesrec = rec.getJMSCorrelationIDAsBytes();
-      
+
       assertByteArraysEqual(bytes, bytesrec);
-      
+
       assertNull(rec.getJMSCorrelationID());
    }
-   
+
    private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)
    {
       if (bytes1 == null | bytes2 == null)

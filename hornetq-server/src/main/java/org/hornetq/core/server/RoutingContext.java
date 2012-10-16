@@ -36,9 +36,9 @@ public interface RoutingContext
    void addQueue(SimpleString address, Queue queue);
 
    Map<SimpleString, RouteContextList> getContexListing();
-   
+
    RouteContextList getContextListing(SimpleString address);
-   
+
    List<Queue> getNonDurableQueues(SimpleString address);
 
    List<Queue> getDurableQueues(SimpleString address);
@@ -46,7 +46,7 @@ public interface RoutingContext
    int getQueueCount();
 
    void clear();
-   
-   
+
+
 
 }

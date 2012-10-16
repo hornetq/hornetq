@@ -31,46 +31,46 @@ public class JMSStorageManagerTest extends StorageManagerTestBase
    public void testJNDIPersistence() throws Exception
    {
       createJMSStorage();
-      
+
       jmsJournal.storeDestination(new PersistedDestination(PersistedType.Queue,
             "jndiPersistQueue", null, true));
 
       jmsJournal.addJNDI(PersistedType.Queue, "jndiPersistQueue", "jndi-1");
-      
+
       List<PersistedDestination> destinations = jmsJournal.recoverDestinations();
-      
+
       List<PersistedJNDI> jndiList = jmsJournal.recoverPersistedJNDI();
-      
+
       assertEquals(1, destinations.size());
-      
+
       assertEquals(1, jndiList.size());
-      
+
       jmsJournal.deleteDestination(PersistedType.Queue, "jndiPersistQueue");
-      
+
       destinations = jmsJournal.recoverDestinations();
 
       assertEquals(0, destinations.size());
-      
+
       jmsJournal.stop();
-      
+
       createJMSStorage();
-      
+
       destinations = jmsJournal.recoverDestinations();
-      
+
       assertEquals(0, destinations.size());
-      
+
       jndiList = jmsJournal.recoverPersistedJNDI();
-      
+
       assertEquals(1, jndiList.size());
-      
+
       PersistedJNDI jndi = jndiList.get(0);
-      
+
       List<String> jndis = jndi.getJndi();
-      
+
       assertEquals(1, jndis.size());
-      
+
       assertEquals("jndi-1", jndis.get(0));
-      
+
    }
 
 }

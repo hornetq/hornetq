@@ -53,7 +53,7 @@ public class AutoAckMesageListenerTest extends JMSTestCase
       try
       {
          CountDownLatch latch = new CountDownLatch(1);
-         
+
          conn = JMSTestCase.cf.createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
@@ -74,13 +74,13 @@ public class AutoAckMesageListenerTest extends JMSTestCase
          // wait until message is received
          log.info("waiting until message has been received by message listener...");
          latch.await(10, TimeUnit.SECONDS);
-         
+
          // check message listener status
          if (listener.getPassed() == false)
          {
             throw new Exception("failed");
          }
-      } 
+      }
       finally
       {
          if (conn != null)

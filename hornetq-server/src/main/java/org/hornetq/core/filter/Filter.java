@@ -17,9 +17,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.ServerMessage;
 
 /**
- * 
+ *
  * A Filter
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

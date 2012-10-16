@@ -149,7 +149,7 @@ public interface ClientSession extends XAResource
     */
    boolean removeFailoverListener(FailoverEventListener listener);
 
-   
+
    /**
     * Returns the server's incrementingVersion.
     *

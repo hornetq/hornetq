@@ -20,14 +20,14 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 /**
- * 
+ *
  * A RecoveringReceiver.
- * 
+ *
  * A Receiver that receives messages from a destination and alternately
  * acknowledges and recovers the session.
  * Must be used with ack mode CLIENT_ACKNOWLEDGE
- * 
- * 
+ *
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

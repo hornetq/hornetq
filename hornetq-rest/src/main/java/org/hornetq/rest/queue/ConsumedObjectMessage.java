@@ -13,7 +13,7 @@ import java.io.ObjectInputStream;
 public class ConsumedObjectMessage extends ConsumedMessage
 {
    protected Object readObject;
-   
+
    public ConsumedObjectMessage(ClientMessage message)
    {
       super(message);

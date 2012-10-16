@@ -13,7 +13,7 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */

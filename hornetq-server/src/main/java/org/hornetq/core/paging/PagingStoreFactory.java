@@ -24,7 +24,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * The integration point between the PagingManger and the File System (aka SequentialFiles)
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */

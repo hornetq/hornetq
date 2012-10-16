@@ -21,7 +21,7 @@ import org.hornetq.utils.DataConstants;
  * A SessionSendContinuationMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Dec 4, 2008 12:25:14 PM
  *
  *
@@ -90,8 +90,8 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
          return size;
       }
    }
-   
-   
+
+
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)

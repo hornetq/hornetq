@@ -22,7 +22,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
  * A JMSSserverControl is used to manage HornetQ JMS server.
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
@@ -66,7 +66,7 @@ public interface JMSServerControl
 
    /**
     * Creates a durable JMS Queue with the specified name and JNDI binding.
-    * 
+    *
     * @return {@code true} if the queue was created, {@code false} else
     */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
@@ -96,7 +96,7 @@ public interface JMSServerControl
 
    /**
     * Destroys a JMS Queue with the specified name.
-    * 
+    *
     * @return {@code true} if the queue was destroyed, {@code false} else
     */
    @Operation(desc = "Destroy a JMS Queue", impact = MBeanOperationInfo.ACTION)
@@ -112,7 +112,7 @@ public interface JMSServerControl
 
    /**
     * Creates a JMS Topic with the specified name and JNDI binding.
-    * 
+    *
     * @return {@code true} if the topic was created, {@code false} else
     */
    @Operation(desc = "Create a JMS Topic", impact = MBeanOperationInfo.ACTION)
@@ -121,7 +121,7 @@ public interface JMSServerControl
 
    /**
     * Destroys a JMS Topic with the specified name.
-    * 
+    *
     * @return {@code true} if the topic was destroyed, {@code false} else
     */
    @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
@@ -132,7 +132,7 @@ public interface JMSServerControl
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
     * <br>
-    * {@code liveConnectorsTransportClassNames}  are the class names 
+    * {@code liveConnectorsTransportClassNames}  are the class names
     * of the {@link ConnectorFactory} to connect to the live servers
     * and {@code liveConnectorTransportParams}  are Map&lt;String, Object&gt; for the corresponding {@link TransportConfiguration}'s parameters.
     *
@@ -148,7 +148,7 @@ public interface JMSServerControl
     * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    *  
+    *
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -157,7 +157,7 @@ public interface JMSServerControl
                                 @Parameter(name = "cfType", desc = "RegularCF=0, QueueCF=1, TopicCF=2, XACF=3, QueueXACF=4, TopicXACF=5") int cfType,
                                 @Parameter(name = "connectorNames", desc = "comma-separated list of connectorNames or the discovery group name") String connectors,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
-   
+
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "ha") boolean ha,
@@ -184,7 +184,7 @@ public interface JMSServerControl
                                 @Parameter(name = "preAcknowledge", desc = "preAcknowledge") boolean preAcknowledge,
                                 @Parameter(name = "loadBalancingPolicyClassName", desc = "loadBalancingPolicyClassName (null or blank mean use the default value)") String loadBalancingPolicyClassName,
                                 @Parameter(name = "transactionBatchSize", desc = "transactionBatchSize") int transactionBatchSize,
-                                @Parameter(name = "dupsOKBatchSize", desc = "dupsOKBatchSize") int dupsOKBatchSize,                        
+                                @Parameter(name = "dupsOKBatchSize", desc = "dupsOKBatchSize") int dupsOKBatchSize,
                                 @Parameter(name = "useGlobalPools", desc = "useGlobalPools") boolean useGlobalPools,
                                 @Parameter(name = "scheduledThreadPoolMaxSize", desc = "scheduledThreadPoolMaxSize") int scheduledThreadPoolMaxSize,
                                 @Parameter(name = "threadPoolMaxSize", desc = "threadPoolMaxSize") int threadPoolMaxSize,
@@ -194,7 +194,7 @@ public interface JMSServerControl
                                 @Parameter(name = "reconnectAttempts", desc = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnInitialConnection", desc = "failoverOnInitialConnection") boolean failoverOnInitialConnection,
                                 @Parameter(name = "groupId", desc = "groupId") String groupId) throws Exception;
-   
+
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -222,7 +222,7 @@ public interface JMSServerControl
                                 @Parameter(name = "preAcknowledge", desc = "preAcknowledge") boolean preAcknowledge,
                                 @Parameter(name = "loadBalancingPolicyClassName", desc = "loadBalancingPolicyClassName (null or blank mean use the default value)") String loadBalancingPolicyClassName,
                                 @Parameter(name = "transactionBatchSize", desc = "transactionBatchSize") int transactionBatchSize,
-                                @Parameter(name = "dupsOKBatchSize", desc = "dupsOKBatchSize") int dupsOKBatchSize,                        
+                                @Parameter(name = "dupsOKBatchSize", desc = "dupsOKBatchSize") int dupsOKBatchSize,
                                 @Parameter(name = "useGlobalPools", desc = "useGlobalPools") boolean useGlobalPools,
                                 @Parameter(name = "scheduledThreadPoolMaxSize", desc = "scheduledThreadPoolMaxSize") int scheduledThreadPoolMaxSize,
                                 @Parameter(name = "threadPoolMaxSize", desc = "threadPoolMaxSize") int threadPoolMaxSize,
@@ -232,8 +232,8 @@ public interface JMSServerControl
                                 @Parameter(name = "reconnectAttempts", desc = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnInitialConnection", desc = "failoverOnInitialConnection") boolean failoverOnInitialConnection,
                                 @Parameter(name = "groupId", desc = "groupId") String groupId) throws Exception;
-   
-   
+
+
 
    @Operation(desc = "Destroy a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to destroy") String name) throws Exception;
@@ -265,7 +265,7 @@ public interface JMSServerControl
    /**
     * Lists all the connections connected to this server.
     * The returned String is a JSON string containing an array of JMSConnectionInfo objects.
-    * 
+    *
     * @see JMSConnectionInfo#from(String)
     */
    @Operation(desc = "List all JMS connections")
@@ -280,7 +280,7 @@ public interface JMSServerControl
    /**
     * Lists all the consumers which belongs to the JMS Connection specified by the connectionID.
     * The returned String is a JSON string containing an array of JMSConsumerInfo objects.
-    * 
+    *
     * @see JMSConsumerInfo#from(String)
     */
    @Operation(desc = "List all JMS consumers associated to a JMS Connection")
@@ -289,7 +289,7 @@ public interface JMSServerControl
    /**
     * Lists all the consumers
     * The returned String is a JSON string containing an array of JMSConsumerInfo objects.
-    * 
+    *
     * @see JMSConsumerInfo#from(String)
     */
    @Operation(desc = "List all JMS consumers associated to a JMS Connection")

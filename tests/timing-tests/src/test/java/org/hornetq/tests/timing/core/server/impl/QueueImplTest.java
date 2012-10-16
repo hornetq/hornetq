@@ -154,7 +154,7 @@ public class QueueImplTest extends UnitTestCase
 
       FakeConsumer consumer = null;
 
-    
+
       // Send one scheduled
 
       long now = System.currentTimeMillis();
@@ -195,7 +195,7 @@ public class QueueImplTest extends UnitTestCase
       queue.addConsumer(consumer);
 
       queue.deliverNow();
-      
+
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 

@@ -45,27 +45,27 @@ public class JMSServerConfigParserTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
+
    public void testParsing() throws Exception
    {
       Configuration config = createDefaultConfig();
-      
+
       // anything so the parsing will work
       config.getConnectorConfigurations().put("netty", new TransportConfiguration());
-      
+
       JMSServerConfigParser parser = new JMSServerConfigParserImpl();
-      
+
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
-      
+
       InputStream stream = confURL.openStream();
-      
+
       JMSConfiguration jmsconfig = parser.parseConfiguration(stream);
       stream.close();
 
       ConnectionFactoryConfiguration cfConfig = jmsconfig.getConnectionFactoryConfigurations().get(0);
-      
+
       assertEquals(1234, cfConfig.getClientFailureCheckPeriod());
       assertEquals(5678, cfConfig.getCallTimeout());
       assertEquals(12345, cfConfig.getConsumerWindowSize());
@@ -90,8 +90,8 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals(6.0, cfConfig.getRetryIntervalMultiplier());
       assertEquals(300, cfConfig.getMaxRetryInterval());
       assertEquals(true, cfConfig.isCacheLargeMessagesClient());
-      
-      
+
+
       assertEquals(1, jmsconfig.getQueueConfigurations().size());
 
       JMSQueueConfiguration queueConfig = jmsconfig.getQueueConfigurations().get(0);
@@ -99,7 +99,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals(2, queueConfig.getBindings().length);
       assertEquals("/fullConfigurationQueue", queueConfig.getBindings()[0]);
       assertEquals("/queue/fullConfigurationQueue", queueConfig.getBindings()[1]);
-      
+
 
       assertEquals(1, jmsconfig.getTopicConfigurations().size());
       TopicConfiguration topicConfig = jmsconfig.getTopicConfigurations().get(0);
@@ -107,8 +107,8 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals(2, topicConfig.getBindings().length);
       assertEquals("/fullConfigurationTopic", topicConfig.getBindings()[0]);
       assertEquals("/topic/fullConfigurationTopic", topicConfig.getBindings()[1]);
-      
-      
+
+
    }
 
    // Package protected ---------------------------------------------

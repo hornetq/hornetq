@@ -88,7 +88,7 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
         } else {
             ChannelFuture handshake = this.handshaker.handshake(ctx.getChannel(), req);
             handshake.addListener(new ChannelFutureListener() {
-                
+
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
@@ -155,6 +155,6 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 
             return msg;
         }
-        
+
     }
 }

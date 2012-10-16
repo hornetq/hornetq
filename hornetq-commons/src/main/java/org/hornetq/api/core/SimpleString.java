@@ -275,7 +275,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
             byte[] bytes = new byte[i - lasPos];
             System.arraycopy(data, lasPos, bytes, 0, bytes.length);
             lasPos = i + 2;
-            
+
             // We will create the ArrayList lazily
             if (all == null)
             {

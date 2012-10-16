@@ -46,7 +46,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
                                + "      <max-redelivery-delay>12000</max-redelivery-delay>\n"
                                + "      <send-to-dla-on-no-route>true</send-to-dla-on-no-route>\n"
                                + "   </address-setting>";
-   
+
    private AddressSettingsDeployer addressSettingsDeployer;
 
    private HierarchicalRepository<AddressSettings> repository;

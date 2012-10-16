@@ -48,7 +48,7 @@ public class QueueImplTest extends UnitTestCase
    // The tests ----------------------------------------------------------------
 
    private ScheduledExecutorService scheduledExecutor;
-   
+
    private ExecutorService executor;
 
    @Override
@@ -561,7 +561,7 @@ public class QueueImplTest extends UnitTestCase
 
          queue.addTail(ref);
       }
-      
+
       queue.deliverNow();
 
       Assert.assertEquals(numMessages * 2, queue.getMessageCount());
@@ -595,7 +595,7 @@ public class QueueImplTest extends UnitTestCase
 
          queue.addTail(ref);
       }
-      
+
       queue.deliverNow();
 
       Assert.assertEquals(numMessages * 3, queue.getMessageCount());
@@ -629,7 +629,7 @@ public class QueueImplTest extends UnitTestCase
       }
 
       queue.deliverNow();
-      
+
       Assert.assertEquals(numMessages * 2, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(numMessages * 2, queue.getDeliveringCount());
@@ -656,7 +656,7 @@ public class QueueImplTest extends UnitTestCase
 
          queue.addTail(ref);
       }
-      
+
       queue.deliverNow();
 
       Assert.assertEquals(numMessages, queue.getMessageCount());
@@ -667,7 +667,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
-   
+
    public void testRoundRobinWithQueueing() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -749,15 +749,15 @@ public class QueueImplTest extends UnitTestCase
 
          queue.addTail(ref);
       }
-      
+
       queue.deliverNow();
 
       FakeConsumer consumer = new FakeConsumer();
 
       queue.addConsumer(consumer);
-      
+
       queue.deliverNow();
-      
+
       List<MessageReference> receivedRefs = consumer.getReferences();
 
       // Should be in reverse order
@@ -829,7 +829,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(numMessages, queue.getMessageCount());
 
-      Iterator<MessageReference> iterator = queue.iterator();      
+      Iterator<MessageReference> iterator = queue.iterator();
       List<MessageReference> list = new ArrayList<MessageReference>();
       while (iterator.hasNext())
       {
@@ -837,19 +837,19 @@ public class QueueImplTest extends UnitTestCase
       }
       assertRefListsIdenticalRefs(refs, list);
    }
-   
+
    private void awaitExecution()
    {
       FutureLatch future = new FutureLatch();
-      
+
       executor.execute(future);
-      
+
       future.await(10000);
    }
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-    
+
       QueueImpl queue = new QueueImpl(1,
                                       QueueImplTest.address1,
                                       QueueImplTest.queue1,
@@ -885,7 +885,7 @@ public class QueueImplTest extends UnitTestCase
       refs.add(ref2);
 
       Assert.assertEquals(2, queue.getMessageCount());
-      
+
       awaitExecution();;
 
       Assert.assertEquals(1, consumer.getReferences().size());
@@ -921,7 +921,7 @@ public class QueueImplTest extends UnitTestCase
       refs.add(ref4);
 
       Assert.assertEquals(3, queue.getMessageCount());
-      
+
       awaitExecution();;
 
       Assert.assertEquals(1, consumer.getReferences().size());
@@ -1213,7 +1213,7 @@ public class QueueImplTest extends UnitTestCase
       }
 
       Assert.assertEquals(6, queue.getMessageCount());
-      
+
       awaitExecution();;
 
       Assert.assertEquals(2, consumer.getReferences().size());
@@ -1394,7 +1394,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(0, queue.getDeliveringCount());
       // resuming work
       queue.resume();
-      
+
       awaitExecution();;
 
       // after resuming the delivery begins.
@@ -1452,10 +1452,10 @@ public class QueueImplTest extends UnitTestCase
 
       // brings the queue to resumed state.
       queue.resume();
-      
-      
+
+
       awaitExecution();;
-      
+
       // resuming delivery of messages
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       Assert.assertEquals(numMessages, queue.getMessageCount());

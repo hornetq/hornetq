@@ -88,18 +88,18 @@ public class VersionLoader
 
       return VersionLoader.version;
    }
-   
+
    public static String getClasspathString() {
       StringBuffer classpath = new StringBuffer();
       ClassLoader applicationClassLoader = VersionImpl.class.getClassLoader();
       URL[] urls = ((URLClassLoader)applicationClassLoader).getURLs();
        for(int i=0; i < urls.length; i++) {
            classpath.append(urls[i].getFile()).append("\r\n");
-       }    
-      
+       }
+
        return classpath.toString();
    }
-   
+
    private static Version load()
    {
       Properties versionProps = new Properties();

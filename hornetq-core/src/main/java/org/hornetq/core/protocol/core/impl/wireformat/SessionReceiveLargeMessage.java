@@ -48,7 +48,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
                                      final int deliveryCount)
    {
       super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
-      
+
       this.consumerID = consumerID;
 
       this.message = message;

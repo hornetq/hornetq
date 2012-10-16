@@ -22,24 +22,24 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  */
 public class ReusableLatchTest extends UnitTestCase
 {
    public void testLatchWithParameterizedDown() throws Exception
    {
       ReusableLatch latch = new ReusableLatch(1000);
-      
+
       latch.countDown(5000);
-      
+
       assertTrue(latch.await(1000));
-      
-      
+
+
       assertEquals(0, latch.getCount());
    }
-   
+
    public void testLatchOnSingleThread() throws Exception
    {
       ReusableLatch latch = new ReusableLatch();
@@ -61,14 +61,14 @@ public class ReusableLatchTest extends UnitTestCase
    }
 
    /**
-    * 
+    *
     * This test will open numberOfThreads threads, and add numberOfAdds on the
     * VariableLatch After those addthreads are finished, the latch count should
     * be numberOfThreads * numberOfAdds Then it will open numberOfThreads
     * threads again releasing numberOfAdds on the VariableLatch After those
     * releaseThreads are finished, the latch count should be 0 And all the
     * waiting threads should be finished also
-    * 
+    *
     * @throws Exception
     */
    public void testLatchOnMultiThread() throws Exception
@@ -245,7 +245,7 @@ public class ReusableLatchTest extends UnitTestCase
       {
          latch.countDown();
       }
-      
+
       latch.countUp();
 
       class ThreadWait extends Thread

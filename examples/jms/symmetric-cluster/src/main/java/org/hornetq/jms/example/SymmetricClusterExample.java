@@ -86,7 +86,7 @@ public class SymmetricClusterExample extends HornetQExample
          // having to know about a specific one.
          UDPBroadcastGroupConfiguration udpCfg = new UDPBroadcastGroupConfiguration("231.7.7.7", 9876, null, -1);
          DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, udpCfg);
-         
+
          ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.CF);
 
          // We give a little while for each server to broadcast its whereabouts to the client

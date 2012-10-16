@@ -256,7 +256,7 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-         
+
          beforeCommit();
 
          if (containsPersistent || xid != null && state == State.PREPARED)
@@ -444,7 +444,7 @@ public class TransactionImpl implements Transaction
    public int getOperationsCount()
    {
       checkCreateOperations();
-      
+
       return operations.size();
    }
 

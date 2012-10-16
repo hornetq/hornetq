@@ -32,7 +32,7 @@ import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
  * A InVMConnector
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -74,7 +74,7 @@ public class InVMConnector extends AbstractConnector
    private volatile boolean started;
 
    protected final OrderedExecutorFactory executorFactory;
-   
+
    private final Executor closeExecutor;
 
    public InVMConnector(final Map<String, Object> configuration,
@@ -89,7 +89,7 @@ public class InVMConnector extends AbstractConnector
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       this.handler = handler;
-      
+
       this.closeExecutor = closeExecutor;
 
       executorFactory = new OrderedExecutorFactory(threadPool);
@@ -129,7 +129,7 @@ public class InVMConnector extends AbstractConnector
       if (InVMConnector.failOnCreateConnection)
       {
          InVMConnector.incFailures();
-         
+
          HornetQServerLogger.LOGGER.debug("Returning null on InVMConnector for tests");
          // For testing only
          return null;
@@ -212,7 +212,7 @@ public class InVMConnector extends AbstractConnector
                public void run()
                {
                   listener.connectionDestroyed(connectionID);
-               }            
+               }
             });
          }
       }
@@ -225,7 +225,7 @@ public class InVMConnector extends AbstractConnector
             public void run()
             {
                listener.connectionException(connectionID, me);
-            }            
+            }
          });
       }
 

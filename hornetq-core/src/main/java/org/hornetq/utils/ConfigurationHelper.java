@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * A ConfigurationHelper
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

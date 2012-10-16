@@ -33,8 +33,8 @@ import org.objectweb.jtests.jms.framework.TestConfig;
  */
 public class MessageBodyTest extends PTPTestCase
 {
-   
-   /** 
+
+   /**
     * Method to use this class in a Test suite
     */
    public static Test suite()
@@ -44,7 +44,7 @@ public class MessageBodyTest extends PTPTestCase
 
 
    /**
-    * Test that the <code>TextMessage.clearBody()</code> method does nto clear the 
+    * Test that the <code>TextMessage.clearBody()</code> method does nto clear the
     * message properties.
     */
    public void testClearBody_2()
@@ -86,7 +86,7 @@ public class MessageBodyTest extends PTPTestCase
    }
 
    /**
-    * Test that a call to the <code>TextMessage.setText()</code> method on a 
+    * Test that a call to the <code>TextMessage.setText()</code> method on a
     * received message raises a <code>javax.jms.MessageNotWriteableException</code>.
     */
    public void testWriteOnReceivedBody()

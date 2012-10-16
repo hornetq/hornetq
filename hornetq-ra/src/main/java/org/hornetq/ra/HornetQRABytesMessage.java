@@ -273,7 +273,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeBoolean(final boolean value) throws JMSException
@@ -288,7 +288,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeByte(final byte value) throws JMSException
@@ -303,7 +303,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @param offset The offset
     * @param length The length
     * @exception JMSException Thrown if an error occurs
@@ -320,7 +320,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeBytes(final byte[] value) throws JMSException
@@ -335,7 +335,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeChar(final char value) throws JMSException
@@ -350,7 +350,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeDouble(final double value) throws JMSException
@@ -365,7 +365,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeFloat(final float value) throws JMSException
@@ -380,7 +380,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeInt(final int value) throws JMSException
@@ -395,7 +395,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeLong(final long value) throws JMSException
@@ -410,7 +410,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeObject(final Object value) throws JMSException
@@ -425,7 +425,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeShort(final short value) throws JMSException
@@ -440,7 +440,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
 
    /**
     * Write
-    * @param value The value 
+    * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
    public void writeUTF(final String value) throws JMSException

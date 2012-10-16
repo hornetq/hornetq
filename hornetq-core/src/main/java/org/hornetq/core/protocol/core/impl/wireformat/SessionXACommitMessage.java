@@ -21,7 +21,7 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class SessionXACommitMessage extends PacketImpl
@@ -68,7 +68,7 @@ public class SessionXACommitMessage extends PacketImpl
    {
       return true;
    }
-   
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

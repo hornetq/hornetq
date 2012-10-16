@@ -50,7 +50,7 @@ public interface Stomp
 
       //1.1
       String NACK = "NACK";
-      
+
       String STOMP = "STOMP";
    }
 
@@ -143,7 +143,7 @@ public interface Stomp
             String AUTO = "auto";
 
             String CLIENT = "client";
-            
+
             String CLIENT_INDIVIDUAL = "client-individual";
          }
       }
@@ -164,7 +164,7 @@ public interface Stomp
          String CLIENT_ID = "client-id";
 
          String REQUEST_ID = "request-id";
-         
+
          //1.1
          String ACCEPT_VERSION = "accept-version";
          String HOST = "host";
@@ -176,7 +176,7 @@ public interface Stomp
       {
          //1.0 only
          String MESSAGE = "message";
-         
+
          //1.1
          String VERSION = "version";
       }
@@ -198,7 +198,7 @@ public interface Stomp
       public interface Ack
       {
          String MESSAGE_ID = "message-id";
-         
+
          //1.1
          String SUBSCRIPTION = "subscription";
       }

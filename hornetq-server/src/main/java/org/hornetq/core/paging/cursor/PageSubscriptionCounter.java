@@ -30,21 +30,21 @@ public interface PageSubscriptionCounter
    void increment(Transaction tx, int add) throws Exception;
 
    void loadValue(final long recordValueID, final long value);
-   
+
    void loadInc(final long recordInd, final int add);
-   
+
    void applyIncrement(Transaction tx, long recordID, int add);
-   
+
    /** This will process the reload */
    void processReload();
 
    /**
-    * 
+    *
     * @param id
     * @param variance
     */
    void addInc(long id, int variance);
-   
+
    // used when deleting the counter
    void delete() throws Exception;
 

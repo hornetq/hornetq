@@ -39,7 +39,7 @@ public final class CoreSessionCallback implements SessionCallback
    private ProtocolManager protocolManager;
 
    private String name;
-   
+
    public CoreSessionCallback(String name, ProtocolManager protocolManager, Channel channel)
    {
       this.name = name;
@@ -70,7 +70,7 @@ public final class CoreSessionCallback implements SessionCallback
    public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
    {
       Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
-      
+
       channel.sendBatched(packet);
 
       int size = packet.getPacketSize();
@@ -97,10 +97,10 @@ public final class CoreSessionCallback implements SessionCallback
    {
       protocolManager.removeHandler(name);
    }
-   
+
    public void addReadyListener(final ReadyListener listener)
    {
-      channel.getConnection().getTransportConnection().addReadyListener(listener);      
+      channel.getConnection().getTransportConnection().addReadyListener(listener);
    }
 
    public void removeReadyListener(final ReadyListener listener)

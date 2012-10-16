@@ -71,9 +71,9 @@ public class NettyFailoverTest extends FailoverTest
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HOST_PROP_NAME, "127.0.0.1");
       TransportConfiguration tc = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", params);
-      
+
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(tc);
-      
+
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);

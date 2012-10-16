@@ -13,7 +13,7 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
@@ -25,12 +25,12 @@ public class StompFrameFactoryFactory
       {
          return new StompFrameFactoryV10();
       }
-      
+
       if ("1.1".equals(version))
       {
          return new StompFrameFactoryV11();
       }
-      
+
       return null;
    }
 

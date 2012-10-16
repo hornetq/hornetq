@@ -26,7 +26,7 @@ public interface HierarchicalRepository<T>
     * @param value the value to hold agains the match
     */
    void addMatch(String match, T value);
-   
+
    void addMatch(String match, T value, boolean immutableMatch);
 
    /**
@@ -64,10 +64,10 @@ public interface HierarchicalRepository<T>
     * clear the repository
     */
    void clear();
-   
+
    void clearListeners();
-   
+
    void clearCache();
-   
+
    int getCacheSize();
 }

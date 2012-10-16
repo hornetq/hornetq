@@ -26,7 +26,7 @@ import org.hornetq.common.example.HornetQExample;
 /**
  * This example demonstrates how HornetQ can be configured with a redelivery delay in the event a message
  * is redelivered.
- * 
+ *
  * Please see the readme.html for more information
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

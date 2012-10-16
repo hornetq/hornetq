@@ -25,7 +25,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.CloseListener;
-import org.hornetq.core.remoting.FailureListener; 
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.ServerMessage;
@@ -60,11 +60,11 @@ public class StompConnection implements RemotingConnection
    private boolean valid;
 
    private boolean destroyed = false;
-   
+
    private final long creationTime;
 
    private StompDecoder decoder;
-   
+
    private final Acceptor acceptorUsed;
 
    private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
@@ -72,20 +72,20 @@ public class StompConnection implements RemotingConnection
    private final List<CloseListener> closeListeners = new CopyOnWriteArrayList<CloseListener>();
 
    private final Object failLock = new Object();
-   
+
    private volatile boolean dataReceived;
-   
+
    private boolean enableMessageID;
-   
+
    private StompVersions version;
-   
+
    private VersionedStompFrameHandler frameHandler;
-   
+
    //this means the version negotiation done.
    private boolean initialized;
-   
+
    private FrameEventListener stompListener;
-   
+
    private final Object sendLock = new Object();
 
    public StompDecoder getDecoder()
@@ -98,11 +98,11 @@ public class StompConnection implements RemotingConnection
       this.transportConnection = transportConnection;
 
       this.manager = manager;
-      
+
       this.decoder = new StompDecoder(this);
-      
+
       this.creationTime = System.currentTimeMillis();
-      
+
       this.acceptorUsed = acceptorUsed;
 
       this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
@@ -181,7 +181,7 @@ public class StompConnection implements RemotingConnection
 
       failureListeners.addAll(listeners);
    }
-   
+
    public void setDataReceived()
    {
       dataReceived = true;
@@ -220,7 +220,7 @@ public class StompConnection implements RemotingConnection
          callClosingListeners();
       }
    }
-   
+
    Acceptor getAcceptorUsed()
    {
       return acceptorUsed;
@@ -250,7 +250,7 @@ public class StompConnection implements RemotingConnection
       callFailureListeners(me);
 
       callClosingListeners();
-      
+
       internalClose();
    }
 
@@ -274,7 +274,7 @@ public class StompConnection implements RemotingConnection
    {
       return transportConnection.getRemoteAddress();
    }
-   
+
    public long getCreationTime()
    {
       return creationTime;
@@ -387,7 +387,7 @@ public class StompConnection implements RemotingConnection
    public void negotiateVersion(StompFrame frame) throws HornetQStompException
    {
       String acceptVersion = frame.getHeader(Stomp.Headers.ACCEPT_VERSION);
-      
+
       if (acceptVersion == null)
       {
          this.version = StompVersions.V1_0;
@@ -400,7 +400,7 @@ public class StompConnection implements RemotingConnection
          {
             requestVersions.add(tokenizer.nextToken());
          }
-         
+
          if (requestVersions.contains("1.1"))
          {
             this.version = StompVersions.V1_1;
@@ -420,7 +420,7 @@ public class StompConnection implements RemotingConnection
             throw error;
          }
       }
-      
+
       this.frameHandler = VersionedStompFrameHandler.getHandler(this, this.version);
       this.initialized = true;
    }
@@ -434,7 +434,7 @@ public class StompConnection implements RemotingConnection
          error.setBody("Cannot accept null as host");
          throw error;
       }
-      
+
       String localHost = manager.getVirtualHostName();
       if (!host.equals(localHost))
       {
@@ -447,7 +447,7 @@ public class StompConnection implements RemotingConnection
    public void handleFrame(StompFrame request)
    {
       StompFrame reply = null;
-      
+
       if (stompListener != null)
       {
          stompListener.requestAccepted(request);
@@ -471,12 +471,12 @@ public class StompConnection implements RemotingConnection
       {
          reply = e.getFrame();
       }
-      
+
       if (reply != null)
       {
          sendFrame(reply);
       }
-      
+
       if (Stomp.Commands.DISCONNECT.equals(cmd))
       {
          this.disconnect(false);
@@ -522,7 +522,7 @@ public class StompConnection implements RemotingConnection
       {
          throw new HornetQStompException("Exception getting session", e);
       }
-      
+
       return session;
    }
 
@@ -636,7 +636,7 @@ public class StompConnection implements RemotingConnection
          }
          subscriptionID = "subscription/" + destination;
       }
-      
+
       try
       {
          manager.createSubscription(this, subscriptionID, durableSubscriptionName, destination, selector, ack, noLocal);

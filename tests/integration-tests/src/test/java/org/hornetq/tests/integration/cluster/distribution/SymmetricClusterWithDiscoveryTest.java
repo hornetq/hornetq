@@ -18,9 +18,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A SymmetricClusterWithDiscoveryTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 3 Feb 2009 09:10:43
  *
  *

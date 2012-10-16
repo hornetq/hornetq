@@ -87,7 +87,7 @@ public class ConnectionTest extends JMSTestCase
       connection.setClientID(clientID);
 
       ProxyAssertSupport.assertEquals(clientID, connection.getClientID());
-      
+
       Connection connection2 = JMSTest.cf.createConnection();
       try
       {
@@ -160,7 +160,7 @@ public class ConnectionTest extends JMSTestCase
 
       connection.close();
 
-      // TODO: This will probably go away, remove it enterily after we 
+      // TODO: This will probably go away, remove it enterily after we
       //       make sure this rule can go away
 //      connection = JMSTestCase.cf.createConnection();
 //      connection.getClientID();

@@ -15,7 +15,7 @@ package org.hornetq.core.protocol.stomp.v10;
 import org.hornetq.core.protocol.stomp.StompFrame;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class StompFrameV10 extends StompFrame

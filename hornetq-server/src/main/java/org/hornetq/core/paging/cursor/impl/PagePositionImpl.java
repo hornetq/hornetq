@@ -27,7 +27,7 @@ public class PagePositionImpl implements PagePosition
    /**
     * The index of the message on the page file.
     *
-    * This can be used as -1 in cases where the message is irrelevant, 
+    * This can be used as -1 in cases where the message is irrelevant,
     * for instance when a cursor is storing the next message to be received
     * or when a page is marked as fully complete (as the ACKs are removed)
     */

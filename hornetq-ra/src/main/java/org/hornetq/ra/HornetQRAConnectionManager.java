@@ -22,7 +22,7 @@ import javax.resource.spi.ManagedConnectionFactory;
 
 /**
  * The connection manager used in non-managed environments.
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
@@ -48,7 +48,7 @@ public class HornetQRAConnectionManager implements ConnectionManager
    /**
     * Allocates a connection
     * @param mcf The managed connection factory
-    * @param cxRequestInfo The connection request information 
+    * @param cxRequestInfo The connection request information
     * @return The connection
     * @exception ResourceException Thrown if there is a problem obtaining the connection
     */

@@ -72,8 +72,8 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          public void connectionReadyForWrites(Object connectionID, boolean ready)
          {
          }
-         
-         
+
+
       };
 
       Acceptor acceptor = factory.createAcceptor(null,

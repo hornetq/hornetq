@@ -31,9 +31,9 @@ import static org.hornetq.api.core.HornetQExceptionType.INVALID_FILTER_EXPRESSIO
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public class JMSExceptionHelperTest extends UnitTestCase
 {
