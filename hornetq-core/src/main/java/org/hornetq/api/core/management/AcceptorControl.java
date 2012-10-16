@@ -15,9 +15,6 @@ package org.hornetq.api.core.management;
 
 import java.util.Map;
 
-import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.AcceptorFactory;
-
 /**
  * An AcceptorControl is used to manage Acceptors.
  *

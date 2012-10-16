@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -41,13 +42,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER, configuredClusterPassword, true);
+      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, configuredClusterPassword, true);
    }
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
+      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                              HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD,
                               false);
    }
 

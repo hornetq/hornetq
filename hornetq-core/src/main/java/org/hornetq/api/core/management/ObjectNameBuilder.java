@@ -15,8 +15,8 @@ package org.hornetq.api.core.management;
 
 import javax.management.ObjectName;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 
 /**
  * Helper class to build ObjectNames for HornetQ resources.
@@ -32,7 +32,7 @@ public final class ObjectNameBuilder
    /**
     * Default JMX domain for HornetQ resources.
     */
-   public final static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+   public final static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN);
 
    static final String JMS_MODULE = "JMS";
 
@@ -48,7 +48,7 @@ public final class ObjectNameBuilder
    {
       if (domain == null)
       {
-         return new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+         return new ObjectNameBuilder(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN);
       }
       else
       {

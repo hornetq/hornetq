@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hornetq.core.config.Configuration;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
@@ -166,8 +166,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
       allowableAcceptorKeys.add(TransportConstants.CONNECTION_TTL);
       allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
-      allowableAcceptorKeys.add(Configuration.PROP_MASK_PASSWORD);
-      allowableAcceptorKeys.add(Configuration.PROP_PASSWORD_CODEC);
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
@@ -189,8 +189,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.BATCH_DELAY);
-      allowableConnectorKeys.add(Configuration.PROP_MASK_PASSWORD);
-      allowableConnectorKeys.add(Configuration.PROP_PASSWORD_CODEC);
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

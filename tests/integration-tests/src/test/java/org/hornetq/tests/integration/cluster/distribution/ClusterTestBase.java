@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.*;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -1905,11 +1906,11 @@ Configuration conf=serverFrom.getConfiguration();
 		ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
 name, address, connectorFrom.getName(),
 				HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-				ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-				ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+				HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+				HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
 				retryInterval,
-				ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-				ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+				HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+				HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
 				reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
 				1024, pairs, false);
 

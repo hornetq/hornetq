@@ -15,101 +15,14 @@
 
    <dependencies>
       <dependency>
+           <groupId>org.jboss.logging</groupId>
+           <artifactId>jboss-logging-processor</artifactId>
+       </dependency>
+      <dependency>
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-core</artifactId>
          <version>${project.version}</version>
       </dependency>
    </dependencies>
-
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <executions>
-               <execution>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>shade</goal>
-                  </goals>
-                  <configuration>
-                     <createSourcesJar>true</createSourcesJar>
-                     <artifactSet>
-                        <includes>
-                            <include>org.hornetq:hornetq-core</include>
-                        </includes>
-                     </artifactSet>
-                     <filters>
-                        <filter>
-                           <artifact>org.hornetq:hornetq-core</artifact>
-                           <includes>
-                              <include>hornetq-version.properties</include>
-                              <include>org/hornetq/api/**/*.class</include>
-                              <include>org/hornetq/*.class</include>
-                              <include>org/hornetq/core/buffers/**/*.class</include>
-                              <include>org/hornetq/core/client/**/*.class</include>
-                              <include>org/hornetq/core/filter/**/*.class</include>
-                              <include>org/hornetq/core/exception/**/*.class</include>
-                              <include>org/hornetq/core/remoting/impl/**/*.class</include>
-                              <include>org/hornetq/utils/**/*.class</include>
-                              <include>org/hornetq/core/cluster/**/*.class</include>
-                              <include>org/hornetq/core/list/**/*.class</include>
-                              <include>org/hornetq/core/logging/**/*.class</include>
-                              <include>org/hornetq/core/message/**/*.class</include>
-                              <include>org/hornetq/core/protocol/core/**/*.class</include>
-                              <include>org/hornetq/core/remoting/**/*.class</include>
-                              <include>org/hornetq/core/version/**/*.class</include>
-                              <include>org/hornetq/core/management/*.class</include>
-                              <include>org/hornetq/core/transaction/impl/XidImpl.class</include>
-                              <include>org/hornetq/spi/core/logging/*.class</include>
-                              <include>org/hornetq/spi/core/protocol/*.class</include>
-                              <include>org/hornetq/spi/core/remoting/*.class</include>
-
-                              <!-- required by SessionSendMessage -->
-                              <include>org/hornetq/core/server/ServerMessage.class</include>
-                              <include>org/hornetq/core/journal/EncodingSupport.class</include>
-                              <!--loggers-->
-                              <include>org/hornetq/core/server/HornetQLogger*</include>
-                              <include>org/hornetq/utils/HornetQUtilLogger*</include>
-                              <!--bundles-->
-                              <include>org/hornetq/core/server/HornetQMessageBundle*</include>
-                              <include>org/hornetq/utils/HornetQUtilBundle*</include>
-
-                              <!--src-->
-
-                              <include>org/hornetq/api/**/*.java</include>
-                              <include>org/hornetq/*.java</include>
-                              <include>org/hornetq/core/buffers/**/*.java</include>
-                              <include>org/hornetq/core/client/**/*.java</include>
-                              <include>org/hornetq/core/filter/**/*.java</include>
-                              <include>org/hornetq/core/exception/**/*.java</include>
-                              <include>org/hornetq/core/remoting/impl/**/*.java</include>
-                              <include>org/hornetq/utils/**/*.java</include>
-                              <include>org/hornetq/core/cluster/**/*.java</include>
-                              <include>org/hornetq/core/list/**/*.java</include>
-                              <include>org/hornetq/core/logging/**/*.java</include>
-                              <include>org/hornetq/core/message/**/*.java</include>
-                              <include>org/hornetq/core/protocol/core/**/*.java</include>
-                              <include>org/hornetq/core/remoting/**/*.java</include>
-                              <include>org/hornetq/core/version/**/*.java</include>
-                              <include>org/hornetq/core/management/*.java</include>
-                              <include>org/hornetq/core/transaction/impl/XidImpl.java</include>
-                              <include>org/hornetq/spi/core/logging/*.java</include>
-                              <include>org/hornetq/spi/core/protocol/*.java</include>
-                              <include>org/hornetq/spi/core/remoting/*.java</include>
-
-                              <!-- required by SessionSendMessage -->
-                              <include>org/hornetq/core/server/ServerMessage.java</include>
-                              <include>org/hornetq/core/journal/EncodingSupport.java</include>
-                           </includes>
-                        </filter>
-                     </filters>
-                  </configuration>
-               </execution>
-
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
 
 </project>

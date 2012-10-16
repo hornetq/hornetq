@@ -31,6 +31,11 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-server</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.security</groupId>
          <artifactId>jboss-security-spi</artifactId>
       </dependency>

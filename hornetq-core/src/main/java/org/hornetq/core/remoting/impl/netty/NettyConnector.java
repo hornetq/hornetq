@@ -34,13 +34,14 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreLogger;
+import org.hornetq.core.HornetQCoreMessageBundle;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.AbstractConnector;
-import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -168,12 +169,12 @@ public class NettyConnector extends AbstractConnector
       super(configuration);
       if (listener == null)
       {
-         throw HornetQMessageBundle.BUNDLE.nullListener();
+         throw HornetQCoreMessageBundle.BUNDLE.nullListener();
       }
 
       if (handler == null)
       {
-         throw HornetQMessageBundle.BUNDLE.nullHandler();
+         throw HornetQCoreMessageBundle.BUNDLE.nullHandler();
       }
 
       this.listener = listener;
@@ -232,7 +233,9 @@ public class NettyConnector extends AbstractConnector
                                                               configuration);
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                   TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                  configuration);
+                                                                  configuration,
+                                                                  HornetQDefaultConfiguration.PROP_MASK_PASSWORD,
+                                                                  HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
       }
       else
       {
@@ -415,9 +418,9 @@ public class NettyConnector extends AbstractConnector
 
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-         HornetQLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
+         HornetQCoreLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
       }
-      HornetQLogger.LOGGER.debug("Started Netty Connector version " + Version.ID);
+      HornetQCoreLogger.LOGGER.debug("Started Netty Connector version " + Version.ID);
    }
 
    public synchronized void close()
@@ -496,7 +499,7 @@ public class NettyConnector extends AbstractConnector
             }
          }
       }
-      HornetQLogger.LOGGER.debug("Remote destination: " + remoteDestination);
+      HornetQCoreLogger.LOGGER.debug("Remote destination: " + remoteDestination);
 
       ChannelFuture future = bootstrap.connect(remoteDestination);
       future.awaitUninterruptibly();
@@ -525,7 +528,7 @@ public class NettyConnector extends AbstractConnector
          }
 
          // No acceptor on a client connection
-         NettyConnection conn = new NettyConnection(configuration, null, ch, new Listener(), !httpEnabled && batchDelay > 0, false);
+         NettyConnection conn = new NettyConnection(configuration, ch, new Listener(), !httpEnabled && batchDelay > 0, false);
 
          return conn;
       }
@@ -535,7 +538,7 @@ public class NettyConnector extends AbstractConnector
 
          if (t != null && !(t instanceof ConnectException))
          {
-            HornetQLogger.LOGGER.errorCreatingNettyConnection(future.getCause());
+            HornetQCoreLogger.LOGGER.errorCreatingNettyConnection(future.getCause());
          }
 
          return null;
@@ -719,11 +722,11 @@ public class NettyConnector extends AbstractConnector
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {
-            throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
+            throw HornetQCoreMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
       }
 
@@ -805,13 +808,13 @@ public class NettyConnector extends AbstractConnector
          InetAddress inetAddr2 = InetAddress.getByName(this.host);
          String ip1 = inetAddr1.getHostAddress();
          String ip2 = inetAddr2.getHostAddress();
-         HornetQLogger.LOGGER.debug(this + " host 1: " + host + " ip address: " + ip1 + " host 2: " + this.host + " ip address: " + ip2);
+         HornetQCoreLogger.LOGGER.debug(this + " host 1: " + host + " ip address: " + ip1 + " host 2: " + this.host + " ip address: " + ip2);
          
          result = ip1.equals(ip2);
       }
       catch (UnknownHostException e)
       {
-         HornetQLogger.LOGGER.error("Cannot resolve host", e);
+         HornetQCoreLogger.LOGGER.error("Cannot resolve host", e);
       }
       
       return result;

@@ -13,7 +13,6 @@
 
 package org.hornetq.api.core;
 
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 

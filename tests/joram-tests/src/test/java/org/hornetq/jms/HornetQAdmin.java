@@ -24,6 +24,7 @@ import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientRequestor;
@@ -79,14 +80,14 @@ public class HornetQAdmin implements Admin
    {
       serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       sf = serverLocator.createSessionFactory();
-      clientSession = sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                       ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
+      clientSession = sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD,
                                        false,
                                        true,
                                        true,
                                        false,
                                        1);
-      requestor = new ClientRequestor(clientSession, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+      requestor = new ClientRequestor(clientSession, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
       clientSession.start();
    }
 

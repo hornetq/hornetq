@@ -14,8 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.client.impl.ClientLargeMessageImpl;
-import org.hornetq.core.client.impl.ClientLargeMessageInternal;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
@@ -38,10 +36,10 @@ public class SessionReceiveLargeMessage extends PacketImpl
    private int deliveryCount;
 
    // To be used on decoding at the client while receiving a large message
-   public SessionReceiveLargeMessage()
+   public SessionReceiveLargeMessage(final MessageInternal message)
    {
       super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
-      this.message = new ClientLargeMessageImpl();
+      this.message = message;
    }
 
    public SessionReceiveLargeMessage(final long consumerID,
@@ -99,7 +97,6 @@ public class SessionReceiveLargeMessage extends PacketImpl
       deliveryCount = buffer.readInt();
       largeMessageSize = buffer.readLong();
       message.decodeHeadersAndProperties(buffer);
-      ((ClientLargeMessageInternal)message).setLargeMessageSize(largeMessageSize);
    }
 
 }

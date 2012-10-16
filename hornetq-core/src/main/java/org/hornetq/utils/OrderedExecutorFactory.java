@@ -13,7 +13,7 @@
 
 package org.hornetq.utils;
 
-import org.hornetq.core.server.HornetQLogger;
+import org.hornetq.core.HornetQCoreLogger;
 
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
@@ -100,7 +100,7 @@ public final class OrderedExecutorFactory implements ExecutorFactory
                   }
                   catch (Throwable t)
                   {
-                     HornetQLogger.LOGGER.caughtunexpectedThrowable(t);
+                     HornetQCoreLogger.LOGGER.caughtunexpectedThrowable(t);
                   }
                }
             }

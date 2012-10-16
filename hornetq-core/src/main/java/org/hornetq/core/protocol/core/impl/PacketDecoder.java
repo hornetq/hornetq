@@ -27,19 +27,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.PACKETS_CONFIRMED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.PING;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND_TX;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMPARE_DATA;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_DELETE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_DELETE_TX;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_LARGE_MESSAGE_END;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_PAGE_EVENT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_PAGE_WRITE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_PREPARE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_RESPONSE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
@@ -59,12 +46,8 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_REQUE
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTINUATION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUATION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
@@ -87,10 +70,11 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
 
+import java.io.Serializable;
+
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.HornetQCoreMessageBundle;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -98,28 +82,12 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
@@ -140,12 +108,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMess
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
@@ -162,25 +126,18 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutRespons
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
-import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A PacketDecoder
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public final class PacketDecoder
+public abstract class PacketDecoder implements Serializable
 {
+   public abstract Packet decode(final HornetQBuffer in);
 
-   private PacketDecoder()
+   public Packet decode(byte packetType)
    {
-      // Utility
-   }
-
-   public static Packet decode(final HornetQBuffer in)
-   {
-      final byte packetType = in.readByte();
-
       Packet packet;
 
       switch (packetType)
@@ -380,28 +337,6 @@ public final class PacketDecoder
             packet = new SessionConsumerFlowCreditMessage();
             break;
          }
-         case SESS_SEND:
-         {
-            packet = new SessionSendMessage();
-            break;
-         }
-         case SESS_SEND_LARGE:
-         {
-            // Using a ClientMessage, but that will be replaced later..
-            // This is just to avoid reading a byte[] to read the message
-            packet = new SessionSendLargeMessage();
-            break;
-         }
-         case SESS_RECEIVE_MSG:
-         {
-            packet = new SessionReceiveMessage();
-            break;
-         }
-         case SESS_RECEIVE_LARGE_MSG:
-         {
-            packet = new SessionReceiveLargeMessage();
-            break;
-         }
          case SESS_CONSUMER_CLOSE:
          {
             packet = new SessionConsumerCloseMessage();
@@ -440,71 +375,6 @@ public final class PacketDecoder
          case SESS_PRODUCER_FAIL_CREDITS:
          {
             packet = new SessionProducerCreditsFailMessage();
-            break;
-         }
-         case REPLICATION_APPEND:
-         {
-            packet = new ReplicationAddMessage();
-            break;
-         }
-         case REPLICATION_APPEND_TX:
-         {
-            packet = new ReplicationAddTXMessage();
-            break;
-         }
-         case REPLICATION_DELETE:
-         {
-            packet = new ReplicationDeleteMessage();
-            break;
-         }
-         case REPLICATION_DELETE_TX:
-         {
-            packet = new ReplicationDeleteTXMessage();
-            break;
-         }
-         case REPLICATION_PREPARE:
-         {
-            packet = new ReplicationPrepareMessage();
-            break;
-         }
-         case REPLICATION_COMMIT_ROLLBACK:
-         {
-            packet = new ReplicationCommitMessage();
-            break;
-         }
-         case REPLICATION_RESPONSE:
-         {
-            packet = new ReplicationResponseMessage();
-            break;
-         }
-         case REPLICATION_PAGE_WRITE:
-         {
-            packet = new ReplicationPageWriteMessage();
-            break;
-         }
-         case REPLICATION_PAGE_EVENT:
-         {
-            packet = new ReplicationPageEventMessage();
-            break;
-         }
-         case REPLICATION_LARGE_MESSAGE_BEGIN:
-         {
-            packet = new ReplicationLargeMessageBeginMessage();
-            break;
-         }
-         case REPLICATION_LARGE_MESSAGE_END:
-         {
-            packet = new ReplicationLargeMessageEndMessage();
-            break;
-         }
-         case REPLICATION_LARGE_MESSAGE_WRITE:
-         {
-            packet = new ReplicationLargeMessageWriteMessage();
-            break;
-         }
-         case REPLICATION_COMPARE_DATA:
-         {
-            packet = new ReplicationCompareDataMessage();
             break;
          }
          case SESS_FORCE_CONSUMER_DELIVERY:
@@ -552,38 +422,11 @@ public final class PacketDecoder
             packet = new SessionUniqueAddMetaDataMessage();
             break;
          }
-         case PacketImpl.BACKUP_REGISTRATION:
-         {
-            packet = new BackupRegistrationMessage();
-            break;
-         }
-         case PacketImpl.BACKUP_REGISTRATION_FAILED:
-         {
-            packet = new BackupReplicationStartFailedMessage();
-            break;
-         }
-         case PacketImpl.REPLICATION_START_FINISH_SYNC:
-         {
-            packet = new ReplicationStartSyncMessage();
-            break;
-         }
-         case PacketImpl.REPLICATION_SYNC_FILE:
-         {
-            packet = new ReplicationSyncFileMessage();
-            break;
-         }
-         case PacketImpl.REPLICATION_SCHEDULED_FAILOVER:
-         {
-            packet = new LiveIsStoppingMessage();
-            break;
-         }
          default:
          {
-            throw HornetQMessageBundle.BUNDLE.invalidType(packetType);
+            throw HornetQCoreMessageBundle.BUNDLE.invalidType(packetType);
          }
       }
-
-      packet.decode(in);
 
       return packet;
    }

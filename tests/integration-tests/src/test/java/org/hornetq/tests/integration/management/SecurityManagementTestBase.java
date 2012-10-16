@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.management;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientRequestor;
@@ -93,7 +94,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
          session.start();
 
-         ClientRequestor requestor = new ClientRequestor(session, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+         ClientRequestor requestor = new ClientRequestor(session, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
 
          ClientMessage mngmntMessage = session.createMessage(false);
          ManagementHelper.putAttribute(mngmntMessage, ResourceNames.CORE_SERVER, "started");

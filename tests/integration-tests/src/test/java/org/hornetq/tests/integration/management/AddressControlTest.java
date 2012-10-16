@@ -20,6 +20,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
@@ -275,7 +276,7 @@ public class AddressControlTest extends ManagementTestBase
       session.createQueue(address, address, true);
 
       AddressControl addressControl = createManagementControl(address);
-      Assert.assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
+      Assert.assertEquals(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
 
       session.close();
       server.stop();

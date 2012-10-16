@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -157,8 +158,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            numMessages * messageSize / 2,
                                                                            connectorConfig,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -330,8 +331,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            numMessages * messageSize / 2,
                                                                            connectorConfig,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          bridgeConfiguration.setCallTimeout(500);
 
@@ -513,8 +514,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            0,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -672,8 +673,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -802,8 +803,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            0,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -979,8 +980,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         1024,
                                                                         staticConnectors,
                                                                         false,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -1104,8 +1105,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         0,
                                                                         staticConnectors,
                                                                         false,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -1352,8 +1353,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            0,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -1504,8 +1505,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            1024,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -1662,8 +1663,8 @@ public class BridgeTest extends ServiceTestBase
                                                                            numMessages * messageSize / 2,
                                                                            staticConnectors,
                                                                            false,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                           HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);

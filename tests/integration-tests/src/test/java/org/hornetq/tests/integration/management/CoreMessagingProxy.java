@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientRequestor;
 import org.hornetq.api.core.client.ClientSession;
@@ -49,7 +50,7 @@ public class CoreMessagingProxy
 
       this.resourceName = resourceName;
 
-      requestor = new ClientRequestor(session, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+      requestor = new ClientRequestor(session, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
 
    }
 

@@ -16,7 +16,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,12 +36,6 @@ public class SessionSendLargeMessage extends PacketImpl
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
-   // To be used by the PacketDecoder
-   public SessionSendLargeMessage()
-   {
-      this(new ServerMessageImpl());
-   }
 
    public SessionSendLargeMessage(final MessageInternal largeMessage)
    {

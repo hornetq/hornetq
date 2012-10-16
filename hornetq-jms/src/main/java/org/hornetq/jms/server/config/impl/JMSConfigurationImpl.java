@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.naming.Context;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -55,7 +56,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    public JMSConfigurationImpl()
    {
-      domain = ConfigurationImpl.DEFAULT_JMX_DOMAIN;
+      domain = HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN;
    }
 
    public JMSConfigurationImpl(final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations,
@@ -66,7 +67,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
       this.connectionFactoryConfigurations.addAll(connectionFactoryConfigurations);
       this.queueConfigurations.addAll(queueConfigurations);
       this.topicConfigurations.addAll(topicConfigurations);
-      this.domain = domain != null ? domain : ConfigurationImpl.DEFAULT_JMX_DOMAIN;
+      this.domain = domain != null ? domain : HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN;
    }
 
    // JMSConfiguration implementation -------------------------------

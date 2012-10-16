@@ -23,6 +23,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -95,7 +96,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          stopServer();
 
          NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
-         JournalImpl journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
+         JournalImpl journal = new JournalImpl(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE,
                                                2,
                                                0,
                                                0,
@@ -351,16 +352,16 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       if (server == null)
       {
          Configuration config = createDefaultConfig(true);
-         config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
+         config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
 
          config.setJournalType(journalType);
          config.setJMXManagementEnabled(false);
 
-         config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
-         config.setJournalMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES);
+         config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
+         config.setJournalMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES);
 
-         config.setJournalCompactMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
-         config.setJournalCompactPercentage(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
+         config.setJournalCompactMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
+         config.setJournalCompactPercentage(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
 
          // This test is supposed to not sync.. All the ACKs are async, and it was supposed to not sync
          config.setJournalSyncNonTransactional(false);
