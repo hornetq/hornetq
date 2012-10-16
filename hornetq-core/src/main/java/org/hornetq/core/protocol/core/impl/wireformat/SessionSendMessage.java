@@ -16,7 +16,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
@@ -44,9 +43,9 @@ public class SessionSendMessage extends MessagePacket
       this.requiresResponse = requiresResponse;
    }
 
-   public SessionSendMessage()
+   public SessionSendMessage(final MessageInternal message)
    {
-      super(PacketImpl.SESS_SEND, new ServerMessageImpl());
+      super(PacketImpl.SESS_SEND, message);
    }
 
    // Public --------------------------------------------------------

@@ -34,8 +34,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.HornetQPrincipal;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreLogger;
+import org.hornetq.core.HornetQCoreMessageBundle;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
 
@@ -49,13 +49,14 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final boolean isTrace = HornetQLogger.LOGGER.isTraceEnabled();
+   private static final boolean isTrace = HornetQCoreLogger.LOGGER.isTraceEnabled();
 
    // Static
    // ---------------------------------------------------------------------------------------
 
    // Attributes
    // -----------------------------------------------------------------------------------
+   private final PacketDecoder packetDecoder;
 
    private final Connection transportConnection;
 
@@ -103,27 +104,30 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    /*
     * Create a client side connection
     */
-   public RemotingConnectionImpl(final Connection transportConnection,
+   public RemotingConnectionImpl(final PacketDecoder packetDecoder,
+                                 final Connection transportConnection,
                                  final long blockingCallTimeout,
                                  final long blockingCallFailoverTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, blockingCallFailoverTimeout, interceptors, true, null, null);
+      this(packetDecoder, transportConnection, blockingCallTimeout, blockingCallFailoverTimeout, interceptors, true, null, null);
    }
 
    /*
     * Create a server side connection
     */
-   RemotingConnectionImpl(final Connection transportConnection,
-                                 final List<Interceptor> interceptors,
-                                 final Executor executor,
-                                 final SimpleString nodeID)
+   RemotingConnectionImpl(final PacketDecoder packetDecoder,
+                          final Connection transportConnection,
+                          final List<Interceptor> interceptors,
+                          final Executor executor,
+                          final SimpleString nodeID)
 
    {
-      this(transportConnection, -1, -1, interceptors, false, executor, nodeID);
+      this(packetDecoder, transportConnection, -1, -1, interceptors, false, executor, nodeID);
    }
 
-   private RemotingConnectionImpl(final Connection transportConnection,
+   private RemotingConnectionImpl(final PacketDecoder packetDecoder,
+                                  final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final long blockingCallFailoverTimeout,
                                   final List<Interceptor> interceptors,
@@ -132,6 +136,8 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
                                   final SimpleString nodeID)
 
    {
+      this.packetDecoder = packetDecoder;
+
       this.transportConnection = transportConnection;
 
       this.blockingCallTimeout = blockingCallTimeout;
@@ -242,7 +248,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    {
       if (listener == null)
       {
-         throw HornetQMessageBundle.BUNDLE.failListenerCannotBeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.failListenerCannotBeNull();
       }
       failureListeners.add(listener);
    }
@@ -251,7 +257,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    {
       if (listener == null)
       {
-         throw HornetQMessageBundle.BUNDLE.failListenerCannotBeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.failListenerCannotBeNull();
       }
 
       return failureListeners.remove(listener);
@@ -261,7 +267,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    {
       if (listener == null)
       {
-         throw HornetQMessageBundle.BUNDLE.closeListenerCannotBeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.closeListenerCannotBeNull();
       }
 
       closeListeners.add(listener);
@@ -271,7 +277,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    {
       if (listener == null)
       {
-         throw HornetQMessageBundle.BUNDLE.closeListenerCannotBeNull();
+         throw HornetQCoreMessageBundle.BUNDLE.closeListenerCannotBeNull();
       }
 
       return closeListeners.remove(listener);
@@ -322,7 +328,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
          destroyed = true;
       }
 
-      HornetQLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getType());
+      HornetQCoreLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getType());
 
       // Then call the listeners
       callFailureListeners(me);
@@ -469,11 +475,11 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    {
       try
       {
-         final Packet packet = PacketDecoder.decode(buffer);
+         final Packet packet = packetDecoder.decode(buffer);
 
          if (isTrace)
          {
-            HornetQLogger.LOGGER.trace("handling packet " + packet);
+            HornetQCoreLogger.LOGGER.trace("handling packet " + packet);
          }
 
          if (packet.isAsyncExec() && executor != null)
@@ -490,7 +496,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
                   }
                   catch (Throwable t)
                   {
-                     HornetQLogger.LOGGER.errorHandlingPacket(t, packet);
+                     HornetQCoreLogger.LOGGER.errorHandlingPacket(t, packet);
                   }
 
                   executing = false;
@@ -514,7 +520,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
       }
       catch (Exception e)
       {
-         HornetQLogger.LOGGER.errorDecodingPacket(e);
+         HornetQCoreLogger.LOGGER.errorDecodingPacket(e);
       }
    }
 
@@ -535,7 +541,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
             }
             catch (final Throwable e)
             {
-               HornetQLogger.LOGGER.errorCallingInterceptor(e, interceptor);
+               HornetQCoreLogger.LOGGER.errorCallingInterceptor(e, interceptor);
             }
          }
       }
@@ -576,7 +582,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            HornetQLogger.LOGGER.errorCallingFailureListener(t);
+            HornetQCoreLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }
@@ -596,7 +602,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
             // Failure of one listener to execute shouldn't prevent others
             // from
             // executing
-            HornetQLogger.LOGGER.errorCallingFailureListener(t);
+            HornetQCoreLogger.LOGGER.errorCallingFailureListener(t);
          }
       }
    }

@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -278,7 +279,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);
-      config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
+      config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
 
       config.setJournalType(journalType);
 

@@ -434,6 +434,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
@@ -453,6 +454,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
@@ -472,6 +474,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
@@ -493,6 +496,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
@@ -524,6 +528,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
@@ -549,6 +554,7 @@
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
+            <module>hornetq-server</module>
             <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>

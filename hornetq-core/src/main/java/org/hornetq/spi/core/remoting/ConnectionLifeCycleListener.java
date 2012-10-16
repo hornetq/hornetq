@@ -13,6 +13,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
@@ -26,10 +27,10 @@ public interface ConnectionLifeCycleListener
     * This method is used both by client connector creation and server connection creation through acceptors.
     * the acceptor will be set to null on client operations
     *
-    * @param The acceptor here will be always null on a client connection created event.
+    * @param component This will probably be the Acceptor and only used on the server side.
     * @param connection the connection that has been created
     */
-   void connectionCreated(Acceptor acceptor, Connection connection, ProtocolType protocol);
+   void connectionCreated(HornetQComponent component, Connection connection, ProtocolType protocol);
 
    /**
     * called when a connection is destroyed.

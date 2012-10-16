@@ -20,6 +20,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -126,8 +127,8 @@ public class BridgeWithPagingTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);

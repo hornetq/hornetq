@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -159,8 +160,8 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       config.setJournalType(journalType);
       config.setJMXManagementEnabled(true);
 
-      config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
-      config.setJournalMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES);
+      config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
+      config.setJournalMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES);
 
       config.setJournalCompactMinFiles(2);
       config.setJournalCompactPercentage(50);

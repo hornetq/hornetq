@@ -21,6 +21,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -160,7 +161,7 @@ public class SecurityNotificationTest extends UnitTestCase
       Role role = new Role("notif", true, true, true, true, true, true, true);
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
-      server.getSecurityRepository().addMatch(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString(),
+      server.getSecurityRepository().addMatch(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString(),
                                               roles);
 
       securityManager.addRole("admin", "notif");
@@ -170,7 +171,7 @@ public class SecurityNotificationTest extends UnitTestCase
       adminSession = sf.createSession("admin", "admin", false, true, true, false, 1);
       adminSession.start();
 
-      adminSession.createTemporaryQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue);
+      adminSession.createTemporaryQueue(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue);
 
       notifConsumer = adminSession.createConsumer(notifQueue);
    }

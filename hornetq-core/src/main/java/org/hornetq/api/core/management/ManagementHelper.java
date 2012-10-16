@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreMessageBundle;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -294,7 +294,7 @@ public final class ManagementHelper
           param instanceof Byte == false &&
           param instanceof Short == false)
       {
-         throw HornetQMessageBundle.BUNDLE.invalidManagementParam(param.getClass().getName());
+         throw HornetQCoreMessageBundle.BUNDLE.invalidManagementParam(param.getClass().getName());
       }
    }
 

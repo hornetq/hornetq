@@ -6,8 +6,13 @@ import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 
-public class Util
+public final class Util
 {
+   private Util()
+   {
+      // Utility class
+   }
+
    static ClientResponse head(ClientRequest request) throws Exception
    {
       ClientResponse<?> response = request.head();

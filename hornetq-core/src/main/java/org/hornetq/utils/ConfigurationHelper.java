@@ -13,9 +13,8 @@
 package org.hornetq.utils;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.HornetQCoreLogger;
+import org.hornetq.core.HornetQCoreMessageBundle;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -77,7 +76,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Number == false)
          {
-            HornetQLogger.LOGGER.propertyNotInteger(propName, prop.getClass().getName());
+            HornetQCoreLogger.LOGGER.propertyNotInteger(propName, prop.getClass().getName());
 
             return def;
          }
@@ -110,7 +109,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Number == false)
          {
-            HornetQLogger.LOGGER.propertyNotLong(propName, prop.getClass().getName());
+            HornetQCoreLogger.LOGGER.propertyNotLong(propName, prop.getClass().getName());
 
             return def;
          }
@@ -143,7 +142,7 @@ public class ConfigurationHelper
          }
          else if (prop instanceof Boolean == false)
          {
-            HornetQLogger.LOGGER.propertyNotBoolean(propName, prop.getClass().getName());
+            HornetQCoreLogger.LOGGER.propertyNotBoolean(propName, prop.getClass().getName());
 
             return def;
          }
@@ -199,7 +198,8 @@ public class ConfigurationHelper
    }
 
    public static String getPasswordProperty(final String propName,
-         final String def, final Map<String, Object> props)
+         final String def, final Map<String, Object> props,
+         String defaultMaskPassword, String defaultPasswordCodec)
    {
       if (props == null)
       {
@@ -214,17 +214,17 @@ public class ConfigurationHelper
       }
 
       String value = prop.toString();
-      Boolean useMask = (Boolean) props.get(Configuration.PROP_MASK_PASSWORD);
+      Boolean useMask = (Boolean) props.get(defaultMaskPassword);
       if (useMask == null || (!useMask))
       {
          return value;
       }
 
-      final String classImpl = (String) props.get(Configuration.PROP_PASSWORD_CODEC);
+      final String classImpl = (String) props.get(defaultPasswordCodec);
 
       if (classImpl == null)
       {
-         throw HornetQMessageBundle.BUNDLE.noCodec();
+         throw HornetQCoreMessageBundle.BUNDLE.noCodec();
       }
 
       SensitiveDataCodec<String> codec = null;
@@ -234,7 +234,7 @@ public class ConfigurationHelper
       }
       catch (HornetQException e1)
       {
-         throw HornetQMessageBundle.BUNDLE.failedToGetDecoder(e1);
+         throw HornetQCoreMessageBundle.BUNDLE.failedToGetDecoder(e1);
       }
 
       try
@@ -243,7 +243,7 @@ public class ConfigurationHelper
       }
       catch (Exception e)
       {
-         throw HornetQMessageBundle.BUNDLE.errordecodingPassword(e);
+         throw HornetQCoreMessageBundle.BUNDLE.errordecodingPassword(e);
       }
    }
 

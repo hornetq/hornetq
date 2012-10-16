@@ -23,6 +23,7 @@ import javax.management.MBeanServerFactory;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -164,8 +165,8 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomPositiveInt(),
                                              connectors,
                                              false,
-                                             ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                                             ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+                                             HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                             HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);

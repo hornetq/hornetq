@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -116,18 +117,18 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       if (AsynchronousFileImpl.isLoaded())
       {
          factory = new AIOSequentialFileFactory(dir.getPath());
-         maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO;
+         maxAIO = HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_AIO;
       }
       else
       {
          factory = new NIOSequentialFileFactory(dir.getPath(), true);
-         maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO;
+         maxAIO = HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_NIO;
       }
 
       journal = new JournalImpl(50 * 1024,
                                 20,
                                 50,
-                                ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
+                                HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
                                 factory,
                                 "hornetq-data",
                                 "hq",

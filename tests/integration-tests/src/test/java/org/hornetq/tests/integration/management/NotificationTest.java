@@ -19,6 +19,7 @@ import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 import junit.framework.Assert;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -254,7 +255,7 @@ public class NotificationTest extends UnitTestCase
 
       notifQueue = RandomUtil.randomSimpleString();
 
-      session.createQueue(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false);
+      session.createQueue(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false);
 
       notifConsumer = session.createConsumer(notifQueue);
    }

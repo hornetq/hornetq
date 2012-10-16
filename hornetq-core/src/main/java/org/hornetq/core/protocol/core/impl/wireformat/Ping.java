@@ -14,9 +14,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**

@@ -184,6 +184,13 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      Thread.sleep(5000l);
+      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
+   }
+
    public void testDeleteTemporaryQueueAfterConnectionIsClosed() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();

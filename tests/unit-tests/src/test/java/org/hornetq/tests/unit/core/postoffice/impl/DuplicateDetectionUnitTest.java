@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -93,7 +94,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          PostOffice postOffice = new FakePostOffice();
 
-         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
 
          journal = new JournalStorageManager(configuration, factory, null);
 
