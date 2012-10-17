@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
  * A client timed out will connecting to HornetQ server.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 4/30/12
  */
 public final class HornetQConnectionTimedOutException extends HornetQException
 {

@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.NOT_CONNECTED;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
  * A client is not able to connect to HornetQ server.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 4/30/12
  */
 public final class HornetQNotConnectedException extends HornetQException
 {

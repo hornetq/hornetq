@@ -24,11 +24,9 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.ILLEGAL_STATE;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
- * A HornetQ resource is not in a legal state (e.g. calling
- * ClientConsumer.receive() if a MessageHandler is set)
+ * A HornetQ resource is not in a legal state (e.g. calling ClientConsumer.receive() if a
+ * MessageHandler is set).
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/2/12
  */
 public final class HornetQIllegalStateException extends HornetQException
 {

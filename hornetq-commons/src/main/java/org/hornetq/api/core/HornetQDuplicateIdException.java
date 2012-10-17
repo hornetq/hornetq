@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.DUPLICATE_ID_REJECTED;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
  * A DuplicateID was rejected.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/2/12
  */
 public final class HornetQDuplicateIdException extends HornetQException
 {

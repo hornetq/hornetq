@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.UNSUPPORTED_PACKET;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
  * A packet of unsupported type was received by HornetQ PacketHandler.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 4/30/12
  */
 public final class HornetQUnsupportedPacketException extends HornetQException
 {

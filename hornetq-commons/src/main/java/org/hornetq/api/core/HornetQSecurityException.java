@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.SECURITY_EXCEPTION;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
  * A security problem occurred (authentication issues, permission issues,...)
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/2/12
  */
 public final class HornetQSecurityException extends HornetQException
 {

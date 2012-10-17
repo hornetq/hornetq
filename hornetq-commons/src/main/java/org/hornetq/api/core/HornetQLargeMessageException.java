@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
  * An problem occurred while manipulating the body of a large message.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/2/12
  */
 public final class HornetQLargeMessageException extends HornetQException
 {

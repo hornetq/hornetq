@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.DISCONNECTED;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
  * A client was disconnected from HornetQ server when the server has shut down.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 4/30/12
  */
 public final class HornetQDisconnectedException extends HornetQException
 {
