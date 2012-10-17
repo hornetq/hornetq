@@ -6,6 +6,7 @@
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-pom</artifactId>
       <version>2.3.0.BETA-SNAPSHOT</version>
+      <relativePath>../../pom.xml</relativePath>
    </parent>
 
     <artifactId>hornetq-twitter-integration</artifactId>
