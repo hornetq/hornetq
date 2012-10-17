@@ -24,10 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS;
 
 /**
+ * An incompatibility between HornetQ versions on the client and the server has been detected.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
- * A incompatibility between HornetQ versions on the client and the server has been detected
  */
 public final class HornetQIncompatibleClientServerException extends HornetQException
 {

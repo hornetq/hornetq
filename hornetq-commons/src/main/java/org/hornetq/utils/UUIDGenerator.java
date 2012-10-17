@@ -132,7 +132,7 @@ public final class UUIDGenerator
    }
 
    /**
-    * If running java 6 or above, returns {@link NetworkInterface#getHardwareAddress()}, else return <code>null</code>.
+    * If running java 6 or above, returns {@link NetworkInterface#getHardwareAddress()}, else return {@code null}.
     * The first hardware address is returned when iterating all the NetworkInterfaces
     */
    public final static byte[] getHardwareAddress()
