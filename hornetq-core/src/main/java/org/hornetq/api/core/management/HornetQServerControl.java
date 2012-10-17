@@ -40,11 +40,30 @@ public interface HornetQServerControl
    boolean isStarted();
 
    /**
-    * Returns the list of interceptors used by this server.
+    * Returns the list of interceptors used by this server. Invoking this method is the same as invoking
+    * <code>getIncomingInterceptorClassNames().</code>
+    *
+    * @see Interceptor
+    * @deprecated As of HornetQ 2.3.0.Final, replaced by
+    * {@link #getIncomingInterceptorClassNames()} and
+    * {@link #getOutgoingInterceptorClassNames()}
+    */
+   @Deprecated
+   String[] getInterceptorClassNames();
+
+   /**
+    * Returns the list of interceptors used by this server for incoming messages.
     *
     * @see Interceptor
     */
-   String[] getInterceptorClassNames();
+   String[] getIncomingInterceptorClassNames();
+
+   /**
+    * Returns the list of interceptors used by this server for outgoing messages.
+    *
+    * @see Interceptor
+    */
+   String[] getOutgoingInterceptorClassNames();
 
    /**
     * Returns whether this server is clustered.

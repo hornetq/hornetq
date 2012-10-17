@@ -219,6 +219,38 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public String[] getIncomingInterceptorClassNames()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         return configuration.getIncomingInterceptorClassNames().toArray(new String[configuration.getIncomingInterceptorClassNames()
+               .size()]);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public String[] getOutgoingInterceptorClassNames()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         return configuration.getOutgoingInterceptorClassNames().toArray(new String[configuration.getOutgoingInterceptorClassNames()
+               .size()]);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public int getJournalBufferSize()
    {
       checkStarted();

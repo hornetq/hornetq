@@ -27,5 +27,5 @@ import org.hornetq.core.server.HornetQServer;
  */
 public interface ProtocolManagerFactory
 {
-   ProtocolManager createProtocolManager(HornetQServer server, List<Interceptor> interceptors);
+   ProtocolManager createProtocolManager(HornetQServer server, List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors);
 }

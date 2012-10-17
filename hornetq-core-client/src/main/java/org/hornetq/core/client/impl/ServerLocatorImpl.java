@@ -184,7 +184,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private transient STATE state;
    private transient CountDownLatch latch;
 
-   private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
+   private final List<Interceptor> incomingInterceptors = new CopyOnWriteArrayList<Interceptor>();
+
+   private final List<Interceptor> outgoingInterceptors = new CopyOnWriteArrayList<Interceptor>();
 
    private static ExecutorService globalThreadPool;
 
@@ -667,7 +669,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           reconnectAttempts,
                                                                           threadPool,
                                                                           scheduledThreadPool,
-                                                                          interceptors,
+                                                                          incomingInterceptors,
+                                                                          outgoingInterceptors,
                                                                           packetDecoder);
 
       addToConnecting(factory);
@@ -710,7 +713,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           reconnectAttempts,
                                                                           threadPool,
                                                                           scheduledThreadPool,
-                                                                          interceptors,
+                                                                          incomingInterceptors,
+                                                                          outgoingInterceptors,
                                                                           packetDecoder);
 
       addToConnecting(factory);
@@ -802,7 +806,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                       reconnectAttempts,
                                                       threadPool,
                                                       scheduledThreadPool,
-                                                      interceptors,
+                                                      incomingInterceptors,
+                                                      outgoingInterceptors,
                                                       packetDecoder);
                try
                {
@@ -1187,12 +1192,32 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public void addInterceptor(final Interceptor interceptor)
    {
-      interceptors.add(interceptor);
+      addIncomingInterceptor(interceptor);
+   }
+
+   public void addIncomingInterceptor(final Interceptor interceptor)
+   {
+      incomingInterceptors.add(interceptor);
+   }
+
+   public void addOutgoingInterceptor(final Interceptor interceptor)
+   {
+      outgoingInterceptors.add(interceptor);
    }
 
    public boolean removeInterceptor(final Interceptor interceptor)
    {
-      return interceptors.remove(interceptor);
+      return removeIncomingInterceptor(interceptor);
+   }
+
+   public boolean removeIncomingInterceptor(final Interceptor interceptor)
+   {
+      return incomingInterceptors.remove(interceptor);
+   }
+
+   public boolean removeOutgoingInterceptor(final Interceptor interceptor)
+   {
+      return outgoingInterceptors.remove(interceptor);
    }
 
    public int getInitialMessagePacketSize()
@@ -1782,7 +1807,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                                 reconnectAttempts,
                                                                                 threadPool,
                                                                                 scheduledThreadPool,
-                                                                                interceptors,
+                                                                                incomingInterceptors,
+                                                                                outgoingInterceptors,
                                                                                 packetDecoder);
 
             factory.disableFinalizeCheck();

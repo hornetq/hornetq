@@ -83,7 +83,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Set<TransportConfiguration> acceptorsConfig;
 
-   private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
+   private final List<Interceptor> incomingInterceptors = new CopyOnWriteArrayList<Interceptor>();
+
+   private final List<Interceptor> outgoingInterceptors = new CopyOnWriteArrayList<Interceptor>();
 
    private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
 
@@ -119,11 +121,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.clusterManager = clusterManager;
 
-      for (String interceptorClass : config.getInterceptorClassNames())
+      for (String interceptorClass : config.getIncomingInterceptorClassNames())
       {
          try
          {
-             interceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
+            incomingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
+         }
+      }
+
+      for (String interceptorClass : config.getOutgoingInterceptorClassNames())
+      {
+         try
+         {
+            outgoingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
          }
          catch (Exception e)
          {
@@ -135,12 +149,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.scheduledThreadPool = scheduledThreadPool;
 
       this.protocolMap.put(ProtocolType.CORE,
-                           new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
+                           new CoreProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
       // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
       this.protocolMap.put(ProtocolType.STOMP,
-                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
+                           new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
       this.protocolMap.put(ProtocolType.STOMP_WS,
-                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
+                           new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -486,12 +500,32 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void addInterceptor(final Interceptor interceptor)
    {
-      interceptors.add(interceptor);
+      addIncomingInterceptor(interceptor);
    }
 
    public boolean removeInterceptor(final Interceptor interceptor)
    {
-      return interceptors.remove(interceptor);
+      return removeIncomingInterceptor(interceptor);
+   }
+
+   public void addIncomingInterceptor(final Interceptor interceptor)
+   {
+      incomingInterceptors.add(interceptor);
+   }
+
+   public boolean removeIncomingInterceptor(final Interceptor interceptor)
+   {
+      return incomingInterceptors.remove(interceptor);
+   }
+
+   public void addOutgoingInterceptor(final Interceptor interceptor)
+   {
+      outgoingInterceptors.add(interceptor);
+   }
+
+   public boolean removeOutgoingInterceptor(final Interceptor interceptor)
+   {
+      return outgoingInterceptors.remove(interceptor);
    }
 
    // Public --------------------------------------------------------

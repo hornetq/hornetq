@@ -79,7 +79,15 @@
                 <xsd:element maxOccurs="1" minOccurs="0" name="message-expiry-thread-priority" type="xsd:int"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="id-cache-size" type="xsd:int"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="persist-id-cache" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-interceptors"/>
+                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-interceptors">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            DEPRECATED. This option is deprecated, but it will still be honored. Any interceptor specified here will be considered an "incoming" interceptor. See &lt;remoting-incoming-interceptors&gt; and &lt;remoting-outgoing-interceptors&gt;.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-incoming-interceptors"/>
+                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-outgoing-interceptors"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="backup" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xsd:boolean">
                     <xsd:annotation>
@@ -243,6 +251,22 @@
     </xsd:element>
 
     <xsd:element name="remoting-interceptors">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="remoting-incoming-interceptors">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="remoting-outgoing-interceptors">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>

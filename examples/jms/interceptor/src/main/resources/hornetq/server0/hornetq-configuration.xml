@@ -11,9 +11,9 @@
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
 
-   <remoting-interceptors>
+   <remoting-incoming-interceptors>
       <class-name>org.hornetq.jms.example.SimpleInterceptor</class-name>
-   </remoting-interceptors>
+   </remoting-incoming-interceptors>
 
    <!-- Connectors -->
 

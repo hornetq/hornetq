@@ -42,7 +42,6 @@ import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.protocol.ClientPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -155,7 +154,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    /** Used to wait for the creation of a session. */
    private CountDownLatch inCreateSessionLatch;
 
-   private final List<Interceptor> interceptors;
+   private final List<Interceptor> incomingInterceptors;
+
+   private final List<Interceptor> outgoingInterceptors;
 
    private volatile boolean stopPingingAfterOne;
 
@@ -187,7 +188,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                             final int reconnectAttempts,
                             final Executor threadPool,
                             final ScheduledExecutorService scheduledThreadPool,
-                            final List<Interceptor> interceptors,
+                            final List<Interceptor> incomingInterceptors,
+                            final List<Interceptor> outgoingInterceptors,
                             PacketDecoder packetDecoder)
    {
 
@@ -225,7 +227,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       closeExecutor = orderedExecutorFactory.getExecutor();
 
-      this.interceptors = interceptors;
+      this.incomingInterceptors = incomingInterceptors;
+
+      this.outgoingInterceptors = outgoingInterceptors;
 
       this.packetDecoder = packetDecoder;
    }
@@ -1324,7 +1328,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             return connection;
          }
 
-         connection = new RemotingConnectionImpl(packetDecoder, tc, callTimeout, callFailoverTimeout, interceptors);
+         connection = new RemotingConnectionImpl(packetDecoder, tc, callTimeout, callFailoverTimeout, incomingInterceptors, outgoingInterceptors);
 
          connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
 

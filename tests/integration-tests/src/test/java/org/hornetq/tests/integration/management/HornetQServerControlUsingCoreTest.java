@@ -197,7 +197,17 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String[] getInterceptorClassNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("interceptorClassNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
+         }
+
+         public String[] getIncomingInterceptorClassNames()
+         {
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
+         }
+
+         public String[] getOutgoingInterceptorClassNames()
+         {
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("outgoingInterceptorClassNames"));
          }
 
          public String getJournalDirectory()

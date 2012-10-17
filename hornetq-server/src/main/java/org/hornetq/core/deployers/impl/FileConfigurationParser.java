@@ -326,7 +326,7 @@ public final class FileConfigurationParser
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
-      ArrayList<String> interceptorList = new ArrayList<String>();
+      ArrayList<String> incomingInterceptorList = new ArrayList<String>();
 
       if (interceptorNodes.getLength() > 0)
       {
@@ -338,12 +338,50 @@ public final class FileConfigurationParser
             {
                String clazz = interceptors.item(i).getTextContent();
 
-               interceptorList.add(clazz);
+               incomingInterceptorList.add(clazz);
             }
          }
       }
 
-      config.setInterceptorClassNames(interceptorList);
+      NodeList incomingInterceptorNodes = e.getElementsByTagName("remoting-incoming-interceptors");
+
+      if (incomingInterceptorNodes.getLength() > 0)
+      {
+         NodeList interceptors = incomingInterceptorNodes.item(0).getChildNodes();
+
+         for (int i = 0; i < interceptors.getLength(); i++)
+         {
+            if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
+            {
+               String clazz = interceptors.item(i).getTextContent();
+
+               incomingInterceptorList.add(clazz);
+            }
+         }
+      }
+
+      config.setIncomingInterceptorClassNames(incomingInterceptorList);
+
+      NodeList outgoingInterceptorNodes = e.getElementsByTagName("remoting-outgoing-interceptors");
+
+      ArrayList<String> outgoingInterceptorList = new ArrayList<String>();
+
+      if (outgoingInterceptorNodes.getLength() > 0)
+      {
+         NodeList interceptors = outgoingInterceptorNodes.item(0).getChildNodes();
+
+         for (int i = 0; i < interceptors.getLength(); i++)
+         {
+            if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
+            {
+               String clazz = interceptors.item(i).getTextContent();
+
+               outgoingInterceptorList.add(clazz);
+            }
+         }
+      }
+
+      config.setOutgoingInterceptorClassNames(outgoingInterceptorList);
 
       NodeList connectorNodes = e.getElementsByTagName("connector");
 

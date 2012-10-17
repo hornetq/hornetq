@@ -8,7 +8,7 @@
   <body onload="prettyPrint()">
      <h1>JMS Interceptor Example</h1>
 
-     <p>This example shows you how to implement and configure a simple interceptor with HornetQ.</p>
+     <p>This example shows you how to implement and configure a simple incoming, server-side interceptor with HornetQ.</p>
      
      <p>HornetQ allows an application to use an interceptor to hook into the messaging system. All that needs to do is to implement the
      Interceptor interface, as defined below: </p>
@@ -25,9 +25,9 @@
      <code>
         &lt;configuration&gt;
         ...
-           &lt;remoting-interceptors&gt;
+           &lt;remoting-incoming-interceptors&gt;
               &lt;class-name&gt;org.hornetq.jms.example.SimpleInterceptor&lt;/class-name&gt;
-           &lt;/remoting-interceptors&gt;
+           &lt;/remoting-incoming-interceptors&gt;
         ...
         &lt;/configuration&gt;
      </code>
