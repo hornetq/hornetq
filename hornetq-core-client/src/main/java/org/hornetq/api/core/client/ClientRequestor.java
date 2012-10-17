@@ -85,7 +85,7 @@ public final class ClientRequestor
     *
     * @param request  the message to send
     * @param timeout the timeout to wait for a reply (in milliseconds)
-    * @return the reply message or <code>null</code> if no message is replied before the timeout elapses
+    * @return the reply message or {@code null} if no message is replied before the timeout elapses
     * @throws Exception
     */
    public ClientMessage request(final ClientMessage request, final long timeout) throws Exception

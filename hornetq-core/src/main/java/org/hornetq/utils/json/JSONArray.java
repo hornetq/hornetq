@@ -39,7 +39,7 @@ import java.util.Map;
  * methods for accessing the values by index, and <code>put</code> methods for
  * adding or replacing values. The values can be any of these types:
  * <code>Boolean</code>, <code>JSONArray</code>, <code>JSONObject</code>,
- * <code>Number</code>, <code>String</code>, or the
+ * <code>Number</code>, {@code string}, or the
  * <code>JSONObject.NULL object</code>.
  * <p>
  * The constructor can convert a JSON text into a Java object. The
@@ -61,7 +61,7 @@ import java.util.Map;
  * <ul>
  * <li>An extra <code>,</code>&nbsp;<small>(comma)</small> may appear just
  *     before the closing bracket.</li>
- * <li>The <code>null</code> value will be inserted when there
+ * <li>The {@code null} value will be inserted when there
  *     is <code>,</code>&nbsp;<small>(comma)</small> elision.</li>
  * <li>Strings may be quoted with <code>'</code>&nbsp;<small>(single
  *     quote)</small>.</li>
@@ -70,7 +70,7 @@ import java.util.Map;
  *     and if they do not contain any of these characters:
  *     <code>{ } [ ] / \ : , = ; #</code> and if they do not look like numbers
  *     and if they are not the reserved words <code>true</code>,
- *     <code>false</code>, or <code>null</code>.</li>
+ *     <code>false</code>, or {@code null}.</li>
  * <li>Values can be separated by <code>;</code> <small>(semicolon)</small> as
  *     well as by <code>,</code> <small>(comma)</small>.</li>
  * <li>Numbers may have the <code>0-</code> <small>(octal)</small> or
