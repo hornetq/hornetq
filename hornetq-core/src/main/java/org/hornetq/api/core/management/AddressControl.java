@@ -51,6 +51,10 @@ public interface AddressControl
     */
    int getNumberOfPages() throws Exception;
 
+   /**
+    * Returns whether this address is paging.
+    * @throws Exception
+    */
    boolean isPaging() throws Exception;
 
    /**
@@ -62,7 +66,4 @@ public interface AddressControl
     * Returns the names of all bindings (both queues and diverts) bound to this address
     */
    String[] getBindingNames() throws Exception;
-
-   // Operations ----------------------------------------------------
-
 }

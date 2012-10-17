@@ -20,8 +20,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
- * Factory class to create HornetQBuffers
- *
+ * Factory class to create instances of {@link HornetQBuffer}.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public final class HornetQBuffers
