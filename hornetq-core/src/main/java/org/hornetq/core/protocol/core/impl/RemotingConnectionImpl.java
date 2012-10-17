@@ -70,7 +70,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private final long blockingCallFailoverTimeout;
 
-   private final List<Interceptor> interceptors;
+   private final List<Interceptor> incomingInterceptors;
+
+   private final List<Interceptor> outgoingInterceptors;
 
    private volatile boolean destroyed;
 
@@ -108,9 +110,10 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
                                  final Connection transportConnection,
                                  final long blockingCallTimeout,
                                  final long blockingCallFailoverTimeout,
-                                 final List<Interceptor> interceptors)
+                                 final List<Interceptor> incomingInterceptors,
+                                 final List<Interceptor> outgoingInterceptors)
    {
-      this(packetDecoder, transportConnection, blockingCallTimeout, blockingCallFailoverTimeout, interceptors, true, null, null);
+      this(packetDecoder, transportConnection, blockingCallTimeout, blockingCallFailoverTimeout, incomingInterceptors, outgoingInterceptors, true, null, null);
    }
 
    /*
@@ -118,19 +121,21 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
     */
    RemotingConnectionImpl(final PacketDecoder packetDecoder,
                           final Connection transportConnection,
-                          final List<Interceptor> interceptors,
+                          final List<Interceptor> incomingInterceptors,
+                          final List<Interceptor> outgoingInterceptors,
                           final Executor executor,
                           final SimpleString nodeID)
 
    {
-      this(packetDecoder, transportConnection, -1, -1, interceptors, false, executor, nodeID);
+      this(packetDecoder, transportConnection, -1, -1, incomingInterceptors, outgoingInterceptors, false, executor, nodeID);
    }
 
    private RemotingConnectionImpl(final PacketDecoder packetDecoder,
                                   final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final long blockingCallFailoverTimeout,
-                                  final List<Interceptor> interceptors,
+                                  final List<Interceptor> incomingInterceptors,
+                                  final List<Interceptor> outgoingInterceptors,
                                   final boolean client,
                                   final Executor executor,
                                   final SimpleString nodeID)
@@ -144,7 +149,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       this.blockingCallFailoverTimeout = blockingCallFailoverTimeout;
 
-      this.interceptors = interceptors;
+      this.incomingInterceptors = incomingInterceptors;
+
+      this.outgoingInterceptors = outgoingInterceptors;
 
       this.client = client;
 
@@ -226,7 +233,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       if (channel == null)
       {
-         channel = new ChannelImpl(this, channelID, confWindowSize);
+         channel = new ChannelImpl(this, channelID, confWindowSize, outgoingInterceptors);
 
          channels.put(channelID, channel);
       }
@@ -526,9 +533,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private void doBufferReceived(final Packet packet)
    {
-      if (interceptors != null)
+      if (incomingInterceptors != null)
       {
-         for (final Interceptor interceptor : interceptors)
+         for (final Interceptor interceptor : incomingInterceptors)
          {
             try
             {

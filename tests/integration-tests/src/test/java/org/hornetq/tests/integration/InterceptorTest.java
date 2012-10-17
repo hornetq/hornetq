@@ -55,11 +55,11 @@ public class InterceptorTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(false);
+      server = createServer(false, true);
 
       server.start();
 
-      locator = createInVMNonHALocator();
+      locator = createNettyNonHALocator();
    }
 
    private static final String key = "fruit";
@@ -71,6 +71,24 @@ public class InterceptorTest extends ServiceTestBase
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
             SessionSendMessage p = (SessionSendMessage)packet;
+
+            ServerMessage sm = (ServerMessage)p.getMessage();
+
+            sm.putStringProperty(InterceptorTest.key, "orange");
+         }
+
+         return true;
+      }
+
+   }
+
+   private class MyOutgoingInterceptor1 implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
+         {
+            SessionReceiveMessage p = (SessionReceiveMessage)packet;
 
             ServerMessage sm = (ServerMessage)p.getMessage();
 
@@ -96,6 +114,24 @@ public class InterceptorTest extends ServiceTestBase
 
    }
 
+   private class MyOutgoingInterceptor2 implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (isForceDeliveryResponse(packet))
+         {
+            return true;
+         }
+
+         if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
+         {
+            return false;
+         }
+
+         return true;
+      }
+   }
+
    private class MyInterceptor3 implements Interceptor
    {
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
@@ -103,6 +139,24 @@ public class InterceptorTest extends ServiceTestBase
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
+
+            ClientMessage cm = (ClientMessage)p.getMessage();
+
+            cm.putStringProperty(InterceptorTest.key, "orange");
+         }
+
+         return true;
+      }
+
+   }
+
+   private class MyOutgoingInterceptor3 implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.SESS_SEND)
+         {
+            SessionSendMessage p = (SessionSendMessage)packet;
 
             ClientMessage cm = (ClientMessage)p.getMessage();
 
@@ -124,6 +178,25 @@ public class InterceptorTest extends ServiceTestBase
          }
 
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
+         {
+            return false;
+         }
+
+         return true;
+      }
+
+   }
+
+   private class MyOutgoingInterceptor4 implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (isForceDeliveryResponse(packet))
+         {
+            return true;
+         }
+
+         if (packet.getType() == PacketImpl.SESS_SEND)
          {
             return false;
          }
@@ -418,6 +491,63 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   public void testClientOutgoingInterceptorChangeProperty() throws Exception
+   {
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      MyOutgoingInterceptor3 interceptor = new MyOutgoingInterceptor3();
+
+      sf.getServerLocator().addOutgoingInterceptor(interceptor);
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
+      }
+
+      sf.getServerLocator().removeOutgoingInterceptor(interceptor);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
+         producer.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertEquals("apple", message.getStringProperty(InterceptorTest.key));
+      }
+
+      session.close();
+   }
+
    public void testClientInterceptorRejectPacket() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -450,6 +580,70 @@ public class InterceptorTest extends ServiceTestBase
       Assert.assertNull(message);
 
       session.close();
+   }
+
+   public void testClientOutgoingInterceptorRejectPacketOnNonBlockingSend() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(false);
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      MyOutgoingInterceptor4 interceptor = new MyOutgoingInterceptor4();
+
+      sf.getServerLocator().addOutgoingInterceptor(interceptor);
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+      ClientMessage message = consumer.receive(100);
+
+      Assert.assertNull(message);
+
+      session.close();
+   }
+
+   public void testClientOutgoingInterceptorRejectPacketOnBlockingSend() throws Exception
+   {
+      // must make the call block to exercise the right logic
+      locator.setBlockOnNonDurableSend(true);
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      MyOutgoingInterceptor4 interceptor = new MyOutgoingInterceptor4();
+
+      sf.getServerLocator().addOutgoingInterceptor(interceptor);
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      ClientMessage message = session.createMessage(false);
+
+      try
+      {
+         producer.send(message);
+         Assert.fail();
+      }
+      catch (HornetQException e)
+      {
+         // expected exception
+      }
    }
 
    public void testServerMultipleInterceptors() throws Exception
@@ -630,4 +824,102 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   public void testServerOutgoingInterceptorChangeProperty() throws Exception
+   {
+      MyOutgoingInterceptor1 interceptor = new MyOutgoingInterceptor1();
+
+      server.getRemotingService().addOutgoingInterceptor(interceptor);
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         message.putIntProperty("count", i);
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         assertNotNull(message);
+
+         assertEquals(i, message.getIntProperty("count").intValue());
+
+         Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
+      }
+
+      server.getRemotingService().removeOutgoingInterceptor(interceptor);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         message.putStringProperty(InterceptorTest.key, "apple");
+
+         producer.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         Assert.assertEquals("apple", message.getStringProperty(InterceptorTest.key));
+      }
+
+      session.close();
+   }
+
+   public void testServerOutgoingInterceptorRejectMessage() throws Exception
+   {
+      MyOutgoingInterceptor2 interceptor = new MyOutgoingInterceptor2();
+
+      server.getRemotingService().addOutgoingInterceptor(interceptor);
+
+      locator.setBlockOnNonDurableSend(false);
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+      ClientMessage message = consumer.receiveImmediate();
+
+      Assert.assertNull(message);
+
+      session.close();
+   }
 }
