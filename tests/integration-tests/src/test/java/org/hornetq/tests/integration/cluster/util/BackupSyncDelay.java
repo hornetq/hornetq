@@ -219,21 +219,22 @@ public class BackupSyncDelay implements Interceptor
       }
 
       @Override
-      public void send(Packet packet)
+      public boolean send(Packet packet)
       {
          // no-op
          // channel.send(packet);
+         return true;
       }
 
       @Override
-      public void sendBatched(Packet packet)
+      public boolean sendBatched(Packet packet)
       {
          throw new UnsupportedOperationException();
 
       }
 
       @Override
-      public void sendAndFlush(Packet packet)
+      public boolean sendAndFlush(Packet packet)
       {
          throw new UnsupportedOperationException();
       }

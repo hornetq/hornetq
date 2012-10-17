@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CommandConfirmationHandler;
@@ -110,7 +112,9 @@ public final class ChannelImpl implements Channel
 
    private volatile boolean transferring;
 
-   public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize)
+   private final List<Interceptor> interceptors;
+
+   public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize, final List<Interceptor> interceptors)
    {
       this.connection = connection;
 
@@ -126,6 +130,8 @@ public final class ChannelImpl implements Channel
       {
          resendCache = null;
       }
+
+      this.interceptors = interceptors;
    }
 
    public boolean supports(final byte packetType)
@@ -177,19 +183,19 @@ public final class ChannelImpl implements Channel
       }
    }
 
-   public void sendAndFlush(final Packet packet)
+   public boolean sendAndFlush(final Packet packet)
    {
-      send(packet, true, false);
+      return send(packet, true, false);
    }
 
-   public void send(final Packet packet)
+   public boolean send(final Packet packet)
    {
-      send(packet, false, false);
+      return send(packet, false, false);
    }
 
-   public void sendBatched(final Packet packet)
+   public boolean sendBatched(final Packet packet)
    {
-      send(packet, false, true);
+      return send(packet, false, true);
    }
 
    public void setTransferring(boolean transferring)
@@ -198,9 +204,15 @@ public final class ChannelImpl implements Channel
    }
 
    // This must never called by more than one thread concurrently
-
-   public void send(final Packet packet, final boolean flush, final boolean batch)
+   public boolean send(final Packet packet, final boolean flush, final boolean batch)
    {
+      String interceptionResult = invokeInterceptors(packet);
+
+      if (interceptionResult != null)
+      {
+         return false;
+      }
+
       synchronized (sendLock)
       {
          packet.setChannelID(id);
@@ -253,11 +265,21 @@ public final class ChannelImpl implements Channel
          // The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
          // buffer is full, preventing any incoming buffers being handled and blocking failover
          connection.getTransportConnection().write(buffer, flush, batch);
+
+         return true;
       }
    }
 
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
+      String interceptionResult = invokeInterceptors(packet);
+
+      if (interceptionResult != null)
+      {
+         // if we don't throw an exception here the client might not unblock
+         throw new HornetQException("Interceptor " + interceptionResult + " returned false. Sending packet aborted");
+      }
+
       if (closed)
       {
          throw HornetQCoreMessageBundle.BUNDLE.connectionDestroyed();
@@ -359,6 +381,40 @@ public final class ChannelImpl implements Channel
 
          return response;
       }
+   }
+
+   /**
+    *
+    * @param packet the packet to intercept
+    * @return the name of the interceptor that returned <code>false</code> or <code>null</code> if no interceptors
+    *    returned <code>false</code>.
+    */
+   private String invokeInterceptors(Packet packet)
+   {
+      if (interceptors != null)
+      {
+         for (final Interceptor interceptor : interceptors)
+         {
+            try
+            {
+               String interceptorName = interceptor.getClass().getName();
+               HornetQCoreLogger.LOGGER.debug("Invoking interceptor " + interceptorName + " on " + packet);
+
+               boolean callNext = interceptor.intercept(packet, connection);
+
+               if (!callNext)
+               {
+                  return interceptorName;
+               }
+            }
+            catch (final Throwable e)
+            {
+               HornetQCoreLogger.LOGGER.errorCallingInterceptor(e, interceptor);
+            }
+         }
+      }
+
+      return null;
    }
 
    public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)

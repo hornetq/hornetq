@@ -71,9 +71,12 @@ public final class CoreSessionCallback implements SessionCallback
    {
       Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
 
-      channel.sendBatched(packet);
+      int size = 0;
 
-      int size = packet.getPacketSize();
+      if (channel.sendBatched(packet))
+      {
+         size = packet.getPacketSize();
+      }
 
       return size;
    }
