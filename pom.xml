@@ -435,15 +435,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>tests</module>
          </modules>
       </profile>
@@ -455,15 +455,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>examples</module>
          </modules>
       </profile>
@@ -475,15 +475,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>examples</module>
             <module>docs</module>
             <module>distribution</module>
@@ -497,15 +497,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>tests</module>
          </modules>
          <properties>
@@ -529,15 +529,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>tests</module>
          </modules>
          <properties>
@@ -555,15 +555,15 @@
             <module>hornetq-core-client</module>
             <module>hornetq-core</module>
             <module>hornetq-server</module>
-            <module>hornetq-jboss-as-integration</module>
             <module>hornetq-jms-client</module>
             <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-spring-integration</module>
-            <module>hornetq-twitter-integration</module>
+            <module>integration/hornetq-jboss-as-integration</module>
+            <module>integration/hornetq-spring-integration</module>
+            <module>integration/hornetq-twitter-integration</module>
             <module>tests</module>
             <module>examples</module>
          </modules>
