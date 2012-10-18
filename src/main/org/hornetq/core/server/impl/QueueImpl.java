@@ -668,7 +668,7 @@ public class QueueImpl implements Queue
       if (redistributor != null)
       {
          redistributor.stop();
-
+         Redistributor redistributorToRemove = redistributor;
          redistributor = null;
 
          Iterator<ConsumerHolder> iter = consumerList.iterator();
@@ -677,7 +677,7 @@ public class QueueImpl implements Queue
          {
             ConsumerHolder holder = iter.next();
 
-            if (holder.consumer == redistributor)
+            if (holder.consumer == redistributorToRemove)
             {
                iter.remove();
 
@@ -698,7 +698,6 @@ public class QueueImpl implements Queue
          redistributorFuture = null;
       }
    }
-
    @Override
    protected void finalize() throws Throwable
    {
