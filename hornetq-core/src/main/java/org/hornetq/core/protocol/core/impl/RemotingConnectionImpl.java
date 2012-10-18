@@ -533,24 +533,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private void doBufferReceived(final Packet packet)
    {
-      if (incomingInterceptors != null)
+      if (ChannelImpl.invokeInterceptors(packet, incomingInterceptors, this) != null)
       {
-         for (final Interceptor interceptor : incomingInterceptors)
-         {
-            try
-            {
-               boolean callNext = interceptor.intercept(packet, this);
-
-               if (!callNext)
-               {
-                  return;
-               }
-            }
-            catch (final Throwable e)
-            {
-               HornetQCoreLogger.LOGGER.errorCallingInterceptor(e, interceptor);
-            }
-         }
+         return;
       }
 
       synchronized (transferLock)
