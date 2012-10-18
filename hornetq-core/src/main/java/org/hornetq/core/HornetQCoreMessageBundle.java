@@ -438,4 +438,6 @@ public interface HornetQCoreMessageBundle
    @Message(id = 119136, value = "Error decoding password" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException errordecodingPassword(@Cause Exception e);
 
+   @Message(id = 119137, value = "Interceptor {0} rejected packet in a blocking call. This call will never complete.", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInterceptorRejectedPacketException interceptorRejectedPacket(String interceptionResult);
 }

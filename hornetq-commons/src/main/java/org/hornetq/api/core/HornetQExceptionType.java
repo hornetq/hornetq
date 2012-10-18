@@ -186,6 +186,14 @@ public enum HornetQExceptionType
          return new HornetQAlreadyReplicatingException(msg);
       }
    },
+   INTERCEPTOR_REJECTED_PACKET(117)
+   {
+      @Override
+      HornetQException createException(String msg)
+      {
+         return new HornetQInterceptorRejectedPacketException(msg);
+      }
+   },
    GENERIC_EXCEPTION(999)
    {
       @Override
