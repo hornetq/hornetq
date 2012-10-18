@@ -45,7 +45,7 @@ import java.util.TreeSet;
  * adding or replacing values by name.
  * <p>
  * The values can be any of these types: <code>Boolean</code>, <code>JSONArray</code>,
- * <code>JSONObject</code>, <code>Number</code>, <code>String</code>, or the
+ * <code>JSONObject</code>, <code>Number</code>, {@code string}, or the
  * <code>JSONObject.NULL</code> object. A JSONObject constructor can be used to convert an external
  * form JSON text into an internal form whose values can be retrieved with the <code>get</code> and
  * <code>opt</code> methods, or to convert values into a JSON text using the <code>put</code> and
@@ -74,7 +74,7 @@ import java.util.TreeSet;
  * <li>Strings do not need to be quoted at all if they do not begin with a quote or single quote,
  * and if they do not contain leading or trailing spaces, and if they do not contain any of these
  * characters: <code>{ } [ ] / \ : , = ; #</code> and if they do not look like numbers and if they
- * are not the reserved words <code>true</code>, <code>false</code>, or <code>null</code>.</li>
+ * are not the reserved words <code>true</code>, <code>false</code>, or {@code null}.</li>
  * <li>Keys can be followed by <code>=</code> or <code>=></code> as well as by <code>:</code>.</li>
  * <li>Values can be followed by <code>;</code> <small>(semicolon)</small> as well as by
  * <code>,</code> <small>(comma)</small>.</li>
@@ -136,7 +136,7 @@ public class JSONObject
 
    /**
     * It is sometimes more convenient and less ambiguous to have a
-    * <code>NULL</code> object than to use Java's <code>null</code> value.
+    * {@code null} object than to use Java's {@code null} value.
     * <code>JSONObject.NULL.equals(null)</code> returns <code>true</code>.
     * <code>JSONObject.NULL.toString()</code> returns <code>"null"</code>.
     */

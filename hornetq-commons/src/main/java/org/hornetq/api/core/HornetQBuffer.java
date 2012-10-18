@@ -18,15 +18,13 @@ import java.nio.ByteBuffer;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- *
  * A HornetQBuffer wraps a Netty's ChannelBuffer and is used throughout HornetQ code base.
- *
+ * <p>
+ * Instances of it can be obtained from {@link HornetQBuffers} factory.
+ * <p>
  * Much of it derived from Netty ChannelBuffer by Trustin Lee
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @see HornetQBuffers
- *
  */
 public interface HornetQBuffer
 {

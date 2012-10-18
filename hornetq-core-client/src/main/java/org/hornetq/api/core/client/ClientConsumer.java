@@ -51,7 +51,7 @@ public interface ClientConsumer
     * <p>
     * Calling this method on a closed consumer will throw a HornetQException.
     * @param timeout time (in milliseconds) to wait to receive a message
-    * @return a message or <code>null</code> if the time out expired
+    * @return a message or {@code null} if the time out expired
     * @throws HornetQException if an exception occurs while waiting to receive a message
     */
    ClientMessage receive(long timeout) throws HornetQException;
@@ -60,14 +60,14 @@ public interface ClientConsumer
     * Receives a message from a queue. This call will force a network trip to HornetQ server to
     * ensure that there are no messages in the queue which can be delivered to this consumer.
     * <p>
-    * This call will never wait indefinitely for a message, it will return <code>null</code> if no
+    * This call will never wait indefinitely for a message, it will return {@code null} if no
     * messages are available for this consumer.
     * <p>
     * Note however that there is a performance cost as an additional network trip to the server may
     * required to check the queue status.
     * <p>
     * Calling this method on a closed consumer will throw a HornetQException.
-    * @return a message or <code>null</code> if there are no messages in the queue for this consumer
+    * @return a message or {@code null} if there are no messages in the queue for this consumer
     * @throws HornetQException if an exception occurs while waiting to receive a message
     */
    ClientMessage receiveImmediate() throws HornetQException;
@@ -76,7 +76,7 @@ public interface ClientConsumer
     * Returns the MessageHandler associated to this consumer.
     * <p>
     * Calling this method on a closed consumer will throw a HornetQException.
-    * @return the MessageHandler associated to this consumer or <code>null</code>
+    * @return the MessageHandler associated to this consumer or {@code null}
     * @throws HornetQException if an exception occurs while getting the MessageHandler
     */
    MessageHandler getMessageHandler() throws HornetQException;
@@ -109,7 +109,7 @@ public interface ClientConsumer
    /**
     * Returns the last exception thrown by a call to this consumer's MessageHandler.
     *
-    * @return the last exception thrown by a call to this consumer's MessageHandler or <code>null</code>
+    * @return the last exception thrown by a call to this consumer's MessageHandler or {@code null}
     */
    Exception getLastException();
 }

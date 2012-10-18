@@ -20,15 +20,12 @@ import java.util.List;
 import org.hornetq.utils.DataConstants;
 
 /**
- * A simple String class that can store all characters, and stores as simple byte[],
- * this minimises expensive copying between String objects.
- *
+ * A simple String class that can store all characters, and stores as simple {@code byte[]}, this
+ * minimises expensive copying between String objects.
+ * <p>
  * This object is used heavily throughout HornetQ for performance reasons.
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
-
 public final class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;
@@ -46,8 +43,9 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
    // ----------------------------------------------------------------------
 
    /**
-    * Returns a SimpleString constructed from the <code>string</code> parameter. If
-    * <code>string</code> is <code>null</code>, the return value will be <code>null</code> too.
+    * Returns a SimpleString constructed from the {@code string} parameter.
+    * <p>
+    * If {@code string} is {@code null}, the return value will be {@code null} too.
     * @param string String used to instantiate a SimpleString.
     */
    public static SimpleString toSimpleString(final String string)
