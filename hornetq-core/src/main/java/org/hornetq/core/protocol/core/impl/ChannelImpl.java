@@ -34,6 +34,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.HornetQCoreLogger;
 import org.hornetq.core.HornetQCoreMessageBundle;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A ChannelImpl
@@ -206,9 +207,7 @@ public final class ChannelImpl implements Channel
    // This must never called by more than one thread concurrently
    public boolean send(final Packet packet, final boolean flush, final boolean batch)
    {
-      String interceptionResult = invokeInterceptors(packet);
-
-      if (interceptionResult != null)
+      if (invokeInterceptors(packet, interceptors, connection) != null)
       {
          return false;
       }
@@ -272,12 +271,12 @@ public final class ChannelImpl implements Channel
 
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
-      String interceptionResult = invokeInterceptors(packet);
+      String interceptionResult = invokeInterceptors(packet, interceptors, connection);
 
       if (interceptionResult != null)
       {
          // if we don't throw an exception here the client might not unblock
-         throw new HornetQException("Interceptor " + interceptionResult + " returned false. Sending packet aborted");
+         throw HornetQCoreMessageBundle.BUNDLE.interceptorRejectedPacket(interceptionResult);
       }
 
       if (closed)
@@ -389,7 +388,7 @@ public final class ChannelImpl implements Channel
     * @return the name of the interceptor that returned <code>false</code> or <code>null</code> if no interceptors
     *    returned <code>false</code>.
     */
-   private String invokeInterceptors(Packet packet)
+   public static String invokeInterceptors(final Packet packet, final List<Interceptor> interceptors, final RemotingConnection connection)
    {
       if (interceptors != null)
       {
@@ -397,14 +396,20 @@ public final class ChannelImpl implements Channel
          {
             try
             {
-               String interceptorName = interceptor.getClass().getName();
-               HornetQCoreLogger.LOGGER.debug("Invoking interceptor " + interceptorName + " on " + packet);
-
                boolean callNext = interceptor.intercept(packet, connection);
+
+               if (HornetQCoreLogger.LOGGER.isDebugEnabled())
+               {
+                  // use a StringBuilder for speed since this may be executed a lot
+                  StringBuilder msg = new StringBuilder();
+                  msg.append("Invocation of interceptor ").append(interceptor.getClass().getName()).append(" on ").
+                        append(packet).append(" returned ").append(callNext);
+                  HornetQCoreLogger.LOGGER.debug(msg.toString());
+               }
 
                if (!callNext)
                {
-                  return interceptorName;
+                  return interceptor.getClass().getName();
                }
             }
             catch (final Throwable e)
