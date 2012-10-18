@@ -15,6 +15,7 @@ package org.hornetq.tests.integration;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -643,6 +644,7 @@ public class InterceptorTest extends ServiceTestBase
       catch (HornetQException e)
       {
          // expected exception
+         Assert.assertTrue(e.getType().getCode() == HornetQExceptionType.INTERCEPTOR_REJECTED_PACKET.getCode());
       }
    }
 
