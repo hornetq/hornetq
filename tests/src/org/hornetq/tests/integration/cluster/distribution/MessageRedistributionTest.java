@@ -26,6 +26,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.server.Bindable;
+import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -87,6 +89,43 @@ public class MessageRedistributionTest extends ClusterTestBase
    protected boolean isNetty()
    {
       return false;
+   }
+   //https://issues.jboss.org/browse/HORNETQ-1057
+   public void testRedistributionStopsWhenConsumerAdded() throws Exception
+   {
+      setupCluster(false);
+
+      MessageRedistributionTest.log.info("Doing test");
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 0, false);
+      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+
+      send(0, "queues.testaddress", 2000, false, null);
+
+      removeConsumer(0);
+      addConsumer(0, 0, "queue0", null);
+
+      Bindable bindable = servers[0].getPostOffice().getBinding(new SimpleString("queue0")).getBindable();
+      String debug = ((QueueImpl) bindable).debug();
+      assertFalse(debug.contains(Redistributor.class.getName()));
+      MessageRedistributionTest.log.info("Test done");
    }
 
    public void testRedistributionWhenConsumerIsClosed() throws Exception
