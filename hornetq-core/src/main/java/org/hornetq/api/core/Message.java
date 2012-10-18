@@ -21,17 +21,16 @@ import org.hornetq.utils.UUID;
 
 /**
  * A Message is a routable instance that has a payload.
- * <br/>
- * The payload (the "body") is opaque to the messaging system.
- * A Message also has a fixed set of headers (required by the messaging system)
- * and properties (defined by the users) that can be used by the messaging system
- * to route the message (e.g. to ensure it matches a queue filter).
- * <br>
+ * <p>
+ * The payload (the "body") is opaque to the messaging system. A Message also has a fixed set of
+ * headers (required by the messaging system) and properties (defined by the users) that can be used
+ * by the messaging system to route the message (e.g. to ensure it matches a queue filter).
+ * <p>
  * <h2>Message Properties</h2>
- *
- * Message can contain properties specified by the users.
- * It is possible to convert from some types to other types as specified
- * by the following table:
+ * <p>
+ * Message can contain properties specified by the users. It is possible to convert from some types
+ * to other types as specified by the following table:
+ * 
  * <pre>
  * |        | boolean byte short int long float double String byte[]
  * |----------------------------------------------------------------
@@ -46,15 +45,13 @@ import org.hornetq.utils.UUID;
  * |byte[]  |                                                   X
  * |-----------------------------------------------------------------
  * </pre>
+ * 
  * <br>
- * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a {@code boolean}),
- * a PropertyConversionException will be thrown.
- *
+ * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a
+ * {@code boolean}), a {@link PropertyConversionException} will be thrown.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">ClebertSuconic</a>
- * @version <tt>$Revision: 3341 $</tt>
- *
- * $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $
+ * @version <tt>$Revision: 3341 $</tt> $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $
  */
 public interface Message
 {

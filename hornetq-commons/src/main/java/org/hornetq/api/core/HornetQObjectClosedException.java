@@ -24,11 +24,9 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.OBJECT_CLOSED;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         4/30/12
- *
- * A client operation failed because the calling resource
- * (ClientSession, ClientProducer, etc.) is closed.
+ * A client operation failed because the calling resource (ClientSession, ClientProducer, etc.) is
+ * closed.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 4/30/12
  */
 public final class HornetQObjectClosedException extends HornetQException
 {

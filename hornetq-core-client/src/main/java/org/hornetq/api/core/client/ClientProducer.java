@@ -41,7 +41,7 @@ public interface ClientProducer
    /**
     * Returns the address where messages will be sent.
     *
-    * <br><br>The address can be <code>null</code> if the ClientProducer
+    * <br><br>The address can be {@code null} if the ClientProducer
     *
     * was creating without specifying an address, that is by using {@link ClientSession#createProducer()}.
     *

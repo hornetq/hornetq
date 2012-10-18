@@ -77,7 +77,7 @@ public interface ClientSession extends XAResource
       long getMessageCount();
 
       /**
-       * Returns the queue's filter string (or <code>null</code> if the queue has no filter).
+       * Returns the queue's filter string (or {@code null} if the queue has no filter).
        */
       SimpleString getFilterString();
 

@@ -387,7 +387,7 @@ public interface ServerLocator
    /**
     * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.api.core.Message#HDR_GROUP_ID}.
     *
-    * Default value is is <code>null</code> and no group ID will be set on the messages.
+    * Default value is is {@code null} and no group ID will be set on the messages.
     *
     * @return the group ID that will be eventually set on each message
     */
