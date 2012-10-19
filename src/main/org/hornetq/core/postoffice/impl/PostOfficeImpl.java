@@ -620,11 +620,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-    	 // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
-    	 if (log.isDebugEnabled())
-    	 {
-    	    log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
-    	 }
+        // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
+        if (log.isDebugEnabled())
+        {
+           log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
+        }
       }
 
       if (log.isTraceEnabled())

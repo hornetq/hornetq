@@ -88,9 +88,9 @@ public class ManagementWithStompTest extends ManagementTestBase
       // retrieve the address of the queue
       frame = "\nSEND\n" + "destination:" + ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS + "\n" +
             "reply-to:" + address + "\n" +
-      		"_HQ_ResourceName:" + ResourceNames.CORE_QUEUE + queue + "\n" +
-      		"_HQ_Attribute: Address\n\n" +
-      		Stomp.NULL;
+            "_HQ_ResourceName:" + ResourceNames.CORE_QUEUE + queue + "\n" +
+            "_HQ_Attribute: Address\n\n" +
+            Stomp.NULL;
       sendFrame(frame);
 
       frame = receiveFrame(10000);

@@ -63,7 +63,7 @@ public class RawAckTest
    @AfterClass
    public static void shutdown() throws Exception
    {
-	  serverLocator.close();
+     serverLocator.close();
       hornetqServer.stop();
 
    }
