@@ -118,7 +118,7 @@ public class DelegatingSession implements ClientSessionInternal
 
    public void addFailoverListener(FailoverEventListener listener)
    {
-	  session.addFailoverListener(listener);
+     session.addFailoverListener(listener);
    }
 
    public void addProducer(final ClientProducerInternal producer)
@@ -461,7 +461,7 @@ public class DelegatingSession implements ClientSessionInternal
 
    public boolean removeFailoverListener(FailoverEventListener listener)
    {
-		return session.removeFailoverListener(listener);
+      return session.removeFailoverListener(listener);
    }
 
    public void removeProducer(final ClientProducerInternal producer)

@@ -152,22 +152,22 @@ public abstract class ServiceTestBase extends UnitTestCase
       do
       {
 
-    	 liveNodesCount = 0;
-    	 backupNodesCount = 0;
+        liveNodesCount = 0;
+        backupNodesCount = 0;
 
-    	 for (TopologyMemberImpl member : topology.getMembers())
-    	 {
-    		 if (member.getLive() != null)
-    		 {
-    			 liveNodesCount ++;
-    		 }
-    		 if (member.getBackup() != null)
-    		 {
-    			 backupNodesCount ++;
-    		 }
-    	 }
+        for (TopologyMemberImpl member : topology.getMembers())
+        {
+           if (member.getLive() != null)
+           {
+              liveNodesCount ++;
+           }
+           if (member.getBackup() != null)
+           {
+              backupNodesCount ++;
+           }
+        }
 
-    	 if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
+        if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
          {
             return topology;
          }

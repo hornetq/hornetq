@@ -451,15 +451,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       return listeners.remove(listener);
    }
 
-	public void addFailoverListener(FailoverEventListener listener)
-	{
-	  failoverListeners.add(listener);
-	}
+   public void addFailoverListener(FailoverEventListener listener)
+   {
+     failoverListeners.add(listener);
+   }
 
-	public boolean removeFailoverListener(FailoverEventListener listener)
-	{
-	  return failoverListeners.remove(listener);
-	}
+   public boolean removeFailoverListener(FailoverEventListener listener)
+   {
+     return failoverListeners.remove(listener);
+   }
 
    public void causeExit()
    {
@@ -701,7 +701,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                if (connection != null)
                {
-            	   callFailoverListeners(FailoverEventType.FAILOVER_COMPLETED);
+                  callFailoverListeners(FailoverEventType.FAILOVER_COMPLETED);
                }
             }
          }
@@ -959,22 +959,22 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void callFailoverListeners(FailoverEventType type)
    {
-	      final List<FailoverEventListener> listenersClone = new ArrayList<FailoverEventListener>(failoverListeners);
+         final List<FailoverEventListener> listenersClone = new ArrayList<FailoverEventListener>(failoverListeners);
 
-	      for (final FailoverEventListener listener : listenersClone)
-	      {
-	         try
-	         {
-	           listener.failoverEvent(type);
-	         }
-	         catch (final Throwable t)
-	         {
-	            // Failure of one listener to execute shouldn't prevent others
-	            // from
-	            // executing
-	            HornetQClientLogger.LOGGER.failedToExecuteListener(t);
-	         }
-	      }
+         for (final FailoverEventListener listener : listenersClone)
+         {
+            try
+            {
+              listener.failoverEvent(type);
+            }
+            catch (final Throwable t)
+            {
+               // Failure of one listener to execute shouldn't prevent others
+               // from
+               // executing
+               HornetQClientLogger.LOGGER.failedToExecuteListener(t);
+            }
+         }
    }
 
    /*

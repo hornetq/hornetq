@@ -1297,8 +1297,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public void addFailoverListener(FailoverEventListener listener)
-	  {
-	  }
+     {
+     }
 
       public boolean removeFailureListener(final FailureListener listener)
       {
@@ -1307,7 +1307,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public boolean removeFailoverListener(FailoverEventListener listener)
       {
-    	return false;
+       return false;
       }
 
       public int getVersion()

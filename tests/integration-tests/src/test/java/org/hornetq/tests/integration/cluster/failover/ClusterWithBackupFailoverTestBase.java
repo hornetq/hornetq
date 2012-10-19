@@ -283,7 +283,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
    protected void failNode(final int node) throws Exception
    {
-	   failNode(node, node);
+      failNode(node, node);
    }
 
 
@@ -306,21 +306,21 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       tstServer.crash(sessionsArray);
    }
 
-	private ClientSession[] exploreSessions(final int node)
-	{
-		HashSet<ClientSession> sessions = new HashSet<ClientSession>();
+   private ClientSession[] exploreSessions(final int node)
+   {
+      HashSet<ClientSession> sessions = new HashSet<ClientSession>();
 
-		for (ConsumerHolder holder : consumers)
-		{
-			if (holder != null && holder.getNode() == node && holder.getSession() != null)
-			{
-				sessions.add(holder.getSession());
-			}
-		}
+      for (ConsumerHolder holder : consumers)
+      {
+         if (holder != null && holder.getNode() == node && holder.getSession() != null)
+         {
+            sessions.add(holder.getSession());
+         }
+      }
 
-		ClientSession[] sessionsArray = sessions.toArray(new ClientSession[sessions.size()]);
-		return sessionsArray;
-	}
+      ClientSession[] sessionsArray = sessions.toArray(new ClientSession[sessions.size()]);
+      return sessionsArray;
+   }
 
    public void testFailAllNodes() throws Exception
    {

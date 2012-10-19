@@ -177,75 +177,75 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_CONSUMERS = 100;
 
-	protected static class ConsumerHolder
-	{
-		final ClientConsumer consumer;
+   protected static class ConsumerHolder
+   {
+      final ClientConsumer consumer;
 
-		final ClientSession session;
+      final ClientSession session;
 
-		final int id;
+      final int id;
 
-		final int node;
+      final int node;
 
-		public ClientConsumer getConsumer()
-		{
-			return consumer;
-		}
+      public ClientConsumer getConsumer()
+      {
+         return consumer;
+      }
 
-		public ClientSession getSession()
-		{
-			return session;
-		}
+      public ClientSession getSession()
+      {
+         return session;
+      }
 
-		public int getId()
-		{
-			return id;
-		}
+      public int getId()
+      {
+         return id;
+      }
 
-		public int getNode()
-		{
-			return node;
-		}
+      public int getNode()
+      {
+         return node;
+      }
 
-		ConsumerHolder(final int id, final ClientConsumer consumer, final ClientSession session, int node)
-		{
-			this.id = id;
-			this.node = node;
+      ConsumerHolder(final int id, final ClientConsumer consumer, final ClientSession session, int node)
+      {
+         this.id = id;
+         this.node = node;
 
-			this.consumer = consumer;
-			this.session = session;
-		}
+         this.consumer = consumer;
+         this.session = session;
+      }
 
-		void close()
-		{
-			if (consumer != null)
-			{
-				try
-				{
-					consumer.close();
-				} catch (HornetQException e)
-				{
-					// ignore
-				}
-			}
-			if (session != null)
-			{
-				try
-				{
-					session.close();
-				} catch (HornetQException e)
-				{
-					// ignore
-				}
-			}
-		}
+      void close()
+      {
+         if (consumer != null)
+         {
+            try
+            {
+               consumer.close();
+            } catch (HornetQException e)
+            {
+               // ignore
+            }
+         }
+         if (session != null)
+         {
+            try
+            {
+               session.close();
+            } catch (HornetQException e)
+            {
+               // ignore
+            }
+         }
+      }
 
-		@Override
-		public String toString()
-		{
-			return "id=" + id + ", consumer=" + consumer + ", session=" + session;
-		}
-	}
+      @Override
+      public String toString()
+      {
+         return "id=" + id + ", consumer=" + consumer + ", session=" + session;
+      }
+   }
 
    protected ClientConsumer getConsumer(final int node)
    {
@@ -1903,16 +1903,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
          pairs.add(serverTotc.getName());
       }
 Configuration conf=serverFrom.getConfiguration();
-		ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
 name, address, connectorFrom.getName(),
-				HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-				HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-				HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
-				retryInterval,
-				HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-				HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-				reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
-				1024, pairs, false);
+            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
+            retryInterval,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+            reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
+            1024, pairs, false);
 
       conf.getClusterConfigurations().add(clusterConf);
    }

@@ -378,18 +378,18 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
    private static class MyFailoverListener implements FailoverEventListener
    {
-	private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
+   private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
 
-	public ArrayList<FailoverEventType> getEventTypeList()
-	{
-		return eventTypeList;
-	}
+   public ArrayList<FailoverEventType> getEventTypeList()
+   {
+      return eventTypeList;
+   }
 
-	public void failoverEvent(FailoverEventType eventType)
-	{
-		eventTypeList.add(eventType);
-		log.info("Failover event just happen : "+eventType.toString());
-	}
+   public void failoverEvent(FailoverEventType eventType)
+   {
+      eventTypeList.add(eventType);
+      log.info("Failover event just happen : "+eventType.toString());
+   }
 
    }
 }

@@ -78,12 +78,16 @@ NB for this make sure you have installed examples/common.
 
 ## Eclipse
 
-We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to the improved
-Maven and Git support. Note that there are still some Maven plugins used by
-sub-projects (e.g. documentation) which are not supported even in Eclipse Juno (4.2).
+We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to the
+built-in support for Maven and Git. Note that there are still some Maven plugins
+used by sub-projects (e.g. documentation) which are not supported even in
+Eclipse Juno (4.2).
 
-Eclipse code formatting and (basic) project configuration files can be found at the
-```etc/``` folder. You need to manually copy them or use a plugin.
+Eclipse [m2e] is already included in "Eclipse IDE for Java Developers", or it
+can be installed from [Eclipse Juno release repository].
+
+[m2e]: http://eclipse.org/m2e/
+[Eclipse Juno release repository]: http://download.eclipse.org/releases/juno
 
 ### Annotation Pre-Processing
 
@@ -117,6 +121,23 @@ found at a [Dzone article on Eclipse Working Sets].
 
 [Eclipse's Working Sets]: http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Fconcepts%2Fcworkset.htm
 [Dzone article on Eclipse Working Sets]: http://eclipse.dzone.com/articles/categorise-projects-package
+
+### Code Formatting
+
+Eclipse code formatting and (basic) project configuration files can be found at
+the ```etc/``` folder. You should manually copy them _after importing all your
+projects_:
+
+```
+for settings_dir in `find . -type d -name .settings`; do
+   \cp -v etc/org.eclipse.jdt.* $settings_dir
+done
+```
+
+Do not use the [maven-eclipse-plugin] to copy the files as it conflicts with [m2e].
+
+[maven-eclipse-plugin]: https://maven.apache.org/plugins/maven-eclipse-plugin/
+[m2e]: http://eclipse.org/m2e/
 
 ## Github procedures
 

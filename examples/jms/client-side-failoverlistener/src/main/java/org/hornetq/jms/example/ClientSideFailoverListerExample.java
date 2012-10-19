@@ -117,7 +117,7 @@ public class ClientSideFailoverListerExample extends HornetQExample
          System.out.println("Got message: " + message.getText() + " from node " + node);
          if (i == 5)
          {
-        	 killServer(0);
+            killServer(0);
          }
       }
 
@@ -128,9 +128,9 @@ public class ClientSideFailoverListerExample extends HornetQExample
    private class FailoverListenerImpl implements FailoverEventListener
    {
 
-	public void failoverEvent(FailoverEventType eventType) {
-		System.out.println("Failover event triggered :"+ eventType.toString());
-	}
+   public void failoverEvent(FailoverEventType eventType) {
+      System.out.println("Failover event triggered :"+ eventType.toString());
+   }
 
    }
 }

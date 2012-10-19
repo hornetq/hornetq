@@ -69,9 +69,9 @@ public class AIOJournalImplTest extends JournalImplTestUnit
 
       file.mkdir();
 
-		return new AIOSequentialFileFactory(getTestDir(),
-				JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO, 1000000,
-				false);
+      return new AIOSequentialFileFactory(getTestDir(),
+            JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO, 1000000,
+            false);
    }
 
    @Override
