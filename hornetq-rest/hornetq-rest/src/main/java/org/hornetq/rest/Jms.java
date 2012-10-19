@@ -105,12 +105,12 @@ public class Jms
 
    public static boolean isHttpMessage(Message message)
    {
-	   try {
-		   Boolean aBoolean = message.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
-		   return aBoolean != null && aBoolean.booleanValue() == true;
-	   } catch (JMSException e) {
-		   return false;
-	   }
+      try {
+         Boolean aBoolean = message.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
+         return aBoolean != null && aBoolean.booleanValue() == true;
+      } catch (JMSException e) {
+         return false;
+      }
    }
 
    /**
@@ -142,28 +142,28 @@ public class Jms
 
       try
       {
-    	  long size = bytesMessage.getBodyLength();
-    	  if (size <= 0) return null;
+         long size = bytesMessage.getBodyLength();
+         if (size <= 0) return null;
 
-    	  byte[] body = new byte[(int)size];
-    	  bytesMessage.readBytes(body);
+         byte[] body = new byte[(int)size];
+         bytesMessage.readBytes(body);
 
-    	  String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
-    	  if (contentType == null)
-    	  {
-    		  throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
-    	  }
-    	  MediaType ct = MediaType.valueOf(contentType);
-    	  MessageBodyReader<T> reader = factory.getMessageBodyReader(type, genericType, null, ct);
-    	  if (reader == null)
-    	  {
-    		  throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
-    	  }
-    	  return reader.readFrom(type, genericType, null, ct, null, new ByteArrayInputStream(body));
+         String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE).substring(1);
+         if (contentType == null)
+         {
+            throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
+         }
+         MediaType ct = MediaType.valueOf(contentType);
+         MessageBodyReader<T> reader = factory.getMessageBodyReader(type, genericType, null, ct);
+         if (reader == null)
+         {
+            throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
+         }
+         return reader.readFrom(type, genericType, null, ct, null, new ByteArrayInputStream(body));
       }
       catch (Exception e)
       {
-    	  throw new RuntimeException(e);
+         throw new RuntimeException(e);
       }
    }
 
