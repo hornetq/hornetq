@@ -69,11 +69,11 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  */
 public class ServerPacketDecoder extends PacketDecoder
 {
-	private static final long serialVersionUID = 3348673114388400766L;
-	public static final ServerPacketDecoder INSTANCE = new ServerPacketDecoder();
+   private static final long serialVersionUID = 3348673114388400766L;
+   public static final ServerPacketDecoder INSTANCE = new ServerPacketDecoder();
 
-	@Override
-	public Packet decode(final HornetQBuffer in)
+   @Override
+   public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
 

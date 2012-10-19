@@ -26,7 +26,7 @@ public enum StompVersions
 
    public String toString()
    {
-	   if (this == V1_0)
+      if (this == V1_0)
       {
          return "1.0";
       }

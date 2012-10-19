@@ -54,7 +54,7 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (!started)
       {
-    	 HornetQJMSServerLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
+        HornetQJMSServerLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
          started = true;
 
          locator = config.createServerLocator();
@@ -72,7 +72,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception startupError)
          {
-        	HornetQJMSServerLogger.LOGGER.warn("Couldn't start recovery discovery on " + config + ", we will retry this on the next recovery scan");
+           HornetQJMSServerLogger.LOGGER.warn("Couldn't start recovery discovery on " + config + ", we will retry this on the next recovery scan");
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
@@ -121,7 +121,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception ignored)
          {
-        	 HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
+            HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
          }
 
          try
@@ -130,7 +130,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception ignored)
          {
-        	 HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
+            HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
          }
 
          sessionFactory = null;
@@ -177,11 +177,11 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (exception.getType() == HornetQExceptionType.DISCONNECTED)
       {
-    	  HornetQJMSServerLogger.LOGGER.warn("being disconnected for server shutdown", exception);
+         HornetQJMSServerLogger.LOGGER.warn("being disconnected for server shutdown", exception);
       }
       else
       {
-    	  HornetQJMSServerLogger.LOGGER.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
+         HornetQJMSServerLogger.LOGGER.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
                                            exception);
       }
       internalStop();

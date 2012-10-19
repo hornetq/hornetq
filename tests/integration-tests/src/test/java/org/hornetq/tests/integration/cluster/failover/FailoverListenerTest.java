@@ -52,13 +52,13 @@ public class FailoverListenerTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-	/**
-	 * Test if two servers is running and one of them is failing that we
-	 * trigger the expected events for {@link FailoverEventListener}
-	 * @throws Exception
-	 */
-	public void testFailoverListerCall() throws Exception
-	{
+   /**
+    * Test if two servers is running and one of them is failing that we
+    * trigger the expected events for {@link FailoverEventListener}
+    * @throws Exception
+    */
+   public void testFailoverListerCall() throws Exception
+   {
       createSessionFactory(2);
 
       SessionFactoryFailoverListener listener = new SessionFactoryFailoverListener();
@@ -134,20 +134,20 @@ public class FailoverListenerTest extends FailoverTestBase
       backupLocator.close();
    }
 
-	/**
-	 * Test that if the only server is running and failing we trigger
-	 * the event FailoverEventType.FAILOVER_FAILED in the end
-	 * @throws Exception
-	 */
+   /**
+    * Test that if the only server is running and failing we trigger
+    * the event FailoverEventType.FAILOVER_FAILED in the end
+    * @throws Exception
+    */
    public void testFailoverFailed() throws Exception
    {
-	  locator.setBlockOnNonDurableSend(true);
-	  locator.setBlockOnDurableSend(true);
-	  locator.setFailoverOnInitialConnection(true); // unnecessary?
-	  locator.setReconnectAttempts(1);
-	  sf = createSessionFactoryAndWaitForTopology(locator, 2);
+     locator.setBlockOnNonDurableSend(true);
+     locator.setBlockOnDurableSend(true);
+     locator.setFailoverOnInitialConnection(true); // unnecessary?
+     locator.setReconnectAttempts(1);
+     sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-	  //make sure no backup server is running
+     //make sure no backup server is running
       backupServer.stop();
 
       SessionFactoryFailoverListener listener = new SessionFactoryFailoverListener();
@@ -215,13 +215,13 @@ public class FailoverListenerTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-	      return TransportConfigurationUtils.getInVMAcceptor(live);
+         return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-	      return TransportConfigurationUtils.getInVMConnector(live);
+         return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 
@@ -277,20 +277,20 @@ public class FailoverListenerTest extends FailoverTestBase
 
    public class SessionFactoryFailoverListener implements FailoverEventListener {
 
-		private ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
+      private ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
 
-		public ArrayList<FailoverEventType> getFailoverEventType()
-		{
-			return this.failoverTypeEvent;
-		}
+      public ArrayList<FailoverEventType> getFailoverEventType()
+      {
+         return this.failoverTypeEvent;
+      }
 
-		@Override
-		public void failoverEvent(FailoverEventType eventType)
-		{
-			this.failoverTypeEvent.add(eventType);
-			log.info("Failover event just happen : "+eventType.toString());
-		}
+      @Override
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         this.failoverTypeEvent.add(eventType);
+         log.info("Failover event just happen : "+eventType.toString());
+      }
 
-	}
+   }
 
 }

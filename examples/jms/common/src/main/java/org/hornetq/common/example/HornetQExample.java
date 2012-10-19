@@ -38,7 +38,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 public abstract class HornetQExample
 {
    protected static final Logger log = Logger.getLogger(HornetQExample.class
-			.getName());
+         .getName());
 
    protected boolean failure = false;
 

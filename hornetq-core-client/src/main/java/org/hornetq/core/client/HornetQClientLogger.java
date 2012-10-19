@@ -488,7 +488,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212105, value = "Client is not being consistent on the request versioning. It just sent a version id={0}" +
-            		   " while it informed {1} previously", format = Message.Format.MESSAGE_FORMAT)
+                     " while it informed {1} previously", format = Message.Format.MESSAGE_FORMAT)
    void incompatibleVersionAfterConnect(int version, int clientVersion);
 
    @LogMessage(level = Logger.Level.WARN)

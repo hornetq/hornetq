@@ -278,13 +278,13 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-	      return TransportConfigurationUtils.getInVMAcceptor(live);
+         return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-	      return TransportConfigurationUtils.getInVMConnector(live);
+         return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 

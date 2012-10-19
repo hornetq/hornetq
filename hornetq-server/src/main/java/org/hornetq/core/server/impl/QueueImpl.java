@@ -2369,7 +2369,7 @@ public class QueueImpl implements Queue
          {
             if (HornetQServerLogger.LOGGER.isTraceEnabled())
             {
-            	HornetQServerLogger.LOGGER.trace("rolling back " + ref);
+               HornetQServerLogger.LOGGER.trace("rolling back " + ref);
             }
             try
             {

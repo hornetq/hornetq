@@ -66,7 +66,7 @@ public class ClientKickoffExample extends HornetQExample
          connection.setExceptionListener(new ExceptionListener()
          {
             @Override
-			public void onException(final JMSException e)
+         public void onException(final JMSException e)
             {
                exception.set(e);
             }
