@@ -819,15 +819,6 @@ public class PagingStoreImpl implements PagingStore
 
    }
 
-   /**
-    * Used only in tests.
-    */
-   @Deprecated
-   public boolean page(final ServerMessage message, final RoutingContext ctx, ReadLock lock) throws Exception
-   {
-      return page(message, ctx.getTransaction(), ctx.getContextListing(storeName), lock);
-   }
-
    @Override
    public boolean
    page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock)

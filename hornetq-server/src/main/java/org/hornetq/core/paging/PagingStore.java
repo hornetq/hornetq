@@ -23,7 +23,6 @@ import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.RouteContextList;
-import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -73,9 +72,6 @@ public interface PagingStore extends HornetQComponent
 
    /** Performs a real sync on the current IO file. */
    void ioSync() throws Exception;
-
-   @Deprecated
-   boolean page(ServerMessage message, RoutingContext ctx, ReadLock readLock) throws Exception;
 
    /**
     * Write message to page if we are paging.

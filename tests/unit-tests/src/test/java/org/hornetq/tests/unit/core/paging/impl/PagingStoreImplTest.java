@@ -187,7 +187,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertTrue(storeImpl.isPaging());
 
-      Assert.assertTrue(storeImpl.page(msg, new RoutingContextImpl(null), lock));
+      final RoutingContextImpl ctx = new RoutingContextImpl(null);
+      Assert.assertTrue(storeImpl.page(msg, ctx.getTransaction(), ctx.getContextListing(storeImpl.getStoreName()), lock));
 
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -238,8 +239,10 @@ public class PagingStoreImplTest extends UnitTestCase
          buffers.add(buffer);
 
          ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
+         final RoutingContextImpl ctx = new RoutingContextImpl(null);
+         Assert.assertTrue(storeImpl.page(msg, ctx.getTransaction(), ctx.getContextListing(storeImpl.getStoreName()),
+                                          lock));
 
-         Assert.assertTrue(storeImpl.page(msg, new RoutingContextImpl(null), lock));
       }
 
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
@@ -284,19 +287,19 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      PagingStoreImpl storeImpl =
+      PagingStoreImpl store =
                new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
                                    createStorageManagerMock(), factory, storeFactory,
                                    PagingStoreImplTest.destinationTestName, addressSettings,
                                    getExecutorFactory().getExecutor(), true);
 
-      storeImpl.start();
+      store.start();
 
-      Assert.assertEquals(0, storeImpl.getNumberOfPages());
+      Assert.assertEquals(0, store.getNumberOfPages());
 
-      storeImpl.startPaging();
+      store.startPaging();
 
-      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+      Assert.assertEquals(1, store.getNumberOfPages());
 
       List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
 
@@ -309,25 +312,26 @@ public class PagingStoreImplTest extends UnitTestCase
 
          if (i == 5)
          {
-            storeImpl.forceAnotherPage();
+            store.forceAnotherPage();
          }
 
-         ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
+         ServerMessage msg = createMessage(i, store, destination, buffer);
 
-         Assert.assertTrue(storeImpl.page(msg, new RoutingContextImpl(null), lock));
+         final RoutingContextImpl ctx = new RoutingContextImpl(null);
+         Assert.assertTrue(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
       }
 
-      Assert.assertEquals(2, storeImpl.getNumberOfPages());
+      Assert.assertEquals(2, store.getNumberOfPages());
 
-      storeImpl.sync();
+      store.sync();
 
       int sequence = 0;
 
       for (int pageNr = 0; pageNr < 2; pageNr++)
       {
-         Page page = storeImpl.depage();
+         Page page = store.depage();
 
-         System.out.println("numberOfPages = " + storeImpl.getNumberOfPages());
+         System.out.println("numberOfPages = " + store.getNumberOfPages());
 
          page.open();
 
@@ -344,15 +348,16 @@ public class PagingStoreImplTest extends UnitTestCase
          }
       }
 
-      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+      Assert.assertEquals(1, store.getNumberOfPages());
 
-      Assert.assertTrue(storeImpl.isPaging());
+      Assert.assertTrue(store.isPaging());
 
-      ServerMessage msg = createMessage(1, storeImpl, destination, buffers.get(0));
+      ServerMessage msg = createMessage(1, store, destination, buffers.get(0));
 
-      Assert.assertTrue(storeImpl.page(msg, new RoutingContextImpl(null), lock));
+      final RoutingContextImpl ctx = new RoutingContextImpl(null);
+      Assert.assertTrue(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
 
-      Page newPage = storeImpl.depage();
+      Page newPage = store.depage();
 
       newPage.open();
 
@@ -360,21 +365,26 @@ public class PagingStoreImplTest extends UnitTestCase
 
       newPage.delete(null);
 
-      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+      Assert.assertEquals(1, store.getNumberOfPages());
 
-      Assert.assertTrue(storeImpl.isPaging());
+      Assert.assertTrue(store.isPaging());
 
-      Assert.assertNull(storeImpl.depage());
+      Assert.assertNull(store.depage());
 
-      Assert.assertFalse(storeImpl.isPaging());
+      Assert.assertFalse(store.isPaging());
 
-      Assert.assertFalse(storeImpl.page(msg, new RoutingContextImpl(null), lock));
+      {final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+         Assert.assertFalse(store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()), lock));
+      }
 
-      storeImpl.startPaging();
+      store.startPaging();
 
-      Assert.assertTrue(storeImpl.page(msg, new RoutingContextImpl(null), lock));
+      {
+         final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+         Assert.assertTrue(store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()), lock));
+      }
 
-      Page page = storeImpl.depage();
+      Page page = store.depage();
 
       page.open();
 
@@ -386,13 +396,13 @@ public class PagingStoreImplTest extends UnitTestCase
 
       UnitTestCase.assertEqualsBuffers(18, buffers.get(0), msgs.get(0).getMessage().getBodyBuffer());
 
-      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+      Assert.assertEquals(1, store.getNumberOfPages());
 
-      Assert.assertTrue(storeImpl.isPaging());
+      Assert.assertTrue(store.isPaging());
 
-      Assert.assertNull(storeImpl.depage());
+      Assert.assertNull(store.depage());
 
-      Assert.assertEquals(0, storeImpl.getNumberOfPages());
+      Assert.assertEquals(0, store.getNumberOfPages());
 
       page.open();
 
@@ -463,7 +473,8 @@ public class PagingStoreImplTest extends UnitTestCase
                   // This is possible because the depage thread is not actually reading the pages.
                   // Just using the internal API to remove it from the page file system
                   ServerMessage msg = createMessage(id, storeImpl, destination, createRandomBuffer(id, 5));
-                  if (storeImpl.page(msg, new RoutingContextImpl(null), lock))
+                  final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+                  if (storeImpl.page(msg, ctx2.getTransaction(), ctx2.getContextListing(storeImpl.getStoreName()), lock))
                   {
                      buffers.put(id, msg);
                   }
@@ -605,7 +616,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       storeImpl2.forceAnotherPage();
 
-      storeImpl2.page(lastMsg, new RoutingContextImpl(null), lock);
+      final RoutingContextImpl ctx = new RoutingContextImpl(null);
+      storeImpl2.page(lastMsg, ctx.getTransaction(), ctx.getContextListing(storeImpl2.getStoreName()), lock);
       buffers2.put(lastMessageId, lastMsg);
 
       Page lastPage = null;
@@ -701,21 +713,21 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      final PagingStore storeImpl =
+      final PagingStore store =
                new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
                                    createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
                                    settings, getExecutorFactory().getExecutor(), false);
 
-      storeImpl.start();
+      store.start();
 
-      Assert.assertEquals(0, storeImpl.getNumberOfPages());
+      Assert.assertEquals(0, store.getNumberOfPages());
 
       // Marked the store to be paged
-      storeImpl.startPaging();
+      store.startPaging();
 
       final CountDownLatch producedLatch = new CountDownLatch(1);
 
-      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+      Assert.assertEquals(1, store.getNumberOfPages());
 
       final SimpleString destination = new SimpleString("test");
 
@@ -742,11 +754,14 @@ public class PagingStoreImplTest extends UnitTestCase
                   // Each thread will Keep paging until all the messages are depaged.
                   // This is possible because the depage thread is not actually reading the pages.
                   // Just using the internal API to remove it from the page file system
-                  ServerMessage msg = createMessage(i, storeImpl, destination, createRandomBuffer(i, 1024));
+                  ServerMessage msg = createMessage(i, store, destination, createRandomBuffer(i, 1024));
                   msg.putLongProperty("count", i);
-                  while (!storeImpl.page(msg, new RoutingContextImpl(null), lock))
+
+                  final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+                  while (!store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()),
+                                         lock))
                   {
-                     storeImpl.startPaging();
+                     store.startPaging();
                   }
 
                   if (i == 0)
@@ -780,7 +795,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
                while (msgsRead < NUMBER_OF_MESSAGES)
                {
-                  Page page = storeImpl.depage();
+                  Page page = store.depage();
                   if (page != null)
                   {
                      page.open();
@@ -822,7 +837,7 @@ public class PagingStoreImplTest extends UnitTestCase
       producerThread.join();
       consumer.join();
 
-      storeImpl.stop();
+      store.stop();
 
       for (Throwable e : errors)
       {
