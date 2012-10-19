@@ -30,21 +30,24 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         3/15/12
- *
+ * 
  * Logger Code 15
+ * <p>
+ * each message id must be 6 digits long starting with 15, the 3rd digit donates
+ * the level so
  *
- * each message id must be 6 digits long starting with 15, the 3rd digit donates the level so
- *
+ * <pre>
  * INF0  1
  * WARN  2
  * DEBUG 3
  * ERROR 4
  * TRACE 5
  * FATAL 6
+ * </pre>
  *
  * so an INFO message would be 151000 to 151999
+ *
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 3/15/12
  */
 @MessageLogger(projectCode = "HQ")
 public interface HornetQRALogger extends BasicLogger
