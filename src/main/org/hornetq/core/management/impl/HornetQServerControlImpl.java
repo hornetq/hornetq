@@ -1530,7 +1530,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
       if (maxSizeBytes < -1 )
       {
-    	  throw new IllegalStateException("Invalid argument on maxSizeBytes");
+         throw new IllegalStateException("Invalid argument on maxSizeBytes");
       }
 
       AddressSettings addressSettings = new AddressSettings();

@@ -2374,7 +2374,7 @@ public class QueueImpl implements Queue
          {
             if (log.isTraceEnabled())
             {
-            	log.trace("rolling back " + ref);
+               log.trace("rolling back " + ref);
             }
             try
             {
