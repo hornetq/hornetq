@@ -25,7 +25,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS QueueBrowser.
@@ -157,7 +156,7 @@ public final class HornetQQueueBrowser implements QueueBrowser
             }
             catch (Exception e)
             {
-               HornetQJMSLogger.LOGGER.errorCreatingMessage(e);
+               HornetQJMSClientLogger.LOGGER.errorCreatingMessage(e);
 
                return null;
             }

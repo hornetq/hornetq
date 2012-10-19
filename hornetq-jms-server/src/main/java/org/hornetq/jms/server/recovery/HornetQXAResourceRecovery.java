@@ -21,7 +21,7 @@ import javax.transaction.xa.XAResource;
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 
 /**
  *
@@ -54,7 +54,7 @@ import org.hornetq.jms.HornetQJMSLogger;
  */
 public class HornetQXAResourceRecovery implements XAResourceRecovery
 {
-   private final boolean trace = HornetQJMSLogger.LOGGER.isTraceEnabled();
+   private final boolean trace = HornetQJMSServerLogger.LOGGER.isTraceEnabled();
 
    private boolean hasMore;
 
@@ -64,15 +64,15 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
    {
       if (trace)
       {
-    	  HornetQJMSLogger.LOGGER.trace("Constructing HornetQXAResourceRecovery");
+    	  HornetQJMSServerLogger.LOGGER.trace("Constructing HornetQXAResourceRecovery");
       }
    }
 
    public boolean initialise(final String config)
    {
-      if (HornetQJMSLogger.LOGGER.isTraceEnabled())
+      if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSLogger.LOGGER.trace(this + " intialise: " + config);
+    	  HornetQJMSServerLogger.LOGGER.trace(this + " intialise: " + config);
       }
 
       String[] configs = config.split(";");
@@ -93,9 +93,9 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
       res = new HornetQXAResourceWrapper(xaRecoveryConfigs);
 
-      if (HornetQJMSLogger.LOGGER.isTraceEnabled())
+      if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSLogger.LOGGER.trace(this + " initialised");
+    	  HornetQJMSServerLogger.LOGGER.trace(this + " initialised");
       }
 
       return true;
@@ -103,9 +103,9 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
    public boolean hasMoreResources()
    {
-      if (HornetQJMSLogger.LOGGER.isTraceEnabled())
+      if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSLogger.LOGGER.trace(this + " hasMoreResources");
+    	  HornetQJMSServerLogger.LOGGER.trace(this + " hasMoreResources");
       }
 
       /*
@@ -129,9 +129,9 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
    public XAResource getXAResource()
    {
-      if (HornetQJMSLogger.LOGGER.isTraceEnabled())
+      if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSLogger.LOGGER.trace(this + " getXAResource");
+    	  HornetQJMSServerLogger.LOGGER.trace(this + " getXAResource");
       }
 
       return res;

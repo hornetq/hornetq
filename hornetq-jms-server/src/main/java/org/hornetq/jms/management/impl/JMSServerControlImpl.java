@@ -42,7 +42,7 @@ import org.hornetq.core.management.impl.AbstractControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -124,7 +124,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
       else
       {
-         HornetQJMSLogger.LOGGER.debug("JMSServerControlImpl.determineJMSDestination()" + coreAddress);
+         HornetQJMSServerLogger.LOGGER.debug("JMSServerControlImpl.determineJMSDestination()" + coreAddress);
          // not related to JMS
          return null;
       }

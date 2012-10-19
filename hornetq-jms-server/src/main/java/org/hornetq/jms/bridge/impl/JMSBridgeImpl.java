@@ -50,7 +50,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.HornetQJMSBundle;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
@@ -75,7 +75,7 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public final class JMSBridgeImpl implements JMSBridge
 {
-   private static boolean trace = HornetQJMSLogger.LOGGER.isTraceEnabled();
+   private static boolean trace = HornetQJMSServerLogger.LOGGER.isTraceEnabled();
 
    private static final int TEN_YEARS = 60 * 60 * 24 * 365 * 10; // in ms
 
@@ -291,7 +291,7 @@ public final class JMSBridgeImpl implements JMSBridge
                this.objectName = ObjectName.getInstance(objectName);
                StandardMBean mbean = new StandardMBean(controlBean, JMSBridgeControl.class);
                mbeanServer.registerMBean(mbean, this.objectName);
-               HornetQJMSLogger.LOGGER.debug("Registered JMSBridge instance as: " + this.objectName.getCanonicalName());
+               HornetQJMSServerLogger.LOGGER.debug("Registered JMSBridge instance as: " + this.objectName.getCanonicalName());
             }
             catch (Exception e)
             {
@@ -306,7 +306,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Created " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Created " + this);
       }
    }
 
@@ -321,13 +321,13 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (started)
       {
-         HornetQJMSLogger.LOGGER.errorBridgeAlreadyStarted();
+         HornetQJMSServerLogger.LOGGER.errorBridgeAlreadyStarted();
          return;
       }
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Starting " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Starting " + this);
       }
 
       // bridge has been stopped and is restarted
@@ -367,7 +367,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       else
       {
-         HornetQJMSLogger.LOGGER.errorStartingBridge();
+         HornetQJMSServerLogger.LOGGER.errorStartingBridge();
          handleFailureOnStartup();
       }
 
@@ -385,7 +385,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Starting time checker thread");
+            HornetQJMSServerLogger.LOGGER.trace("Starting time checker thread");
          }
 
          timeChecker = new BatchTimeChecker();
@@ -395,7 +395,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Started time checker thread");
+            HornetQJMSServerLogger.LOGGER.trace("Started time checker thread");
          }
       }
 
@@ -403,7 +403,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Started " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Started " + this);
       }
    }
 
@@ -448,7 +448,7 @@ public final class JMSBridgeImpl implements JMSBridge
       synchronized (this) {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Stopping " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Stopping " + this);
       }
 
       synchronized (lock)
@@ -470,7 +470,7 @@ public final class JMSBridgeImpl implements JMSBridge
          // Terminate any transaction
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Rolling back remaining tx");
+            HornetQJMSServerLogger.LOGGER.trace("Rolling back remaining tx");
          }
 
          try
@@ -481,13 +481,13 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Failed to rollback", ignore);
+               HornetQJMSServerLogger.LOGGER.trace("Failed to rollback", ignore);
             }
          }
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Rolled back remaining tx");
+            HornetQJMSServerLogger.LOGGER.trace("Rolled back remaining tx");
          }
       }
 
@@ -499,7 +499,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to close source conn", ignore);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to close source conn", ignore);
          }
       }
 
@@ -513,14 +513,14 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Failed to close target conn", ignore);
+               HornetQJMSServerLogger.LOGGER.trace("Failed to close target conn", ignore);
             }
          }
       }
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Stopped " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Stopped " + this);
       }
       }
    }
@@ -540,7 +540,7 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (Exception e)
          {
-            HornetQJMSLogger.LOGGER.errorUnregisteringBridge(objectName);
+            HornetQJMSServerLogger.LOGGER.errorUnregisteringBridge(objectName);
          }
       }
    }
@@ -551,7 +551,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Pausing " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Pausing " + this);
       }
 
       synchronized (lock)
@@ -563,7 +563,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Paused " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Paused " + this);
       }
    }
 
@@ -571,7 +571,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Resuming " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Resuming " + this);
       }
 
       synchronized (lock)
@@ -583,7 +583,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Resumed " + this);
+         HornetQJMSServerLogger.LOGGER.trace("Resumed " + this);
       }
    }
 
@@ -898,7 +898,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Enlisting resources in tx");
+         HornetQJMSServerLogger.LOGGER.trace("Enlisting resources in tx");
       }
 
       XAResource resSource = ((XASession)sourceSession).getXAResource();
@@ -911,7 +911,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Enlisted resources in tx");
+         HornetQJMSServerLogger.LOGGER.trace("Enlisted resources in tx");
       }
    }
 
@@ -919,7 +919,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Delisting resources from tx");
+         HornetQJMSServerLogger.LOGGER.trace("Delisting resources from tx");
       }
 
       XAResource resSource = ((XASession)sourceSession).getXAResource();
@@ -932,7 +932,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to delist source resource", e);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to delist source resource", e);
          }
       }
 
@@ -946,13 +946,13 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to delist target resource", e);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to delist target resource", e);
          }
       }
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Delisted resources from tx");
+         HornetQJMSServerLogger.LOGGER.trace("Delisted resources from tx");
       }
    }
 
@@ -960,7 +960,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Starting JTA transaction");
+         HornetQJMSServerLogger.LOGGER.trace("Starting JTA transaction");
       }
 
       TransactionManager tm = getTm();
@@ -980,7 +980,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Started JTA transaction");
+         HornetQJMSServerLogger.LOGGER.trace("Started JTA transaction");
       }
 
       return tx;
@@ -1030,7 +1030,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Creating an XA connection");
+               HornetQJMSServerLogger.LOGGER.trace("Creating an XA connection");
             }
             conn = ((XAConnectionFactory)cf).createXAConnection();
          }
@@ -1038,7 +1038,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Creating a non XA connection");
+               HornetQJMSServerLogger.LOGGER.trace("Creating a non XA connection");
             }
             conn = ((ConnectionFactory)cf).createConnection();
          }
@@ -1049,7 +1049,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Creating an XA connection");
+               HornetQJMSServerLogger.LOGGER.trace("Creating an XA connection");
             }
             conn = ((XAConnectionFactory)cf).createXAConnection(username, password);
          }
@@ -1057,7 +1057,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Creating a non XA connection");
+               HornetQJMSServerLogger.LOGGER.trace("Creating a non XA connection");
             }
             conn = ((ConnectionFactory)cf).createConnection(username, password);
          }
@@ -1164,7 +1164,7 @@ public final class JMSBridgeImpl implements JMSBridge
                // Create an XASession for consuming from the source
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace("Creating XA source session");
+                  HornetQJMSServerLogger.LOGGER.trace("Creating XA source session");
                }
 
                sourceSession = ((XAConnection)sourceConn).createXASession();
@@ -1175,7 +1175,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace("Creating non XA source session");
+                  HornetQJMSServerLogger.LOGGER.trace("Creating non XA source session");
                }
 
                // Create a standard session for consuming from the source
@@ -1229,7 +1229,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace("Creating XA dest session");
+                  HornetQJMSServerLogger.LOGGER.trace("Creating XA dest session");
                }
 
                // Create an XA sesion for sending to the destination
@@ -1242,7 +1242,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace("Creating non XA dest session");
+                  HornetQJMSServerLogger.LOGGER.trace("Creating non XA dest session");
                }
 
                // Create a standard session for sending to the target
@@ -1262,7 +1262,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Starting JTA transaction");
+               HornetQJMSServerLogger.LOGGER.trace("Starting JTA transaction");
             }
 
             tx = startTx();
@@ -1281,7 +1281,7 @@ public final class JMSBridgeImpl implements JMSBridge
          // If this fails we should attempt to cleanup or we might end up in some weird state
 
          // Adding a log.warn, so the use may see the cause of the failure and take actions
-         HornetQJMSLogger.LOGGER.bridgeConnectError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeConnectError(e);
 
          cleanup();
 
@@ -1300,7 +1300,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to stop source connection", ignore);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to stop source connection", ignore);
          }
       }
 
@@ -1314,7 +1314,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Failed to delist resources", ignore);
+               HornetQJMSServerLogger.LOGGER.trace("Failed to delist resources", ignore);
             }
          }
          try
@@ -1326,7 +1326,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Failed to rollback", ignore);
+               HornetQJMSServerLogger.LOGGER.trace("Failed to rollback", ignore);
             }
          }
       }
@@ -1340,7 +1340,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to close source connection", ignore);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to close source connection", ignore);
          }
       }
       try
@@ -1354,7 +1354,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failed to close target connection", ignore);
+            HornetQJMSServerLogger.LOGGER.trace("Failed to close target connection", ignore);
          }
       }
    }
@@ -1378,7 +1378,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Setting up connections");
+         HornetQJMSServerLogger.LOGGER.trace("Setting up connections");
       }
 
       int count = 0;
@@ -1399,7 +1399,7 @@ public final class JMSBridgeImpl implements JMSBridge
             break;
          }
 
-         HornetQJMSLogger.LOGGER.failedToSetUpBridge(failureRetryInterval);
+         HornetQJMSServerLogger.LOGGER.failedToSetUpBridge(failureRetryInterval);
 
          pause(failureRetryInterval);
       }
@@ -1412,7 +1412,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Sending batch of " + messages.size() + " messages");
+         HornetQJMSServerLogger.LOGGER.trace("Sending batch of " + messages.size() + " messages");
       }
 
       if (paused)
@@ -1420,7 +1420,7 @@ public final class JMSBridgeImpl implements JMSBridge
          // Don't send now
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Paused, so not sending now");
+            HornetQJMSServerLogger.LOGGER.trace("Paused, so not sending now");
          }
 
          return;
@@ -1450,14 +1450,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Client acking source session");
+               HornetQJMSServerLogger.LOGGER.trace("Client acking source session");
             }
 
             messages.getLast().acknowledge();
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Client acked source session");
+               HornetQJMSServerLogger.LOGGER.trace("Client acked source session");
             }
          }
 
@@ -1469,14 +1469,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Committing target session");
+               HornetQJMSServerLogger.LOGGER.trace("Committing target session");
             }
 
             targetSession.commit();
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Committed source session");
+               HornetQJMSServerLogger.LOGGER.trace("Committed source session");
             }
          }
 
@@ -1489,14 +1489,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Client acking source session");
+               HornetQJMSServerLogger.LOGGER.trace("Client acking source session");
             }
 
             messages.getLast().acknowledge();
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSLogger.LOGGER.trace("Client acked source session");
+               HornetQJMSServerLogger.LOGGER.trace("Client acked source session");
             }
          }
 
@@ -1505,7 +1505,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       catch (Exception e)
       {
-         HornetQJMSLogger.LOGGER.bridgeAckError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
          handleFailureOnSend();
       }
@@ -1523,14 +1523,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Committing JTA transaction");
+            HornetQJMSServerLogger.LOGGER.trace("Committing JTA transaction");
          }
 
          tx.commit();
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Committed JTA transaction");
+            HornetQJMSServerLogger.LOGGER.trace("Committed JTA transaction");
          }
 
          tx = startTx();
@@ -1542,7 +1542,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       catch (Exception e)
       {
-         HornetQJMSLogger.LOGGER.bridgeAckError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
          handleFailureOnSend();
       }
@@ -1556,14 +1556,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Committing source session");
+            HornetQJMSServerLogger.LOGGER.trace("Committing source session");
          }
 
          sourceSession.commit();
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Committed source session");
+            HornetQJMSServerLogger.LOGGER.trace("Committed source session");
          }
 
          // Clear the messages
@@ -1571,7 +1571,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       catch (Exception e)
       {
-         HornetQJMSLogger.LOGGER.bridgeAckError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
          handleFailureOnSend();
       }
@@ -1594,7 +1594,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Sending message " + msg);
+            HornetQJMSServerLogger.LOGGER.trace("Sending message " + msg);
          }
 
          // Make sure the correct time to live gets propagated
@@ -1615,7 +1615,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Sent message " + msg);
+            HornetQJMSServerLogger.LOGGER.trace("Sent message " + msg);
          }
       }
    }
@@ -1651,7 +1651,7 @@ public final class JMSBridgeImpl implements JMSBridge
       // distributed request/response
       if (JMSBridgeImpl.trace)
       {
-         HornetQJMSLogger.LOGGER.trace("Adding old message id in Message header");
+         HornetQJMSServerLogger.LOGGER.trace("Adding old message id in Message header");
       }
 
       JMSBridgeImpl.copyProperties(msg);
@@ -1768,7 +1768,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   {
                      if (JMSBridgeImpl.trace)
                      {
-                        HornetQJMSLogger.LOGGER.trace(this + " thread was interrupted");
+                        HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
                   }
                   continue;
@@ -1790,7 +1790,7 @@ public final class JMSBridgeImpl implements JMSBridge
                {
                   if (JMSBridgeImpl.trace)
                   {
-                     HornetQJMSLogger.LOGGER.trace(this + " exception while receiving a message", jmse);
+                     HornetQJMSServerLogger.LOGGER.trace(this + " exception while receiving a message", jmse);
                   }
                }
 
@@ -1804,7 +1804,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   {
                      if (JMSBridgeImpl.trace)
                      {
-                        HornetQJMSLogger.LOGGER.trace(this + " thread was interrupted");
+                        HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
                   }
                   continue;
@@ -1812,7 +1812,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace(this + " received message " + msg);
+                  HornetQJMSServerLogger.LOGGER.trace(this + " received message " + msg);
                }
 
                messages.add(msg);
@@ -1821,21 +1821,21 @@ public final class JMSBridgeImpl implements JMSBridge
 
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace(this + " rescheduled batchExpiryTime to " + batchExpiryTime);
+                  HornetQJMSServerLogger.LOGGER.trace(this + " rescheduled batchExpiryTime to " + batchExpiryTime);
                }
 
                if (maxBatchSize != -1 && messages.size() >= maxBatchSize)
                {
                   if (JMSBridgeImpl.trace)
                   {
-                     HornetQJMSLogger.LOGGER.trace(this + " maxBatchSize has been reached so sending batch");
+                     HornetQJMSServerLogger.LOGGER.trace(this + " maxBatchSize has been reached so sending batch");
                   }
 
                   sendBatch();
 
                   if (JMSBridgeImpl.trace)
                   {
-                     HornetQJMSLogger.LOGGER.trace(this + " sent batch");
+                     HornetQJMSServerLogger.LOGGER.trace(this + " sent batch");
                   }
                }
             }
@@ -1857,13 +1857,13 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (JMSException e)
          {
-            HornetQJMSLogger.LOGGER.jmsBridgeSrcConnectError(e);
+            HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e);
          }
       }
 
       protected void succeeded()
       {
-         HornetQJMSLogger.LOGGER.bridgeReconnected();
+         HornetQJMSServerLogger.LOGGER.bridgeReconnected();
 
          synchronized (lock)
          {
@@ -1876,7 +1876,7 @@ public final class JMSBridgeImpl implements JMSBridge
       protected void failed()
       {
          // We haven't managed to recreate connections or maxRetries = 0
-         HornetQJMSLogger.LOGGER.errorConnectingBridge();
+         HornetQJMSServerLogger.LOGGER.errorConnectingBridge();
 
          try
          {
@@ -1891,7 +1891,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace("Failure handler running");
+            HornetQJMSServerLogger.LOGGER.trace("Failure handler running");
          }
 
          // Clear the messages
@@ -1903,7 +1903,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (maxRetries > 0 || maxRetries == -1)
          {
-            HornetQJMSLogger.LOGGER.bridgeRetry(failureRetryInterval);
+            HornetQJMSServerLogger.LOGGER.bridgeRetry(failureRetryInterval);
 
             pause(failureRetryInterval);
 
@@ -1928,14 +1928,14 @@ public final class JMSBridgeImpl implements JMSBridge
       protected void failed()
       {
          // Don't call super
-         HornetQJMSLogger.LOGGER.bridgeNotStarted();
+         HornetQJMSServerLogger.LOGGER.bridgeNotStarted();
       }
 
       @Override
       protected void succeeded()
       {
          // Don't call super - a bit ugly in this case but better than taking the lock twice.
-         HornetQJMSLogger.LOGGER.bridgeConnected();
+         HornetQJMSServerLogger.LOGGER.bridgeConnected();
 
          synchronized (lock)
          {
@@ -1951,7 +1951,7 @@ public final class JMSBridgeImpl implements JMSBridge
             }
             catch (JMSException e)
             {
-               HornetQJMSLogger.LOGGER.jmsBridgeSrcConnectError(e);
+               HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e);
             }
          }
       }
@@ -1963,7 +1963,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSLogger.LOGGER.trace(this + " running");
+            HornetQJMSServerLogger.LOGGER.trace(this + " running");
          }
 
          synchronized (lock)
@@ -1976,7 +1976,7 @@ public final class JMSBridgeImpl implements JMSBridge
                {
                   if (JMSBridgeImpl.trace)
                   {
-                     HornetQJMSLogger.LOGGER.trace(this + " waited enough");
+                     HornetQJMSServerLogger.LOGGER.trace(this + " waited enough");
                   }
 
                   synchronized (lock)
@@ -1985,14 +1985,14 @@ public final class JMSBridgeImpl implements JMSBridge
                      {
                         if (JMSBridgeImpl.trace)
                         {
-                           HornetQJMSLogger.LOGGER.trace(this + " got some messages so sending batch");
+                           HornetQJMSServerLogger.LOGGER.trace(this + " got some messages so sending batch");
                         }
 
                         sendBatch();
 
                         if (JMSBridgeImpl.trace)
                         {
-                           HornetQJMSLogger.LOGGER.trace(this + " sent batch");
+                           HornetQJMSServerLogger.LOGGER.trace(this + " sent batch");
                         }
                      }
                   }
@@ -2005,14 +2005,14 @@ public final class JMSBridgeImpl implements JMSBridge
                   {
                      if (JMSBridgeImpl.trace)
                      {
-                        HornetQJMSLogger.LOGGER.trace(this + " waiting for " + toWait);
+                        HornetQJMSServerLogger.LOGGER.trace(this + " waiting for " + toWait);
                      }
 
                      lock.wait(toWait);
 
                      if (JMSBridgeImpl.trace)
                      {
-                        HornetQJMSLogger.LOGGER.trace(this + " woke up");
+                        HornetQJMSServerLogger.LOGGER.trace(this + " woke up");
                      }
                   }
                   catch (InterruptedException e)
@@ -2020,7 +2020,7 @@ public final class JMSBridgeImpl implements JMSBridge
                      // Ignore
                      if (JMSBridgeImpl.trace)
                      {
-                        HornetQJMSLogger.LOGGER.trace(this + " thread was interrupted");
+                        HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
                   }
 
@@ -2034,7 +2034,7 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       public void onException(final JMSException e)
       {
-         HornetQJMSLogger.LOGGER.bridgeFailure();
+         HornetQJMSServerLogger.LOGGER.bridgeFailure();
 
          synchronized (lock)
          {
@@ -2043,7 +2043,7 @@ public final class JMSBridgeImpl implements JMSBridge
                // The failure has already been detected and is being handled
                if (JMSBridgeImpl.trace)
                {
-                  HornetQJMSLogger.LOGGER.trace("Failure recovery already in progress");
+                  HornetQJMSServerLogger.LOGGER.trace("Failure recovery already in progress");
                }
             }
             else

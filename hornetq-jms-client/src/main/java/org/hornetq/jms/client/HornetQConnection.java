@@ -42,7 +42,6 @@ import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.version.Version;
-import org.hornetq.jms.HornetQJMSLogger;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
@@ -468,7 +467,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    {
       if (!closed)
       {
-         HornetQJMSLogger.LOGGER.connectionLeftOpen(creationStack);
+         HornetQJMSClientLogger.LOGGER.connectionLeftOpen(creationStack);
 
          close();
       }
@@ -657,7 +656,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
             {
                if (!conn.closed)
                {
-                  HornetQJMSLogger.LOGGER.errorCallingExcListener(e);
+                  HornetQJMSClientLogger.LOGGER.errorCallingExcListener(e);
                }
             }
          }
@@ -706,7 +705,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
             {
                if (!conn.closed)
                {
-                  HornetQJMSLogger.LOGGER.errorCallingFailoverListener(e);
+                  HornetQJMSClientLogger.LOGGER.errorCallingFailoverListener(e);
                }
             }
          }
