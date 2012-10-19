@@ -64,24 +64,22 @@
             configuration:</para>
         <programlisting>
 &lt;configuration xmlns="urn:hornetq" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd ">
     
-    &lt;connection-factory name="ConnectionFactory"&gt;
-        &lt;connectors>
-           &lt;connector-ref connector-name="netty"/&gt;
-        &lt;/connectors>
-        &lt;entries&gt;
-            &lt;entry name="ConnectionFactory"/&gt;           
-        &lt;/entries&gt;
-    &lt;/connection-factory&gt;
-    
-    &lt;queue name="OrderQueue"&gt;
-        &lt;entry name="queues/OrderQueue"/&gt;
-    &lt;/queue&gt;
-    
-&lt;/configuration&gt; 
-        </programlisting>
+   &lt;connection-factory name="ConnectionFactory">
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty"/>
+      &lt;/connectors>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>
+      &lt;/entries>
+   &lt;/connection-factory>
+
+   &lt;queue name="OrderQueue">
+      &lt;entry name="queues/OrderQueue"/>
+   &lt;/queue>
+&lt;/configuration></programlisting>
         <para>We deploy one ConnectionFactory called <literal>ConnectionFactory</literal> and bind
             it in just one place in JNDI as given by the <literal>entry</literal> element.
             ConnectionFactory instances can be bound in many places in JNDI if you require. </para>
@@ -152,20 +150,19 @@
             <para>As an example, the following configures an XAQueueConnectionFactory:</para>
         <programlisting>
 &lt;configuration xmlns="urn:hornetq" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
-    
-    &lt;connection-factory name="ConnectionFactory" signature="queue"&gt;
-        &lt;xa>true&lt;/xa>
-        &lt;connectors>
-           &lt;connector-ref connector-name="netty"/&gt;
-        &lt;/connectors>
-        &lt;entries&gt;
-            &lt;entry name="ConnectionFactory"/&gt;           
-        &lt;/entries&gt;
-    &lt;/connection-factory&gt;
-&lt;/configuration&gt; 
-        </programlisting>
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd ">
+
+   &lt;connection-factory name="ConnectionFactory" signature="queue">
+      &lt;xa>true&lt;/xa>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty"/>
+      &lt;/connectors>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>
+      &lt;/entries>
+   &lt;/connection-factory>
+&lt;/configuration></programlisting>
 
     </section>
     <section>
@@ -182,8 +179,7 @@
         <programlisting>
 java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=jnp://myhost:1099
-java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces                        
-        </programlisting>
+java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
         <para>Where <literal>myhost</literal> is the hostname or IP address of the JNDI server. 1099
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
@@ -191,16 +187,15 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
                 <literal>hornetq-beans.xml</literal> by setting properties on the <literal
                 >JNDIServer</literal> bean:</para>
         <programlisting>
-&lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
-    &lt;property name="namingInfo"&gt;
-        &lt;inject bean="Naming"/&gt;
-    &lt;/property&gt;
-    &lt;property name="port"&gt;1099&lt;/property&gt;
-    &lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
-    &lt;property name="rmiPort"&gt;1098&lt;/property&gt;
-    &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
-&lt;/bean&gt;                        
-        </programlisting>
+&lt;bean name="JNDIServer" class="org.jnp.server.Main">
+   &lt;property name="namingInfo">
+      &lt;inject bean="Naming"/>
+   &lt;/property>
+   &lt;property name="port">1099&lt;/property>
+   &lt;property name="bindAddress">localhost&lt;/property>
+   &lt;property name="rmiPort">1098&lt;/property>
+   &lt;property name="rmiBindAddress">localhost&lt;/property>
+&lt;/bean></programlisting>
         <note>
             <para>If you want your JNDI server to be available to non local clients make sure you
                 change it's bind address to something other than <literal
@@ -238,8 +233,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
 producer.send(message);</programlisting>
         <para>And we consume the message:</para>
         <programlisting>TextMessage receivedMessage = (TextMessage)consumer.receive();
-System.out.println("Got order: " + receivedMessage.getText());
-        </programlisting>
+System.out.println("Got order: " + receivedMessage.getText());</programlisting>
         <para>It's as simple as that. For a wide range of working JMS examples please see the
             examples directory in the distribution.</para>
         <warning>
@@ -269,10 +263,8 @@ System.out.println("Got order: " + receivedMessage.getText());
             for more information on connectors please see <xref linkend="configuring-transports"
             />.</para>
         <programlisting>              
-TransportConfiguration transportConfiguration = 
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());                
-ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,transportConfiguration);
-        </programlisting>
+TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName());
+ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,transportConfiguration);</programlisting>
         <para>We also create the JMS Queue object via the HornetQJMSClient Utility class:</para>
         <programlisting>Queue orderQueue = HornetQJMSClient.createQueue("OrderQueue");</programlisting>
         <para>Next we create a JMS connection using the connection factory:</para>
@@ -291,8 +283,7 @@ ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFact
 producer.send(message);</programlisting>
         <para>And we consume the message:</para>
         <programlisting>TextMessage receivedMessage = (TextMessage)consumer.receive();
-System.out.println("Got order: " + receivedMessage.getText());
-        </programlisting>
+System.out.println("Got order: " + receivedMessage.getText());</programlisting>
     </section>
     <section id="using-jms.clientid">
         <title>Setting The Client ID</title>

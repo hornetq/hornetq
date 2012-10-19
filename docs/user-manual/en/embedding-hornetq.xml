@@ -56,7 +56,9 @@
       <para>For instantiating a core HornetQ Server only, the steps are pretty
       simple. The example requires that you have defined a configuration file
       <literal>hornetq-configuration.xml</literal> in your
-      classpath:<programlisting>import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+      classpath:</para>
+        <programlisting>
+import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 
 ...
 
@@ -87,13 +89,12 @@ ClientMessage msgReceived = consumer.receive();
 
 System.out.println("message = " + msgReceived.getBody().readString());
 
-session.close();
-</programlisting>
+session.close();</programlisting>
 
 <para>The <literal>EmbeddedHornetQ</literal> class has a
       few additional setter methods that allow you to specify a different
       config file name as well as other properties. See the javadocs for this
-      class for more details.</para></para>
+      class for more details.</para>
     </section>
 
     <section id="simple.embedded.jms">
@@ -107,7 +108,8 @@ session.close();
       also assume that a queue and connection factory has been defined in the
       <literal>hornetq-jms.xml</literal> config file.</para>
 
-      <programlisting>import org.hornetq.jms.server.embedded.EmbeddedJMS;
+      <programlisting>
+import org.hornetq.jms.server.embedded.EmbeddedJMS;
 
 ...
 
@@ -118,10 +120,8 @@ jms.start();
 ConnectionFactory connectionFactory = jms.lookup("ConnectionFactory");
 Destination destination = jms.lookup("/example/queue");
 
-... regular JMS code ...
-
-
-</programlisting><para>By default, the <literal>EmbeddedJMS</literal>
+... regular JMS code ...</programlisting>
+        <para>By default, the <literal>EmbeddedJMS</literal>
       class will store component entries defined within your
       <literal>hornetq-jms.xml</literal> file in an internal concurrent hash
       map. The <literal>EmbeddedJMS.lookup()</literal> method returns
@@ -148,25 +148,26 @@ Destination destination = jms.lookup("/example/queue");
     <literal>NettyAcceptorFactory</literal> on the transports the same way you
     would through the main configuration file.</para>
 
-    <programlisting>import org.hornetq.core.config.Configuration;
+    <programlisting>
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 
 ...
 
 Configuration config = new ConfigurationImpl();
-HashSet&lt;TransportConfiguration&gt; transports = new HashSet&lt;TransportConfiguration&gt;();
+HashSet&lt;TransportConfiguration> transports = new HashSet&lt;TransportConfiguration>();
       
 transports.add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
-config.setAcceptorConfigurations(transports);
-</programlisting>
+config.setAcceptorConfigurations(transports);</programlisting>
 
     <para>You need to instantiate an instance of
     <literal>org.hornetq.api.core.server.embedded.EmbeddedHornetQ</literal>
     and add the configuration object to it.</para>
 
-    <programlisting>import org.hornetq.api.core.server.HornetQ;
+    <programlisting>
+import org.hornetq.api.core.server.HornetQ;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 
 ...
@@ -179,8 +180,8 @@ server.start();</programlisting>
     <para>You also have the option of instantiating
     <literal>HornetQServerImpl</literal> directly:</para>
 
-    <programlisting>HornetQServer server = 
-        new HornetQServerImpl(config);
+    <programlisting>
+HornetQServer server = new HornetQServerImpl(config);
 server.start();</programlisting>
 
     <para>For JMS POJO instantiation, you work with the EmbeddedJMS class
@@ -194,8 +195,7 @@ server.start();</programlisting>
 Configuration configuration = new ConfigurationImpl();
 configuration.setPersistenceEnabled(false);
 configuration.setSecurityEnabled(false);
-configuration.getAcceptorConfigurations()
-         .add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+configuration.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 
 // Step 2. Create the JMS configuration
 JMSConfiguration jmsConfig = new JMSConfigurationImpl();
@@ -242,31 +242,30 @@ jmsServer.start();</programlisting>
     <para>A very basic XML Bean declaration for the JBoss Micro Container
     would be:</para>
 
-    <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt;
-   
-   &lt;!-- The core configuration --&gt;
+    <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+   &lt;!-- The core configuration -->
    &lt;bean name="Configuration" 
-         class="org.hornetq.core.config.impl.FileConfiguration"&gt;
-   &lt;/bean&gt;
+         class="org.hornetq.core.config.impl.FileConfiguration">
+   &lt;/bean>
 
-     &lt;!-- The core server --&gt;
+     &lt;!-- The core server -->
    &lt;bean name="HornetQServer" 
-         class="org.hornetq.core.server.impl.HornetQServerImpl"&gt;      
-      &lt;constructor&gt;
-         &lt;parameter&gt;
-            &lt;inject bean="Configuration"/&gt;
-         &lt;/parameter&gt;            
-      &lt;/constructor&gt;         
-   &lt;/bean&gt;
-   &lt;/deployment&gt;</programlisting>
+         class="org.hornetq.core.server.impl.HornetQServerImpl">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="Configuration"/>
+         &lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
+&lt;/deployment></programlisting>
 
     <para><literal>HornetQBootstrapServer</literal> provides an easy
     encapsulation of JBoss Micro Container.</para>
 
-    <programlisting>HornetQBootstrapServer bootStrap = 
-        new HornetQBootstrapServer(new String[] {"hornetq-beans.xml"});
-        bootStrap.run(</programlisting>
+    <programlisting>
+HornetQBootstrapServer bootStrap = new HornetQBootstrapServer(new String[] {"hornetq-beans.xml"});
+bootStrap.run();</programlisting>
   </section>
 </chapter>

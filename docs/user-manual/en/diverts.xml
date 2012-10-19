@@ -62,16 +62,15 @@
         <para>Here's some example xml configuration for an exclusive divert, it's taken from the
             divert example:</para>
         <programlisting>
-&lt;divert name="prices-divert"&gt;                  
-    &lt;address&gt;jms.topic.priceUpdates&lt;/address&gt;
-    &lt;forwarding-address&gt;jms.queue.priceForwarding&lt;/forwarding-address&gt;    
-    &lt;filter string="office='New York'"/&gt;
-    &lt;transformer-class-name&gt;
-        org.hornetq.jms.example.AddForwardingTimeTransformer
-    &lt;/transformer-class-name&gt;     
-    &lt;exclusive&gt;true&lt;/exclusive&gt;
-&lt;/divert&gt;                        
-        </programlisting>
+&lt;divert name="prices-divert">
+   &lt;address>jms.topic.priceUpdates&lt;/address>
+   &lt;forwarding-address>jms.queue.priceForwarding&lt;/forwarding-address>
+   &lt;filter string="office='New York'"/>
+   &lt;transformer-class-name>
+      org.hornetq.jms.example.AddForwardingTimeTransformer
+   &lt;/transformer-class-name>
+   &lt;exclusive>true&lt;/exclusive>
+&lt;/divert></programlisting>
         <para>We define a divert called '<literal>prices-divert</literal>' that will divert any
             messages sent to the address '<literal>jms.topic.priceUpdates</literal>' (this
             corresponds to any messages sent to a JMS Topic called '<literal
@@ -101,12 +100,11 @@
             optional filter and transformer, here's an example non-exclusive divert, again from the
             divert example:</para>
         <programlisting>
-&lt;divert name="order-divert"&gt;                 
-    &lt;address&gt;jms.queue.orders&lt;/address&gt;
-    &lt;forwarding-address&gt;jms.topic.spyTopic&lt;/forwarding-address&gt;         
-    &lt;exclusive&gt;false&lt;/exclusive&gt;
-&lt;/divert&gt;                       
-        </programlisting>
+&lt;divert name="order-divert">
+    &lt;address>jms.queue.orders&lt;/address>
+    &lt;forwarding-address>jms.topic.spyTopic&lt;/forwarding-address>
+    &lt;exclusive>false&lt;/exclusive>
+&lt;/divert></programlisting>
         <para>The above divert example takes a copy of every message sent to the address '<literal
                 >jms.queue.orders</literal>' (Which corresponds to a JMS Queue called '<literal
                 >orders</literal>') and sends it to a local address called '<literal

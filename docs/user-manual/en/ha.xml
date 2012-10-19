@@ -118,26 +118,24 @@
 .
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
-     &lt;cluster-user>fish&lt;cluster-user>
-     &lt;cluster-password>ILikeToSwim&lt;cluster-password>
-   ...
+      &lt;cluster-user>fish&lt;cluster-user>
+      &lt;cluster-password>ILikeToSwim&lt;cluster-password>
+      ...
    &lt;/cluster-connection>
-&lt;/cluster-connections>
-                </programlisting>
+&lt;/cluster-connections></programlisting>
 
                 <para>The backup server must be flagged explicitly as a backup.</para>
                 <programlisting>
 &lt;backup>true&lt;/backup>
 &lt;connectors>
-  &lt;connector name="nameOfConfiguredLiveServerConnector">
-    &lt;factory-class>
-          org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-    &lt;/factory-class>
-    &lt;param key="port" value="5445"/>
-  &lt;/connector>
+   &lt;connector name="nameOfConfiguredLiveServerConnector">
+      &lt;factory-class>
+         org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
+      &lt;/factory-class>
+   &lt;param key="port" value="5445"/>
+   &lt;/connector>
 &lt;!-- a real configuration could have more connectors here -->
-&lt;connectors>
-                </programlisting>
+&lt;connectors></programlisting>
                 </section>
 
             </section>
@@ -176,8 +174,7 @@
                     <para>Additionally, each backup server must be flagged explicitly as a
                         backup:</para>
                     <programlisting>
-&lt;backup>true&lt;/backup>
-                     </programlisting>
+&lt;backup>true&lt;/backup></programlisting>
                     <para>In order for live - backup groups to operate properly with a shared store,
                         both servers must have configured the location of journal directory to point
                         to the <emphasis>same shared location</emphasis> (as explained in <xref
@@ -202,8 +199,7 @@
                         configuration file like so:
                     </para>
                     <programlisting>
-&lt;failover-on-shutdown>true&lt;/failover-on-shutdown>
-                    </programlisting>
+&lt;failover-on-shutdown>true&lt;/failover-on-shutdown></programlisting>
                     <para>
                         By default this is set to false, if by some chance you have set this to false but still
                         want to stop the server normally and cause failover then you can do this by using the management
@@ -215,8 +211,7 @@
                     <literal>hornetq-configuration.xml</literal> configuration file as follows:
                     </para>
                     <programlisting>
-&lt;allow-failback>true&lt;/allow-failback>
-                    </programlisting>
+&lt;allow-failback>true&lt;/allow-failback></programlisting>
                 </section>
             </section>
     </section>

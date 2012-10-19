@@ -52,147 +52,141 @@
             This would typically be deployed inside the JBoss Application Server and the following
             example shows an example of a beans file that bridges 2 destinations which are actually
             on the same server. </para>
-        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
-
+        <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?>
 &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+   &lt;bean name="JMSBridge" class="org.hornetq.api.jms.bridge.impl.JMSBridgeImpl">
+      &lt;!-- HornetQ must be started before the bridge -->
+      &lt;depends>HornetQServer&lt;/depends>
+      &lt;constructor>
+         &lt;!-- Source ConnectionFactory Factory -->
+         &lt;parameter>
+            &lt;inject bean="SourceCFF"/>
+         &lt;/parameter>
+         &lt;!-- Target ConnectionFactory Factory -->
+         &lt;parameter>
+            &lt;inject bean="TargetCFF"/>
+         &lt;/parameter>
+         &lt;!-- Source DestinationFactory -->
+         &lt;parameter>
+            &lt;inject bean="SourceDestinationFactory"/>
+         &lt;/parameter>
+         &lt;!-- Target DestinationFactory -->
+         &lt;parameter>
+            &lt;inject bean="TargetDestinationFactory"/>
+         &lt;/parameter>
+         &lt;!-- Source User Name (no username here) -->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Source Password (no password here)-->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Target User Name (no username here)-->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Target Password (no password here)-->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Selector -->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Failure Retry Interval (in ms) -->
+         &lt;parameter>5000&lt;/parameter>
+         &lt;!-- Max Retries -->
+         &lt;parameter>10&lt;/parameter>
+         &lt;!-- Quality Of Service -->
+         &lt;parameter>ONCE_AND_ONLY_ONCE&lt;/parameter>
+         &lt;!-- Max Batch Size -->
+         &lt;parameter>1&lt;/parameter>
+         &lt;!-- Max Batch Time (-1 means infinite) -->
+         &lt;parameter>-1&lt;/parameter>
+         &lt;!-- Subscription name (no subscription name here)-->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Client ID  (no client ID here)-->
+         &lt;parameter>&lt;null />&lt;/parameter>
+         &lt;!-- Add MessageID In Header -->
+         &lt;parameter>true&lt;/parameter>
+         &lt;!-- register the JMS Bridge in the AS MBeanServer -->
+         &lt;parameter>
+            &lt;inject bean="MBeanServer"/>
+         &lt;/parameter>
+         &lt;parameter>org.hornetq:service=JMSBridge&lt;/parameter>
+      &lt;/constructor>
+      &lt;property name="transactionManager">
+         &lt;inject bean="RealTransactionManager"/>
+      &lt;/property>
+   &lt;/bean>
 
-       &lt;bean name="JMSBridge" class="org.hornetq.api.jms.bridge.impl.JMSBridgeImpl">
-           &lt;!-- HornetQ must be started before the bridge -->
-           &lt;depends>HornetQServer&lt;/depends>
-           &lt;constructor>
-               &lt;!-- Source ConnectionFactory Factory -->
-               &lt;parameter>
-                   &lt;inject bean="SourceCFF"/>
-               &lt;/parameter>
-               &lt;!-- Target ConnectionFactory Factory -->
-               &lt;parameter>
-                   &lt;inject bean="TargetCFF"/>
-               &lt;/parameter>
-               &lt;!-- Source DestinationFactory -->
-               &lt;parameter>
-                   &lt;inject bean="SourceDestinationFactory"/>
-               &lt;/parameter>
-               &lt;!-- Target DestinationFactory -->
-               &lt;parameter>
-                   &lt;inject bean="TargetDestinationFactory"/>
-               &lt;/parameter>
-               &lt;!-- Source User Name (no username here) -->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Source Password (no password here)-->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Target User Name (no username here)-->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Target Password (no password here)-->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Selector -->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Failure Retry Interval (in ms) -->
-               &lt;parameter>5000&lt;/parameter>
-               &lt;!-- Max Retries -->
-               &lt;parameter>10&lt;/parameter>
-               &lt;!-- Quality Of Service -->
-               &lt;parameter>ONCE_AND_ONLY_ONCE&lt;/parameter>
-               &lt;!-- Max Batch Size -->
-               &lt;parameter>1&lt;/parameter>
-               &lt;!-- Max Batch Time (-1 means infinite) -->
-               &lt;parameter>-1&lt;/parameter>
-               &lt;!-- Subscription name (no subscription name here)-->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Client ID  (no client ID here)-->
-               &lt;parameter>&lt;null />&lt;/parameter>
-               &lt;!-- Add MessageID In Header -->
-               &lt;parameter>true&lt;/parameter>
-               &lt;!-- register the JMS Bridge in the AS MBeanServer -->
-               &lt;parameter>
-                   &lt;inject bean="MBeanServer"/>
-               &lt;/parameter>
-               &lt;parameter>org.hornetq:service=JMSBridge&lt;/parameter>
-             &lt;/constructor>
-           &lt;property name="transactionManager">
-               &lt;inject bean="RealTransactionManager"/>
-           &lt;/property>
-       &lt;/bean>
+   &lt;!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
+   &lt;bean name="SourceCFF"
+       class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="JNDI" />
+         &lt;/parameter>
+         &lt;parameter>/ConnectionFactory&lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
 
-       &lt;!-- SourceCFF describes the ConnectionFactory used to connect to the 
-            source destination -->
-       &lt;bean name="SourceCFF" 
-            class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
-           &lt;constructor>
-               &lt;parameter>
-                   &lt;inject bean="JNDI" />
-               &lt;/parameter>
-               &lt;parameter>/ConnectionFactory&lt;/parameter>
-           &lt;/constructor>  
-       &lt;/bean>
+   &lt;!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
+   &lt;bean name="TargetCFF"
+       class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="JNDI" />
+         &lt;/parameter>
+         &lt;parameter>/ConnectionFactory&lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
 
-       &lt;!-- TargetCFF describes the ConnectionFactory used to connect to the 
-        target destination -->
-       &lt;bean name="TargetCFF" 
-            class="org.hornetq.api.jms.bridge.impl.JNDIConnectionFactoryFactory">
-           &lt;constructor>
-               &lt;parameter>
-                   &lt;inject bean="JNDI" />
-               &lt;/parameter>
-               &lt;parameter>/ConnectionFactory&lt;/parameter>
-           &lt;/constructor>  
-       &lt;/bean>
+   &lt;!-- SourceDestinationFactory describes the Destination used as the source -->
+   &lt;bean name="SourceDestinationFactory" class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="JNDI" />
+         &lt;/parameter>
+         &lt;parameter>/queue/source&lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
 
-       &lt;!-- SourceDestinationFactory describes the Destination used as the source -->
-       &lt;bean name="SourceDestinationFactory" 
-            class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
-           &lt;constructor>
-               &lt;parameter>
-                   &lt;inject bean="JNDI" />
-               &lt;/parameter>
-               &lt;parameter>/queue/source&lt;/parameter>
-           &lt;/constructor>  
-       &lt;/bean>
+   &lt;!-- TargetDestinationFactory describes the Destination used as the target -->
+   &lt;bean name="TargetDestinationFactory" class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="JNDI" />
+         &lt;/parameter>
+         &lt;parameter>/queue/target&lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
 
-       &lt;!-- TargetDestinationFactory describes the Destination used as the target -->
-       &lt;bean name="TargetDestinationFactory" 
-            class="org.hornetq.api.jms.bridge.impl.JNDIDestinationFactory">
-           &lt;constructor>
-               &lt;parameter>
-                   &lt;inject bean="JNDI" />
-               &lt;/parameter>
-               &lt;parameter>/queue/target&lt;/parameter>
-           &lt;/constructor>  
-       &lt;/bean>
-       
-       &lt;!-- JNDI is a Hashtable containing the JNDI properties required -->
-       &lt;!-- to connect to the sources and targets JMS resrouces         -->       
-      &lt;bean name="JNDI" class="java.util.Hashtable">
-         &lt;constructor class="java.util.Map">
-            &lt;map class="java.util.Hashtable" keyClass="String"
-                                             valueClass="String">
-               &lt;entry>
-                  &lt;key>java.naming.factory.initial&lt;/key>
-                  &lt;value>org.jnp.interfaces.NamingContextFactory&lt;/value>
-               &lt;/entry>
-               &lt;entry>
-                  &lt;key>java.naming.provider.url&lt;/key>
-                  &lt;value>jnp://localhost:1099&lt;/value>
-               &lt;/entry>
-               &lt;entry>
-                  &lt;key>java.naming.factory.url.pkgs&lt;/key>
-                  &lt;value>org.jboss.naming:org.jnp.interfaces"&lt;/value>
-               &lt;/entry>
-               &lt;entry>
-                  &lt;key>jnp.timeout&lt;/key>
-                  &lt;value>5000&lt;/value>
-               &lt;/entry>
-               &lt;entry>
-                  &lt;key>jnp.sotimeout&lt;/key>
-                  &lt;value>5000&lt;/value>
-               &lt;/entry>
-            &lt;/map>
-         &lt;/constructor>
-      &lt;/bean>
+   &lt;!-- JNDI is a Hashtable containing the JNDI properties required -->
+   &lt;!-- to connect to the sources and targets JMS resrouces         -->
+   &lt;bean name="JNDI" class="java.util.Hashtable">
+      &lt;constructor class="java.util.Map">
+         &lt;map class="java.util.Hashtable" keyClass="String"
+                                          valueClass="String">
+            &lt;entry>
+               &lt;key>java.naming.factory.initial&lt;/key>
+               &lt;value>org.jnp.interfaces.NamingContextFactory&lt;/value>
+            &lt;/entry>
+            &lt;entry>
+               &lt;key>java.naming.provider.url&lt;/key>
+               &lt;value>jnp://localhost:1099&lt;/value>
+            &lt;/entry>
+            &lt;entry>
+               &lt;key>java.naming.factory.url.pkgs&lt;/key>
+               &lt;value>org.jboss.naming:org.jnp.interfaces"&lt;/value>
+            &lt;/entry>
+            &lt;entry>
+               &lt;key>jnp.timeout&lt;/key>
+               &lt;value>5000&lt;/value>
+            &lt;/entry>
+            &lt;entry>
+               &lt;key>jnp.sotimeout&lt;/key>
+               &lt;value>5000&lt;/value>
+            &lt;/entry>
+         &lt;/map>
+      &lt;/constructor>
+   &lt;/bean>
 
-      &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
-         &lt;constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
-                      factoryMethod="locateJBoss"/>
-      &lt;/bean>
+   &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
+      &lt;constructor factoryClass="org.jboss.mx.util.MBeanServerLocator" factoryMethod="locateJBoss"/>
+   &lt;/bean>
 &lt;/deployment></programlisting>
         <section>
             <title>JMS Bridge Parameters</title>
@@ -201,7 +195,7 @@
             <note>
                 <para>To let a parameter be unspecified (for example, if the authentication is
                     anonymous or no message selector is provided), use <literal>&lt;null
-                        /&gt;</literal> for the unspecified parameter value.</para>
+                        /></literal> for the unspecified parameter value.</para>
             </note>
             <itemizedlist>
                 <listitem>

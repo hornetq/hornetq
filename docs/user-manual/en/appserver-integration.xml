@@ -42,12 +42,12 @@
             application server. The configuration properties are listed later in this chapter. </para>
         <para>All MDBs however need to have the destination type and the destination configured.
             The following example shows how this can be done using annotations:</para>
-        <programlisting>@MessageDriven(name = "MDBExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
-                     })
+        <programlisting>
+@MessageDriven(name = "MDBExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+})
 @ResourceAdapter("hornetq-ra.rar")
 public class MDBExample implements MessageListener
 {
@@ -86,12 +86,12 @@ public class MDBExample implements MessageListener
                 back then the message delivery semantics will kick in (by default, it will try to
                 redeliver the message up to 10 times before sending to a DLQ). Using annotations
                 this would be configured as follows:</para>
-            <programlisting>@MessageDriven(name = "MDB_CMP_TxRequiredExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
-                     })
+            <programlisting>
+@MessageDriven(name = "MDB_CMP_TxRequiredExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+})
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -109,31 +109,32 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
                 by calling <literal>setRollbackOnly</literal> on the <literal
                     >MessageDrivenContext</literal>. The code for this would look something
                 like:</para>
-            <programlisting>   @Resource
-   MessageDrivenContextContext ctx;
+            <programlisting>
+@Resource
+MessageDrivenContextContext ctx;
 
-   public void onMessage(Message message)
+public void onMessage(Message message)
+{
+   try
    {
-      try
-      {
-         //something here fails
-      }
-      catch (Exception e)
-      {
-         ctx.setRollbackOnly();
-      }
-   }</programlisting>
+      //something here fails
+   }
+   catch (Exception e)
+   {
+      ctx.setRollbackOnly();
+   }
+}</programlisting>
             <para>If you do not want the overhead of an XA transaction being created every time but
                 you would still like the message delivered within a transaction (i.e. you are only
                 using a JMS resource) then you can configure the MDB to use a local transaction.
                 This would be configured as such:</para>
-            <programlisting>@MessageDriven(name = "MDB_CMP_TxLocalExample",
-               activationConfig =
-                     {
-                           @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                           @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                           @ActivationConfigProperty(propertyName = "useLocalTx", propertyValue = "true")
-                     })
+            <programlisting>
+@MessageDriven(name = "MDB_CMP_TxLocalExample", activationConfig =
+{
+      @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+      @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+      @ActivationConfigProperty(propertyName = "useLocalTx", propertyValue = "true")
+})
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -147,13 +148,13 @@ public class MDB_CMP_TxLocalExample implements MessageListener
             <para>Message-driven beans can also be configured to use Bean-Managed Transactions
                 (BMT). In this case a User Transaction is created. This would be configured as
                 follows:</para>
-            <programlisting>@MessageDriven(name = "MDB_BMPExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
-                     })
+            <programlisting>
+@MessageDriven(name = "MDB_BMPExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+   @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
+})
 @TransactionManagement(value= TransactionManagementType.BEAN)
 @ResourceAdapter("hornetq-ra.rar")
 public class MDB_BMPExample implements MessageListener
@@ -169,44 +170,45 @@ public class MDB_BMPExample implements MessageListener
                 be redelivered.</para>
             <para>A user would control the lifecycle of the transaction something like the
                 following:</para>
-            <programlisting>   @Resource
-   MessageDrivenContext ctx;
+            <programlisting>
+@Resource
+MessageDrivenContext ctx;
 
-   public void onMessage(Message message)
+public void onMessage(Message message)
+{
+   UserTransaction tx;
+   try
    {
-      UserTransaction tx;
-      try
-      {
-         TextMessage textMessage = (TextMessage)message;
+      TextMessage textMessage = (TextMessage)message;
 
-         String text = textMessage.getText();
+      String text = textMessage.getText();
 
-         UserTransaction tx = ctx.getUserTransaction();
+      UserTransaction tx = ctx.getUserTransaction();
 
-         tx.begin();
-         
-         //do some stuff within the transaction
-         
-         tx.commit();
+      tx.begin();
 
-      }
-      catch (Exception e)
-      {
-         tx.rollback();
-      }
-   }</programlisting>
+      //do some stuff within the transaction
+
+      tx.commit();
+
+   }
+   catch (Exception e)
+   {
+      tx.rollback();
+   }
+}</programlisting>
         </section>
         <section>
             <title>Using Message Selectors with Message-Driven Beans</title>
             <para>It is also possible to use MDBs with message selectors. To do this simple define
                 your message selector as follows:</para>
-            <programlisting>@MessageDriven(name = "MDBMessageSelectorExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "color = 'RED'")
-                     })
+            <programlisting>
+@MessageDriven(name = "MDBMessageSelectorExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+   @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "color = 'RED'")
+})
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -226,12 +228,12 @@ public class MDBMessageSelectorExample implements MessageListener
         <para>This means that if the sending of the message fails the overall transaction would
             rollback and the message be re-sent. Heres an example of this from within an
             MDB:</para>
-        <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
-                     })
+        <programlisting>
+@MessageDriven(name = "MDBMessageSendTxExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+})
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -297,13 +299,13 @@ public class MDBMessageSendTxExample implements MessageListener
          pool size to 1, 15 sessions/consumers will be created (this is the default). If you want to limit how many
          sessions/consumers are created then you need to set the <literal>maxSession</literal> parameter either on the
       resource adapter itself or via an an Activation Config Property on the MDB itself</para>
-        <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
-                     })
+        <programlisting>
+@MessageDriven(name = "MDBMessageSendTxExample", activationConfig =
+{
+   @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+   @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+   @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
+})
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-ra.rar")
@@ -321,77 +323,77 @@ public class MyMDB implements MessageListener
             configuration of the adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
-        <programlisting>&lt;resourceadapter>
-      &lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
-      &lt;config-property>
-         &lt;description>The transport type. Multiple connectors can be configured by using a comma separated list,
-            i.e. org.hornetq.core.remoting.impl.invm.InVMConnectorFactory,org.hornetq.core.remoting.impl.invm.InVMConnectorFactory.&lt;/description>
-         &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
-         &lt;config-property-type>java.lang.String&lt;/config-property-type>
-         &lt;config-property-value>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value>
-      &lt;/config-property>
-      &lt;config-property>
-         &lt;description>The transport configuration. These values must be in the form of key=val;key=val;,
-            if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
-            Each set of params maps to the connector classname specified.&lt;/description>
-         &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
-         &lt;config-property-type>java.lang.String&lt;/config-property-type>
-         &lt;config-property-value>server-id=0&lt;/config-property-value>
-      &lt;/config-property>
+        <programlisting>
+&lt;resourceadapter>
+   &lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
+   &lt;config-property>
+      &lt;description>The transport type. Multiple connectors can be configured by using a comma separated list,
+         i.e. org.hornetq.core.remoting.impl.invm.InVMConnectorFactory,org.hornetq.core.remoting.impl.invm.InVMConnectorFactory.&lt;/description>
+      &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value>
+   &lt;/config-property>
+   &lt;config-property>
+      &lt;description>The transport configuration. These values must be in the form of key=val;key=val;,
+         if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
+         Each set of params maps to the connector classname specified.&lt;/description>
+      &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>server-id=0&lt;/config-property-value>
+   &lt;/config-property>
 
-      &lt;outbound-resourceadapter>
-         &lt;connection-definition>
-            &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnection
-            Factory&lt;/managedconnectionfactory-class>
+   &lt;outbound-resourceadapter>
+      &lt;connection-definition>
+         &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnection
+         Factory&lt;/managedconnectionfactory-class>
 
-            &lt;config-property>
-               &lt;description>The default session type&lt;/description>
-               &lt;config-property-name>SessionDefaultType&lt;/config-property-name>
-               &lt;config-property-type>java.lang.String&lt;/config-property-type>
-               &lt;config-property-value>javax.jms.Queue&lt;/config-property-value>
-            &lt;/config-property>
-            &lt;config-property>
-               &lt;description>Try to obtain a lock within specified number of seconds; less
-               than or equal to 0 disable this functionality&lt;/description>
-               &lt;config-property-name>UseTryLock&lt;/config-property-name>
-               &lt;config-property-type>java.lang.Integer&lt;/config-property-type>
-               &lt;config-property-value>0&lt;/config-property-value>
-            &lt;/config-property>
+         &lt;config-property>
+            &lt;description>The default session type&lt;/description>
+            &lt;config-property-name>SessionDefaultType&lt;/config-property-name>
+            &lt;config-property-type>java.lang.String&lt;/config-property-type>
+            &lt;config-property-value>javax.jms.Queue&lt;/config-property-value>
+         &lt;/config-property>
+         &lt;config-property>
+            &lt;description>Try to obtain a lock within specified number of seconds; less
+            than or equal to 0 disable this functionality&lt;/description>
+            &lt;config-property-name>UseTryLock&lt;/config-property-name>
+            &lt;config-property-type>java.lang.Integer&lt;/config-property-type>
+            &lt;config-property-value>0&lt;/config-property-value>
+         &lt;/config-property>
 
-            &lt;connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory
-            &lt;/connectionfactory-interface>
-            &lt;connectionfactororg.hornetq.ra.HornetQConnectionFactoryImplonFactoryImpl
-            &lt;/connectionfactory-impl-class>
-            &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
-            &lt;connection-impl-class>org.hornetq.ra.HornetQRASession
-            &lt;/connection-impl-class>
-         &lt;/connection-definition>
-         &lt;transaction-support>XATransaction&lt;/transaction-support>
-         &lt;authentication-mechanism>
-            &lt;authentication-mechanism-type>BasicPassword
-            &lt;/authentication-mechanism-type>
-            &lt;credential-interface>javax.resource.spi.security.PasswordCredential
-            &lt;/credential-interface>
-         &lt;/authentication-mechanism>
-         &lt;reauthentication-support>false&lt;/reauthentication-support>
-      &lt;/outbound-resourceadapter>
+         &lt;connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory
+         &lt;/connectionfactory-interface>
+         &lt;connectionfactororg.hornetq.ra.HornetQConnectionFactoryImplonFactoryImpl
+         &lt;/connectionfactory-impl-class>
+         &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
+         &lt;connection-impl-class>org.hornetq.ra.HornetQRASession
+         &lt;/connection-impl-class>
+      &lt;/connection-definition>
+      &lt;transaction-support>XATransaction&lt;/transaction-support>
+      &lt;authentication-mechanism>
+         &lt;authentication-mechanism-type>BasicPassword
+         &lt;/authentication-mechanism-type>
+         &lt;credential-interface>javax.resource.spi.security.PasswordCredential
+         &lt;/credential-interface>
+      &lt;/authentication-mechanism>
+      &lt;reauthentication-support>false&lt;/reauthentication-support>
+   &lt;/outbound-resourceadapter>
 
-      &lt;inbound-resourceadapter>
-         &lt;messageadapter>
-            &lt;messagelistener>
-               &lt;messagelistener-type>javax.jms.MessageListener&lt;/messagelistener-type>
-               &lt;activationspec>
-                  &lt;activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec
-                  &lt;/activationspec-class>
-                  &lt;required-config-property>
-                      &lt;config-property-name>destination&lt;/config-property-name>
-                  &lt;/required-config-property>
-               &lt;/activationspec>
-            &lt;/messagelistener>
-         &lt;/messageadapter>
-      &lt;/inbound-resourceadapter>
-
-   &lt;/resourceadapter></programlisting>
+   &lt;inbound-resourceadapter>
+      &lt;messageadapter>
+         &lt;messagelistener>
+            &lt;messagelistener-type>javax.jms.MessageListener&lt;/messagelistener-type>
+            &lt;activationspec>
+               &lt;activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec
+               &lt;/activationspec-class>
+               &lt;required-config-property>
+                   &lt;config-property-name>destination&lt;/config-property-name>
+               &lt;/required-config-property>
+            &lt;/activationspec>
+         &lt;/messagelistener>
+      &lt;/messageadapter>
+   &lt;/inbound-resourceadapter>
+&lt;/resourceadapter></programlisting>
         <para>There are three main parts to this configuration.</para>
         <orderedlist>
             <listitem>
@@ -707,20 +709,20 @@ public class MyMDB implements MessageListener
                 server please refer to your application servers documentation for how to do
                 this.</para>
             </note>
-            <programlisting>&lt;tx-connection-factory>
-      &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
-      &lt;xa-transaction/>
-      &lt;rar-name>jms-ra.rar&lt;/rar-name>
-      &lt;connection-definition>org.hornetq.ra.HornetQRAConnectionFactory
+            <programlisting>
+&lt;tx-connection-factory>
+   &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
+   &lt;xa-transaction/>
+   &lt;rar-name>jms-ra.rar&lt;/rar-name>
+   &lt;connection-definition>org.hornetq.ra.HornetQRAConnectionFactory
 &lt;/connection-definition>
-      &lt;config-property name="SessionDefaultType" type="String">javax.jms.Topic
-      &lt;/config-property>
-      &lt;config-property name="ConnectorClassName" type="String">
-        org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-      &lt;/config-property>
-      &lt;config-property name="ConnectionParameters" type="String">
-          port=5445&lt;/config-property>
-      &lt;max-pool-size>20&lt;/max-pool-size>
+&lt;config-property name="SessionDefaultType" type="String">javax.jms.Topic&lt;/config-property>
+   &lt;config-property name="ConnectorClassName" type="String">
+      org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
+   &lt;/config-property>
+   &lt;config-property name="ConnectionParameters" type="String">
+      port=5445&lt;/config-property>
+   &lt;max-pool-size>20&lt;/max-pool-size>
 &lt;/tx-connection-factory></programlisting>
            <warning>
               <title>overriding connectors</title>
@@ -729,7 +731,8 @@ public class MyMDB implements MessageListener
             <para>In this example the connection factory will be bound to JNDI with the name
                     <literal>RemoteJmsXA</literal> and can be looked up in the usual way using JNDI
                 or defined within the EJB or MDB as such:</para>
-            <programlisting>@Resource(mappedName="java:/RemoteJmsXA")
+            <programlisting>
+@Resource(mappedName="java:/RemoteJmsXA")
 private ConnectionFactory connectionFactory;</programlisting>
             <para>The <literal>config-property</literal> elements are what overrides those in the
                     <literal>ra.xml</literal> configuration file. Any of the elements pertaining to the
@@ -886,40 +889,38 @@ private ConnectionFactory connectionFactory;</programlisting>
                    Heres an example of what this would look like:
                 </para>
                 <programlisting>
-&lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
-   &lt;config-property&gt;
-      &lt;description&gt;The transport type&lt;/description&gt;
-      &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
-      &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-      &lt;config-property-value&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value&gt;
-   &lt;/config-property&gt;
-      &lt;config-property&gt;
-      &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
-      &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
-      &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-   &lt;config-property-value&gt;host=127.0.0.1;port=5446&lt;/config-property-value&gt;
-&lt;/config-property>
-                </programlisting>
+&lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
+   &lt;config-property>
+      &lt;description>The transport type&lt;/description>
+      &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
+   &lt;/config-property>
+      &lt;config-property>
+      &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+      &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+   &lt;config-property-value>host=127.0.0.1;port=5446&lt;/config-property-value>
+&lt;/config-property></programlisting>
                 <para>
                    If you want to provide a list of servers that the adapter can connect to you can provide a list of
                    connectors, each separated by a comma.
                 </para>
 
                 <programlisting>
-&lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
-   &lt;config-property&gt;
-      &lt;description&gt;The transport type&lt;/description&gt;
-      &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
-      &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-      &lt;config-property-value&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value&gt;
-   &lt;/config-property&gt;
-      &lt;config-property&gt;
-      &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
-      &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
-      &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-   &lt;config-property-value&gt;host=127.0.0.1;port=5446,host=127.0.0.2;port=5447&lt;/config-property-value&gt;
-&lt;/config-property>
-                </programlisting>
+&lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
+   &lt;config-property>
+      &lt;description>The transport type&lt;/description>
+      &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
+   &lt;/config-property>
+      &lt;config-property>
+      &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+      &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+   &lt;config-property-value>host=127.0.0.1;port=5446,host=127.0.0.2;port=5447&lt;/config-property-value>
+&lt;/config-property></programlisting>
                 <warning>
                    <title>provide all params</title>
                    <para>
@@ -943,17 +944,16 @@ private ConnectionFactory connectionFactory;</programlisting>
                 </para>
                 <para>The following example shows a sample configuration</para>
                 <programlisting>
-&lt;tx-connection-factory&gt;
-   &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
-   &lt;xa-transaction/&gt;
-   &lt;rar-name&gt;hornetq-ra.rar&lt;/rar-name&gt;
-   &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
-   &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
-   &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
-   &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;host=127.0.0.1;port=5446&lt;/config-property&gt;
-   &lt;max-pool-size&gt;20&lt;/max-pool-size&gt;
-&lt;/tx-connection-factory&gt;
-                </programlisting>
+&lt;tx-connection-factory>
+   &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
+   &lt;xa-transaction/>
+   &lt;rar-name>hornetq-ra.rar&lt;/rar-name>
+   &lt;connection-definition>org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition>
+   &lt;config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic&lt;/config-property>
+   &lt;config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property>
+   &lt;config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446&lt;/config-property>
+   &lt;max-pool-size>20&lt;/max-pool-size>
+&lt;/tx-connection-factory></programlisting>
                 <para>Again you will see that this uses the netty connector type and will connect to the HornetQ server
                    running on localhost and listening on port 5446. JEE components can access this by using JNDI and looking
                    up the connection factory using JNDI using <literal>java:/RemoteJmsXA</literal>, you can see that this
@@ -1138,9 +1138,7 @@ Copyright 2009 Red Hat, Inc.
       &lt;/inbound-resourceadapter>
 
    &lt;/resourceadapter>
-&lt;/connector>
-
-                    </programlisting>
+&lt;/connector></programlisting>
                     <para>The important part of this configuration is the part in bold, i.e. &lt;config-property-value>host=127.0.0.1;port=5445&lt;/config-property-value>.
                     This should be configured to the host and port of the remote HornetQ server.</para>
                 </listitem>
@@ -1175,8 +1173,7 @@ Copyright 2009 Red Hat, Inc.
   &lt;/tx-connection-factory>
 
 
-&lt;/connection-factories>
-                    </programlisting>
+&lt;/connection-factories></programlisting>
                     <para>Again you will see that the host and port are configured here to match the remote HornetQ servers
                         configuration. The other important attributes are:</para>
                     <itemizedlist>
@@ -1200,8 +1197,7 @@ Copyright 2009 Red Hat, Inc.
 &lt;message-driven>
     &lt;ejb-name>MyMDB&lt;/ejb-name>
     &lt;resource-adapter-name>jms-ra.rar&lt;/resource-adapter-name>
- &lt;/message-driven>
-            </programlisting>
+ &lt;/message-driven></programlisting>
             <para>Also you will need to edit the <literal>standardjboss.xml</literal> and uncomment the section with the
             following 'Uncomment to use JMS message inflow from jmsra.rar' and then comment out the invoker-proxy-binding
             called 'message-driven-bean'</para>
@@ -1217,11 +1213,10 @@ Copyright 2009 Red Hat, Inc.
             the cluster. This service is only available if using a cluster of JBoss Application
             Server instances.</para>
         <para>To use it use the following properties when connecting to JNDI.</para>
-        <programlisting>Hashtable&lt;String, String> jndiParameters = new Hashtable&lt;String, String>();
-jndiParameters.put("java.naming.factory.initial", 
-    "org.jnp.interfaces.NamingContextFactory");
-jndiParameters.put("java.naming.factory.url.pkgs=", 
-    "org.jboss.naming:org.jnp.interfaces");
+        <programlisting>
+Hashtable&lt;String, String> jndiParameters = new Hashtable&lt;String, String>();
+jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
 
 initialContext = new InitialContext(jndiParameters);</programlisting>
         <para>For more information on using HA-JNDI see the <ulink
@@ -1248,14 +1243,13 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
                 of JBoss AS profiles:</para>
             <programlisting>
-&lt;properties depends="arjuna" name="jta"&gt;
+&lt;properties depends="arjuna" name="jta">
    ...
                      
    &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HornetQ1"
-                value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;[connection configuration]"/&gt;
-   &lt;property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/&gt;
-&lt;/properties&gt;
-            </programlisting>
+                value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;[connection configuration]"/>
+   &lt;property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
+&lt;/properties></programlisting>
             <para>The <literal>[connection configuration]</literal> contains all the information
                 required to connect to HornetQ node under the form <literal>[connector factory class
                     name],[user name], [password], [connector parameters]</literal>. </para>
@@ -1295,28 +1289,24 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <para>If HornetQ is configured with a default in-vm acceptor:</para>
                 <programlisting>
 &lt;acceptor name="in-vm">
-    &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory&lt;/factory-class>
-&lt;/acceptor>
-                </programlisting>
+   &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory&lt;/factory-class>
+&lt;/acceptor></programlisting>
                 <para>the corresponding configuration in <literal
                         >conf/jbossts-properties.xml</literal> is:</para>
                 <programlisting>
 &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-   value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>        			
-                </programlisting>
+   value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/></programlisting>
                 <para>If it is now configured with a netty acceptor on a non-default port:</para>
                 <programlisting>
 &lt;acceptor name="netty">
-    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-    &lt;param key="port" value="8888"/>
-&lt;/acceptor>
-                </programlisting>
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="port" value="8888"/>
+&lt;/acceptor></programlisting>
                 <para>the corresponding configuration in <literal
                         >conf/jbossts-properties.xml</literal> is:</para>
                 <programlisting>
 &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, , , port=8888"/>        			                    
-                </programlisting>
+       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, , , port=8888"/></programlisting>
                 <note>
                     <para>Note the additional commas to skip the user and password before connector
                         parameters</para>
@@ -1325,8 +1315,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     configuration would have been:</para>
                 <programlisting>
 &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
-      value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, admin, adminpass, port=8888"/>
-                </programlisting>
+      value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory, admin, adminpass, port=8888"/></programlisting>
                 <para>Configuring HornetQ with an invm acceptor and configuring the Recovery Manager
                     with an invm connector is the recommended way to enable XA Recovery.</para>
             </section>

@@ -35,15 +35,14 @@
             defined in xml in the configuration file <literal
             >hornetq-configuration.xml</literal>.</para>
         <programlisting>
-&lt;acceptors&gt;                
-    &lt;acceptor name="netty"&gt;
-        &lt;factory-class&gt;
-org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
-        &lt;/factory-class&gt;
-        &lt;param key="port" value="5446"/&gt;
-    &lt;/acceptor&gt;
-&lt;/acceptors&gt;            
-        </programlisting>
+&lt;acceptors>
+   &lt;acceptor name="netty">
+      &lt;factory-class>
+         org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
+      &lt;/factory-class>
+      &lt;param key="port" value="5446"/>
+   &lt;/acceptor>
+&lt;/acceptors></programlisting>
         <para>Acceptors are always defined inside an <literal>acceptors</literal> element. There can
             be one or more acceptors defined in the <literal>acceptors</literal> element. There's no
             upper limit to the number of acceptors per server.</para>
@@ -73,15 +72,14 @@ org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
         <para>Let's look at a connector defined in our <literal>hornetq-configuration.xml</literal>
             file:</para>
         <programlisting>
-&lt;connectors&gt;
-    &lt;connector name="netty"&gt;
-        &lt;factory-class&gt;
-            org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-        &lt;/factory-class&gt;
-        &lt;param key="port" value="5446"/&gt;
-    &lt;/connector&gt;
-&lt;/connectors&gt;            
-        </programlisting>
+&lt;connectors>
+   &lt;connector name="netty">
+      &lt;factory-class>
+         org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
+      &lt;/factory-class>
+      &lt;param key="port" value="5446"/>
+   &lt;/connector>
+&lt;/connectors></programlisting>
         <para>Connectors can be defined inside a <literal>connectors</literal> element. There can be
             one or more connectors defined in the <literal>connectors</literal> element. There's no
             upper limit to the number of connectors per server.</para>
@@ -106,16 +104,15 @@ org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
                     connection factory that references our netty connector defined in our <literal
                         >hornetq-configuration.xml</literal> file:</para>
                 <programlisting>
-&lt;connection-factory name="ConnectionFactory"&gt;
-    &lt;connectors>
-       &lt;connector-ref connector-name="netty"/&gt;
-    &lt;/connectors>
-    &lt;entries&gt;
-        &lt;entry name="ConnectionFactory"/&gt;
-        &lt;entry name="XAConnectionFactory"/&gt;
-    &lt;/entries&gt;
-&lt;/connection-factory&gt;                
-            </programlisting>
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty"/>
+   &lt;/connectors>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+      &lt;entry name="XAConnectionFactory"/>
+   &lt;/entries>
+&lt;/connection-factory></programlisting>
             </listitem>
         </itemizedlist>
     </section>
@@ -133,7 +130,7 @@ org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
             standard Netty TCP transport and will try and connect on port 5446 to localhost
             (default):</para>
         <programlisting>
-Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
+Map&lt;String, Object> connectionParams = new HashMap&lt;String, Object>();
     
 connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 
                     5446);
@@ -149,13 +146,12 @@ ClientSessionFactory sessionFactory = locator.createClientSessionFactory();
 
 ClientSession session = sessionFactory.createSession(...);
 
-etc                       
-        </programlisting>
+etc</programlisting>
         <para>Similarly, if you're using JMS, you can configure the JMS connection factory directly
             on the client side without having to define a connector on the server side or define a
             connection factory in <literal>hornetq-jms.xml</literal>:</para>
         <programlisting>
-Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
+Map&lt;String, Object> connectionParams = new HashMap&lt;String, Object>();
 
 connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 5446);
 
@@ -168,8 +164,7 @@ ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactoryWi
 
 Connection jmsConnection = connectionFactory.createConnection();
 
-etc                       
-        </programlisting>
+etc</programlisting>
     </section>
     <section>
         <title>Configuring the Netty transport</title>
@@ -251,8 +246,7 @@ etc
                             url="http://www-didc.lbl.gov/TCP-tuning/">this</ulink>.</para>
                     <para>In summary TCP send/receive buffer sizes should be calculated as:</para>
                     <programlisting>
-                        buffer_size = bandwidth * RTT.
-                    </programlisting>
+buffer_size = bandwidth * RTT.</programlisting>
                     <para>Where bandwidth is in <emphasis>bytes per second</emphasis> and network
                         round trip time (RTT) is in seconds. RTT can be easily measured using the
                             <literal>ping</literal> utility.</para>
@@ -387,7 +381,8 @@ etc
                 <listitem>
                     <para>Deploy the servlet. Here's an example web.xml describing a web application
                         that uses the servlet:</para>
-                    <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
+                    <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?>
 &lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
          version="2.4">
@@ -405,9 +400,7 @@ etc
       &lt;servlet-name>HornetQServlet&lt;/servlet-name>
       &lt;url-pattern>/HornetQServlet&lt;/url-pattern>
    &lt;/servlet-mapping>
-&lt;/web-app>
-
-</programlisting>
+&lt;/web-app></programlisting>
                 </listitem>
                 <listitem>
                     <para>We also need to add a special Netty invm acceptor on the server side
@@ -416,34 +409,30 @@ etc
                         file showing that acceptor being defined:</para>
                     <programlisting>                    
 &lt;acceptors>
-
-      &lt;acceptor name="netty-invm">
-         &lt;factory-class>
-            org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
-         &lt;/factory-class>
-         &lt;param key="use-invm" value="true"/>
-         &lt;param key="host" value="org.hornetq"/>
-      &lt;/acceptor>
-
-&lt;/acceptors>                                         
-                </programlisting>
+   &lt;acceptor name="netty-invm">
+      &lt;factory-class>
+         org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
+      &lt;/factory-class>
+      &lt;param key="use-invm" value="true"/>
+      &lt;param key="host" value="org.hornetq"/>
+   &lt;/acceptor>
+&lt;/acceptors></programlisting>
                 </listitem>
                 <listitem>
                     <para>Lastly we need a connector for the client, this again will be configured
                         in the <literal>hornetq-configuration.xml</literal> file as such:</para>
-                    <programlisting>&lt;connectors>
-
-      &lt;connector name="netty-servlet">
-         &lt;factory-class>
-            org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-         &lt;/factory-class>
-         &lt;param key="host" value="localhost"/>
-         &lt;param key="port" value="8080"/>
-         &lt;param key="use-servlet" value="true"/>
-         &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
-      &lt;/connector>
-
- &lt;/connectors></programlisting>
+                    <programlisting>
+&lt;connectors>
+   &lt;connector name="netty-servlet">
+      &lt;factory-class>
+         org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
+      &lt;/factory-class>
+      &lt;param key="host" value="localhost"/>
+      &lt;param key="port" value="8080"/>
+      &lt;param key="use-servlet" value="true"/>
+      &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
+   &lt;/connector>
+&lt;/connectors></programlisting>
                 </listitem>
             </itemizedlist>
             <para>Heres a list of the init params and what they are used for</para>
@@ -460,30 +449,31 @@ etc
                 there is one.</para>
             <para>Its also possible to use the servlet transport over SSL. simply add the following
                 configuration to the
-                connector:<programlisting>    &lt;connector name="netty-servlet">
-         &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
-         &lt;param key="host" value="localhost"/>
-         &lt;param key="port" value="8443"/>
-         &lt;param key="use-servlet" value="true"/>
-         &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
-         &lt;param key="ssl-enabled" value="true"/>
-         &lt;param key="key-store-path" value="path to a keystoree"/>
-         &lt;param key="key-store-password" value="keystore password"/>
-      &lt;/connector>
-</programlisting></para>
+                connector:</para>
+            <programlisting>
+&lt;connector name="netty-servlet">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+   &lt;param key="host" value="localhost"/>
+   &lt;param key="port" value="8443"/>
+   &lt;param key="use-servlet" value="true"/>
+   &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
+   &lt;param key="ssl-enabled" value="true"/>
+   &lt;param key="key-store-path" value="path to a keystoree"/>
+   &lt;param key="key-store-password" value="keystore password"/>
+&lt;/connector></programlisting>
             <para>You will also have to configure the Application server to use a KeyStore. Edit the
                     <literal>server.xml</literal> file that can be found under <literal
                     >server/default/deploy/jbossweb.sar</literal> of the Application Server
                 installation and edit the SSL/TLS connector configuration to look like the
-                following:<programlisting>&lt;Connector protocol="HTTP/1.1" SSLEnabled="true"
-           port="8443" address="${jboss.bind.address}"
-           scheme="https" secure="true" clientAuth="false"
-           keystoreFile="path to a keystore"
-           keystorePass="keystore password" sslProtocol = "TLS" />
-
-</programlisting>In
-                both cases you will need to provide a keystore and password. Take a look at the
-                servlet ssl example shipped with HornetQ for more detail.</para>
+                following:</para>
+            <programlisting>
+&lt;Connector protocol="HTTP/1.1" SSLEnabled="true"
+     port="8443" address="${jboss.bind.address}"
+     scheme="https" secure="true" clientAuth="false"
+     keystoreFile="path to a keystore"
+     keystorePass="keystore password" sslProtocol = "TLS" /></programlisting>
+                <para>In both cases you will need to provide a keystore and password. Take a look
+                    at the servlet ssl example shipped with HornetQ for more detail.</para>
         </section>
     </section>
 </chapter>

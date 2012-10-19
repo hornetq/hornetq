@@ -64,8 +64,7 @@ finally
    {
       locator.close();
    }
-}
-        </programlisting>
+}</programlisting>
         <para>And here's an example of a well behaved JMS client application:</para>
         <programlisting>
 Connection jmsConnection = null;
@@ -84,8 +83,7 @@ finally
    {
       connection.close();
    }
-}
-        </programlisting>
+}</programlisting>
         <para>Unfortunately users don't always write well behaved applications, and sometimes
             clients just crash so they don't have a chance to clean up their resources!</para>
         <para>If this occurs then it can leave server side resources, like sessions, hanging on the
@@ -128,17 +126,12 @@ finally
                 a warning similar to the following in the logs (If you are using JMS the warning
                 will involve a JMS connection not a client session):</para>
             <programlisting>
-                
-[Finalizer] 20:14:43,244 WARNING [org.hornetq.core.client.impl.DelegatingSession]  I'm closin
-g a ClientSession you left open. Please make sure you close all ClientSessions explicitly before let
+[Finalizer] 20:14:43,244 WARNING [org.hornetq.core.client.impl.DelegatingSession]  I'm closing a ClientSession you left open. Please make sure you close all ClientSessions explicitly before let
 ting them go out of scope!
-[Finalizer] 20:14:43,244 WARNING [org.hornetq.core.client.impl.DelegatingSession]  The sessi
-on you didn't close was created here:
+[Finalizer] 20:14:43,244 WARNING [org.hornetq.core.client.impl.DelegatingSession]  The session you didn't close was created here:
 java.lang.Exception
-at org.hornetq.core.client.impl.DelegatingSession.&lt;init&gt;(DelegatingSession.java:83)
-at org.acme.yourproject.YourClass (YourClass.java:666)    
-                
-            </programlisting>
+   at org.hornetq.core.client.impl.DelegatingSession.&lt;init>(DelegatingSession.java:83)
+   at org.acme.yourproject.YourClass (YourClass.java:666)</programlisting>
             <para>HornetQ will then close the connection / client session for you.</para>
             <para>Note that the log will also tell you the exact line of your user code where you
                 created the JMS connection / client session that you later did not close. This will

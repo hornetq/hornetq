@@ -37,13 +37,11 @@
       <para>Using HornetQ Core API, you can set an expiration time directly on the message:</para>
       <programlisting>
 // message will expire in 5000ms from now
-message.setExpiration(System.currentTimeMillis() + 5000);         
-              </programlisting>
+message.setExpiration(System.currentTimeMillis() + 5000);</programlisting>
       <para>JMS MessageProducer allows to set a TimeToLive for the messages it sent:</para>
       <programlisting>
 // messages sent by this producer will be retained for 5s (5000ms) before expiration           
-producer.setTimeToLive(5000);
-        </programlisting>
+producer.setTimeToLive(5000);</programlisting>
       <para>Expired messages which are consumed from an expiry address have the following
          properties:</para>
       <itemizedlist>
@@ -63,11 +61,10 @@ producer.setTimeToLive(5000);
       <title>Configuring Expiry Addresses</title>
       <para>Expiry address are defined in the address-setting configuration:</para>
       <programlisting>
-&lt;!-- expired messages in exampleQueue will be sent to the expiry address expiryQueue --&gt;
-&lt;address-setting match="jms.queue.exampleQueue"&gt;
-   &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
-&lt;/address-setting&gt;
-        </programlisting>
+&lt;!-- expired messages in exampleQueue will be sent to the expiry address expiryQueue -->
+&lt;address-setting match="jms.queue.exampleQueue">
+   &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
+&lt;/address-setting></programlisting>
       <para>If messages are expired and no expiry address is specified, messages are simply removed
          from the queue and dropped. Address wildcards can be used to configure expiry address for a
          set of addresses (see <xref linkend="wildcard-syntax"/>).</para>

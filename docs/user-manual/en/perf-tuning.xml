@@ -212,8 +212,7 @@
                         >/etc/security/limits.conf</literal> e.g. add the lines
                     <programlisting>
 serveruser     soft    nofile  20000
-serveruser     hard    nofile  20000                   
-                </programlisting>
+serveruser     hard    nofile  20000</programlisting>
                     This would allow up to 20000 file handles to be open by the user <literal
                         >serveruser</literal>. </para>
             </listitem>
