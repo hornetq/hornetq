@@ -19,15 +19,10 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.*;
 import org.w3c.dom.Node;
 
 import javax.management.ObjectName;
@@ -50,12 +45,12 @@ import javax.management.ObjectName;
  * so an INFO message would be 121000 to 121999
  */
 @MessageLogger(projectCode = "HQ")
-public interface HornetQJMSLogger extends BasicLogger
+public interface HornetQJMSClientLogger extends BasicLogger
 {
    /**
     * The default logger.
     */
-   HornetQJMSLogger LOGGER = Logger.getMessageLogger(HornetQJMSLogger.class, HornetQJMSLogger.class.getPackage().getName());
+   HornetQJMSClientLogger LOGGER = Logger.getMessageLogger(HornetQJMSClientLogger.class, HornetQJMSClientLogger.class.getPackage().getName());
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 121001, value = "Failed to set up JMS bridge connections. Most probably the source or target servers are unavailable." +

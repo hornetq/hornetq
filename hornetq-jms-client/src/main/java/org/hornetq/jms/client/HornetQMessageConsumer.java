@@ -29,7 +29,6 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  * HornetQ implementation of a JMS MessageConsumer.
@@ -237,7 +236,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
             }
             catch (Throwable e)
             {
-               HornetQJMSLogger.LOGGER.errorPreparingMessage(e);
+               HornetQJMSClientLogger.LOGGER.errorPreparingMessage(e);
 
                return null;
             }

@@ -23,7 +23,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.utils.Pair;
 
 /**
@@ -54,7 +54,7 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (!started)
       {
-    	 HornetQJMSLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
+    	 HornetQJMSServerLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
          started = true;
 
          locator = config.createServerLocator();
@@ -68,11 +68,11 @@ public class RecoveryDiscovery implements SessionFailureListener
             // in case of failure we will retry
             sessionFactory.addFailureListener(this);
 
-            HornetQJMSLogger.LOGGER.debug("RecoveryDiscovery started fine on " + config);
+            HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery started fine on " + config);
          }
          catch (Exception startupError)
          {
-        	HornetQJMSLogger.LOGGER.warn("Couldn't start recovery discovery on " + config + ", we will retry this on the next recovery scan");
+        	HornetQJMSServerLogger.LOGGER.warn("Couldn't start recovery discovery on " + config + ", we will retry this on the next recovery scan");
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
@@ -121,7 +121,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception ignored)
          {
-        	 HornetQJMSLogger.LOGGER.debug(ignored, ignored);
+        	 HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
          }
 
          try
@@ -130,7 +130,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception ignored)
          {
-        	 HornetQJMSLogger.LOGGER.debug(ignored, ignored);
+        	 HornetQJMSServerLogger.LOGGER.debug(ignored, ignored);
          }
 
          sessionFactory = null;
@@ -177,11 +177,11 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (exception.getType() == HornetQExceptionType.DISCONNECTED)
       {
-    	  HornetQJMSLogger.LOGGER.warn("being disconnected for server shutdown", exception);
+    	  HornetQJMSServerLogger.LOGGER.warn("being disconnected for server shutdown", exception);
       }
       else
       {
-    	  HornetQJMSLogger.LOGGER.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
+    	  HornetQJMSServerLogger.LOGGER.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
                                            exception);
       }
       internalStop();
