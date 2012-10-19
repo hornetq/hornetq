@@ -85,8 +85,7 @@ SimpleString myUniqueID = "This is my unique id";   // Could use a UUID for this
 
 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID, myUniqueID);
 
-...
-        </programlisting>
+...</programlisting>
         <para>And here's an example using the JMS API:</para>
         <programlisting>
 ...     
@@ -97,8 +96,7 @@ String myUniqueID = "This is my unique id";   // Could use a UUID for this
 
 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
 
-...
-        </programlisting>
+...</programlisting>
     </section>
     <section id="duplicate.id.cache">
         <title>Configuring the Duplicate ID Cache</title>

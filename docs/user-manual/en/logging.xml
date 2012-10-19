@@ -74,28 +74,27 @@
          If you are using the distribution make sure the jnp-client.jar is included or if you are using maven add the following
          dependencies.
          <programlisting>
-   &lt;dependency>
-   &lt;groupId>org.jboss.naming&lt;/groupId>
-   &lt;artifactId>jnp-client&lt;/artifactId>
-   &lt;version>5.0.5.Final&lt;/version>
-      &lt;exclusions>
-         &lt;exclusion>
-            &lt;groupId>org.jboss.logging&lt;/groupId>
-            &lt;artifactId>jboss-logging-spi&lt;/artifactId>
-         &lt;/exclusion>
-      &lt;/exclusions>
-   &lt;/dependency>
-   &lt;dependency>
-      &lt;groupId>org.jboss.logmanager&lt;/groupId>
-      &lt;artifactId>jboss-logmanager&lt;/artifactId>
-      &lt;version>1.3.1.Final&lt;/version>
-   &lt;/dependency>
-   &lt;dependency>
-       &lt;groupId>org.hornetq&lt;/groupId>
-       &lt;artifactId>hornetq-core-client&lt;/artifactId>
-       &lt;version>2.3.0.BETA1&lt;/version>
-   &lt;/dependency>
-         </programlisting>
+&lt;dependency>
+&lt;groupId>org.jboss.naming&lt;/groupId>
+&lt;artifactId>jnp-client&lt;/artifactId>
+&lt;version>5.0.5.Final&lt;/version>
+   &lt;exclusions>
+      &lt;exclusion>
+         &lt;groupId>org.jboss.logging&lt;/groupId>
+         &lt;artifactId>jboss-logging-spi&lt;/artifactId>
+      &lt;/exclusion>
+   &lt;/exclusions>
+&lt;/dependency>
+&lt;dependency>
+   &lt;groupId>org.jboss.logmanager&lt;/groupId>
+   &lt;artifactId>jboss-logmanager&lt;/artifactId>
+   &lt;version>1.3.1.Final&lt;/version>
+&lt;/dependency>
+&lt;dependency>
+   &lt;groupId>org.hornetq&lt;/groupId>
+   &lt;artifactId>hornetq-core-client&lt;/artifactId>
+   &lt;version>2.3.0.Final&lt;/version>
+&lt;/dependency></programlisting>
          The first dependency <literal>jnp-client</literal> is not actually needed for logging, however this is needed for
          using JNDI and imports a previous version JBoss logging which needs to be excluded
       </para>
@@ -112,39 +111,38 @@
       <para>
          The following is a typical <literal>logging.properties for a client</literal>
          <programlisting>
-   # Root logger option
-   loggers=org.jboss.logging,org.hornetq.core.server,org.hornetq.utils,org.hornetq.journal,org.hornetq.jms,org.hornetq.ra
+# Root logger option
+loggers=org.jboss.logging,org.hornetq.core.server,org.hornetq.utils,org.hornetq.journal,org.hornetq.jms,org.hornetq.ra
 
-   # Root logger level
-   logger.level=INFO
-   # HornetQ logger levels
-   logger.org.hornetq.core.server.level=INFO
-   logger.org.hornetq.utils.level=INFO
-   logger.org.hornetq.jms.level=DEBUG
+# Root logger level
+logger.level=INFO
+# HornetQ logger levels
+logger.org.hornetq.core.server.level=INFO
+logger.org.hornetq.utils.level=INFO
+logger.org.hornetq.jms.level=DEBUG
 
-   # Root logger handlers
-   logger.handlers=FILE,CONSOLE
+# Root logger handlers
+logger.handlers=FILE,CONSOLE
 
-   # Console handler configuration
-   handler.CONSOLE=org.jboss.logmanager.handlers.ConsoleHandler
-   handler.CONSOLE.properties=autoFlush
-   handler.CONSOLE.level=FINE
-   handler.CONSOLE.autoFlush=true
-   handler.CONSOLE.formatter=PATTERN
+# Console handler configuration
+handler.CONSOLE=org.jboss.logmanager.handlers.ConsoleHandler
+handler.CONSOLE.properties=autoFlush
+handler.CONSOLE.level=FINE
+handler.CONSOLE.autoFlush=true
+handler.CONSOLE.formatter=PATTERN
 
-   # File handler configuration
-   handler.FILE=org.jboss.logmanager.handlers.FileHandler
-   handler.FILE.level=FINE
-   handler.FILE.properties=autoFlush,fileName
-   handler.FILE.autoFlush=true
-   handler.FILE.fileName=hornetq.log
-   handler.FILE.formatter=PATTERN
+# File handler configuration
+handler.FILE=org.jboss.logmanager.handlers.FileHandler
+handler.FILE.level=FINE
+handler.FILE.properties=autoFlush,fileName
+handler.FILE.autoFlush=true
+handler.FILE.fileName=hornetq.log
+handler.FILE.formatter=PATTERN
 
-   # Formatter pattern configuration
-   formatter.PATTERN=org.jboss.logmanager.formatters.PatternFormatter
-   formatter.PATTERN.properties=pattern
-   formatter.PATTERN.pattern=%d{HH:mm:ss,SSS} %-5p [%c] %s%E%n
-         </programlisting>
+# Formatter pattern configuration
+formatter.PATTERN=org.jboss.logmanager.formatters.PatternFormatter
+formatter.PATTERN.properties=pattern
+formatter.PATTERN.pattern=%d{HH:mm:ss,SSS} %-5p [%c] %s%E%n</programlisting>
       </para>
    </section>
     <section>

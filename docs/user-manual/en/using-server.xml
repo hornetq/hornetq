@@ -174,11 +174,11 @@
         <para>It is also possible to use system property substitution in all the configuration
             files. by replacing a value with the name of a system property. Here is an example of
             this with a connector configuration:</para>
-        <programlisting>&lt;connector name="netty">
-         &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-           &lt;/factory-class>
-         &lt;param key="host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
-         &lt;param key="port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+        <programlisting>
+&lt;connector name="netty">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+   &lt;param key="host" value="${hornetq.remoting.netty.host:localhost}" type="String"/>
+   &lt;param key="port" value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
         <para>Here you can see we have replaced 2 values with system properties <literal
                 >hornetq.remoting.netty.host</literal> and <literal
@@ -200,68 +200,65 @@
         </note>
         <para>Let's take a look at an example beans file from the stand-alone server:</para>
         <para>
-            <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+            <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+   &lt;bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+   &lt;!-- JNDI server. Disable this if you don't want JNDI -->
+   &lt;bean name="JNDIServer" class="org.jnp.server.Main">
+      &lt;property name="namingInfo">
+         &lt;inject bean="Naming"/>
+      &lt;/property>
+      &lt;property name="port">1099&lt;/property>
+      &lt;property name="bindAddress">localhost&lt;/property>
+      &lt;property name="rmiPort">1098&lt;/property>
+      &lt;property name="rmiBindAddress">localhost&lt;/property>
+   &lt;/bean>
 
-&lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt;
+   &lt;!-- MBean server -->
+   &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
+      &lt;constructor factoryClass="java.lang.management.ManagementFactory"
+         factoryMethod="getPlatformMBeanServer"/>
+   &lt;/bean>
 
-&lt;bean name="Naming" class="org.jnp.server.NamingBeanImpl"/&gt;
+   &lt;!-- The core configuration -->
+   &lt;bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration">
+   &lt;/bean>
 
-&lt;!-- JNDI server. Disable this if you don't want JNDI --&gt;
-&lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
-   &lt;property name="namingInfo"&gt;
-      &lt;inject bean="Naming"/&gt;
-   &lt;/property&gt;
-   &lt;property name="port"&gt;1099&lt;/property&gt;
-   &lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
-   &lt;property name="rmiPort"&gt;1098&lt;/property&gt;
-   &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
-&lt;/bean&gt;
+   &lt;!-- The security manager -->
+   &lt;bean name="HornetQSecurityManager"
+         class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl">
+      &lt;start ignored="true"/>
+      &lt;stop ignored="true"/>
+   &lt;/bean>
 
-&lt;!-- MBean server --&gt;
-&lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
-   &lt;constructor factoryClass="java.lang.management.ManagementFactory"
-      factoryMethod="getPlatformMBeanServer"/&gt;
-&lt;/bean&gt; 
+   &lt;!-- The core server -->
+   &lt;bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+      &lt;start ignored="true"/>
+      &lt;stop ignored="true"/>
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="Configuration"/>
+         &lt;/parameter>
+         &lt;parameter>
+            &lt;inject bean="MBeanServer"/>
+         &lt;/parameter>
+         &lt;parameter>
+            &lt;inject bean="HornetQSecurityManager"/>
+         &lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
 
-&lt;!-- The core configuration --&gt;
-&lt;bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"&gt;
-&lt;/bean&gt;
-
-&lt;!-- The security manager --&gt;
-&lt;bean name="HornetQSecurityManager" 
-      class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl"&gt;
-   &lt;start ignored="true"/&gt;
-   &lt;stop ignored="true"/&gt;
-&lt;/bean&gt;
-
-&lt;!-- The core server --&gt;
-&lt;bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl"&gt;
-   &lt;start ignored="true"/&gt;
-   &lt;stop ignored="true"/&gt;  
-   &lt;constructor&gt;
-      &lt;parameter&gt;
-         &lt;inject bean="Configuration"/&gt;
-      &lt;/parameter&gt;
-      &lt;parameter&gt;
-         &lt;inject bean="MBeanServer"/&gt;
-      &lt;/parameter&gt;
-      &lt;parameter&gt;
-         &lt;inject bean="HornetQSecurityManager"/&gt;
-      &lt;/parameter&gt;        
-   &lt;/constructor&gt;         
-&lt;/bean&gt;
-
-&lt;!-- The JMS server --&gt;
-&lt;bean name="JMSServerManager" 
-      class="org.hornetq.jms.server.impl.JMSServerManagerImpl"&gt;
-   &lt;constructor&gt;         
-      &lt;parameter&gt;
-         &lt;inject bean="HornetQServer"/&gt;
-      &lt;/parameter&gt;         
-   &lt;/constructor&gt;
-&lt;/bean&gt;
-
-&lt;/deployment&gt;</programlisting>
+   &lt;!-- The JMS server -->
+   &lt;bean name="JMSServerManager"
+         class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="HornetQServer"/>
+         &lt;/parameter>
+      &lt;/constructor>
+   &lt;/bean>
+&lt;/deployment></programlisting>
         </para>
         <para>We can see that, as well as the core HornetQ server, the stand-alone server
             instantiates various different POJOs, lets look at them in turn:</para>
@@ -318,36 +315,34 @@
                 similar to Microcontainer Beans</para>
         </note>
         <para>
-            <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;server&gt;
-
+            <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;server>
    &lt;mbean code="org.hornetq.service.HornetQFileConfigurationService"
-      name="org.hornetq:service=HornetQFileConfigurationService"&gt;
-   &lt;/mbean&gt;
+      name="org.hornetq:service=HornetQFileConfigurationService">
+   &lt;/mbean>
 
    &lt;mbean code="org.hornetq.service.JBossASSecurityManagerService"
-      name="org.hornetq:service=JBossASSecurityManagerService"&gt;
-   &lt;/mbean&gt;
+      name="org.hornetq:service=JBossASSecurityManagerService">
+   &lt;/mbean>
 
    &lt;mbean code="org.hornetq.service.HornetQStarterService" 
-      name="org.hornetq:service=HornetQStarterService"&gt;
-      &lt;!--lets let the JMS Server start us--&gt;
-         &lt;attribute name="Start"&gt;false&lt;/attribute&gt;
+      name="org.hornetq:service=HornetQStarterService">
+      &lt;!--lets let the JMS Server start us-->
+         &lt;attribute name="Start">false&lt;/attribute>
 
       &lt;depends optional-attribute-name="SecurityManagerService"
-         proxy-type="attribute"&gt;org.hornetq:service=JBossASSecurityManagerService&lt;/depends&gt;
+         proxy-type="attribute">org.hornetq:service=JBossASSecurityManagerService&lt;/depends>
       &lt;depends optional-attribute-name="ConfigurationService"
-         proxy-type="attribute"&gt;org.hornetq:service=HornetQFileConfigurationService&lt;/depends&gt;
-   &lt;/mbean&gt;
+         proxy-type="attribute">org.hornetq:service=HornetQFileConfigurationService&lt;/depends>
+   &lt;/mbean>
 
    &lt;mbean code="org.hornetq.service.HornetQJMSStarterService"
-      name="org.hornetq:service=HornetQJMSStarterService"&gt;
+      name="org.hornetq:service=HornetQJMSStarterService">
       &lt;depends optional-attribute-name="HornetQServer"
-         proxy-type="attribute"&gt;org.hornetq:service=HornetQStarterService&lt;/depends&gt;
-   &lt;/mbean&gt;
-   
-&lt;/server&gt;
-            </programlisting>
+         proxy-type="attribute">org.hornetq:service=HornetQStarterService&lt;/depends>
+   &lt;/mbean>
+&lt;/server></programlisting>
         </para>
         <para>This jboss-service.xml configuration file is included inside the hornetq-service.sar
             on AS4 with embebbed HornetQ. As you can see, on this configuration file we are starting

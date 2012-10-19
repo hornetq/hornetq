@@ -107,17 +107,16 @@
                 <para>Let's take a look at an example broadcast group from <literal
                         >hornetq-configuration.xml</literal> that defines a UDP broadcast group:</para>
                 <programlisting>
-     &lt;broadcast-groups>
-     &lt;broadcast-group name="my-broadcast-group">
-     &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
-     &lt;local-bind-port>5432&lt;/local-bind-port>
-     &lt;group-address>231.7.7.7&lt;/group-address>
-     &lt;group-port>9876&lt;/group-port>
-     &lt;broadcast-period>2000&lt;/broadcast-period>
-     &lt;connector-ref connector-name="netty-connector"/>
-     &lt;/broadcast-group>
-     &lt;/broadcast-groups>
-                </programlisting>
+&lt;broadcast-groups>
+   &lt;broadcast-group name="my-broadcast-group">
+      &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
+      &lt;local-bind-port>5432&lt;/local-bind-port>
+      &lt;group-address>231.7.7.7&lt;/group-address>
+      &lt;group-port>9876&lt;/group-port>
+      &lt;broadcast-period>2000&lt;/broadcast-period>
+      &lt;connector-ref connector-name="netty-connector"/>
+   &lt;/broadcast-group>
+&lt;/broadcast-groups></programlisting>
                 <para>Some of the broadcast group parameters are optional and you'll normally use the
                     defaults, but we specify them all in the above example for clarity. Let's discuss
                     each one in turn:</para>
@@ -168,15 +167,14 @@
 
                 <para>Here is another example broadcast group that defines a JGroups broadcast group:</para>
                 <programlisting>
-     &lt;broadcast-groups>
-     &lt;broadcast-group name="my-broadcast-group">
-     &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
-     &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
-     &lt;broadcast-period>2000&lt;/broadcast-period>
-     &lt;connector-ref connector-name="netty-connector"/>
-     &lt;/broadcast-group>
-     &lt;/broadcast-groups>
-                </programlisting>
+&lt;broadcast-groups>
+   &lt;broadcast-group name="my-broadcast-group">
+      &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+      &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+      &lt;broadcast-period>2000&lt;/broadcast-period>
+    &lt;connector-ref connector-name="netty-connector"/>
+   &lt;/broadcast-group>
+&lt;/broadcast-groups></programlisting>
                 <para>To be able to use JGroups to broadcast, one must specify two attributes, i.e. 
                     <literal>jgroups-file</literal> and <literal>jgroups-channel</literal>, as discussed
                     in details as following:</para>
@@ -200,58 +198,56 @@
                    The following is an example of a JGroups file
                    <programlisting>
 &lt;config xmlns="urn:org:jgroups"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.0.xsd">
-    &lt;TCP loopback="true"
-         recv_buf_size="20000000"
-         send_buf_size="640000"
-         discard_incompatible_packets="true"
-         max_bundle_size="64000"
-         max_bundle_timeout="30"
-         enable_bundling="true"
-         use_send_queues="false"
-         sock_conn_timeout="300"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.0.xsd">
+   &lt;TCP loopback="true"
+      recv_buf_size="20000000"
+      send_buf_size="640000"
+      discard_incompatible_packets="true"
+      max_bundle_size="64000"
+      max_bundle_timeout="30"
+      enable_bundling="true"
+      use_send_queues="false"
+      sock_conn_timeout="300"
 
-         thread_pool.enabled="true"
-         thread_pool.min_threads="1"
-         thread_pool.max_threads="10"
-         thread_pool.keep_alive_time="5000"
-         thread_pool.queue_enabled="false"
-         thread_pool.queue_max_size="100"
-         thread_pool.rejection_policy="run"
+      thread_pool.enabled="true"
+      thread_pool.min_threads="1"
+      thread_pool.max_threads="10"
+      thread_pool.keep_alive_time="5000"
+      thread_pool.queue_enabled="false"
+      thread_pool.queue_max_size="100"
+      thread_pool.rejection_policy="run"
 
-         oob_thread_pool.enabled="true"
-         oob_thread_pool.min_threads="1"
-         oob_thread_pool.max_threads="8"
-         oob_thread_pool.keep_alive_time="5000"
-         oob_thread_pool.queue_enabled="false"
-         oob_thread_pool.queue_max_size="100"
-         oob_thread_pool.rejection_policy="run"/>
+      oob_thread_pool.enabled="true"
+      oob_thread_pool.min_threads="1"
+      oob_thread_pool.max_threads="8"
+      oob_thread_pool.keep_alive_time="5000"
+      oob_thread_pool.queue_enabled="false"
+      oob_thread_pool.queue_max_size="100"
+      oob_thread_pool.rejection_policy="run"/>
 
-    &lt;FILE_PING location="../file.ping.dir"/>
-    &lt;MERGE2 max_interval="30000"
-              min_interval="10000"/>
-    &lt;FD_SOCK/>
-    &lt;FD timeout="10000" max_tries="5" />
-    &lt;VERIFY_SUSPECT timeout="1500"  />
-    &lt;BARRIER />
-    &lt;pbcast.NAKACK
-                   use_mcast_xmit="false"
-                   retransmit_timeout="300,600,1200,2400,4800"
-                   discard_delivered_msgs="true"/>
-    &lt;UNICAST timeout="300,600,1200" />
-    &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
-                   max_bytes="400000"/>
-    &lt;pbcast.GMS print_local_addr="true" join_timeout="3000"
-
-                view_bundling="true"/>
-    &lt;FC max_credits="2000000"
-        min_threshold="0.10"/>
-    &lt;FRAG2 frag_size="60000"  />
-    &lt;pbcast.STATE_TRANSFER/>
-    &lt;pbcast.FLUSH timeout="0"/>
-&lt;/config>
-                   </programlisting>
+   &lt;FILE_PING location="../file.ping.dir"/>
+   &lt;MERGE2 max_interval="30000"
+      min_interval="10000"/>
+   &lt;FD_SOCK/>
+   &lt;FD timeout="10000" max_tries="5" />
+   &lt;VERIFY_SUSPECT timeout="1500"  />
+   &lt;BARRIER />
+   &lt;pbcast.NAKACK
+      use_mcast_xmit="false"
+      retransmit_timeout="300,600,1200,2400,4800"
+      discard_delivered_msgs="true"/>
+   &lt;UNICAST timeout="300,600,1200" />
+   &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+      max_bytes="400000"/>
+   &lt;pbcast.GMS print_local_addr="true" join_timeout="3000"
+      view_bundling="true"/>
+   &lt;FC max_credits="2000000"
+      min_threshold="0.10"/>
+   &lt;FRAG2 frag_size="60000"  />
+   &lt;pbcast.STATE_TRANSFER/>
+   &lt;pbcast.FLUSH timeout="0"/>
+&lt;/config></programlisting>
                 </para>
                 <para>
                    As it shows, the file content defines a jgroups protocol stacks. If you want hornetq
@@ -261,8 +257,7 @@
                    configuration is stored in a file named "jgroups-stacks.xml" then your
                    <literal>jgroups-file</literal> should be like
                    <programlisting>
-         &lt;jgroups-file>jgroups-stacks.xml&lt;/jgroups-file>
-                   </programlisting>
+&lt;jgroups-file>jgroups-stacks.xml&lt;/jgroups-file></programlisting>
                 </para>
             </section>
             <section id="clusters.discovery-groups">
@@ -305,15 +300,14 @@
                     can be many discovery groups defined by HornetQ server. Let's look at an
                     example:</para>
                 <programlisting>
-       &lt;discovery-groups>
-         &lt;discovery-group name="my-discovery-group">
-           &lt;local-bind-address>172.16.9.7&lt;/local-bind-address>
-           &lt;group-address>231.7.7.7&lt;/group-address>
-           &lt;group-port>9876&lt;/group-port>
-           &lt;refresh-timeout>10000&lt;/refresh-timeout>
-         &lt;/discovery-group>
-       &lt;/discovery-groups>
-                </programlisting>
+&lt;discovery-groups>
+   &lt;discovery-group name="my-discovery-group">
+      &lt;local-bind-address>172.16.9.7&lt;/local-bind-address>
+      &lt;group-address>231.7.7.7&lt;/group-address>
+      &lt;group-port>9876&lt;/group-port>
+      &lt;refresh-timeout>10000&lt;/refresh-timeout>
+   &lt;/discovery-group>
+&lt;/discovery-groups></programlisting>
                 <para>We'll consider each parameter of the discovery group:</para>
                 <itemizedlist>
                     <listitem>
@@ -350,14 +344,13 @@
                 </itemizedlist>
                 <para>Here is another example that defines a JGroups discovery group:</para>
                 <programlisting>
-     &lt;discovery-groups>
-     &lt;discovery-group name="my-broadcast-group">
-     &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
-     &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
-     &lt;refresh-timeout>10000&lt;/refresh-timeout>
-     &lt;/discovery-group>
-     &lt;/discovery-groups>
-                </programlisting>
+&lt;discovery-groups>
+   &lt;discovery-group name="my-broadcast-group">
+      &lt;jgroups-file>test-jgroups-file_ping.xml&lt;/jgroups-file>
+      &lt;jgroups-channel>hornetq_broadcast_channel&lt;/jgroups-channel>
+      &lt;refresh-timeout>10000&lt;/refresh-timeout>
+   &lt;/discovery-group>
+&lt;/discovery-groups></programlisting>
                 <para>To receive broadcast from JGroups channels, one must specify two attributes, 
                     <literal>jgroups-file</literal> and <literal>jgroups-channel</literal>, as discussed
                     in details as following:</para>
@@ -391,13 +384,12 @@
                         configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
                         example:</para>
                     <programlisting>
-      &lt;connection-factory name="ConnectionFactory">
-      &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
-      &lt;entries>
+&lt;connection-factory name="ConnectionFactory">
+   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
+   &lt;entries>
       &lt;entry name="ConnectionFactory"/>
-      &lt;/entries>
-      &lt;/connection-factory>
-                    </programlisting>
+   &lt;/entries>
+&lt;/connection-factory></programlisting>
                     <para>The element <literal>discovery-group-ref</literal> specifies the name of a
                         discovery group defined in <literal>hornetq-configuration.xml</literal>.</para>
                     <para>When this connection factory is downloaded from JNDI by a client application
@@ -408,18 +400,18 @@
                         - you're instantiating the JMS connection factory directly then you can specify
                         the discovery group parameters directly when creating the JMS connection
                         factory. Here's an
-                        example:<programlisting>
-       final String groupAddress = "231.7.7.7";
+                        example:</para>
+                    <programlisting>
+final String groupAddress = "231.7.7.7";
 
-       final int groupPort = 9876;
+final int groupPort = 9876;
 
-       ConnectionFactory jmsConnectionFactory =
-       HornetQJMSClient.createConnectionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort), , JMSFactoryType.CF);
+ConnectionFactory jmsConnectionFactory =
+HornetQJMSClient.createConnectionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort), , JMSFactoryType.CF);
 
-       Connection jmsConnection1 = jmsConnectionFactory.createConnection();
+Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
-       Connection jmsConnection2 = jmsConnectionFactory.createConnection();
-                       </programlisting></para>
+Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting>
                     <para>The <literal>refresh-timeout</literal> can be set directly on the DiscoveryGroupConfiguration
                         by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
                         want to change the default value.</para>
@@ -433,17 +425,17 @@
                 </section>
                 <section>
                     <title>Configuring client discovery using Core</title>
-                    <para>If you're using the core API to directly instantiate <literal
-                            >ClientSessionFactory</literal> instances, then you can specify the
+                    <para>If you're using the core API to directly instantiate
+                        <literal>ClientSessionFactory</literal> instances, then you can specify the
                         discovery group parameters directly when creating the session factory. Here's an
-                        example:
+                        example:</para>
                         <programlisting>
-    final String groupAddress = "231.7.7.7";
-    final int groupPort = 9876;
-    SessionFactory factory = HornetQClient.createClientSessionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort));
-    ClientSession session1 = factory.createClientSession(...); ClientSession
-    session2 = factory.createClientSession(...);
-                        </programlisting></para>
+final String groupAddress = "231.7.7.7";
+final int groupPort = 9876;
+ServerLocator factory = HornetQClient.createServerLocatorWithHA(new DiscoveryGroupConfiguration(groupAddress, groupPort));
+ClientSessionFactory factory = locator.createSessionFactory();
+ClientSession session1 = factory.createSession();
+ClientSession session2 = factory.createSession();</programlisting>
                     <para>The <literal>refresh-timeout</literal> can be set directly on the DiscoveryGroupConfiguration
                         by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
                         want to change the default value.</para>
@@ -483,17 +475,16 @@
                         configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
                         example:</para>
                     <programlisting>
-      &lt;connection-factory name="ConnectionFactory">
-         &lt;connectors>
-            &lt;connector-ref connector-name="netty-connector"/>
-            &lt;connector-ref connector-name="netty-connector2"/>
-            &lt;connector-ref connector-name="netty-connector3"/>
-         &lt;/connectors>
-         &lt;entries>
-            &lt;entry name="ConnectionFactory"/>
-         &lt;/entries>
-      &lt;/connection-factory>
-                    </programlisting>
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;connector-ref connector-name="netty-connector2"/>
+      &lt;connector-ref connector-name="netty-connector3"/>
+   &lt;/connectors>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+   &lt;/entries>
+&lt;/connection-factory></programlisting>
                     <para>
                         The element <literal>connectors</literal> contains a list of pre defined connectors in the
                         <literal>hornetq-configuration.xml</literal> file. When this connection factory is downloaded
@@ -506,35 +497,33 @@
                         the JMS connection factory. Here's an example:
                     </para>
                     <programlisting>
-      HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
-      map.put("host", "myhost");
-      map.put("port", "5445");
-      TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-      HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
-      map2.put("host", "myhost2");
-      map2.put("port", "5446");
-      TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
+HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
+map.put("host", "myhost");
+map.put("port", "5445");
+TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
+map2.put("host", "myhost2");
+map2.put("port", "5446");
+TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
 
-      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, server1, server2);
-                    </programlisting>
+HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, server1, server2);</programlisting>
                 </section>
                 <section>
                     <title>Configuring client discovery using JMS</title>
                     <para>If you are using the core API then the same can be done as follows:</para>
                     <programlisting>
-      HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
-      map.put("host", "myhost");
-      map.put("port", "5445");
-      TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-      HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
-      map2.put("host", "myhost2");
-      map2.put("port", "5446");
-      TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
+HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
+map.put("host", "myhost");
+map.put("port", "5445");
+TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
+map2.put("host", "myhost2");
+map2.put("port", "5446");
+TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithHA(server1, server2);
-      ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession();
-                    </programlisting>
+ServerLocator locator = HornetQClient.createServerLocatorWithHA(server1, server2);
+ClientSessionFactory factory = locator.createSessionFactory();
+ClientSession session = factory.createSession();</programlisting>
                 </section>
             </section>
         </section>
@@ -544,8 +533,8 @@
         <para>If cluster connections are defined between nodes of a cluster, then HornetQ will load
             balance messages arriving at a particular node from a client.</para>
         <para>Let's take a simple example of a cluster of four nodes A, B, C, and D arranged in a
-            <emphasis>symmetric cluster</emphasis> (described in <xref
-                    linkend="symmetric-cluster"/>). We have a queue called <literal>OrderQueue</literal>
+            <emphasis>symmetric cluster</emphasis> (described in
+            <xref linkend="symmetric-cluster"/>). We have a queue called <literal>OrderQueue</literal>
             deployed on each node of the cluster.</para>
         <para>We have client Ca connected to node A, sending orders to the server. We have also have
             order processor clients Pa, Pb, Pc, and Pd connected to each of the nodes A, B, C, D. If
@@ -575,17 +564,16 @@
                         >cluster-connection</literal> element. There can be zero or more cluster
                 connections defined per HornetQ server.</para>
             <programlisting>
-    &lt;cluster-connections&gt;
-      &lt;cluster-connection name="my-cluster"&gt;
-      &lt;address&gt;jms&lt;/address&gt;
-      &lt;retry-interval&gt;500&lt;/retry-interval&gt;
-      &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
-      &lt;forward-when-no-consumers&gt;false&lt;/forward-when-no-consumers&gt;
-      &lt;max-hops&gt;1&lt;/max-hops&gt;
-      &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
-      &lt;/cluster-connection&gt;
-    &lt;/cluster-connections&gt;
-            </programlisting>
+&lt;cluster-connections>
+   &lt;cluster-connection name="my-cluster">
+      &lt;address>jms&lt;/address>
+      &lt;retry-interval>500&lt;/retry-interval>
+      &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
+      &lt;forward-when-no-consumers>false&lt;/forward-when-no-consumers>
+      &lt;max-hops>1&lt;/max-hops>
+      &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
+   &lt;/cluster-connection>
+&lt;/cluster-connections></programlisting>
             <para>In the above cluster connection all parameters have been explicitly specified. The following
                shows all the available configuration options</para>
             <itemizedlist>
@@ -670,7 +658,9 @@
                 </listitem>
                 <listitem>
                     <para><literal>reconnect-attempts"</literal>.The number of times the system will
-                        try to connect a node on the cluster. If the max-retry is achieved this node will be considered permanently down and the system will stop routing messages to this node.</para>
+                        try to connect a node on the cluster. If the max-retry is achieved this node will
+                        be considered permanently down and the system will stop routing messages to this
+                        node.</para>
                     <para>This parameter is optional and its default is at -1 (infinite retries).</para>
                 </listitem>
                 <listitem>
@@ -718,24 +708,22 @@
                 servers for discovery then you can do it like this.
             </para>
             <programlisting>
-                &lt;cluster-connection name="my-cluster">
-                &lt;address>jms&lt;/address>
-                &lt;connector-ref>netty-connector&lt;/connector-ref>
-                &lt;retry-interval>500&lt;/retry-interval>
-                &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
-                &lt;forward-when-no-consumers>true&lt;/forward-when-no-consumers>
-                &lt;max-hops>1&lt;/max-hops>
-                &lt;static-connectors>
-                &lt;connector-ref>server0-connector&lt;/connector-ref>
-                &lt;connector-ref>server1-connector&lt;/connector-ref>
-                &lt;/static-connectors>
-                &lt;/cluster-connection>
-            </programlisting>
+&lt;cluster-connection name="my-cluster">
+   &lt;address>jms&lt;/address>
+   &lt;connector-ref>netty-connector&lt;/connector-ref>
+   &lt;retry-interval>500&lt;/retry-interval>
+   &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
+   &lt;forward-when-no-consumers>true&lt;/forward-when-no-consumers>
+   &lt;max-hops>1&lt;/max-hops>
+   &lt;static-connectors>
+      &lt;connector-ref>server0-connector&lt;/connector-ref>
+      &lt;connector-ref>server1-connector&lt;/connector-ref>
+   &lt;/static-connectors>
+&lt;/cluster-connection></programlisting>
             <para>
                 Here we have defined 2 servers that we know for sure will that at least one will be available. There may
                 be many more servers in the cluster but these will; be discovered via one of these connectors once an
-                initial connection has been made.
-            </para>
+                initial connection has been made.</para>
         </section>
         <section id="clusters.clusteruser">
             <title>Cluster User Credentials</title>
@@ -743,9 +731,8 @@
                 HornetQ uses a cluster user and cluster password which is defined in <literal
                         >hornetq-configuration.xml</literal>:</para>
             <programlisting>
-                &lt;cluster-user&gt;HORNETQ.CLUSTER.ADMIN.USER&lt;/cluster-user&gt;
-                &lt;cluster-password&gt;CHANGE ME!!&lt;/cluster-password&gt;
-            </programlisting>
+&lt;cluster-user>HORNETQ.CLUSTER.ADMIN.USER&lt;/cluster-user>
+&lt;cluster-password>CHANGE ME!!&lt;/cluster-password></programlisting>
             <warning>
                 <para>It is imperative that these values are changed from their default, or remote
                     clients will be able to make connections to the server using the default values.
@@ -761,7 +748,7 @@
             to spread smoothly across the nodes of a cluster and not be "clumped" on any particular
             node.</para>
         <para>The load balancing policy to be used by the client factory is configurable. HornetQ
-            provides two out-of-the-box load balancing policies and you can also implement your own
+            provides four out-of-the-box load balancing policies, and you can also implement your own
             and use that.</para>
         <para>The out-of-the-box policies are</para>
         <itemizedlist>
@@ -769,10 +756,25 @@
                 <para>Round Robin. With this policy the first node is chosen randomly then each
                     subsequent node is chosen sequentially in the same order.</para>
                 <para>For example nodes might be chosen in the order B, C, D, A, B, C, D, A, B or D,
-                    A, B, C, A, B, C, D, A or C, D, A, B, C, D, A, B, C, D, A.</para>
+                    A, B, C, D, A, B, C, D or C, D, A, B, C, D, A, B, C.</para>
+                <para>Use <literal>org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</literal>
+                    as the <literal>&lt;connection-load-balancing-policy-class-name></literal>.</para>
             </listitem>
             <listitem>
                 <para>Random. With this policy each node is chosen randomly.</para>
+                <para>Use <literal>org.hornetq.api.core.client.loadbalance.RandomConnectionLoadBalancingPolicy</literal>
+                    as the <literal>&lt;connection-load-balancing-policy-class-name></literal>.</para>
+            </listitem>
+            <listitem>
+                <para>Random Sticky. With this policy the first node is chosen randomly and then re-used for subsequent
+                    connections.</para>
+                <para>Use <literal>org.hornetq.api.core.client.loadbalance.RandomStickyConnectionLoadBalancingPolicy</literal>
+                    as the <literal>&lt;connection-load-balancing-policy-class-name></literal>.</para>
+            </listitem>
+            <listitem>
+                <para>First Element. With this policy the "first" (i.e. 0th) node is always returned.</para>
+                <para>Use <literal>org.hornetq.api.core.client.loadbalance.FirstElementConnectionLoadBalancingPolicy</literal>
+                    as the <literal>&lt;connection-load-balancing-policy-class-name></literal>.</para>
             </listitem>
         </itemizedlist>
         <para>You can also implement your own policy by implementing the interface <literal
@@ -782,33 +784,30 @@
                     >org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
         <para>If you're using JMS, and you're using JNDI on the server to put your JMS connection
             factories into JNDI, then you can specify the load balancing policy directly in the
-            <literal>hornetq-jms.xml</literal> configuration file on the server as follows:
+            <literal>hornetq-jms.xml</literal> configuration file on the server as follows:</para>
             <programlisting>
-    &lt;connection-factory name="ConnectionFactory"&gt;
-    &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
-    &lt;entries&gt;
-    &lt;entry name="ConnectionFactory"/&gt;
-    &lt;/entries&gt;
-    &lt;connection-load-balancing-policy-class-name&gt;
-    org.hornetq.api.core.client.loadbalance.RandomConnectionLoadBalancingPolicy
-    &lt;/connection-load-balancing-policy-class-name&gt;
-    &lt;/connection-factory&gt;
-            </programlisting>The
-            above example would deploy a JMS connection factory that uses the random connection load
+&lt;connection-factory name="ConnectionFactory">
+   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+   &lt;/entries>
+   &lt;connection-load-balancing-policy-class-name>
+      org.hornetq.api.core.client.loadbalance.RandomConnectionLoadBalancingPolicy
+   &lt;/connection-load-balancing-policy-class-name>
+&lt;/connection-factory></programlisting>
+        <para>The above example would deploy a JMS connection factory that uses the random connection load
             balancing policy. </para>
         <para>If you're using JMS but you're instantiating your connection factory directly on the
-            client side then you can set the load balancing policy using the setter on the <literal
-                    >HornetQConnectionFactory</literal> before using it:
+            client side then you can set the load balancing policy using the setter on the
+            <literal>HornetQConnectionFactory</literal> before using it:</para>
             <programlisting>
-    ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
-    jmsConnectionFactory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
-            </programlisting></para>
+ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
+jmsConnectionFactory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");</programlisting>
         <para>If you're using the core API, you can set the load balancing policy directly on the
-            <literal>ClientSessionFactory</literal> instance you are using:
+            <literal>ServerLocator</literal> instance you are using:</para>
             <programlisting>
-    ClientSessionFactory factory = HornetQClient.createClientSessionFactory(...);
-    factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
-            </programlisting></para>
+ServerLocator locator = HornetQClient.createServerLocatorWithHA(server1, server2);
+locator.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");</programlisting>
         <para>The set of servers over which the factory load balances can be determined in one of
             two ways:</para>
         <itemizedlist>
@@ -829,7 +828,7 @@
             configured as follows:
         </para>
         <programlisting>
-   &lt;cluster-connection name="my-cluster">
+&lt;cluster-connection name="my-cluster">
    &lt;address>jms&lt;/address>
    &lt;connector-ref>netty-connector&lt;/connector-ref>
    &lt;retry-interval>500&lt;/retry-interval>
@@ -837,10 +836,9 @@
    &lt;forward-when-no-consumers>true&lt;/forward-when-no-consumers>
    &lt;max-hops>1&lt;/max-hops>
    &lt;static-connectors allow-direct-connections-only="true">
-   &lt;connector-ref>server1-connector&lt;/connector-ref>
+      &lt;connector-ref>server1-connector&lt;/connector-ref>
    &lt;/static-connectors>
-   &lt;/cluster-connection>
-        </programlisting>
+&lt;/cluster-connection></programlisting>
         <para>
             In this example we have set the attribute <literal>allow-direct-connections-only</literal> which means that
             the only server that this server can create a cluster connection to is server1-connector. This means you can
@@ -871,12 +869,11 @@
         <para>Here's an address settings snippet from <literal>hornetq-configuration.xml</literal>
             showing how message redistribution is enabled for a set of queues:</para>
         <programlisting>
-   &lt;address-settings>
+&lt;address-settings>
    &lt;address-setting match="jms.#">
-   &lt;redistribution-delay>0&lt;/redistribution-delay>
+      &lt;redistribution-delay>0&lt;/redistribution-delay>
    &lt;/address-setting>
-   &lt;/address-settings>
-        </programlisting>
+&lt;/address-settings></programlisting>
         <para>The above <literal>address-settings</literal> block would set a <literal
                 >redistribution-delay</literal> of <literal>0</literal> for any queue which is bound
             to an address that starts with "jms.". All JMS queues and topic subscriptions are bound

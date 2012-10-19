@@ -52,26 +52,24 @@
         <para>Bridges are configured in <literal>hornetq-configuration.xml</literal>. Let's kick off
             with an example (this is actually from the bridge example):</para>
         <programlisting>
-&lt;bridge name="my-bridge"&gt;
-    &lt;queue-name&gt;jms.queue.sausage-factory&lt;/queue-name&gt;
-    &lt;forwarding-address&gt;jms.queue.mincing-machine&lt;/forwarding-address&gt;
-    &lt;filter-string="name='aardvark'"/&gt;
-    &lt;transformer-class-name&gt;
-        org.hornetq.jms.example.HatColourChangeTransformer
-    &lt;/transformer-class-name&gt;
-    &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
-    &lt;ha&gt;true&lt;/ha&gt;
-    &lt;retry-interval-multiplier&gt;1.0&lt;/retry-interval-multiplier&gt;
-    &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
-    &lt;failover-on-server-shutdown&gt;false&lt;/failover-on-server-shutdown&gt;
-    &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
-    &lt;confirmation-window-size&gt;10000000&lt;/confirmation-window-size&gt;
-    &lt;connector-ref connector-name="remote-connector" 
-        backup-connector-name="backup-remote-connector"/&gt;     
-    &lt;user&gt;foouser&lt;/user&gt;
-    &lt;password&gt;foopassword&lt;/password&gt;
-&lt;/bridge&gt;                        
-        </programlisting>
+&lt;bridge name="my-bridge">
+   &lt;queue-name>jms.queue.sausage-factory&lt;/queue-name>
+   &lt;forwarding-address>jms.queue.mincing-machine&lt;/forwarding-address>
+   &lt;filter-string="name='aardvark'"/>
+   &lt;transformer-class-name>
+      org.hornetq.jms.example.HatColourChangeTransformer
+   &lt;/transformer-class-name>
+   &lt;retry-interval>1000&lt;/retry-interval>
+   &lt;ha>true&lt;/ha>
+   &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
+   &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
+   &lt;failover-on-server-shutdown>false&lt;/failover-on-server-shutdown>
+   &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
+   &lt;confirmation-window-size>10000000&lt;/confirmation-window-size>
+   &lt;connector-ref connector-name="remote-connector" backup-connector-name="backup-remote-connector"/>
+   &lt;user>foouser&lt;/user>
+   &lt;password>foopassword&lt;/password>
+&lt;/bridge></programlisting>
         <para>In the above example we have shown all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
             specify them all explicitly.</para>

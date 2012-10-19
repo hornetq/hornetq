@@ -52,11 +52,10 @@
          <title>Configuring Delayed Redelivery</title>
          <para>Delayed redelivery is defined in the address-setting configuration:</para>
          <programlisting>
-     &lt;!-- delay redelivery of messages for 5s --&gt;
-     &lt;address-setting match="jms.queue.exampleQueue"&gt;
-        &lt;redelivery-delay&gt;5000&lt;/redelivery-delay&gt;
-     &lt;/address-setting&gt;
-             </programlisting>
+&lt;!-- delay redelivery of messages for 5s -->
+&lt;address-setting match="jms.queue.exampleQueue">
+   &lt;redelivery-delay>5000&lt;/redelivery-delay>
+&lt;/address-setting></programlisting>
          <para>If a <literal>redelivery-delay</literal> is specified, HornetQ will wait this delay
             before redelivering the messages</para>
          <para>By default, there is no redelivery delay (<literal>redelivery-delay</literal>is set
@@ -87,14 +86,12 @@
          <title>Configuring Dead Letter Addresses</title>
          <para>Dead letter address is defined in the address-setting configuration:</para>
          <programlisting>
-     &lt;!-- undelivered messages in exampleQueue will be sent to the dead letter address 
-        deadLetterQueue after 3 unsuccessful delivery attempts
-      --&gt;
-     &lt;address-setting match="jms.queue.exampleQueue"&gt;
-        &lt;dead-letter-address&gt;jms.queue.deadLetterQueue&lt;/dead-letter-address&gt;
-        &lt;max-delivery-attempts&gt;3&lt;/max-delivery-attempts&gt;
-     &lt;/address-setting&gt;
-             </programlisting>
+&lt;!-- undelivered messages in exampleQueue will be sent to the dead letter address
+   deadLetterQueue after 3 unsuccessful delivery attempts -->
+&lt;address-setting match="jms.queue.exampleQueue">
+   &lt;dead-letter-address>jms.queue.deadLetterQueue&lt;/dead-letter-address>
+   &lt;max-delivery-attempts>3&lt;/max-delivery-attempts>
+&lt;/address-setting></programlisting>
          <para>If a <literal>dead-letter-address</literal> is not specified, messages will removed
             after <literal>max-delivery-attempts</literal> unsuccessful attempts.</para>
          <para>By default, messages are redelivered 10 times at the maximum. Set <literal
@@ -142,7 +139,6 @@
       <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal
             >true</literal> in <literal>hornetq-configuration.xml</literal>:</para>
       <programlisting>
-&lt;persist-delivery-count-before-delivery&gt;true&lt;/persist-delivery-count-before-delivery&gt;
-      </programlisting>
+&lt;persist-delivery-count-before-delivery>true&lt;/persist-delivery-count-before-delivery></programlisting>
    </section>
 </chapter>
