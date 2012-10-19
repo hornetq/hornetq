@@ -524,7 +524,7 @@ public class XMLUtil
       {
          public URL run()
          {
-         	return ClassloadingUtil.findResource(resourceName);
+            return ClassloadingUtil.findResource(resourceName);
          }
       });
    }

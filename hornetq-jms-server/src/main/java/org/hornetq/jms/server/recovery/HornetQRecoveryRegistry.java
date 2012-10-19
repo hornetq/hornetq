@@ -70,8 +70,8 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
          if (HornetQJMSServerLogger.LOGGER.isDebugEnabled())
          {
-        	HornetQJMSServerLogger.LOGGER.debug("\n=======================================================================================");
-        	HornetQJMSServerLogger.LOGGER.debug("Returning the following list on getXAREsources:");
+           HornetQJMSServerLogger.LOGGER.debug("\n=======================================================================================");
+           HornetQJMSServerLogger.LOGGER.debug("Returning the following list on getXAREsources:");
             for (Map.Entry<String, HornetQXAResourceWrapper> entry : recoveries.entrySet())
             {
                HornetQJMSServerLogger.LOGGER.debug("server-id=" + entry.getKey() + ", value=" + entry.getValue());
@@ -83,7 +83,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       }
       catch (Throwable e)
       {
-    	  HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
+         HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
          return new XAResource[] {};
       }
    }
@@ -134,7 +134,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
     */
    public void failedDiscovery(RecoveryDiscovery failedDiscovery)
    {
-	  HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
+     HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
       synchronized (failedDiscoverySet)
       {
          failedDiscoverySet.add(failedDiscovery);
@@ -157,7 +157,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       {
          if (HornetQJMSServerLogger.LOGGER.isDebugEnabled())
          {
-        	 HornetQJMSServerLogger.LOGGER.debug(nodeID + " being registered towards " + networkConfiguration);
+            HornetQJMSServerLogger.LOGGER.debug(nodeID + " being registered towards " + networkConfiguration);
          }
          XARecoveryConfig config = new XARecoveryConfig(true,
                                                         extractTransportConfiguration(networkConfiguration),
@@ -200,12 +200,12 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
                {
                   try
                   {
-                	 HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
+                    HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
                      discovery.start();
                   }
                   catch (Throwable e)
                   {
-                	  HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
+                     HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
                   }
                }
             }

@@ -37,7 +37,7 @@ import org.hornetq.jms.server.HornetQJMSServerLogger;
  *
  * you'll need something like this if the HornetQ Server is remote
  *
- *		<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+ *      <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
  *                  value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/>-->
  *
  * you'll need something like this if the HornetQ Server is remote and has failover configured-->
@@ -64,7 +64,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
    {
       if (trace)
       {
-    	  HornetQJMSServerLogger.LOGGER.trace("Constructing HornetQXAResourceRecovery");
+         HornetQJMSServerLogger.LOGGER.trace("Constructing HornetQXAResourceRecovery");
       }
    }
 
@@ -72,7 +72,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
    {
       if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSServerLogger.LOGGER.trace(this + " intialise: " + config);
+         HornetQJMSServerLogger.LOGGER.trace(this + " intialise: " + config);
       }
 
       String[] configs = config.split(";");
@@ -95,7 +95,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
       if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSServerLogger.LOGGER.trace(this + " initialised");
+         HornetQJMSServerLogger.LOGGER.trace(this + " initialised");
       }
 
       return true;
@@ -105,7 +105,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
    {
       if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSServerLogger.LOGGER.trace(this + " hasMoreResources");
+         HornetQJMSServerLogger.LOGGER.trace(this + " hasMoreResources");
       }
 
       /*
@@ -131,7 +131,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
    {
       if (HornetQJMSServerLogger.LOGGER.isTraceEnabled())
       {
-    	  HornetQJMSServerLogger.LOGGER.trace(this + " getXAResource");
+         HornetQJMSServerLogger.LOGGER.trace(this + " getXAResource");
       }
 
       return res;

@@ -736,6 +736,7 @@
             <artifactId>maven-help-plugin</artifactId>
             <version>2.1.1</version>
          </plugin>
+
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
@@ -748,30 +749,6 @@
                <failOnError>false</failOnError>
             </configuration>
          </plugin>
-
-	 <plugin>
-	   <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <downloadSources>true</downloadSources>
-          <downloadJavadocs>true</downloadJavadocs>
-          <sourceExcludes>
-             <sourceExclude>**/.svn/**</sourceExclude>
-          </sourceExcludes>
-	<additionalConfig>
-	<file>
-         <name>.settings/org.eclipse.jdt.core.prefs</name>
-         <location>${user.dir}/etc/org.eclipse.jdt.core.prefs</location>
-        </file>
-	<file>
-         <name>.settings/org.eclipse.jdt.ui.prefs</name>
-         <location>${user.dir}/etc/org.eclipse.jdt.ui.prefs</location>
-        </file>
-	</additionalConfig>
-        </configuration>
-        </plugin>
-
       </plugins>
    </build>
 

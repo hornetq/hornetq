@@ -59,7 +59,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       testStartStop2("fdm test file.xml");
       if (!isWindows())
       {
-    	  testStartStop2("fdm\ttest\tfile.xml");
+         testStartStop2("fdm\ttest\tfile.xml");
       }
    }
 

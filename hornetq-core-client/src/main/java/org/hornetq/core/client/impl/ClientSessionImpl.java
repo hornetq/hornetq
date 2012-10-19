@@ -721,12 +721,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    public void addFailoverListener(FailoverEventListener listener)
    {
-	  sessionFactory.addFailoverListener(listener);
+     sessionFactory.addFailoverListener(listener);
    }
 
    public boolean removeFailoverListener(FailoverEventListener listener)
    {
-	  return sessionFactory.removeFailoverListener(listener);
+     return sessionFactory.removeFailoverListener(listener);
    }
 
    public int getVersion()

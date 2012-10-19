@@ -106,7 +106,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          if (destination == null)
          {
             response = new HornetQStompException("Must specify the subscription's id or " +
-            		"the destination you are unsubscribing from").getFrame();
+                  "the destination you are unsubscribing from").getFrame();
             return response;
          }
          subscriptionID = "subscription/" + destination;

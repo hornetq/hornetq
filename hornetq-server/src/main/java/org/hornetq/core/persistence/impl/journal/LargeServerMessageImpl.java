@@ -433,11 +433,11 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    protected void openFile() throws Exception
    {
-	  if (file == null)
-	  {
-		  validateFile();
-	  }
-	  else
+     if (file == null)
+     {
+        validateFile();
+     }
+     else
       if (!file.isOpen())
       {
          file.open();
@@ -446,10 +446,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    protected void closeFile() throws Exception
    {
-	  if (file != null && file.isOpen())
-	  {
-	     file.close();
-	  }
+     if (file != null && file.isOpen())
+     {
+        file.close();
+     }
    }
 
    // Inner classes -------------------------------------------------

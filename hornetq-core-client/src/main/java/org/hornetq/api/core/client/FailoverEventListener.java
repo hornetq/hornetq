@@ -19,12 +19,12 @@ package org.hornetq.api.core.client;
  */
 public interface FailoverEventListener {
 
-	/**
-	 * Notifies that a connection state has changed according the specified event type. <br>
-	 * This method is called when failover is detected, if it fails and when it's completed
-	 *
-	 * @param eventType The type of event
-	 */
-	void failoverEvent(FailoverEventType eventType);
+   /**
+    * Notifies that a connection state has changed according the specified event type. <br>
+    * This method is called when failover is detected, if it fails and when it's completed
+    *
+    * @param eventType The type of event
+    */
+   void failoverEvent(FailoverEventType eventType);
 
 }

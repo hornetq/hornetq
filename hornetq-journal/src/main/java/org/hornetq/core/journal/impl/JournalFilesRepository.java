@@ -277,7 +277,7 @@ public class JournalFilesRepository
 
       if (CHECK_CONSISTENCE)
       {
-      	checkDataFiles();
+         checkDataFiles();
       }
    }
 
@@ -361,7 +361,7 @@ public class JournalFilesRepository
 
       if (CHECK_CONSISTENCE)
       {
-      	checkDataFiles();
+         checkDataFiles();
       }
    }
 
@@ -442,7 +442,7 @@ public class JournalFilesRepository
 
       if (CHECK_CONSISTENCE)
       {
-      	checkDataFiles();
+         checkDataFiles();
       }
    }
 

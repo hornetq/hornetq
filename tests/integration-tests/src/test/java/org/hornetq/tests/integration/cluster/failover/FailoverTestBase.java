@@ -266,18 +266,18 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected final ClientSessionFactoryInternal
             createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-	        throws Exception
-	{
-		CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
+           throws Exception
+   {
+      CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
-		locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
       ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
-		addSessionFactory(sf);
+      addSessionFactory(sf);
 
-		assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
-		return sf;
-	}
+      assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
+      return sf;
+   }
 
    /**
     * Waits for backup to be in the "started" state and to finish synchronization with its live.
@@ -337,15 +337,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
 
-	   protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
+      protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
 
-	   protected ServerLocatorInternal getServerLocator() throws Exception
-	   {
-	      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      protected ServerLocatorInternal getServerLocator() throws Exception
+      {
+         ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
          locator.setRetryInterval(50);
-	      addServerLocator(locator);
-	      return (ServerLocatorInternal) locator;
-	   }
+         addServerLocator(locator);
+         return (ServerLocatorInternal) locator;
+      }
 
 
    protected void crash(final ClientSession... sessions) throws Exception

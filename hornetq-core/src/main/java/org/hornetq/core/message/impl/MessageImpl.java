@@ -307,16 +307,16 @@ public abstract class MessageImpl implements MessageInternal
     */
    public void setAddress(final SimpleString address)
    {
-	  // This is protecting the buffer
-	  synchronized (this)
-	  {
-	      if (this.address != address)
-	      {
-	         this.address = address;
+     // This is protecting the buffer
+     synchronized (this)
+     {
+         if (this.address != address)
+         {
+            this.address = address;
 
-	         bufferValid = false;
-	      }
-	  }
+            bufferValid = false;
+         }
+     }
    }
 
    public byte getType()
