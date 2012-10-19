@@ -59,7 +59,7 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
 import org.hornetq.jms.HornetQJMSBundle;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
@@ -248,7 +248,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          for (Runnable run : cachedCommands)
          {
-            HornetQJMSLogger.LOGGER.serverRunningCachedCommand(run);
+            HornetQJMSServerLogger.LOGGER.serverRunningCachedCommand(run);
             run.run();
          }
 
@@ -259,7 +259,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       catch (Exception e)
       {
-         HornetQJMSLogger.LOGGER.jmsDeployerStartError(e);
+         HornetQJMSServerLogger.LOGGER.jmsDeployerStartError(e);
       }
    }
 
@@ -892,7 +892,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             Binding binding = server.getPostOffice().getBinding(new SimpleString(queueName));
             if (binding == null)
             {
-               HornetQJMSLogger.LOGGER.noQueueOnTopic(queueName, name);
+               HornetQJMSServerLogger.LOGGER.noQueueOnTopic(queueName, name);
                continue;
             }
 
@@ -1674,7 +1674,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                }
                catch (Exception e)
                {
-                  HornetQJMSLogger.LOGGER.jndiUnbindError(e, key);
+                  HornetQJMSServerLogger.LOGGER.jndiUnbindError(e, key);
                }
             }
          }
@@ -1801,7 +1801,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       else
       {
-         HornetQJMSLogger.LOGGER.serverCachingCommand(runnable);
+         HornetQJMSServerLogger.LOGGER.serverCachingCommand(runnable);
          cachedCommands.add(runnable);
          return false;
       }
@@ -1817,7 +1817,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
          catch (Exception e)
          {
-            HornetQJMSLogger.LOGGER.jmsServerError(e);
+            HornetQJMSServerLogger.LOGGER.jmsServerError(e);
          }
       }
 
@@ -1835,12 +1835,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          try
          {
             String newHost = InetAddress.getLocalHost().getHostName();
-            HornetQJMSLogger.LOGGER.invalidHostForConnector(transportConfiguration.getName(), newHost);
+            HornetQJMSServerLogger.LOGGER.invalidHostForConnector(transportConfiguration.getName(), newHost);
             params.put(TransportConstants.HOST_PROP_NAME, newHost);
          }
          catch (UnknownHostException e)
          {
-            HornetQJMSLogger.LOGGER.failedToCorrectHost(e, transportConfiguration.getName());
+            HornetQJMSServerLogger.LOGGER.failedToCorrectHost(e, transportConfiguration.getName());
          }
       }
    }

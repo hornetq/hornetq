@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.utils.Pair;
 import org.jboss.tm.XAResourceRecovery;
 
@@ -68,22 +68,22 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
          HornetQXAResourceWrapper[] resourceArray = new HornetQXAResourceWrapper[recoveries.size()];
          resourceArray = recoveries.values().toArray(resourceArray);
 
-         if (HornetQJMSLogger.LOGGER.isDebugEnabled())
+         if (HornetQJMSServerLogger.LOGGER.isDebugEnabled())
          {
-        	HornetQJMSLogger.LOGGER.debug("\n=======================================================================================");
-        	HornetQJMSLogger.LOGGER.debug("Returning the following list on getXAREsources:");
+        	HornetQJMSServerLogger.LOGGER.debug("\n=======================================================================================");
+        	HornetQJMSServerLogger.LOGGER.debug("Returning the following list on getXAREsources:");
             for (Map.Entry<String, HornetQXAResourceWrapper> entry : recoveries.entrySet())
             {
-               HornetQJMSLogger.LOGGER.debug("server-id=" + entry.getKey() + ", value=" + entry.getValue());
+               HornetQJMSServerLogger.LOGGER.debug("server-id=" + entry.getKey() + ", value=" + entry.getValue());
             }
-            HornetQJMSLogger.LOGGER.debug("=======================================================================================\n");
+            HornetQJMSServerLogger.LOGGER.debug("=======================================================================================\n");
          }
 
          return resourceArray;
       }
       catch (Throwable e)
       {
-    	  HornetQJMSLogger.LOGGER.warn(e.getMessage(), e);
+    	  HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
          return new XAResource[] {};
       }
    }
@@ -134,7 +134,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
     */
    public void failedDiscovery(RecoveryDiscovery failedDiscovery)
    {
-	  HornetQJMSLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
+	  HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
       synchronized (failedDiscoverySet)
       {
          failedDiscoverySet.add(failedDiscovery);
@@ -155,9 +155,9 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
       if (recoveries.get(nodeID) == null)
       {
-         if (HornetQJMSLogger.LOGGER.isDebugEnabled())
+         if (HornetQJMSServerLogger.LOGGER.isDebugEnabled())
          {
-        	 HornetQJMSLogger.LOGGER.debug(nodeID + " being registered towards " + networkConfiguration);
+        	 HornetQJMSServerLogger.LOGGER.debug(nodeID + " being registered towards " + networkConfiguration);
          }
          XARecoveryConfig config = new XARecoveryConfig(true,
                                                         extractTransportConfiguration(networkConfiguration),
@@ -200,12 +200,12 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
                {
                   try
                   {
-                	 HornetQJMSLogger.LOGGER.debug("Retrying discovery " + discovery);
+                	 HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
                      discovery.start();
                   }
                   catch (Throwable e)
                   {
-                	  HornetQJMSLogger.LOGGER.warn(e.getMessage(), e);
+                	  HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
                   }
                }
             }

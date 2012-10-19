@@ -21,7 +21,6 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.jms.HornetQJMSLogger;
 
 /**
  *
@@ -77,7 +76,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       }
       catch (Exception e)
       {
-         HornetQJMSLogger.LOGGER.errorPreparingMessageForReceipt(e);
+         HornetQJMSClientLogger.LOGGER.errorPreparingMessageForReceipt(e);
 
          return;
       }
@@ -90,7 +89,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
-            HornetQJMSLogger.LOGGER.errorProcessingMessage(e);
+            HornetQJMSClientLogger.LOGGER.errorProcessingMessage(e);
          }
       }
 
@@ -102,7 +101,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       {
          // See JMS 1.1 spec, section 4.5.2
 
-         HornetQJMSLogger.LOGGER.onMessageError(e);
+         HornetQJMSClientLogger.LOGGER.onMessageError(e);
 
          if (!transactedOrClientAck)
          {
@@ -119,7 +118,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
             }
             catch (Exception e2)
             {
-               HornetQJMSLogger.LOGGER.errorRecoveringSession(e2);
+               HornetQJMSClientLogger.LOGGER.errorRecoveringSession(e2);
             }
          }
       }
@@ -136,7 +135,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
-            HornetQJMSLogger.LOGGER.errorProcessingMessage(e);
+            HornetQJMSClientLogger.LOGGER.errorProcessingMessage(e);
          }
       }
 

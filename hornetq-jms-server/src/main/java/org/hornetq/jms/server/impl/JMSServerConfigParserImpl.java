@@ -26,7 +26,7 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.jms.HornetQJMSBundle;
-import org.hornetq.jms.HornetQJMSLogger;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -106,7 +106,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
             Node keyNode = node.getAttributes().getNamedItem(JMSServerConfigParserImpl.NAME_ATTR);
             if (keyNode == null)
             {
-               HornetQJMSLogger.LOGGER.jmsConfigMissingKey(node);
+               HornetQJMSServerLogger.LOGGER.jmsConfigMissingKey(node);
                continue;
             }
 
