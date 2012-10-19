@@ -69,20 +69,20 @@ public abstract class DestinationServiceManager
    }
 
     /**
-	 * @return the consumerServerLocator
-	 */
-	public ServerLocator getConsumerServerLocator() {
-		return consumerServerLocator;
-	}
+    * @return the consumerServerLocator
+    */
+   public ServerLocator getConsumerServerLocator() {
+      return consumerServerLocator;
+   }
 
-	/**
-	 * @param consumerServerLocator the consumerServerLocator to set
-	 */
-	public void setConsumerServerLocator(ServerLocator consumerServerLocator) {
-		this.consumerServerLocator = consumerServerLocator;
-	}
+   /**
+    * @param consumerServerLocator the consumerServerLocator to set
+    */
+   public void setConsumerServerLocator(ServerLocator consumerServerLocator) {
+      this.consumerServerLocator = consumerServerLocator;
+   }
 
-	public TimeoutTask getTimeoutTask()
+   public TimeoutTask getTimeoutTask()
    {
       return timeoutTask;
    }
@@ -104,12 +104,12 @@ public abstract class DestinationServiceManager
 
    public ServerLocator getServerLocator()
    {
-	   return this.locator;
+      return this.locator;
    }
 
    public void setServerLocator(ServerLocator locator)
    {
-	   this.locator = locator;
+      this.locator = locator;
    }
 
    public ClientSessionFactory getSessionFactory()
@@ -134,20 +134,20 @@ public abstract class DestinationServiceManager
 
    protected void initDefaults()
    {
-	  if (locator == null)
-	  {
-		  locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-	  }
+     if (locator == null)
+     {
+        locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+     }
       if (sessionFactory == null)
       {
-    	 try
-    	 {
-    		 sessionFactory = locator.createSessionFactory();
-    	 }
-    	 catch (Exception e)
-    	 {
-    		 throw new RuntimeException (e.getMessage(), e);
-    	 }
+        try
+        {
+           sessionFactory = locator.createSessionFactory();
+        }
+        catch (Exception e)
+        {
+           throw new RuntimeException (e.getMessage(), e);
+        }
       }
 
       if (consumerSessionFactory == null) consumerSessionFactory = sessionFactory;

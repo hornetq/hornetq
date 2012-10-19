@@ -177,9 +177,9 @@ public class PageSubscriptionImpl implements PageSubscription
 
    public void notEmpty()
    {
-   	  synchronized (consumedPages)
-   	  {
-      	this.empty = false;
+        synchronized (consumedPages)
+        {
+         this.empty = false;
       }
 
    }
@@ -262,12 +262,12 @@ public class PageSubscriptionImpl implements PageSubscription
 
    public void onPageModeCleared(Transaction tx) throws Exception
    {
-	  if (counter != null)
-	  {
-		  // this could be null on testcases
-		  counter.delete(tx);
-	  }
-	  this.empty = true;
+     if (counter != null)
+     {
+        // this could be null on testcases
+        counter.delete(tx);
+     }
+     this.empty = true;
    }
 
    /**

@@ -675,7 +675,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
-	   rollback(false, considerLastMessageAsDelivered);
+      rollback(false, considerLastMessageAsDelivered);
    }
 
    /**
@@ -960,7 +960,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
                try
                {
-            	  // jbpapp-8845
+                 // jbpapp-8845
                   // This could have happened because the TX timed out,
                   // at this point we would be better on rolling back this session as a way to prevent consumers from holding their messages
                   this.rollback(false);

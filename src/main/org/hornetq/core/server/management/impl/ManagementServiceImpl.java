@@ -704,10 +704,10 @@ public class ManagementServiceImpl implements ManagementService
                // https://jira.jboss.org/jira/browse/HORNETQ-317
                if (messagingServer == null || !messagingServer.isInitialised())
                {
-            	  if (log.isDebugEnabled())
-            	  {
-            	     log.debug("ignoring message " + notification + " as the server is not initialized");
-            	  }
+                 if (log.isDebugEnabled())
+                 {
+                    log.debug("ignoring message " + notification + " as the server is not initialized");
+                 }
                   return;
                }
 

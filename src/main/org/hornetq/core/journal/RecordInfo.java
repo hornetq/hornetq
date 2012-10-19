@@ -63,9 +63,9 @@ public class RecordInfo
    @Override
    public boolean equals(final Object other)
    {
-	  if (!(other instanceof RecordInfo))
-	  {
-		   return false;
+     if (!(other instanceof RecordInfo))
+     {
+         return false;
       }
       RecordInfo r = (RecordInfo)other;
 

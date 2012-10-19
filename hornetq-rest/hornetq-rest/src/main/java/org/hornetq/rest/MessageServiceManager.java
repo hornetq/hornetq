@@ -148,7 +148,7 @@ public class MessageServiceManager
 
       if (configuration.getConsumerWindowSize() != -1)
       {
-    	  consumerLocator.setConsumerWindowSize(configuration.getConsumerWindowSize());
+         consumerLocator.setConsumerWindowSize(configuration.getConsumerWindowSize());
       }
 
       ClientSessionFactory consumerSessionFactory = consumerLocator.createSessionFactory();
