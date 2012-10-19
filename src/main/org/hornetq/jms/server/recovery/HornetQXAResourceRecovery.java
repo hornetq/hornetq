@@ -37,7 +37,7 @@ import org.hornetq.core.logging.Logger;
  *
  * you'll need something like this if the HornetQ Server is remote
  *
- *		<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+ *      <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
  *                  value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/>-->
  *
  * you'll need something like this if the HornetQ Server is remote and has failover configured-->
