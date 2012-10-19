@@ -80,15 +80,14 @@
                 >hornetq-configuration.xml</literal> or <literal>hornetq-queues.xml</literal>
             file:</para>
         <programlisting>
-&lt;security-setting match="globalqueues.europe.#"&gt;
-    &lt;permission type="createDurableQueue" roles="admin"/&gt;
-    &lt;permission type="deleteDurableQueue" roles="admin"/&gt;
-    &lt;permission type="createNonDurableQueue" roles="admin, guest, europe-users"/&gt;
-    &lt;permission type="deleteNonDurableQueue" roles="admin, guest, europe-users"/&gt;
-    &lt;permission type="send" roles="admin, europe-users"/&gt;
-    &lt;permission type="consume" roles="admin, europe-users"/&gt;
-&lt;/security-setting&gt;            
-        </programlisting>
+&lt;security-setting match="globalqueues.europe.#">
+   &lt;permission type="createDurableQueue" roles="admin"/>
+   &lt;permission type="deleteDurableQueue" roles="admin"/>
+   &lt;permission type="createNonDurableQueue" roles="admin, guest, europe-users"/>
+   &lt;permission type="deleteNonDurableQueue" roles="admin, guest, europe-users"/>
+   &lt;permission type="send" roles="admin, europe-users"/>
+   &lt;permission type="consume" roles="admin, europe-users"/>
+&lt;/security-setting></programlisting>
         <para>The '<literal>#</literal>' character signifies "any sequence of words". Words are
             delimited by the '<literal>.</literal>' character. For a full description of the
             wildcard syntax please see <xref linkend="wildcard-syntax"/>. The above security block
@@ -112,11 +111,10 @@
         <para>Let's look at an example of that, here's another <literal>security-setting</literal>
             block:</para>
         <programlisting>
-&lt;security-setting match="globalqueues.europe.orders.#"&gt;
-    &lt;permission type="send" roles="europe-users"/&gt;
-    &lt;permission type="consume" roles="europe-users"/&gt;
-&lt;/security-setting&gt;            
-        </programlisting>
+&lt;security-setting match="globalqueues.europe.orders.#">
+   &lt;permission type="send" roles="europe-users"/>
+   &lt;permission type="consume" roles="europe-users"/>
+&lt;/security-setting></programlisting>
         <para>In this <literal>security-setting</literal> block the match
             'globalqueues.europe.orders.#' is more specific than the previous match
             'globalqueues.europe.#'. So any addresses which match 'globalqueues.europe.orders.#'
@@ -152,29 +150,28 @@
         <para>Let's take a look at an example file:</para>
         <programlisting>
 &lt;configuration xmlns="urn:hornetq" 
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-users.xsd "&gt;
-    
-    &lt;defaultuser name="guest" password="guest"&gt;
-        &lt;role name="guest"/&gt;
-    &lt;/defaultuser&gt;
-    
-    &lt;user name="tim" password="marmite"&gt;
-        &lt;role name="admin"/&gt;      
-    &lt;/user&gt;
-    
-    &lt;user name="andy" password="doner_kebab"&gt;
-        &lt;role name="admin"/&gt;
-        &lt;role name="guest"/&gt;
-    &lt;/user&gt;
-    
-    &lt;user name="jeff" password="camembert"&gt;
-        &lt;role name="europe-users"/&gt;
-        &lt;role name="guest"/&gt;
-    &lt;/user&gt;
-    
-&lt;/configuration&gt;
-        </programlisting>
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq ../schemas/hornetq-users.xsd ">
+
+   &lt;defaultuser name="guest" password="guest">
+      &lt;role name="guest"/>
+   &lt;/defaultuser>
+
+   &lt;user name="tim" password="marmite">
+      &lt;role name="admin"/>
+   &lt;/user>
+
+   &lt;user name="andy" password="doner_kebab">
+      &lt;role name="admin"/>
+      &lt;role name="guest"/>
+   &lt;/user>
+
+   &lt;user name="jeff" password="camembert">
+      &lt;role name="europe-users"/>
+      &lt;role name="guest"/>
+   &lt;/user>
+
+&lt;/configuration></programlisting>
         <para>The first thing to note is the element <literal>defaultuser</literal>. This defines
             what user will be assumed when the client does not specify a username/password when
             creating a session. In this case they will be the user <literal>guest</literal> and have
@@ -193,12 +190,10 @@
             changing the class for the <literal>HornetQSecurityManager</literal> bean.</para>
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
-&lt;bean name="HornetQSecurityManager" 
-      class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl"&gt;
-    &lt;start ignored="true"/&gt;
-    &lt;stop ignored="true"/&gt;
-&lt;/bean&gt;            
-        </programlisting>
+&lt;bean name="HornetQSecurityManager" class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl">
+   &lt;start ignored="true"/>
+   &lt;stop ignored="true"/>
+&lt;/bean></programlisting>
         <para>The class <literal>org.hornetq.spi.core.security.HornetQSecurityManagerImpl</literal>
             is the default security manager that is used by the standalone server.</para>
         <para>HornetQ ships with two other security manager implementations you can use
@@ -219,20 +214,18 @@
             you need to specify the security manager as a <literal>JAASSecurityManager</literal> in
             the beans file. Here's an example:</para>
         <programlisting>
-&lt;bean name="HornetQSecurityManager"
-      class="org.hornetq.integration.jboss.security.JAASSecurityManager"&gt;
-    &lt;start ignored="true"/&gt;
-    &lt;stop ignored="true"/&gt;
+&lt;bean name="HornetQSecurityManager" class="org.hornetq.integration.jboss.security.JAASSecurityManager">
+   &lt;start ignored="true"/>
+   &lt;stop ignored="true"/>
 
-    &lt;property name="ConfigurationName"&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/property&gt;
-    &lt;property name="Configuration"&gt;
-       &lt;inject bean="ExampleConfiguration"/&gt;
-    &lt;/property&gt;
-    &lt;property name="CallbackHandler"&gt;
-       &lt;inject bean="ExampleCallbackHandler"/&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;
-        </programlisting>
+   &lt;property name="ConfigurationName">org.hornetq.jms.example.ExampleLoginModule&lt;/property>
+   &lt;property name="Configuration">
+      &lt;inject bean="ExampleConfiguration"/>
+   &lt;/property>
+   &lt;property name="CallbackHandler">
+      &lt;inject bean="ExampleCallbackHandler"/>
+   &lt;/property>
+&lt;/bean></programlisting>
         <para>Note that you need to feed the JAAS security manager with three properties:</para>
         <itemizedlist>
             <listitem>

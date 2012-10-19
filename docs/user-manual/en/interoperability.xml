@@ -39,8 +39,7 @@
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
    &lt;param key="protocol"  value="stomp"/>
    &lt;param key="port"  value="61613"/>
-&lt;/acceptor>
-</programlisting>
+&lt;/acceptor></programlisting>
           <para>With this configuration, HornetQ will accept Stomp connections on 
             the port <literal>61613</literal> (which is the default port of the Stomp brokers).</para>
           <para>See the <literal>stomp</literal> example which shows how to configure a HornetQ server with Stomp.</para>
@@ -95,8 +94,7 @@
    &lt;param key="protocol"  value="stomp"/>
    &lt;param key="port"  value="61613"/>
    &lt;param key="connection-ttl"  value="20000"/>
-&lt;/acceptor>
-</programlisting>
+&lt;/acceptor></programlisting>
         <para>The above configuration will make sure that any stomp connection that is created from that acceptor will have its 
         connection-ttl set to 20 seconds.</para>
 
@@ -121,8 +119,7 @@ SEND
 destination:jms.queue.orders
 
 hello queue orders
-^@
-                </programlisting>
+^@</programlisting>
               </listitem>
               <listitem>
                 <para>send or subscribe to a JMS <emphasis>Topic</emphasis> by prepending the topic name by <literal>jms.topic.</literal>.</para>
@@ -131,8 +128,7 @@ hello queue orders
 SUBSCRIBE
 destination:jms.topic.stocks
 
-^@
-                </programlisting>
+^@</programlisting>
               </listitem>
              </itemizedlist>
            </section>
@@ -161,18 +157,16 @@ destination:jms.topic.stocks
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol"  value="stomp"/>
-   &lt;param key="port"  value="61613"/>
-   &lt;param key="stomp-enable-message-id"  value="true"/>
-&lt;/acceptor>
-</programlisting>
+   &lt;param key="protocol" value="stomp"/>
+   &lt;param key="port" value="61613"/>
+   &lt;param key="stomp-enable-message-id" value="true"/>
+&lt;/acceptor></programlisting>
             <para>When the server starts with the above setting, each stomp message sent through this
             acceptor will have an extra property added. The property key is <literal>
             hq-message-id</literal> and the value is a String representation of a long type internal
             message id prefixed with "<literal>STOMP</literal>", like:
 <programlisting>
-  hq-message-id : STOMP12345
-</programlisting>
+hq-message-id : STOMP12345</programlisting>
             If <literal>stomp-enable-message-id</literal> is not specified in the configuration, default
             is <literal>false</literal>. </para>
           </section>
@@ -186,14 +180,13 @@ destination:jms.topic.stocks
             parameter set to <literal>stomp_ws</literal>:</para>
          <programlisting>
 &lt;acceptor name="stomp-ws-acceptor">
-	&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-	&lt;param key="protocol" value="stomp_ws"/>
-	&lt;param key="port" value="61614"/>
-&lt;/acceptor>
-         </programlisting>
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol" value="stomp_ws"/>
+   &lt;param key="port" value="61614"/>
+&lt;/acceptor></programlisting>
          <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 
             the port <literal>61614</literal> with the URL path <literal>/stomp</literal>.
-            Web browser can then connect to <literal>ws://&lt;server&gt;:61614/stomp</literal> using a Web Socket to send and receive Stomp
+            Web browser can then connect to <literal>ws://&lt;server>:61614/stomp</literal> using a Web Socket to send and receive Stomp
             messages.</para>
          <para>A companion JavaScript library to ease client-side development is available from 
             <ulink url="http://github.com/jmesnil/stomp-websocket">GitHub</ulink> (please see
@@ -213,7 +206,8 @@ destination:jms.topic.stocks
             JNDI.</para>
           <para>Stomp requires the file <literal>jndi.properties</literal> to be available on the
             classpath. This should look something like:</para>
-          <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+          <programlisting>
+java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=jnp://localhost:1099
 java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
           <para>Make sure this file is in the classpath along with the StompConnect jar and the

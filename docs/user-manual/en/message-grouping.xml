@@ -66,19 +66,19 @@
 
  message = ...
  message.setStringProperty("JMSXGroupID", "Group-0");
- producer.send(message);          
-       </programlisting>
+ producer.send(message);</programlisting>
       <para>Alternatively, you can set <literal>autogroup</literal> to true on the <literal
             >HornetQConnectonFactory</literal> which will pick a random unique id. This can also be
          set in the <literal>hornetq-jms.xml</literal> file like this:</para>
-      <programlisting>&lt;connection-factory name="ConnectionFactory">
-      &lt;connectors>
-         &lt;connector-ref connector-name="netty-connector"/>
-      &lt;/connectors>
-      &lt;entries>
-         &lt;entry name="ConnectionFactory"/>
-      &lt;/entries>
-      &lt;autogroup>true&lt;/autogroup>
+      <programlisting>
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty-connector"/>
+   &lt;/connectors>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+   &lt;/entries>
+   &lt;autogroup>true&lt;/autogroup>
 &lt;/connection-factory></programlisting>
       <para>Alternatively you can set the group id via the connection factory. All messages sent
          with producers created via this connection factory will set the <literal
@@ -86,16 +86,15 @@
          group id set it on the connection factory in the <literal>hornetq-jms.xml</literal> config
          file as follows
          <programlisting>
-         &lt;connection-factory name="ConnectionFactory"&gt;
-      &lt;connectors&gt;
-         &lt;connector-ref connector-name="netty-connector"/&gt;
-      &lt;/connectors&gt;
-      &lt;entries&gt;
-         &lt;entry name="ConnectionFactory"/&gt;
-      &lt;/entries>
-      &lt;group-id>Group-0&lt;/group-id&gt;
-   &lt;/connection-factory&gt;
-      </programlisting></para>
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty-connector"/>
+   &lt;/connectors>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+   &lt;/entries>
+   &lt;group-id>Group-0&lt;/group-id>
+&lt;/connection-factory></programlisting></para>
    </section>
    <section>
       <title>Example</title>
@@ -123,17 +122,18 @@
          other remote handlers converse with this. Here is a sample config for both types of
          handler, this should be configured in the <emphasis role="italic"
             >hornetq-configuration.xml</emphasis>
-         file.<programlisting>   &lt;grouping-handler name="my-grouping-handler">
-      &lt;type>LOCAL&lt;/type>
-      &lt;address>jms&lt;/address>
-      &lt;timeout>5000&lt;/timeout>
-   &lt;/grouping-handler>
+         file.<programlisting>
+&lt;grouping-handler name="my-grouping-handler">
+   &lt;type>LOCAL&lt;/type>
+   &lt;address>jms&lt;/address>
+   &lt;timeout>5000&lt;/timeout>
+&lt;/grouping-handler>
 
-   &lt;grouping-handler name="my-grouping-handler">
-      &lt;type>REMOTE&lt;/type>
-      &lt;address>jms&lt;/address>
-      &lt;timeout>5000&lt;/timeout>
-   &lt;/grouping-handler></programlisting></para>
+&lt;grouping-handler name="my-grouping-handler">
+   &lt;type>REMOTE&lt;/type>
+   &lt;address>jms&lt;/address>
+   &lt;timeout>5000&lt;/timeout>
+&lt;/grouping-handler></programlisting></para>
       <para>The <emphasis role="italic">address</emphasis> attribute refers to a cluster connection
          and the address it uses, refer to the clustering section on how to configure clusters. The
             <emphasis role="italic">timeout</emphasis> attribute referes to how long to wait for a

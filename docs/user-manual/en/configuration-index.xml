@@ -1514,17 +1514,15 @@
 <para>example 1</para>
 
 <programlisting>
-&lt;cluster-password&gt;bbc&lt;/cluster-password&gt;
-</programlisting>
+&lt;cluster-password>bbc&lt;/cluster-password></programlisting>
 
 <para>This indicates the cluster password is a plaintext value ("bbc").</para>
 
 <para>example 2</para>
 
 <programlisting>
-&lt;mask-password&gt;true&lt;/mask-password&gt;
-&lt;cluster-password&gt;80cf731af62c290&lt;/cluster-password&gt;
-</programlisting>
+&lt;mask-password>true&lt;/mask-password>
+&lt;cluster-password>80cf731af62c290&lt;/cluster-password></programlisting>
 
               <para>This indicates the cluster password is a masked value and HorentQ will use its built-in decoder to decode it. All other
               passwords in the configuration file, Connectors, Acceptors and Bridges, will also use masked passwords.</para>
@@ -1543,10 +1541,10 @@
            separated by semi-colons. For example:</para>
 
 <literal>
-&lt;property name="useMaskedPassword"&gt;true&lt;/property&gt;
+&lt;property name="useMaskedPassword">true&lt;/property>
 </literal><para></para>
 <literal>
-&lt;property name="passwordCodec"&gt;com.foo.FooDecoder;key=value&lt;/property&gt;
+&lt;property name="passwordCodec">com.foo.FooDecoder;key=value&lt;/property>
 </literal>
            <para>HornetQ will load this property and initialize the class with a parameter map containing the "key"->"value" pair. 
            If <literal>passwordCodec</literal> is not specified, the built-in decoder is used.</para>
@@ -1564,17 +1562,16 @@
               It is the same format as that for JMS Bridges. Example:</para>
 
 <programlisting>
-      &lt;config-property&gt;
-        &lt;config-property-name&gt;UseMaskedPassword&lt;/config-property-name&gt;
-        &lt;config-property-type&gt;boolean&lt;/config-property-type&gt;
-        &lt;config-property-value&gt;true&lt;/config-property-value&gt;
-      &lt;/config-property&gt;
-      &lt;config-property&gt;
-        &lt;config-property-name&gt;PasswordCodec&lt;/config-property-name&gt;
-        &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-        &lt;config-property-value&gt;com.foo.ADecoder;key=helloworld&lt;/config-property-value&gt;
-      &lt;/config-property&gt;
-</programlisting>
+&lt;config-property>
+  &lt;config-property-name>UseMaskedPassword&lt;/config-property-name>
+  &lt;config-property-type>boolean&lt;/config-property-type>
+  &lt;config-property-value>true&lt;/config-property-value>
+&lt;/config-property>
+&lt;config-property>
+  &lt;config-property-name>PasswordCodec&lt;/config-property-name>
+  &lt;config-property-type>java.lang.String&lt;/config-property-type>
+  &lt;config-property-value>com.foo.ADecoder;key=helloworld&lt;/config-property-value>
+&lt;/config-property></programlisting>
 
            <para>With this configuration, both passwords in ra.xml and all of its MDBs will have to be in masked form.</para>
 
@@ -1591,9 +1588,8 @@
            followed by key/value pairs. It is the same format as that for JMS Bridges. Example:</para>
 
 <programlisting>
-<mask-password>true</mask-password>
-<password-codec>org.hornetq.utils.DefaultSensitiveStringCodec;key=hello world</password-codec>
-</programlisting>
+&lt;mask-password>true&lt;/mask-password>
+&lt;password-codec>org.hornetq.utils.DefaultSensitiveStringCodec;key=hello world&lt;/password-codec></programlisting>
 
            <para>When so configured, the HornetQ security manager will initialize a DefaultSensitiveStringCodec with the parameters 
            "key"->"hello world", then use it to decode all the masked passwords in this configuration file.</para>
@@ -1616,14 +1612,12 @@
               pretty straightforward. To get a mask for a password, just run the following in command line:</para>
 
 <programlisting>
-java org.hornetq.utils.DefaultSensitiveStringCodec "your plaintext password"
-</programlisting>
+java org.hornetq.utils.DefaultSensitiveStringCodec "your plaintext password"</programlisting>
 
               <para>Make sure the classpath is correct. You'll get something like</para>
 
 <programlisting>
-Encoded password: 80cf731af62c290
-</programlisting>
+Encoded password: 80cf731af62c290</programlisting>
 
               <para>Just copy "80cf731af62c290" and replace your plaintext password with it.</para>
               </section>
@@ -1634,22 +1628,19 @@ Encoded password: 80cf731af62c290
               is in HornetQ's classpath and configure the server to use it as follows:</para>
 
 <programlisting>
-<password-codec>com.foo.SomeDecoder;key1=value1;key2=value2</password-codec>
-</programlisting>
+&lt;password-codec>com.foo.SomeDecoder;key1=value1;key2=value2&lt;/password-codec></programlisting>
 
               <para>If your decoder needs params passed to it you can do this via key/value pairs when configuring.
               For instance if your decoder needs say a "key-location" parameter, you can define like so:</para>
 
 <programlisting>
-<password-codec>com.foo.NewDecoder;key-location=/some/url/to/keyfile</password-codec>
-</programlisting>
+&lt;password-codec>com.foo.NewDecoder;key-location=/some/url/to/keyfile&lt;/password-codec></programlisting>
 
               <para>Then configure your cluster-password like this:</para>
 
 <programlisting>
-<mask-password>true</mask-password>
-<cluster-password>masked_password</cluster-password>
-</programlisting>
+&lt;mask-password>true&lt;/mask-password>
+&lt;cluster-password>masked_password&lt;/cluster-password></programlisting>
 
               <para>When HornetQ reads the cluster-password it will initialize the NewDecoder and use it to decode "mask_password". 
               It also process all passwords using the new defined decoder.</para>
@@ -1658,22 +1649,21 @@ Encoded password: 80cf731af62c290
               <section><title>Implementing your own ocdecs</title>
 
               <para>To use a different decoder than the built-in one, you either pick one from existing libraries or you implement it yourself.
-              All decoders must implement the <literal>org.hornetq.utils.SensitiveDataCodec&lt;T&gt;</literal> interface:</para>
+              All decoders must implement the <literal>org.hornetq.utils.SensitiveDataCodec&lt;T></literal> interface:</para>
 
 <programlisting>
-public interface SensitiveDataCodec&lt;T&gt;
+public interface SensitiveDataCodec&lt;T>
 {
    T decode(Object mask) throws Exception;
 
-   void init(Map&lt;String, String&gt; params);
-}
-</programlisting>
+   void init(Map&lt;String, String> params);
+}</programlisting>
 
               <para>This is a generic type interface but normally for a password you just need String type. 
                   So a new decoder would be defined like </para>
 
 <programlisting>
-public class MyNewDecoder implements SensitiveDataCodec&lt;String&gt;
+public class MyNewDecoder implements SensitiveDataCodec&lt;String>
 {
    public String decode(Object mask) throws Exception
    {
@@ -1681,12 +1671,11 @@ public class MyNewDecoder implements SensitiveDataCodec&lt;String&gt;
       return "the password";
    }
 
-   public void init(Map&lt;String, String&gt; params)
+   public void init(Map&lt;String, String> params)
    {
       //initialization done here. It is called right after the decoder has been created.
    }
-}
-</programlisting>
+}</programlisting>
 
              <para>Last but not least, once you get your own decoder, please add it to the classpath. Otherwise HornetQ will 
              fail to load it!</para>

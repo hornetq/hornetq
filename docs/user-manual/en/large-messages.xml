@@ -44,16 +44,13 @@
             main configuration file.</para>
         <para>The configuration property <literal>large-messages-directory</literal> specifies where
             large messages are stored.</para>
-        <programlisting>&lt;configuration xmlns="urn:hornetq"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
-
+        <programlisting>
+&lt;configuration xmlns="urn:hornetq"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 ...
-
 &lt;large-messages-directory>/data/large-messages&lt;/large-messages-directory>
-
 ...
-
 &lt;/configuration</programlisting>
         <para>By default the large message directory is <literal>data/largemessages</literal></para>
         <para>For the best performance we recommend large messages directory is stored on a
@@ -74,8 +71,7 @@ ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new Transport
 
 locator.setMinLargeMessageSize(25 * 1024);
 
-ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
-            </programlisting>
+ClientSessionFactory factory = HornetQClient.createClientSessionFactory();</programlisting>
             <para><xref linkend="configuring-transports.client.side"/> will provide more information
                 on how to instantiate the session factory.</para>
         </section>
@@ -85,15 +81,15 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
                 is specified in <literal>hornetq-jms.xml</literal></para>
             <programlisting>...
 &lt;connection-factory name="ConnectionFactory">
-&lt;connectors>
-   &lt;connector-ref connector-name="netty"/>
-&lt;/connectors>
-&lt;entries>
-   &lt;entry name="ConnectionFactory"/>
-   &lt;entry name="XAConnectionFactory"/>
-&lt;/entries>
-                
-&lt;min-large-message-size>250000&lt;/min-large-message-size>
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty"/>
+   &lt;/connectors>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+      &lt;entry name="XAConnectionFactory"/>
+   &lt;/entries>
+
+   &lt;min-large-message-size>250000&lt;/min-large-message-size>
 &lt;/connection-factory>
 ...</programlisting>
             <para>If the connection factory is being instantiated directly, the minimum large
@@ -181,16 +177,13 @@ ClientMessage msg2 = consumer.receive(...);
 
 // This will not wait the transfer to finish
 msg.setOutputStream(someOtherOutputStream); 
-...
-                
-            </programlisting>
+...</programlisting>
             <para> Set the input stream when sending a core message: </para>
             <programlisting>
 ...
 ClientMessage msg = session.createMessage();
 msg.setInputStream(dataInputStream);
-...
-            </programlisting>
+...</programlisting>
             <para>Notice also that for messages with more than 2GiB the getBodySize() will return
                 invalid values since this is an integer (which is also exposed to the JMS API). On
                 those cases you can use the message property _HQ_LARGE_SIZE.</para>
@@ -225,14 +218,12 @@ FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
                 
 // This will block until the entire content is saved on disk
-messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);
-            </programlisting>
+messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);</programlisting>
             <para>Setting the <literal>OutputStream</literal> could also be done in a non blocking
                 way using the property JMS_HQ_OutputStream.</para>
             <programlisting>
 // This won't wait the stream to finish. You need to keep the consumer active.
-messageReceived.setObjectProperty("JMS_HQ_OutputStream", bufferedOutput);
-            </programlisting>
+messageReceived.setObjectProperty("JMS_HQ_OutputStream", bufferedOutput);</programlisting>
             <note>
                 <para>When using JMS, Streaming large messages are only supported on <literal
                         >StreamMessage</literal> and <literal>BytesMessage</literal>.</para>
@@ -245,7 +236,8 @@ messageReceived.setObjectProperty("JMS_HQ_OutputStream", bufferedOutput);
                 >OutputStream</literal> capability of HornetQ You could still access the data
             directly in an alternative fashion.</para>
         <para>On the Core API just get the bytes of the body as you normally would.</para>
-        <programlisting>ClientMessage msg = consumer.receive();
+        <programlisting>
+ClientMessage msg = consumer.receive();
          
 byte[] bytes = new byte[1024];
 for (int i = 0 ;  i &lt; msg.getBodySize(); i += bytes.length)
@@ -255,7 +247,8 @@ for (int i = 0 ;  i &lt; msg.getBodySize(); i += bytes.length)
 }</programlisting>
         <para>If using JMS API, <literal>BytesMessage</literal> and <literal>StreamMessage</literal>
             also supports it transparently.</para>
-        <programlisting>BytesMessage rm = (BytesMessage)cons.receive(10000);
+        <programlisting>
+BytesMessage rm = (BytesMessage)cons.receive(10000);
 
 byte data[] = new byte[1024];
 

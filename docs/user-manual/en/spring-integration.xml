@@ -36,50 +36,51 @@
   HornetQ server and adds any factories or destinations configured within
   <literal>hornetq-jms.xml</literal> directly into the namespace of the Spring
   context. Let's take this <literal>hornetq-jms.xml</literal> file for
-  instance: <programlisting>&lt;configuration xmlns="urn:hornetq"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd"&gt;
-    &lt;!--the connection factory used by the example--&gt;
-    &lt;connection-factory name="ConnectionFactory"&gt;
-        &lt;connectors&gt;
-            &lt;connector-ref connector-name="in-vm"/&gt;
-        &lt;/connectors&gt;
-        &lt;entries&gt;
-            &lt;entry name="ConnectionFactory"/&gt;
-        &lt;/entries&gt;
-    &lt;/connection-factory&gt;
+  instance: </para>
+    <programlisting>
+&lt;configuration xmlns="urn:hornetq"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
+   &lt;!--the connection factory used by the example-->
+   &lt;connection-factory name="ConnectionFactory">
+      &lt;connectors>
+         &lt;connector-ref connector-name="in-vm"/>
+      &lt;/connectors>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>
+      &lt;/entries>
+   &lt;/connection-factory>
 
-    &lt;!--the queue used by the example--&gt;
-    &lt;queue name="exampleQueue"&gt;
-        &lt;entry name="/queue/exampleQueue"/&gt;
-    &lt;/queue&gt;
-
-&lt;/configuration&gt;
-</programlisting>Here we've specified a
+   &lt;!--the queue used by the example-->
+   &lt;queue name="exampleQueue">
+      &lt;entry name="/queue/exampleQueue"/>
+   &lt;/queue>
+&lt;/configuration></programlisting>
+    <para>Here we've specified a
   <literal>javax.jms.ConnectionFactory</literal> we want bound to a
   <literal>ConnectionFactory</literal> entry as well as a queue destination
   bound to a <literal>/queue/exampleQueue</literal> entry. Using the
   <literal>SpringJmsBootStrap</literal> bean will automatically populate the
   Spring context with references to those beans so that you can use them.
   Below is an example Spring JMS bean file taking advantage of this
-  feature:<programlisting>&lt;beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
+  feature:</para>
+    <programlisting>
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-   &lt;bean id="EmbeddedJms" class="org.hornetq.integration.spring.SpringJmsBootstrap" init-method="start"/&gt;
+   &lt;bean id="EmbeddedJms" class="org.hornetq.integration.spring.SpringJmsBootstrap" init-method="start"/>
 
-   &lt;bean id="listener" class="org.hornetq.tests.integration.spring.ExampleListener"/&gt;
+   &lt;bean id="listener" class="org.hornetq.tests.integration.spring.ExampleListener"/>
     
-   &lt;bean id="listenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"&gt;
-       &lt;property name="connectionFactory" ref="ConnectionFactory"/&gt;
-       &lt;property name="destination" ref="/queue/exampleQueue"/&gt;
-       &lt;property name="messageListener" ref="listener"/&gt;
-   &lt;/bean&gt;
-    
-
-&lt;/beans&gt;
-</programlisting>As you can see, the
+   &lt;bean id="listenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+      &lt;property name="connectionFactory" ref="ConnectionFactory"/>
+      &lt;property name="destination" ref="/queue/exampleQueue"/>
+      &lt;property name="messageListener" ref="listener"/>
+   &lt;/bean>
+&lt;/beans></programlisting>
+    <para>As you can see, the
   <literal>listenerContainer</literal> bean references the components defined
   in the <literal>hornetq-jms.xml</literal> file. The
   <literal>SpringJmsBootstrap</literal> class extends the EmbeddedJMS class

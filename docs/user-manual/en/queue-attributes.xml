@@ -32,10 +32,11 @@
             lets look at a JMS level.</para>
         <para>The following shows a queue predefined in the <literal>hornetq-jms.xml</literal>
             configuration file.</para>
-        <programlisting>&lt;queue name="selectorQueue">
-      &lt;entry name="/queue/selectorQueue"/>
-      &lt;selector string="color='red'"/>
-      &lt;durable>true&lt;/durable>
+        <programlisting>
+&lt;queue name="selectorQueue">
+   &lt;entry name="/queue/selectorQueue"/>
+   &lt;selector string="color='red'"/>
+   &lt;durable>true&lt;/durable>
 &lt;/queue></programlisting>
         <para>This name attribute of queue defines the name of the queue. When we do this at a jms
             level we follow a naming convention so the actual name of the core queue will be
@@ -50,12 +51,13 @@
             optional and defaults to true if omitted.</para>
         <para>Secondly a queue can be predefined at a core level in the <literal
                 >hornetq-configuration.xml</literal> file. The following is an example.</para>
-        <programlisting>&lt;queues>     
-   	&lt;queue name="jms.queue.selectorQueue">
-   	    &lt;address>jms.queue.selectorQueue&lt;/address>
-   	    &lt;filter string="color='red'"/>
-       &lt;durable>true&lt;/durable>
-   	&lt;/queue>
+        <programlisting>
+&lt;queues>
+   &lt;queue name="jms.queue.selectorQueue">
+      &lt;address>jms.queue.selectorQueue&lt;/address>
+      &lt;filter string="color='red'"/>
+      &lt;durable>true&lt;/durable>
+    &lt;/queue>
 &lt;/queues></programlisting>
         <para>This is very similar to the JMS configuration, with 3 real differences which
             are.</para>
@@ -94,19 +96,20 @@
         <para>There are some attributes that are defined against an address wildcard rather than a
             specific queue. Here an example of an <literal>address-setting</literal> entry that
             would be found in the <literal>hornetq-configuration.xml</literal> file.</para>
-        <programlisting>&lt;address-settings>
-    &lt;address-setting match="jms.queue.exampleQueue">
-        &lt;dead-letter-address>jms.queue.deadLetterQueue&lt;/dead-letter-address>
-        &lt;max-delivery-attempts>3&lt;/max-delivery-attempts>
-        &lt;redelivery-delay>5000&lt;/redelivery-delay>
-        &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
-        &lt;last-value-queue>true&lt;/last-value-queue>        
-        &lt;max-size-bytes>100000&lt;/max-size-bytes>
-        &lt;page-size-bytes>20000&lt;/page-size-bytes>
-        &lt;redistribution-delay>0&lt;/redistribution-delay>
-        &lt;send-to-dla-on-no-route>true&lt;/send-to-dla-on-no-route>
-        &lt;address-full-policy>PAGE&lt;/address-full-policy>
-     &lt;/address-setting>
+        <programlisting>
+&lt;address-settings>
+   &lt;address-setting match="jms.queue.exampleQueue">
+      &lt;dead-letter-address>jms.queue.deadLetterQueue&lt;/dead-letter-address>
+      &lt;max-delivery-attempts>3&lt;/max-delivery-attempts>
+      &lt;redelivery-delay>5000&lt;/redelivery-delay>
+      &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
+      &lt;last-value-queue>true&lt;/last-value-queue>
+      &lt;max-size-bytes>100000&lt;/max-size-bytes>
+      &lt;page-size-bytes>20000&lt;/page-size-bytes>
+      &lt;redistribution-delay>0&lt;/redistribution-delay>
+      &lt;send-to-dla-on-no-route>true&lt;/send-to-dla-on-no-route>
+      &lt;address-full-policy>PAGE&lt;/address-full-policy>
+   &lt;/address-setting>
 &lt;/address-settings></programlisting>
         <para>The idea with address settings, is you can provide a block of settings which will be
             applied against any adresses that match the string in the <literal>match</literal> attribute. In the

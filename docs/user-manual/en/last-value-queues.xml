@@ -32,10 +32,9 @@
       <title>Configuring Last-Value Queues</title>
       <para>Last-value queues are defined in the address-setting configuration:</para>
       <programlisting>
-&lt;address-setting match="jms.queue.lastValueQueue"&gt;
-    &lt;last-value-queue&gt;true&lt;/last-value-queue&gt;
-&lt;/address-setting&gt;
-            </programlisting>
+&lt;address-setting match="jms.queue.lastValueQueue">
+   &lt;last-value-queue>true&lt;/last-value-queue>
+&lt;/address-setting></programlisting>
       <para>By default, <literal>last-value-queue</literal> is false. Address wildcards can be used
          to configure Last-Value queues for a set of addresses (see <xref linkend="wildcard-syntax"
          />).</para>
@@ -48,14 +47,12 @@
          a Last-Value queue, only the latest message will be kept in the queue:</para>
       <programlisting>
 // send 1st message with Last-Value property set to STOCK_NAME
-TextMessage message = 
-  session.createTextMessage("1st message with Last-Value property set");
+TextMessage message = session.createTextMessage("1st message with Last-Value property set");
 message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
 producer.send(message);
 
 // send 2nd message with Last-Value property set to STOCK_NAME             
-message = 
-  session.createTextMessage("2nd message with Last-Value property set");
+message = session.createTextMessage("2nd message with Last-Value property set");
 message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
 producer.send(message);
        
@@ -64,8 +61,7 @@ producer.send(message);
 // only the 2nd message will be received: it is the latest with 
 // the Last-Value property set
 TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
-System.out.format("Received message: %s\n", messageReceived.getText());             
-            </programlisting>
+System.out.format("Received message: %s\n", messageReceived.getText());</programlisting>
    </section>
    <section>
       <title>Example</title>
