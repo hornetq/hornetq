@@ -30,6 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
@@ -621,13 +622,13 @@ public class JMSServerControlTest extends ManagementTestBase
             .getConnectorConfigurations()
             .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      XAConnection conn = (XAConnection)cf.createConnection();
+      XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");
@@ -661,13 +662,13 @@ public class JMSServerControlTest extends ManagementTestBase
             .getConnectorConfigurations()
             .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
       Destination dest = (Destination)context.lookup("/q");
-      XAConnection conn = (XAConnection)cf.createConnection();
+      XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
       TextMessage m2 = ss.createTextMessage("m2");

@@ -201,24 +201,24 @@ public final class JMSBridgeImpl implements JMSBridge
    {
 
       this(sourceCff,
-           targetCff,
-           sourceDestinationFactory,
-           targetDestinationFactory,
-           sourceUsername,
-           sourcePassword,
-           targetUsername,
-           targetPassword,
-           selector,
-           failureRetryInterval,
-           maxRetries,
-           qosMode,
-           maxBatchSize,
-           maxBatchTime,
-           subName,
-           clientID,
-           addMessageIDInHeader,
-           null,
-           null);
+         targetCff,
+         sourceDestinationFactory,
+         targetDestinationFactory,
+         sourceUsername,
+         sourcePassword,
+         targetUsername,
+         targetPassword,
+         selector,
+         failureRetryInterval,
+         maxRetries,
+         qosMode,
+         maxBatchSize,
+         maxBatchTime,
+         subName,
+         clientID,
+         addMessageIDInHeader,
+         null,
+         null);
    }
 
    public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
@@ -446,82 +446,82 @@ public final class JMSBridgeImpl implements JMSBridge
       }
 
       synchronized (this) {
-      if (JMSBridgeImpl.trace)
-      {
-         HornetQJMSServerLogger.LOGGER.trace("Stopping " + this);
-      }
-
-      synchronized (lock)
-      {
-         started = false;
-
-         executor.shutdownNow();
-      }
-
-      boolean ok = executor.awaitTermination(60, TimeUnit.SECONDS);
-
-      if (!ok)
-      {
-         throw new Exception("fail to stop JMS Bridge");
-      }
-
-      if (tx != null)
-      {
-         // Terminate any transaction
          if (JMSBridgeImpl.trace)
          {
-            HornetQJMSServerLogger.LOGGER.trace("Rolling back remaining tx");
+            HornetQJMSServerLogger.LOGGER.trace("Stopping " + this);
+         }
+
+         synchronized (lock)
+         {
+            started = false;
+
+            executor.shutdownNow();
+         }
+
+         boolean ok = executor.awaitTermination(60, TimeUnit.SECONDS);
+
+         if (!ok)
+         {
+            throw new Exception("fail to stop JMS Bridge");
+         }
+
+         if (tx != null)
+         {
+            // Terminate any transaction
+            if (JMSBridgeImpl.trace)
+            {
+               HornetQJMSServerLogger.LOGGER.trace("Rolling back remaining tx");
+            }
+
+            try
+            {
+               tx.rollback();
+            }
+            catch (Exception ignore)
+            {
+               if (JMSBridgeImpl.trace)
+               {
+                  HornetQJMSServerLogger.LOGGER.trace("Failed to rollback", ignore);
+               }
+            }
+
+            if (JMSBridgeImpl.trace)
+            {
+               HornetQJMSServerLogger.LOGGER.trace("Rolled back remaining tx");
+            }
          }
 
          try
          {
-            tx.rollback();
+            sourceConn.close();
          }
          catch (Exception ignore)
          {
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSServerLogger.LOGGER.trace("Failed to rollback", ignore);
+               HornetQJMSServerLogger.LOGGER.trace("Failed to close source conn", ignore);
             }
          }
 
-         if (JMSBridgeImpl.trace)
+         if (targetConn != null)
          {
-            HornetQJMSServerLogger.LOGGER.trace("Rolled back remaining tx");
-         }
-      }
-
-      try
-      {
-         sourceConn.close();
-      }
-      catch (Exception ignore)
-      {
-         if (JMSBridgeImpl.trace)
-         {
-            HornetQJMSServerLogger.LOGGER.trace("Failed to close source conn", ignore);
-         }
-      }
-
-      if (targetConn != null)
-      {
-         try
-         {
-            targetConn.close();
-         }
-         catch (Exception ignore)
-         {
-            if (JMSBridgeImpl.trace)
+            try
             {
-               HornetQJMSServerLogger.LOGGER.trace("Failed to close target conn", ignore);
+               targetConn.close();
+            }
+            catch (Exception ignore)
+            {
+               if (JMSBridgeImpl.trace)
+               {
+                  HornetQJMSServerLogger.LOGGER.trace("Failed to close target conn", ignore);
+               }
             }
          }
-      }
 
-      if (JMSBridgeImpl.trace)
-      {
-         HornetQJMSServerLogger.LOGGER.trace("Stopped " + this);
-      }
+         if (JMSBridgeImpl.trace)
+         {
+            HornetQJMSServerLogger.LOGGER.trace("Stopped " + this);
+         }
       }
    }
 
@@ -999,9 +999,9 @@ public final class JMSBridgeImpl implements JMSBridge
          catch (Exception e)
          {
             throw new IllegalStateException("unable to create TransactionManager from " + transactionManagerLocatorClass +
-                                                     "." +
-                                                     transactionManagerLocatorMethod,
-                                            e);
+               "." +
+               transactionManagerLocatorMethod,
+               e);
          }
 
          if (tm == null)
@@ -1013,7 +1013,10 @@ public final class JMSBridgeImpl implements JMSBridge
       return tm;
    }
 
-   private Connection createConnection(final String username, final String password, final ConnectionFactoryFactory cff) throws Exception
+   private Connection createConnection(final String username, final String password,
+                                       final ConnectionFactoryFactory cff,
+                                       final String clientID,
+                                       final boolean isXA) throws Exception
    {
       Connection conn;
 
@@ -1026,7 +1029,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (username == null)
       {
-         if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
+         if (isXA)
          {
             if (JMSBridgeImpl.trace)
             {
@@ -1045,7 +1048,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       else
       {
-         if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
+         if (isXA)
          {
             if (JMSBridgeImpl.trace)
             {
@@ -1062,6 +1065,16 @@ public final class JMSBridgeImpl implements JMSBridge
             conn = ((ConnectionFactory)cf).createConnection(username, password);
          }
       }
+
+      if (clientID != null)
+      {
+         conn.setClientID(clientID);
+      }
+
+
+      conn.setExceptionListener(new BridgeExceptionListener());
+
+
 
       return conn;
    }
@@ -1131,31 +1144,12 @@ public final class JMSBridgeImpl implements JMSBridge
 
          targetDestination = targetDestinationFactory.createDestination();
 
-         sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff);
-
-         if (forwardMode != JMSBridgeImpl.FORWARD_MODE_LOCALTX)
-         {
-            targetConn = createConnection(targetUsername, targetPassword, targetCff);
-
-            targetConn.setExceptionListener(new BridgeExceptionListener());
-         }
-
-         if (clientID != null)
-         {
-            sourceConn.setClientID(clientID);
-         }
-
-         sourceConn.setExceptionListener(new BridgeExceptionListener());
-
-         Session sess;
-
          if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
          {
             // We simply use a single local transacted session for consuming and sending
 
+            sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
             sourceSession = sourceConn.createSession(true, Session.SESSION_TRANSACTED);
-
-            sess = sourceSession;
          }
          else
          {
@@ -1167,9 +1161,8 @@ public final class JMSBridgeImpl implements JMSBridge
                   HornetQJMSServerLogger.LOGGER.trace("Creating XA source session");
                }
 
+               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true);
                sourceSession = ((XAConnection)sourceConn).createXASession();
-
-               sess = ((XASession)sourceSession).getSession();
             }
             else
             {
@@ -1182,30 +1175,20 @@ public final class JMSBridgeImpl implements JMSBridge
 
                // We use ack mode client ack
 
+               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
                sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-               sess = sourceSession;
             }
-         }
-
-         if (forwardMode == JMSBridgeImpl.FORWARD_MODE_XA && sourceSession instanceof HornetQSession)
-         {
-            HornetQSession jsession = (HornetQSession)sourceSession;
-
-            ClientSession clientSession = jsession.getCoreSession();
-
-            // clientSession.setTreatAsNonTransactedWhenNotEnlisted(false);
          }
 
          if (subName == null)
          {
             if (selector == null)
             {
-               sourceConsumer = sess.createConsumer(sourceDestination);
+               sourceConsumer = sourceSession.createConsumer(sourceDestination);
             }
             else
             {
-               sourceConsumer = sess.createConsumer(sourceDestination, selector, false);
+               sourceConsumer = sourceSession.createConsumer(sourceDestination, selector, false);
             }
          }
          else
@@ -1213,17 +1196,22 @@ public final class JMSBridgeImpl implements JMSBridge
             // Durable subscription
             if (selector == null)
             {
-               sourceConsumer = sess.createDurableSubscriber((Topic)sourceDestination, subName);
+               sourceConsumer = sourceSession.createDurableSubscriber((Topic)sourceDestination, subName);
             }
             else
             {
-               sourceConsumer = sess.createDurableSubscriber((Topic)sourceDestination, subName, selector, false);
+               sourceConsumer = sourceSession.createDurableSubscriber((Topic)sourceDestination, subName, selector, false);
             }
          }
 
          // Now the sending session
 
-         if (forwardMode != JMSBridgeImpl.FORWARD_MODE_LOCALTX)
+         if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
+         {
+             targetConn = sourceConn;
+             targetSession = sourceSession;
+         }
+         else
          {
             if (forwardMode == JMSBridgeImpl.FORWARD_MODE_XA)
             {
@@ -1234,9 +1222,9 @@ public final class JMSBridgeImpl implements JMSBridge
 
                // Create an XA sesion for sending to the destination
 
-               targetSession = ((XAConnection)targetConn).createXASession();
+               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, true);
 
-               sess = ((XASession)targetSession).getSession();
+               targetSession = ((XAConnection)targetConn).createXASession();
             }
             else
             {
@@ -1251,10 +1239,10 @@ public final class JMSBridgeImpl implements JMSBridge
 
                boolean transacted = maxBatchSize > 1;
 
-               targetSession = targetConn.createSession(transacted, transacted ? Session.SESSION_TRANSACTED
-                                                                              : Session.AUTO_ACKNOWLEDGE);
+               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, false);
 
-               sess = targetSession;
+               targetSession = targetConn.createSession(transacted, transacted ? Session.SESSION_TRANSACTED
+                  : Session.AUTO_ACKNOWLEDGE);
             }
          }
 
@@ -1270,7 +1258,7 @@ public final class JMSBridgeImpl implements JMSBridge
             enlistResources(tx);
          }
 
-         targetProducer = sess.createProducer(null);
+         targetProducer = targetSession.createProducer(null);
 
          return true;
       }
