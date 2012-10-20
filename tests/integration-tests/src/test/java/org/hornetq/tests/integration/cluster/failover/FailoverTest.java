@@ -1575,14 +1575,45 @@ public class FailoverTest extends FailoverTestBase
 
    private void receiveDurableMessages(ClientConsumer consumer) throws HornetQException
    {
+      // During failover non-persistent messages may disappear but in certain cases they may survive.
+      // For that reason the test is validating all the messages but being permissive with non-persistent messages
+      // The test will just ack any non-persistent message, however when arriving it must be in order
+      ClientMessage repeatMessage=null;
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         // Only the persistent messages will survive
+         ClientMessage message;
+
+         if (repeatMessage != null)
+         {
+            message = repeatMessage;
+            repeatMessage = null;
+         }
+         else
+         {
+            message = consumer.receive(1000);
+         }
+
+         if (message != null)
+         {
+            int msgInternalCounter = message.getIntProperty("counter").intValue();
+
+            if (msgInternalCounter == i + 1)
+            {
+               // The test can only jump to the next message if the current iteration is meant for non-durable
+               assertFalse("a message on counter=" + i + " was expected", isDurable(i));
+               // message belongs to the next iteration.. lets just ignore it
+               repeatMessage = message;
+               continue;
+            }
+         }
 
          if (isDurable(i))
          {
-            ClientMessage message = consumer.receive(1000);
-            Assert.assertNotNull("expecting durable msg " + i, message);
+            Assert.assertNotNull(message);
+         }
+
+         if (message != null)
+         {
             assertMessageBody(i, message);
             Assert.assertEquals(i, message.getIntProperty("counter").intValue());
             message.acknowledge();

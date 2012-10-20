@@ -654,8 +654,12 @@ public class JournalStorageManager implements StorageManager
    {
       if (isReplicated())
       {
-         if (!message.getMessage().isDurable())
-            return;
+         // Note: (https://issues.jboss.org/browse/HORNETQ-1059)
+         // We have to replicate durable and non-durable messages on paging
+         // since acknowledgements are written using the page-position.
+         // Say you are sending durable and non-durable messages to a page
+         // The ACKs would be done to wrong positions, and the backup would be a mess
+
          readLock();
          try
          {

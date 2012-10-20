@@ -572,7 +572,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    protected synchronized HornetQConnection createConnectionInternal(final String username,
                                                                      final String password,
- final boolean isXA,
+                                                                     final boolean isXA,
                                                                      final int type) throws JMSException
    {
       readOnly = true;

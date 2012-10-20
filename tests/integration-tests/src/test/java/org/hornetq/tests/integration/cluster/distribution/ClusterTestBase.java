@@ -957,9 +957,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
                Assert.fail("consumer " + consumerID + " did not receive message " + j);
             }
 
-            log.info("msg on ClusterTestBase = " + message);
-
-
             if (isLargeMessage())
             {
                checkMessageBody(message);
