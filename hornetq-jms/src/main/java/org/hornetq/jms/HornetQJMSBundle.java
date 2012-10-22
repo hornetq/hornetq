@@ -45,4 +45,7 @@ public interface HornetQJMSBundle
 
    @Message(id = 129008, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
+
+   @Message(id = 129009, value =  "Invalid filter: {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInvalidFilterExpressionException invalidFilter(@Cause Throwable e, SimpleString filter);
 }

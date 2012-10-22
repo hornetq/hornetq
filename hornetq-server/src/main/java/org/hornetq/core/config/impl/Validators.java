@@ -13,7 +13,7 @@
 
 package org.hornetq.core.config.impl;
 
-import org.hornetq.core.HornetQCoreMessageBundle;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
@@ -44,7 +44,7 @@ public final class Validators
          String str = (String) value;
          if (str == null || str.length() == 0)
          {
-            throw HornetQCoreMessageBundle.BUNDLE.emptyOrNull(name);
+            throw HornetQMessageBundle.BUNDLE.emptyOrNull(name);
          }
       }
    };
@@ -60,7 +60,7 @@ public final class Validators
          }
          else
          {
-            throw HornetQCoreMessageBundle.BUNDLE.greaterThanZero(name, val);
+            throw HornetQMessageBundle.BUNDLE.greaterThanZero(name, val);
          }
       }
    };
@@ -72,7 +72,7 @@ public final class Validators
          Number val = (Number) value;
          if (val == null || (val.intValue() < 0 || val.intValue() > 100))
          {
-            throw HornetQCoreMessageBundle.BUNDLE.notPercent(name, val);
+            throw HornetQMessageBundle.BUNDLE.notPercent(name, val);
          }
       }
    };
@@ -88,7 +88,7 @@ public final class Validators
          }
          else
          {
-            throw HornetQCoreMessageBundle.BUNDLE.greaterThanZero(name, val);
+            throw HornetQMessageBundle.BUNDLE.greaterThanZero(name, val);
          }
       }
    };
@@ -104,7 +104,7 @@ public final class Validators
          }
          else
          {
-            throw HornetQCoreMessageBundle.BUNDLE.greaterThanMinusOne(name, val);
+            throw HornetQMessageBundle.BUNDLE.greaterThanMinusOne(name, val);
          }
       }
    };
@@ -120,7 +120,7 @@ public final class Validators
          }
          else
          {
-            throw HornetQCoreMessageBundle.BUNDLE.greaterThanZeroOrMinusOne(name, val);
+            throw HornetQMessageBundle.BUNDLE.greaterThanZeroOrMinusOne(name, val);
          }
       }
    };
@@ -136,7 +136,7 @@ public final class Validators
          }
          else
          {
-            throw HornetQCoreMessageBundle.BUNDLE.mustbeBetween(name, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, value);
+            throw HornetQMessageBundle.BUNDLE.mustbeBetween(name, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, value);
          }
       }
    };
@@ -148,7 +148,7 @@ public final class Validators
          String val = (String) value;
          if (val == null || !val.equals(JournalType.NIO.toString()) && !val.equals(JournalType.ASYNCIO.toString()))
          {
-            throw HornetQCoreMessageBundle.BUNDLE.invalidJournalType(val);
+            throw HornetQMessageBundle.BUNDLE.invalidJournalType(val);
          }
       }
    };
@@ -163,7 +163,7 @@ public final class Validators
                !val.equals(AddressFullMessagePolicy.BLOCK.toString()) &&
                !val.equals(AddressFullMessagePolicy.FAIL.toString()))
          {
-            throw HornetQCoreMessageBundle.BUNDLE.invalidAddressFullPolicyType(val);
+            throw HornetQMessageBundle.BUNDLE.invalidAddressFullPolicyType(val);
          }
       }
    };

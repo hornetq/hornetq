@@ -20,7 +20,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core</artifactId>
+                    <artifactId>hornetq-core-client</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
@@ -52,7 +52,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core</artifactId>
+                    <artifactId>hornetq-core-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -14,6 +14,7 @@
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +55,10 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.filter.impl.FilterParser;
+import org.hornetq.core.filter.impl.Identifier;
+import org.hornetq.core.filter.impl.ParseException;
+import org.hornetq.jms.HornetQJMSBundle;
 
 /**
  * HornetQ implementation of a JMS Session.
@@ -665,11 +669,14 @@ public class HornetQSession implements Session, QueueSession, TopicSession
       // eager test of the filter syntax as required by JMS spec
       try
       {
-         FilterImpl.createFilter(filterString);
+         if (filterString != null)
+         {
+            new FilterParser().parse(new SimpleString(filterString.trim()), new HashMap<SimpleString, Identifier>());
+         }
       }
-      catch (HornetQException e)
+      catch (ParseException e)
       {
-         throw JMSExceptionHelper.convertFromHornetQException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(HornetQJMSBundle.BUNDLE.invalidFilter(e, new SimpleString(filterString)));
       }
 
       HornetQDestination jbq = (HornetQDestination)queue;
