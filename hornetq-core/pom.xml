@@ -23,7 +23,6 @@
            <artifactId>jgroups</artifactId>
        </dependency>
 
-
        <!--
            JBoss Logging
        -->
@@ -92,9 +91,16 @@
          </build>
       </profile>
    </profiles>
+
    <build>
-      <plugins>
-         <plugin>
+     <resources>
+       <resource>
+         <directory>src/main/resources</directory>
+         <filtering>true</filtering>
+       </resource>
+     </resources>
+     <plugins>
+        <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>javacc-maven-plugin</artifactId>
             <executions>

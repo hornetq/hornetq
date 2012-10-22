@@ -31,16 +31,15 @@
     </prerequisites>
 
    <properties>
-      <!-- Netty version must also be updated at "hornetq-core/src/main/resources/hornetq-version.properties" -->
       <netty.version>3.4.5.Final</netty.version>
-      <netty.version.string>3.4.5.Final</netty.version.string>
+      <netty.version.string>${netty-version}-2da5b0e</netty.version.string>
       <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>122</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>Alpha</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>Alpha</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
@@ -691,6 +690,11 @@
                      </goals>
                   </execution>
                </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-resources-plugin</artifactId>
+               <version>2.6</version>
             </plugin>
          </plugins>
       </pluginManagement>
