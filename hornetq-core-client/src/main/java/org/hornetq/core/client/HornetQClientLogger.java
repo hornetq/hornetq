@@ -44,17 +44,12 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.utils.FutureLatch;
-import org.hornetq.utils.Pair;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.netty.channel.Channel;
@@ -66,7 +61,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 @MessageLogger(projectCode = "HQ")
 public interface HornetQClientLogger extends BasicLogger
