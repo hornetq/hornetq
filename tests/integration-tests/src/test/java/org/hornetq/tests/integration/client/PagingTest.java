@@ -3074,9 +3074,9 @@ public class PagingTest extends ServiceTestBase
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
-         log.info("Received " + i + " with property = " + msg.getIntProperty("count"));
          if (i != msg.getIntProperty("count").intValue())
          {
+            log.info("Received " + i + " with property = " + msg.getIntProperty("count"));
             log.info("###### different");
          }
          // assertEquals(i, msg.getIntProperty("count").intValue());
@@ -3635,13 +3635,15 @@ public class PagingTest extends ServiceTestBase
       locator.setAckBatchSize(0);
 
       sf = createSessionFactory(locator);
-      ClientSession session = sf.createSession();
+      ClientSession sessionProducer = sf.createSession();
 
-      session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+      sessionProducer.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
 
-      ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+      ClientProducer producer = sessionProducer.createProducer(PagingTest.ADDRESS);
 
       ClientMessage message = null;
+
+      ClientSession sessionConsumer = sf.createSession();
 
       class MyHandler implements MessageHandler
       {
@@ -3676,9 +3678,9 @@ public class PagingTest extends ServiceTestBase
          }
       }
 
-      ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
+      ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
 
-      session.start();
+      sessionConsumer.start();
 
       consumer.setMessageHandler(new MyHandler());
 
@@ -3686,7 +3688,7 @@ public class PagingTest extends ServiceTestBase
       {
          byte[] body = new byte[1024];
 
-         message = session.createMessage(false);
+         message = sessionProducer.createMessage(false);
          message.getBodyBuffer().writeBytes(body);
 
          message.setExpiration(System.currentTimeMillis() + 100);
@@ -3694,7 +3696,8 @@ public class PagingTest extends ServiceTestBase
          producer.send(message);
       }
 
-      session.close();
+      sessionProducer.close();
+      sessionConsumer.close();
    }
 
    private void internalTestPageMultipleDestinations(final boolean transacted) throws Exception

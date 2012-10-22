@@ -607,4 +607,16 @@ public class DelegatingSession implements ClientSessionInternal
       session.addUniqueMetaData(key, data);
 
    }
+
+   public void startCall()
+   {
+      session.startCall();
+   }
+
+   public void endCall()
+   {
+      session.endCall();
+   }
+
+
 }

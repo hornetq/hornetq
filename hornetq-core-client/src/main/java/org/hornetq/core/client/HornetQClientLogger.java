@@ -54,6 +54,7 @@ import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.netty.channel.Channel;
@@ -1241,4 +1242,10 @@ public interface HornetQClientLogger extends BasicLogger
       value = "Can't find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
       format = Message.Format.MESSAGE_FORMAT)
    void cantFindQueueOnPageComplete(long queueID);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214084,
+      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one concurrent session",
+      format = Message.Format.MESSAGE_FORMAT)
+   void invalidConcurrentSessionUsage(@Cause Throwable t);
 }
