@@ -24,7 +24,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-jms</artifactId>
+                    <artifactId>hornetq-jms-server</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.spec.javax.jms</groupId>
