@@ -18,7 +18,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientRequestor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 
 /**
  * A MBeanUsingCoreMessage

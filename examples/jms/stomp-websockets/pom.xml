@@ -76,7 +76,7 @@
                </dependency>
                <dependency>
                   <groupId>org.hornetq</groupId>
-                  <artifactId>hornetq-core</artifactId>
+                  <artifactId>hornetq-core-client</artifactId>
                   <version>${project.version}</version>
                </dependency>
                <dependency>

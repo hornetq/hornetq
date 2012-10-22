@@ -61,19 +61,7 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-core</include>
-         </includes>
-         <binaries>
-            <includeDependencies>false</includeDependencies>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
-         </binaries>
-      </moduleSet>
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-core</include>
+            <include>org.hornetq:hornetq-core-server</include>
          </includes>
          <binaries>
             <includeDependencies>false</includeDependencies>
