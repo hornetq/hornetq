@@ -1239,7 +1239,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 214084,
-      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one concurrent session",
+      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
       format = Message.Format.MESSAGE_FORMAT)
    void invalidConcurrentSessionUsage(@Cause Throwable t);
 }

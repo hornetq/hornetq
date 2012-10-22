@@ -384,7 +384,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    }
 
-   public void testTemoraryQueuesWithFilter() throws Exception
+   public void testTemporaryQueuesWithFilter() throws Exception
    {
 
       int countTmpQueue=0;
@@ -438,7 +438,6 @@ public class TemporaryQueueTest extends ServiceTestBase
       int iterations = 100;
       int msgs = 100;
 
-      // Will be using a single Session as this is how an issue was raised
       for (int i = 0 ; i < iterations; i++)
       {
          ClientSessionFactory clientsConnecton = addSessionFactory(createSessionFactory(locator));
@@ -453,21 +452,19 @@ public class TemporaryQueueTest extends ServiceTestBase
          String queueRed = address + "_red_" + (countTmpQueue++);
          String queueBlue = address + "_blue_" + (countTmpQueue++);
 
-         //ClientSession sessConsumerRed = clientsConnecton.createSession();
-         ClientSession sessConsumerRed = localSession;
+         ClientSession sessConsumerRed = clientsConnecton.createSession();
          sessConsumerRed.createTemporaryQueue(address, queueRed, "color='red'");
          MyHandler redHandler = new MyHandler(sessConsumerRed, "red", msgs);
          ClientConsumer redClientConsumer = sessConsumerRed.createConsumer(queueRed);
          redClientConsumer.setMessageHandler(redHandler);
-         //sessConsumerRed.start();
+         sessConsumerRed.start();
 
-         //ClientSession sessConsumerBlue = clientsConnecton.createSession();
-         ClientSession sessConsumerBlue = localSession;
+         ClientSession sessConsumerBlue = clientsConnecton.createSession();
          sessConsumerBlue.createTemporaryQueue(address, queueBlue, "color='blue'");
          MyHandler blueHandler = new MyHandler(sessConsumerBlue, "blue", msgs);
          ClientConsumer blueClientConsumer = sessConsumerBlue.createConsumer(queueBlue);
          blueClientConsumer.setMessageHandler(blueHandler);
-         //sessConsumerBlue.start();
+         sessConsumerBlue.start();
 
          try
          {
