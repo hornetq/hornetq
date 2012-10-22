@@ -60,7 +60,6 @@
                <plugin>
                   <groupId>org.hornetq</groupId>
                   <artifactId>hornetq-maven-plugin</artifactId>
-                  <version>1.0.0</version>
                   <executions>
                      <execution>
                         <id>start</id>
