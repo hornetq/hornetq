@@ -58,7 +58,6 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.filter.impl.FilterParser;
 import org.hornetq.core.filter.impl.Identifier;
 import org.hornetq.core.filter.impl.ParseException;
-import org.hornetq.jms.HornetQJMSBundle;
 
 /**
  * HornetQ implementation of a JMS Session.
@@ -676,7 +675,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession
       }
       catch (ParseException e)
       {
-         throw JMSExceptionHelper.convertFromHornetQException(HornetQJMSBundle.BUNDLE.invalidFilter(e, new SimpleString(filterString)));
+         throw JMSExceptionHelper.convertFromHornetQException(HornetQJMSClientBundle.BUNDLE.invalidFilter(e, new SimpleString(filterString)));
       }
 
       HornetQDestination jbq = (HornetQDestination)queue;

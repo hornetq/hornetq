@@ -34,6 +34,7 @@
          <plugin>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-maven-plugin</artifactId>
+            <version>1.0.0</version>
             <executions>
                <execution>
                   <id>start0</id>
@@ -107,7 +108,7 @@
                </dependency>
                <dependency>
                   <groupId>org.hornetq</groupId>
-                  <artifactId>hornetq-jms-server</artifactId>
+                  <artifactId>hornetq-jms-client</artifactId>
                   <version>${project.version}</version>
                </dependency>
                <dependency>

@@ -1,4 +1,4 @@
-package org.hornetq.jms;
+package org.hornetq.jms.client;
 
 
 import org.hornetq.api.core.*;
@@ -18,9 +18,9 @@ import org.jboss.logging.Messages;
  * so 129000 to 129999
  */
 @MessageBundle(projectCode = "HQ")
-public interface HornetQJMSBundle
+public interface HornetQJMSClientBundle
 {
-   HornetQJMSBundle BUNDLE = Messages.getBundle(HornetQJMSBundle.class);
+   HornetQJMSClientBundle BUNDLE = Messages.getBundle(HornetQJMSClientBundle.class);
 
    @Message(id = 129001, value =  "Connection Factory {0} doesn't exist" , format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException cfDoesntExist(String name);

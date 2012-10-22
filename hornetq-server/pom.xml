@@ -107,21 +107,6 @@
    <build>
       <plugins>
          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>javacc-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>javacc</id>
-                  <goals>
-                     <goal>javacc</goal>
-                  </goals>
-                  <configuration>
-                     <isStatic>false</isStatic>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>

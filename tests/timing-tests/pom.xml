@@ -62,7 +62,7 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
-         <artifactId>hornetq-jms</artifactId>
+         <artifactId>hornetq-jms-client</artifactId>
          <version>${project.version}</version>
          <scope>test</scope>
       </dependency>

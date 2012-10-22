@@ -58,7 +58,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
-import org.hornetq.jms.HornetQJMSBundle;
+import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -712,7 +712,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       if (registry.lookup(jndiBinding) != null)
       {
-         throw HornetQJMSBundle.BUNDLE.cfJndiExists(name);
+         throw HornetQJMSServerBundle.BUNDLE.cfJndiExists(name);
       }
       boolean added = bindToJndi(jndiBinding, factory);
       if (added)
@@ -1097,7 +1097,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       if (jndi == null)
       {
-         throw HornetQJMSBundle.BUNDLE.cfDoesntExist(name);
+         throw HornetQJMSServerBundle.BUNDLE.cfDoesntExist(name);
       }
 
       String[] usedJNDI = jndi.toArray(new String[jndi.size()]);
@@ -1301,7 +1301,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          if (groupConfig == null)
          {
-            throw HornetQJMSBundle.BUNDLE.discoveryGroupDoesntExist(cfConfig.getDiscoveryGroupName());
+            throw HornetQJMSServerBundle.BUNDLE.discoveryGroupDoesntExist(cfConfig.getDiscoveryGroupName());
          }
 
          if (cfConfig.isHA())
@@ -1317,7 +1317,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          if (cfConfig.getConnectorNames() == null || cfConfig.getConnectorNames().size() == 0)
          {
-            throw HornetQJMSBundle.BUNDLE.noConnectorNameOnCF();
+            throw HornetQJMSServerBundle.BUNDLE.noConnectorNameOnCF();
          }
 
          TransportConfiguration[] configs = new TransportConfiguration[cfConfig.getConnectorNames().size()];
@@ -1328,7 +1328,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             TransportConfiguration connector = server.getConfiguration().getConnectorConfigurations().get(name);
             if (connector == null)
             {
-               throw HornetQJMSBundle.BUNDLE.noConnectorNameConfiguredOnCF(name);
+               throw HornetQJMSServerBundle.BUNDLE.noConnectorNameConfiguredOnCF(name);
             }
             correctInvalidNettyConnectorHost(connector);
             configs[count++] = connector;
