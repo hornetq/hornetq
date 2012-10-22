@@ -21,26 +21,7 @@
 */
 package org.hornetq.core.client;
 
-import org.hornetq.api.core.HornetQAddressFullException;
-import org.hornetq.api.core.HornetQConnectionTimedOutException;
-import org.hornetq.api.core.HornetQDisconnectedException;
-import org.hornetq.api.core.HornetQDuplicateMetaDataException;
-import org.hornetq.api.core.HornetQIOErrorException;
-import org.hornetq.api.core.HornetQIllegalStateException;
-import org.hornetq.api.core.HornetQIncompatibleClientServerException;
-import org.hornetq.api.core.HornetQInternalErrorException;
-import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
-import org.hornetq.api.core.HornetQLargeMessageException;
-import org.hornetq.api.core.HornetQNonExistentQueueException;
-import org.hornetq.api.core.HornetQNotConnectedException;
-import org.hornetq.api.core.HornetQObjectClosedException;
-import org.hornetq.api.core.HornetQQueueExistsException;
-import org.hornetq.api.core.HornetQSecurityException;
-import org.hornetq.api.core.HornetQSessionCreationException;
-import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
-import org.hornetq.api.core.HornetQTransactionRolledBackException;
-import org.hornetq.api.core.HornetQUnBlockedException;
-import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.*;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Connection;
@@ -471,5 +452,8 @@ public interface HornetQClientMessageBundle
 
    @Message(id = 119139, value = "Address \"{0}\" is full. Message encode size = {1}B", format = Message.Format.MESSAGE_FORMAT)
    HornetQAddressFullException addressIsFull(String addressName, int size);
+
+   @Message(id = 119140, value = "Interceptor {0} rejected packet in a blocking call. This call will never complete.", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInterceptorRejectedPacketException interceptorRejectedPacket(String interceptionResult);
 
 }
