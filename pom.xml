@@ -533,6 +533,7 @@
             <module>tests</module>
          </modules>
          <properties>
+            <skipUnitTests>false</skipUnitTests>
             <skipJmsTests>false</skipJmsTests>
             <skipJoramTests>false</skipJoramTests>
             <skipConcurrentTests>false</skipConcurrentTests>
