@@ -44,12 +44,8 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.utils.FutureLatch;
-import org.hornetq.utils.Pair;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -65,7 +61,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 @MessageLogger(projectCode = "HQ")
 public interface HornetQClientLogger extends BasicLogger
@@ -1241,4 +1236,10 @@ public interface HornetQClientLogger extends BasicLogger
       value = "Can't find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
       format = Message.Format.MESSAGE_FORMAT)
    void cantFindQueueOnPageComplete(long queueID);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214084,
+      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
+      format = Message.Format.MESSAGE_FORMAT)
+   void invalidConcurrentSessionUsage(@Cause Throwable t);
 }

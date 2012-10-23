@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -197,6 +198,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private boolean xaRetry = false;
 
+   private final AtomicInteger concurrentCall = new AtomicInteger(0);
+
    // Constructors ----------------------------------------------------------------------------
 
    ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
@@ -359,7 +362,15 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       checkClosed();
 
-      channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
+      startCall();
+      try
+      {
+         channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
+      }
+      finally
+      {
+         endCall();
+      }
    }
 
    public void deleteQueue(final String queueName) throws HornetQException
@@ -373,14 +384,24 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       SessionQueueQueryMessage request = new SessionQueueQueryMessage(queueName);
 
-      SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request);
 
-      return new QueueQueryImpl(response.isDurable(),
-                                response.getConsumerCount(),
-                                response.getMessageCount(),
-                                response.getFilterString(),
-                                response.getAddress(),
-                                response.isExists());
+      startCall();
+      try
+      {
+         SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request);
+
+         return new QueueQueryImpl(response.isDurable(),
+            response.getConsumerCount(),
+            response.getMessageCount(),
+            response.getFilterString(),
+            response.getAddress(),
+            response.isExists());
+      }
+      finally
+      {
+         endCall();
+      }
+
    }
 
    public BindingQuery bindingQuery(final SimpleString address) throws HornetQException
@@ -776,13 +797,21 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
 
-      if (blockOnAcknowledge)
+      startCall();
+      try
       {
-         channel.sendBlocking(message);
+         if (blockOnAcknowledge)
+         {
+            channel.sendBlocking(message);
+         }
+         else
+         {
+            channel.sendBatched(message);
+         }
       }
-      else
+      finally
       {
-         channel.sendBatched(message);
+         endCall();
       }
    }
 
@@ -800,13 +829,21 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                                             messageID,
                                                                                             blockOnAcknowledge);
 
-      if (blockOnAcknowledge)
+      startCall();
+      try
       {
-         channel.sendBlocking(message);
+         if (blockOnAcknowledge)
+         {
+            channel.sendBlocking(message);
+         }
+         else
+         {
+            channel.sendBatched(message);
+         }
       }
-      else
+      finally
       {
-         channel.sendBatched(message);
+         endCall();
       }
    }
 
@@ -1178,6 +1215,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          metadata.put(key, data);
       }
+
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
 
@@ -1271,6 +1309,19 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       return producerCreditManager;
    }
 
+   public void startCall()
+   {
+      if (concurrentCall.incrementAndGet() > 1)
+      {
+         HornetQClientLogger.LOGGER.invalidConcurrentSessionUsage(new Exception ("trace"));
+      }
+   }
+
+   public void endCall()
+   {
+      concurrentCall.decrementAndGet();
+   }
+
    // CommandConfirmationHandler implementation ------------------------------------
 
    public void commandConfirmed(final Packet packet)
@@ -1314,6 +1365,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
 
+      startCall();
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
@@ -1339,6 +1391,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          // Any error on commit -> RETRY
          // We can't rollback a Prepared TX for definition
          throw new XAException(XAException.XA_RETRY);
+      }
+      finally
+      {
+         endCall();
       }
    }
 
@@ -1379,7 +1435,16 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          flushAcks();
 
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+         SessionXAResponseMessage response;
+         startCall();
+         try
+         {
+            response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+         }
+         finally
+         {
+            endCall();
+         }
 
          if (response.isError())
          {
@@ -1397,6 +1462,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    public void forget(final Xid xid) throws XAException
    {
       checkXA();
+      startCall();
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(new SessionXAForgetMessage(xid));
@@ -1410,6 +1476,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
+      }
+      finally
+      {
+         endCall();
       }
    }
 
@@ -1468,6 +1538,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
 
+      startCall();
       try
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
@@ -1524,6 +1595,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
+      finally
+      {
+         endCall();
+      }
+
    }
 
    public Xid[] recover(final int flags) throws XAException
@@ -1881,7 +1957,15 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp, true);
 
-      channel.sendBlocking(request);
+      startCall();
+      try
+      {
+         channel.sendBlocking(request);
+      }
+      finally
+      {
+         endCall();
+      }
    }
 
    private void checkXA() throws XAException
