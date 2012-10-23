@@ -49,7 +49,7 @@ import javax.transaction.xa.XAResource;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.jms.HornetQJMSBundle;
+import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
@@ -432,7 +432,7 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (Exception e)
          {
-            throw HornetQJMSBundle.BUNDLE.errorDecodingPassword(e);
+            throw HornetQJMSServerBundle.BUNDLE.errorDecodingPassword(e);
          }
 
       }

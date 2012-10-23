@@ -431,10 +431,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-jms-server</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
@@ -452,10 +450,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-jms-server</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
@@ -473,10 +469,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-jms-server</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
@@ -496,10 +490,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-jms-server</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
@@ -529,10 +521,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
@@ -555,10 +545,8 @@
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
-            <module>hornetq-core</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
-            <module>hornetq-jms</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>

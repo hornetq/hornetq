@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
