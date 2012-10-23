@@ -211,99 +211,108 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private void doSend(final SimpleString address, final Message msg) throws HornetQException
    {
-      MessageInternal msgI = (MessageInternal)msg;
-
-      ClientProducerCredits theCredits;
-
-      boolean isLarge;
-
-      if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
-          msgI.getBodyBuffer().writerIndex() > minLargeMessageSize)
-      {
-         isLarge = true;
-      }
-      else
-      {
-         isLarge = false;
-      }
-
-      if (address != null)
-      {
-         if (!isLarge)
-         {
-            session.setAddress(msg, address);
-         }
-         else
-         {
-            msg.setAddress(address);
-         }
-
-         // Anonymous
-         theCredits = session.getCredits(address, true);
-      }
-      else
-      {
-         if (!isLarge)
-         {
-            session.setAddress(msg, this.address);
-         }
-         else
-         {
-            msg.setAddress(this.address);
-         }
-
-         theCredits = credits;
-      }
-
-      if (rateLimiter != null)
-      {
-         // Rate flow control
-
-         rateLimiter.limit();
-      }
-
-      if (groupID != null)
-      {
-         msgI.putStringProperty(Message.HDR_GROUP_ID, groupID);
-      }
-
-      boolean sendBlocking = msgI.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;
-
-      session.workDone();
+      session.startCall();
 
       try
       {
-         // This will block if credits are not available
+         MessageInternal msgI = (MessageInternal)msg;
 
-         // Note, that for a large message, the encode size only includes the properties + headers
-         // Not the continuations, but this is ok since we are only interested in limiting the amount of
-         // data in *memory* and continuations go straight to the disk
+         ClientProducerCredits theCredits;
 
-         if (!isLarge)
+         boolean isLarge;
+
+         if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
+            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize)
          {
-            theCredits.acquireCredits(msgI.getEncodeSize());
-         }
-      }
-      catch (InterruptedException e)
-      {
-      }
-
-      if (isLarge)
-      {
-         largeMessageSend(sendBlocking, msgI, theCredits);
-      }
-      else
-      {
-         SessionSendMessage packet = new SessionSendMessage(msgI, sendBlocking);
-
-         if (sendBlocking)
-         {
-            channel.sendBlocking(packet);
+            isLarge = true;
          }
          else
          {
-            channel.sendBatched(packet);
+            isLarge = false;
          }
+
+         if (address != null)
+         {
+            if (!isLarge)
+            {
+               session.setAddress(msg, address);
+            }
+            else
+            {
+               msg.setAddress(address);
+            }
+
+            // Anonymous
+            theCredits = session.getCredits(address, true);
+         }
+         else
+         {
+            if (!isLarge)
+            {
+               session.setAddress(msg, this.address);
+            }
+            else
+            {
+               msg.setAddress(this.address);
+            }
+
+            theCredits = credits;
+         }
+
+         if (rateLimiter != null)
+         {
+            // Rate flow control
+
+            rateLimiter.limit();
+         }
+
+         if (groupID != null)
+         {
+            msgI.putStringProperty(Message.HDR_GROUP_ID, groupID);
+         }
+
+         boolean sendBlocking = msgI.isDurable() ? blockOnDurableSend : blockOnNonDurableSend;
+
+         session.workDone();
+
+         try
+         {
+            // This will block if credits are not available
+
+            // Note, that for a large message, the encode size only includes the properties + headers
+            // Not the continuations, but this is ok since we are only interested in limiting the amount of
+            // data in *memory* and continuations go straight to the disk
+
+            if (!isLarge)
+            {
+               theCredits.acquireCredits(msgI.getEncodeSize());
+            }
+         }
+         catch (InterruptedException e)
+         {
+         }
+
+         if (isLarge)
+         {
+            largeMessageSend(sendBlocking, msgI, theCredits);
+         }
+         else
+         {
+            SessionSendMessage packet = new SessionSendMessage(msgI, sendBlocking);
+
+            if (sendBlocking)
+            {
+               channel.sendBlocking(packet);
+            }
+            else
+            {
+               channel.sendBatched(packet);
+            }
+         }
+      }
+      finally
+      {
+         session.endCall();
       }
    }
 

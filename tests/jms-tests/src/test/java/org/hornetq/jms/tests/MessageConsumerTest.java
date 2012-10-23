@@ -3806,20 +3806,22 @@ public class MessageConsumerTest extends JMSTestCase
 
          conn.start();
 
-         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         Session sessProducer = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         Session sessConsumer = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         MessageConsumer cons = sessConsumer.createConsumer(HornetQServerTestCase.queue1);
 
          RedelMessageListenerImpl listener = new RedelMessageListenerImpl(false);
-         listener.sess = sess;
+         listener.sess = sessConsumer;
 
          cons.setMessageListener(listener);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         TextMessage m1 = sess.createTextMessage("a");
-         TextMessage m2 = sess.createTextMessage("b");
-         TextMessage m3 = sess.createTextMessage("c");
+         TextMessage m1 = sessProducer.createTextMessage("a");
+         TextMessage m2 = sessProducer.createTextMessage("b");
+         TextMessage m3 = sessProducer.createTextMessage("c");
 
          prod.send(m1);
          prod.send(m2);

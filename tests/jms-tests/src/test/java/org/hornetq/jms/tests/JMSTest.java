@@ -380,9 +380,9 @@ public class JMSTest extends JMSTestCase
       {
          conn = JMSTestCase.cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessionConsumer.createConsumer(HornetQServerTestCase.queue1);
 
          final AtomicReference<Message> message = new AtomicReference<Message>();
          final CountDownLatch latch = new CountDownLatch(1);
@@ -398,9 +398,11 @@ public class JMSTest extends JMSTestCase
 
          conn.start();
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+
+         Session sessionProducer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessionProducer.createProducer(HornetQServerTestCase.queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         TextMessage m = session.createTextMessage("one");
+         TextMessage m = sessionProducer.createTextMessage("one");
          prod.send(m);
 
          boolean gotMessage = latch.await(5000, MILLISECONDS);
