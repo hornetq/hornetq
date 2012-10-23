@@ -343,16 +343,25 @@ public class AsynchronousFileTest extends AIOTestBase
 
          waitForLatch(callbackLocal.latch);
 
-         ByteBuffer newBuffer = ByteBuffer.allocateDirect(50);
+         ByteBuffer newBuffer = AsynchronousFileImpl.newBuffer(512);
 
-         callbackLocal = new LocalCallback();
+         try
+         {
+            callbackLocal = new LocalCallback();
 
-         controller.read(0, 50, newBuffer, callbackLocal);
+            controller.read(0, 50, newBuffer, callbackLocal);
 
-         waitForLatch(callbackLocal.latch);
+            waitForLatch(callbackLocal.latch);
 
-         Assert.assertTrue(callbackLocal.error);
+            Assert.assertTrue(callbackLocal.error);
 
+         }
+         finally
+         {
+            // We have to destroy the native buffer manually as it was created with a malloc like C function
+            AsynchronousFileImpl.destroyBuffer(newBuffer);
+            newBuffer = null;
+         }
          callbackLocal = new LocalCallback();
 
          byte bytes[] = new byte[512];
