@@ -20,11 +20,11 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core</artifactId>
+                    <artifactId>hornetq-core-client</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-jms-server</artifactId>
+                    <artifactId>hornetq-jms-client</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.spec.javax.jms</groupId>
@@ -52,7 +52,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core</artifactId>
+                    <artifactId>hornetq-core-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

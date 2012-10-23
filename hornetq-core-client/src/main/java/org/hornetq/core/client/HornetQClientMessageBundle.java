@@ -21,6 +21,7 @@
 */
 package org.hornetq.core.client;
 
+
 import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
@@ -28,6 +29,7 @@ import org.hornetq.api.core.HornetQDuplicateMetaDataException;
 import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQIncompatibleClientServerException;
+import org.hornetq.api.core.HornetQInterceptorRejectedPacketException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
 import org.hornetq.api.core.HornetQLargeMessageException;
@@ -167,7 +169,8 @@ public interface HornetQClientMessageBundle
    @Message(id = 119035, value =  "The connection was disconnected because of server shutdown", format = Message.Format.MESSAGE_FORMAT)
    HornetQDisconnectedException disconnected();
 
-   @Message(id = 119036, value =  "Connection failure detected. Unblocking a blocking call that will never get a response", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119036, value =  "Connection failure detected. Unblocking a blocking call that will never get a resp" +
+         "onse", format = Message.Format.MESSAGE_FORMAT)
    HornetQUnBlockedException unblockingACall();
 
    @Message(id = 119037, value =  "Timeout on waiting I/O completion", format = Message.Format.MESSAGE_FORMAT)
@@ -273,7 +276,8 @@ public interface HornetQClientMessageBundle
    @Message(id = 119072, value =  "Metadata {0}={1} had been set already", format = Message.Format.MESSAGE_FORMAT)
    HornetQDuplicateMetaDataException duplicateMetadata(String key, String data);
 
-   @Message(id = 119073, value =  "The transaction was rolled back on failover however commit may have been succesful", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119073, value =  "The transaction was rolled back on failover however commit may have been succesful" +
+         "", format = Message.Format.MESSAGE_FORMAT)
    HornetQTransactionOutcomeUnknownException txOutcomeUnknown();
 
    @Message(id = 119074, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
@@ -471,5 +475,9 @@ public interface HornetQClientMessageBundle
 
    @Message(id = 119139, value = "Address \"{0}\" is full. Message encode size = {1}B", format = Message.Format.MESSAGE_FORMAT)
    HornetQAddressFullException addressIsFull(String addressName, int size);
+
+   @Message(id = 119140, value = "Interceptor {0} rejected packet in a blocking call. This call will never complete."
+         , format = Message.Format.MESSAGE_FORMAT)
+   HornetQInterceptorRejectedPacketException interceptorRejectedPacket(String interceptionResult);
 
 }

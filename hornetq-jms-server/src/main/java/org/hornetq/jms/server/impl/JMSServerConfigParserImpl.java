@@ -25,7 +25,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.Validators;
-import org.hornetq.jms.HornetQJMSBundle;
+import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.server.JMSServerConfigParser;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -208,7 +208,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       if (!node.getNodeName().equals(JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME))
       {
          // sanity check, this shouldn't ever happen
-         throw HornetQJMSBundle.BUNDLE.invalidNodeParsingCF(node.getNodeName());
+         throw HornetQJMSServerBundle.BUNDLE.invalidNodeParsingCF(node.getNodeName());
       }
       Element e = (Element)node;
 
@@ -465,7 +465,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
             return JMSFactoryType.TOPIC_CF;
          }
       }
-      throw HornetQJMSBundle.BUNDLE.invalidSignatureParsingCF(fact);
+      throw HornetQJMSServerBundle.BUNDLE.invalidSignatureParsingCF(fact);
    }
 
    /**
