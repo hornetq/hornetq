@@ -386,7 +386,20 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-name>JgroupsFile</config-property-name>" +
          "         <config-property-type>java.lang.String</config-property-type>" +
          "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>jgroups endpoint factory</description>" +
+         "         <config-property-name>JGroupsEndpointFactory</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value>SomeFactoryName</config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description>connection pool name</description>" +
+         "         <config-property-name>ConnectionPoolName</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value>SomePoolName</config-property-value>" +
          "      </config-property>";
+
 
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
