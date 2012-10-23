@@ -66,6 +66,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * Trace enabled
     */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
+   
+   /**
+    * We need this purely for AS7 integration. Within AS7 the RA is loaded by JCA.
+    * properties can only be passed in String form. However if RA is configured 
+    * using jgroups stack, we need to pass a Channel object. As is impossible with
+    * JCA, we use a static Map to pass the object.
+    */
+   private static Map<String, JGroupsBroadcastGroupConfiguration> endpointFactories = null;
 
    /**
     * The bootstrap context
@@ -1579,6 +1587,23 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setSetupInterval(interval);
    }
 
+   public void setConnectionPoolName(String name)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setConnectionPoolName(" + name + ")");
+      }
+      raProperties.setConnectionPoolName(name);
+   }
+
+   public String getConnectionPoolName()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getConnectionPoolName()");
+      }
+      return raProperties.getConnectionPoolName();
+   }
 
    /**
     * Indicates whether some other object is "equal to" this one.
@@ -1814,26 +1839,37 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (discoveryAddress != null || jgroupsFileName != null)
+      if (connectorClassName == null)
       {
-         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                              : getDiscoveryPort();
-
-         if(discoveryPort == null)
+         BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
+         if (discoveryAddress != null)
          {
-            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
-         }
+            Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                                  : getDiscoveryPort();
+            if(discoveryPort == null)
+            {
+               discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+            }
 
-         BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
-         if (jgroupsFileName == null)
-         {
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                                                                            : raProperties.getDiscoveryLocalBindAddress();
             endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
-         else
+         else if (jgroupsFileName != null)
          {
             endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
+         }
+         else
+         {
+            String poolName = raProperties.getConnectionPoolName();
+            if (poolName != null)
+            {
+               endpointFactoryConfiguration = endpointFactories.get(poolName);
+            }
+            if (endpointFactoryConfiguration == null)
+            {
+               throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+            }
          }
 
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
@@ -1868,7 +1904,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
       }
       else
-      if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
@@ -1914,10 +1949,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
          }
       }
-      else
-      {
-         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
-      }
       setParams(cf, overrideProperties);
       return cf;
    }
@@ -1937,25 +1968,37 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName()
          : getJgroupsChannelName();
 
-      if (discoveryAddress != null)
+      if (connectorClassName == null)
       {
-         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                              : getDiscoveryPort();
+         BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
+         if (discoveryAddress != null)
+         {
+            Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                                  : getDiscoveryPort();
+            if(discoveryPort == null)
+            {
+               discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+            }
 
-         if(discoveryPort == null || jgroupsFileName != null)
-         {
-            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
-         }
-         BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
-         if (jgroupsFileName == null)
-         {
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                                                                            : raProperties.getDiscoveryLocalBindAddress();
             endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
-         else
+         else if (jgroupsFileName != null)
          {
             endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
+         }
+         else
+         {
+             String poolName = raProperties.getConnectionPoolName();
+             if (poolName != null)
+             {
+            	 endpointFactoryConfiguration = endpointFactories.get(poolName);
+             }
+             if (endpointFactoryConfiguration == null)
+             {
+                 throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+             }
          }
 
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
@@ -1967,7 +2010,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
          Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
                                                                         : raProperties.getDiscoveryInitialWaitTimeout();
-
          if(initialTimeout == null)
          {
             initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
@@ -1975,7 +2017,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(refreshTimeout, initialTimeout, endpointFactoryConfiguration);
 
          groupConfiguration.setRefreshTimeout(refreshTimeout);
-
 
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
@@ -1985,7 +2026,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
       }
       else
-      if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
@@ -2023,11 +2063,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
 
          cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
-
-      }
-      else
-      {
-         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
       }
       setParams(cf, overrideProperties);
 
@@ -2294,5 +2329,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public SensitiveDataCodec<String> getCodecInstance()
    {
       return raProperties.getCodecInstance();
+   }
+   
+   public synchronized static void setJGroupsEndpointFactory(String name, JGroupsBroadcastGroupConfiguration factory)
+   {
+      if (endpointFactories == null)
+      {
+         endpointFactories = new HashMap<String, JGroupsBroadcastGroupConfiguration>();
+      }
+      endpointFactories.put(name, factory);
    }
 }
