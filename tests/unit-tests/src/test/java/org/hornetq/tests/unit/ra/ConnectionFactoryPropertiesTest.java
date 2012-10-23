@@ -63,6 +63,10 @@ public class ConnectionFactoryPropertiesTest extends UnitTestCase {
        UNSUPPORTED_RA_PROPERTIES.add("useAutoRecovery");
        UNSUPPORTED_RA_PROPERTIES.add("useLocalTx");
        UNSUPPORTED_RA_PROPERTIES.add("userName");
+
+       // TODO: shouldn't this be also set on the HornetQConnectionFactory:
+       // https://community.jboss.org/thread/211815?tstart=0
+       UNSUPPORTED_RA_PROPERTIES.add("connectionPoolName");
     }
 
     public void testCompareConnectionFactoryAndResourceAdapterProperties() throws Exception {

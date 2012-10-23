@@ -1833,15 +1833,29 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName()
          : getJgroupsChannelName();
 
+      String poolName = raProperties.getConnectionPoolName();
 
       if(ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (connectorClassName == null)
+      if (discoveryAddress != null || jgroupsFileName != null || poolName != null)
       {
          BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
+
+         if (poolName != null)
+         {
+            endpointFactoryConfiguration = endpointFactories.get(poolName);
+
+            if (endpointFactoryConfiguration == null)
+            {
+               // TODO: internationalization
+               throw new IllegalArgumentException("Couldn't find a valid Grouping Configuration by the name " + poolName);
+            }
+
+         }
+         else
          if (discoveryAddress != null)
          {
             Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
@@ -1859,19 +1873,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          {
             endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
          }
-         else
-         {
-            String poolName = raProperties.getConnectionPoolName();
-            if (poolName != null)
-            {
-               endpointFactoryConfiguration = endpointFactories.get(poolName);
-            }
-            if (endpointFactoryConfiguration == null)
-            {
-               throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
-            }
-         }
-
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
                                                                     : raProperties.getDiscoveryRefreshTimeout();
          if (refreshTimeout == null)
@@ -1903,7 +1904,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
       }
-      else
+      else if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
@@ -1949,6 +1950,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
          }
       }
+      else
+      {
+         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+      }
+
       setParams(cf, overrideProperties);
       return cf;
    }
