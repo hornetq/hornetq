@@ -146,13 +146,27 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       creationStack = new Exception();
    }
 
+   /** This internal method serves basically the Resource Adapter.
+    *  The resource adapter plays with an XASession and a non XASession.
+    *  When there is no enlisted transaction, the EE specification mandates that the commit should
+    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
+    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    *  mandates createSession to return a XASession. */
+   public Session createNonXASession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
+   }
+
+
    // Connection implementation --------------------------------------------------------------------
 
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
 
-      return createSessionInternal(transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -357,7 +371,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer
@@ -374,7 +388,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer
@@ -479,7 +493,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    }
 
    protected final HornetQSession
-            createSessionInternal(final boolean transacted, int acknowledgeMode, final int type) throws JMSException
+            createSessionInternal(final boolean isXA, final boolean transacted, int acknowledgeMode, final int type) throws JMSException
    {
       if (transacted)
       {
@@ -493,37 +507,37 @@ public class HornetQConnection implements TopicConnection, QueueConnection
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA(), false, false,
+                     sessionFactory.createSession(username, password, isXA, false, false,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA(), true, true,
+                     sessionFactory.createSession(username, password, isXA, true, true,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(), 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA(), true, true,
+                     sessionFactory.createSession(username, password, isXA, true, true,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(), dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA(), true, false,
+                     sessionFactory.createSession(username, password, isXA, true, false,
                                                   sessionFactory.getServerLocator().isPreAcknowledge(),
                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA(), true, false, false, transactionBatchSize);
+                     sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA(), true, false, true, transactionBatchSize);
+            session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
          }
          else
          {
@@ -538,7 +552,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
          session.addFailureListener(listener);
          session.addFailoverListener(failoverListener);
 
-         HornetQSession jbs = createHQSession(transacted, acknowledgeMode, session, type);
+         HornetQSession jbs = createHQSession(isXA, transacted, acknowledgeMode, session, type);
 
          sessions.add(jbs);
 
@@ -566,9 +580,16 @@ public class HornetQConnection implements TopicConnection, QueueConnection
     * @param type
     * @return
     */
-   protected HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session, int type)
+   protected HornetQSession createHQSession(boolean isXA, boolean transacted, int acknowledgeMode, ClientSession session, int type)
    {
-      return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
+      if (isXA)
+      {
+         return new HornetQXASession(this, transacted, true, acknowledgeMode, session, type);
+      }
+      else
+      {
+         return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
+      }
    }
 
    protected final void checkClosed() throws JMSException
