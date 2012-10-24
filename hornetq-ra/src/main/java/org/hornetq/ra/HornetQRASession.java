@@ -1234,7 +1234,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
    {
       if (HornetQRASession.trace)
       {
-         HornetQRALogger.LOGGER.trace("getSession()");
+         HornetQRALogger.LOGGER.trace("getNonXAsession()");
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||

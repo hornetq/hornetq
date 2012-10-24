@@ -45,14 +45,14 @@ public final class HornetQXAConnection extends HornetQConnection implements XATo
    public XASession createXASession() throws JMSException
    {
       checkClosed();
-      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_GENERIC_SESSION);
+      return (XASession)createSessionInternal(isXA(), true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_GENERIC_SESSION);
    }
 
    @Override
    public XAQueueSession createXAQueueSession() throws JMSException
    {
       checkClosed();
-      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_QUEUE_SESSION);
+      return (XAQueueSession)createSessionInternal(isXA(), true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_QUEUE_SESSION);
 
    }
 
@@ -60,7 +60,7 @@ public final class HornetQXAConnection extends HornetQConnection implements XATo
    public XATopicSession createXATopicSession() throws JMSException
    {
       checkClosed();
-      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_TOPIC_SESSION);
+      return (XATopicSession)createSessionInternal(isXA(), true, Session.SESSION_TRANSACTED, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    @Override
@@ -69,9 +69,4 @@ public final class HornetQXAConnection extends HornetQConnection implements XATo
       return true;
    }
 
-   @Override
-   protected HornetQSession createHQSession(boolean transacted, int acknowledgeMode, ClientSession session, int type)
-   {
-      return new HornetQXASession(this, transacted, true, acknowledgeMode, session, type);
-   }
 }
