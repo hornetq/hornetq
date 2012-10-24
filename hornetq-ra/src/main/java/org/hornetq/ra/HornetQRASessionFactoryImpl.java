@@ -783,7 +783,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
    }
 
    /**
-    * Allocation a connection
+    * Allocate a connection
     * @param transacted Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @param sessionType The session type

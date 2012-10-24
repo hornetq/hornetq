@@ -32,7 +32,6 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.ra.HornetQRAConnectionFactory;
@@ -85,7 +84,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleMessageSendAndReceive() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -113,7 +112,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -150,7 +149,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleMessageSendAndReceiveTransacted() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       resourceAdapter.setUseLocalTx(true);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
@@ -184,7 +183,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testMultipleSessionsThrowsException() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -211,7 +210,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testConnectionCredentials() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -237,7 +236,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testConnectionCredentialsFail() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -255,7 +254,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       try
       {
          queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
-         fail("should throw esxception");
+         fail("should throw exception");
       }
       catch (JMSException e)
       {

@@ -72,7 +72,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
    private final HornetQRAConnectionRequestInfo cri;
 
    /** The resource adapter */
-   private HornetQResourceAdapter ra;
+   private final HornetQResourceAdapter ra;
 
    /** The user name */
    private final String userName;
@@ -617,7 +617,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       {
          if (HornetQRAManagedConnection.trace)
          {
-            HornetQRALogger.LOGGER.trace("getSession() -> session " + xaSession.getSession());
+            HornetQRALogger.LOGGER.trace("getSession() -> session " + session);
          }
 
          return session;
