@@ -59,6 +59,6 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
    @Override
    protected final void crash(ClientSession... sessions) throws Exception
    {
-      crash(false, sessions);
+      crash(true, sessions);
    }
 }
