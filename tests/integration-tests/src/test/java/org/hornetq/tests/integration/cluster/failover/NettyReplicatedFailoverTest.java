@@ -39,9 +39,8 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
       createReplicatedConfigs();
    }
 
-
    @Override
-   protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   protected final void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
       if (sessions.length > 0)
       {
@@ -58,19 +57,8 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
    }
 
    @Override
-   protected void crash(ClientSession... sessions) throws Exception
+   protected final void crash(ClientSession... sessions) throws Exception
    {
-      if (sessions.length > 0)
-      {
-         for (ClientSession session : sessions)
-         {
-            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
-         }
-      }
-      else
-      {
-         waitForRemoteBackup(null, 5, true, backupServer.getServer());
-      }
-      super.crash(sessions);
+      crash(false, sessions);
    }
 }
