@@ -766,56 +766,45 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       public void close() throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       public Exception getLastException()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public MessageHandler getMessageHandler() throws HornetQException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public boolean isClosed()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
       public ClientMessage receive() throws HornetQException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public ClientMessage receive(final long timeout) throws HornetQException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public ClientMessage receiveImmediate() throws HornetQException
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void setMessageHandler(final MessageHandler handler) throws HornetQException
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void acknowledge(final ClientMessage message) throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       @Override
@@ -825,108 +814,96 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       public void cleanUp() throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       public void clear(boolean waitForOnMessage) throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       public void clearAtFailover()
       {
-         // TODO Auto-generated method stub
-
       }
 
       public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       public void flushAcks() throws HornetQException
       {
-         // TODO Auto-generated method stub
-
       }
 
       public int getBufferSize()
       {
-         // TODO Auto-generated method stub
+         
          return 0;
       }
 
       public int getClientWindowSize()
       {
-         // TODO Auto-generated method stub
+         
          return 0;
       }
 
       public SimpleString getFilterString()
       {
-         // TODO Auto-generated method stub
+         
          return null;
       }
 
       public long getID()
       {
-         // TODO Auto-generated method stub
+         
          return 0;
       }
 
       public SimpleString getQueueName()
       {
-         // TODO Auto-generated method stub
+         
          return null;
       }
 
       public void handleLargeMessage(final SessionReceiveLargeMessage largeMessageHeader) throws Exception
       {
-         // TODO Auto-generated method stub
+         
 
       }
 
       public void handleLargeMessageContinuation(final SessionReceiveContinuationMessage continuation) throws Exception
       {
-         // TODO Auto-generated method stub
+         
 
       }
 
       public void handleMessage(final ClientMessageInternal message) throws Exception
       {
-         // TODO Auto-generated method stub
+         
 
       }
 
       public boolean isBrowseOnly()
       {
-         // TODO Auto-generated method stub
+         
          return false;
       }
 
       public void start()
       {
-         // TODO Auto-generated method stub
+         
 
       }
 
       public void stop() throws HornetQException
       {
-         // TODO Auto-generated method stub
+         
 
       }
 
       public void stop(boolean waitForOnMessage) throws HornetQException
       {
-         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       public SessionQueueQueryResponseMessage getQueueInfo()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -935,7 +912,7 @@ public class LargeMessageBufferTest extends UnitTestCase
        */
       public ClientSessionInternal getSession()
       {
-         // TODO Auto-generated method stub
+         
          return null;
       }
 
