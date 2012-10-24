@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQUnBlockedException;
 import org.hornetq.api.core.client.ClientSession;
@@ -45,9 +47,6 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class TopologyClusterTestBase extends ClusterTestBase
 {
 
-    /**
-    *
-    */
    private static final class LatchListener implements ClusterTopologyListener
    {
       private final CountDownLatch upLatch;
@@ -67,7 +66,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       }
 
       @Override
-      public void nodeUP(TopologyMember topologyMember, boolean last)
+      public synchronized void nodeUP(TopologyMember topologyMember, boolean last)
       {
          final String nodeID = topologyMember.getNodeId();
 
@@ -78,7 +77,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
             }
          }
 
-      public void nodeDown(final long uniqueEventID, String nodeID)
+      public synchronized void nodeDown(final long uniqueEventID, String nodeID)
       {
          if (nodes.contains(nodeID))
          {
@@ -371,9 +370,9 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
             session = checkSessionOrReconnect(session, locator);
             fail();
          }
-         catch (Exception e)
+      catch (HornetQException expected)
          {
-         throw e;
+         assertEquals(HornetQExceptionType.NOT_CONNECTED, expected.getType());
          }
    }
 
@@ -425,9 +424,4 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
          stopServers(0);
       }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
