@@ -68,9 +68,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
    
    /**
-    * We need this purely for AS7 integration. Within AS7 the RA is loaded by JCA.
-    * properties can only be passed in String form. However if RA is configured 
-    * using jgroups stack, we need to pass a Channel object. As is impossible with
+    * We need this purely for AS7 integration.
+    * <p>
+    * Within AS7 the RA is loaded by JCA. properties can only be passed in String form. However if
+    * RA is configured using jgroups stack, we need to pass a Channel object. As is impossible with
     * JCA, we use a static Map to pass the object.
     */
    private static Map<String, JGroupsBroadcastGroupConfiguration> endpointFactories = null;
