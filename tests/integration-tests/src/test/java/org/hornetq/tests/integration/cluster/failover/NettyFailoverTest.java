@@ -20,7 +20,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.HornetQClient;
@@ -37,42 +36,25 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
  */
 public class NettyFailoverTest extends FailoverTest
 {
-
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
-      }
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-
-      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
+      return getNettyAcceptorTransportConfiguration(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
-      }
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-
-      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
+      return getNettyConnectorTransportConfiguration(live);
    }
 
    public void testFailoverWithHostAlias() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HOST_PROP_NAME, "127.0.0.1");
-      TransportConfiguration tc = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", params);
+      TransportConfiguration tc = createTransportConfiguration(true, false, params);
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithHA(tc);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithHA(tc));
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -94,29 +76,8 @@ public class NettyFailoverTest extends FailoverTest
 
       crash(session);
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session.createMessage(i % 2 == 0);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = consumer.receive(1000);
-
-         Assert.assertNotNull(message);
-
-         assertMessageBody(i, message);
-
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
-
-         message.acknowledge();
-      }
+      sendMessages(session, producer, numMessages);
+      receiveMessages(consumer, 0, numMessages, true);
 
       session.close();
 

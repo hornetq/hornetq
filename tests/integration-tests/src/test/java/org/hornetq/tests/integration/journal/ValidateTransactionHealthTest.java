@@ -193,7 +193,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   class Loader implements LoaderCallback
+   static class Loader implements LoaderCallback
    {
       int numberOfPreparedTransactions = 0;
 
