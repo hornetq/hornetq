@@ -13,6 +13,8 @@
 
 package org.hornetq.ra;
 
+import java.util.Arrays;
+
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
@@ -100,7 +102,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("readBytes(" + value + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("readBytes(" + Arrays.toString(value) + ", " + length + ")");
       }
 
       return ((BytesMessage)message).readBytes(value, length);
@@ -116,7 +118,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("readBytes(" + value + ")");
+         HornetQRALogger.LOGGER.trace("readBytes(" + Arrays.toString(value) + ")");
       }
 
       return ((BytesMessage)message).readBytes(value);
@@ -312,7 +314,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("writeBytes(" + Arrays.toString(value) + ", " + offset + ", " + length + ")");
       }
 
       ((BytesMessage)message).writeBytes(value, offset, length);
@@ -327,7 +329,7 @@ public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMess
    {
       if (HornetQRABytesMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("writeBytes(" + value + ")");
+         HornetQRALogger.LOGGER.trace("writeBytes(" + Arrays.toString(value) + ")");
       }
 
       ((BytesMessage)message).writeBytes(value);

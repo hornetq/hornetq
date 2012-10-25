@@ -13,6 +13,7 @@
 
 package org.hornetq.ra;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 
 import javax.jms.JMSException;
@@ -298,7 +299,8 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + value + ", " + offset + ", " + length + ")");
+         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + Arrays.toString(value) + ", " + offset + ", " +
+                  length + ")");
       }
 
       ((MapMessage)message).setBytes(name, value, offset, length);
@@ -314,7 +316,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
    {
       if (HornetQRAMapMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + value + ")");
+         HornetQRALogger.LOGGER.trace("setBytes(" + name + ", " + Arrays.toString(value) + ")");
       }
 
       ((MapMessage)message).setBytes(name, value);
