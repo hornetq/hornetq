@@ -77,22 +77,29 @@ public class SessionExpireMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionExpireMessage == false)
-      {
-         return false;
-      }
-
-      SessionExpireMessage r = (SessionExpireMessage)other;
-
-      return super.equals(other) && consumerID == r.consumerID && messageID == r.messageID;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + (int)(messageID ^ (messageID >>> 32));
+      return result;
    }
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionExpireMessage))
+         return false;
+      SessionExpireMessage other = (SessionExpireMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (messageID != other.messageID)
+         return false;
+      return true;
+   }
 }

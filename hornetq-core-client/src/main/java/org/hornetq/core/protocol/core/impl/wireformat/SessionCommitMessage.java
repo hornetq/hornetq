@@ -17,23 +17,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A SessionCommitMessage
- *
  * @author tim
- *
- *
  */
 public class SessionCommitMessage extends PacketImpl
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * @param type
@@ -43,17 +30,9 @@ public class SessionCommitMessage extends PacketImpl
       super(SESS_COMMIT);
    }
 
+   @Override
    public boolean isAsyncExec()
    {
       return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

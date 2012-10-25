@@ -21,32 +21,15 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class NullResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public NullResponseMessage()
    {
       super(NULL_RESPONSE);
    }
 
-   // Public --------------------------------------------------------
-
    @Override
    public boolean isResponse()
    {
       return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

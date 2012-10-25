@@ -24,15 +24,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionDeleteQueueMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private SimpleString queueName;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionDeleteQueueMessage(final SimpleString queueName)
    {
@@ -45,8 +37,6 @@ public class SessionDeleteQueueMessage extends PacketImpl
    {
       super(DELETE_QUEUE);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public String toString()
@@ -75,23 +65,31 @@ public class SessionDeleteQueueMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionDeleteQueueMessage == false)
-      {
-         return false;
-      }
-
-      SessionDeleteQueueMessage r = (SessionDeleteQueueMessage)other;
-
-      return super.equals(other) && r.queueName.equals(queueName);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionDeleteQueueMessage))
+         return false;
+      SessionDeleteQueueMessage other = (SessionDeleteQueueMessage)obj;
+      if (queueName == null)
+      {
+         if (other.queueName != null)
+            return false;
+      }
+      else if (!queueName.equals(other.queueName))
+         return false;
+      return true;
+   }
 }

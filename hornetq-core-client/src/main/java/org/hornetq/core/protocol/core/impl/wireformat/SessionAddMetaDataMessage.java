@@ -72,4 +72,41 @@ public class SessionAddMetaDataMessage extends PacketImpl
       return data;
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((data == null) ? 0 : data.hashCode());
+      result = prime * result + ((key == null) ? 0 : key.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionAddMetaDataMessage))
+         return false;
+      SessionAddMetaDataMessage other = (SessionAddMetaDataMessage)obj;
+      if (data == null)
+      {
+         if (other.data != null)
+            return false;
+      }
+      else if (!data.equals(other.data))
+         return false;
+      if (key == null)
+      {
+         if (other.key != null)
+            return false;
+      }
+      else if (!key.equals(other.key))
+         return false;
+      return true;
+   }
+
 }

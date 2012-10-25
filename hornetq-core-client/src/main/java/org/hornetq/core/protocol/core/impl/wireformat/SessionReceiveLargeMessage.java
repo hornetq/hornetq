@@ -26,7 +26,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionReceiveLargeMessage extends PacketImpl
 {
-   private MessageInternal message;
+   private final MessageInternal message;
 
    /** Since we receive the message before the entire message was received, */
    private long largeMessageSize;
@@ -97,6 +97,44 @@ public class SessionReceiveLargeMessage extends PacketImpl
       deliveryCount = buffer.readInt();
       largeMessageSize = buffer.readLong();
       message.decodeHeadersAndProperties(buffer);
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + deliveryCount;
+      result = prime * result + (int)(largeMessageSize ^ (largeMessageSize >>> 32));
+      result = prime * result + ((message == null) ? 0 : message.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionReceiveLargeMessage))
+         return false;
+      SessionReceiveLargeMessage other = (SessionReceiveLargeMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (deliveryCount != other.deliveryCount)
+         return false;
+      if (largeMessageSize != other.largeMessageSize)
+         return false;
+      if (message == null)
+      {
+         if (other.message != null)
+            return false;
+      }
+      else if (!message.equals(other.message))
+         return false;
+      return true;
    }
 
 }

@@ -58,16 +58,31 @@ public class SessionQueueQueryMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionQueueQueryMessage == false)
-      {
-         return false;
-      }
-
-      SessionQueueQueryMessage r = (SessionQueueQueryMessage)other;
-
-      return super.equals(other) && r.queueName.equals(queueName);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      return result;
    }
 
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionQueueQueryMessage))
+         return false;
+      SessionQueueQueryMessage other = (SessionQueueQueryMessage)obj;
+      if (queueName == null)
+      {
+         if (other.queueName != null)
+            return false;
+      }
+      else if (!queueName.equals(other.queueName))
+         return false;
+      return true;
+   }
 }

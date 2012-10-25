@@ -18,12 +18,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A RollbackMessage
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created Feb 18, 2009 2:11:17 PM
- *
- *
  */
 public class RollbackMessage extends PacketImpl
 {
@@ -40,9 +35,6 @@ public class RollbackMessage extends PacketImpl
       this.considerLastMessageAsDelivered = considerLastMessageAsDelivered;
    }
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private boolean considerLastMessageAsDelivered;
 
@@ -74,23 +66,33 @@ public class RollbackMessage extends PacketImpl
       considerLastMessageAsDelivered = buffer.readBoolean();
    }
 
+   @Override
    public boolean isAsyncExec()
    {
       return true;
    }
 
-   // Static --------------------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (considerLastMessageAsDelivered ? 1231 : 1237);
+      return result;
+   }
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof RollbackMessage))
+         return false;
+      RollbackMessage other = (RollbackMessage)obj;
+      if (considerLastMessageAsDelivered != other.considerLastMessageAsDelivered)
+         return false;
+      return true;
+   }
 }
