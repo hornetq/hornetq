@@ -2134,13 +2134,13 @@ public class HornetQServerImpl implements HornetQServer
    {
       boolean failedAlready = false;
 
-      public synchronized void onIOException(HornetQExceptionType code, String message, SequentialFile file)
+      public synchronized void onIOException(Exception cause, String message, SequentialFile file)
       {
          if (!failedAlready)
          {
             failedAlready = true;
 
-            HornetQServerLogger.LOGGER.ioErrorShutdownServer(code, message);
+            HornetQServerLogger.LOGGER.ioCriticalIOError(message, file.toString(), cause);
 
             new Thread()
             {

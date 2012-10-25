@@ -40,4 +40,9 @@ public final class HornetQIOErrorException extends HornetQException
    {
       super(IO_ERROR, msg);
    }
+
+   public HornetQIOErrorException(String msg, Throwable cause)
+   {
+      super(IO_ERROR, msg, cause);
+   }
 }

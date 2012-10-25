@@ -24,5 +24,5 @@ import org.hornetq.api.core.HornetQExceptionType;
  */
 public interface IOExceptionListener
 {
-   void onIOException(HornetQExceptionType code, String message);
+   void onIOException(Exception exception, String message);
 }

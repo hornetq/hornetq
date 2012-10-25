@@ -579,14 +579,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
    }
 
    /**
+    * This is called by the native layer
     * @param errorCode
     * @param errorMessage
     */
    private void fireExceptionListener(final int errorCode, final String errorMessage)
    {
+      HornetQJournalLogger.LOGGER.ioError(errorCode, errorMessage);
       if (ioExceptionListener != null)
       {
-         ioExceptionListener.onIOException(HornetQExceptionType.getType(errorCode), errorMessage);
+         ioExceptionListener.onIOException(HornetQExceptionType.getType(errorCode).createException(errorMessage), errorMessage);
       }
    }
 
