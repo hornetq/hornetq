@@ -15,6 +15,7 @@ package org.hornetq.core.server.cluster.impl;
 
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.utils.Pair;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -127,6 +128,11 @@ public class Redistributor implements Consumer
       if (!active)
       {
          return HandleStatus.BUSY;
+      }
+      //we shouldn't redistribute with message groups return NO_MATCH so other messages can be delivered
+      else if(reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID) != null)
+      {
+         return HandleStatus.NO_MATCH;
       }
 
       final Transaction tx = new TransactionImpl(storageManager);
