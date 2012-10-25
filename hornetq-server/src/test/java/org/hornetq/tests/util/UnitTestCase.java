@@ -51,7 +51,6 @@ import javax.transaction.xa.Xid;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 
-import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -91,9 +90,9 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -102,6 +101,7 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -1169,8 +1169,14 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
          for (Thread aliveThread : postThreads.keySet())
          {
-            if (!aliveThread.getName().contains("SunPKCS11") && !aliveThread.getName().contains("Attach Listener") &&
-                !previousThreads.containsKey(aliveThread))
+            final String name = aliveThread.getName();
+            final boolean notSunPKCS11 = !name.contains("SunPKCS11");
+            final boolean notAttachListener = !name.contains("Attach Listener");
+            ThreadGroup group = aliveThread.getThreadGroup();
+            final boolean isSystemThread = group != null && "system".equals(group.getName());
+            // 'process reaper' is a normal JVM thread that will run when we call Runtime.exec()
+            final boolean notProcessReaper = isSystemThread && !name.equals("process reaper");
+            if (notSunPKCS11 && notAttachListener && notProcessReaper && !previousThreads.containsKey(aliveThread))
             {
                failedThread = true;
                buffer.append("=============================================================================\n");

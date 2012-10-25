@@ -19,7 +19,6 @@ import java.net.URL;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -55,7 +54,7 @@ public class NettySecurityClientTest extends ServiceTestBase
 
       ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
+      config.getAcceptorConfigurations().add(getNettyAcceptorTransportConfiguration(true));
       messagingService = createServer(false, config);
       messagingService.start();
       waitForServer(messagingService);
@@ -113,7 +112,4 @@ public class NettySecurityClientTest extends ServiceTestBase
 
       Assert.assertEquals("client VM did not exit cleanly", 0, p.exitValue());
    }
-
-   // Inner classes -------------------------------------------------
-
 }
