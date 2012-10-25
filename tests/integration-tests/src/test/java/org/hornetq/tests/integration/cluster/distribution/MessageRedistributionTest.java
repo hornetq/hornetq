@@ -20,16 +20,19 @@ import java.util.Set;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.cluster.impl.Redistributor;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -67,6 +70,106 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       return false;
    }
+   //https://issues.jboss.org/browse/HORNETQ-1061
+   public void testRedistributionWithMessageGroups() throws Exception
+   {
+      setupCluster(false);
+
+      MessageRedistributionTest.log.info("Doing test");
+
+
+      getServer(0).getConfiguration().setGroupingHandlerConfiguration(
+            new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.LOCAL, new SimpleString("queues")));
+      getServer(1).getConfiguration().setGroupingHandlerConfiguration(
+            new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.REMOTE, new SimpleString("queues")));
+
+      startServers(0, 1);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+
+      this.
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(1, 1, "queue0", null);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 0, false);
+
+      //send some grouped messages before we add the consumer to node 0 so we guarantee its pinned to node 1
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("grp1"));
+      addConsumer(0, 0, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+      //now send some non grouped messages
+      send(0, "queues.testaddress", 10, false, null);
+
+      //consume half of the grouped messages from node 1
+      for(int i = 0; i < 5; i++)
+      {
+         ClientMessage message = getConsumer(1).receive(1000);
+         assertNotNull(message);
+         message.acknowledge();
+         assertNotNull(message.getSimpleStringProperty(Message.HDR_GROUP_ID));
+      }
+
+      //now consume the non grouped messages from node 1 where they are pinned
+      for(int i = 0; i < 5; i++)
+      {
+         ClientMessage message = getConsumer(0).receive(5000);
+         assertNotNull("" + i, message);
+         message.acknowledge();
+         assertNull(message.getSimpleStringProperty(Message.HDR_GROUP_ID));
+      }
+
+      ClientMessage clientMessage = getConsumer(0).receiveImmediate();
+      assertNull(clientMessage);
+
+      // i know the last 5 messages consumed won't be acked yet so i wait for 15
+      waitForMessages(1, "queues.testaddress", 15);
+
+      //now removing it will start redistribution but only for non grouped messages
+      removeConsumer(1);
+
+      //consume the non grouped messages
+      for(int i = 0; i < 5; i++)
+      {
+         ClientMessage message = getConsumer(0).receive(5000);
+         if(message == null)
+         {
+            System.out.println();
+         }
+         assertNotNull("" + i, message);
+         message.acknowledge();
+         assertNull(message.getSimpleStringProperty(Message.HDR_GROUP_ID));
+      }
+
+      clientMessage = getConsumer(0).receiveImmediate();
+      assertNull(clientMessage);
+
+      removeConsumer(0);
+
+      addConsumer(1, 1, "queue0", null);
+
+      //now we see the grouped messages are still on the same node
+      for(int i = 0; i < 5; i++)
+      {
+         ClientMessage message = getConsumer(1).receive(1000);
+         assertNotNull(message);
+         message.acknowledge();
+         assertNotNull(message.getSimpleStringProperty(Message.HDR_GROUP_ID));
+      }
+      MessageRedistributionTest.log.info("Test done");
+   }
+
    //https://issues.jboss.org/browse/HORNETQ-1057
    public void testRedistributionStopsWhenConsumerAdded() throws Exception
    {
