@@ -16,7 +16,6 @@ package org.hornetq.core.paging.cursor.impl;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -212,7 +211,7 @@ class PageSubscriptionImpl implements PageSubscription
       info.setCompleteInfo(position);
       synchronized (consumedPages)
       {
-         consumedPages.put(new Long(position.getPageNr()), info);
+         consumedPages.put(Long.valueOf(position.getPageNr()), info);
       }
    }
 
@@ -433,7 +432,7 @@ class PageSubscriptionImpl implements PageSubscription
          retPos = retPos.nextPage();
          synchronized (consumedPages)
          {
-            PageCursorInfo pageInfo = consumedPages.get((Long)retPos.getPageNr());
+            PageCursorInfo pageInfo = consumedPages.get(retPos.getPageNr());
             // any deleted or complete page will be ignored on the moveNextPage, we will just keep going
             if (pageInfo == null || (!pageInfo.isPendingDelete() && pageInfo.getCompleteInfo() == null))
             {

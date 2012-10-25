@@ -13,6 +13,8 @@
 
 package org.hornetq.core.protocol.core.impl.wireformat;
 
+import java.util.Arrays;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.utils.DataConstants;
@@ -29,21 +31,12 @@ import org.hornetq.utils.DataConstants;
 public abstract class SessionContinuationMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
    public static final int SESSION_CONTINUATION_BASE_SIZE = PACKET_HEADERS_SIZE + DataConstants.SIZE_INT +
                                                             DataConstants.SIZE_BOOLEAN;
-
-   // Attributes ----------------------------------------------------
 
    protected byte[] body;
 
    protected boolean continues;
-
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionContinuationMessage(final byte type, final byte[] body, final boolean continues)
    {
@@ -99,12 +92,31 @@ public abstract class SessionContinuationMessage extends PacketImpl
       continues = buffer.readBoolean();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + Arrays.hashCode(body);
+      result = prime * result + (continues ? 1231 : 1237);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionContinuationMessage))
+         return false;
+      SessionContinuationMessage other = (SessionContinuationMessage)obj;
+      if (!Arrays.equals(body, other.body))
+         return false;
+      if (continues != other.continues)
+         return false;
+      return true;
+   }
 
 }

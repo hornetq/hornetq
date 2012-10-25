@@ -155,22 +155,64 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionQueueQueryResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionQueueQueryResponseMessage r = (SessionQueueQueryResponseMessage)other;
-
-      return super.equals(other) && exists == r.exists &&
-             durable == r.durable &&
-             consumerCount == r.consumerCount &&
-             messageCount == r.messageCount &&
-             filterString == null ? r.filterString == null
-                                 : filterString.equals(r.filterString) && address == null ? r.address == null
-                                                                                         : address.equals(r.address);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + consumerCount;
+      result = prime * result + (durable ? 1231 : 1237);
+      result = prime * result + (exists ? 1231 : 1237);
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + (int)(messageCount ^ (messageCount >>> 32));
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + (temporary ? 1231 : 1237);
+      return result;
    }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionQueueQueryResponseMessage))
+         return false;
+      SessionQueueQueryResponseMessage other = (SessionQueueQueryResponseMessage)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (consumerCount != other.consumerCount)
+         return false;
+      if (durable != other.durable)
+         return false;
+      if (exists != other.exists)
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (messageCount != other.messageCount)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (temporary != other.temporary)
+         return false;
+      return true;
+   }
+
 
 }

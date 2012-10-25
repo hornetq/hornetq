@@ -39,6 +39,7 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
+import org.jboss.netty.util.CharsetUtil;
 
 /**
  * A simple JMS example showing how to administer un-finished transactions.
@@ -51,7 +52,7 @@ public class XAHeuristicExample extends HornetQExample
 
    private final ArrayList<String> receiveHolder = new ArrayList<String>();
 
-   private final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
+   private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
 
    public static void main(final String[] args)
    {
@@ -101,7 +102,8 @@ public class XAHeuristicExample extends HornetQExample
          TextMessage worldMessage = session.createTextMessage("world");
 
          // Step 12. create a transaction
-         Xid xid1 = new DummyXid("xa-example1".getBytes(), 1, UUIDGenerator.getInstance()
+         Xid xid1 =
+                  new DummyXid("xa-example1".getBytes(CharsetUtil.ISO_8859_1), 1, UUIDGenerator.getInstance()
                                                                            .generateStringUUID()
                                                                            .getBytes());
 

@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -100,12 +99,28 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
       consumerID = buffer.readLong();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionReceiveContinuationMessage))
+         return false;
+      SessionReceiveContinuationMessage other = (SessionReceiveContinuationMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      return true;
+   }
 
 }

@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
@@ -26,15 +25,8 @@ import org.hornetq.utils.DataConstants;
  */
 public class SessionSendMessage extends MessagePacket
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private boolean requiresResponse;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionSendMessage(final MessageInternal message, final boolean requiresResponse)
    {
@@ -104,7 +96,28 @@ public class SessionSendMessage extends MessagePacket
 
    }
 
-   // Private -------------------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (requiresResponse ? 1231 : 1237);
+      return result;
+   }
 
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionSendMessage))
+         return false;
+      SessionSendMessage other = (SessionSendMessage)obj;
+      if (requiresResponse != other.requiresResponse)
+         return false;
+      return true;
+   }
+
 }
