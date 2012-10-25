@@ -53,11 +53,11 @@ public class FailoverListenerTest extends FailoverTestBase
    }
 
    /**
-    * Test if two servers is running and one of them is failing that we
-    * trigger the expected events for {@link FailoverEventListener}
+    * Test if two servers are running and one of them is failing, that we trigger the expected
+    * events for {@link FailoverEventListener}
     * @throws Exception
     */
-   public void testFailoverListerCall() throws Exception
+   public void testFailoverListenerCall() throws Exception
    {
       createSessionFactory(2);
 
@@ -277,7 +277,7 @@ public class FailoverListenerTest extends FailoverTestBase
 
    public class SessionFactoryFailoverListener implements FailoverEventListener {
 
-      private ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
+      private final ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
 
       public ArrayList<FailoverEventType> getFailoverEventType()
       {

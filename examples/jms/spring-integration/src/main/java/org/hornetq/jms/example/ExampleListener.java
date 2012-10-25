@@ -11,7 +11,7 @@ import javax.jms.TextMessage;
  */
 public class ExampleListener implements MessageListener
 {
-   public static String lastMessage = null;
+   protected static String lastMessage = null;
 
    public void onMessage(Message message)
    {

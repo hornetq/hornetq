@@ -79,7 +79,7 @@ public class ManagementNotificationExample extends HornetQExample
                   while (propertyNames.hasMoreElements())
                   {
                      String propertyName = (String)propertyNames.nextElement();
-                     System.out.format("  %s: %s\n", propertyName, notif.getObjectProperty(propertyName));
+                     System.out.format("  %s: %s%n", propertyName, notif.getObjectProperty(propertyName));
                   }
                }
                catch (JMSException e)
