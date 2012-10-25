@@ -26,12 +26,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionSendLargeMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
 
-   // Attributes ----------------------------------------------------
 
    /** Used only if largeMessage */
-   private MessageInternal largeMessage;
+   private final MessageInternal largeMessage;
 
    // Static --------------------------------------------------------
 
@@ -63,11 +61,33 @@ public class SessionSendLargeMessage extends PacketImpl
       largeMessage.decodeHeadersAndProperties(buffer);
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((largeMessage == null) ? 0 : largeMessage.hashCode());
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionSendLargeMessage))
+         return false;
+      SessionSendLargeMessage other = (SessionSendLargeMessage)obj;
+      if (largeMessage == null)
+      {
+         if (other.largeMessage != null)
+            return false;
+      }
+      else if (!largeMessage.equals(other.largeMessage))
+         return false;
+      return true;
+   }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

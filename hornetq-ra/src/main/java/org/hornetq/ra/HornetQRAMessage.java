@@ -13,6 +13,7 @@
 
 package org.hornetq.ra;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 
 import javax.jms.Destination;
@@ -540,7 +541,7 @@ public class HornetQRAMessage implements Message
    {
       if (HornetQRAMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("setJMSCorrelationIDAsBytes(" + correlationID + ")");
+         HornetQRALogger.LOGGER.trace("setJMSCorrelationIDAsBytes(" + Arrays.toString(correlationID) + ")");
       }
 
       message.setJMSCorrelationIDAsBytes(correlationID);

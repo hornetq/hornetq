@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A SessionSendContinuationMessage
@@ -29,9 +28,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class SessionSendContinuationMessage extends SessionContinuationMessage
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private boolean requiresResponse;
 
@@ -121,12 +117,41 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
       requiresResponse = buffer.readBoolean();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((message == null) ? 0 : message.hashCode());
+      result = prime * result + (int)(messageBodySize ^ (messageBodySize >>> 32));
+      result = prime * result + (requiresResponse ? 1231 : 1237);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionSendContinuationMessage))
+         return false;
+      SessionSendContinuationMessage other = (SessionSendContinuationMessage)obj;
+      if (message == null)
+      {
+         if (other.message != null)
+            return false;
+      }
+      else if (!message.equals(other.message))
+         return false;
+      if (messageBodySize != other.messageBodySize)
+         return false;
+      if (requiresResponse != other.requiresResponse)
+         return false;
+      return true;
+   }
 
-   // Private -------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
 
 }

@@ -125,12 +125,11 @@ public class ClientSideFailoverListerExample extends HornetQExample
 
    }
 
-   private class FailoverListenerImpl implements FailoverEventListener
+   private static class FailoverListenerImpl implements FailoverEventListener
    {
-
-   public void failoverEvent(FailoverEventType eventType) {
-      System.out.println("Failover event triggered :"+ eventType.toString());
-   }
-
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         System.out.println("Failover event triggered :" + eventType.toString());
+      }
    }
 }

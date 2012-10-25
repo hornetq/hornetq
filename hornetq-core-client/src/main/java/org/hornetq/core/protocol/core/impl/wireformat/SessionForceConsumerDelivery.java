@@ -76,15 +76,30 @@ public class SessionForceConsumerDelivery extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionForceConsumerDelivery == false)
-      {
-         return false;
-      }
-
-      SessionForceConsumerDelivery r = (SessionForceConsumerDelivery)other;
-
-      return super.equals(other) && consumerID == r.consumerID && sequence == r.sequence;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + (int)(sequence ^ (sequence >>> 32));
+      return result;
    }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionForceConsumerDelivery))
+         return false;
+      SessionForceConsumerDelivery other = (SessionForceConsumerDelivery)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (sequence != other.sequence)
+         return false;
+      return true;
+   }
+
 }

@@ -25,15 +25,8 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class PacketsConfirmedMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private int commandID;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public PacketsConfirmedMessage(final int commandID)
    {

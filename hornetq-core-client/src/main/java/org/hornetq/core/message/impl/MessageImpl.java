@@ -55,7 +55,6 @@ public abstract class MessageImpl implements MessageInternal
 
    public static final int BODY_OFFSET = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
 
-
    protected long messageID;
 
    protected SimpleString address;

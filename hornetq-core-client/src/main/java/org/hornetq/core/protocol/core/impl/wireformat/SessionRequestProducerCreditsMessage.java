@@ -23,17 +23,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SessionRequestProducerCreditsMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private int credits;
 
    private SimpleString address;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionRequestProducerCreditsMessage(final int credits, final SimpleString address)
    {
@@ -80,11 +72,36 @@ public class SessionRequestProducerCreditsMessage extends PacketImpl
       address = buffer.readSimpleString();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + credits;
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionRequestProducerCreditsMessage))
+         return false;
+      SessionRequestProducerCreditsMessage other = (SessionRequestProducerCreditsMessage)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (credits != other.credits)
+         return false;
+      return true;
+   }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

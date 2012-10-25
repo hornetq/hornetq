@@ -291,8 +291,8 @@ public class PrintPages // NO_UCD (unused code)
             CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
             encoding.decode(buff);
 
-            Long queueID = new Long(encoding.queueID);
-            Long pageNR = new Long(encoding.position.getPageNr());
+            Long queueID = Long.valueOf(encoding.queueID);
+            Long pageNR = Long.valueOf(encoding.position.getPageNr());
 
             if (!cursorInfo.getCompletePages(queueID).add(pageNR))
             {

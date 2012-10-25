@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.DataConstants;
 
@@ -58,10 +57,6 @@ public class SessionReceiveMessage extends MessagePacket
    {
       return deliveryCount;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    public HornetQBuffer encode(final RemotingConnection connection)
@@ -110,7 +105,31 @@ public class SessionReceiveMessage extends MessagePacket
       buffer.setIndex(PACKET_HEADERS_SIZE + DataConstants.SIZE_INT, message.getEndOfBodyPosition());
    }
 
-   // Private -------------------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(consumerID ^ (consumerID >>> 32));
+      result = prime * result + deliveryCount;
+      return result;
+   }
 
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionReceiveMessage))
+         return false;
+      SessionReceiveMessage other = (SessionReceiveMessage)obj;
+      if (consumerID != other.consumerID)
+         return false;
+      if (deliveryCount != other.deliveryCount)
+         return false;
+      return true;
+   }
+
 }

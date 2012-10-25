@@ -156,7 +156,7 @@ public class XAwithJTAExample extends HornetQExample
       }
    }
 
-   public class DummyXAResource implements XAResource
+   public static class DummyXAResource implements XAResource
    {
 
       public DummyXAResource()
