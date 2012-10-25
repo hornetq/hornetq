@@ -1588,24 +1588,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setSetupInterval(interval);
    }
 
-   public void setConnectionPoolName(String name)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQRALogger.LOGGER.trace("setConnectionPoolName(" + name + ")");
-      }
-      raProperties.setConnectionPoolName(name);
-   }
-
-   public String getConnectionPoolName()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQRALogger.LOGGER.trace("getConnectionPoolName()");
-      }
-      return raProperties.getConnectionPoolName();
-   }
-
    /**
     * Indicates whether some other object is "equal to" this one.
     *
