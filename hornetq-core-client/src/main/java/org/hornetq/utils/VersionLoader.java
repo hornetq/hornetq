@@ -93,8 +93,9 @@ public class VersionLoader
       StringBuffer classpath = new StringBuffer();
       ClassLoader applicationClassLoader = VersionImpl.class.getClassLoader();
       URL[] urls = ((URLClassLoader)applicationClassLoader).getURLs();
-       for(int i=0; i < urls.length; i++) {
-           classpath.append(urls[i].getFile()).append("\r\n");
+       for (URL url : urls)
+      {
+           classpath.append(url.getFile()).append("\r\n");
        }
 
        return classpath.toString();
@@ -103,7 +104,7 @@ public class VersionLoader
    private static Version load()
    {
       Properties versionProps = new Properties();
-      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
+      final InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
       try
       {
          if (in == null)
@@ -143,7 +144,8 @@ public class VersionLoader
       {
          try
          {
-            in.close();
+            if (in != null)
+               in.close();
          }
          catch (Throwable ignored)
          {

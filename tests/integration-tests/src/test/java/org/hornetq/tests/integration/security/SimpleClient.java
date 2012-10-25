@@ -30,7 +30,7 @@ import org.hornetq.tests.util.RandomUtil;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-class SimpleClient
+final class SimpleClient
 {
 
    public static void main(final String[] args) throws Exception
@@ -47,7 +47,9 @@ class SimpleClient
          String messageText = RandomUtil.randomString();
 
          ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorFactoryClassName));
-         ClientSessionFactory sf = locator.createSessionFactory();
+         try
+         {
+            ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(queueName, queueName, null, false);
@@ -80,8 +82,13 @@ class SimpleClient
          consumer.close();
          session.deleteQueue(queueName);
          session.close();
-
+            sf.close();
          System.out.println("OK");
+         }
+         finally
+         {
+            locator.close();
+         }
       }
       catch (Throwable t)
       {
@@ -98,19 +105,4 @@ class SimpleClient
          System.exit(1);
       }
    }
-
-   // Attributes -----------------------------------------------------------------------------------
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   // Public ---------------------------------------------------------------------------------------
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
-
 }
