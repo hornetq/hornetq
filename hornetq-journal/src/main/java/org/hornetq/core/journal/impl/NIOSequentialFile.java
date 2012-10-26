@@ -23,6 +23,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -103,7 +104,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
       catch (IOException e)
       {
-         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
          throw e;
       }
 
@@ -207,7 +208,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
             callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getLocalizedMessage());
          }
 
-         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
 
          throw e;
       }
@@ -319,7 +320,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          }
          catch (IOException e)
          {
-            factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
+            factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
          }
       }
       else
@@ -340,7 +341,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
                   catch (IOException e)
                   {
                      HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
-                     factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), NIOSequentialFile.this);
+                     factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), NIOSequentialFile.this);
                      callback.onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
                   }
                   catch (Throwable e)

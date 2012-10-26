@@ -193,7 +193,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       }
       catch (HornetQException e)
       {
-         factory.onIOError(HornetQExceptionType.IO_ERROR, e.getMessage(), this);
+         factory.onIOError(e, e.getMessage(), this);
          throw e;
       }
 
@@ -262,7 +262,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    /* (non-Javadoc)
     * @see org.hornetq.core.asyncio.IOExceptionListener#onException(int, java.lang.String)
     */
-   public void onIOException(HornetQExceptionType code, String message)
+   public void onIOException(Exception code, String message)
    {
       factory.onIOError(code, message, this);
    }

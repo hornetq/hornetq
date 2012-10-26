@@ -276,4 +276,8 @@ public interface HornetQJournalLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 144006, value = "Failed to performance blast", format = Message.Format.MESSAGE_FORMAT)
    void failedToPerfBlast(@Cause Throwable e);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 144007, value = "IOError code {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
+   void ioError(final int errorCode, final String errorMessage);
 }

@@ -251,6 +251,11 @@ public class JournalStorageManager implements StorageManager
    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings =
       new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
+   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
+   {
+      this(config, executorFactory, null);
+   }
+
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
                                 final IOCriticalErrorListener criticalErrorListener)
    {
@@ -443,7 +448,10 @@ public class JournalStorageManager implements StorageManager
          storageManagerLock.writeLock().lock();
          try
          {
-            replicator.sendSynchronizationDone(nodeID);
+            if (replicator != null)
+            {
+               replicator.sendSynchronizationDone(nodeID);
+            }
             // XXX HORNETQ-720 SEND a compare journals message?
          }
          finally

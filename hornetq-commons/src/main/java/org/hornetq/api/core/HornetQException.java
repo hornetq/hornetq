@@ -60,12 +60,6 @@ public class HornetQException extends Exception
       this.type = type;
    }
 
-   public HornetQException(HornetQExceptionType type, String message, Exception e)
-   {
-      super(message, e);
-      this.type = type;
-   }
-
    public HornetQException(HornetQExceptionType type, String message, Throwable t)
    {
       super(message, t);

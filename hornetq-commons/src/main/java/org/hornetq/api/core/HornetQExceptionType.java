@@ -13,7 +13,7 @@ public enum HornetQExceptionType
    INTERNAL_ERROR(000)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQInternalErrorException(msg);
       }
@@ -21,7 +21,7 @@ public enum HornetQExceptionType
    UNSUPPORTED_PACKET(001)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQUnsupportedPacketException(msg);
       }
@@ -29,7 +29,7 @@ public enum HornetQExceptionType
    NOT_CONNECTED(002)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQNotConnectedException(msg);
       }
@@ -37,7 +37,7 @@ public enum HornetQExceptionType
    CONNECTION_TIMEDOUT(003)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQConnectionTimedOutException(msg);
       }
@@ -45,7 +45,7 @@ public enum HornetQExceptionType
    DISCONNECTED(004)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQDisconnectedException(msg);
       }
@@ -53,7 +53,7 @@ public enum HornetQExceptionType
    UNBLOCKED(005)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQUnBlockedException(msg);
       }
@@ -61,7 +61,7 @@ public enum HornetQExceptionType
    IO_ERROR(006)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQIOErrorException(msg);
       }
@@ -69,7 +69,7 @@ public enum HornetQExceptionType
    QUEUE_DOES_NOT_EXIST(100)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQNonExistentQueueException(msg);
       }
@@ -77,7 +77,7 @@ public enum HornetQExceptionType
    QUEUE_EXISTS(101)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQQueueExistsException(msg);
       }
@@ -85,7 +85,7 @@ public enum HornetQExceptionType
    OBJECT_CLOSED(102)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQObjectClosedException(msg);
       }
@@ -93,7 +93,7 @@ public enum HornetQExceptionType
    INVALID_FILTER_EXPRESSION(103)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQInvalidFilterExpressionException(msg);
       }
@@ -101,7 +101,7 @@ public enum HornetQExceptionType
    ILLEGAL_STATE(104)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQIllegalStateException(msg);
       }
@@ -109,7 +109,7 @@ public enum HornetQExceptionType
    SECURITY_EXCEPTION(105)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQSecurityException(msg);
       }
@@ -117,7 +117,7 @@ public enum HornetQExceptionType
    ADDRESS_EXISTS(107)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQAddressExistsException(msg);
       }
@@ -125,7 +125,7 @@ public enum HornetQExceptionType
    INCOMPATIBLE_CLIENT_SERVER_VERSIONS(108)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQIncompatibleClientServerException(msg);
       }
@@ -133,7 +133,7 @@ public enum HornetQExceptionType
    LARGE_MESSAGE_ERROR_BODY(110)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQLargeMessageException(msg);
       }
@@ -141,7 +141,7 @@ public enum HornetQExceptionType
    TRANSACTION_ROLLED_BACK(111)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQTransactionRolledBackException(msg);
       }
@@ -149,7 +149,7 @@ public enum HornetQExceptionType
    SESSION_CREATION_REJECTED(112)
    {
          @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQSessionCreationException(msg);
       }
@@ -157,7 +157,7 @@ public enum HornetQExceptionType
    DUPLICATE_ID_REJECTED(113)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQDuplicateIdException(msg);
       }
@@ -165,7 +165,7 @@ public enum HornetQExceptionType
    DUPLICATE_METADATA(114)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQDuplicateMetaDataException(msg);
       }
@@ -173,7 +173,7 @@ public enum HornetQExceptionType
    TRANSACTION_OUTCOME_UNKNOWN(115)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQTransactionOutcomeUnknownException(msg);
       }
@@ -181,7 +181,7 @@ public enum HornetQExceptionType
    ALREADY_REPLICATING(116)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQAlreadyReplicatingException(msg);
       }
@@ -189,99 +189,22 @@ public enum HornetQExceptionType
    INTERCEPTOR_REJECTED_PACKET(117)
    {
       @Override
-      HornetQException createException(String msg)
+      public HornetQException createException(String msg)
       {
          return new HornetQInterceptorRejectedPacketException(msg);
       }
    },
-   GENERIC_EXCEPTION(999)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return new HornetQException(msg);
-      }
-   },
-   NATIVE_ERROR_INTERNAL(200)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_INVALID_BUFFER(201)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_NOT_ALIGNED(202)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_CANT_INITIALIZE_AIO(203)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return new HornetQNativeIOError(msg);
-      }
-   },
-   NATIVE_ERROR_CANT_RELEASE_AIO(204)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_CANT_OPEN_CLOSE_FILE(205)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_CANT_ALLOCATE_QUEUE(206)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_PREALLOCATE_FILE(208)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   NATIVE_ERROR_ALLOCATE_MEMORY(209)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-         return null;
-      }
-   },
-   ADDRESS_FULL(210)
-   {
-      @Override
-      HornetQException createException(String msg)
-      {
-          return null;
-      }
-   };
+   GENERIC_EXCEPTION(999),
+   NATIVE_ERROR_INTERNAL(200),
+   NATIVE_ERROR_INVALID_BUFFER(201),
+   NATIVE_ERROR_NOT_ALIGNED(202),
+   NATIVE_ERROR_CANT_INITIALIZE_AIO(203),
+   NATIVE_ERROR_CANT_RELEASE_AIO(204),
+   NATIVE_ERROR_CANT_OPEN_CLOSE_FILE(205),
+   NATIVE_ERROR_CANT_ALLOCATE_QUEUE(206),
+   NATIVE_ERROR_PREALLOCATE_FILE(208),
+   NATIVE_ERROR_ALLOCATE_MEMORY(209),
+   ADDRESS_FULL(210);
 
    private final static Map<Integer, HornetQExceptionType> TYPE_MAP;
    static
@@ -306,7 +229,10 @@ public enum HornetQExceptionType
       return code;
    }
 
-   abstract HornetQException createException(String msg);
+   public HornetQException createException(String msg)
+   {
+      return new HornetQException(msg + ", code:" + this);
+   }
 
    public static HornetQException createException(int code, String msg)
    {

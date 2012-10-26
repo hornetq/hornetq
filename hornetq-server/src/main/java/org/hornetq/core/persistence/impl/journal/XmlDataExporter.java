@@ -145,14 +145,7 @@ public final class XmlDataExporter
          }
       };
 
-      storageManager = new JournalStorageManager(config, executorFactory, new IOCriticalErrorListener()
-      {
-         @Override
-         public void onIOException(HornetQExceptionType code, String message, SequentialFile file)
-         {
-            // ignore
-         }
-      });
+      storageManager = new JournalStorageManager(config, executorFactory);
 
       messageRefs = new HashMap<Long, HashMap<Long, ReferenceDescribe>>();
 
