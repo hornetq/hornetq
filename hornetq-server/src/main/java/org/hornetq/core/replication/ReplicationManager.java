@@ -58,6 +58,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
@@ -295,7 +296,12 @@ public class ReplicationManager implements HornetQComponent
          replicatingChannel.close();
       }
 
-      remotingConnection.removeFailureListener(failureListener);
+
+      RemotingConnection toStop = remotingConnection;
+      if (toStop != null)
+      {
+         toStop.removeFailureListener(failureListener);
+      }
       remotingConnection = null;
       started = false;
    }

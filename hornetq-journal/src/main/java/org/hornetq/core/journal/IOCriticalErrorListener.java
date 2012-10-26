@@ -24,5 +24,5 @@ import org.hornetq.api.core.HornetQExceptionType;
  */
 public interface IOCriticalErrorListener
 {
-   void onIOException(HornetQExceptionType code, String message, SequentialFile file);
+   void onIOException(Exception code, String message, SequentialFile file);
 }

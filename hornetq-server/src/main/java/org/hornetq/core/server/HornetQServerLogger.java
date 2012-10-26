@@ -306,8 +306,8 @@ public interface HornetQServerLogger extends BasicLogger
    void replicationStartProblem(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222011, value = "Critical IO Error, shutting down the server. code={0}, message={1}", format = Message.Format.MESSAGE_FORMAT)
-   void ioErrorShutdownServer(HornetQExceptionType code, String message);
+   @Message(id = 222011, value = "Critical IO Error, shutting down the server. file={1}, message={0}", format = Message.Format.MESSAGE_FORMAT)
+   void ioCriticalIOError(String message, String file, @Cause Throwable  code);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222012, value = "Error stopping server", format = Message.Format.MESSAGE_FORMAT)

@@ -509,4 +509,7 @@ public interface HornetQMessageBundle
    @Message(id = 119143, value = "No session found with {0}={1}", format = Message.Format.MESSAGE_FORMAT)
    String destroyConnectionWithSessionMetadataNoSessionFound(String key, String value);
 
+   @Message(id = 119144, value =  "Invalid Page IO, PagingManager was stopped or closed", format = Message.Format.MESSAGE_FORMAT)
+   HornetQIllegalStateException invalidPageIO();
+
 }

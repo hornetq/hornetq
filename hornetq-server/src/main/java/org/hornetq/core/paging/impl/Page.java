@@ -26,6 +26,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
@@ -101,11 +102,16 @@ public class Page implements Comparable<Page>
       this.pageCache = pageCache;
    }
 
-   public List<PagedMessage> read(StorageManager storage) throws Exception
+   public synchronized List<PagedMessage> read(StorageManager storage) throws Exception
    {
       if (isDebug)
       {
          HornetQServerLogger.LOGGER.debug("reading page " + this.pageId + " on address = " + storeName);
+      }
+
+      if (!file.isOpen())
+      {
+         throw HornetQMessageBundle.BUNDLE.invalidPageIO();
       }
 
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
@@ -181,8 +187,14 @@ public class Page implements Comparable<Page>
       return messages;
    }
 
-   public void write(final PagedMessage message) throws Exception
+   public synchronized void write(final PagedMessage message) throws Exception
    {
+      if (!file.isOpen())
+      {
+
+         return;
+      }
+
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + Page.SIZE_RECORD);
 
       HornetQBuffer wrap = HornetQBuffers.wrappedBuffer(buffer);
@@ -226,7 +238,7 @@ public class Page implements Comparable<Page>
       file.position(0);
    }
 
-   public void close() throws Exception
+   public synchronized void close() throws Exception
    {
       if (storageManager != null)
       {
