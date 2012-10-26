@@ -33,7 +33,6 @@ import org.hornetq.ra.HornetQRaUtils;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version $Revision: $
  */
 public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
 {

@@ -29,9 +29,7 @@ import javax.jms.Session;
  *
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class RecoveringReceiver extends Receiver
 {

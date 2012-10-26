@@ -42,7 +42,6 @@ import org.hornetq.utils.SimpleIDGenerator;
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @version <tt>$Revision$</tt> $Id$
  */
 public class RemotingConnectionImpl implements CoreRemotingConnection
 {

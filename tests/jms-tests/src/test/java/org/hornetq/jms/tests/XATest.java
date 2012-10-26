@@ -48,7 +48,6 @@ import org.jboss.tm.TxUtils;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
- * $Id$
  *
  */
 public class XATest extends HornetQServerTestCase

@@ -38,9 +38,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * A JMSXDeliveryCountTest
 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public class JMSXDeliveryCountTest extends HornetQServerTestCase

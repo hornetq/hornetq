@@ -23,9 +23,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * A test that sends/receives text messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class TextMessageTest extends MessageTestBase
 {

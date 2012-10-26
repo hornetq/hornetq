@@ -20,9 +20,7 @@ import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ConsumerClosedTest extends JMSTestCase
 {

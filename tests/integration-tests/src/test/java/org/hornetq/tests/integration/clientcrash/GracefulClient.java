@@ -25,9 +25,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class GracefulClient
 {

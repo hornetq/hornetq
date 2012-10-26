@@ -18,9 +18,7 @@ import java.io.Serializable;
 /**
  * ObjectMessageTest needed a simple class to test ClassLoadingIsolations
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
  *
- *  $Id$
  */
 public class SomeObject implements Serializable
 {

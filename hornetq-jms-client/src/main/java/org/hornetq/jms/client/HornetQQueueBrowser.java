@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ClientSession;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *
- * $Id$
  */
 public final class HornetQQueueBrowser implements QueueBrowser
 {

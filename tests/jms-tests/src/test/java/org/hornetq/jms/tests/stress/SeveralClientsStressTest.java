@@ -47,8 +47,6 @@ clebert        hard    nofile          10240
 
 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
- *          $Id$
  */
 public class SeveralClientsStressTest extends HornetQServerTestCase
 {

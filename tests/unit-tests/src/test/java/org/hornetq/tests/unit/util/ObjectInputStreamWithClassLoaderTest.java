@@ -38,7 +38,6 @@ import org.hornetq.utils.ObjectInputStreamWithClassLoader;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
  */
 public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 {

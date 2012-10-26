@@ -29,8 +29,6 @@ import org.hornetq.jms.tests.JmsTestLogger;
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
- * $Id$
  */
 public class CorruptMessageStressTest extends HornetQServerTestCase
 {

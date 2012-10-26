@@ -31,9 +31,7 @@ import org.hornetq.utils.Pair;
  * HornetQ implementation of a JMS Destination.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class HornetQDestination implements Destination, Serializable, Referenceable
 {

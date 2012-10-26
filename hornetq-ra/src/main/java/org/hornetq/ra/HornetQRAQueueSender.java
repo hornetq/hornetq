@@ -24,7 +24,6 @@ import javax.jms.QueueSender;
  *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRAQueueSender extends HornetQRAMessageProducer implements QueueSender
 {

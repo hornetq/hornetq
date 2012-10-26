@@ -49,7 +49,6 @@ import org.hornetq.jms.server.HornetQJMSServerLogger;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
- * $Id$
  *
  */
 public class HornetQXAResourceRecovery implements XAResourceRecovery

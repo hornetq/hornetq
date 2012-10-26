@@ -21,22 +21,12 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAEndMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private Xid xid;
 
    private boolean failed;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXAEndMessage(final Xid xid, final boolean failed)
    {
@@ -51,8 +41,6 @@ public class SessionXAEndMessage extends PacketImpl
    {
       super(SESS_XA_END);
    }
-
-   // Public --------------------------------------------------------
 
    public boolean isFailed()
    {
@@ -85,23 +73,34 @@ public class SessionXAEndMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAEndMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAEndMessage r = (SessionXAEndMessage)other;
-
-      return super.equals(other) && xid.equals(r.xid) && failed == r.failed;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (failed ? 1231 : 1237);
+      result = prime * result + ((xid == null) ? 0 : xid.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAEndMessage))
+         return false;
+      SessionXAEndMessage other = (SessionXAEndMessage)obj;
+      if (failed != other.failed)
+         return false;
+      if (xid == null)
+      {
+         if (other.xid != null)
+            return false;
+      }
+      else if (!xid.equals(other.xid))
+         return false;
+      return true;
+   }
 }

@@ -28,9 +28,7 @@ import org.hornetq.jms.tests.tools.container.Server;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *          <p/>
- *          $Id$
  */
 public class ServerManagement
 {

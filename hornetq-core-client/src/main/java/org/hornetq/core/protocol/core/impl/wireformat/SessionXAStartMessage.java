@@ -22,7 +22,6 @@ import org.hornetq.utils.XidCodecSupport;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAStartMessage extends PacketImpl
 {
@@ -68,23 +67,33 @@ public class SessionXAStartMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAStartMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAStartMessage r = (SessionXAStartMessage)other;
-
-      return super.equals(other) && xid.equals(r.xid);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((xid == null) ? 0 : xid.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAStartMessage))
+         return false;
+      SessionXAStartMessage other = (SessionXAStartMessage)obj;
+      if (xid == null)
+      {
+         if (other.xid != null)
+            return false;
+      }
+      else if (!xid.equals(other.xid))
+         return false;
+      return true;
+   }
 
-   // Protected -----------------------------------------------------
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

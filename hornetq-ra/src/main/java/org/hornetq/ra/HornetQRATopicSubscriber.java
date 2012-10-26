@@ -23,7 +23,6 @@ import javax.jms.TopicSubscriber;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRATopicSubscriber extends HornetQRAMessageConsumer implements TopicSubscriber
 {

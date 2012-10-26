@@ -29,7 +29,6 @@ import javax.transaction.TransactionManager;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public final class HornetQRaUtils
 {
@@ -55,7 +54,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -79,7 +78,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -103,7 +102,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -127,7 +126,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -151,7 +150,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }

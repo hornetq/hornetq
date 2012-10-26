@@ -31,9 +31,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ObjectMessageTest extends MessageTestBase
 {

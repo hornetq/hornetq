@@ -32,9 +32,7 @@ import org.hornetq.utils.UUIDGenerator;
  * <numMessages> must be a multiple of <commitSize>
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class Transactional2PCReceiver extends Receiver
 {

@@ -26,9 +26,7 @@ import javax.jms.Session;
  * Sends messages to a destination, used in stress testing
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class Sender extends Runner
 {

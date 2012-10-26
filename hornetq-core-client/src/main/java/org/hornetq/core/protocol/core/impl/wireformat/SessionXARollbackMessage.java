@@ -22,19 +22,10 @@ import org.hornetq.utils.XidCodecSupport;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXARollbackMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private Xid xid;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXARollbackMessage(final Xid xid)
    {
@@ -68,29 +59,38 @@ public class SessionXARollbackMessage extends PacketImpl
       xid = XidCodecSupport.decodeXid(buffer);
    }
 
+   @Override
    public boolean isAsyncExec()
    {
       return true;
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXARollbackMessage == false)
-      {
-         return false;
-      }
-
-      SessionXARollbackMessage r = (SessionXARollbackMessage)other;
-
-      return super.equals(other) && xid.equals(r.xid);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((xid == null) ? 0 : xid.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXARollbackMessage))
+         return false;
+      SessionXARollbackMessage other = (SessionXARollbackMessage)obj;
+      if (xid == null)
+      {
+         if (other.xid != null)
+            return false;
+      }
+      else if (!xid.equals(other.xid))
+         return false;
+      return true;
+   }
 }

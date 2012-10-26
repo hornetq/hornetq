@@ -28,9 +28,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * Testing of message property conversion. See javax.jms.Message for details
  *
  * @author <a href="mailto:afu@novell.com">Alex Fu</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class MessagePropertyConversionTest extends HornetQServerTestCase
 {

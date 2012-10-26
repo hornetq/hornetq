@@ -19,19 +19,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAGetTimeoutResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private int timeoutSeconds;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXAGetTimeoutResponseMessage(final int timeoutSeconds)
    {
@@ -44,8 +35,6 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
    {
       super(SESS_XA_GET_TIMEOUT_RESP);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public boolean isResponse()
@@ -71,23 +60,26 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAGetTimeoutResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAGetTimeoutResponseMessage r = (SessionXAGetTimeoutResponseMessage)other;
-
-      return super.equals(other) && timeoutSeconds == r.timeoutSeconds;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + timeoutSeconds;
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAGetTimeoutResponseMessage))
+         return false;
+      SessionXAGetTimeoutResponseMessage other = (SessionXAGetTimeoutResponseMessage)obj;
+      if (timeoutSeconds != other.timeoutSeconds)
+         return false;
+      return true;
+   }
 }

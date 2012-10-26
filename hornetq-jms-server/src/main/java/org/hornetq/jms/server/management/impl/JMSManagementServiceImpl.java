@@ -41,7 +41,6 @@ import org.hornetq.jms.server.management.JMSManagementService;
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class JMSManagementServiceImpl implements JMSManagementService
 {

@@ -38,7 +38,6 @@ import org.hornetq.tests.util.SpawnedVMSupport;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * $Id$
  */
 public class ClientExitTest extends ClientTestBase
 {

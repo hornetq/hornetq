@@ -19,7 +19,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:dua_rajdeep@yahoo.com">Rajdeep Dua</a>
- * @version <tt>$Revision$</tt>
  */
 public class JMSTypeHeaderTest extends MessageHeaderTestBase
 {

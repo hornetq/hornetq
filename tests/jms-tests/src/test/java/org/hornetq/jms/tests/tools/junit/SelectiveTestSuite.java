@@ -27,9 +27,7 @@ import junit.framework.TestSuite;
  * A TestSuite that filters tests.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class SelectiveTestSuite extends TestSuite
 {
