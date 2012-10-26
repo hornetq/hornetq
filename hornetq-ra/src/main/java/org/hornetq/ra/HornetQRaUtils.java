@@ -55,7 +55,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -79,7 +79,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -103,7 +103,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -127,7 +127,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
@@ -151,7 +151,7 @@ public final class HornetQRaUtils
       }
 
       // if me null and you are not
-      if (me == null && you != null)
+      if (me == null)
       {
          return false;
       }
