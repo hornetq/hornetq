@@ -21,20 +21,11 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAResumeMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private Xid xid;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXAResumeMessage(final Xid xid)
    {
@@ -68,23 +59,31 @@ public class SessionXAResumeMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAResumeMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAResumeMessage r = (SessionXAResumeMessage)other;
-
-      return super.equals(other) && xid.equals(r.xid);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((xid == null) ? 0 : xid.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAResumeMessage))
+         return false;
+      SessionXAResumeMessage other = (SessionXAResumeMessage)obj;
+      if (xid == null)
+      {
+         if (other.xid != null)
+            return false;
+      }
+      else if (!xid.equals(other.xid))
+         return false;
+      return true;
+   }
 }

@@ -24,20 +24,10 @@ import org.hornetq.utils.XidCodecSupport;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private List<Xid> xids;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXAGetInDoubtXidsResponseMessage(final List<Xid> xids)
    {
@@ -50,8 +40,6 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    {
       super(SESS_XA_INDOUBT_XIDS_RESP);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public boolean isResponse()
@@ -89,40 +77,31 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAGetInDoubtXidsResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAGetInDoubtXidsResponseMessage r = (SessionXAGetInDoubtXidsResponseMessage)other;
-
-      if (super.equals(other))
-      {
-         if (xids.size() == r.xids.size())
-         {
-            for (int i = 0; i < xids.size(); i++)
-            {
-               if (!xids.get(i).equals(r.xids.get(i)))
-               {
-                  return false;
-               }
-            }
-         }
-      }
-      else
-      {
-         return false;
-      }
-      return true;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((xids == null) ? 0 : xids.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAGetInDoubtXidsResponseMessage))
+         return false;
+      SessionXAGetInDoubtXidsResponseMessage other = (SessionXAGetInDoubtXidsResponseMessage)obj;
+      if (xids == null)
+      {
+         if (other.xids != null)
+            return false;
+      }
+      else if (!xids.equals(other.xids))
+         return false;
+      return true;
+   }
 }

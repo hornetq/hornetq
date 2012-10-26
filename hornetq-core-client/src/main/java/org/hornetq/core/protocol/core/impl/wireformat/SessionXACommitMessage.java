@@ -22,21 +22,12 @@ import org.hornetq.utils.XidCodecSupport;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXACommitMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private boolean onePhase;
 
    private Xid xid;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXACommitMessage(final Xid xid, final boolean onePhase)
    {
@@ -50,8 +41,6 @@ public class SessionXACommitMessage extends PacketImpl
    {
       super(SESS_XA_COMMIT);
    }
-
-   // Public --------------------------------------------------------
 
    public Xid getXid()
    {
@@ -90,23 +79,34 @@ public class SessionXACommitMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXACommitMessage == false)
-      {
-         return false;
-      }
-
-      SessionXACommitMessage r = (SessionXACommitMessage)other;
-
-      return super.equals(other) && xid.equals(r.xid) && onePhase == r.onePhase;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (onePhase ? 1231 : 1237);
+      result = prime * result + ((xid == null) ? 0 : xid.hashCode());
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXACommitMessage))
+         return false;
+      SessionXACommitMessage other = (SessionXACommitMessage)obj;
+      if (onePhase != other.onePhase)
+         return false;
+      if (xid == null)
+      {
+         if (other.xid != null)
+            return false;
+      }
+      else if (!xid.equals(other.xid))
+         return false;
+      return true;
+   }
 }

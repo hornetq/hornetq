@@ -18,24 +18,14 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXAResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private boolean error;
 
    private int responseCode;
 
    private String message;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXAResponseMessage(final boolean isError, final int responseCode, final String message)
    {
@@ -93,23 +83,37 @@ public class SessionXAResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXAResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionXAResponseMessage r = (SessionXAResponseMessage)other;
-
-      return super.equals(other) && error == r.error && responseCode == r.responseCode && message.equals(r.message);
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (error ? 1231 : 1237);
+      result = prime * result + ((message == null) ? 0 : message.hashCode());
+      result = prime * result + responseCode;
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXAResponseMessage))
+         return false;
+      SessionXAResponseMessage other = (SessionXAResponseMessage)obj;
+      if (error != other.error)
+         return false;
+      if (message == null)
+      {
+         if (other.message != null)
+            return false;
+      }
+      else if (!message.equals(other.message))
+         return false;
+      if (responseCode != other.responseCode)
+         return false;
+      return true;
+   }
 }
