@@ -30,9 +30,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class CTSMiscellaneousTest extends JMSTest
 {

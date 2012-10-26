@@ -31,9 +31,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * Various use cases, added here while trying things or fixing forum issues.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class MiscellaneousTest extends JMSTestCase
 {

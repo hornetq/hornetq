@@ -75,7 +75,6 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter

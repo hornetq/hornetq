@@ -21,8 +21,6 @@ import org.hornetq.jms.tests.JmsTestLogger;
 /**
  * This class will proxy any JUnit assertions and send then to our log outputs.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
- *          $Id$
  */
 public class ProxyAssertSupport extends TestCase
 {

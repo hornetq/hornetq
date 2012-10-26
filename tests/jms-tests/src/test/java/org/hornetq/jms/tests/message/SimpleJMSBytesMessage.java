@@ -31,7 +31,6 @@ import javax.jms.MessageNotWriteableException;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version $Revision$
  *
- * $Id$
  */
 public class SimpleJMSBytesMessage extends SimpleJMSMessage implements BytesMessage
 {

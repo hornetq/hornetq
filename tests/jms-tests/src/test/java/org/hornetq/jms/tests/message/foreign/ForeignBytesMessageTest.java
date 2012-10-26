@@ -26,9 +26,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  *
  *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class ForeignBytesMessageTest extends ForeignMessageTest
 {

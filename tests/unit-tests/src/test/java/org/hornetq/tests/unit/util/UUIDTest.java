@@ -25,7 +25,6 @@ import org.hornetq.utils.UUIDGenerator;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public class UUIDTest extends UnitTestCase

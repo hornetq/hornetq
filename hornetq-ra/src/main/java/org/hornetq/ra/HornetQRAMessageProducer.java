@@ -24,7 +24,6 @@ import javax.jms.MessageProducer;
  *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision:  $
  */
 public class HornetQRAMessageProducer implements MessageProducer
 {

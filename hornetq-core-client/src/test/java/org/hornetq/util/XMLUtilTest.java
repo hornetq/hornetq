@@ -23,7 +23,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  */
 public class XMLUtilTest extends SilentTestCase
 {

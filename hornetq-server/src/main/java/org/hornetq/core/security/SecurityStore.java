@@ -19,9 +19,7 @@ import org.hornetq.core.server.ServerSession;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public interface SecurityStore
 {

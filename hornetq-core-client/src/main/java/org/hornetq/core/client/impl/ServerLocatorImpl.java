@@ -357,7 +357,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          if (state == STATE.CLOSING)
             throw new HornetQIllegalStateException();
-
       try
       {
          state = STATE.INITIALIZED;

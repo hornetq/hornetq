@@ -45,7 +45,6 @@ import org.hornetq.utils.TypedProperties;
  *
  * @version $Revision$
  *
- * $Id$
  */
 public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryChangeListener
 {

@@ -33,9 +33,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * back to the topic with a different selector, then consume that with more consumers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public class RelayStressTest extends HornetQServerTestCase

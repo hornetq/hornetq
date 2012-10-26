@@ -29,7 +29,6 @@ import org.jboss.util.Primitives;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version $Revision$
  *
- * $Id$
  */
 public class SimpleJMSStreamMessage extends SimpleJMSMessage implements StreamMessage
 {

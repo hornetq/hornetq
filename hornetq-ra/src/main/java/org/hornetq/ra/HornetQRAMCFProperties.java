@@ -26,7 +26,6 @@ import javax.jms.Topic;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- * @version $Revision: $
  */
 public class HornetQRAMCFProperties extends ConnectionFactoryProperties implements Serializable
 {

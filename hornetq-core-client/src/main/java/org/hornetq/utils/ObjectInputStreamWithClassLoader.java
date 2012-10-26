@@ -22,9 +22,7 @@ import java.lang.reflect.Proxy;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
  * 
- * $Id$
  */
 public class ObjectInputStreamWithClassLoader extends ObjectInputStream
 {

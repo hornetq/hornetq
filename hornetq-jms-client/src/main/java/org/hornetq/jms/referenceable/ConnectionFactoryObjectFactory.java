@@ -29,7 +29,6 @@ import javax.naming.spi.ObjectFactory;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
- * $Id$
  */
 public class ConnectionFactoryObjectFactory implements ObjectFactory
 {

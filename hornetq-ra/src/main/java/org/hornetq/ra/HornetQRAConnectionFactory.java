@@ -24,7 +24,6 @@ import javax.resource.Referenceable;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.com">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory,
          XATopicConnectionFactory, Serializable, Referenceable

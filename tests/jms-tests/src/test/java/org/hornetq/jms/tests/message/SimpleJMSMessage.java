@@ -27,9 +27,7 @@ import javax.jms.Message;
  * Foreign message implementation. Used for testing only.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class SimpleJMSMessage implements Message
 {

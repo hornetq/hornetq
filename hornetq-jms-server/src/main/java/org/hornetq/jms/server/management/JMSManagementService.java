@@ -24,7 +24,6 @@ import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public interface JMSManagementService

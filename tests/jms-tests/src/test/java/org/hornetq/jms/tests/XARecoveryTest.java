@@ -36,9 +36,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public class XARecoveryTest extends JMSTestCase

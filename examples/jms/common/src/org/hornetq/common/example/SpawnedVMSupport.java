@@ -27,7 +27,6 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
  */
 public class SpawnedVMSupport
 {

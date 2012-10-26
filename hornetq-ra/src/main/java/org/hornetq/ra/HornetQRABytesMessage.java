@@ -24,7 +24,6 @@ import javax.jms.JMSException;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMessage
 {
