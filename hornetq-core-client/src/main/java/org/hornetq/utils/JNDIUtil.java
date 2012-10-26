@@ -23,9 +23,7 @@ import javax.naming.NamingException;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class JNDIUtil
 {

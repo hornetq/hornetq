@@ -36,9 +36,7 @@ import org.hornetq.jms.tests.JmsTestLogger;
  * Receives messages from a dstination for stress testing
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class Receiver extends Runner implements MessageListener
 {

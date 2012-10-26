@@ -40,7 +40,6 @@ import org.hornetq.ra.HornetQRALogger;
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- * @version $Revision: $
  */
 public class HornetQMessageHandler implements MessageHandler
 {

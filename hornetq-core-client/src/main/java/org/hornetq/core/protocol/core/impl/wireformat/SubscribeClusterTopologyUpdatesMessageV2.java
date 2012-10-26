@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -22,15 +21,8 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class SubscribeClusterTopologyUpdatesMessageV2 extends SubscribeClusterTopologyUpdatesMessage
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private int clientVersion;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SubscribeClusterTopologyUpdatesMessageV2(final boolean clusterConnection, int clientVersion)
    {
@@ -70,11 +62,27 @@ public class SubscribeClusterTopologyUpdatesMessageV2 extends SubscribeClusterTo
       clientVersion = buffer.readInt();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + clientVersion;
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SubscribeClusterTopologyUpdatesMessageV2))
+         return false;
+      SubscribeClusterTopologyUpdatesMessageV2 other = (SubscribeClusterTopologyUpdatesMessageV2)obj;
+      if (clientVersion != other.clientVersion)
+         return false;
+      return true;
+   }
 }

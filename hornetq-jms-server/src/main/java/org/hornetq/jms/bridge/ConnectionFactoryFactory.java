@@ -17,9 +17,7 @@ package org.hornetq.jms.bridge;
  * A ConnectionFactoryFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public interface ConnectionFactoryFactory

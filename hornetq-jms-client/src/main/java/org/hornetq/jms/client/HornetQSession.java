@@ -69,9 +69,7 @@ import org.hornetq.core.filter.impl.ParseException;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  *
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class HornetQSession implements Session, QueueSession, TopicSession
 {

@@ -23,7 +23,6 @@ import javax.resource.spi.LocalTransaction;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRALocalTransaction implements LocalTransaction
 {

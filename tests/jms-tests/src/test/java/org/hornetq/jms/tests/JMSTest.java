@@ -35,9 +35,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Foxv</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class JMSTest extends JMSTestCase
 {

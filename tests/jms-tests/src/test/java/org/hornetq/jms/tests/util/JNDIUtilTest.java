@@ -21,7 +21,6 @@ import org.hornetq.utils.JNDIUtil;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  */
 public class JNDIUtilTest extends HornetQServerTestCase
 {

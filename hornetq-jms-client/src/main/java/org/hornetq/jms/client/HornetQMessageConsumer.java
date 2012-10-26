@@ -34,7 +34,6 @@ import org.hornetq.api.jms.HornetQJMSConstants;
  * HornetQ implementation of a JMS MessageConsumer.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  */
 public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscriber
 {

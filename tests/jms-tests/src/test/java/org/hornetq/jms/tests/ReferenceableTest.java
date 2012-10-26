@@ -43,7 +43,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
- * $Id$
  */
 public class ReferenceableTest extends JMSTestCase
 {

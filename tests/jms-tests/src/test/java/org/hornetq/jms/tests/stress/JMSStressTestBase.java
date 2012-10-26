@@ -26,9 +26,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * Base class for stress tests
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
 */
 public class JMSStressTestBase extends HornetQServerTestCase
 {

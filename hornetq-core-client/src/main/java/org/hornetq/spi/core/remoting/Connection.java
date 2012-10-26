@@ -21,7 +21,6 @@ import org.hornetq.core.security.HornetQPrincipal;
  * The connection used by a channel to write data to.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  */
 public interface Connection
 {

@@ -19,19 +19,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class SessionXASetTimeoutResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private boolean ok;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionXASetTimeoutResponseMessage(final boolean ok)
    {
@@ -71,23 +62,26 @@ public class SessionXASetTimeoutResponseMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof SessionXASetTimeoutResponseMessage == false)
-      {
-         return false;
-      }
-
-      SessionXASetTimeoutResponseMessage r = (SessionXASetTimeoutResponseMessage)other;
-
-      return super.equals(other) && ok == r.ok;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (ok ? 1231 : 1237);
+      return result;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (!(obj instanceof SessionXASetTimeoutResponseMessage))
+         return false;
+      SessionXASetTimeoutResponseMessage other = (SessionXASetTimeoutResponseMessage)obj;
+      if (ok != other.ok)
+         return false;
+      return true;
+   }
 }

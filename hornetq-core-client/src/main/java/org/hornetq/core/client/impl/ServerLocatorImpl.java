@@ -357,7 +357,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          if (state == STATE.CLOSING)
             throw new HornetQIllegalStateException();
-
       try
       {
          state = STATE.INITIALIZED;
@@ -1190,6 +1189,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       return discoveryGroupConfiguration;
    }
 
+   @Override
+   @Deprecated
    public void addInterceptor(final Interceptor interceptor)
    {
       addIncomingInterceptor(interceptor);
@@ -1205,6 +1206,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       outgoingInterceptors.add(interceptor);
    }
 
+   @Override
+   @Deprecated
    public boolean removeInterceptor(final Interceptor interceptor)
    {
       return removeIncomingInterceptor(interceptor);

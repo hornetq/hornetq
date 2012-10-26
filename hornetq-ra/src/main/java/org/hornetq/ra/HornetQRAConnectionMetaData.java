@@ -24,7 +24,6 @@ import javax.jms.ConnectionMetaData;
  *
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRAConnectionMetaData implements ConnectionMetaData
 {

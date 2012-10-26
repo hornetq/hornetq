@@ -25,7 +25,6 @@ import java.util.concurrent.Executor;
  * @author <a href="david.lloyd@jboss.com">David Lloyd</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public final class OrderedExecutorFactory implements ExecutorFactory

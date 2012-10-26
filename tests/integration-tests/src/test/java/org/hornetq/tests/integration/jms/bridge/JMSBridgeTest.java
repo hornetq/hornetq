@@ -45,9 +45,7 @@ import org.hornetq.utils.DefaultSensitiveStringCodec;
  * A JMSBridgeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public class JMSBridgeTest extends BridgeTestBase

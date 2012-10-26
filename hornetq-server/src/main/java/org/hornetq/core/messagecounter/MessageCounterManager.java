@@ -16,7 +16,6 @@ package org.hornetq.core.messagecounter;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public interface MessageCounterManager

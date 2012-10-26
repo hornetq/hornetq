@@ -30,9 +30,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * See http://jira.jboss.com/jira/browse/JBMESSAGING-442
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  *
  */
 public class MessageWithReadResolveTest extends JMSTestCase

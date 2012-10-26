@@ -31,7 +31,6 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision:  $
  */
 public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactory
 {

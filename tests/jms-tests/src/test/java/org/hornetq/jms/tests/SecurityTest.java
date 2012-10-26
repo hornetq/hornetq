@@ -33,7 +33,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * @author <a href="pra@tim.se">Peter Antman</a>
  *
  *
- * @version <tt>$Revision$</tt>
  *
  */
 public class SecurityTest extends JMSTestCase

@@ -29,7 +29,6 @@ import javax.jms.TextMessage;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
  */
 public class HornetQRAMessageConsumer implements MessageConsumer
 {

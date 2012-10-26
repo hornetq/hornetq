@@ -35,7 +35,6 @@ import org.hornetq.tests.util.ServiceTestBase;
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class PingStressTest extends ServiceTestBase
 {

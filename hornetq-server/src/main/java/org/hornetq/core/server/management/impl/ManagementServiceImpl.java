@@ -78,7 +78,6 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
  *
- * @version <tt>$Revision$</tt>
  */
 public class ManagementServiceImpl implements ManagementService
 {

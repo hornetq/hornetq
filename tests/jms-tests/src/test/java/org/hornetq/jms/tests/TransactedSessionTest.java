@@ -31,7 +31,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *         <p/>
- *         $Id$
  */
 public class TransactedSessionTest extends JMSTestCase
 {

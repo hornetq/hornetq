@@ -26,9 +26,7 @@ import junit.textui.TestRunner;
  * A text TestRunner than runs only test methods specified on command line with "-t".
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class SelectiveTestRunner extends TestRunner
 {

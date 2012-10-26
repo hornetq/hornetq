@@ -22,7 +22,6 @@ import org.hornetq.core.server.HornetQComponent;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
- * @version <tt>$Revision$</tt>
  * 
  */
 public interface JMSBridge extends HornetQComponent

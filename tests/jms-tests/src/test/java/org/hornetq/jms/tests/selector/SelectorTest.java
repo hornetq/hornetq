@@ -33,9 +33,7 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class SelectorTest extends HornetQServerTestCase
 {

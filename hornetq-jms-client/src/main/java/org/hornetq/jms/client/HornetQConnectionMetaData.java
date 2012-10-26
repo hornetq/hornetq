@@ -27,7 +27,6 @@ import org.hornetq.core.version.Version;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
- * $Id$
  */
 public class HornetQConnectionMetaData implements ConnectionMetaData
 {

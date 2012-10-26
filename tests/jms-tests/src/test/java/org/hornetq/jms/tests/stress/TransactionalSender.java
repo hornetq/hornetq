@@ -30,9 +30,7 @@ import javax.jms.Session;
  * <numMessages> must be a multiple of <commitSize>
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
 public class TransactionalSender extends Sender
 {
