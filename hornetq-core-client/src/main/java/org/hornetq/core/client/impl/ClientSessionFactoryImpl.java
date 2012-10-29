@@ -263,7 +263,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void setBackupConnector(final TransportConfiguration live, final TransportConfiguration backUp)
    {
-      if (live.equals(connectorConfig) && backUp != null && !backUp.equals(connectorConfig))
+      if (connector.isEquivalent(live.getParams()) && backUp != null && !connector.isEquivalent(backUp.getParams()))
       {
          if (ClientSessionFactoryImpl.isDebug)
          {
@@ -1367,7 +1367,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(),
                                                                        VersionLoader.getVersion()
                                                                                     .getIncrementingVersion()));
-
          }
       }
 
