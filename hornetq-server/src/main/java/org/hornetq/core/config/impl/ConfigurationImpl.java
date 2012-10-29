@@ -26,14 +26,12 @@ import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -345,11 +343,15 @@ public class ConfigurationImpl implements Configuration
       asyncConnectionExecutionEnabled = enabled;
    }
 
+   @Deprecated
+   @Override
    public List<String> getInterceptorClassNames()
    {
       return getIncomingInterceptorClassNames();
    }
 
+   @Deprecated
+   @Override
    public void setInterceptorClassNames(final List<String> interceptors)
    {
       setIncomingInterceptorClassNames(interceptors);
