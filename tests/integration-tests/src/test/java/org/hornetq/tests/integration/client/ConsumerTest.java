@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -221,7 +223,7 @@ public class ConsumerTest extends ServiceTestBase
       session.close();
       sf.close();
       final CountDownLatch latch = new CountDownLatch(numMessages);
-      server.getRemotingService().addInterceptor(new Interceptor()
+      server.getRemotingService().addIncomingInterceptor(new Interceptor()
       {
          public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
          {

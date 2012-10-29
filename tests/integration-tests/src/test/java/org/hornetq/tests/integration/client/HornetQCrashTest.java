@@ -49,7 +49,7 @@ public class HornetQCrashTest extends UnitTestCase
 
       server.start();
 
-      server.getRemotingService().addInterceptor(new AckInterceptor(server));
+      server.getRemotingService().addIncomingInterceptor(new AckInterceptor(server));
 
 
 

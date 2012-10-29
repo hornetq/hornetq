@@ -67,7 +67,7 @@ public class BackupSyncDelay implements Interceptor
       assert !live.getConfiguration().isBackup();
       this.backup = backup;
       this.live = live;
-      live.getRemotingService().addInterceptor(this);
+      live.getRemotingService().addIncomingInterceptor(this);
       handler = new ReplicationChannelHandler(packetCode);
    }
 

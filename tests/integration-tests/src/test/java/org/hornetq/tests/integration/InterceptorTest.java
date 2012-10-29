@@ -339,7 +339,7 @@ public class InterceptorTest extends ServiceTestBase
    {
       MyInterceptor1 interceptor = new MyInterceptor1();
 
-      server.getRemotingService().addInterceptor(interceptor);
+      server.getRemotingService().addIncomingInterceptor(interceptor);
 
       ClientSessionFactory sf = createSessionFactory(locator);
 
@@ -402,7 +402,7 @@ public class InterceptorTest extends ServiceTestBase
    {
       MyInterceptor2 interceptor = new MyInterceptor2();
 
-      server.getRemotingService().addInterceptor(interceptor);
+      server.getRemotingService().addIncomingInterceptor(interceptor);
 
 
       locator.setBlockOnNonDurableSend(false);
@@ -441,7 +441,7 @@ public class InterceptorTest extends ServiceTestBase
 
       MyInterceptor3 interceptor = new MyInterceptor3();
 
-      sf.getServerLocator().addInterceptor(interceptor);
+      sf.getServerLocator().addIncomingInterceptor(interceptor);
 
       ClientSession session = sf.createSession(false, true, true, true);
 
@@ -555,7 +555,7 @@ public class InterceptorTest extends ServiceTestBase
 
       MyInterceptor4 interceptor = new MyInterceptor4();
 
-      sf.getServerLocator().addInterceptor(interceptor);
+      sf.getServerLocator().addIncomingInterceptor(interceptor);
 
       ClientSession session = sf.createSession(false, true, true, true);
 
@@ -655,10 +655,10 @@ public class InterceptorTest extends ServiceTestBase
       MyInterceptor5 interceptor3 = new MyInterceptor5("c", 3);
       MyInterceptor5 interceptor4 = new MyInterceptor5("d", 4);
 
-      server.getRemotingService().addInterceptor(interceptor1);
-      server.getRemotingService().addInterceptor(interceptor2);
-      server.getRemotingService().addInterceptor(interceptor3);
-      server.getRemotingService().addInterceptor(interceptor4);
+      server.getRemotingService().addIncomingInterceptor(interceptor1);
+      server.getRemotingService().addIncomingInterceptor(interceptor2);
+      server.getRemotingService().addIncomingInterceptor(interceptor3);
+      server.getRemotingService().addIncomingInterceptor(interceptor4);
 
       ClientSessionFactory sf = createSessionFactory(locator);
 
@@ -746,10 +746,10 @@ public class InterceptorTest extends ServiceTestBase
 
       ClientSessionFactory sf = createSessionFactory(locator);
 
-      sf.getServerLocator().addInterceptor(interceptor1);
-      sf.getServerLocator().addInterceptor(interceptor2);
-      sf.getServerLocator().addInterceptor(interceptor3);
-      sf.getServerLocator().addInterceptor(interceptor4);
+      sf.getServerLocator().addIncomingInterceptor(interceptor1);
+      sf.getServerLocator().addIncomingInterceptor(interceptor2);
+      sf.getServerLocator().addIncomingInterceptor(interceptor3);
+      sf.getServerLocator().addIncomingInterceptor(interceptor4);
 
       ClientSession session = sf.createSession(false, true, true, true);
 

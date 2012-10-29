@@ -88,7 +88,7 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
          }
       };
 
-      locator.addInterceptor(interceptorClient);
+      locator.addIncomingInterceptor(interceptorClient);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       ClientSession session = sf.createSession(true, true);

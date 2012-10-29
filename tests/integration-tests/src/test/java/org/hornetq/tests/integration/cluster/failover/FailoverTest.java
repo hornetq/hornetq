@@ -1725,7 +1725,7 @@ public class FailoverTest extends FailoverTestBase
 
       // Add an interceptor to delay the send method so we can get time to cause failover before it returns
 
-      // liveServer.getRemotingService().addInterceptor(new DelayInterceptor());
+      // liveServer.getRemotingService().addIncomingInterceptor(new DelayInterceptor());
 
       final ClientSession session = createSession(sf, true, true, 0);
 
@@ -1814,7 +1814,7 @@ public class FailoverTest extends FailoverTestBase
          {
             try
             {
-               sf.getServerLocator().addInterceptor(interceptor);
+               sf.getServerLocator().addIncomingInterceptor(interceptor);
 
                session.commit();
             }

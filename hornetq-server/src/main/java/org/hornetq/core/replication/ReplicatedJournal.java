@@ -41,8 +41,6 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 public class ReplicatedJournal implements Journal
 {
 
-   // Attributes ----------------------------------------------------
-
    private static final boolean trace = false;
 
    private static void trace(final String message)
@@ -64,12 +62,6 @@ public class ReplicatedJournal implements Journal
       this.localJournal = localJournal;
       this.replicationManager = replicationManager;
    }
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * @param id
@@ -572,13 +564,4 @@ public class ReplicatedJournal implements Journal
    {
       return localJournal.getFileSize();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

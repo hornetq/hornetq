@@ -13,10 +13,6 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
 
@@ -32,7 +28,8 @@ import org.hornetq.api.jms.JMSFactoryType;
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAConnectionFactory extends HornetQConnectionFactory implements XAConnectionFactory, XATopicConnectionFactory, XAQueueConnectionFactory, ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory
+public class HornetQXAConnectionFactory extends HornetQConnectionFactory implements XATopicConnectionFactory,
+         XAQueueConnectionFactory
 {
    private static final long serialVersionUID = 743611571839154115L;
 
@@ -71,6 +68,7 @@ public class HornetQXAConnectionFactory extends HornetQConnectionFactory impleme
       super(ha, initialConnectors);
    }
 
+   @Override
    public int getFactoryType()
    {
       return JMSFactoryType.XA_CF.intValue();

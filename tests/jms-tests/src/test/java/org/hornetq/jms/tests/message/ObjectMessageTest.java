@@ -35,16 +35,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class ObjectMessageTest extends MessageTestBase
 {
-   // Constants ------------------------------------------------------------------------------------
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   // Public ---------------------------------------------------------------------------------------
-
    @Override
    public void setUp() throws Exception
    {
@@ -122,7 +112,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       list.clear();
 
-      list = (ArrayList)msgTest.getObject();
+      list = (ArrayList<String>)msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(1, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
@@ -133,7 +123,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       list.clear();
 
-      list = (ArrayList)msgTest.getObject();
+      list = (ArrayList<String>)msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(2, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
@@ -143,13 +133,13 @@ public class ObjectMessageTest extends MessageTestBase
       list.add("hello3");
       msgTest.setObject(list);
 
-      list = (ArrayList)msgTest.getObject();
+      list = (ArrayList<String>)msgTest.getObject();
       ProxyAssertSupport.assertEquals(3, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
       ProxyAssertSupport.assertEquals("hello2", list.get(1));
       ProxyAssertSupport.assertEquals("hello3", list.get(2));
 
-      list = (ArrayList)msgTest.getObject();
+      list = (ArrayList<String>)msgTest.getObject();
 
       list.clear();
 
@@ -157,7 +147,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       msgTest = (ObjectMessage)queueCons.receive(5000);
 
-      list = (ArrayList)msgTest.getObject();
+      list = (ArrayList<String>)msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(3, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));

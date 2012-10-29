@@ -47,7 +47,6 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.SimpleString;
@@ -2225,7 +2224,7 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator0.addClusterTopologyListener(nodeLocator);
             nodeLocator.connectToCluster(serverLocator0);
 
-            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
+            serverLocator0.addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
             nodeManager.startBackup();
 

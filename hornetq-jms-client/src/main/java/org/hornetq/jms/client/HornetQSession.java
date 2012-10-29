@@ -71,7 +71,7 @@ import org.hornetq.core.filter.impl.ParseException;
  *
  *
  */
-public class HornetQSession implements Session, QueueSession, TopicSession
+public class HornetQSession implements QueueSession, TopicSession
 {
    // Constants -----------------------------------------------------
 

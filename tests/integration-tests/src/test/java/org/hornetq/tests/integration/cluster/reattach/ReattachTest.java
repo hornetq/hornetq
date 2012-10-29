@@ -180,7 +180,7 @@ public class ReattachTest extends ServiceTestBase
          }
       };
 
-      locator.addInterceptor(intercept);
+      locator.addIncomingInterceptor(intercept);
 
       ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
