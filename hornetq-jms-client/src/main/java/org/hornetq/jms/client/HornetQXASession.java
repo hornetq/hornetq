@@ -14,7 +14,6 @@
 package org.hornetq.jms.client;
 
 import javax.jms.XAQueueSession;
-import javax.jms.XASession;
 import javax.jms.XATopicSession;
 
 import org.hornetq.api.core.client.ClientSession;
@@ -26,7 +25,7 @@ import org.hornetq.api.core.client.ClientSession;
  *
  *
  */
-public class HornetQXASession extends HornetQSession implements XAQueueSession, XATopicSession, XASession
+public class HornetQXASession extends HornetQSession implements XAQueueSession, XATopicSession
 {
 
    /**
@@ -46,23 +45,4 @@ public class HornetQXASession extends HornetQSession implements XAQueueSession, 
    {
       super(connection, transacted, xa, ackMode, session, sessionType);
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
