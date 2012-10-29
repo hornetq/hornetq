@@ -367,10 +367,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
    }
 
-   // verify if these weak references are released after a few GCs
+   /**
+    * Verifies whether weak references are released after a few GCs.
+    * @param references
+    * @throws InterruptedException
+    */
    public static void checkWeakReferences(final WeakReference<?>... references)
    {
-
       int i = 0;
       boolean hasValue = false;
 
@@ -388,6 +391,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
             if (ref.get() != null)
             {
                hasValue = true;
+               break;
             }
          }
       }
@@ -1070,12 +1074,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
          if (failed)
          {
-            logAndSystemOut("Thread leaked on test " + this.getClass().getName() +
-                            "::" +
-                            this.getName() +
-                            "\n" +
-                            buffer.toString());
-            logAndSystemOut("Thread leakage");
+               logAndSystemOut("Thread leaked on test " + this.getClass().getName() + "::" + this.getName() + "\n" +
+                        buffer);
+               logAndSystemOut("Thread leakage");
 
             fail("Thread leaked");
          }

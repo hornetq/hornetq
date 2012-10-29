@@ -219,9 +219,26 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
       UnitTestCase.checkWeakReferences(ref1, ref2, ref3);
 
-      Assert.assertEquals(0, sf.numSessions());
-      Assert.assertEquals(1, sf.numConnections());
-      Assert.assertEquals(1, server.getRemotingService().getConnections().size());
+      int count = 0;
+      final int TOTAL_SLEEP_TIME = 400;
+      final int MAX_COUNT = 20;
+      while (count++ < MAX_COUNT)
+      {
+         /*
+          * The assertion is vulnerable to races, both in the session closing as well as the return
+          * value of the sessions.size() (i.e. HashSet.size()).
+          */
+         synchronized (this)
+         {
+            // synchronized block will (as a side effect) force sync all field values
+            if (sf.numSessions() == 0)
+               break;
+            Thread.sleep(TOTAL_SLEEP_TIME / MAX_COUNT);
+         }
+      }
+      Assert.assertEquals("# sessions", 0, sf.numSessions());
+      Assert.assertEquals("# connections", 1, sf.numConnections());
+      Assert.assertEquals("# connections in remoting service", 1, server.getRemotingService().getConnections().size());
    }
 
 }
