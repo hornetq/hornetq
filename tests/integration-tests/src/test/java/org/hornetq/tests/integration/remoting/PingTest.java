@@ -296,7 +296,7 @@ public class PingTest extends ServiceTestBase
       // server must received at least one ping from the client to pass
       // so that the server connection TTL is configured with the client value
       final CountDownLatch pingOnServerLatch = new CountDownLatch(2);
-      server.getRemotingService().addInterceptor(new Interceptor()
+      server.getRemotingService().addIncomingInterceptor(new Interceptor()
       {
 
          public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException

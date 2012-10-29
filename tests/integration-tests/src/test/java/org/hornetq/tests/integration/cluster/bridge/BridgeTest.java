@@ -39,7 +39,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Packet;
@@ -352,7 +351,7 @@ public class BridgeTest extends ServiceTestBase
 
          server1.start();
 
-         server1.getRemotingService().addInterceptor(myInterceptor);
+      server1.getRemotingService().addIncomingInterceptor(myInterceptor);
 
          server0.start();
       locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc));

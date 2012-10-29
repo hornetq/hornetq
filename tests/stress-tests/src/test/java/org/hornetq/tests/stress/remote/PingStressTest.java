@@ -96,7 +96,7 @@ public class PingStressTest extends ServiceTestBase
          }
       };
 
-      server.getRemotingService().addInterceptor(noPongInterceptor);
+      server.getRemotingService().addIncomingInterceptor(noPongInterceptor);
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
       locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));

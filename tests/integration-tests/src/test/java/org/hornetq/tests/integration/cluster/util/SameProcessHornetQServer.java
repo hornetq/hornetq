@@ -56,7 +56,7 @@ public class SameProcessHornetQServer implements TestableServer
 
    public void addInterceptor(Interceptor interceptor)
    {
-      server.getRemotingService().addInterceptor(interceptor);
+      server.getRemotingService().addIncomingInterceptor(interceptor);
    }
 
    public void removeInterceptor(Interceptor interceptor)

@@ -51,7 +51,7 @@ public class ProducerTest extends ServiceTestBase
    public void testProducerWithSmallWindowSizeAndLargeMessage() throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
-      server.getRemotingService().addInterceptor(new Interceptor()
+      server.getRemotingService().addIncomingInterceptor(new Interceptor()
       {
          public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
          {
