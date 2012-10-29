@@ -13,7 +13,6 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnectionFactory;
 
@@ -27,7 +26,8 @@ import org.hornetq.api.core.client.ServerLocator;
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implements ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory
+public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implements TopicConnectionFactory,
+         QueueConnectionFactory
 {
 
    private final static long serialVersionUID = -2810634789345348326L;

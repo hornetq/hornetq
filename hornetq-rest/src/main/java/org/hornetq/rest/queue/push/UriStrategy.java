@@ -1,5 +1,7 @@
 package org.hornetq.rest.queue.push;
 
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -13,8 +15,6 @@ import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.client.core.executors.ApacheHttpClientExecutor;
 import org.jboss.resteasy.specimpl.UriBuilderImpl;
-
-import javax.ws.rs.core.UriBuilder;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -92,7 +92,7 @@ public class UriStrategy implements PushStrategy
             HornetQRestLogger.LOGGER.debug("Status of push: " + status);
             if (status == 503)
             {
-               String retryAfter = (String) res.getHeaders().getFirst("Retry-After");
+               String retryAfter = res.getHeaders().getFirst("Retry-After");
                if (retryAfter != null)
                {
                   wait = Long.parseLong(retryAfter) * 1000;

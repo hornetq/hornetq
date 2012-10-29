@@ -56,6 +56,7 @@ public class ReferenceableTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @SuppressWarnings("cast")
    public void testSerializable() throws Exception
    {
       ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Serializable);
@@ -65,6 +66,7 @@ public class ReferenceableTest extends JMSTestCase
       ProxyAssertSupport.assertTrue(HornetQServerTestCase.topic1 instanceof Serializable);
    }
 
+   @SuppressWarnings("cast")
    public void testReferenceable() throws Exception
    {
       ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Referenceable);
