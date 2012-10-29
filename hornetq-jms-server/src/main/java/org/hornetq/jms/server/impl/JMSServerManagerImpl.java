@@ -156,8 +156,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       configFileName = null;
    }
 
-   /** Unused */
-   @Deprecated
+   /**
+    * This constructor is used by the Application Server's integration
+    * @param server
+    * @param registry
+    * @throws Exception
+    */
    public JMSServerManagerImpl(final HornetQServer server, final BindingRegistry registry) throws Exception
    {
       this.server = server;
