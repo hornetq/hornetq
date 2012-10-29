@@ -1085,6 +1085,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          checkThread = true;
       }
+
+      checkFilesUsage();
       clearData();
       super.tearDown();
    }
@@ -1195,9 +1197,21 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return failedThread;
    }
 
-   private void cleanupPools()
+
+   private void checkFilesUsage()
    {
-      OperationContextImpl.clearContext();
+      long timeout = System.currentTimeMillis() + 15000;
+
+      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
+      {
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (Exception ignored)
+         {
+         }
+      }
 
       int invmSize = InVMRegistry.instance.size();
       if (invmSize > 0)
@@ -1207,24 +1221,18 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          fail("invm registry still had acceptors registered");
       }
 
-      long timeout = System.currentTimeMillis() + 15000;
-
-      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
-      {
-         try
-         {
-            Thread.sleep(500);
-         }
-         catch (Exception ignored)
-         {
-         }
-      }
-
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
          AsynchronousFileImpl.resetMaxAIO();
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
+
+
+   }
+
+   private void cleanupPools()
+   {
+      OperationContextImpl.clearContext();
 
       // We shutdown the global pools to give a better isolation between tests
       try
