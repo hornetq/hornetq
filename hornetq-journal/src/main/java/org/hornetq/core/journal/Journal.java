@@ -106,7 +106,8 @@ public interface Journal extends HornetQComponent
     * @param txID
     * @param sync
     * @param callback
-    * @param useLineUp if appendCommitRecord should call a storeLineUp. This is because the caller may have already taken into account
+    * @param lineUpContext if appendCommitRecord should call a storeLineUp. This is because the
+    *           caller may have already taken into account
     * @throws Exception
     */
    void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception;
@@ -147,6 +148,7 @@ public interface Journal extends HornetQComponent
 
    /**
     * Load internal data structures, and remain waiting for synchronization to complete.
+    * @param state the current state of the journal, this parameter ensures consistency.
     */
    JournalLoadInformation loadSyncOnly(JournalState state) throws Exception;
 

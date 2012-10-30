@@ -12,8 +12,6 @@
    <artifactId>hornetq-ra</artifactId>
    <packaging>jar</packaging>
 
-
-
     <dependencies>
       <dependency>
             <groupId>org.jboss.logging</groupId>
