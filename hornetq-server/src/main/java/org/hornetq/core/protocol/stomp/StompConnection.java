@@ -26,8 +26,8 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -63,7 +63,7 @@ public class StompConnection implements RemotingConnection
 
    private final long creationTime;
 
-   private StompDecoder decoder;
+   private final StompDecoder decoder;
 
    private final Acceptor acceptorUsed;
 
@@ -75,7 +75,7 @@ public class StompConnection implements RemotingConnection
 
    private volatile boolean dataReceived;
 
-   private boolean enableMessageID;
+   private final boolean enableMessageID;
 
    private StompVersions version;
 
@@ -446,6 +446,7 @@ public class StompConnection implements RemotingConnection
 
    public void handleFrame(StompFrame request)
    {
+
       StompFrame reply = null;
 
       if (stompListener != null)
@@ -456,6 +457,10 @@ public class StompConnection implements RemotingConnection
       String cmd = request.getCommand();
       try
       {
+         if (isDestroyed())
+         {
+            throw new HornetQStompException("Connection was destroyed.");
+         }
          if (!initialized)
          {
             if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
