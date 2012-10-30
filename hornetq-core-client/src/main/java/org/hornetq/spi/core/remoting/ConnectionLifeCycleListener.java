@@ -35,6 +35,7 @@ public interface ConnectionLifeCycleListener
     * usage of it.
     * @param component This will probably be an {@code Acceptor} and only used on the server side.
     * @param connection the connection that has been created
+    * @param protocol the messaging protocol type this connection uses
     */
    void connectionCreated(HornetQComponent component, Connection connection, ProtocolType protocol);
 

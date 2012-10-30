@@ -19,22 +19,13 @@ import java.nio.channels.FileLock;
 
 /**
  * A HornetQFileLock
- *
  * @author clebertsuconic
- *
- *
  */
 public class HornetQFileLock extends FileLock
 {
 
    private final int handle;
 
-   /**
-    * @param channel
-    * @param position
-    * @param size
-    * @param shared
-    */
    protected HornetQFileLock(final int handle)
    {
       super((FileChannel)null, 0, 0, false);
@@ -47,31 +38,9 @@ public class HornetQFileLock extends FileLock
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see java.nio.channels.FileLock#release()
-    */
    @Override
    public void release() throws IOException
    {
       AsynchronousFileImpl.closeFile(handle);
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

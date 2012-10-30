@@ -38,8 +38,11 @@ public class JournalFilesRepository
 {
    private static final boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
 
-   // Used to debug the consistency of the journal ordering.
-   // This is meant to be false as these extra checks would cause performance issues
+   /**
+    * Used to debug the consistency of the journal ordering.
+    * <p>
+    * This is meant to be false as these extra checks would cause performance issues
+    */
    private static final boolean CHECK_CONSISTENCE = false;
 
    // This method exists just to make debug easier.
@@ -49,10 +52,6 @@ public class JournalFilesRepository
    {
       HornetQJournalLogger.LOGGER.trace(message);
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private final SequentialFileFactory fileFactory;
 
@@ -94,12 +93,6 @@ public class JournalFilesRepository
          }
       }
    };
-
-
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public JournalFilesRepository(final SequentialFileFactory fileFactory,
                                  final JournalImpl journal,
@@ -531,8 +524,9 @@ public class JournalFilesRepository
 
    /**
     * This will get a File from freeFile without initializing it
-    * @return
+    * @return uninitialized JournalFile
     * @throws Exception
+    * @see {@link JournalImpl#initFileHeader(SequentialFileFactory, SequentialFile, int, long)}
     */
    public JournalFile takeFile(final boolean keepOpened,
                                final boolean multiAIO,
@@ -565,23 +559,20 @@ public class JournalFilesRepository
 
    /**
     * Creates files for journal synchronization of a replicated backup.
-    * @param isCurrent a current file is initialized and kept open.
+    * <p>
+    * In order to simplify synchronization, the file IDs in the backup match those in the live
+    * server.
+    * @param fileID the fileID to use when creating the file.
     */
    public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
    {
       return createFile(false, false, true, false, fileID);
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    /**
     * This method will create a new file on the file system, pre-fill it with FILL_CHARACTER
     * @param keepOpened
-    * @return
+    * @return an initialized journal file
     * @throws Exception
     */
    private JournalFile createFile(final boolean keepOpened,
