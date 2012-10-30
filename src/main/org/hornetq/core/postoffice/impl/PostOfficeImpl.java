@@ -1200,46 +1200,50 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          message.removeProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID);
 
       }
-
-      byte[] duplicateIDBytes = message.getDuplicateIDBytes();
-
-      DuplicateIDCache cache = null;
-
-      boolean isDuplicate = false;
-
-      if (duplicateIDBytes != null)
+      else
       {
-         cache = getDuplicateIDCache(message.getAddress());
-
-         isDuplicate = cache.contains(duplicateIDBytes);
-
-         if (rejectDuplicates && isDuplicate)
+         // if used BridgeDuplicate, it's not going to use the regular duplicate
+         // since this will would break redistribution (re-setting the duplicateId)
+         byte[] duplicateIDBytes = message.getDuplicateIDBytes();
+   
+         DuplicateIDCache cache = null;
+   
+         boolean isDuplicate = false;
+   
+         if (duplicateIDBytes != null)
          {
-            String warnMessage = "Duplicate message detected - message will not be routed. Message information:" + message.toString();
-            PostOfficeImpl.log.warn(warnMessage);
-
-            if (context.getTransaction() != null)
+            cache = getDuplicateIDCache(message.getAddress());
+   
+            isDuplicate = cache.contains(duplicateIDBytes);
+   
+            if (rejectDuplicates && isDuplicate)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
+               String warnMessage = "Duplicate message detected - message will not be routed. Message information:" + message.toString();
+               PostOfficeImpl.log.warn(warnMessage);
+   
+               if (context.getTransaction() != null)
+               {
+                  context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
+               }
+   
+               message.decrementRefCount();
+   
+               return false;
             }
-
-            message.decrementRefCount();
-
-            return false;
          }
-      }
-
-      if (cache != null && !isDuplicate)
-      {
-         if (context.getTransaction() == null)
+   
+         if (cache != null && !isDuplicate)
          {
-            // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
-            context.setTransaction(new TransactionImpl(storageManager));
-
-            startedTX.set(true);
+            if (context.getTransaction() == null)
+            {
+               // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
+               context.setTransaction(new TransactionImpl(storageManager));
+   
+               startedTX.set(true);
+            }
+   
+            cache.addToCache(duplicateIDBytes, context.getTransaction());
          }
-
-         cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
 
       return true;
