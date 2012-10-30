@@ -196,11 +196,15 @@ public class QueueImpl implements Queue
       }
 
       boolean foundRef = false;
-      Iterator<MessageReference> iter = messageReferences.iterator();
-      while (iter.hasNext())
+
+      synchronized (this)
       {
-         foundRef = true;
-         out.println("reference = " + iter.next());
+         Iterator<MessageReference> iter = messageReferences.iterator();
+         while (iter.hasNext())
+         {
+            foundRef = true;
+            out.println("reference = " + iter.next());
+         }
       }
 
       if (!foundRef)
@@ -1607,6 +1611,9 @@ public class QueueImpl implements Queue
    }
 
    /**
+    * The caller of this method requires synchronized on the queue.
+    * I'm not going to add synchronized to this method just for a precaution,
+    * as I'm not 100% sure this won't cause any extra runtime.
     * @param ref
     */
    private void internalAddTail(final MessageReference ref)
@@ -1616,6 +1623,9 @@ public class QueueImpl implements Queue
    }
 
    /**
+    * The caller of this method requires synchronized on the queue.
+    * I'm not going to add synchronized to this method just for a precaution,
+    * as I'm not 100% sure this won't cause any extra runtime.
     * @param ref
     */
    private void internalAddHead(final MessageReference ref)
