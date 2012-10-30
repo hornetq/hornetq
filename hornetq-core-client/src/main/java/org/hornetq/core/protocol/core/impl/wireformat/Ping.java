@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -23,7 +24,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  * @see RemotingConnection#checkDataReceived()
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class Ping extends PacketImpl
+public final class Ping extends PacketImpl
 {
    private long connectionTTL;
 

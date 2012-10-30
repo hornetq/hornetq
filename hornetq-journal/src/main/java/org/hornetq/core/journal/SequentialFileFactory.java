@@ -13,8 +13,6 @@
 
 package org.hornetq.core.journal;
 
-import org.hornetq.api.core.HornetQExceptionType;
-
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -46,10 +44,10 @@ public interface SequentialFileFactory
    void releaseDirectBuffer(ByteBuffer buffer);
 
    /**
-    * Note: You need to release the buffer if is used for reading operations.
-    *       You don't need to do it if using writing operations (AIO Buffer Lister will take of writing operations)
+    * Note: You need to release the buffer if is used for reading operations. You don't need to do
+    * it if using writing operations (AIO Buffer Lister will take of writing operations)
     * @param size
-    * @return
+    * @return the allocated ByteBuffer
     */
    ByteBuffer newBuffer(int size);
 
@@ -75,7 +73,7 @@ public interface SequentialFileFactory
    void stop();
 
    /**
-    * Create the directory if it doesn't exist yet
+    * Creates the directory if it does not exist yet.
     */
    void createDirs() throws Exception;
 

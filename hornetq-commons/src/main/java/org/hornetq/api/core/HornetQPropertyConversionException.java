@@ -14,7 +14,7 @@
 package org.hornetq.api.core;
 
 /**
- * A PropertyConversionException is thrown by {@link org.hornetq.api.core.Message} methods when a
+ * A PropertyConversionException is thrown by {@code org.hornetq.api.core.Message} methods when a
  * property can not be converted to the expected type.
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @see org.hornetq.api.core.Message

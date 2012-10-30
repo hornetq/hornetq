@@ -10,7 +10,7 @@
 
    <artifactId>hornetq-jms-message-group2-example</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ JMS Message Group Example</name>
+   <name>HornetQ JMS Message Group Example 2</name>
 
    <dependencies>
       <dependency>
