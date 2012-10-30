@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.distribution;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -723,8 +724,25 @@ public class MessageRedistributionTest extends ClusterTestBase
 
    }
 
+   // https://issues.jboss.org/browse/HORNETQ-1072
+   public void testBackAndForth2WithDuplicDetection() throws Exception
+   {
+      internalTestBackAndForth2(true);
+   }
+
    public void testBackAndForth2() throws Exception
    {
+      internalTestBackAndForth2(false);
+   }
+
+   public void internalTestBackAndForth2(final boolean useDuplicateDetection) throws Exception
+   {
+      AtomicInteger duplDetection = null;
+
+      if (useDuplicateDetection)
+      {
+         duplDetection = new AtomicInteger(0);
+      }
       for (int i = 0; i < 10; i++)
       {
          setupCluster(false);
@@ -748,7 +766,7 @@ public class MessageRedistributionTest extends ClusterTestBase
          waitForBindings(0, ADDRESS, 1, 0, false);
          waitForBindings(1, ADDRESS, 1, 1, false);
 
-         send(1, ADDRESS, 20, false, null);
+         send(1, ADDRESS, 20, false, null, duplDetection);
 
          waitForMessages(0, ADDRESS, 20);
 
