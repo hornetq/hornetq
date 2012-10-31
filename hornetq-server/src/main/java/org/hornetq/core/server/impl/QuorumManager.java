@@ -15,6 +15,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
@@ -32,7 +33,7 @@ import org.hornetq.utils.Pair;
  * quorum will help a remote backup deciding whether to replace its 'live' server or to keep trying
  * to reconnect.
  */
-public final class QuorumManager implements FailureListener, ClusterTopologyListener
+public final class QuorumManager implements SessionFailureListener, ClusterTopologyListener
 {
    private String targetServerID = "";
    private final ExecutorService executor;
@@ -75,6 +76,8 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
    public void setLiveID(String liveID)
    {
       targetServerID = liveID;
+      //now we are replicating we can start waiting for disconnect notifications so we can fail over
+      sessionFactory.addFailureListener(this);
    }
 
    private boolean isLiveDown()
@@ -243,6 +246,12 @@ public final class QuorumManager implements FailureListener, ClusterTopologyList
             locator.close();
          }
       }
+   }
+
+   @Override
+   public void beforeReconnect(HornetQException exception)
+   {
+      //noop
    }
 
    @Override
