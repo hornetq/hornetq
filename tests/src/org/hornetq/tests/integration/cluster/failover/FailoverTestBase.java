@@ -196,9 +196,18 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       logAndSystemOut("#test tearDown");
+ 
+      InVMConnector.failOnCreateConnection = false;
+
       backupServer.stop();
 
       liveServer.stop();
+
+      backupServer = null;
+
+      liveServer = null;
+
+      nodeManager = null;
 
       long timeout = System.currentTimeMillis() + 5000;
 
@@ -208,15 +217,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
-
-      backupServer = null;
-
-      liveServer = null;
-
-      nodeManager = null;
-
-      InVMConnector.failOnCreateConnection = false;
-
       super.tearDown();
       try
       {
