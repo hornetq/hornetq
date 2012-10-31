@@ -1559,6 +1559,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public synchronized void connectorsChanged(List<DiscoveryEntry> newConnectors)
    {
+      if(receivedTopology)
+      {
+         return;
+      }
       TransportConfiguration[] newInitialconnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
                                                                            newConnectors.size());
 
