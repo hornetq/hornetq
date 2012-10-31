@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -679,6 +680,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
                               final boolean durable,
                               final String filterVal) throws Exception
    {
+      sendInRange(node, address, msgStart, msgEnd, durable, filterVal, null);
+   }
+
+   protected void sendInRange(final int node,
+                              final String address,
+                              final int msgStart,
+                              final int msgEnd,
+                              final boolean durable,
+                              final String filterVal,
+                              final AtomicInteger duplicateDetectionSeq) throws Exception
+   {
       ClientSessionFactory sf = sfs[node];
 
       if (sf == null)
@@ -699,6 +711,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (filterVal != null)
             {
                message.putStringProperty(ClusterTestBase.FILTER_PROP, new SimpleString(filterVal));
+            }
+
+            if (duplicateDetectionSeq != null)
+            {
+               String str = Integer.toString(duplicateDetectionSeq.incrementAndGet());
+               message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString(str));
             }
 
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
@@ -801,7 +819,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
                        final boolean durable,
                        final String filterVal) throws Exception
    {
-      sendInRange(node, address, 0, numMessages, durable, filterVal);
+      send(node, address, numMessages, durable, filterVal, null);
+   }
+
+   protected void send(final int node,
+                       final String address,
+                       final int numMessages,
+                       final boolean durable,
+                       final String filterVal,
+                       final AtomicInteger duplicateDetectionCounter) throws Exception
+   {
+      sendInRange(node, address, 0, numMessages, durable, filterVal, duplicateDetectionCounter);
    }
 
    protected void verifyReceiveAllInRange(final boolean ack,
