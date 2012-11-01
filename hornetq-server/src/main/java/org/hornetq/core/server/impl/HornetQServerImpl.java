@@ -2222,7 +2222,20 @@ public class HornetQServerImpl implements HornetQServer
                   new AnyLiveNodeLocator(quorumManager):
                   new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
             serverLocator0.addClusterTopologyListener(nodeLocator);
-            nodeLocator.connectToCluster(serverLocator0);
+            do
+            {
+               try
+               {
+                  nodeLocator.connectToCluster(serverLocator0);
+                  break;
+               }
+               catch (HornetQException e)
+               {
+                  if(closed)
+                     return;
+                  Thread.sleep(serverLocator0.getRetryInterval());
+               }
+            } while (true);
 
             serverLocator0.addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
