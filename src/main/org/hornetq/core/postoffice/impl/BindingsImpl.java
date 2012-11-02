@@ -456,6 +456,10 @@ public class BindingsImpl implements Bindings
          {
             // ok lets find the next binding to propose
             Binding theBinding = getNextBinding(message, routingName, bindings);
+            if(theBinding == null)
+            {
+               continue;
+            }
             // TODO https://jira.jboss.org/jira/browse/HORNETQ-191
             resp = groupingGroupingHandler.propose(new Proposal(fullID, theBinding.getClusterName()));
 
