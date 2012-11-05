@@ -1444,22 +1444,6 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    {
       try
       {
-         if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
-         {
-            // We client ack before sending
-
-            if (JMSBridgeImpl.trace)
-            {
-               JMSBridgeImpl.log.trace("Client acking source session");
-            }
-
-            ((Message)messages.getLast()).acknowledge();
-
-            if (JMSBridgeImpl.trace)
-            {
-               JMSBridgeImpl.log.trace("Client acked source session");
-            }
-         }
 
          sendMessages();
 
@@ -1479,25 +1463,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                JMSBridgeImpl.log.trace("Committed source session");
             }
          }
-
-         if (qualityOfServiceMode == QualityOfServiceMode.DUPLICATES_OK)
-         {
-            // We client ack after sending
-
-            // Note we could actually use Session.DUPS_OK_ACKNOWLEDGE here
-            // For a slightly less strong delivery guarantee
-
-            if (JMSBridgeImpl.trace)
-            {
-               JMSBridgeImpl.log.trace("Client acking source session");
-            }
-
-            messages.getLast().acknowledge();
-
-            if (JMSBridgeImpl.trace)
-            {
-               JMSBridgeImpl.log.trace("Client acked source session");
-            }
+           
+         for(Message msg :messages){
+              JMSBridgeImpl.log.trace("Do ACK to message");
+              msg.acknowledge();
          }
 
          // Clear the messages
