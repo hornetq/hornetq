@@ -83,7 +83,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       this.jbossConn = jbossConn;
 
-      connID = jbossConn.getUID();
+      connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
 
       this.producer = producer;
 
@@ -431,15 +431,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       ClientMessage coreMessage = msg.getCoreMessage();
 
-      if (jbossConn.hasNoLocal())
-      {
-         coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
-      }
-      else
-      {
-         // make sure the message does not get a connID from a previous producer on another connection
-         coreMessage.removeProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME);
-      }
+      coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
 
       try
       {
