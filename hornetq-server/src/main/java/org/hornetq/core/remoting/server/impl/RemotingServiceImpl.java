@@ -627,18 +627,18 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
                   if (entry.ttl != -1)
                   {
-                     if (now >= entry.lastCheck + entry.ttl)
+                     if (!conn.checkDataReceived())
                      {
-                        if (!conn.checkDataReceived())
+                        if (now >= entry.lastCheck + entry.ttl)
                         {
                            idsToRemove.add(conn.getID());
 
                            flush = false;
                         }
-                        else
-                        {
-                           entry.lastCheck = now;
-                        }
+                     }
+                     else
+                     {
+                        entry.lastCheck = now;
                      }
                   }
 
