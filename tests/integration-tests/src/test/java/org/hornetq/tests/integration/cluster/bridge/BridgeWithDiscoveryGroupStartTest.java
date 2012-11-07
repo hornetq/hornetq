@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;

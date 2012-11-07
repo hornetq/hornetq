@@ -57,7 +57,6 @@ import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
