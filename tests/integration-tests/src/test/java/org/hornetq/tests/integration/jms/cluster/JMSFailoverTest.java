@@ -50,6 +50,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.jms.server.management.JMSUtil;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -369,7 +370,7 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.setPagingDirectory(getPageDir());
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
       backupConf.setPersistenceEnabled(true);
-      backupService = new ServiceTestBase.InVMNodeManagerServer(backupConf, nodeManager);
+      backupService = new InVMNodeManagerServer(backupConf, nodeManager);
 
       backupJMSService = new JMSServerManagerImpl(backupService);
 

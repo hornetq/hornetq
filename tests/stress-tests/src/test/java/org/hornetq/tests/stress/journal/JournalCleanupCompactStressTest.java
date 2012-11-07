@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
