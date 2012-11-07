@@ -1135,14 +1135,13 @@ public class DiscoveryTest extends UnitTestCase
    }
 
 
-   private class FakeNodeManager extends NodeManager
+   private final class FakeNodeManager extends NodeManager
    {
 
       public FakeNodeManager(String nodeID)
       {
          this.setNodeID(nodeID);
       }
-
 
       @Override
       public void awaitLiveNode() throws Exception
@@ -1177,30 +1176,6 @@ public class DiscoveryTest extends UnitTestCase
       @Override
       public void releaseBackup() throws Exception
       {
-      }
-
-      @Override
-      public void start() throws Exception
-      {
-         super.start();
-      }
-
-      @Override
-      public void stop() throws Exception
-      {
-         super.stop();
-      }
-
-      @Override
-      public boolean isStarted()
-      {
-         return super.isStarted();
-      }
-
-      @Override
-      public SimpleString getNodeId()
-      {
-         return super.getNodeId();
       }
 
       @Override

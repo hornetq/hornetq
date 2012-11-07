@@ -485,7 +485,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               HornetQServerLogger.LOGGER.errorStoppingServer(e);
             }
          }
       });
@@ -2150,21 +2150,7 @@ public class HornetQServerImpl implements HornetQServer
 
             HornetQServerLogger.LOGGER.ioCriticalIOError(message, file.toString(), cause);
 
-            new Thread()
-            {
-               @Override
-               public void run()
-               {
-                  try
-                  {
-                     HornetQServerImpl.this.stop(true, true);
-                  }
-                  catch (Exception e)
-                  {
-                     HornetQServerLogger.LOGGER.errorStoppingServer(e);
-                  }
-               }
-            }.start();
+            stopTheServer();
          }
       }
    }
