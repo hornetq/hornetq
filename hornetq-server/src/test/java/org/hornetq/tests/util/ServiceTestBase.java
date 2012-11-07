@@ -28,9 +28,6 @@ import javax.management.MBeanServer;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.server.Queue;
-import org.hornetq.utils.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -49,19 +46,21 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -971,57 +970,5 @@ public abstract class ServiceTestBase extends UnitTestCase
    protected void validateNoFilesOnLargeDir() throws Exception
    {
       validateNoFilesOnLargeDir(0);
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-   public final class InVMNodeManagerServer extends HornetQServerImpl
-   {
-      final NodeManager nodeManager;
-
-      public InVMNodeManagerServer(final NodeManager nodeManager)
-      {
-         super();
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(final Configuration configuration, final NodeManager nodeManager)
-      {
-         super(configuration);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(final Configuration configuration,
-                                   final MBeanServer mbeanServer,
-                                   final NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(final Configuration configuration,
-                                   final HornetQSecurityManager securityManager,
-                                   final NodeManager nodeManager)
-      {
-         super(configuration, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(final Configuration configuration,
-                                   final MBeanServer mbeanServer,
-                                   final HornetQSecurityManager securityManager,
-                                   final NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      @Override
-      protected NodeManager createNodeManager(final String directory)
-      {
-         return nodeManager;
-      }
-
    }
 }

@@ -16,16 +16,13 @@ package org.hornetq.tests.integration.cluster.bridge;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
-
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.impl.HornetQServerImpl;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -148,47 +145,4 @@ public abstract class BridgeTestBase extends UnitTestCase
       if (!server.waitForActivation(5000L, TimeUnit.MILLISECONDS))
          throw new IllegalStateException("Timed out waiting for server starting = " + server);
    }
-
-    // Inner classes -------------------------------------------------
-   class InVMNodeManagerServer extends HornetQServerImpl
-   {
-      final NodeManager nodeManager;
-      public InVMNodeManagerServer(NodeManager nodeManager)
-      {
-         super();
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, NodeManager nodeManager)
-      {
-         super(configuration);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, HornetQSecurityManager securityManager, NodeManager nodeManager)
-      {
-         super(configuration, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, HornetQSecurityManager securityManager, NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      @Override
-      protected NodeManager createNodeManager(String directory)
-      {
-         return nodeManager;
-      }
-
-   }
-
 }
