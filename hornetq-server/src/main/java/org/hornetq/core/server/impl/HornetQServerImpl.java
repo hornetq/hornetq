@@ -379,6 +379,15 @@ public class HornetQServerImpl implements HornetQServer
 
       try
       {
+         if (configuration.isBackup() && !configuration.isSharedStore())
+         {
+            /**
+             * Has to be done before all directory checks and before opening the "server.lock" file
+             * (done when using {@link FileLockNodeManager} or its extension classes.
+             */
+            moveServerData();
+         }
+
          checkJournalDirectory();
 
          nodeManager = createNodeManager(configuration.getJournalDirectory());
@@ -2183,9 +2192,6 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            // move all data away:
-            moveServerData();
-
             synchronized (HornetQServerImpl.this)
             {
                state = SERVER_STATE.STARTED;
@@ -2380,51 +2386,6 @@ public class HornetQServerImpl implements HornetQServer
                serverLocator0.close();
          }
       }
-
-      /**
-       * Move data away before starting data synchronization for fail-back.
-       * <p>
-       * Use case is a server, upon restarting, finding a former backup running in its place. It
-       * will move any older data away and log a warning about it.
-       */
-      private void moveServerData()
-      {
-         String[] dataDirs =
-            new String[] { configuration.getBindingsDirectory(),
-               configuration.getJournalDirectory(),
-               configuration.getPagingDirectory(),
-               configuration.getLargeMessagesDirectory() };
-         boolean allEmpty = true;
-         int lowestSuffixForMovedData = 1;
-         for (String dir : dataDirs)
-         {
-            File fDir = new File(dir);
-            if (fDir.isDirectory())
-            {
-               if (fDir.list().length > 0)
-                  allEmpty = false;
-            }
-            String sanitizedPath = fDir.getPath();
-            while (new File(sanitizedPath + lowestSuffixForMovedData).exists())
-            {
-               lowestSuffixForMovedData++;
-            }
-         }
-         if (allEmpty)
-            return;
-
-         for (String dir0 : dataDirs)
-         {
-            File dir = new File(dir0);
-            File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
-            if (dir.exists() && dir.renameTo(newPath))
-            {
-               HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
-               dir.mkdir();
-            }
-         }
-      }
-
 
       public void close(final boolean permanently) throws Exception
       {
@@ -2870,4 +2831,65 @@ public class HornetQServerImpl implements HornetQServer
       return locator;
    }
 
+   /**
+    * Move data away before starting data synchronization for fail-back.
+    * <p>
+    * Use case is a server, upon restarting, finding a former backup running in its place. It will
+    * move any older data away and log a warning about it.
+    */
+   private void moveServerData()
+   {
+      String[] dataDirs =
+               new String[] { configuration.getBindingsDirectory(),
+                             configuration.getJournalDirectory(),
+                             configuration.getPagingDirectory(),
+                             configuration.getLargeMessagesDirectory() };
+      boolean allEmpty = true;
+      int lowestSuffixForMovedData = 1;
+      boolean redo = true;
+
+      while (redo)
+      {
+         redo = false;
+         for (String dir : dataDirs)
+         {
+            File fDir = new File(dir);
+            if (fDir.exists())
+            {
+               if (!fDir.isDirectory())
+               {
+                  throw new IllegalStateException("Path " + fDir + " exists and it is not a directory");
+               }
+
+               if (fDir.list().length > 0)
+                  allEmpty = false;
+            }
+
+            String sanitizedPath = fDir.getPath();
+            while (new File(sanitizedPath + lowestSuffixForMovedData).exists())
+            {
+               lowestSuffixForMovedData++;
+               redo = true;
+            }
+         }
+      }
+      if (allEmpty)
+         return;
+
+      for (String dir0 : dataDirs)
+      {
+         File dir = new File(dir0);
+         File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
+         if (dir.exists() )
+         {
+            if (!dir.renameTo(newPath))
+            {
+               throw new IllegalStateException("Could not move "+dir);
+            }
+
+            HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
+            dir.mkdir();
+         }
+      }
+   }
 }

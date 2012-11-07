@@ -21,7 +21,6 @@ import junit.framework.Assert;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.server.HornetQComponent;

@@ -25,7 +25,6 @@ import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
