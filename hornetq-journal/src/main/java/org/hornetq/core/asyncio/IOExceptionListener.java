@@ -13,8 +13,6 @@
 
 package org.hornetq.core.asyncio;
 
-import org.hornetq.api.core.HornetQExceptionType;
-
 /**
  * A IOExceptionListener
  *
