@@ -13,8 +13,6 @@
 
 package org.hornetq.core.journal;
 
-import org.hornetq.api.core.HornetQExceptionType;
-
 /**
  * A IOCriticalErrorListener
  *

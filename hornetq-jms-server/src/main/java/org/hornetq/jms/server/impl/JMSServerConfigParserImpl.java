@@ -23,7 +23,6 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;

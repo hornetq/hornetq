@@ -27,7 +27,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.RandomUtil;

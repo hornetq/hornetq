@@ -22,7 +22,6 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.utils.Pair;
 
