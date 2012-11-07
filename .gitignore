@@ -111,6 +111,9 @@ hornetq-rest/hornetq-rest/src/main/Main.iml
 hornetq-rest/hornetq-rest/src/test/Test.iml
 hornetq-rest/hornetq-rest/target/
 native/src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h
+native/src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl_CallbackHolder.h
+native/src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl_ErrorCallback.h
+native/src/org_hornetq_core_asyncio_impl_AsynchronousFileImpl_PollerRunnable.h
 src/Hornetq-branch.iml
 tests/Tests.iml
 tests/joram-tests/Joram-tests.iml
