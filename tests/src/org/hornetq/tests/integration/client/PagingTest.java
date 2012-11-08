@@ -6016,6 +6016,108 @@ public class PagingTest extends ServiceTestBase
 
 
    // Test a scenario where a page was complete and now needs to be cleared
+   public void testPendingACKOutOfOrder() throws Throwable
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+                            config,
+                            PagingTest.PAGE_SIZE,
+                            PagingTest.PAGE_MAX,
+                            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnDurableSend(false);
+         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSession session = sf.createSession(true,  true, 0);
+
+         session.createQueue(ADDRESS.toString(), "Q1", true);
+
+         PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
+
+         store.startPaging();
+
+
+         ClientProducer prod = session.createProducer(ADDRESS);
+
+         
+         for (int i = 0; i < 100; i++)
+         {
+            ClientMessage msg = session.createMessage(true);
+            msg.putIntProperty("count", i);
+            prod.send(msg);
+            session.commit();
+            if ((i + 1) % 5 == 0 && i < 50)
+            {
+               store.forceAnotherPage();
+            }
+         }
+
+         session.start();
+
+         ClientConsumer cons1 = session.createConsumer("Q1");
+
+         for (int i = 0; i < 100; i++)
+         {
+            ClientMessage msg = cons1.receive(5000);
+            assertNotNull(msg);
+            
+            if (i == 13)
+            {
+               msg.individualAcknowledge();
+            }
+         }
+         
+         session.close();
+         
+         locator.close();
+         
+         server.stop();
+         
+         server.start();
+         
+         store = server.getPagingManager().getPageStore(ADDRESS);
+         
+         locator = createInVMNonHALocator();
+         
+         sf = locator.createSessionFactory();
+         
+         session = sf.createSession(true,  true, 0);
+         cons1 = session.createConsumer("Q1");
+         session.start();
+         
+         
+         for (int i = 0 ; i < 99; i++)
+         {
+            ClientMessage msg = cons1.receive(5000);
+            assertNotNull(msg);
+            System.out.println("count = " + msg.getIntProperty("count"));
+            msg.acknowledge();
+         }
+         
+         assertNull(cons1.receiveImmediate());
+         
+         
+         session.close();
+         waitForNotPaging(store);
+      }
+      finally
+      {
+         server.stop();
+      }
+
+   }
+   
+   
+   // Test a scenario where a page was complete and now needs to be cleared
    public void testPageCompleteWasLive() throws Throwable
    {
       clearData();
@@ -6100,6 +6202,51 @@ public class PagingTest extends ServiceTestBase
       }
 
    }
+   
+   public void testNoCursors() throws Exception
+   {
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+                            config,
+                            PagingTest.PAGE_SIZE,
+                            PagingTest.PAGE_MAX,
+                            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession session = sf.createSession();
+      
+      session.createQueue(ADDRESS, ADDRESS, true);
+      ClientProducer prod = session.createProducer(ADDRESS);
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         Message msg = session.createMessage(true);
+         msg.getBodyBuffer().writeBytes(new byte[1024]);
+         prod.send(msg);
+      }
+      
+      session.commit();
+      
+      session.deleteQueue(ADDRESS);
+      session.close();
+      sf.close();
+      locator.close();
+      server.stop();
+      server.start();
+      waitForNotPaging(server.getPagingManager().getPageStore(ADDRESS));
+      server.stop();
+
+   }
+
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

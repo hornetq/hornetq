@@ -462,7 +462,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                      firstPageId = fileId;
                   }
                }
-
+               
                if (currentPageId != 0)
                {
                   currentPage = createPage(currentPageId);
