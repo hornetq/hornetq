@@ -83,6 +83,35 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
+   // HORNETQ- 1084
+   public void testBasicSendWithDLAButNoBinding() throws Exception
+   {
+      SimpleString dla = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(1);
+      addressSettings.setDeadLetterAddress(dla);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      //SimpleString dlq = new SimpleString("DLQ1");
+      //clientSession.createQueue(dla, dlq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+      ClientProducer producer = clientSession.createProducer(qName);
+      producer.send(createTextMessage(clientSession, "heyho!"));
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      ClientMessage m = clientConsumer.receive(500);
+      m.acknowledge();
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      // force a cancel
+      clientSession.rollback();
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      clientConsumer.close();
+      Queue q = (Queue)server.getPostOffice().getBinding(qName).getBindable();
+      Assert.assertEquals(0, q.getDeliveringCount());
+   }
+
    public void testBasicSend2times() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
