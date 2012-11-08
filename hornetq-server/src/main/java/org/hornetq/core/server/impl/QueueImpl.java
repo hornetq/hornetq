@@ -2089,6 +2089,7 @@ public class QueueImpl implements Queue
          if (bindingList.getBindings().isEmpty())
          {
             HornetQServerLogger.LOGGER.messageExceededMaxDelivery(ref, deadLetterAddress);
+            acknowledge(ref);
          }
          else
          {
