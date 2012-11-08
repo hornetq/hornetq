@@ -29,7 +29,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public abstract class ClientTestBase extends ServiceTestBase
 {
 
-   private HornetQServer server;
+   protected HornetQServer server;
 
    @Override
    protected void setUp() throws Exception
@@ -44,7 +44,12 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    protected void assertActiveConnections(final int expectedActiveConnections) throws Exception
    {
-      long timeout = System.currentTimeMillis() + 5000;
+      assertActiveConnections(expectedActiveConnections, 0);
+   }
+
+   protected void assertActiveConnections(final int expectedActiveConnections, long timeout) throws Exception
+   {
+      timeout += System.currentTimeMillis();
       while (timeout > System.currentTimeMillis() && server.getHornetQServerControl().getConnectionCount() != expectedActiveConnections)
       {
          Thread.sleep(100);
@@ -54,7 +59,12 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    protected void assertActiveSession(final int expectedActiveSession) throws Exception
    {
-      long timeout = System.currentTimeMillis() + 5000;
+      assertActiveSession(expectedActiveSession, 0);
+   }
+
+   protected void assertActiveSession(final int expectedActiveSession, long timeout) throws Exception
+   {
+      timeout += System.currentTimeMillis();
       while (timeout > System.currentTimeMillis() && server.getSessions().size() != expectedActiveSession)
       {
          Thread.sleep(100);

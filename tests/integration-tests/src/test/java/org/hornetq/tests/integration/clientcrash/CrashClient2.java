@@ -54,7 +54,7 @@ public class CrashClient2
 
 
          ClientSession session = sf.createSession(true, true, 1000000);
-         ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);
+         ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE2);
 
          ClientMessage message = session.createMessage(false);
          message.getBodyBuffer().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
@@ -64,7 +64,7 @@ public class CrashClient2
          //Now consume the message, but don't let ack get to server
 
          //Consume the message
-         ClientConsumer cons = session.createConsumer(ClientCrashTest.QUEUE);
+         ClientConsumer cons = session.createConsumer(ClientCrashTest.QUEUE2);
 
          session.start();
 

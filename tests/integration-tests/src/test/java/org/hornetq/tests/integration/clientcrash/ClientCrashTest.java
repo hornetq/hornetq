@@ -23,6 +23,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.SpawnedVMSupport;
@@ -39,11 +40,12 @@ public class ClientCrashTest extends ClientTestBase
 {
    static final int PING_PERIOD = 2000;
 
-   static final int CONNECTION_TTL = 3000;
+   static final int CONNECTION_TTL = 6000;
 
    // Constants -----------------------------------------------------
 
    public static final SimpleString QUEUE = new SimpleString("ClientCrashTestQueue");
+   public static final SimpleString QUEUE2 = new SimpleString("ClientCrashTestQueue2");
 
    public static final String MESSAGE_TEXT_FROM_SERVER = "ClientCrashTest from server";
 
@@ -100,29 +102,31 @@ public class ClientCrashTest extends ClientTestBase
 
       System.out.println("VM Exited");
 
-      Thread.sleep(3 * ClientCrashTest.CONNECTION_TTL);
+      long timeout = ClientCrashTest.CONNECTION_TTL + ClientCrashTest.PING_PERIOD + 2000;
 
-      assertActiveConnections(1);
-      // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-      assertActiveSession(1);
+      assertActiveConnections(1, timeout);
+      assertActiveSession(1, timeout);
 
+      session.deleteQueue(ClientCrashTest.QUEUE);
       session.close();
-
-      Thread.sleep(2 * ClientCrashTest.CONNECTION_TTL);
 
       // the crash must have been detected and the resources cleaned up
       assertActiveConnections(1);
-      // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       assertActiveSession(0);
    }
 
    public void testCrashClient2() throws Exception
    {
+      // set the redelivery delay to avoid an attempt to redeliver the message to the dead client
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setRedeliveryDelay(ClientCrashTest.CONNECTION_TTL + ClientCrashTest.PING_PERIOD);
+      server.getAddressSettingsRepository().addMatch(ClientCrashTest.QUEUE2.toString(), addressSettings);
+
       assertActiveConnections(1);
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ClientCrashTest.QUEUE, ClientCrashTest.QUEUE, null, false);
+      session.createQueue(ClientCrashTest.QUEUE2, ClientCrashTest.QUEUE2, null, false);
 
       // spawn a JVM that creates a Core client, which sends a message
       Process p = SpawnedVMSupport.spawnVM(CrashClient2.class.getName());
@@ -134,9 +138,12 @@ public class ClientCrashTest extends ClientTestBase
 
       System.out.println("VM Exited");
 
-      Thread.sleep(3 * ClientCrashTest.CONNECTION_TTL);
+      long timeout = ClientCrashTest.CONNECTION_TTL + ClientCrashTest.PING_PERIOD + 2000;
 
-      ClientConsumer consumer = session.createConsumer(ClientCrashTest.QUEUE);
+      assertActiveConnections(1, timeout);
+      assertActiveSession(1, timeout);
+
+      ClientConsumer consumer = session.createConsumer(ClientCrashTest.QUEUE2);
 
       session.start();
 
@@ -147,8 +154,8 @@ public class ClientCrashTest extends ClientTestBase
 
       assertEquals("delivery count", 2, messageFromClient.getDeliveryCount());
 
+      session.deleteQueue(ClientCrashTest.QUEUE2);
       session.close();
-
    }
 
    // Package protected ---------------------------------------------
