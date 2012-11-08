@@ -2093,6 +2093,7 @@ public class QueueImpl implements Queue
          {
             QueueImpl.log.warn("Message " + ref + " has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
                                " so dropping it");
+            acknowledge(ref);
          }
          else
          {
