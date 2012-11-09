@@ -27,7 +27,7 @@ import org.hornetq.core.paging.PagingStore;
 public interface PageCursorProvider
 {
 
-   PageCache getPageCache(PagePosition pos);
+   PageCache getPageCache(long pageNr);
 
    PagedReference newReference(final PagePosition pos, final PagedMessage msg, PageSubscription sub);
 
