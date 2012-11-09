@@ -389,7 +389,7 @@ class PageSubscriptionImpl implements PageSubscription
    {
       PagePosition retPos = pos.nextMessage();
 
-      PageCache cache = cursorProvider.getPageCache(pos);
+      PageCache cache = cursorProvider.getPageCache(pos.getPageNr());
 
       if (cache != null && !cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages())
       {
@@ -402,7 +402,7 @@ class PageSubscriptionImpl implements PageSubscription
       {
          retPos = moveNextPage(retPos);
 
-         cache = cursorProvider.getPageCache(retPos);
+         cache = cursorProvider.getPageCache(retPos.getPageNr());
       }
 
       if (cache == null)
@@ -461,47 +461,6 @@ class PageSubscriptionImpl implements PageSubscription
     */
    private synchronized PagePosition getStartPosition()
    {
-      synchronized (consumedPages)
-      {
-         // Get the first page not marked for deletion
-         // It's important to verify if it's not marked for deletion as you may have a pending request on the queue
-         for (Map.Entry<Long, PageCursorInfo> entry : consumedPages.entrySet())
-         {
-            if (!entry.getValue().isPendingDelete())
-            {
-               if (entry.getValue().acks.isEmpty())
-               {
-                  return new PagePositionImpl(entry.getKey(), -1);
-               }
-               else
-               {
-                  // The list is not ordered...
-                  // This is only done at creation of the queue, so we just scan instead of keeping the list ordened
-                  PagePosition retValue = null;
-
-                  for (PagePosition pos : entry.getValue().acks)
-                  {
-                     if (isTrace)
-                     {
-                        HornetQServerLogger.LOGGER.trace("Analizing " + pos);
-                     }
-                     if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
-                     {
-                        retValue = pos;
-                     }
-                  }
-
-                  if (isTrace)
-                  {
-                     HornetQServerLogger.LOGGER.trace("Returning initial position " + retValue);
-                  }
-
-                  return retValue;
-               }
-            }
-         }
-      }
-
       return new PagePositionImpl(pageStore.getFirstPage(), -1);
    }
 
@@ -879,26 +838,32 @@ class PageSubscriptionImpl implements PageSubscription
       return executor;
    }
 
-   private synchronized PageCursorInfo getPageInfo(final PagePosition pos)
+
+   public void reloadPageInfo(long pageNr)
    {
-      return getPageInfo(pos, true);
+      getPageInfo(pageNr, true);
    }
 
-   private PageCursorInfo getPageInfo(final PagePosition pos, boolean create)
+   private synchronized PageCursorInfo getPageInfo(final PagePosition pos)
+   {
+      return getPageInfo(pos.getPageNr(), true);
+   }
+
+   private PageCursorInfo getPageInfo(final long pageNr, boolean create)
    {
       synchronized (consumedPages)
       {
-         PageCursorInfo pageInfo = consumedPages.get(pos.getPageNr());
+         PageCursorInfo pageInfo = consumedPages.get(pageNr);
 
          if (create && pageInfo == null)
          {
-            PageCache cache = cursorProvider.getPageCache(pos);
+            PageCache cache = cursorProvider.getPageCache(pageNr);
             if (cache == null)
             {
                return null;
             }
-            pageInfo = new PageCursorInfo(pos.getPageNr(), cache.getNumberOfMessages(), cache);
-            consumedPages.put(pos.getPageNr(), pageInfo);
+            pageInfo = new PageCursorInfo(pageNr, cache.getNumberOfMessages(), cache);
+            consumedPages.put(pageNr, pageInfo);
          }
          return pageInfo;
       }
@@ -1203,7 +1168,7 @@ class PageSubscriptionImpl implements PageSubscription
             PageCache localcache = this.cache.get();
             if (localcache == null)
             {
-               localcache = cursorProvider.getPageCache(new PagePositionImpl(pageId, 0));
+               localcache = cursorProvider.getPageCache(pageId);
                this.cache = new WeakReference<PageCache>(localcache);
             }
 
@@ -1385,7 +1350,7 @@ class PageSubscriptionImpl implements PageSubscription
                   ignored = true;
                }
 
-               PageCursorInfo info = getPageInfo(message.getPosition(), false);
+               PageCursorInfo info = getPageInfo(message.getPosition().getPageNr(), false);
 
                if (info != null && info.isRemoved(message.getPosition()))
                {

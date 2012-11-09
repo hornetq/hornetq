@@ -95,6 +95,8 @@ public interface PageSubscription
 
    void reloadPageCompletion(PagePosition position);
 
+   void reloadPageInfo(long pageNr);
+
    /**
     * To be called when the cursor decided to ignore a position.
     *
