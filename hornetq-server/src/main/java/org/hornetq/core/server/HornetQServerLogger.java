@@ -860,7 +860,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222189, value =   "Unable to announce backup, retrying", format = Message.Format.MESSAGE_FORMAT)
-   void errorAnnouncingBackup(@Cause Exception e);
+   void errorAnnouncingBackup();
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222190, value =   "Local Member is not set at on ClusterConnection {0}", format = Message.Format.MESSAGE_FORMAT)
