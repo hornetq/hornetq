@@ -113,7 +113,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRAConnectionMetaData.log.trace("getJMSProviderName()");
       }
 
-      return "2.2.19.Final";
+      return "2.2.24.Snapshot";
    }
 
    /**
