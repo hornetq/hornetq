@@ -495,9 +495,17 @@ public class HornetQSession implements QueueSession, TopicSession
          {
             connection.setHasNoLocal();
 
-            String filter = HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" +
-                            connection.getUID() +
-                            "'";
+            String filter;
+            if (connection.getClientID() != null)
+            {
+               filter =
+                        HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getClientID() +
+                                 "'";
+            }
+            else
+            {
+               filter = HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getUID() + "'";
+            }
 
             if (selectorString != null)
             {
