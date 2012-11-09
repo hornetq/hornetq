@@ -81,7 +81,7 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 
         // Handshake
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-                this.getWebSocketLocation(req), null, false);
+                this.getWebSocketLocation(req), "v10.stomp", false);
         this.handshaker = wsFactory.newHandshaker(req);
         if (this.handshaker == null) {
             wsFactory.sendUnsupportedWebSocketVersionResponse(ctx.getChannel());
