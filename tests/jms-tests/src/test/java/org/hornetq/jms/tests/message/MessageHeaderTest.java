@@ -314,7 +314,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          propNames.add(propName);
       }
 
-      ProxyAssertSupport.assertEquals(9, propNames.size());
+      // the original connection ID is always sent now, so 9 + 1 the original connection ID
+      ProxyAssertSupport.assertEquals(10, propNames.size());
 
       ProxyAssertSupport.assertTrue(propNames.contains("myBool"));
       ProxyAssertSupport.assertTrue(propNames.contains("myByte"));
