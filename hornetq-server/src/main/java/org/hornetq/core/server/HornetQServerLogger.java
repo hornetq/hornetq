@@ -983,8 +983,22 @@ public interface HornetQServerLogger extends BasicLogger
    void backupMovingDataAway(String oldPath, String newPath);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222217, value = "Error when trying to start replication {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222217, value = "Server is being completely stopped, since this was a replicated backup there may be " +
+         "journal files that need cleaning up. The HornetQ server will have to be manually restarted.",
+            format = Message.Format.MESSAGE_FORMAT)
+   void stopReplicatedBackupAfterFailback();
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222218, value = "Error when trying to start replication {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorStartingReplication(BackupReplicationStartFailedMessage.BackupRegistrationProblem problem);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222219, value = "Error starting naming server", format = Message.Format.MESSAGE_FORMAT)
+   void unableToStartNamingServer(@Cause Exception e);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222220, value = "Error stopping naming server", format = Message.Format.MESSAGE_FORMAT)
+   void unableToStopNamingServer(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224002, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
