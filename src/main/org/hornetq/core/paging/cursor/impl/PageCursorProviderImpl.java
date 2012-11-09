@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -122,7 +123,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public PagedMessage getMessage(final PagePosition pos) throws Exception
    {
-      PageCache cache = getPageCache(pos);
+      PageCache cache = getPageCache(pos.getPageNr());
 
       if (cache == null || pos.getMessageNr() >= cache.getNumberOfMessages())
       {
@@ -138,14 +139,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
                                       final PageSubscription subscription)
    {
       return new PagedReferenceImpl(pos, msg, subscription);
-   }
-
-   /**
-    * No need to synchronize this method since the private getPageCache will have a synchronized call
-    */
-   public PageCache getPageCache(PagePosition pos)
-   {
-      return getPageCache(pos.getPageNr());
    }
 
    public PageCache getPageCache(final long pageId)
@@ -250,9 +243,30 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public void processReload() throws Exception
    {
-      for (PageSubscription cursor : this.activeCursors.values())
+      Collection<PageSubscription> cursorList = this.activeCursors.values();
+      for (PageSubscription cursor : cursorList)
       {
          cursor.processReload();
+      }
+      
+      if (!cursorList.isEmpty())
+      {
+         // https://issues.jboss.org/browse/JBPAPP-10338 if you ack out of order,
+         // the min page could be beyond the first page.
+         // we have to reload any previously acked message 
+         long cursorsMinPage = checkMinPage(cursorList);
+         
+         // checkMinPage will return MaxValue if there aren't any pages or any cursors
+         if (cursorsMinPage != Long.MAX_VALUE)
+         {
+            for (long startPage = pagingStore.getFirstPage(); startPage < cursorsMinPage; startPage++)
+            {
+               for (PageSubscription cursor : cursorList)
+               {
+                  cursor.reloadPageInfo(startPage);
+               }
+            }
+         }
       }
 
       cleanup();
@@ -622,7 +636,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    /**
     * This method is synchronized because we want it to be atomic with the cursors being used
     */
-   private long checkMinPage(List<PageSubscription> cursorList)
+   private long checkMinPage(Collection<PageSubscription> cursorList)
    {
       long minPage = Long.MAX_VALUE;
 
