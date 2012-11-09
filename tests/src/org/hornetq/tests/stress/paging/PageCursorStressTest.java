@@ -102,7 +102,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       for (int i = 0; i < numberOfPages; i++)
       {
-         PageCache cache = cursorProvider.getPageCache(new PagePositionImpl(i + 1, 0));
+         PageCache cache = cursorProvider.getPageCache(i + 1);
          System.out.println("Page " + i + " had " + cache.getNumberOfMessages() + " messages");
 
       }
@@ -261,93 +261,9 @@ public class PageCursorStressTest extends ServiceTestBase
 
       PageCursorProvider cursorProvider = lookupCursorProvider();
 
-      PageCache cache = cursorProvider.getPageCache(new PagePositionImpl(2, 0));
+      PageCache cache = cursorProvider.getPageCache(2);
 
       assertNull(cache);
-   }
-
-   public void testRestart() throws Exception
-   {
-      final int NUM_MESSAGES = 1000;
-
-      int numberOfPages = addMessages(NUM_MESSAGES, 100 * 1024);
-
-      System.out.println("Number of pages = " + numberOfPages);
-
-      PageCursorProvider cursorProvider = lookupCursorProvider();
-
-      PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvier()
-                                           .getSubscription(queue.getID());
-
-      PageCache firstPage = cursorProvider.getPageCache(new PagePositionImpl(server.getPagingManager()
-                                                                                   .getPageStore(ADDRESS)
-                                                                                   .getFirstPage(), 0));
-
-      int firstPageSize = firstPage.getNumberOfMessages();
-
-      firstPage = null;
-
-      System.out.println("Cursor: " + cursor);
-      cursorProvider.printDebug();
-
-      LinkedListIterator<PagedReference> iterator = cursor.iterator();
-
-      for (int i = 0; i < 1000; i++)
-      {
-         System.out.println("Reading Msg : " + i);
-         PagedReference msg = iterator.next();
-         assertNotNull(msg);
-         assertEquals(i, msg.getMessage().getIntProperty("key").intValue());
-
-         if (i < firstPageSize)
-         {
-            cursor.ack(msg);
-         }
-      }
-      cursorProvider.printDebug();
-
-      server.getStorageManager().waitOnOperations();
-      lookupPageStore(ADDRESS).flushExecutors();
-
-      // needs to clear the context since we are using the same thread over two distinct servers
-      // otherwise we will get the old executor on the factory
-      OperationContextImpl.clearContext();
-
-      server.stop();
-
-      server.start();
-
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
-
-      iterator = cursor.iterator();
-
-      for (int i = firstPageSize; i < NUM_MESSAGES; i++)
-      {
-         System.out.println("Received " + i);
-         PagedReference msg = iterator.next();
-         assertNotNull(msg);
-         assertEquals(i, msg.getMessage().getIntProperty("key").intValue());
-
-         cursor.ack(msg);
-
-         OperationContextImpl.getContext(null).waitCompletion();
-
-      }
-
-      OperationContextImpl.getContext(null).waitCompletion();
-
-      lookupPageStore(ADDRESS).flushExecutors();
-
-      assertFalse(lookupPageStore(ADDRESS).isPaging());
-
-      server.stop();
-      createServer();
-      assertFalse(lookupPageStore(ADDRESS).isPaging());
-      waitCleanup();
-      assertEquals(1, lookupPageStore(ADDRESS).getNumberOfPages());
-
    }
 
    public void testRestartWithHoleOnAck() throws Exception
@@ -754,7 +670,7 @@ public class PageCursorStressTest extends ServiceTestBase
       // The cleanup is done asynchronously, so we need to wait some time
       long timeout = System.currentTimeMillis() + 10000;
 
-      while (System.currentTimeMillis() < timeout && lookupPageStore(ADDRESS).getNumberOfPages() != 1)
+      while (System.currentTimeMillis() < timeout && lookupPageStore(ADDRESS).getNumberOfPages() > 2)
       {
          Thread.sleep(100);
       }
@@ -762,90 +678,6 @@ public class PageCursorStressTest extends ServiceTestBase
       assertTrue("expected " + lookupPageStore(ADDRESS).getNumberOfPages(),
                  lookupPageStore(ADDRESS).getNumberOfPages() <= 2);
    }
-
-   public void testPrepareScenarios() throws Exception
-   {
-      PagingStoreImpl pageStore = lookupPageStore(ADDRESS);
-
-      pageStore.startPaging();
-
-      final int NUM_MESSAGES = 100;
-
-      final int messageSize = 100 * 1024;
-
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
-      System.out.println("cursorProvider = " + cursorProvider);
-
-      PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvier()
-                                           .getSubscription(queue.getID());
-      LinkedListIterator<PagedReference> iterator = cursor.iterator();
-
-      System.out.println("Cursor: " + cursor);
-
-      StorageManager storage = this.server.getStorageManager();
-
-      long pgtxRollback = storage.generateUniqueID();
-      long pgtxForgotten = storage.generateUniqueID();
-      long pgtxCommit = storage.generateUniqueID();
-
-      Transaction txRollback = pgMessages(storage, pageStore, pgtxRollback, 0, NUM_MESSAGES, messageSize);
-      pageStore.forceAnotherPage();
-      Transaction txForgotten = pgMessages(storage, pageStore, pgtxForgotten, 100, NUM_MESSAGES, messageSize);
-      pageStore.forceAnotherPage();
-      Transaction txCommit = pgMessages(storage, pageStore, pgtxCommit, 200, NUM_MESSAGES, messageSize);
-      pageStore.forceAnotherPage();
-
-      addMessages(300, NUM_MESSAGES, messageSize);
-
-      System.out.println("Number of pages - " + pageStore.getNumberOfPages());
-
-      // First consume what's already there without any tx as nothing was committed
-      for (int i = 300; i < 400; i++)
-      {
-         PagedReference pos = iterator.next();
-         assertNotNull("Null at position " + i, pos);
-         assertEquals(i, pos.getMessage().getIntProperty("key").intValue());
-         cursor.ack(pos);
-      }
-
-      assertNull(iterator.next());
-
-      cursor.printDebug();
-
-      txCommit.commit();
-
-      txRollback.rollback();
-
-      storage.waitOnOperations();
-
-      // Second:after pgtxCommit was done
-      for (int i = 200; i < 300; i++)
-      {
-         PagedReference pos = iterator.next();
-         assertNotNull(pos);
-         assertEquals(i, pos.getMessage().getIntProperty("key").intValue());
-         cursor.ack(pos);
-      }
-
-      assertNull(iterator.next());
-
-      server.getStorageManager().waitOnOperations();
-
-      server.stop();
-      createServer();
-
-      long timeout = System.currentTimeMillis() + 10000;
-
-      while (System.currentTimeMillis() < timeout && lookupPageStore(ADDRESS).getNumberOfPages() != 1)
-      {
-         Thread.sleep(500);
-      }
-      assertEquals(1, lookupPageStore(ADDRESS).getNumberOfPages());
-
-   }
-
 
    public void testLazyCommit() throws Exception
    {
@@ -912,96 +744,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
-   public void testNoCursors() throws Exception
-   {
-
-      final int NUM_MESSAGES = 100;
-
-      int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
-
-      ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory sf = locator.createSessionFactory();
-      ClientSession session = sf.createSession();
-      session.deleteQueue(ADDRESS);
-
-      System.out.println("NumberOfPages = " + numberOfPages);
-
-      session.close();
-      sf.close();
-      locator.close();
-      server.stop();
-      createServer();
-      waitCleanup();
-      assertEquals(0, lookupPageStore(ADDRESS).getNumberOfPages());
-
-   }
-
-   public void testFirstMessageInTheMiddlePersistent() throws Exception
-   {
-
-      final int NUM_MESSAGES = 100;
-
-      int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
-
-      System.out.println("NumberOfPages = " + numberOfPages);
-
-      PageCursorProvider cursorProvider = lookupCursorProvider();
-
-      PageCache cache = cursorProvider.getPageCache(new PagePositionImpl(5, 0));
-
-      PageSubscription cursor = cursorProvider.getSubscription(queue.getID());
-      PagePosition startingPos = new PagePositionImpl(5, cache.getNumberOfMessages() / 2);
-      cursor.bookmark(startingPos);
-
-      // We can't proceed until the operation has finished
-      server.getStorageManager().waitOnOperations();
-
-      PagedMessage msg = cache.getMessage(startingPos.getMessageNr() + 1);
-      msg.initMessage(server.getStorageManager());
-      int initialKey = msg.getMessage().getIntProperty("key").intValue();
-      int key = initialKey;
-
-      msg = null;
-
-      cache = null;
-
-      LinkedListIterator<PagedReference> iterator = cursor.iterator();
-
-      PagedReference msgCursor = null;
-      while ((msgCursor = iterator.next()) != null)
-      {
-         assertEquals(key++, msgCursor.getMessage().getIntProperty("key").intValue());
-      }
-      assertEquals(NUM_MESSAGES, key);
-
-      server.stop();
-
-      OperationContextImpl.clearContext();
-
-      createServer();
-
-      cursorProvider = lookupCursorProvider();
-      cursor = cursorProvider.getSubscription(queue.getID());
-      key = initialKey;
-      iterator = cursor.iterator();
-      while ((msgCursor = iterator.next()) != null)
-      {
-         assertEquals(key++, msgCursor.getMessage().getIntProperty("key").intValue());
-         cursor.ack(msgCursor);
-      }
-
-      forceGC();
-
-      assertTrue(cursorProvider.getCacheSize() < numberOfPages);
-
-      server.stop();
-      createServer();
-      waitCleanup();
-      assertEquals(1, lookupPageStore(ADDRESS).getNumberOfPages());
-
-   }
-
-   private int tstProperty(ServerMessage msg)
+    private int tstProperty(ServerMessage msg)
    {
       return msg.getIntProperty("key").intValue();
    }
