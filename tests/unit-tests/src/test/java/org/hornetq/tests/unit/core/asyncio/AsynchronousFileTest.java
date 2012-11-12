@@ -343,56 +343,69 @@ public class AsynchronousFileTest extends AIOTestBase
 
          waitForLatch(callbackLocal.latch);
 
-         ByteBuffer newBuffer = AsynchronousFileImpl.newBuffer(512);
-
-         try
          {
-            callbackLocal = new LocalCallback();
+            ByteBuffer newBuffer = AsynchronousFileImpl.newBuffer(512);
 
-            controller.read(0, 50, newBuffer, callbackLocal);
+            try
+            {
+               callbackLocal = new LocalCallback();
 
-            waitForLatch(callbackLocal.latch);
+               controller.read(0, 50, newBuffer, callbackLocal);
 
-            Assert.assertTrue(callbackLocal.error);
+               waitForLatch(callbackLocal.latch);
 
-         }
-         finally
-         {
-            // We have to destroy the native buffer manually as it was created with a malloc like C function
-            AsynchronousFileImpl.destroyBuffer(newBuffer);
-            newBuffer = null;
+               Assert.assertTrue(callbackLocal.error);
+
+            }
+            finally
+            {
+               // We have to destroy the native buffer manually as it was created with a malloc like C function
+               AsynchronousFileImpl.destroyBuffer(newBuffer);
+               newBuffer = null;
+            }
          }
          callbackLocal = new LocalCallback();
 
          byte bytes[] = new byte[512];
 
-         try
          {
-            newBuffer = ByteBuffer.wrap(bytes);
+            try
+            {
+               ByteBuffer newBuffer = ByteBuffer.wrap(bytes);
 
-            controller.read(0, 512, newBuffer, callbackLocal);
+               controller.read(0, 512, newBuffer, callbackLocal);
 
-            Assert.fail("An exception was supposed to be thrown");
+               Assert.fail("An exception was supposed to be thrown");
+            }
+            catch (HornetQException ignored)
+            {
+            }
          }
-         catch (HornetQException ignored)
+
          {
-         }
+            ByteBuffer newBuffer = AsynchronousFileImpl.newBuffer(512);
+            try
+            {
+               callbackLocal = new LocalCallback();
+               controller.read(0, 512, newBuffer, callbackLocal);
+               waitForLatch(callbackLocal.latch);
+               Assert.assertFalse(callbackLocal.error);
 
-         newBuffer = AsynchronousFileImpl.newBuffer(512);
-         callbackLocal = new LocalCallback();
-         controller.read(0, 512, newBuffer, callbackLocal);
-         waitForLatch(callbackLocal.latch);
-         Assert.assertFalse(callbackLocal.error);
+               newBuffer.rewind();
 
-         newBuffer.rewind();
+               byte[] bytesRead = new byte[SIZE];
 
-         byte[] bytesRead = new byte[SIZE];
+               newBuffer.get(bytesRead);
 
-         newBuffer.get(bytesRead);
-
-         for (int i = 0; i < SIZE; i++)
-         {
-            Assert.assertEquals((byte)(i % 100), bytesRead[i]);
+               for (int i = 0; i < SIZE; i++)
+               {
+                  Assert.assertEquals((byte)(i % 100), bytesRead[i]);
+               }
+            }
+            finally
+            {
+               AsynchronousFileImpl.destroyBuffer(newBuffer);
+            }
          }
       }
       finally
