@@ -112,7 +112,7 @@
                 both <literal>hornetq-configuration.xml</literal> to have:</para>
 
                 <programlisting>
-&lt;shared-store>false&lt;shared-store>
+&lt;shared-store>false&lt;/shared-store>
 .
 .
 .
@@ -169,7 +169,7 @@
                     <para>To configure the live and backup servers to share their store, configure
                         all <literal>hornetq-configuration.xml</literal>:</para>
                     <programlisting>
-&lt;shared-store>true&lt;shared-store>
+&lt;shared-store>true&lt;/shared-store>
                 </programlisting>
                     <para>Additionally, each backup server must be flagged explicitly as a
                         backup:</para>
@@ -187,32 +187,39 @@
                         to it's live server or any other nodes in the cluster. refer to <xref linkend="clusters"/> for details
                         on how this is done.</para>
                 </section>
-                <section id="ha.allow-fail-back">
-                    <title>Failing Back to live Server</title>
-                    <para>After a live server has failed and a backup taken has taken over its duties, you may want to
-                        restart the live server and have clients fail back. To do this simply restart the original live
-                        server and kill the new live server. You can do this by killing the process itself or just waiting
-                        for the server to crash naturally </para>
-                    <para>
-                        It is also possible to cause failover to occur on normal server shutdown, to enable
-                        this set the following property to true in the <literal>hornetq-configuration.xml</literal>
-                        configuration file like so:
-                    </para>
-                    <programlisting>
+            </section>
+            <section id="ha.allow-fail-back">
+                <title>Failing Back to live Server</title>
+                <para>After a live server has failed and a backup taken has taken over its duties, you may want to
+                    restart the live server and have clients fail back. To do this simply restart the original live
+                    server and kill the new live server. You can do this by killing the process itself or just waiting
+                    for the server to crash naturally </para>
+                <para>
+                    It is also possible to cause failover to occur on normal server shutdown, to enable
+                    this set the following property to true in the <literal>hornetq-configuration.xml</literal>
+                    configuration file like so:
+                </para>
+                <programlisting>
 &lt;failover-on-shutdown>true&lt;/failover-on-shutdown></programlisting>
-                    <para>
-                        By default this is set to false, if by some chance you have set this to false but still
-                        want to stop the server normally and cause failover then you can do this by using the management
-                        API as explained at <xref linkend="management.core.server"/>
-                    </para>
-                    <para>
-                        You can also force the new live server to shutdown when the old live server comes back up allowing
-                        the original live server to take over automatically by setting the following property in the
-                    <literal>hornetq-configuration.xml</literal> configuration file as follows:
-                    </para>
-                    <programlisting>
+                <para>
+                    By default this is set to false, if by some chance you have set this to false but still
+                    want to stop the server normally and cause failover then you can do this by using the management
+                    API as explained at <xref linkend="management.core.server"/>
+                </para>
+                <para>
+                    You can also force the new live server to shutdown when the old live server comes back up allowing
+                    the original live server to take over automatically by setting the following property in the
+                <literal>hornetq-configuration.xml</literal> configuration file as follows:
+                </para>
+                <programlisting>
 &lt;allow-failback>true&lt;/allow-failback></programlisting>
-                </section>
+                <para>
+                    In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
+                    to <literal>true</literal> in order to force the new live server to shutdown when the old live server 
+                    comes back up in <literal>hornetq-configuration.xml</literal> configuration file as follows:
+                </para>
+                <programlisting>
+&lt;check-for-live-server>true&lt;/check-for-live-server></programlisting>
             </section>
     </section>
     <section id="failover">
@@ -342,7 +349,7 @@
                   <title>2 phase commit</title>
                   <para>
                      The caveat to this rule is when XA is used either via JMS or through the core API.
-                     If 2 phase commit is used and prepare has already ben called then rolling back could
+                     If 2 phase commit is used and prepare has already been called then rolling back could
                      cause a <literal>HeuristicMixedException</literal>. Because of this the commit will throw
                      a <literal>XAException.XA_RETRY</literal> exception. This informs the Transaction Manager
                      that it should retry the commit at some later point in time, a side effect of this is
