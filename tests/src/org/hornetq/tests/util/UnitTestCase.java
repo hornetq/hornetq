@@ -1056,19 +1056,26 @@ public class UnitTestCase extends TestCase
    /**
     *
     */
-   protected void cleanupPools()
+   protected void cleanupPools() throws Exception
    {
       OperationContextImpl.clearContext();
+      
+      long timeout = System.currentTimeMillis() + 5000;
 
-      int invmSize = InVMRegistry.instance.size();
-      if (invmSize > 0)
+      while (InVMRegistry.instance.size() > 0  && timeout > System.currentTimeMillis())
+      {
+         Thread.sleep(100);
+      }
+
+      if (InVMRegistry.instance.size() > 0)
       {
          InVMRegistry.instance.clear();
          log.info(threadDump("Thread dump"));
-         fail("invm registry still had acceptors registered");
+         Assert.assertEquals(0, InVMRegistry.instance.size());
+
       }
 
-      long timeout = System.currentTimeMillis() + 15000;
+      timeout = System.currentTimeMillis() + 15000;
 
       while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
       {
