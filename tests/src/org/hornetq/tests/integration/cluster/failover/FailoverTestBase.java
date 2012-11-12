@@ -209,15 +209,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       nodeManager = null;
 
-      long timeout = System.currentTimeMillis() + 5000;
-
-      while (InVMRegistry.instance.size() > 0  && timeout > System.currentTimeMillis())
-      {
-         Thread.sleep(100);
-      }
-
-      Assert.assertEquals(0, InVMRegistry.instance.size());
       super.tearDown();
+      
       try
       {
          ServerSocket serverSocket = new ServerSocket(5445);
