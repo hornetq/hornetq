@@ -251,7 +251,6 @@ public class PagingFailoverTest extends FailoverTestBase
          catch (Throwable e)
          {
             e.printStackTrace();
-            System.exit(-1);
          }
 
       }
