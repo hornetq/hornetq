@@ -136,7 +136,7 @@ public class MessageGroupExample extends HornetQExample
          try
          {
             TextMessage msg = (TextMessage)message;
-            System.out.format("Message: [%s] received by %s\n", msg.getText(), name);
+            System.out.format("Message: [%s] received by %s%n", msg.getText(), name);
             messageReceiverMap.put(msg.getText(), name);
          }
          catch (JMSException e)
