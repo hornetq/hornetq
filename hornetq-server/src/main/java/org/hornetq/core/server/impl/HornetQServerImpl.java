@@ -429,6 +429,10 @@ public class HornetQServerImpl implements HornetQServer
             }
             else
             {
+               if(wasLive)
+               {
+                  moveServerData();
+               }
                assert replicationEndpoint == null;
                backupUpToDate = false;
                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
