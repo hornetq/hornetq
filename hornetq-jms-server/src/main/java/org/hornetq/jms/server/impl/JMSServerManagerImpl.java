@@ -267,6 +267,74 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
+   @Override
+   public void deActivate()
+   {
+      try
+      {
+         synchronized (this)
+         {
+            if (!active)
+            {
+               return;
+            }
+
+            if (jmsDeployer != null)
+            {
+               jmsDeployer.stop();
+            }
+
+            if (deploymentManager != null)
+            {
+               deploymentManager.stop();
+            }
+
+            // Storage could be null on a shared store backup server before initialization
+            if (storage != null && storage.isStarted())
+            {
+               storage.stop();
+            }
+
+            unbindJNDI(queueJNDI);
+
+            unbindJNDI(topicJNDI);
+
+            unbindJNDI(connectionFactoryJNDI);
+
+            for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
+            {
+               shutdownConnectionFactory(connectionFactory);
+            }
+
+            connectionFactories.clear();
+            connectionFactoryJNDI.clear();
+
+            queueJNDI.clear();
+            queues.clear();
+
+            topicJNDI.clear();
+            topics.clear();
+
+            // it could be null if a backup
+            if (jmsManagementService != null)
+            {
+               jmsManagementService.unregisterJMSServer();
+
+               jmsManagementService.stop();
+            }
+
+            jmsDeployer = null;
+            jmsManagementService = null;
+
+            active = false;
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    public void recoverJndiBindings(String name, PersistedType type)
          throws NamingException
    {
@@ -404,54 +472,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             return;
          }
-
-         if (jmsDeployer != null)
-         {
-            jmsDeployer.stop();
-         }
-
-         if (deploymentManager != null)
-         {
-            deploymentManager.stop();
-         }
-
-         // Storage could be null on a shared store backup server before initialization
-         if (storage != null)
-         {
-            storage.stop();
-         }
-
-         unbindJNDI(queueJNDI);
-
-         unbindJNDI(topicJNDI);
-
-         unbindJNDI(connectionFactoryJNDI);
-
-         for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
-         {
-            shutdownConnectionFactory(connectionFactory);
-         }
-
-         connectionFactories.clear();
-         connectionFactoryJNDI.clear();
-
-         queueJNDI.clear();
-         queues.clear();
-
-         topicJNDI.clear();
-         topics.clear();
-
+         //deactivate in case we haven't been already
+         deActivate();
          if (registry != null)
          {
             registry.close();
-         }
-
-         // it could be null if a backup
-         if (jmsManagementService != null)
-         {
-            jmsManagementService.unregisterJMSServer();
-
-            jmsManagementService.stop();
          }
 
          started = false;
