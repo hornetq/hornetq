@@ -132,7 +132,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" +
+            Long.toString(System.nanoTime());
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
@@ -943,7 +944,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
       OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));
