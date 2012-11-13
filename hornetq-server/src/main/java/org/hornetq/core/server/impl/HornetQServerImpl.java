@@ -606,6 +606,8 @@ public class HornetQServerImpl implements HornetQServer
 
       if (storageManager != null)
       storageManager.clearContext();
+      //before we stop any components deactivate any callbacks
+      callDeActiveCallbacks();
 
       synchronized (this)
       {
@@ -1326,6 +1328,14 @@ public class HornetQServerImpl implements HornetQServer
       for (ActivateCallback callback : activateCallbacks)
       {
          callback.preActivate();
+      }
+   }
+
+   private void callDeActiveCallbacks()
+   {
+      for (ActivateCallback callback : activateCallbacks)
+      {
+         callback.deActivate();
       }
    }
 
@@ -2687,6 +2697,7 @@ public class HornetQServerImpl implements HornetQServer
                            //
                         }
                         stop(true);
+                        HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
                      }
                      else
                      {
@@ -2760,7 +2771,7 @@ public class HornetQServerImpl implements HornetQServer
       @Override
       public void connectionClosed()
       {
-         Executors.newSingleThreadExecutor().execute(new Runnable()
+         threadPool.execute(new Runnable()
          {
             public void run()
             {
