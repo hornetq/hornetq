@@ -118,4 +118,10 @@
     <Class name="~org\.hornetq\..*\.HornetQ.*(Logger_\$logger|Bundle_\$bundle)"/>
   </Match>
 
+  <!-- Ignore checks on return values, example File.delete(), on samples/examples -->
+  <Match>
+    <Class name="~org\.hornetq\.common\.example.*Example"/>
+    <bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
+  </Match>
+
 </FindBugsFilter>
