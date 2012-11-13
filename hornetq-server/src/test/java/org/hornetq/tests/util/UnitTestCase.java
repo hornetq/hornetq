@@ -465,7 +465,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       else
       {
          // System.out goes towards JUnit report
-         System.out.println("Test " + clazz.getName() + " ignored as AIO is not available");
+         System.out.println("Test " + clazz.getName() + " ignored as AIO is not available." +
+            "Add this to your java arguments if you are on a Linux system:" +
+            "\n-Djava.library.path=<project_home>/distribution/hornetq/src/main/resources/bin");
       }
 
       return suite;
