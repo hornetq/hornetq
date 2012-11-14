@@ -21,7 +21,11 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
+
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -30,15 +34,12 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         8/6/12
  */
 public class ReplicatedMultipleServerFailoverExtraBackupsTest extends ReplicatedMultipleServerFailoverTest
 {
+   @Override
    public void testStartLiveFirst() throws Exception
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
@@ -50,12 +51,15 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
       for (TestableServer backupServer : backupServers)
       {
          backupServer.start();
+         waitForRemoteBackupSynchronization(backupServer.getServer());
       }
+
       sendCrashReceive();
       waitForTopology(backupServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashBackupReceive();
    }
 
+   @Override
    public void testStartBackupFirst() throws Exception
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
@@ -69,6 +73,12 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
       {
          liveServer.start();
       }
+
+      for (TestableServer backupServer : backupServers)
+      {
+         waitForRemoteBackupSynchronization(backupServer.getServer());
+      }
+
       waitForTopology(liveServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashReceive();
    }
