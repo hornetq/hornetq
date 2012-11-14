@@ -313,6 +313,21 @@ public class AsynchronousFileTest extends AIOTestBase
       }
    }
 
+   public void testReleaseNullBuffer() throws Exception
+   {
+      boolean failed = false;
+      try
+      {
+         AsynchronousFileImpl.destroyBuffer(null);
+      }
+      catch (Exception expected)
+      {
+         failed = true;
+      }
+
+      assertTrue("Exception expected", failed);
+   }
+
    public void testInvalidReads() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
