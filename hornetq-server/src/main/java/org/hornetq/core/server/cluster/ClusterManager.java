@@ -104,11 +104,6 @@ public class ClusterManager implements HornetQComponent
                              final Configuration configuration,
                          final NodeManager nodeManager, final boolean backup)
    {
-      if (nodeManager.getNodeId() == null)
-      {
-         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
-      }
-
       this.executorFactory = executorFactory;
 
       executor = executorFactory.getExecutor();;

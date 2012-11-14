@@ -352,16 +352,22 @@ public class HornetQServerImpl implements HornetQServer
    /*
     * Can be overridden for tests
     */
-   protected NodeManager createNodeManager(final String directory)
+   protected NodeManager createNodeManager(final String directory, String nodeGroupName, boolean replicatingBackup)
    {
+      NodeManager manager;
       if (configuration.getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
       {
-         return new AIOFileLockNodeManager(directory);
+         manager = new AIOFileLockNodeManager(directory, replicatingBackup);
       }
-      return new FileLockNodeManager(directory);
+      else
+      {
+         manager = new FileLockNodeManager(directory, replicatingBackup);
+      }
+      manager.setNodeGroupName(nodeGroupName);
+      return manager;
    }
 
-   public synchronized void start() throws Exception
+   public final synchronized void start() throws Exception
    {
       if (state != SERVER_STATE.STOPPED)
       {
@@ -379,20 +385,10 @@ public class HornetQServerImpl implements HornetQServer
 
       try
       {
-         if (configuration.isBackup() && !configuration.isSharedStore())
-         {
-            /**
-             * Has to be done before all directory checks and before opening the "server.lock" file
-             * (done when using {@link FileLockNodeManager} or its extension classes.
-             */
-            moveServerData();
-         }
-
          checkJournalDirectory();
 
-         nodeManager = createNodeManager(configuration.getJournalDirectory());
-
-         nodeManager.setNodeGroupName(configuration.getBackupGroupName());
+         nodeManager =
+                  createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), false);
 
          nodeManager.start();
 
@@ -430,6 +426,9 @@ public class HornetQServerImpl implements HornetQServer
             else
             {
                assert replicationEndpoint == null;
+               nodeManager.stop();
+               nodeManager =
+                        createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), true);
                backupUpToDate = false;
                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
                activation = new SharedNothingBackupActivation(wasLive);
@@ -456,7 +455,7 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   protected void finalize() throws Throwable
+   protected final void finalize() throws Throwable
    {
       if (state != SERVER_STATE.STOPPED)
       {
@@ -471,7 +470,7 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * Stops the server in a different thread.
     */
-   public void stopTheServer()
+   public final void stopTheServer()
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.submit(new Runnable()
@@ -491,7 +490,7 @@ public class HornetQServerImpl implements HornetQServer
       });
    }
 
-   public void stop() throws Exception
+   public final void stop() throws Exception
    {
       synchronized (failbackCheckerGuard)
       {
@@ -528,7 +527,7 @@ public class HornetQServerImpl implements HornetQServer
       HornetQServerLogger.LOGGER.warn(str.toString());
    }
 
-   public void stop(boolean failoverOnServerShutdown) throws Exception
+   public final void stop(boolean failoverOnServerShutdown) throws Exception
    {
       stop(failoverOnServerShutdown, false);
    }
@@ -1562,6 +1561,10 @@ public class HornetQServerImpl implements HornetQServer
 
       remotingService.start();
 
+      if (nodeManager.getNodeId() == null)
+      {
+         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
+      }
       activationLatch.countDown();
    }
 
@@ -2192,6 +2195,10 @@ public class HornetQServerImpl implements HornetQServer
             {
                state = SERVER_STATE.STARTED;
             }
+            // move all data away:
+            nodeManager.stop();
+            moveServerData();
+            nodeManager.start();
             synchronized (this)
             {
                if (closed)
@@ -2215,7 +2222,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity());
+               quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity(), nodeManager);
                serverLocator0.addClusterTopologyListener(quorumManager);
             }
 
@@ -2241,7 +2248,7 @@ public class HornetQServerImpl implements HornetQServer
 
             serverLocator0.addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
-            nodeManager.startBackup();
+            // nodeManager.startBackup();
 
             clusterManager.start();
 
@@ -2314,9 +2321,9 @@ public class HornetQServerImpl implements HornetQServer
                if (!isStarted() || signal == STOP)
                   return;
                //time to fail over
-               else if(signal == FAIL_OVER)
+               else if (signal == FAIL_OVER)
                   break;
-               //something has gone badly run restart from scratch
+               // something has gone badly run restart from scratch
                else if(signal == BACKUP_ACTIVATION.FAILURE_REPLICATING)
                {
                   Thread startThread = new Thread(new Runnable()
@@ -2877,16 +2884,16 @@ public class HornetQServerImpl implements HornetQServer
       {
          File dir = new File(dir0);
          File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
-         if (dir.exists() )
+         if (dir.exists())
          {
             if (!dir.renameTo(newPath))
             {
-               throw new IllegalStateException("Could not move "+dir);
+               throw new IllegalStateException("Could not move " + dir);
             }
 
             HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
-            dir.mkdir();
          }
+         dir.mkdir();
       }
    }
 }

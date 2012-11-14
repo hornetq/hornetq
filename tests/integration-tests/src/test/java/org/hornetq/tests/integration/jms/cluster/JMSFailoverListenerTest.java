@@ -278,7 +278,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
     */
    protected void startServers() throws Exception
    {
-      NodeManager nodeManager = new InVMNodeManager();
+      NodeManager nodeManager = new InVMNodeManager(false);
       backuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
       livetc = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
 

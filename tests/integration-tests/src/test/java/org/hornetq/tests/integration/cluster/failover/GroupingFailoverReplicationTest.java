@@ -19,7 +19,7 @@ package org.hornetq.tests.integration.cluster.failover;
 public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
 {
    @Override
-   boolean isSharedServer()
+   protected boolean isSharedStore()
    {
       return false;
    }

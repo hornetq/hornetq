@@ -30,6 +30,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class FileLockTest extends UnitTestCase
 {
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -40,7 +41,7 @@ public class FileLockTest extends UnitTestCase
 
    public void testNIOLock() throws Exception
    {
-      doTestLock(new FileLockNodeManager(getTestDir()), new FileLockNodeManager(getTestDir()));
+      doTestLock(new FileLockNodeManager(getTestDir(), false), new FileLockNodeManager(getTestDir(), false));
 
    }
 
@@ -48,7 +49,7 @@ public class FileLockTest extends UnitTestCase
    {
       if (AsynchronousFileImpl.isLoaded())
       {
-         doTestLock(new AIOFileLockNodeManager(getTestDir()), new AIOFileLockNodeManager(getTestDir()));
+         doTestLock(new AIOFileLockNodeManager(getTestDir(), false), new AIOFileLockNodeManager(getTestDir(), false));
       }
 
    }

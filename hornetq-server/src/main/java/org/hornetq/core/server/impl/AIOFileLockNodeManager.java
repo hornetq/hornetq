@@ -35,10 +35,11 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
 
    /**
     * @param directory
+    * @param replicatingBackup
     */
-   public AIOFileLockNodeManager(final String directory)
+   public AIOFileLockNodeManager(final String directory, boolean replicatingBackup)
    {
-      super(directory);
+      super(directory, replicatingBackup);
    }
 
    @Override

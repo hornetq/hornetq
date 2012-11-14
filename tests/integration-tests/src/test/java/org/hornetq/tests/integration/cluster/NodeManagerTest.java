@@ -114,7 +114,7 @@ public class NodeManagerTest extends ServiceTestBase
 
    public void performWork(NodeManagerAction... actions) throws Exception
    {
-      NodeManager nodeManager = new InVMNodeManager();
+      NodeManager nodeManager = new InVMNodeManager(false);
       List<NodeRunner> nodeRunners = new ArrayList<NodeRunner>();
       Thread[] threads = new Thread[actions.length];
       for (NodeManagerAction action : actions)

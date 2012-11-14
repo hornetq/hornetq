@@ -13,11 +13,8 @@
 
 package org.hornetq.core.server.impl;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -25,7 +22,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUID;
-import org.hornetq.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -34,10 +30,6 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class FileLockNodeManager extends NodeManager
 {
-   private static final String SERVER_LOCK_NAME = "server.lock";
-
-   private static final String ACCESS_MODE = "rw";
-
    private static final int LIVE_LOCK_POS = 1;
 
    private static final int BACKUP_LOCK_POS = 2;
@@ -52,79 +44,30 @@ public class FileLockNodeManager extends NodeManager
 
    private static final byte NOT_STARTED = 'N';
 
-   private static final byte FIRST_TIME_START = '0';
-
-   private FileChannel channel;
-
    private FileLock liveLock;
 
    private FileLock backupLock;
 
-   private final String directory;
-
    protected boolean interrupted = false;
 
-   public FileLockNodeManager(final String directory)
+   public FileLockNodeManager(final String directory, boolean replicatedBackup)
    {
-      this.directory = directory;
+      super(replicatedBackup, directory);
    }
 
    @Override
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       if (isStarted())
       {
          return;
       }
-      File file = newFile(FileLockNodeManager.SERVER_LOCK_NAME);
-
-      boolean fileCreated = false;
-
-      if (!file.exists())
+      if (!replicatedBackup)
       {
-         try
-         {
-            fileCreated = file.createNewFile();
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.nodeManagerCantOpenFile(e, file);
-            throw e;
-         }
-         if (!fileCreated)
-         {
-            throw new IllegalStateException("Unable to create server lock file");
-         }
+         setUpServerLockFile();
       }
-
-      RandomAccessFile raFile = new RandomAccessFile(file, FileLockNodeManager.ACCESS_MODE);
-
-      channel = raFile.getChannel();
-
-      if (fileCreated)
-      {
-         ByteBuffer id = ByteBuffer.allocateDirect(3);
-         byte[] bytes = new byte[3];
-         bytes[0] = FileLockNodeManager.FIRST_TIME_START;
-         bytes[1] = FileLockNodeManager.FIRST_TIME_START;
-         bytes[2] = FileLockNodeManager.FIRST_TIME_START;
-         id.put(bytes, 0, 3);
-         id.position(0);
-         channel.write(id, 0);
-         channel.force(true);
-      }
-
-      createNodeId();
 
       super.start();
-   }
-
-   @Override
-   public void stop() throws Exception
-   {
-      channel.close();
-
-      super.stop();
    }
 
    @Override
@@ -162,9 +105,13 @@ public class FileLockNodeManager extends NodeManager
    }
 
    @Override
-   public void releaseBackup() throws Exception
+   public final void releaseBackup() throws Exception
    {
-      releaseBackupLock();
+      if (backupLock != null)
+      {
+         backupLock.release();
+         backupLock = null;
+      }
    }
 
    @Override
@@ -173,7 +120,7 @@ public class FileLockNodeManager extends NodeManager
       do
       {
          byte state = getState();
-         while (state == FileLockNodeManager.NOT_STARTED || state == FileLockNodeManager.FIRST_TIME_START)
+         while (state == FileLockNodeManager.NOT_STARTED || state == FIRST_TIME_START)
          {
             HornetQServerLogger.LOGGER.debug("awaiting live node startup state='" + state + "'");
             Thread.sleep(2000);
@@ -206,7 +153,7 @@ public class FileLockNodeManager extends NodeManager
    @Override
    public void startBackup() throws Exception
    {
-
+      assert !replicatedBackup; // should not be called if this is a replicating backup
       HornetQServerLogger.LOGGER.waitingToBecomeBackup();
 
       backupLock = lock(FileLockNodeManager.BACKUP_LOCK_POS);
@@ -249,22 +196,6 @@ public class FileLockNodeManager extends NodeManager
       }
    }
 
-   @Override
-   public void stopBackup() throws Exception
-   {
-      if (backupLock != null)
-      {
-         backupLock.release();
-         backupLock = null;
-      }
-
-   }
-
-   public String getDirectory()
-   {
-      return directory;
-   }
-
    private void setLive() throws Exception
    {
       writeFileLockStatus(FileLockNodeManager.LIVE);
@@ -286,6 +217,8 @@ public class FileLockNodeManager extends NodeManager
     */
    private void writeFileLockStatus(byte status) throws IOException
    {
+      if (replicatedBackup && channel == null)
+         return;
       ByteBuffer bb = ByteBuffer.allocateDirect(1);
       bb.put(status);
       bb.position(0);
@@ -308,36 +241,6 @@ public class FileLockNodeManager extends NodeManager
       }
    }
 
-   private void releaseBackupLock() throws Exception
-   {
-      if (backupLock != null)
-      {
-         backupLock.release();
-         backupLock = null;
-      }
-   }
-
-   private void createNodeId() throws Exception
-   {
-      ByteBuffer id = ByteBuffer.allocateDirect(16);
-      int read = channel.read(id, 3);
-      if (read != 16)
-      {
-         setUUID(UUIDGenerator.getInstance().generateUUID());
-         id.put(getUUID().asBytes(), 0, 16);
-         id.position(0);
-         channel.write(id, 3);
-         channel.force(true);
-      }
-      else
-      {
-         byte[] bytes = new byte[16];
-         id.position(0);
-         id.get(bytes);
-         setUUID(new UUID(UUID.TYPE_TIME_BASED, bytes));
-      }
-   }
-
    @Override
    public final SimpleString readNodeId() throws HornetQIllegalStateException, IOException
    {
@@ -354,20 +257,10 @@ public class FileLockNodeManager extends NodeManager
       return getNodeId();
    }
 
-   /**
-    * @return
-    */
-   protected File newFile(final String fileName)
-   {
-      File file = new File(directory, fileName);
-      return file;
-   }
-
    protected FileLock tryLock(final int lockPos) throws Exception
    {
       return channel.tryLock(lockPos, LOCK_LENGTH, false);
    }
-
 
    protected FileLock lock(final int liveLockPos) throws IOException
    {

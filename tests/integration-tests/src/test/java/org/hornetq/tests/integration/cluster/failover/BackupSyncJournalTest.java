@@ -1,10 +1,15 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.io.File;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -20,6 +25,7 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.Pair;
+import org.hornetq.utils.UUID;
 
 public class BackupSyncJournalTest extends FailoverTestBase
 {
@@ -159,6 +165,30 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertFalse("should not be initialized", backupServer.getServer().isActive());
       crash(session);
       backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
+
+      // assert that nodeID was saved (to the right file!)
+
+      String journalDirectory = backupConfig.getJournalDirectory();
+
+      File serverLockFile = new File(journalDirectory, "server.lock");
+      assertTrue("server.lock must exist!\n " + serverLockFile, serverLockFile.exists());
+      RandomAccessFile raFile = new RandomAccessFile(serverLockFile, "r");
+
+      // verify the nodeID was written correctly
+      FileChannel channel = raFile.getChannel();
+      final int size = 16;
+      ByteBuffer id = ByteBuffer.allocateDirect(size);
+      int read = channel.read(id, 3);
+      assertEquals("tried to read " + size + " bytes", size, read);
+      byte[] bytes = new byte[16];
+      id.position(0);
+      id.get(bytes);
+      UUID uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
+      SimpleString storedNodeId = new SimpleString(uuid.toString());
+      assertEquals("nodeId must match", backupServer.getServer().getNodeID(), storedNodeId);
+
+      raFile.close();
+
    }
 
    public void testMessageSyncSimple() throws Exception

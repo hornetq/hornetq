@@ -48,8 +48,16 @@ public final class InVMNodeManager extends NodeManager
 
    public long failoverPause = 0l;
 
-   public InVMNodeManager()
+   public InVMNodeManager(boolean replicatedBackup)
    {
+      this(replicatedBackup, null);
+      if (replicatedBackup)
+         throw new RuntimeException("if replicated-backup, we need its journal directory");
+   }
+
+   public InVMNodeManager(boolean replicatedBackup, String directory)
+   {
+      super(replicatedBackup, directory);
       liveLock = new Semaphore(1);
       backupLock = new Semaphore(1);
       setUUID(UUIDGenerator.getInstance().generateUUID());
@@ -119,18 +127,6 @@ public final class InVMNodeManager extends NodeManager
    }
 
    @Override
-   public void stopBackup() throws Exception
-   {
-      backupLock.release();
-   }
-
-   @Override
-   public void releaseBackup()
-   {
-      releaseBackupNode();
-   }
-
-   @Override
    public boolean isAwaitingFailback() throws Exception
    {
       return state == FAILING_BACK;
@@ -145,12 +141,13 @@ public final class InVMNodeManager extends NodeManager
    @Override
    public void interrupt()
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+      //
    }
 
-   private void releaseBackupNode()
+   @Override
+   public void releaseBackup()
    {
-      if(backupLock != null)
+      if (backupLock != null)
       {
          backupLock.release();
       }
