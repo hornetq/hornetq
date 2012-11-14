@@ -173,6 +173,11 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_r
 JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
   (JNIEnv * env, jclass, jobject jbuffer)
 {
+    if (jbuffer == 0)
+    {
+		throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Null Buffer");
+		return;
+    }
 	void *  buffer = env->GetDirectBufferAddress(jbuffer);
 	free(buffer);
 }
