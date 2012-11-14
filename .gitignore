@@ -49,6 +49,8 @@ hornetq-core/*.log
 /target
 /.metadata
 
+integration/hornetq-*-integration/.project
+
 # /distribution/
 /distribution/target
 /distribution/.project
