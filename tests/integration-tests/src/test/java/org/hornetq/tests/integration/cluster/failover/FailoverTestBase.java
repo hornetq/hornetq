@@ -109,7 +109,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          if (startBackupServer)
          {
           backupServer.start();
-          waitForServer(backupServer.getServer());
+          waitForRemoteBackupSynchronization(backupServer.getServer());
          }
       }
    }
