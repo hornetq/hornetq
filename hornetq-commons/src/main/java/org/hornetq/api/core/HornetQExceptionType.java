@@ -206,7 +206,7 @@ public enum HornetQExceptionType
    NATIVE_ERROR_ALLOCATE_MEMORY(209),
    ADDRESS_FULL(210);
 
-   private final static Map<Integer, HornetQExceptionType> TYPE_MAP;
+   private static final Map<Integer, HornetQExceptionType> TYPE_MAP;
    static
    {
       HashMap<Integer, HornetQExceptionType> map = new HashMap<Integer, HornetQExceptionType>();

@@ -440,8 +440,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message, Exception e)
    {
-      HornetQServerLogger log = HornetQServerLogger.LOGGER;
-      log.info(message, e);
+      HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
+      log0.info(message, e);
       System.out.println(message);
       e.printStackTrace(System.out);
    }
@@ -449,8 +449,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message)
    {
-      HornetQServerLogger log = HornetQServerLogger.LOGGER;
-      log.info(message);
+      HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
+      log0.info(message);
       System.out.println(this.getClass().getName() + "::" + message);
    }
 
@@ -695,9 +695,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getJournalDir(final int index, final boolean backup)
    {
-      String dir = getJournalDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
-
-      return dir;
+      return getJournalDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -721,7 +719,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     */
    protected static String getBindingsDir(final int index, final boolean backup)
    {
-      return getBindingsDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getBindingsDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -742,7 +740,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getPageDir(final int index, final boolean backup)
    {
-      return getPageDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getPageDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -763,7 +761,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getLargeMessagesDir(final int index, final boolean backup)
    {
-      return getLargeMessagesDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getLargeMessagesDir(getTestDir()) + directoryNameSuffix(index, backup);
+   }
+
+   private static String directoryNameSuffix(int index, boolean backup)
+   {
+      return index + "-" + (backup ? "B" : "L");
    }
 
    /**

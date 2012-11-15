@@ -1835,10 +1835,11 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (config != null)
       {
-         GroupingHandler groupingHandler;
+         GroupingHandler groupingHandler1;
          if (config.getType() == GroupingHandlerConfiguration.TYPE.LOCAL)
          {
-            groupingHandler = new LocalGroupingHandler(managementService,
+            groupingHandler1 =
+                     new LocalGroupingHandler(managementService,
                config.getName(),
                config.getAddress(),
                getStorageManager(),
@@ -1846,15 +1847,16 @@ public class HornetQServerImpl implements HornetQServer
          }
          else
          {
-            groupingHandler = new RemoteGroupingHandler(managementService,
+            groupingHandler1 =
+                     new RemoteGroupingHandler(managementService,
                config.getName(),
                config.getAddress(),
                config.getTimeout());
          }
 
-         this.groupingHandler = groupingHandler;
+         this.groupingHandler = groupingHandler1;
 
-         managementService.addNotificationListener(groupingHandler);
+         managementService.addNotificationListener(groupingHandler1);
       }
    }
 
@@ -2692,9 +2694,9 @@ public class HornetQServerImpl implements HornetQServer
 
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
-                     BackupTopologyListener listener = new BackupTopologyListener(getNodeID().toString());
-                     clusterConnection.addClusterTopologyListener(listener);
-                     if (listener.waitForBackup())
+                     BackupTopologyListener listener1 = new BackupTopologyListener(getNodeID().toString());
+                     clusterConnection.addClusterTopologyListener(listener1);
+                     if (listener1.waitForBackup())
                      {
                         try
                         {

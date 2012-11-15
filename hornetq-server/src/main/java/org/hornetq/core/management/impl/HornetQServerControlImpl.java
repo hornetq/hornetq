@@ -209,7 +209,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames()
+         return configuration.getIncomingInterceptorClassNames().toArray(new String[configuration.getIncomingInterceptorClassNames()
                .size()]);
       }
       finally

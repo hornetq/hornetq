@@ -102,7 +102,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       HornetQServer server = createServer(true, isNetty());
 
          server.getConfiguration()
-               .getInterceptorClassNames()
+               .getIncomingInterceptorClassNames()
                .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
 
          server.start();
@@ -152,7 +152,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       HornetQServer server = createServer(true, isNetty());
 
          // server.getConfiguration()
-         // .getInterceptorClassNames()
+         // .getIncomingInterceptorClassNames()
          // .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
 
          server.start();
@@ -218,7 +218,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
                createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
 
          // server.getConfiguration()
-         // .getInterceptorClassNames()
+         // .getIncomingInterceptorClassNames()
          // .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
 
          server.start();
@@ -306,7 +306,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
                createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
 
          // server.getConfiguration()
-         // .getInterceptorClassNames()
+         // .getIncomingInterceptorClassNames()
          // .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
 
          server.start();

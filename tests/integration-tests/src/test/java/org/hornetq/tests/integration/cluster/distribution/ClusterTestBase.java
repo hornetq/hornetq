@@ -31,7 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -42,7 +48,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
-import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.postoffice.Binding;
@@ -69,10 +74,6 @@ import org.hornetq.tests.util.UnitTestCase;
  * A ClusterTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 30 Jan 2009 11:29:43
- *
- *
  */
 public abstract class ClusterTestBase extends ServiceTestBase
 {
