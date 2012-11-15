@@ -45,7 +45,7 @@ public class PrintData // NO_UCD (unused code)
       {
          try
          {
-            FileLockNodeManager fileLock = new FileLockNodeManager(arg[1]);
+            FileLockNodeManager fileLock = new FileLockNodeManager(arg[1], false);
             fileLock.start();
             System.out.println("********************************************");
             System.out.println("Server's ID=" + fileLock.getNodeId().toString());

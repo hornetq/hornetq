@@ -32,11 +32,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFails() throws Exception
    {
-      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
+      setupBackupServer(2, 0, isFileStorage(), isSharedStore(), isNetty());
 
-      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedStore(), isNetty());
 
-      setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
+      setupLiveServer(1, isFileStorage(), isSharedStore(), isNetty());
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
@@ -79,7 +79,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          verifyReceiveAll(10, 0);
 
-         if (!isSharedServer())
+      if (!isSharedStore())
          {
             waitForBackupTopologyAnnouncement(sfs[0]);
          }
@@ -128,11 +128,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
-      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
+      setupBackupServer(2, 0, isFileStorage(), isSharedStore(), isNetty());
 
-      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedStore(), isNetty());
 
-      setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
+      setupLiveServer(1, isFileStorage(), isSharedStore(), isNetty());
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
@@ -184,7 +184,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1);
 
-         if (!isSharedServer())
+      if (!isSharedStore())
          {
             waitForBackupTopologyAnnouncement(sfs[0]);
          }
@@ -221,6 +221,4 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
    {
       return true;
    }
-
-   abstract boolean isSharedServer();
 }

@@ -343,7 +343,8 @@ public class JMSFailoverTest extends ServiceTestBase
     */
    protected void startServers() throws Exception
    {
-      NodeManager nodeManager = new InVMNodeManager();
+      final boolean sharedStore = true;
+      NodeManager nodeManager = new InVMNodeManager(!sharedStore);
       backuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
       livetc = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
 
@@ -363,7 +364,7 @@ public class JMSFailoverTest extends ServiceTestBase
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
       backupConf.setBackup(true);
-      backupConf.setSharedStore(true);
+      backupConf.setSharedStore(sharedStore);
       backupConf.setBindingsDirectory(getBindingsDir());
       backupConf.setJournalMinFiles(2);
       backupConf.setJournalDirectory(getJournalDir());
@@ -388,7 +389,7 @@ public class JMSFailoverTest extends ServiceTestBase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().add(liveAcceptortc);
       basicClusterConnectionConfig(liveConf, livetc.getName());
-      liveConf.setSharedStore(true);
+      liveConf.setSharedStore(sharedStore);
       liveConf.setJournalType(getDefaultJournalType());
       liveConf.setBindingsDirectory(getBindingsDir());
       liveConf.setJournalMinFiles(2);

@@ -23,6 +23,7 @@ import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.Pair;
 
 /**
@@ -48,12 +49,14 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    private static final int RECONNECT_ATTEMPTS = 5;
 
    private final Object decisionGuard = new Object();
+   private final NodeManager nodeManager;
 
-   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, String identity)
+   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, String identity, NodeManager nodeManager)
    {
       this.serverIdentity = identity;
       this.executor = executor;
       this.latch = new CountDownLatch(1);
+      this.nodeManager = nodeManager;
       topology = serverLocator.getTopology();
    }
 
@@ -66,7 +69,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    @Override
    public void nodeDown(long eventUID, String nodeID)
    {
-      if(targetServerID.equals(nodeID))
+      if (targetServerID.equals(nodeID))
       {
          decideOnAction();
       }
@@ -75,6 +78,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    public void setLiveID(String liveID)
    {
       targetServerID = liveID;
+      nodeManager.setNodeID(liveID);
       //now we are replicating we can start waiting for disconnect notifications so we can fail over
       sessionFactory.addFailureListener(this);
    }

@@ -38,7 +38,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
    protected ServerLocatorImpl locator;
    private NodeManager nodeManager;
-
+   final boolean sharedStore = true;
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    public void _testLoop() throws Exception
@@ -53,7 +53,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    }
    public void testMultipleFailovers() throws Exception
    {
-      nodeManager = new InVMNodeManager();
+      nodeManager = new InVMNodeManager(!sharedStore);
       createLiveConfig(0);
       createBackupConfig(0, 1, 0, 2, 3, 4, 5);
       createBackupConfig(0, 2, 0, 1, 3, 4, 5);
@@ -128,7 +128,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
                                                                            generateParams(nodeid, isNetty())));
       config1.setSecurityEnabled(false);
-      config1.setSharedStore(true);
+      config1.setSharedStore(sharedStore);
       config1.setBackup(true);
       List<String> staticConnectors = new ArrayList<String>();
 
@@ -161,7 +161,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
                                                                            generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
-      config0.setSharedStore(true);
+      config0.setSharedStore(sharedStore);
       basicClusterConnectionConfig(config0, liveConnector.getName());
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 

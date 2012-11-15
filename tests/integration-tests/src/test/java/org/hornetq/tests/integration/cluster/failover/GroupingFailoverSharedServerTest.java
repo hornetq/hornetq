@@ -21,7 +21,7 @@ public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
 {
 
    @Override
-   boolean isSharedServer()
+   protected boolean isSharedStore()
    {
       return true;
    }

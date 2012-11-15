@@ -13,14 +13,14 @@
 
 package org.hornetq.tests.integration.cluster;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.UUID;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -43,7 +43,7 @@ public class RealNodeManagerTest extends NodeManagerTest
 
    public void testId() throws Exception
    {
-      NodeManager nodeManager = new FileLockNodeManager(getTemporaryDir());
+      NodeManager nodeManager = new FileLockNodeManager(getTemporaryDir(), false);
       nodeManager.start();
       UUID id1 = nodeManager.getUUID();
       nodeManager.stop();

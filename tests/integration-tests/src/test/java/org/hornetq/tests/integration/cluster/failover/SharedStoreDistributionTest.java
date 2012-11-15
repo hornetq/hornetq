@@ -15,36 +15,13 @@ package org.hornetq.tests.integration.cluster.failover;
 
 /**
  * A SharedStoreReplicatedDistributionTest
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class SharedStoreDistributionTest extends ReplicatedDistributionTest
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
-   protected boolean isShared()
+   protected boolean isSharedStore()
    {
       return true;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

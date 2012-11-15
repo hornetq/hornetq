@@ -143,11 +143,19 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       for (int i = 0, nodeManagersLength = nodeManagers.length; i < nodeManagersLength; i++)
       {
-         nodeManagers[i] = new InVMNodeManager();
+         nodeManagers[i] = new InVMNodeManager(isSharedStore(), getJournalDir(i, true));
       }
 
       locators = new ServerLocator[ClusterTestBase.MAX_SERVERS];
 
+   }
+
+   /**
+    * Whether the servers share the storage or not.
+    */
+   protected boolean isSharedStore()
+   {
+      return false;
    }
 
    @Override
