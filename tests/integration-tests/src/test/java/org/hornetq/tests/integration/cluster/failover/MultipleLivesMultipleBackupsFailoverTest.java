@@ -36,7 +36,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
    private ServerLocator locator2;
    private ServerLocator locator;
-
+   private final boolean sharedStore = true;
    @Override
    protected void tearDown() throws Exception
    {
@@ -53,8 +53,8 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
 
    public void testMultipleFailovers2LiveServers() throws Exception
    {
-      NodeManager nodeManager1 = new InVMNodeManager();
-      NodeManager nodeManager2 = new InVMNodeManager();
+      NodeManager nodeManager1 = new InVMNodeManager(!sharedStore);
+      NodeManager nodeManager2 = new InVMNodeManager(!sharedStore);
       createLiveConfig(nodeManager1, 0, 3, 4, 5);
       createBackupConfig(nodeManager1, 0, 1, true, new int[] { 0, 2 }, 3, 4, 5);
       createBackupConfig(nodeManager1, 0, 2, true, new int[] { 0, 1 }, 3, 4, 5);
@@ -152,7 +152,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
                                                                            true,
                                                                            generateParams(nodeid, isNetty())));
       config1.setSecurityEnabled(false);
-      config1.setSharedStore(true);
+      config1.setSharedStore(sharedStore);
       config1.setBackup(true);
 
       List<String> staticConnectors = new ArrayList<String>();
@@ -198,7 +198,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
                                                                            true,
                                                                            generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
-      config0.setSharedStore(true);
+      config0.setSharedStore(sharedStore);
       List<String> pairs = new ArrayList<String>();
       for (int node : otherLiveNodes)
       {

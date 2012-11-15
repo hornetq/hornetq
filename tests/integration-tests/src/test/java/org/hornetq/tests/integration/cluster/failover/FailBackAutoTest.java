@@ -247,7 +247,7 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected void createConfigs() throws Exception
    {
-      nodeManager = new InVMNodeManager();
+      nodeManager = new InVMNodeManager(false);
 
       backupConfig = super.createDefaultConfig();
       backupConfig.getAcceptorConfigurations().clear();

@@ -130,7 +130,7 @@ public class NodeManagerAction
 
       }
       NodeManagerAction nodeManagerAction = new NodeManagerAction(work1);
-      FileLockNodeManager nodeManager = new FileLockNodeManager(".");
+      FileLockNodeManager nodeManager = new FileLockNodeManager(".", false);
       nodeManager.start();
       try
       {

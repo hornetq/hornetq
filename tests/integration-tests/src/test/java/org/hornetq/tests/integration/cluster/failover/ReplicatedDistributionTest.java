@@ -60,7 +60,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
          // System.out.println(i + " msg = " + msg);
 
-            int received = msg.getIntProperty("key");
+         int received = msg.getIntProperty("key");
 
             Assert.assertEquals(i, received);
 
@@ -125,7 +125,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
          // System.out.println(i + " msg = " + msg);
 
-            int received = msg.getIntProperty("key");
+         int received = msg.getIntProperty("key");
 
             if (i != received)
             {
@@ -189,9 +189,9 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    {
       super.setUp();
 
-      setupLiveServer(1, true, isShared(), true);
-      setupLiveServer(3, true, isShared(), true);
-      setupBackupServer(2, 3, true, isShared(), true);
+      setupLiveServer(1, true, isSharedStore(), true);
+      setupLiveServer(3, true, isSharedStore(), true);
+      setupBackupServer(2, 3, true, isSharedStore(), true);
 
       final String address = ReplicatedDistributionTest.ADDRESS.toString();
       // notice the abuse of the method call, '3' is not a backup for '1'
@@ -242,7 +242,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       }
    }
 
-   protected boolean isShared()
+   @Override
+   protected boolean isSharedStore()
    {
       return false;
    }

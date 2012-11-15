@@ -156,7 +156,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected void createConfigs() throws Exception
    {
-      nodeManager = new InVMNodeManager();
+      nodeManager = new InVMNodeManager(false);
 
       backupConfig = super.createDefaultConfig();
       backupConfig.getAcceptorConfigurations().clear();
@@ -185,7 +185,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected void createReplicatedConfigs() throws Exception
    {
-      nodeManager = new InVMNodeManager();
 
       final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
@@ -203,6 +202,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
       backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
       backupConfig.setSecurityEnabled(false);
+      nodeManager = new InVMNodeManager(true, backupConfig.getJournalDirectory());
 
       backupServer = createTestableServer(backupConfig);
       liveConfig.getAcceptorConfigurations().clear();
@@ -301,13 +301,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
 
-      protected ServerLocatorInternal getServerLocator() throws Exception
-      {
+   protected ServerLocatorInternal getServerLocator() throws Exception
+   {
          ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
-         locator.setRetryInterval(50);
-         addServerLocator(locator);
+      locator.setRetryInterval(50);
+      addServerLocator(locator);
          return (ServerLocatorInternal) locator;
-      }
+   }
 
 
    protected void crash(final ClientSession... sessions) throws Exception

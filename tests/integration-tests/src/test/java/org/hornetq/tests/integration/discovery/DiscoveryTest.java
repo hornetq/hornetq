@@ -1140,6 +1140,7 @@ public class DiscoveryTest extends UnitTestCase
 
       public FakeNodeManager(String nodeID)
       {
+         super(false, null);
          this.setNodeID(nodeID);
       }
 
@@ -1165,11 +1166,6 @@ public class DiscoveryTest extends UnitTestCase
 
       @Override
       public void crashLiveServer() throws Exception
-      {
-      }
-
-      @Override
-      public void stopBackup() throws Exception
       {
       }
 

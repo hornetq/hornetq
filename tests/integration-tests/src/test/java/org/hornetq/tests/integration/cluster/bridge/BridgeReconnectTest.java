@@ -78,7 +78,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    // Fail bridge and reconnecting immediately
    public void testFailoverAndReconnectImmediately() throws Exception
    {
-      NodeManager nodeManager = new InVMNodeManager();
+      NodeManager nodeManager = new InVMNodeManager(false);
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
 
@@ -222,7 +222,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    // Fail bridge and attempt failover a few times before succeeding
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
-      NodeManager nodeManager = new InVMNodeManager();
+      NodeManager nodeManager = new InVMNodeManager(false);
 
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
