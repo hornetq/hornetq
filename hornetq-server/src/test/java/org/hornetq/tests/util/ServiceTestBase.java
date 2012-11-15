@@ -36,6 +36,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.Configuration;
@@ -56,6 +57,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
@@ -867,69 +869,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       for (JournalFile file : filesToRead)
       {
-         JournalImpl.readJournalFile(messagesFF, file, new JournalReaderCallback()
-         {
-
-            AtomicInteger getType(byte key)
-            {
-               if (key == 0)
-               {
-                  System.out.println("huh?");
-               }
-               Integer ikey = new Integer(key);
-               AtomicInteger value = recordsType.get(ikey);
-               if (value == null)
-               {
-                  value = new AtomicInteger();
-                  recordsType.put(ikey, value);
-               }
-               return value;
-            }
-
-            public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-               getType(recordInfo.getUserRecordType()).incrementAndGet();
-            }
-
-            public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
-            {
-               getType(recordInfo.getUserRecordType()).incrementAndGet();
-            }
-
-            public void onReadRollbackRecord(long transactionID) throws Exception
-            {
-            }
-
-            public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
-            {
-            }
-
-            public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-            }
-
-            public void onReadDeleteRecord(long recordID) throws Exception
-            {
-            }
-
-            public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
-            {
-            }
-
-            public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-               getType(recordInfo.getUserRecordType()).incrementAndGet();
-            }
-
-            public void onReadAddRecord(RecordInfo recordInfo) throws Exception
-            {
-               getType(recordInfo.getUserRecordType()).incrementAndGet();
-            }
-
-            public void markAsDataFile(JournalFile file)
-            {
-            }
-         });
+         JournalImpl.readJournalFile(messagesFF, file, new RecordTypeCounter(recordsType));
       }
       return recordsType;
    }
@@ -979,6 +919,78 @@ public abstract class ServiceTestBase extends UnitTestCase
       return recordsType;
    }
 
+   private static final class RecordTypeCounter implements JournalReaderCallback
+   {
+      private final HashMap<Integer, AtomicInteger> recordsType;
+
+      /**
+       * @param recordsType
+       */
+      public RecordTypeCounter(HashMap<Integer, AtomicInteger> recordsType)
+      {
+         this.recordsType = recordsType;
+      }
+
+      AtomicInteger getType(byte key)
+      {
+         if (key == 0)
+         {
+            System.out.println("huh?");
+         }
+         Integer ikey = new Integer(key);
+         AtomicInteger value = recordsType.get(ikey);
+         if (value == null)
+         {
+            value = new AtomicInteger();
+            recordsType.put(ikey, value);
+         }
+         return value;
+      }
+
+      public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+      {
+         getType(recordInfo.getUserRecordType()).incrementAndGet();
+      }
+
+      public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+      {
+         getType(recordInfo.getUserRecordType()).incrementAndGet();
+      }
+
+      public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+      {
+         getType(recordInfo.getUserRecordType()).incrementAndGet();
+      }
+
+      public void onReadAddRecord(RecordInfo recordInfo) throws Exception
+      {
+         getType(recordInfo.getUserRecordType()).incrementAndGet();
+      }
+
+      public void onReadRollbackRecord(long transactionID) throws Exception
+      {
+      }
+
+      public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+      {
+      }
+
+      public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+      {
+      }
+
+      public void onReadDeleteRecord(long recordID) throws Exception
+      {
+      }
+
+      public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+      {
+      }
+
+      public void markAsDataFile(JournalFile file0)
+      {
+      }
+   }
 
    /**
     * Deleting a file on LargeDir is an asynchronous process. We need to keep looking for a while if
