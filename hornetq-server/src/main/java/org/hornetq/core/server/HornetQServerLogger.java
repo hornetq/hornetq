@@ -1247,4 +1247,10 @@ public interface HornetQServerLogger extends BasicLogger
       value = "Can't find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
       format = Message.Format.MESSAGE_FORMAT)
    void cantFindQueueOnPageComplete(long queueID);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 224084,
+      value = "Bridge {0} timed out waiting for the completion of {1} messages, we will just shutdown the bridge after 10 seconds wait",
+      format = Message.Format.MESSAGE_FORMAT)
+   void timedOutWaitingCompletions(String bridgeName, long numberOfMessages);
 }
