@@ -29,7 +29,6 @@ public class Embedded
       tjws.setPort(port);
       tjws.setRootResourcePath("");
       tjws.setSecurityDomain(null);
-
    }
 
    public MessageServiceConfiguration getConfig()

@@ -2,9 +2,24 @@ package org.hornetq.rest.queue.push;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScheme;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.BasicAuth;
@@ -13,8 +28,10 @@ import org.hornetq.rest.queue.push.xml.XmlHttpHeader;
 import org.hornetq.rest.util.HttpMessageHelper;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.client.core.executors.ApacheHttpClientExecutor;
+import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 import org.jboss.resteasy.specimpl.UriBuilderImpl;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -22,12 +39,20 @@ import org.jboss.resteasy.specimpl.UriBuilderImpl;
  */
 public class UriStrategy implements PushStrategy
 {
-   protected HttpClient client = new HttpClient();
-   protected ApacheHttpClientExecutor executor = new ApacheHttpClientExecutor(client);
+   ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager();
+   protected HttpClient client = new DefaultHttpClient(connManager);
+   protected BasicHttpContext localContext;
+   protected ApacheHttpClient4Executor executor = new ApacheHttpClient4Executor(client);
    protected PushRegistration registration;
    protected UriBuilder targetUri;
    protected String method;
    protected String contentType;
+
+   UriStrategy()
+   {
+      connManager.setDefaultMaxPerRoute(100);
+      connManager.setMaxTotal(1000);
+   }
 
    public void setRegistration(PushRegistration reg)
    {
@@ -50,19 +75,26 @@ public class UriStrategy implements PushStrategy
          if (registration.getAuthenticationMechanism().getType() instanceof BasicAuth)
          {
             BasicAuth basic = (BasicAuth) registration.getAuthenticationMechanism().getType();
-            //log.info("Setting Basic Auth: " + basic.getUsername());
-            client.getParams().setAuthenticationPreemptive(true);
-            client.getState().setCredentials(
-                    //new AuthScope(null, 8080, "Test"),
-                    new AuthScope(AuthScope.ANY),
-                    new UsernamePasswordCredentials(basic.getUsername(), basic.getPassword())
-            );
+            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(basic.getUsername(), basic.getPassword());
+            AuthScope authScope = new AuthScope(AuthScope.ANY);
+            ((DefaultHttpClient)client).getCredentialsProvider().setCredentials(authScope, creds);
+
+            localContext = new BasicHttpContext();
+
+            // Generate BASIC scheme object and stick it to the local execution context
+            BasicScheme basicAuth = new BasicScheme();
+            localContext.setAttribute("preemptive-auth", basicAuth);
+
+            // Add as the first request interceptor
+            ((DefaultHttpClient)client).addRequestInterceptor(new PreemptiveAuth(), 0);
+            executor.setHttpContext(localContext);
          }
       }
    }
 
    public void stop()
    {
+      connManager.shutdown();
    }
 
    public boolean push(ClientMessage message)
@@ -72,7 +104,7 @@ public class UriStrategy implements PushStrategy
       for (int i = 0; i < registration.getMaxRetries(); i++)
       {
          long wait = registration.getRetryWaitMillis();
-         HornetQRestLogger.LOGGER.debug("Creating request from " + uri);
+         System.out.println("Creating request from " + uri);
          ClientRequest request = executor.createRequest(uri);
          request.followRedirects(false);
          HornetQRestLogger.LOGGER.debug("Created request " + request);
@@ -83,7 +115,7 @@ public class UriStrategy implements PushStrategy
             request.header(header.getName(), header.getValue());
          }
          HttpMessageHelper.buildMessage(message, request, contentType);
-        ClientResponse<?> res = null;
+         ClientResponse<?> res = null;
          try
          {
             HornetQRestLogger.LOGGER.debug(method + " " + uri);
@@ -142,7 +174,13 @@ public class UriStrategy implements PushStrategy
          catch (Exception e)
          {
             HornetQRestLogger.LOGGER.debug("failed to push message to " + uri, e);
+            e.printStackTrace();
             return false;
+         }
+         finally
+         {
+            if (res != null)
+               res.releaseConnection();
          }
          try
          {
@@ -160,5 +198,28 @@ public class UriStrategy implements PushStrategy
    {
       String uri = targetUri.build().toString();
       return uri;
+   }
+
+   static class PreemptiveAuth implements HttpRequestInterceptor
+   {
+      public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException
+      {
+         AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
+
+         // If no auth scheme available yet, try to initialize it preemptively
+         if (authState.getAuthScheme() == null) {
+            AuthScheme authScheme = (AuthScheme) context.getAttribute("preemptive-auth");
+            CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(ClientContext.CREDS_PROVIDER);
+            HttpHost targetHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+            if (authScheme != null) {
+               Credentials creds = credsProvider.getCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()));
+               if (creds == null) {
+                  throw new HttpException("No credentials for preemptive authentication");
+               }
+               authState.setAuthScheme(authScheme);
+               authState.setCredentials(creds);
+            }
+         }
+      }
    }
 }
