@@ -556,11 +556,11 @@ public class HornetQActivation
     */
    public void handleFailure(Throwable failure)
    {
-      if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST))
+      if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
       {
          HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
       }
-      else if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED))
+      else if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
       {
          HornetQRALogger.LOGGER.awaitingJMSServerCreation();
       }
@@ -604,17 +604,17 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST))
+               if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
                {
-                  if (lastException == null || !(lastException instanceof HornetQNonExistentQueueException))
+                  if (lastException == null || !(t instanceof HornetQNonExistentQueueException))
                   {
                      lastException = t;
                      HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
                   }
                }
-               else if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED))
+               else if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
                {
-                  if (lastException == null || !(lastException instanceof HornetQNotConnectedException))
+                  if (lastException == null || !(t instanceof HornetQNotConnectedException))
                   {
                      lastException = t;
                      HornetQRALogger.LOGGER.awaitingJMSServerCreation();
