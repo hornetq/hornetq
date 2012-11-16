@@ -104,7 +104,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       if (discoveryRecord == null)
       {
          discoveryRecord = newInstance;
-         discoveryRecord.start();
+         discoveryRecord.start(false);
       }
       // you could have a configuration shared with multiple MDBs or RAs
       discoveryRecord.incrementUsage();
@@ -201,7 +201,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
                   try
                   {
                     HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
-                     discovery.start();
+                     discovery.start(true);
                   }
                   catch (Throwable e)
                   {
