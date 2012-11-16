@@ -198,7 +198,7 @@ public class LargeMessageExample extends HornetQExample
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void createFile(final File file, final long fileSize) throws FileNotFoundException, IOException
+   private void createFile(final File file, final long fileSize) throws IOException
    {
       FileOutputStream fileOut = new FileOutputStream(file);
       BufferedOutputStream buffOut = new BufferedOutputStream(fileOut);

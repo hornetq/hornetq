@@ -13,6 +13,7 @@
 
 package org.hornetq.core.settings.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -265,10 +266,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    }
 
    /**
-    * compares to matches to see which one is more specific
+    * Compares to matches to see which one is more specific.
     */
-   private static class MatchComparator implements Comparator<String>
+   private static class MatchComparator implements Comparator<String>, Serializable
    {
+      private static final long serialVersionUID = -6182535107518999740L;
+
       public int compare(final String o1, final String o2)
       {
          if (o1.contains(Match.WILDCARD) && !o2.contains(Match.WILDCARD))

@@ -78,4 +78,36 @@ public class ReplicationPageWriteMessage extends PacketImpl
       return pagedMessage;
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + pageNumber;
+      result = prime * result + ((pagedMessage == null) ? 0 : pagedMessage.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ReplicationPageWriteMessage other = (ReplicationPageWriteMessage)obj;
+      if (pageNumber != other.pageNumber)
+         return false;
+      if (pagedMessage == null)
+      {
+         if (other.pagedMessage != null)
+            return false;
+      }
+      else if (!pagedMessage.equals(other.pagedMessage))
+         return false;
+      return true;
+   }
+
 }

@@ -309,12 +309,12 @@ public class ConfigurationImplTest extends UnitTestCase
       final String name1 = "uqwyuqywuy";
       final String name2 = "yugyugyguyg";
 
-      conf.getInterceptorClassNames().add(name1);
-      conf.getInterceptorClassNames().add(name2);
+      conf.getIncomingInterceptorClassNames().add(name1);
+      conf.getIncomingInterceptorClassNames().add(name2);
 
-      Assert.assertTrue(conf.getInterceptorClassNames().contains(name1));
-      Assert.assertTrue(conf.getInterceptorClassNames().contains(name2));
-      Assert.assertFalse(conf.getInterceptorClassNames().contains("iijij"));
+      Assert.assertTrue(conf.getIncomingInterceptorClassNames().contains(name1));
+      Assert.assertTrue(conf.getIncomingInterceptorClassNames().contains(name2));
+      Assert.assertFalse(conf.getIncomingInterceptorClassNames().contains("iijij"));
    }
 
    public void testSerialize() throws Exception
