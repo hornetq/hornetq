@@ -42,6 +42,8 @@ import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -58,8 +60,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -490,22 +490,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          if (inCreateSessionLatch != null)
             inCreateSessionLatch.countDown();
       }
-         forceReturnChannel1();
+      forceReturnChannel1();
 
       // we need to stop the factory from connecting if it is in the middle of trying to failover before we get the lock
       causeExit();
+
       synchronized (createSessionLock)
       {
          closeCleanSessions(close);
-         if (close) {
-            synchronized (failoverLock)
-            {
-               closeCleanSessions(true);
-            }
-         }
+         closed = true;
       }
-
-      closed = true;
    }
 
    /**
@@ -899,6 +893,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                synchronized (sessions)
                {
+                  if (closed || exitLoop)
+                  {
+                     session.close();
+                     return null;
+                  }
                   sessions.add(session);
                }
 
