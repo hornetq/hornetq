@@ -104,6 +104,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
 
+   private HornetQPrincipal defaultInvmSecurityPrincipal;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -228,6 +230,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        threadPool,
                                                        scheduledThreadPool);
 
+            if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
+            {
+               acceptor.setDefaultHornetQPrincipal(defaultInvmSecurityPrincipal);
+            }
+
             acceptors.add(acceptor);
 
             if (managementService != null)
@@ -258,6 +265,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
    {
+      defaultInvmSecurityPrincipal = principal;
       for (Acceptor acceptor : acceptors)
       {
          if(acceptor.isUnsecurable())
