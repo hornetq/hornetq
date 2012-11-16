@@ -176,9 +176,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
    }
 
-   protected static final void basicClusterConnectionConfig(Configuration mainConfig,
-                                                                                      String connectorName,
-                                                                                      String... connectors)
+   protected static final void basicClusterConnectionConfig(Configuration mainConfig, String connectorName,
+                                                            String... connectors)
    {
       ArrayList<String> connectors0 = new ArrayList<String>();
       for (String c : connectors)
@@ -225,12 +224,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     * @return
     * @throws Exception
     */
-   protected static ConfigurationImpl createBasicConfig(final int serverID) throws Exception
+   protected static final ConfigurationImpl createBasicConfig(final int serverID) throws Exception
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setJournalFileSize(100 * 1024);
+
       configuration.setJournalType(getDefaultJournalType());
 
       configuration.setJournalDirectory(getJournalDir(serverID, false));
@@ -246,21 +246,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
-      Configuration configuration = new ConfigurationImpl();
-      configuration.setSecurityEnabled(false);
-      configuration.setJMXManagementEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir());
-      configuration.setJournalMinFiles(2);
-      configuration.setJournalDirectory(getJournalDir());
-      configuration.setJournalFileSize(100 * 1024);
-      configuration.setPagingDirectory(getPageDir());
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir());
-      configuration.setJournalCompactMinFiles(0);
-      configuration.setJournalCompactPercentage(0);
+      ConfigurationImpl configuration = createBasicConfig(-1);
 
       configuration.setFileDeploymentEnabled(false);
-
-      configuration.setJournalType(getDefaultJournalType());
+      configuration.setJMXManagementEnabled(false);
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -269,7 +258,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
          configuration.getAcceptorConfigurations().add(transportConfig);
       }
-      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
@@ -440,8 +428,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message, Exception e)
    {
-      HornetQServerLogger log = HornetQServerLogger.LOGGER;
-      log.info(message, e);
+      HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
+      log0.info(message, e);
       System.out.println(message);
       e.printStackTrace(System.out);
    }
@@ -449,8 +437,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /** Sends the message to both logger and System.out (for unit report) */
    public void logAndSystemOut(String message)
    {
-      HornetQServerLogger log = HornetQServerLogger.LOGGER;
-      log.info(message);
+      HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
+      log0.info(message);
       System.out.println(this.getClass().getName() + "::" + message);
    }
 
@@ -695,9 +683,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getJournalDir(final int index, final boolean backup)
    {
-      String dir = getJournalDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
-
-      return dir;
+      return getJournalDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -721,7 +707,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     */
    protected static String getBindingsDir(final int index, final boolean backup)
    {
-      return getBindingsDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getBindingsDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -742,7 +728,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getPageDir(final int index, final boolean backup)
    {
-      return getPageDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getPageDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -763,7 +749,14 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static String getLargeMessagesDir(final int index, final boolean backup)
    {
-      return getLargeMessagesDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
+      return getLargeMessagesDir(getTestDir()) + directoryNameSuffix(index, backup);
+   }
+
+   private static String directoryNameSuffix(int index, boolean backup)
+   {
+      if (index == -1)
+         return "";
+      return index + "-" + (backup ? "B" : "L");
    }
 
    /**

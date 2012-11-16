@@ -13,6 +13,8 @@
 
 package org.hornetq.core.protocol.core.impl.wireformat;
 
+import java.util.Arrays;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -25,15 +27,8 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class ReplicationCompareDataMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private JournalLoadInformation[] journalInformation;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationCompareDataMessage(final JournalLoadInformation[] journalInformation)
    {
@@ -83,11 +78,27 @@ public class ReplicationCompareDataMessage extends PacketImpl
       return journalInformation;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + Arrays.hashCode(journalInformation);
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ReplicationCompareDataMessage other = (ReplicationCompareDataMessage)obj;
+      if (!Arrays.equals(journalInformation, other.journalInformation))
+         return false;
+      return true;
+   }
 }

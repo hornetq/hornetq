@@ -44,20 +44,14 @@ import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A BridgeControlTest
- *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 11 dec. 2008 17:38:58
- *
  */
 public class BridgeControlTest extends ManagementTestBase
 {
-
    private HornetQServer server_0;
+   private HornetQServer server_1;
 
    private BridgeConfiguration bridgeConfig;
-
-   private HornetQServer server_1;
 
    public void testAttributes() throws Exception
    {
@@ -164,8 +158,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomPositiveInt(),
                                              connectors,
                                              false,
-                                             HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
-                                             HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
+                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, CLUSTER_PASSWORD);
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);

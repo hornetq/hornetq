@@ -52,7 +52,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       Assert.assertEquals(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN, conf.getJMXDomain());
 
-      Assert.assertEquals(0, conf.getInterceptorClassNames().size());
+      Assert.assertEquals(0, conf.getIncomingInterceptorClassNames().size());
 
       Assert.assertEquals(HornetQDefaultConfiguration.DEFAULT_CONNECTION_TTL_OVERRIDE, conf.getConnectionTTLOverride());
 

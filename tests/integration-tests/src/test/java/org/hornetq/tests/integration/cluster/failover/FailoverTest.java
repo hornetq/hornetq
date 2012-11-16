@@ -1822,7 +1822,7 @@ public class FailoverTest extends FailoverTestBase
             {
                // Ok - now we retry the commit after removing the interceptor
 
-               sf.getServerLocator().removeInterceptor(interceptor);
+               sf.getServerLocator().removeIncomingInterceptor(interceptor);
 
                try
                {
@@ -1839,7 +1839,7 @@ public class FailoverTest extends FailoverTestBase
             {
                // Ok - now we retry the commit after removing the interceptor
 
-               sf.getServerLocator().removeInterceptor(interceptor);
+               sf.getServerLocator().removeIncomingInterceptor(interceptor);
 
                try
                {

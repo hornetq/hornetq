@@ -75,10 +75,9 @@ import org.hornetq.utils.UUIDGenerator;
 public abstract class ServiceTestBase extends UnitTestCase
 {
 
-   // Constants -----------------------------------------------------
-
    /**
-    *
+    * Add a "sendCallNumber" property to messages sent using helper classes. Meant to help in
+    * debugging.
     */
    private static final String SEND_CALL_NUMBER = "sendCallNumber";
    protected static final long WAIT_TIMEOUT = 10000;
