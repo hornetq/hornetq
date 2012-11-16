@@ -176,9 +176,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
    }
 
-   protected static final void basicClusterConnectionConfig(Configuration mainConfig,
-                                                                                      String connectorName,
-                                                                                      String... connectors)
+   protected static final void basicClusterConnectionConfig(Configuration mainConfig, String connectorName,
+                                                            String... connectors)
    {
       ArrayList<String> connectors0 = new ArrayList<String>();
       for (String c : connectors)
@@ -225,12 +224,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     * @return
     * @throws Exception
     */
-   protected static ConfigurationImpl createBasicConfig(final int serverID) throws Exception
+   protected static final ConfigurationImpl createBasicConfig(final int serverID) throws Exception
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setJournalFileSize(100 * 1024);
+
       configuration.setJournalType(getDefaultJournalType());
 
       configuration.setJournalDirectory(getJournalDir(serverID, false));
@@ -246,21 +246,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
-      Configuration configuration = new ConfigurationImpl();
-      configuration.setSecurityEnabled(false);
-      configuration.setJMXManagementEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir());
-      configuration.setJournalMinFiles(2);
-      configuration.setJournalDirectory(getJournalDir());
-      configuration.setJournalFileSize(100 * 1024);
-      configuration.setPagingDirectory(getPageDir());
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir());
-      configuration.setJournalCompactMinFiles(0);
-      configuration.setJournalCompactPercentage(0);
+      ConfigurationImpl configuration = createBasicConfig(-1);
 
       configuration.setFileDeploymentEnabled(false);
-
-      configuration.setJournalType(getDefaultJournalType());
+      configuration.setJMXManagementEnabled(false);
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -269,7 +258,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
          configuration.getAcceptorConfigurations().add(transportConfig);
       }
-      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
@@ -766,6 +754,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    private static String directoryNameSuffix(int index, boolean backup)
    {
+      if (index == -1)
+         return "";
       return index + "-" + (backup ? "B" : "L");
    }
 

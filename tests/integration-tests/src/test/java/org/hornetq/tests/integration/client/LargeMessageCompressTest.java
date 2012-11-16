@@ -53,26 +53,22 @@ public class LargeMessageCompressTest extends LargeMessageTest
    @Override
    protected ServerLocator createFactory(final boolean isNetty) throws Exception
    {
-      ServerLocator locator = super.createFactory(isNetty);
-      locator.setCompressLargeMessage(true);
-      return locator;
+      ServerLocator locator1 = super.createFactory(isNetty);
+      locator1.setCompressLargeMessage(true);
+      return locator1;
    }
 
    public void testLargeMessageCompression() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-      ClientSession session = null;
-
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, false, false);
+      ClientSession session = addClientSession(sf.createSession(false, false, false));
 
          session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
@@ -104,34 +100,19 @@ public class LargeMessageCompressTest extends LargeMessageTest
          session.close();
 
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testLargeMessageCompression2() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-      ClientSession session = null;
-
-      try
-      {
          HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, false, false);
+      ClientSession session = addClientSession(sf.createSession(false, false, false));
 
          session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
@@ -177,34 +158,20 @@ public class LargeMessageCompressTest extends LargeMessageTest
          input.close();
          testFile.delete();
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
+
    }
 
    public void testLargeMessageCompression3() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-      ClientSession session = null;
-
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, false, false);
+      ClientSession session = addClientSession(sf.createSession(false, false, false));
 
          session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
@@ -250,17 +217,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
          testFile.delete();
          validateNoFilesOnLargeDir();
       }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
 
 
 
@@ -268,17 +224,14 @@ public class LargeMessageCompressTest extends LargeMessageTest
    {
       final int messageSize = 1024 * 1024;
 
-      ClientSession session = null;
 
-      try
-      {
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
          ClientSessionFactory sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, false, false);
+      ClientSession session = addClientSession(sf.createSession(false, false, false));
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
@@ -347,17 +300,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
          testFile.delete();
          validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
 

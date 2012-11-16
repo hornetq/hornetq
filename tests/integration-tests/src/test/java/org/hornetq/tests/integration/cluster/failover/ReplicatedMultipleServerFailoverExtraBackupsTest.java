@@ -44,40 +44,40 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
       backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
-      for (TestableServer liveServer : liveServers)
-      {
-         liveServer.start();
-      }
-      for (TestableServer backupServer : backupServers)
-      {
-         backupServer.start();
-         waitForRemoteBackupSynchronization(backupServer.getServer());
-      }
+
+      startServers(liveServers);
+      startServers(backupServers);
+      waitForBackupSyncs();
 
       sendCrashReceive();
       waitForTopology(backupServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashBackupReceive();
    }
 
+   private void waitForBackupSyncs()
+   {
+      for (TestableServer backupServer : backupServers)
+      {
+         waitForRemoteBackupSynchronization(backupServer.getServer());
+      }
+   }
+
+   private void startServers(List<TestableServer> servers) throws Exception
+   {
+      for (TestableServer testableServer : servers)
+      {
+         testableServer.start();
+      }
+   }
    @Override
    public void testStartBackupFirst() throws Exception
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
       backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
 
-      for (TestableServer backupServer : backupServers)
-      {
-         backupServer.start();
-      }
-      for (TestableServer liveServer : liveServers)
-      {
-         liveServer.start();
-      }
-
-      for (TestableServer backupServer : backupServers)
-      {
-         waitForRemoteBackupSynchronization(backupServer.getServer());
-      }
+      startServers(backupServers);
+      startServers(liveServers);
+      waitForBackupSyncs();
 
       waitForTopology(liveServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashReceive();
