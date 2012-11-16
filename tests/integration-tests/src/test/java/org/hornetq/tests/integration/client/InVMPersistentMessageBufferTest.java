@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
+
 /**
  * A InVMPersistentMessageBufferTest
  *
@@ -29,8 +30,8 @@ public class InVMPersistentMessageBufferTest extends InVMNonPersistentMessageBuf
    }
 
    @Override
-   public boolean isNetty()
+   protected ConnectionType getConnectionType()
    {
-      return false;
+      return ConnectionType.INVM;
    }
 }

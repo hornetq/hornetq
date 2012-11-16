@@ -159,21 +159,31 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Static --------------------------------------------------------
 
+   public enum ConnectionType
+   {
+      INVM, NETTY;
+   }
+
    protected Configuration createDefaultConfig() throws Exception
    {
-      return createDefaultConfig(false);
-   }
+      return createDefaultConfig(ConnectionType.INVM);
+    }
 
    protected Configuration createDefaultConfig(final boolean netty) throws Exception
    {
-      if (netty)
+      return createDefaultConfig(netty ? ConnectionType.NETTY : ConnectionType.INVM);
+   }
+
+   protected Configuration createDefaultConfig(final ConnectionType type) throws Exception
+   {
+      switch (type)
       {
-         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+         case NETTY:
+            return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+         case INVM:
+            return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
       }
-      else
-      {
-         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
-      }
+      throw new IllegalArgumentException();
    }
 
    protected static final void basicClusterConnectionConfig(Configuration mainConfig, String connectorName,

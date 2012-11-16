@@ -29,8 +29,8 @@ public class NettyNonPersistentMessageBufferTest extends InVMNonPersistentMessag
    }
 
    @Override
-   public boolean isNetty()
+   protected ConnectionType getConnectionType()
    {
-      return true;
+      return ConnectionType.NETTY;
    }
 }
