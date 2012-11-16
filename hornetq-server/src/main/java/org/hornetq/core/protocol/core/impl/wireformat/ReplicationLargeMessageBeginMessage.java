@@ -26,15 +26,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationLargeMessageBeginMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    long messageId;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationLargeMessageBeginMessage(final long messageId)
    {
@@ -46,8 +38,6 @@ public class ReplicationLargeMessageBeginMessage extends PacketImpl
    {
       super(PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -69,12 +59,27 @@ public class ReplicationLargeMessageBeginMessage extends PacketImpl
       return messageId;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(messageId ^ (messageId >>> 32));
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ReplicationLargeMessageBeginMessage other = (ReplicationLargeMessageBeginMessage)obj;
+      if (messageId != other.messageId)
+         return false;
+      return true;
+   }
 }
