@@ -606,7 +606,7 @@ public class HornetQActivation
             {
                if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST))
                {
-                  if (lastException == null && lastException instanceof HornetQNonExistentQueueException)
+                  if (lastException == null || !(lastException instanceof HornetQNonExistentQueueException))
                   {
                      lastException = t;
                      HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
@@ -614,7 +614,7 @@ public class HornetQActivation
                }
                else if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED))
                {
-                  if (lastException == null && lastException instanceof HornetQNotConnectedException)
+                  if (lastException == null || !(lastException instanceof HornetQNotConnectedException))
                   {
                      lastException = t;
                      HornetQRALogger.LOGGER.awaitingJMSServerCreation();
