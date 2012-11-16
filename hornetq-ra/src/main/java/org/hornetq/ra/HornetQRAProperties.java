@@ -52,7 +52,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    /** Method used to locate the TM */
    private String transactionManagerLocatorMethod = "getTm;getTM";
 
-   private static final int DEFAULT_SETUP_ATTEMPTS = 10;
+   private static final int DEFAULT_SETUP_ATTEMPTS = -1;
 
    private static final long DEFAULT_SETUP_INTERVAL = 2 * 1000;
 

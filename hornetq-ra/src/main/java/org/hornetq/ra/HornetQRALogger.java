@@ -85,6 +85,10 @@ public interface HornetQRALogger extends BasicLogger
    @Message(id = 151007, value = "Instantiating {0} \"{1}\" directly since UseJNDI=false.", format = Message.Format.MESSAGE_FORMAT)
    void instantiatingDestination(String destinationType, String destination);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 151008, value = "awaiting HornetQ Server availability", format = Message.Format.MESSAGE_FORMAT)
+   void awaitingJMSServerCreation();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 152001, value = "It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod" +
          "\nHornetQ Resource Adapter won't be able to set and verify transaction timeouts in certain cases.", format = Message.Format.MESSAGE_FORMAT)

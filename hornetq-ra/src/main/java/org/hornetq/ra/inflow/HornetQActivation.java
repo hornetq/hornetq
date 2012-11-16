@@ -31,6 +31,8 @@ import javax.resource.spi.work.WorkManager;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQNonExistentQueueException;
+import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -482,7 +484,9 @@ public class HornetQActivation
 
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
 
-               HornetQRALogger.LOGGER.unableToRetrieveDestinationFromJNDI(destinationName, destinationType.getName(), calculatedDestinationName);
+               HornetQRALogger.LOGGER.debug("Unable to retrieve " + destinationName +
+                     " from JNDI. Creating a new " + destinationType.getName() +
+                     " named " + calculatedDestinationName + " to be used by the MDB.");
 
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
@@ -552,9 +556,13 @@ public class HornetQActivation
     */
    public void handleFailure(Throwable failure)
    {
-      if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
+      if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST))
       {
          HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
+      }
+      else if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED))
+      {
+         HornetQRALogger.LOGGER.awaitingJMSServerCreation();
       }
       else
       {
@@ -569,6 +577,7 @@ public class HornetQActivation
          return;
       try
       {
+         Throwable lastException = failure;
          while (deliveryActive.get() && (setupAttempts == -1 || reconnectCount < setupAttempts))
          {
             teardown();
@@ -583,7 +592,10 @@ public class HornetQActivation
                break;
             }
 
-            HornetQRALogger.LOGGER.attemptingReconnect(spec);
+            if (reconnectCount < 1)
+            {
+               HornetQRALogger.LOGGER.attemptingReconnect(spec);
+            }
             try
             {
                setup();
@@ -592,9 +604,21 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
+               if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST))
                {
-                  HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
+                  if (lastException == null && lastException instanceof HornetQNonExistentQueueException)
+                  {
+                     lastException = t;
+                     HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
+                  }
+               }
+               else if(failure instanceof HornetQException && !(((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED))
+               {
+                  if (lastException == null && lastException instanceof HornetQNotConnectedException)
+                  {
+                     lastException = t;
+                     HornetQRALogger.LOGGER.awaitingJMSServerCreation();
+                  }
                }
                else
                {

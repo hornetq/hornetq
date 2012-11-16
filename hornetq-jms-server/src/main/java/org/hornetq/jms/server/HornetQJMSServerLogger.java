@@ -165,6 +165,11 @@ public interface HornetQJMSServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void failedToCorrectHost(@Cause Exception e, String name);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 122021, value = "Couldn't start recovery discovery on {0}, we will retry every recovery scan until the server is available" ,
+         format = Message.Format.MESSAGE_FORMAT)
+   void xaRecoveryStartError(XARecoveryConfig e);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124001, value = "key attribute missing for JMS configuration {0}" , format = Message.Format.MESSAGE_FORMAT)
    void jmsConfigMissingKey(Node e);

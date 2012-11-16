@@ -50,7 +50,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       this.config = config;
    }
 
-   public synchronized void start()
+   public synchronized void start(boolean retry)
    {
       if (!started)
       {
@@ -72,7 +72,10 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
          catch (Exception startupError)
          {
-           HornetQJMSServerLogger.LOGGER.warn("Couldn't start recovery discovery on " + config + ", we will retry this on the next recovery scan");
+            if (!retry)
+            {
+               HornetQJMSServerLogger.LOGGER.xaRecoveryStartError(config);
+            }
             stop();
             HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
          }
