@@ -45,11 +45,13 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class XMLUtil
+public final class XMLUtil
 {
-   // Constants ------------------------------------------------------------------------------------
 
-   // Static ---------------------------------------------------------------------------------------
+   private XMLUtil()
+   {
+      // Utility class
+   }
 
    public static Element stringToElement(final String s) throws Exception
    {

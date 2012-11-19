@@ -165,7 +165,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
                                                         password);
 
          HornetQXAResourceWrapper wrapper = new HornetQXAResourceWrapper(config);
-         recoveries.put(nodeID, wrapper);
+         recoveries.putIfAbsent(nodeID, wrapper);
       }
    }
 
