@@ -25,6 +25,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CommandConfirmationHandler;
@@ -32,8 +34,6 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
-import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -307,7 +307,10 @@ public final class ChannelImpl implements Channel
                {
                   if(connection.getBlockingCallFailoverTimeout() < 0)
                   {
-                     failoverCondition.await();
+                     while (failingOver)
+                     {
+                        failoverCondition.await();
+                     }
                   }
                   else
                   {

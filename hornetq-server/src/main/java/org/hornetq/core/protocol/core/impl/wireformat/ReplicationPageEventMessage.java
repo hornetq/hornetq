@@ -19,10 +19,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A ReplicationPageWrite
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicationPageEventMessage extends PacketImpl
 {
@@ -36,14 +33,6 @@ public class ReplicationPageEventMessage extends PacketImpl
     */
    private boolean isDelete;
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public ReplicationPageEventMessage()
    {
       super(PacketImpl.REPLICATION_PAGE_EVENT);
@@ -56,8 +45,6 @@ public class ReplicationPageEventMessage extends PacketImpl
       this.isDelete = isDelete;
       this.storeName = storeName;
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -104,5 +91,40 @@ public class ReplicationPageEventMessage extends PacketImpl
    {
       return ReplicationPageEventMessage.class.getSimpleName() + "(channel=" + channelID + ", isDelete=" + isDelete +
                ", storeName=" + storeName + ", pageNumber=" + pageNumber + ")";
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (isDelete ? 1231 : 1237);
+      result = prime * result + pageNumber;
+      result = prime * result + ((storeName == null) ? 0 : storeName.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ReplicationPageEventMessage other = (ReplicationPageEventMessage)obj;
+      if (isDelete != other.isDelete)
+         return false;
+      if (pageNumber != other.pageNumber)
+         return false;
+      if (storeName == null)
+      {
+         if (other.storeName != null)
+            return false;
+      }
+      else if (!storeName.equals(other.storeName))
+         return false;
+      return true;
    }
 }
