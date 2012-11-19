@@ -114,19 +114,29 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
+         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core-client</artifactId>
-	        <version>${project.version}</version>
-        </dependency>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-server</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms-client</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms-server</artifactId>
+            <version>${project.version}</version>
+         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-client</artifactId>
-	        <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>

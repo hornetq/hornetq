@@ -37,8 +37,8 @@
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>122</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>BETA2</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>BETA2</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})

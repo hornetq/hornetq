@@ -273,12 +273,45 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-core</include>
+            <include>org.hornetq:hornetq-core-client</include>
          </includes>
          <binaries>
             <attachmentClassifier>javadoc</attachmentClassifier>
             <includeDependencies>false</includeDependencies>
-            <outputDirectory>docs/api</outputDirectory>
+            <outputDirectory>docs/api/hornetq-client</outputDirectory>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-server</include>
+         </includes>
+         <binaries>
+            <attachmentClassifier>javadoc</attachmentClassifier>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>docs/api/hornetq-server</outputDirectory>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-jms-client</include>
+         </includes>
+         <binaries>
+            <attachmentClassifier>javadoc</attachmentClassifier>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>docs/api/hornetq-jms-client</outputDirectory>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-jms-server</include>
+         </includes>
+         <binaries>
+            <attachmentClassifier>javadoc</attachmentClassifier>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>docs/api/hornetq-jms-server</outputDirectory>
          </binaries>
       </moduleSet>
    </moduleSets>
