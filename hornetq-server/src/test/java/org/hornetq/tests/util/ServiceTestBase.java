@@ -222,20 +222,14 @@ public abstract class ServiceTestBase extends UnitTestCase
       throw new Exception(msg);
    }
 
-   protected final static void waitForComponent(final HornetQComponent component, final long seconds) throws Exception
+   protected final static void
+            waitForComponent(final HornetQComponent component, final long seconds) throws InterruptedException
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
       while (!component.isStarted())
       {
-         try
-         {
-            Thread.sleep(50);
-         }
-         catch (InterruptedException e)
-         {
-            // ignore
-         }
+         Thread.sleep(50);
          if (System.currentTimeMillis() > (time + toWait))
          {
             fail("component did not start within timeout of " + seconds);

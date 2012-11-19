@@ -47,18 +47,18 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
 
       startServers(liveServers);
       startServers(backupServers);
-      waitForBackupSyncs();
+      waitForBackups();
 
       sendCrashReceive();
       waitForTopology(backupServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashBackupReceive();
    }
 
-   private void waitForBackupSyncs()
+   private void waitForBackups() throws InterruptedException
    {
       for (TestableServer backupServer : backupServers)
       {
-         waitForRemoteBackupSynchronization(backupServer.getServer());
+         waitForComponent(backupServer.getServer(), 5);
       }
    }
 
@@ -69,6 +69,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
          testableServer.start();
       }
    }
+
    @Override
    public void testStartBackupFirst() throws Exception
    {
@@ -77,7 +78,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
 
       startServers(backupServers);
       startServers(liveServers);
-      waitForBackupSyncs();
+      waitForBackups();
 
       waitForTopology(liveServers.get(0).getServer(), liveServers.size(), 2);
       sendCrashReceive();

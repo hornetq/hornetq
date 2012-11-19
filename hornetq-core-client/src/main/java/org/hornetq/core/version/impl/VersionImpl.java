@@ -68,7 +68,7 @@ public class VersionImpl implements Version, Serializable
 
       this.nettyVersion = nettyVersion;
 
-      this.compatibleVersionList = compatibleVersionList;
+      this.compatibleVersionList = Arrays.copyOf(compatibleVersionList, compatibleVersionList.length);
    }
 
    // Version implementation ------------------------------------------
@@ -123,9 +123,16 @@ public class VersionImpl implements Version, Serializable
       return nettyVersion;
    }
 
-   public int[] getCompatibleVersionList()
+   public boolean isCompatible(int version)
    {
-      return compatibleVersionList;
+      for (int element : compatibleVersionList)
+      {
+         if (element == version)
+         {
+            return true;
+         }
+      }
+      return false;
    }
 
    @Override
