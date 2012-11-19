@@ -28,9 +28,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.security.HornetQPrincipal;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.version.Version;
 
@@ -111,18 +111,7 @@ public class HornetQPacketHandler implements ChannelHandler
       try
       {
          Version version = server.getVersion();
-         int[] compatibleList = version.getCompatibleVersionList();
-         boolean isCompatibleClient = false;
-         for (int element : compatibleList)
-         {
-            if (element == request.getVersion())
-            {
-               isCompatibleClient = true;
-               break;
-            }
-         }
-
-         if (!isCompatibleClient)
+         if (!version.isCompatible(request.getVersion()))
          {
             HornetQServerLogger.LOGGER.incompatibleVersion(request.getVersion(), connection.getRemoteAddress(), version.getFullVersion());
             throw HornetQMessageBundle.BUNDLE.incompatibleCLientServer();
