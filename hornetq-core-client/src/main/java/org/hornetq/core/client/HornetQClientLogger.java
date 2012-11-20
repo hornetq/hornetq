@@ -673,7 +673,8 @@ public interface HornetQClientLogger extends BasicLogger
    void propertyNotBoolean(String propName, String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212154, value = "Cannot find hornetq-version.properties on classpath: {1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 212154, value = "Cannot find hornetq-version.properties on classpath: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void noVersionOnClasspath(String classpath);
 
    @LogMessage(level = Logger.Level.WARN)
