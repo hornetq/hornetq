@@ -1000,7 +1000,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                   session.close();
                   session = null;
                }
-               catch (Exception dontcare)
+            catch (HornetQException dontcare)
                {
                }
             }
@@ -1016,9 +1016,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             HornetQServerLogger.LOGGER.bridgeStopped(name);
          }
-         catch (Exception e)
+         catch (RuntimeException e)
          {
            HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
+         }
+         catch (InterruptedException e)
+         {
+            HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
          }
       }
    }

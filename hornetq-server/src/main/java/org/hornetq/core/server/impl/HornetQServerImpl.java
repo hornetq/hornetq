@@ -1565,7 +1565,10 @@ public class HornetQServerImpl implements HornetQServer
       {
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
-      activationLatch.countDown();
+      synchronized (activationLatchGuard)
+      {
+         activationLatch.countDown();
+      }
    }
 
    /**

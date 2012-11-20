@@ -585,7 +585,7 @@ public class QueueImpl implements Queue
       consumerSet.add(consumer);
    }
 
-   public synchronized void removeConsumer(final Consumer consumer) throws Exception
+   public synchronized void removeConsumer(final Consumer consumer)
    {
       Iterator<ConsumerHolder> iter = consumerList.iterator();
 
