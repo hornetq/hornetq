@@ -111,20 +111,43 @@ public class PushConsumer implements MessageHandler
    @Override
    public void onMessage(ClientMessage clientMessage)
    {
-      if (strategy.push(clientMessage) == false)
+      log.debug(this + ": receiving " + clientMessage);
+
+      try
       {
-         throw new RuntimeException("Failed to push message to " + registration.getTarget());
+         clientMessage.acknowledge();
+         log.debug(this + ": acknowledged " + clientMessage);
+      }
+      catch (HornetQException e)
+      {
+         throw new RuntimeException(e.getMessage(), e);
+      }
+
+      log.debug(this + ": pushing " + clientMessage + " via " + strategy);
+      boolean acknowledge = strategy.push(clientMessage);
+
+      if (acknowledge)
+      {
+         try
+         {
+            log.debug("Acknowledging: " + clientMessage.getMessageID());
+            session.commit();
+            return;
+         }
+         catch (HornetQException e)
+         {
+            throw new RuntimeException(e);
+         }
       }
       else
       {
          try
          {
-            log.debug("Acknowledging: " + clientMessage.getMessageID());
-            clientMessage.acknowledge();
+            session.rollback();
          }
          catch (HornetQException e)
          {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
          }
       }
    }
