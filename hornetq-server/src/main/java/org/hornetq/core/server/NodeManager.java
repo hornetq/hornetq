@@ -38,7 +38,7 @@ public abstract class NodeManager implements HornetQComponent
 
    protected final boolean replicatedBackup;
    private final String directory;
-   private final Object nodeIDGuard = new String();
+   private final Object nodeIDGuard = "";
    private SimpleString nodeID;
    private UUID uuid;
    private String nodeGroupName;
