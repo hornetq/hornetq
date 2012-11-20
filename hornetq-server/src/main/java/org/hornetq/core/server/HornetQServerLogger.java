@@ -677,7 +677,7 @@ public interface HornetQServerLogger extends BasicLogger
    void bridgeUnableToSendMessage(@Cause Exception e, MessageReference ref);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222141, value = "Connection failed with failedOver={1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222141, value = "Connection failed with failedOver={0}", format = Message.Format.MESSAGE_FORMAT)
    void bridgeConnectionFailed(@Cause Exception e, Boolean failedOver);
 
    @LogMessage(level = Logger.Level.WARN)
