@@ -25,6 +25,10 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
 import javax.resource.spi.ManagedConnection;
@@ -81,6 +85,62 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       super.tearDown();
    }
 
+   public void testIllegalStateDurableSubscriber() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+      QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
+      QueueSession s = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+      Topic topic = HornetQJMSClient.createTopic(MDBQUEUE);
+      try
+      {
+         s.createDurableSubscriber(topic, "test", "test", true);
+         fail("createDurableSubscriber on QueueSession should throw IllegalStateException");
+      }
+      catch (IllegalStateException e)
+      {
+         //success
+      }
+
+      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
+      s.close();
+      mc.destroy();
+   }
+
+   public void testIllegalStateQueueBrowser() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+      TopicConnection topicConnection = qraConnectionFactory.createTopicConnection();
+      TopicSession t = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
+      try
+      {
+         t.createBrowser(q);
+         fail("createDurableSubscriber on QueueSession should throw IllegalStateException");
+      }
+      catch (IllegalStateException e)
+      {
+         //success
+      }
+
+      ManagedConnection mc = ((HornetQRASession)t).getManagedConnection();
+      t.close();
+      mc.destroy();
+   }
+
    public void testSimpleMessageSendAndReceive() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
@@ -92,7 +152,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
-      Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s = queueConnection.createQueueSession(true,0);
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
       MessageProducer mp = s.createProducer(q);
       MessageConsumer consumer = s.createConsumer(q);
