@@ -159,6 +159,32 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
+      /** This internal method serves basically the Resource Adapter.
+    *  The resource adapter plays with an XASession and a non XASession.
+    *  When there is no enlisted transaction, the EE specification mandates that the commit should
+    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
+    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    *  mandates createSession to return a XASession. */
+   public Session createNonXATopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_TOPIC_CONNECTION);
+   }
+
+      /** This internal method serves basically the Resource Adapter.
+    *  The resource adapter plays with an XASession and a non XASession.
+    *  When there is no enlisted transaction, the EE specification mandates that the commit should
+    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
+    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    *  mandates createSession to return a XASession. */
+   public Session createNonXAQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
+      checkClosed();
+
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_QUEUE_CONNECTION);
+   }
+
 
    // Connection implementation --------------------------------------------------------------------
 
