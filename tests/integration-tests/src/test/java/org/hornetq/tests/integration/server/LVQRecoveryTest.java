@@ -27,6 +27,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -218,7 +219,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
@@ -237,12 +238,12 @@ public class LVQRecoveryTest extends ServiceTestBase
       // start the server
       server.start();
 
-      AddressSettings qs = new AddressSettings();
-      qs.setLastValueQueue(true);
-      server.getAddressSettingsRepository().addMatch(address.toString(), qs);
+      AddressSettings qs1 = new AddressSettings();
+      qs1.setLastValueQueue(true);
+      server.getAddressSettingsRepository().addMatch(address.toString(), qs1);
       // then we create a client as normal
       locator.close();
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
