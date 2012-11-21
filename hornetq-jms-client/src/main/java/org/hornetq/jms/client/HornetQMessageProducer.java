@@ -431,7 +431,15 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       ClientMessage coreMessage = msg.getCoreMessage();
 
-      coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
+      if (jbossConn.hasNoLocal())
+      {
+         coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
+      }
+      else
+      {
+         // make sure the message does not get a connID from a previous producer on another connection
+         coreMessage.removeProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME);
+      }
 
       try
       {
