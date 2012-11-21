@@ -13,13 +13,13 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A OneWayChainClusterTest
@@ -39,30 +39,36 @@ public class OneWayChainClusterTest extends ClusterTestBase
    {
       super.setUp();
 
-      setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());
-      setupServer(2, isFileStorage(), isNetty());
-      setupServer(3, isFileStorage(), isNetty());
-      setupServer(4, isFileStorage(), isNetty());
+      setupServer(0, isFileStorage());
+      setupServer(1, isFileStorage());
+      setupServer(2, isFileStorage());
+      setupServer(3, isFileStorage());
+      setupServer(4, isFileStorage());
    }
 
    protected boolean isNetty()
    {
-      return false;
+      throw new RuntimeException("dead");
+   }
+
+   @Override
+   protected ConnectionType getConnectionType()
+   {
+      return ConnectionType.INVM;
    }
 
    public void testBasicRoundRobin() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -83,16 +89,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testBasicNonLoadBalanced() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -116,16 +122,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testRoundRobinForwardWhenNoConsumersTrue() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", true, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", true, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", true, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", true, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", true, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", true, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", true, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", true, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -147,16 +153,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testRoundRobinForwardWhenNoConsumersFalseNoLocalQueue() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(4, "queues.testaddress", "queue0", null, false);
 
@@ -173,16 +179,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testRoundRobinForwardWhenNoConsumersFalse() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -206,16 +212,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testRoundRobinForwardWhenNoConsumersFalseLocalConsumer() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -239,16 +245,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testHopsTooLow() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 3, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 3, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 3, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 3, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 3, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 3, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 3, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 3, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -267,16 +273,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testStartStopMiddleOfChain() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(4, isNetty(), true);
+      setupSessionFactoryCT(0);
+      setupSessionFactoryCT(4, true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -334,11 +340,11 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
    public void testChainClusterConnections() throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, isNetty(), true);
-      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, true);
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 4, true);
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 4, true);
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 4, true);
+      setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, true);
 
       startServers(0, 1, 2, 3, 4);
       Set<ClusterConnection> connectionSet = getServer(0).getClusterManager().getClusterConnections();
