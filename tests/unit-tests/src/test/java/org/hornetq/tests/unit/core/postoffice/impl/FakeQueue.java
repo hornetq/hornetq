@@ -514,61 +514,40 @@ public class FakeQueue implements Queue
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#referenceHandled()
-    */
    public void referenceHandled()
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#removeConsumer(org.hornetq.core.server.Consumer)
-    */
-   public void removeConsumer(final Consumer consumer) throws Exception
+   public void removeConsumer(final Consumer consumer)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#removeFirstReference(long)
-    */
    public MessageReference removeFirstReference(final long id) throws Exception
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#removeReferenceWithID(long)
-    */
    public MessageReference removeReferenceWithID(final long id) throws Exception
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#resume()
-    */
    public void resume()
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#sendMessageToDeadLetterAddress(long)
-    */
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#sendMessagesToDeadLetterAddress(org.hornetq.core.filter.Filter)
-    */
    public int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
    {
       // no-op
