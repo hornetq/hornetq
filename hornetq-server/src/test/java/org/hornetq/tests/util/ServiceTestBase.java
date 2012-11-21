@@ -518,6 +518,11 @@ public abstract class ServiceTestBase extends UnitTestCase
       return createServer(realFiles, false);
    }
 
+   protected final HornetQServer createServerCT(final boolean realFiles) throws Exception
+   {
+      return createServer(realFiles, getConnectionType() == ConnectionType.NETTY);
+   }
+
    protected final HornetQServer createServer(final boolean realFiles, final boolean netty) throws Exception
    {
       return createServer(realFiles, createDefaultConfig(netty), -1, -1, new HashMap<String, AddressSettings>());
@@ -656,6 +661,22 @@ public abstract class ServiceTestBase extends UnitTestCase
          return createServer(realFiles, createDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), -1, -1,
                              new HashMap<String, AddressSettings>());
       }
+   }
+
+   protected ConnectionType getConnectionType()
+   {
+      throw new RuntimeException("method must be overriden (at least while HORNETQ-1090 is not finished");
+   }
+
+   protected final ServerLocator createFactory() {
+      switch (getConnectionType())
+      {
+         case NETTY:
+            return createNettyNonHALocator();
+         case INVM:
+            return createInVMNonHALocator();
+      }
+      throw new IllegalArgumentException();
    }
 
    protected ServerLocator createFactory(final boolean isNetty) throws Exception

@@ -1462,6 +1462,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
       setupSessionFactory(node, netty, false);
    }
 
+   protected void setupSessionFactoryCT(final int node) throws Exception
+   {
+      setupSessionFactoryCT(node, false);
+   }
+
+   protected void setupSessionFactoryCT(final int node, final boolean ha) throws Exception
+   {
+      setupSessionFactory(node, getConnectionType() == ConnectionType.NETTY, ha);
+   }
+
    protected void setupSessionFactory(final int node, final boolean netty, boolean ha) throws Exception
    {
       if (sfs[node] != null)
@@ -1573,6 +1583,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void setupServer(final int node, final boolean fileStorage, final boolean netty) throws Exception
    {
       setupLiveServer(node, fileStorage, false, netty);
+   }
+
+   protected final void setupServer(final int node, final boolean fileStorage) throws Exception
+   {
+      setupLiveServer(node, fileStorage, false, getConnectionType() == ConnectionType.NETTY);
    }
 
    protected void setupLiveServer(final int node,
@@ -1838,6 +1853,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                          final String address,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
+                                         final boolean allowDirectConnectionsOnly)
+   {
+      setupClusterConnection(name, nodeFrom, nodeTo, address, forwardWhenNoConsumers, maxHops,
+                             getConnectionType() == ConnectionType.NETTY, allowDirectConnectionsOnly);
+   }
+
+   @Deprecated
+   protected void setupClusterConnection(final String name, final int nodeFrom, final int nodeTo, final String address,
+                                         final boolean forwardWhenNoConsumers, final int maxHops,
                                          final boolean netty,
                                          final boolean allowDirectConnectionsOnly)
    {

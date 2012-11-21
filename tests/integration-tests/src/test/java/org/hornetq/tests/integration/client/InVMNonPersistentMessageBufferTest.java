@@ -201,21 +201,10 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    }
 
-   protected ServerLocator createFactory() throws Exception
+   @Override
+   protected ConnectionType getConnectionType()
    {
-      if (isNetty())
-      {
-         return createNettyNonHALocator();
-      }
-      else
-      {
-         return createInVMNonHALocator();
-      }
-   }
-
-   protected boolean isNetty()
-   {
-      return false;
+      return ConnectionType.INVM;
    }
 
    protected boolean isPersistent()
@@ -228,7 +217,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(isPersistent(), isNetty());
+      server = createServerCT(isPersistent());
 
       server.start();
 
