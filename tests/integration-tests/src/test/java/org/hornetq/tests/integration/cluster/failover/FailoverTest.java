@@ -157,15 +157,15 @@ public class FailoverTest extends FailoverTestBase
       Thread t = new Thread(r);
       t.start();
       assertTrue("latch released", latch.await(10, TimeUnit.SECONDS));
-      log.info("crashing session");
       crash(session);
       t.join(5000);
+      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
       session.start();
       for (int i = 0; i < 500; i++)
       {
          ClientMessage m = consumer.receive(1000);
-         assertNotNull(m);
+         assertNotNull("message #=" + i, m);
          // assertEquals(i, m.getIntProperty("counter").intValue());
       }
    }
