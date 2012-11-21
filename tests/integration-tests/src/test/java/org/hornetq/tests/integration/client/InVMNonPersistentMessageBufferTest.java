@@ -201,11 +201,6 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    }
 
-   protected boolean isNetty()
-   {
-      throw new RuntimeException("dead");
-   }
-
    @Override
    protected ConnectionType getConnectionType()
    {
