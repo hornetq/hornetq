@@ -134,7 +134,7 @@ public class MultipleFailoverFailbackExample extends HornetQExample
          for (int i = (numMessages / 3) * 2; i < numMessages; i++)
          {
             message0 = (TextMessage)consumer.receive(5000);
-            System.out.printf("Got message: %s (redelivered?: %s)\n", message0.getText(), message0.getJMSRedelivered());
+            System.out.printf("Got message: %s (redelivered?: %s)%n", message0.getText(), message0.getJMSRedelivered());
          }
          message0.acknowledge();
 
