@@ -44,14 +44,14 @@ import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.protocol.ClientPacketDecoder;
 import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -403,7 +403,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
       this.discoveryGroupConfiguration = discoveryGroupConfiguration;
 
-      this.initialConnectors = transportConfigs;
+      this.initialConnectors = transportConfigs != null ? transportConfigs : new TransportConfiguration[] {};
 
       this.nodeID = UUIDGenerator.getInstance().generateStringUUID();
 
@@ -591,7 +591,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       synchronized (this)
       {
          // static list of initial connectors
-         if (initialConnectors != null && discoveryGroup == null)
+         if (initialConnectors.length > 0 && discoveryGroup == null)
          {
             ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect(skipWarnings);
             addFactory(sf);
@@ -761,7 +761,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
       initialise();
 
-      if (initialConnectors == null && discoveryGroup != null)
+      if (initialConnectors.length == 0 && discoveryGroup != null)
       {
          // Wait for an initial broadcast to give us at least one node in the cluster
          long timeout = clusterConnection ? 0 : discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout();
@@ -833,7 +833,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                      {
                         throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
                      }
-                     if (topologyArray == null && initialConnectors != null && attempts == initialConnectors.length)
+                     if (topologyArray == null && attempts == initialConnectors.length)
                      {
                         throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
                      }
@@ -1181,7 +1181,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public TransportConfiguration[] getStaticTransportConfigurations()
    {
-      return this.initialConnectors;
+      return Arrays.copyOf(initialConnectors, initialConnectors.length);
    }
 
    public DiscoveryGroupConfiguration getDiscoveryGroupConfiguration()
