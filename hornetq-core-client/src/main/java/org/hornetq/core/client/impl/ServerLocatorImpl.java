@@ -207,7 +207,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    */
    private PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
 
-   private final Exception e = new Exception();
+   private final Exception traceException = new Exception();
 
    // To be called when there are ServerLocator being finalized.
    // To be used on test assertions
@@ -395,7 +395,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                              final DiscoveryGroupConfiguration discoveryGroupConfiguration,
                              final TransportConfiguration[] transportConfigs)
    {
-      e.fillInStackTrace();
+      traceException.fillInStackTrace();
 
       this.topology = topology == null ? new Topology(this) : topology;
 
@@ -1783,7 +1783,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             return null;
          }
 
-         HornetQClientLogger.LOGGER.errorConnectingToNodes(e);
+         HornetQClientLogger.LOGGER.errorConnectingToNodes(traceException);
          throw HornetQClientMessageBundle.BUNDLE.cannotConnectToStaticConnectors2();
       }
 
@@ -1840,7 +1840,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          if (!isClosed() && finalizeCheck)
          {
-            HornetQClientLogger.LOGGER.serverLocatorNotClosed(e, System.identityHashCode(this));
+            HornetQClientLogger.LOGGER.serverLocatorNotClosed(traceException, System.identityHashCode(this));
 
             if (ServerLocatorImpl.finalizeCallback != null)
             {
