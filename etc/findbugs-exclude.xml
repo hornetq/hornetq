@@ -124,4 +124,9 @@
     <bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
   </Match>
 
+  <Match>
+    <Class name="org.hornetq.utils.json.JSONObject$Null"/>
+    <Bug pattern="EQ_UNUSUAL"/>
+  </Match>
+
 </FindBugsFilter>

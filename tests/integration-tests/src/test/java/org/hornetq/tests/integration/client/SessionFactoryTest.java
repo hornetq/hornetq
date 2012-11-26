@@ -520,7 +520,8 @@ public class SessionFactoryTest extends ServiceTestBase
    {
       if (staticConnectors == null)
       {
-         Assert.assertNull(locator.getStaticTransportConfigurations());
+         Assert.assertTrue("no static connectors",
+                           Arrays.equals(new String[] {}, locator.getStaticTransportConfigurations()));
       }
       else
       {
