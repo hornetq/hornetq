@@ -27,11 +27,14 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConfigurationUtils;
@@ -40,9 +43,9 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
@@ -83,7 +86,22 @@ public class ClusterManager implements HornetQComponent
 
    private final Configuration configuration;
 
-   private volatile boolean started;
+   enum State
+   {
+      STOPPED,
+      /** Used because {@link ClusterManager#stop()} method is not completely synchronized */
+      STOPPING,
+      /**
+       * Deployed means {@link ClusterManager#deploy()} was called but
+       * {@link ClusterManager#start()} was not called.
+       * <p>
+       * We need the distinction if {@link ClusterManager#stop()} is called before 'start'. As
+       * otherwise we would leak locators.
+       */
+      DEPLOYED, STARTED,
+   }
+
+   private volatile State state = State.STOPPED;
 
    private volatile boolean backup;
 
@@ -187,6 +205,15 @@ public class ClusterManager implements HornetQComponent
 
    public synchronized void deploy() throws Exception
    {
+      if (state == State.STOPPED)
+      {
+         state = State.DEPLOYED;
+      }
+      else
+      {
+         throw new IllegalStateException();
+      }
+
          for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
          {
             deployBroadcastGroup(config);
@@ -200,7 +227,7 @@ public class ClusterManager implements HornetQComponent
 
    public synchronized void start() throws Exception
    {
-      if (started)
+      if (state == State.STARTED)
       {
          return;
       }
@@ -228,18 +255,18 @@ public class ClusterManager implements HornetQComponent
          deployBridge(config, !backup);
       }
 
-
-      started = true;
+      state = State.STARTED;
    }
 
    public void stop() throws Exception
    {
       synchronized (this)
       {
-         if (!started)
+         if (state == State.STOPPED || state == State.STOPPING)
          {
             return;
          }
+         state = State.STOPPING;
 
             for (BroadcastGroup group : broadcastGroups.values())
             {
@@ -276,7 +303,7 @@ public class ClusterManager implements HornetQComponent
          }
       }
       clusterLocators.clear();
-      started = false;
+      state = State.STOPPED;
 
       clearClusterConnections();
    }
@@ -294,7 +321,7 @@ public class ClusterManager implements HornetQComponent
 
    public boolean isStarted()
    {
-      return started;
+      return state == State.STARTED;
    }
 
    public Map<String, Bridge> getBridges()

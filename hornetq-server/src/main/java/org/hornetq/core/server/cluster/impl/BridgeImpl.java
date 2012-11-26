@@ -110,6 +110,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private volatile ClientProducer producer;
 
    private volatile boolean started;
+   private volatile boolean stopping = false;
 
    private final boolean useDuplicateDetection;
 
@@ -136,8 +137,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private int retryCount = 0;
 
    private NotificationService notificationService;
-
-   private boolean stopping = false;
 
    public BridgeImpl(final ServerLocatorInternal serverLocator,
                      final int reconnectAttempts,
