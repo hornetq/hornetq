@@ -211,18 +211,21 @@ public class OutgoingConnectionTest extends HornetQRATestBase
            // iterate thru the property names
             int i = 0;
             propertyNames = messageReceived.getPropertyNames();
-            do {
+            do
+            {
                 String tmp = (String)propertyNames.nextElement();
                 System.out.println("+++++++   Property Name is: " + tmp );
                 if ( tmp.indexOf("JMS") != 0 )
                     i++;
-            } while (propertyNames.hasMoreElements());
+            }
+            while (propertyNames.hasMoreElements());
 
-            if (i == numPropertyNames) {
+            if (i == numPropertyNames)
+            {
                 System.out.println("Pass: # of properties is " + numPropertyNames + " as expected");
-            } else {
-                System.out.println("Error: expected " + numPropertyNames + "property names");
-                System.out.println("       But " + i + " returned");
+            }
+            else {
+               fail("Error: expected " + numPropertyNames + "property names" + "       But " + i + " returned");
             }
         }
         catch (Exception e)
