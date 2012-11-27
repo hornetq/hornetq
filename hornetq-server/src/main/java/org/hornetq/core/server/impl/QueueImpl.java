@@ -1065,7 +1065,32 @@ public class QueueImpl implements Queue
 
    public synchronized int deleteMatchingReferences(final Filter filter) throws Exception
    {
+      return iterQueue(filter, new QueueIterateAction()
+      {
+         @Override
+         public void actMessage(Transaction tx, MessageReference ref) throws Exception
+         {
+            deliveringCount.incrementAndGet();
+            acknowledge(tx, ref);
+            refRemoved(ref);
+         }
+      });
+   }
+
+
+   /**
+    * This is a generic method for any method interacting on the Queue to move or delete messages
+    * Instead of duplicate the feature we created an abstract class where you pass the logic for each message.
+    * Too bad there's not such thing as a function pointer in Java (as there is in scala).
+    * @param filter
+    * @param messageAction
+    * @return
+    * @throws Exception
+    */
+   private synchronized int iterQueue(final Filter filter, QueueIterateAction messageAction) throws Exception
+   {
       int count = 0;
+      int txCount = 0;
 
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -1087,20 +1112,35 @@ public class QueueImpl implements Queue
 
             if (filter == null || filter.match(ref.getMessage()))
             {
-               deliveringCount.incrementAndGet();
-               acknowledge(tx, ref);
+               messageAction.actMessage(tx, ref);
                iter.remove();
-               refRemoved(ref);
+               txCount++;
                count++;
             }
+         }
+
+         if (txCount > 0)
+         {
+            tx.commit();
+
+            tx = new TransactionImpl(storageManager);
+
+            txCount = 0;
          }
 
          List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
          for (MessageReference messageReference : cancelled)
          {
-            deliveringCount.incrementAndGet();
-            acknowledge(tx, messageReference);
+            messageAction.actMessage(tx, messageReference);
             count++;
+            txCount++;
+         }
+
+         if (txCount > 0)
+         {
+            tx.commit();
+            tx = new TransactionImpl(storageManager);
+            txCount = 0;
          }
 
 
@@ -1115,16 +1155,29 @@ public class QueueImpl implements Queue
                if (filter == null || filter.match(reference.getMessage()))
                {
                   count++;
-                  pageSubscription.ack(reference);
+                  txCount++;
+                  messageAction.actMessage(tx, reference);
                }
                else
                {
                   addTail(reference, false);
                }
+
+               if (txCount > 0 && txCount % 500 == 0)
+               {
+                  tx.commit();
+                  tx = new TransactionImpl(storageManager);
+                  txCount = 0;
+               }
             }
          }
 
-         tx.commit();
+         if (txCount > 0)
+         {
+            tx.commit();
+            tx = null;
+         }
+
 
 
          if (filter != null && pageIterator != null)
@@ -1396,84 +1449,37 @@ public class QueueImpl implements Queue
                                           final SimpleString toAddress,
                                           final boolean rejectDuplicates) throws Exception
    {
-      Transaction tx = new TransactionImpl(storageManager);
+      final DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
 
-      int count = 0;
-
-      try
+      return iterQueue(filter, new QueueIterateAction()
       {
-         LinkedListIterator<MessageReference> iter = iterator();
-
-         try
+         @Override
+         public void actMessage(Transaction tx, MessageReference ref) throws Exception
          {
+            boolean ignored = false;
 
-            DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
+            deliveringCount.incrementAndGet();
 
-            while (iter.hasNext())
-            {
-               MessageReference ref = iter.next();
-               if (filter == null || filter.match(ref.getMessage()))
-               {
-                  boolean ignored = false;
-
-                  deliveringCount.incrementAndGet();
-                  count++;
-
-                  if (rejectDuplicates)
-                  {
-                     byte[] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
-                     if (duplicateBytes != null)
-                     {
-                        if (targetDuplicateCache.contains(duplicateBytes))
-                        {
-                           HornetQServerLogger.LOGGER.messageWithDuplicateID(ref.getMessage().getDuplicateProperty(), toAddress, address, address);
-                           acknowledge(tx, ref);
-                           ignored = true;
-                        }
-                     }
-                  }
-
-                  if (!ignored)
-                  {
-                     move(toAddress, tx, ref, false, rejectDuplicates);
-                  }
-                  iter.remove();
-               }
-            }
-
-            List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
-            for (MessageReference ref : cancelled)
+            if (rejectDuplicates)
             {
                byte[] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
                if (duplicateBytes != null)
                {
                   if (targetDuplicateCache.contains(duplicateBytes))
                   {
-                     HornetQServerLogger.LOGGER.messageWithDuplicateID(ref.getMessage().getDuplicateProperty(), toAddress, address);
-                     continue;
+                     HornetQServerLogger.LOGGER.messageWithDuplicateID(ref.getMessage().getDuplicateProperty(), toAddress, address, address);
+                     acknowledge(tx, ref);
+                     ignored = true;
                   }
                }
-
-               deliveringCount.incrementAndGet();
-               count++;
-               move(toAddress, tx, ref, false, rejectDuplicates);
-               acknowledge(tx, ref);
             }
 
-            tx.commit();
-
-            return count;
+            if (!ignored)
+            {
+               move(toAddress, tx, ref, false, rejectDuplicates);
+            }
          }
-         finally
-         {
-            iter.close();
-         }
-      }
-      catch (Exception e)
-      {
-         deliveringCount.addAndGet(-count);
-         throw e;
-      }
+      });
    }
 
    public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
@@ -2520,6 +2526,16 @@ public class QueueImpl implements Queue
       {
          doPoll();
       }
+   }
+
+   /**
+    * This will determine the actions that could be done while iterate the queue through iterQueue
+    *
+    * @author clebertsuconic
+    */
+   abstract class QueueIterateAction
+   {
+      public abstract void actMessage(Transaction tx, MessageReference ref) throws Exception;
    }
 
    /* For external use we need to use a synchronized version since the list is not thread safe */

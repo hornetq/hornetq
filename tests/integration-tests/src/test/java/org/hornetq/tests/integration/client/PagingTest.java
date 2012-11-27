@@ -5777,9 +5777,95 @@ public class PagingTest extends ServiceTestBase
 
    }
 
-   // Package protected ---------------------------------------------
+   // Test a scenario where a page was complete and now needs to be cleared
+   public void testMoveMessages() throws Throwable
+   {
+      clearData();
 
-   // Protected -----------------------------------------------------
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server = createServer(true,
+         config,
+         PagingTest.PAGE_SIZE,
+         PagingTest.PAGE_MAX,
+         new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnDurableSend(false);
+         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSession session = sf.createSession(true,  true, 0);
+
+         session.createQueue("Q1", "Q1", true);
+         session.createQueue("Q2", "Q2", true);
+
+         PagingStore store = server.getPagingManager().getPageStore(new SimpleString("Q1"));
+
+
+         ClientProducer prod = session.createProducer("Q1");
+
+         for (int i = 0 ; i < 50; i++)
+         {
+            ClientMessage msg = session.createMessage(true);
+            msg.putIntProperty("count", i);
+            prod.send(msg);
+         }
+         session.commit();
+
+         store.startPaging();
+         for (int i = 50 ; i < 100; i++)
+         {
+            ClientMessage msg = session.createMessage(true);
+            msg.putIntProperty("count", i);
+            prod.send(msg);
+            if (i % 10 == 0)
+            {
+               session.commit();
+               store.forceAnotherPage();
+            }
+         }
+         session.commit();
+
+         Queue queue = server.locateQueue(new SimpleString("Q1"));
+
+         queue.moveReferences(null, new SimpleString("Q2"));
+
+         waitForNotPaging(store);
+
+         session.start();
+
+         ClientConsumer cons = session.createConsumer("Q2");
+
+         for (int i = 0 ; i < 100; i++)
+         {
+            ClientMessage msg = cons.receive(10000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            assertEquals(i, msg.getIntProperty("count").intValue());
+         }
+
+         assertNull(cons.receiveImmediate());
+
+         waitForNotPaging(server.locateQueue(new SimpleString("Q2")));
+
+         session.close();
+         sf.close();
+         locator.close();
+
+      }
+      finally
+      {
+         server.stop();
+      }
+
+   }
+
+
    @Override
    protected Configuration createDefaultConfig() throws Exception
    {
@@ -5788,9 +5874,6 @@ public class PagingTest extends ServiceTestBase
       return config;
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
    private static final class DummyOperationContext implements OperationContext
    {
       private final CountDownLatch pageUp;
@@ -5849,6 +5932,4 @@ public class PagingTest extends ServiceTestBase
 
       }
    }
-
-   ;
 }
