@@ -247,7 +247,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
-      Session s = queueConnection.createQueueSession(true,0);
+      Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
       MessageProducer mp = s.createProducer(q);
       MessageConsumer consumer = s.createConsumer(q);
