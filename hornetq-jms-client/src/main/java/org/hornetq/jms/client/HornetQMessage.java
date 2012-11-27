@@ -732,8 +732,8 @@ public class HornetQMessage implements javax.jms.Message
 
       for (SimpleString propName : message.getPropertyNames())
       {
-         if (!propName.startsWith(HornetQMessage.JMS) || propName.startsWith(HornetQMessage.JMSX) ||
-             propName.startsWith(HornetQMessage.JMS_))
+         if ((!propName.startsWith(HornetQMessage.JMS) || propName.startsWith(HornetQMessage.JMSX) ||
+             propName.startsWith(HornetQMessage.JMS_)) && !propName.startsWith(HornetQConnection.CONNECTION_ID_PROPERTY_NAME))
          {
             set.add(propName.toString());
          }
