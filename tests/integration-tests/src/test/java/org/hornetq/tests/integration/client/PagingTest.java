@@ -5794,6 +5794,8 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
+      final int LARGE_MESSAGE_SIZE = 1024 * 1024;
+
       try
       {
          ServerLocator locator = createInVMNonHALocator();
@@ -5813,6 +5815,10 @@ public class PagingTest extends ServiceTestBase
          {
             ClientMessage msg = session.createMessage(true);
             msg.putIntProperty("count", i);
+            if (i > 0 && i % 10 == 0)
+            {
+               msg.setBodyInputStream(createFakeLargeStream(LARGE_MESSAGE_SIZE));
+            }
             prod.send(msg);
          }
          session.commit();
@@ -5822,6 +5828,10 @@ public class PagingTest extends ServiceTestBase
          {
             ClientMessage msg = session.createMessage(true);
             msg.putIntProperty("count", i);
+            if (i % 10 == 0)
+            {
+               msg.setBodyInputStream(createFakeLargeStream(LARGE_MESSAGE_SIZE));
+            }
             prod.send(msg);
             if (i % 10 == 0)
             {
@@ -5837,6 +5847,17 @@ public class PagingTest extends ServiceTestBase
 
          waitForNotPaging(store);
 
+         session.close();
+         locator.close();
+
+         server.stop();
+         server.start();
+
+         locator = createInVMNonHALocator();
+         locator.setBlockOnDurableSend(false);
+         sf = locator.createSessionFactory();
+         session = sf.createSession(true,  true, 0);
+
          session.start();
 
          ClientConsumer cons = session.createConsumer("Q2");
@@ -5845,6 +5866,15 @@ public class PagingTest extends ServiceTestBase
          {
             ClientMessage msg = cons.receive(10000);
             assertNotNull(msg);
+            if (i > 0 && i % 10 == 0)
+            {
+               byte largeMessageRead[] = new byte[LARGE_MESSAGE_SIZE];
+               msg.getBodyBuffer().readBytes(largeMessageRead);
+               for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
+               {
+                  assertEquals(largeMessageRead[j], getSamplebyte(j));
+               }
+            }
             msg.acknowledge();
             assertEquals(i, msg.getIntProperty("count").intValue());
          }
