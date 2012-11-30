@@ -934,27 +934,6 @@ public class HornetQServerImpl implements HornetQServer
       return session;
    }
 
-   private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
-   {
-      if (!isStarted())
-         return null;
-      if (!configuration.isBackup())
-      {
-         throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
-      }
-
-      channel.setHandler(replicationEndpoint);
-
-      if (replicationEndpoint.getChannel() != null)
-      {
-         throw HornetQMessageBundle.BUNDLE.alreadyHaveReplicationServer();
-      }
-
-      replicationEndpoint.setChannel(channel);
-
-      return replicationEndpoint;
-   }
-
    public void removeSession(final String name) throws Exception
    {
       sessions.remove(name);
@@ -2475,6 +2454,27 @@ public class HornetQServerImpl implements HornetQServer
                HornetQServerLogger.LOGGER.replicationStartProblem(e);
                quorumManager.causeExit(FAILURE_REPLICATING);
             }
+         }
+
+         private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
+         {
+            if (!isStarted())
+               return null;
+            if (!configuration.isBackup())
+            {
+               throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
+            }
+
+            channel.setHandler(replicationEndpoint);
+
+            if (replicationEndpoint.getChannel() != null)
+            {
+               throw HornetQMessageBundle.BUNDLE.alreadyHaveReplicationServer();
+            }
+
+            replicationEndpoint.setChannel(channel);
+
+            return replicationEndpoint;
          }
       }
    }
