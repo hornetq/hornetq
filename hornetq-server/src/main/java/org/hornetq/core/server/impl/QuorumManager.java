@@ -175,26 +175,14 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    }
 
    /**
-    * Returns {@link true} when a sufficient number of votes has been cast to take a decision.
-    * @param total the total number of votes
-    * @param pingCount the total number of servers that were reached
-    * @param votesLeft the total number of servers for which we don't have a decision yet.
+    * Decides whether the server is to be considered down or not.
+    * @param totalServers
+    * @param reachedServers
     * @return
     */
-   private static final boolean isSufficient(int total, int pingCount, long votesLeft)
-   {
-      boolean notEnoughVotesLeft = total - 2 * (pingCount + votesLeft) > 0;
-      return nodeIsDown(total, pingCount) || notEnoughVotesLeft;
-   }
-
-   /**
-    * @param total
-    * @param pingCount
-    * @return
-    */
-   private static boolean nodeIsDown(int total, int pingCount)
-   {
-      return pingCount * 2 >= total - 1;
+   private static boolean nodeIsDown(int totalServers, int reachedServers)
+   { // at least half of the servers were reached
+      return reachedServers * 2 >= totalServers - 1;
    }
 
    public void notifyRegistrationFailed()
@@ -247,7 +235,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
                session = sessionFactory.createSession();
                if (session != null)
                {
-                  if (isSufficient(total, count.incrementAndGet(), latch.getCount() - 1))
+                  if (nodeIsDown(total, count.incrementAndGet()))
                   {
                      while (latch.getCount() > 0)
                         latch.countDown();
