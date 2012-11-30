@@ -52,6 +52,7 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -173,6 +174,8 @@ public class QueueImpl implements Queue
 
    private volatile boolean directDeliver = true;
 
+   private AddressSettingsRepositoryListener addressSettingsRepositoryListener;
+
    public String debug()
    {
       StringWriter str = new StringWriter();
@@ -285,6 +288,8 @@ public class QueueImpl implements Queue
       if (addressSettingsRepository != null)
       {
          expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+         addressSettingsRepositoryListener = new AddressSettingsRepositoryListener();
+         addressSettingsRepository.registerListener(addressSettingsRepositoryListener);
       }
       else
       {
@@ -513,7 +518,8 @@ public class QueueImpl implements Queue
          checkQueueSizeFuture.cancel(false);
       }
 
-      getExecutor().execute(new Runnable(){
+      getExecutor().execute(new Runnable()
+      {
          public void run()
          {
             try
@@ -527,6 +533,11 @@ public class QueueImpl implements Queue
             }
          }
       });
+
+      if (addressSettingsRepository != null)
+      {
+         addressSettingsRepository.unRegisterListener(addressSettingsRepositoryListener);
+      }
    }
 
    public Executor getExecutor()
@@ -2588,6 +2599,15 @@ public class QueueImpl implements Queue
          }
       }
 
+   }
+
+   private class AddressSettingsRepositoryListener implements HierarchicalRepositoryChangeListener
+   {
+      @Override
+      public void onChange()
+      {
+         expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+      }
    }
 }
 
