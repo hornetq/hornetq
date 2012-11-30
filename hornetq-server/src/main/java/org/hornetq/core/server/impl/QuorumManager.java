@@ -22,6 +22,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.Pair;
@@ -32,6 +33,23 @@ import org.hornetq.utils.Pair;
  * The use case scenario is an eventual connection loss between the live and the backup, where the
  * quorum will help a remote backup deciding whether to replace its 'live' server or to keep trying
  * to reconnect.
+ * <p>
+ * If the live server does an orderly shutdown, it will explicitly notify the backup through the
+ * replication channel. In this scenario, no voting takes place and the backup fails-over. See
+ * {@link #failOver()}.
+ * <p>
+ * In case of
+ * <ol>
+ * <li>broken connection, which would trigger a
+ * {@link FailureListener#connectionFailed(HornetQException, boolean)}. This is affected by the TTL
+ * configuration.</li>
+ * <li>getting a "nodeDown" topology notification. This would happen if a given server failed to
+ * PING our live</li>
+ * </ol>
+ * The backup will try to connect to all the topology members, if it manages to reach at least half
+ * of the servers, it concludes the network is operating normally and fail-over. If the backup finds
+ * less than half of its peers, then it assumes a network failure and attempts to reconnect with the
+ * live.
  */
 public final class QuorumManager implements SessionFailureListener, ClusterTopologyListener
 {
@@ -96,7 +114,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       if (total < 1)
          return true;
 
-      final CountDownLatch latch = new CountDownLatch(total);
+      final CountDownLatch voteLatch = new CountDownLatch(total);
       try
       {
          for (TopologyMemberImpl tm : nodes)
@@ -108,13 +126,13 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
             {
                ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);
                locatorsList.add(locator);
-               executor.submit(new ServerConnect(latch, total, pingCount, locator, serverTC));
+               executor.submit(new QuorumVoteServerConnect(voteLatch, total, pingCount, locator, serverTC));
             }
          }
 
          try
          {
-            latch.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
+            voteLatch.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
          }
          catch (InterruptedException interruption)
          {
@@ -157,26 +175,14 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    }
 
    /**
-    * Returns {@link true} when a sufficient number of votes has been cast to take a decision.
-    * @param total the total number of votes
-    * @param pingCount the total number of servers that were reached
-    * @param votesLeft the total number of servers for which we don't have a decision yet.
+    * Decides whether the server is to be considered down or not.
+    * @param totalServers
+    * @param reachedServers
     * @return
     */
-   private static final boolean isSufficient(int total, int pingCount, long votesLeft)
-   {
-      boolean notEnoughVotesLeft = total - 2 * (pingCount + votesLeft) > 0;
-      return nodeIsDown(total, pingCount) || notEnoughVotesLeft;
-   }
-
-   /**
-    * @param total
-    * @param pingCount
-    * @return
-    */
-   private static boolean nodeIsDown(int total, int pingCount)
-   {
-      return pingCount * 2 >= total - 1;
+   private static boolean nodeIsDown(int totalServers, int reachedServers)
+   { // at least half of the servers were reached
+      return reachedServers * 2 >= totalServers - 1;
    }
 
    public void notifyRegistrationFailed()
@@ -194,7 +200,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    /**
     * Attempts to connect to a given server.
     */
-   private static class ServerConnect implements Runnable
+   private static class QuorumVoteServerConnect implements Runnable
    {
       private final ServerLocatorImpl locator;
       private final CountDownLatch latch;
@@ -202,7 +208,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       private final TransportConfiguration tc;
       private final int total;
 
-      public ServerConnect(CountDownLatch latch, int total, AtomicInteger count,
+      public QuorumVoteServerConnect(CountDownLatch latch, int total, AtomicInteger count,
                            ServerLocatorImpl serverLocator,
                            TransportConfiguration serverTC)
       {
@@ -229,7 +235,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
                session = sessionFactory.createSession();
                if (session != null)
                {
-                  if (isSufficient(total, count.incrementAndGet(), latch.getCount() - 1))
+                  if (nodeIsDown(total, count.incrementAndGet()))
                   {
                      while (latch.getCount() > 0)
                         latch.countDown();
@@ -317,12 +323,12 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    /**
     * Cause the Activation thread to exit and the server to be stopped.
-    * @param signal the state we want to set the quorum manager to
+    * @param explicitSignal the state we want to set the quorum manager to return
     */
-   public synchronized void causeExit(BACKUP_ACTIVATION signal)
+   public synchronized void causeExit(BACKUP_ACTIVATION explicitSignal)
    {
       removeListener();
-      this.signal = signal;
+      this.signal = explicitSignal;
       latch.countDown();
    }
 
@@ -335,6 +341,9 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    /**
     * Releases the latch, causing the backup activation thread to fail-over.
+    * <p>
+    * The use case is for when the 'live' has an orderly shutdown, in which case it informs the
+    * backup that it should fail-over.
     */
    public synchronized void failOver()
    {
