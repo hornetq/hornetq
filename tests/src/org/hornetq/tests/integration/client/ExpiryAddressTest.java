@@ -24,6 +24,8 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -65,6 +67,58 @@ public class ExpiryAddressTest extends ServiceTestBase
       Assert.assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(eq);
+      m = clientConsumer.receive(500);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
+      m.acknowledge();
+   }
+
+   public void testBasicSendWithRetroActiveAddressSettings() throws Exception
+   {
+      // apply "original" address settings
+      SimpleString expiryAddress1 = new SimpleString("expiryAddress1");
+      SimpleString qName = new SimpleString("q1");
+      SimpleString expiryQueue1 = new SimpleString("expiryQueue1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress1);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      clientSession.createQueue(expiryAddress1, expiryQueue1, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+
+      // override "original" address settings
+      SimpleString expiryAddress2 = new SimpleString("expiryAddress2");
+      SimpleString expiryQueue2 = new SimpleString("expiryQueue2");
+      addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress2);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      clientSession.createQueue(expiryAddress2, expiryQueue2, null, false);
+
+      // send message that will expire ASAP
+      ClientProducer producer = clientSession.createProducer(qName);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
+      clientMessage.setExpiration(System.currentTimeMillis());
+      producer.send(clientMessage);
+
+      clientSession.start();
+
+      // make sure the message has expired from the original queue
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      ClientMessage m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      clientConsumer.close();
+
+      // make sure the message wasn't sent to the original expiry address
+      clientConsumer = clientSession.createConsumer(expiryQueue1);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      m = clientConsumer.receiveImmediate();
+      Assert.assertNull(m);
+      clientConsumer.close();
+
+      // make sure the message was sent to the expected expected expiry address
+      clientConsumer = clientSession.createConsumer(expiryQueue2);
       m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
