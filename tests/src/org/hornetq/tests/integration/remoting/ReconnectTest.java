@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.remoting;
 
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +24,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -131,6 +133,139 @@ public class ReconnectTest extends ServiceTestBase
       }
 
    }
+   
+
+   public void testInterruptReconnectNetty() throws Exception
+   {
+      internalTestInterruptReconnect(true, false);
+   }
+   
+   public void testInterruptReconnectInVM() throws Exception
+   {
+      internalTestInterruptReconnect(false, false);
+   }
+   
+   public void testInterruptReconnectNettyInterruptMainThread() throws Exception
+   {
+      internalTestInterruptReconnect(true, true);
+   }
+   
+   public void testInterruptReconnectInVMInterruptMainThread() throws Exception
+   {
+      internalTestInterruptReconnect(false, true);
+   }
+   
+   public void internalTestInterruptReconnect(final boolean isNetty, final boolean interruptMainThread) throws Exception
+   {
+      final int pingPeriod = 1000;
+
+      HornetQServer server = createServer(false, isNetty);
+
+      server.start();
+
+      try
+      {
+         ServerLocator locator = createFactory(isNetty);
+         locator.setClientFailureCheckPeriod(pingPeriod);
+         locator.setRetryInterval(500);
+         locator.setRetryIntervalMultiplier(1d);
+         locator.setReconnectAttempts(-1);
+         locator.setConfirmationWindowSize(1024 * 1024);
+         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)locator.createSessionFactory();
+         
+         // One for beforeReconnecto from the Factory, and one for the commit about to be done
+         final CountDownLatch latchCommit = new CountDownLatch(2);
+
+         final ArrayList<Thread> threadToBeInterrupted = new ArrayList<Thread>();
+         
+         factory.addFailureListener(new SessionFailureListener()
+         {
+            
+            @Override
+            public void connectionFailed(HornetQException exception, boolean failedOver)
+            {
+            }
+            
+            @Override
+            public void beforeReconnect(HornetQException exception)
+            {
+               latchCommit.countDown();
+               threadToBeInterrupted.add(Thread.currentThread());
+               System.out.println("Thread " + Thread.currentThread() + " reconnecting now");
+            }
+         });
+
+
+         final ClientSessionInternal session = (ClientSessionInternal)factory.createSession();
+
+         final AtomicInteger count = new AtomicInteger(0);
+
+         final CountDownLatch latch = new CountDownLatch(1);
+
+         session.addFailureListener(new SessionFailureListener()
+         {
+
+            public void connectionFailed(final HornetQException me, boolean failedOver)
+            {
+               count.incrementAndGet();
+               latch.countDown();
+            }
+
+            public void beforeReconnect(final HornetQException exception)
+            {
+            }
+
+         });
+
+         server.stop();
+         
+         Thread tcommitt = new Thread()
+         {
+            public void run()
+            {
+               latchCommit.countDown();
+               try
+               {
+                  session.commit();
+               }
+               catch (HornetQException e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         };
+         
+         tcommitt.start();
+         assertTrue(latchCommit.await(10, TimeUnit.SECONDS));
+         
+         // There should be only one thread
+         assertEquals(1, threadToBeInterrupted.size());
+         
+         if (interruptMainThread)
+         {
+            tcommitt.interrupt();
+         }
+         else
+         {
+            for (Thread tint: threadToBeInterrupted)
+            {
+               tint.interrupt();
+            }
+         }
+         tcommitt.join(5000);
+         
+         assertFalse(tcommitt.isAlive());
+
+         locator.close();
+      }
+      finally
+      {
+      }
+
+   }
+   
+
+
 
    // Package protected ---------------------------------------------
 

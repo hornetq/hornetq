@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
@@ -219,6 +220,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       catch (InterruptedException e)
       {
+         throw new HornetQInterruptedException(e);
       }
 
       thread = null;
@@ -274,6 +276,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             }
             catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
 
             if (timeout != 0)

@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -212,6 +213,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
       }
 

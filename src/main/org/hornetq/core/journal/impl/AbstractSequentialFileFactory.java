@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -108,6 +108,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
       }
    }
@@ -220,7 +221,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       {
          public ClassLoader run()
          {
-            return ClientSessionFactoryImpl.class.getClassLoader();
+            return AbstractSequentialFileFactory.class.getClassLoader();
          }
       });
 

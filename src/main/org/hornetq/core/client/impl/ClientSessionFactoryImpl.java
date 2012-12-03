@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -553,7 +554,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
-      failoverOrReconnect(connectionID, me);
+      try
+      {
+         failoverOrReconnect(connectionID, me);
+      }
+      catch (HornetQInterruptedException e)
+      {
+         // this is just a debug, since an interrupt is an expected event (in case of a shutdown)
+         log.debug(e.getMessage(), e);
+      }
    }
 
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
@@ -637,6 +646,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      }
                      catch (InterruptedException e)
                      {
+                        throw new HornetQInterruptedException(e);
                      }
                   }
                }
@@ -1028,8 +1038,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   {
                      waitLock.wait(interval);
                   }
-                  catch (InterruptedException ignore)
+                  catch (InterruptedException interrupted)
                   {
+                     throw new HornetQInterruptedException(interrupted);
                   }
 
                   // Exponential back-off

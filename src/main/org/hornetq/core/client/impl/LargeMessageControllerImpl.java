@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
@@ -348,7 +349,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
          catch (InterruptedException e)
          {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
+            throw new HornetQInterruptedException(e);
          }
 
          if (!streamEnded && handledException == null)
