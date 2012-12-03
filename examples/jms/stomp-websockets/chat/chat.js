@@ -11,11 +11,14 @@ $(document).ready(function(){
     client = Stomp.client(url);
 
     // this allows to display debug logs directly on the web page
-    client.debug = function(str) {
+    debug = function(str) {
       $("#debug").append(str + "\n");
     };
+    client.debug = debug;
+
     // the client is notified when it is connected to the server.
     var onconnect = function(frame) {
+      debug("connected to Stomp");
       $('#connect').fadeOut({ duration: 'fast' });
       $('#disconnect').fadeIn();
       $('#send_form_input').removeAttr('disabled');
