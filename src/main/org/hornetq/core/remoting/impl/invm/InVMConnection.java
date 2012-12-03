@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQPrincipal;
@@ -204,7 +205,7 @@ public class InVMConnection implements Connection
             }
             catch (InterruptedException e)
             {
-               log.debug(e.getMessage(), e);
+               throw new HornetQInterruptedException(e);
             }
          }
       }

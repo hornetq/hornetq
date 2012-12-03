@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -209,6 +210,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
          finally
          {
@@ -228,6 +230,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
          finally
          {
@@ -796,6 +799,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             catch (InterruptedException ignore)
             {
+               throw new HornetQInterruptedException(e);
             }
 
          }
@@ -1316,6 +1320,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             catch (InterruptedException ignore)
             {
+               throw new HornetQInterruptedException(ignore);
             }
          }
 
@@ -1332,6 +1337,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             catch (InterruptedException ignore)
             {
+               throw new HornetQInterruptedException(ignore);
             }
          }
       }

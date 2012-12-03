@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -1324,6 +1325,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
                catch (InterruptedException e)
                {
+                  throw new HornetQInterruptedException(e);
                }
 
                long now = System.currentTimeMillis();
