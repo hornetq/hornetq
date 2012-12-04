@@ -21,6 +21,9 @@
 */
 package org.hornetq.jms.server.impl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
@@ -49,6 +52,8 @@ public class StandaloneNamingServer implements HornetQComponent
    private int rmiPort= 1098;
 
    private String rmiBindAddress = "localhost";
+   
+   private ExecutorService executor;
 
    public StandaloneNamingServer(HornetQServer server)
    {
@@ -107,7 +112,8 @@ public class StandaloneNamingServer implements HornetQComponent
             jndiServer = new Main();
             namingBean = new NamingBeanImpl();
             jndiServer.setNamingInfo(namingBean);
-            jndiServer.setLookupExector(server.getExecutorFactory().getExecutor());
+            executor = Executors.newCachedThreadPool();
+            jndiServer.setLookupExector(executor);
             jndiServer.setPort(port);
             jndiServer.setBindAddress(bindAddress);
             jndiServer.setRmiPort(rmiPort);
@@ -150,6 +156,10 @@ public class StandaloneNamingServer implements HornetQComponent
          if (namingBean != null)
          {
             namingBean.stop();
+         }
+         if (executor != null)
+         {
+            executor.shutdown();
          }
          activated = false;
       }
