@@ -2,7 +2,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
 
-   <connection-factory name="NettyConnectionFactory">
+   <connection-factory name="NettyXAConnectionFactory">
       <xa>true</xa>
       <connectors>
          <connector-ref connector-name="netty"/>
