@@ -51,26 +51,15 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * This will test Discovery test on JGroups and UDP.
- *
- * In some configuration IPV6 may be a challenge.
- * To make sure this test works, you may add this property to your jvm settings:
- *
- * -Djgroups.bind_addr=::1
- *
- * Or ultimately you may also turn off IPV6:
- *
- * -Djava.net.preferIPv4Stack=true
- *
- *
- * Also: Make sure you add integration-tests/src/tests/resources to your project path on the tests/integration-tests
- *
+ * <p>
+ * In some configurations IPV6 may be a challenge. To make sure this test works, you may add this
+ * property to your JVM settings: {@literal -Djgroups.bind_addr=::1}
+ * <p>
+ * Or ultimately you may also turn off IPV6: {@literal -Djava.net.preferIPv4Stack=true}
+ * <p>
+ * Also: Make sure you add integration-tests/src/tests/resources to your project path on the
+ * tests/integration-tests
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 8 Dec 2008 12:36:26
- *
- *
- *
- *
  */
 public class DiscoveryTest extends UnitTestCase
 {
