@@ -345,15 +345,64 @@ public class HornetQActivation
       {
          handler.interruptConsumer();
       }
-      for (HornetQMessageHandler handler : handlers)
+
+      Thread threadTearDown = new Thread("TearDown/HornetQActivation")
       {
-         handler.teardown();
+         public void run()
+         {
+            for (HornetQMessageHandler handler : handlers)
+            {
+               handler.teardown();
+            }
+         }
+      };
+
+      // We will first start a new thread that will call tearDown on all the instances, trying to graciously shutdown everything.
+      // We will then use the call-timeout to determine a timeout.
+      // if that failed we will then close the connection factory, and interrupt the thread
+      threadTearDown.start();
+
+      try
+      {
+         threadTearDown.join(factory.getCallTimeout());
       }
-      if (spec.isHasBeenUpdated())
+      catch (InterruptedException e)
+      {
+         // nothing to be done on this context.. we will just keep going as we need to send an interrupt to threadTearDown and give up
+      }
+
+      if (threadTearDown.isAlive())
+      {
+         if (factory != null)
+         {
+            // This will interrupt any threads waiting on reconnect
+            factory.close();
+            factory = null;
+         }
+         threadTearDown.interrupt();
+
+         try
+         {
+            threadTearDown.join(5000);
+         }
+         catch (InterruptedException e)
+         {
+            // nothing to be done here.. we are going down anyways
+         }
+
+         if (threadTearDown.isAlive())
+         {
+            HornetQRALogger.LOGGER.warn("Thread " + threadTearDown + " couldn't be finished");
+         }
+      }
+
+      if (spec.isHasBeenUpdated() && factory != null)
       {
          factory.close();
          factory = null;
       }
+
+
       HornetQRALogger.LOGGER.debug("Tearing down complete " + this);
    }
 

@@ -32,6 +32,7 @@ import javax.net.ssl.SSLEngine;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
@@ -632,7 +633,7 @@ public class NettyAcceptor implements Acceptor
       }
       catch (InterruptedException e)
       {
-         e.printStackTrace();
+         throw new HornetQInterruptedException(e);
       }
 
       paused = true;

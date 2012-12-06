@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
@@ -236,6 +237,7 @@ public final class ChannelImpl implements Channel
                }
                catch (InterruptedException e)
                {
+                  throw new HornetQInterruptedException(e);
                }
             }
 
@@ -322,6 +324,7 @@ public final class ChannelImpl implements Channel
                }
                catch (InterruptedException e)
                {
+                  throw new HornetQInterruptedException(e);
                }
             }
 
@@ -346,6 +349,7 @@ public final class ChannelImpl implements Channel
                }
                catch (InterruptedException e)
                {
+                  throw new HornetQInterruptedException(e);
                }
 
                if (closed)

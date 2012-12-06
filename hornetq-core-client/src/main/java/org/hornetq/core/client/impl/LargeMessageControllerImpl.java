@@ -30,6 +30,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -344,7 +345,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
          catch (InterruptedException e)
          {
-            throw HornetQClientMessageBundle.BUNDLE.largeMessageControllerInterrupted(e);
+            throw new HornetQInterruptedException(e);
          }
 
          if (!streamEnded && handledException == null)
