@@ -47,6 +47,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
@@ -1752,10 +1753,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   }
                   catch (InterruptedException e)
                   {
-                     if (JMSBridgeImpl.trace)
-                     {
-                        HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
-                     }
+                     throw new HornetQInterruptedException(e);
                   }
                   continue;
                }
@@ -1792,6 +1790,7 @@ public final class JMSBridgeImpl implements JMSBridge
                      {
                         HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
+                     throw new HornetQInterruptedException(e);
                   }
                   continue;
                }
@@ -2003,11 +2002,11 @@ public final class JMSBridgeImpl implements JMSBridge
                   }
                   catch (InterruptedException e)
                   {
-                     // Ignore
                      if (JMSBridgeImpl.trace)
                      {
                         HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
+                     throw new HornetQInterruptedException(e);
                   }
 
                }

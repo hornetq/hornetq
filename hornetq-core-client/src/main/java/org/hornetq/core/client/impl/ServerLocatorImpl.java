@@ -37,6 +37,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -228,6 +229,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
          finally
          {
@@ -247,6 +249,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
          finally
          {
@@ -859,8 +862,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                wait(1000);
             }
-            catch (InterruptedException ignore)
+            catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
 
@@ -1401,8 +1405,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                   HornetQClientLogger.LOGGER.timedOutWaitingForTermination();
                }
             }
-            catch (InterruptedException ignore)
+            catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
 
@@ -1417,8 +1422,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                   HornetQClientLogger.LOGGER.timedOutWaitingForScheduledPoolTermination();
                }
             }
-            catch (InterruptedException ignore)
+            catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
       }

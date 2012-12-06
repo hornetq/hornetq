@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.BodyEncoder;
@@ -289,6 +290,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
 
          if (isLarge)
@@ -362,6 +364,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       catch (InterruptedException e)
       {
+         throw new HornetQInterruptedException(e);
       }
 
       InputStream input = msgI.getBodyInputStream();
@@ -435,6 +438,7 @@ public class ClientProducerImpl implements ClientProducerInternal
             }
             catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
       }
@@ -555,6 +559,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
       }
 

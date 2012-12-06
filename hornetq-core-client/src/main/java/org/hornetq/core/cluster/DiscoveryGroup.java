@@ -24,6 +24,7 @@ import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.BroadcastEndpointFactory;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
@@ -162,6 +163,7 @@ public final class DiscoveryGroup
       }
       catch (InterruptedException e)
       {
+         throw new HornetQInterruptedException(e);
       }
 
       thread = null;
@@ -217,6 +219,7 @@ public final class DiscoveryGroup
             }
             catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
 
             if (timeout != 0)
