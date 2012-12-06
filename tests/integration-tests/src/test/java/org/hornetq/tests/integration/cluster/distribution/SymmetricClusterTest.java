@@ -1793,6 +1793,4 @@ public class SymmetricClusterTest extends ClusterTestBase
    {
       return false;
    }
-
-
 }

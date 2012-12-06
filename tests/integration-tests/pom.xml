@@ -134,7 +134,7 @@
 
                   <configuration>
                      <systemProperties>
-                        <!-- This is to make sure that any test using JGroups 
+                        <!-- This is to make sure that any test using JGroups
                              e.g org.hornetq.tests.integration.discovery.DiscoveryTest
                              will use a valid address regardless of the settings you have -->
                         <property>

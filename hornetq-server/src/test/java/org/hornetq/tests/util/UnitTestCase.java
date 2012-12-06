@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -129,6 +130,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected static final String CLUSTER_PASSWORD = "UnitTestsClusterPassword";
 
    private static final String OS_TYPE = System.getProperty("os.name").toLowerCase();
+   private static final int DEFAULT_UDP_PORT;
+   static
+   {
+      Random random = new Random();
+      DEFAULT_UDP_PORT = 6000 + random.nextInt(1000);
+   }
 
    // Attributes ----------------------------------------------------
 
@@ -279,7 +286,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    public static int getUDPDiscoveryPort()
    {
-      return Integer.parseInt(System.getProperty("TEST-UDP-PORT", "6750"));
+      String port = System.getProperty("TEST-UDP-PORT");
+      if (port != null)
+      {
+         return Integer.parseInt(port);
+      }
+      return DEFAULT_UDP_PORT;
    }
 
    public static int getUDPDiscoveryPort(final int variant)
