@@ -137,7 +137,6 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
          {
             latch.countDown();
          }
-         System.out.println("lastMessage = " + lastMessage);
       }
 
       public void release()

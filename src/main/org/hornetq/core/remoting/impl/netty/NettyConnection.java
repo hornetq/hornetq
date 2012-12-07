@@ -19,6 +19,7 @@ import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
@@ -234,8 +235,9 @@ public class NettyConnection implements Connection
 
                      break;
                   }
-                  catch (InterruptedException ignore)
+                  catch (InterruptedException e)
                   {
+                     throw new HornetQInterruptedException(e);
                   }
                }
             }
@@ -248,7 +250,9 @@ public class NettyConnection implements Connection
       catch (InterruptedException e)
       {
          Thread.currentThread().interrupt();
+         throw new HornetQInterruptedException(e);
       }
+      
    }
 
    public String getRemoteAddress()
