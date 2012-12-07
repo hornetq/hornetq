@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -255,6 +256,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   }
                   catch (InterruptedException e)
                   {
+                     throw new HornetQInterruptedException();
                   }
 
                   if (m != null || closed)
@@ -889,9 +891,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             latch.await(10, TimeUnit.SECONDS);
          }
-         catch (InterruptedException ignored)
+         catch (InterruptedException interrupted)
          {
-            // no big deal
+            throw new HornetQInterruptedException(interrupted);
          }
       }
    }

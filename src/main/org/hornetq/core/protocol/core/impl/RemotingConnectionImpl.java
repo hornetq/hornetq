@@ -24,6 +24,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
@@ -571,6 +572,11 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          try
          {
             listener.connectionFailed(me, false);
+         }
+         catch (HornetQInterruptedException interrupted)
+         {
+            // this is an expected behaviour.. no warn or error here
+            log.debug("thread interrupted", interrupted);
          }
          catch (final Throwable t)
          {

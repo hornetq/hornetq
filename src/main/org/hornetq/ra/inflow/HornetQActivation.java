@@ -134,7 +134,7 @@ public class HornetQActivation
    public HornetQActivation(final HornetQResourceAdapter ra,
                             final MessageEndpointFactory endpointFactory,
                             final HornetQActivationSpec spec) throws ResourceException
-   {
+                            {
       spec.validate();
 
       if (HornetQActivation.trace)
@@ -171,7 +171,7 @@ public class HornetQActivation
       {
          throw new ResourceException(e);
       }
-   }
+                            }
 
    /**
     * Get the activation spec
@@ -348,15 +348,64 @@ public class HornetQActivation
       {
          handler.interruptConsumer();
       }
-      for (HornetQMessageHandler handler : handlers)
+
+      Thread threadTearDown = new Thread("TearDown/HornetQActivation")
       {
-         handler.teardown();
+         public void run()
+         {
+            for (HornetQMessageHandler handler : handlers)
+            {
+               handler.teardown();
+            }
+         }
+      };
+
+      // We will first start a new thread that will call tearDown on all the instances, trying to graciously shutdown everything.
+      // We will then use the call-timeout to determine a timeout.
+      // if that failed we will then close the connection factory, and interrupt the thread
+      threadTearDown.start();
+
+      try
+      {
+         threadTearDown.join(factory.getCallTimeout());
       }
-      if (spec.isHasBeenUpdated())
+      catch (InterruptedException e)
+      {
+         // nothing to be done on this context.. we will just keep going as we need to send an interrupt to threadTearDown and give up
+      }
+
+      if (threadTearDown.isAlive())
+      {
+         if (factory != null)
+         {
+            // This will interrupt any threads waiting on reconnect
+            factory.close();
+            factory = null;
+         }
+         threadTearDown.interrupt();
+
+         try
+         {
+            threadTearDown.join(5000);
+         }
+         catch (InterruptedException e)
+         {
+            // nothing to be done here.. we are going down anyways
+         }
+
+         if (threadTearDown.isAlive())
+         {
+            log.warn("Thread " + threadTearDown + " couldn't be finished");
+         }
+      }
+
+      if (spec.isHasBeenUpdated() && factory != null)
       {
          factory.close();
          factory = null;
       }
+
+
       HornetQActivation.log.debug("Tearing down complete " + this);
    }
 
@@ -474,7 +523,7 @@ public class HornetQActivation
             }
 
             HornetQActivation.log.debug("Retrieving " + destinationType.getName() + " \"" + destinationName
-                  + "\" from JNDI");
+                                        + "\" from JNDI");
 
             try
             {
@@ -490,7 +539,7 @@ public class HornetQActivation
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
 
                HornetQActivation.log.info("Unable to retrieve " + destinationName + " from JNDI. Creating a new "
-                     + destinationType.getName() + " named \"" + calculatedDestinationName + "\" to be used by the MDB.");
+                        + destinationType.getName() + " named \"" + calculatedDestinationName + "\" to be used by the MDB.");
 
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
@@ -507,7 +556,7 @@ public class HornetQActivation
          {
             HornetQActivation.log.debug("Destination type not defined in MDB activation configuration.");
             HornetQActivation.log.debug("Retrieving " + Destination.class.getName() + " \"" + destinationName
-                  + "\" from JNDI");
+                                        + "\" from JNDI");
 
             destination = (HornetQDestination) Util.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
@@ -519,7 +568,7 @@ public class HornetQActivation
       else
       {
          HornetQActivation.log.info("Instantiating " + spec.getDestinationType() + " \"" + spec.getDestination()
-               + "\" directly since UseJNDI=false.");
+                                    + "\" directly since UseJNDI=false.");
 
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {

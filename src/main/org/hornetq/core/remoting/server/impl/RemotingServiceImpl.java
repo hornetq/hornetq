@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -557,8 +558,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             {
                join();
             }
-            catch (InterruptedException ignore)
+            catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
       }
