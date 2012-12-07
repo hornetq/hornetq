@@ -12,6 +12,7 @@
  */
 package org.hornetq.ra.inflow;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 
 import javax.jms.Session;
@@ -34,8 +35,10 @@ import org.hornetq.ra.HornetQRaUtils;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
+public class HornetQActivationSpec extends ConnectionFactoryProperties implements ActivationSpec, Serializable
 {
+   private static final long serialVersionUID = -7997041053897964654L;
+
    private static final int DEFAULT_MAX_SESSION = 15;
 
    /** Whether trace is enabled */
