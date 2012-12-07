@@ -14,6 +14,8 @@ import org.junit.Test;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
@@ -75,7 +77,7 @@ public class PushQueueConsumerTest extends MessageTestBase
       }
    }
 
-//   @Test
+   @Test
    public void testClass() throws Exception
    {
       Link destinationForConsumption = null;
@@ -114,7 +116,7 @@ public class PushQueueConsumerTest extends MessageTestBase
       }
    }
 
-//   @Test
+   @Test
    public void testTemplate() throws Exception
    {
       Link destinationForConsumption = null;
@@ -165,10 +167,38 @@ public class PushQueueConsumerTest extends MessageTestBase
       {
          got_it = str;
       }
-
    }
 
-//   @Test
+   @Path("/myConcurrent")
+   public static class MyConcurrentResource
+   {
+      public static AtomicInteger concurrentInvocations = new AtomicInteger();
+      public static AtomicInteger maxConcurrentInvocations = new AtomicInteger();
+
+      @PUT
+      public void put(String str)
+      {
+         concurrentInvocations.getAndIncrement();
+
+         if (concurrentInvocations.get() > maxConcurrentInvocations.get())
+         {
+            maxConcurrentInvocations.set(concurrentInvocations.get());
+         }
+         try
+         {
+            // sleep here so the concurrent invocations can stack up
+            Thread.sleep(1000);
+         }
+         catch (InterruptedException e)
+         {
+            e.printStackTrace();
+         }
+
+         concurrentInvocations.getAndDecrement();
+      }
+   }
+
+   @Test
    public void testUri() throws Exception
    {
       Link pushSubscription = null;
@@ -196,6 +226,49 @@ public class PushQueueConsumerTest extends MessageTestBase
          Thread.sleep(100);
 
          Assert.assertEquals(messageContent, MyResource.got_it);
+      }
+      finally
+      {
+         cleanupSubscription(pushSubscription);
+      }
+   }
+
+   @Test
+   public void testUriWithMultipleSessions() throws Exception
+   {
+      Link pushSubscription = null;
+      String messageContent = "1";
+      final int CONCURRENT = 10;
+
+      try
+      {
+         // The name of the queue used for the test should match the name of the test
+         String queue = "testUriWithMultipleSessions";
+         String queueToPushTo = "pushedFrom-" + queue;
+         System.out.println("\n" + queue);
+
+         deployQueue(queue);
+         deployQueue(queueToPushTo);
+         server.getJaxrsServer().getDeployment().getRegistry().addPerRequestResource(MyConcurrentResource.class);
+
+         ClientResponse queueResponse = Util.head(new ClientRequest(generateURL(Util.getUrlPath(queue))));
+         Link destinationForSend = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "create");
+         Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), queueResponse, "push-consumers");
+
+         pushSubscription = createPushRegistration(generateURL("/myConcurrent"), pushSubscriptions, PushRegistrationType.URI, CONCURRENT);
+
+         for (int i = 0; i < CONCURRENT; i++)
+         {
+            sendMessage(destinationForSend, messageContent);
+         }
+
+         // wait until all the invocations have completed
+         while (MyConcurrentResource.concurrentInvocations.get() > 0)
+         {
+            Thread.sleep(100);
+         }
+
+         Assert.assertEquals(CONCURRENT, MyConcurrentResource.maxConcurrentInvocations.get());
       }
       finally
       {
@@ -251,6 +324,11 @@ public class PushQueueConsumerTest extends MessageTestBase
 
    private Link createPushRegistration(String queueToPushTo, Link pushSubscriptions, PushRegistrationType pushRegistrationType) throws Exception
    {
+      return createPushRegistration(queueToPushTo, pushSubscriptions, pushRegistrationType, 1);
+   }
+
+   private Link createPushRegistration(String queueToPushTo, Link pushSubscriptions, PushRegistrationType pushRegistrationType, int sessionCount) throws Exception
+   {
       PushRegistration reg = new PushRegistration();
       reg.setDurable(false);
       XmlLink target = new XmlLink();
@@ -275,6 +353,7 @@ public class PushQueueConsumerTest extends MessageTestBase
          target.setHref(queueToPushTo);
       }
       reg.setTarget(target);
+      reg.setSessionCount(sessionCount);
       ClientResponse pushRegistrationResponse = pushSubscriptions.request().body("application/xml", reg).post();
       pushRegistrationResponse.releaseConnection();
       Assert.assertEquals(201, pushRegistrationResponse.getStatus());

@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name = "push-registration")
 @XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(propOrder = {"enabled", "destination", "durable", "selector", "target", "maxRetries", "retryWaitMillis", "disableOnFailure", "authenticationMechanism", "headers"})
+@XmlType(propOrder = {"enabled", "destination", "durable", "selector", "target", "maxRetries", "retryWaitMillis", "disableOnFailure", "authenticationMechanism", "headers", "sessionCount"})
 public class PushRegistration implements Serializable
 {
    private static final long serialVersionUID = -2749818399978544262L;
@@ -35,6 +35,7 @@ public class PushRegistration implements Serializable
    private boolean disableOnFailure;
    private int maxRetries = 10;
    private boolean enabled = true;
+   private int sessionCount = 1;
 
    @XmlElement
    public int getMaxRetries()
@@ -167,6 +168,17 @@ public class PushRegistration implements Serializable
       this.headers = headers;
    }
 
+   @XmlElement
+   public int getSessionCount()
+   {
+      return sessionCount;
+   }
+
+   public void setSessionCount(int sessionCount)
+   {
+      this.sessionCount = sessionCount;
+   }
+
    @Override
    public String toString()
    {
@@ -181,6 +193,7 @@ public class PushRegistration implements Serializable
               ", retryWaitMillis=" + retryWaitMillis +
               ", disableOnFailure=" + disableOnFailure +
               ", maxRetries=" + maxRetries +
+              ", sessionCount=" + sessionCount +
               ", enabled=" + enabled +
               '}';
    }

@@ -6,16 +6,19 @@ import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class PushConsumer implements MessageHandler
+public class PushConsumer
 {
    protected PushRegistration registration;
    protected ClientSessionFactory factory;
-   protected ClientSession session;
-   protected ClientConsumer consumer;
+   protected List<ClientSession> sessions;
+   protected List<ClientConsumer> consumers;
    protected String destination;
    protected String id;
    protected PushStrategy strategy;
@@ -28,6 +31,11 @@ public class PushConsumer implements MessageHandler
       this.id = id;
       this.registration = registration;
       this.store = store;
+   }
+
+   public PushStrategy getStrategy()
+   {
+      return strategy;
    }
 
    public PushRegistration getRegistration()
@@ -65,43 +73,49 @@ public class PushConsumer implements MessageHandler
       strategy.setRegistration(registration);
       strategy.start();
 
-      session = factory.createSession(false, false, 0);
-      if (registration.getSelector() != null)
+      sessions = new ArrayList<ClientSession>();
+      consumers = new ArrayList<ClientConsumer>();
+
+      for (int i = 0; i < registration.getSessionCount(); i++)
       {
-         consumer = session.createConsumer(destination, SelectorTranslator.convertToHornetQFilterString(registration.getSelector()));
+         ClientSession session = factory.createSession(false, false, 0);
+
+         ClientConsumer consumer;
+
+         if (registration.getSelector() != null)
+         {
+            consumer = session.createConsumer(destination, SelectorTranslator.convertToHornetQFilterString(registration.getSelector()));
+         }
+         else
+         {
+            consumer = session.createConsumer(destination);
+         }
+         consumer.setMessageHandler(new PushConsumerMessageHandler(this, session));
+         session.start();
+         HornetQRestLogger.LOGGER.startingPushConsumer(registration.getTarget());
+
+         consumers.add(consumer);
+         sessions.add(session);
       }
-      else
-      {
-         consumer = session.createConsumer(destination);
-      }
-      consumer.setMessageHandler(this);
-      session.start();
-      HornetQRestLogger.LOGGER.startingPushConsumer(registration.getTarget());
    }
 
    public void stop()
    {
-      try
+      for (ClientSession session : sessions)
       {
-         if (consumer != null)
+         try
          {
-            consumer.close();
+            if (session != null)
+            {
+               session.close();
+            }
          }
-      }
-      catch (HornetQException e)
-      {
-      }
-      try
-      {
-         if (session != null)
+         catch (HornetQException e)
          {
-            session.close();
-         }
-      }
-      catch (HornetQException e)
-      {
 
+         }
       }
+
       try
       {
          if (strategy != null)
@@ -129,55 +143,5 @@ public class PushConsumer implements MessageHandler
          HornetQRestLogger.LOGGER.errorUpdatingStore(e);
       }
       stop();
-   }
-
-   @Override
-   public void onMessage(ClientMessage clientMessage)
-   {
-      HornetQRestLogger.LOGGER.debug(this + ": receiving " + clientMessage);
-
-      try
-      {
-         clientMessage.acknowledge();
-         HornetQRestLogger.LOGGER.debug(this + ": acknowledged " + clientMessage);
-      }
-      catch (HornetQException e)
-      {
-         throw new RuntimeException(e.getMessage(), e);
-      }
-
-      HornetQRestLogger.LOGGER.debug(this + ": pushing " + clientMessage + " via " + strategy);
-      boolean acknowledge = strategy.push(clientMessage);
-
-      if (acknowledge)
-      {
-         try
-         {
-            HornetQRestLogger.LOGGER.debug("Acknowledging: " + clientMessage.getMessageID());
-            session.commit();
-            return;
-         }
-         catch (HornetQException e)
-         {
-            throw new RuntimeException(e);
-         }
-      }
-      else
-      {
-         try
-         {
-            session.rollback();
-         }
-         catch (HornetQException e)
-         {
-            throw new RuntimeException(e.getMessage(), e);
-         }
-         if (registration.isDisableOnFailure())
-         {
-            HornetQRestLogger.LOGGER.errorPushingMessage(registration.getTarget());
-            disableFromFailure();
-            return;
-         }
-      }
    }
 }
