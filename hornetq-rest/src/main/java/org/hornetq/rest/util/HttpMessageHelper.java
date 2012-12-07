@@ -74,7 +74,7 @@ public class HttpMessageHelper
       {
          String k = key.toString();
          String headerName = HttpHeaderProperty.fromPropertyName(k);
-         if (headerName == null)
+         if (headerName == null || headerName.contains("content-length"))
          {
             continue;
          }

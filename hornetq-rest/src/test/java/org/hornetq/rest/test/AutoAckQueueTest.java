@@ -35,11 +35,17 @@ public class AutoAckQueueTest extends MessageTestBase
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
+      System.out.println("create-with-id: " + MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create-with-id"));
       response = Util.setAutoAck(consumers, true);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+      ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+      res.releaseConnection();
+      Assert.assertEquals(201, res.getStatus());
+      System.out.println("create-next: " + MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "create-next"));
+
+      res = sender.request().body("text/plain", Integer.toString(2)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
@@ -51,11 +57,6 @@ public class AutoAckQueueTest extends MessageTestBase
       System.out.println("session: " + session);
       consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
       System.out.println("consumeNext: " + consumeNext);
-
-
-      res = sender.request().body("text/plain", Integer.toString(2)).post();
-      res.releaseConnection();
-      Assert.assertEquals(201, res.getStatus());
 
       System.out.println(consumeNext);
       res = consumeNext.request().header(Constants.WAIT_HEADER, "10").post(String.class);

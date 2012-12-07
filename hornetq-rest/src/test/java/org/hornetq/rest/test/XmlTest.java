@@ -18,6 +18,7 @@ public class XmlTest
       String xml = "<push-registration id=\"111\">\n" +
               "   <destination>jms.queue.bar</destination>\n" +
               "   <durable>true</durable>\n" +
+              "   <session-count>10</session-count>\n" +
               "   <link rel=\"template\" href=\"http://somewhere.com/resources/{id}/messages\" method=\"PUT\"/>\n" +
               "   <authentication>\n" +
               "      <basic-auth><username>guest</username><password>geheim</password></basic-auth>" +
