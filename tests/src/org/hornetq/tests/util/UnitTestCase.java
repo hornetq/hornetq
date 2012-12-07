@@ -1033,8 +1033,14 @@ public class UnitTestCase extends TestCase
 
          for (Thread aliveThread : postThreads.keySet())
          {
-            if (!aliveThread.getName().contains("SunPKCS11") && !aliveThread.getName().contains("Attach Listener") &&
-                !previousThreads.containsKey(aliveThread))
+            final String name = aliveThread.getName();
+            final boolean notSunPKCS11 = !name.contains("SunPKCS11");
+            final boolean notAttachListener = !name.contains("Attach Listener");
+            ThreadGroup group = aliveThread.getThreadGroup();
+            final boolean isSystemThread = group != null && "system".equals(group.getName());
+            // 'process reaper' is a normal JVM thread that will run when we call Runtime.exec()
+            final boolean notProcessReaper = isSystemThread && !name.equals("process reaper");
+            if (notSunPKCS11 && notAttachListener && notProcessReaper && !previousThreads.containsKey(aliveThread))
             {
                failedThread = true;
                buffer.append("=============================================================================\n");
