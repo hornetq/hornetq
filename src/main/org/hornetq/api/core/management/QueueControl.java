@@ -13,9 +13,13 @@
 
 package org.hornetq.api.core.management;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
+
+import org.hornetq.core.server.MessageReference;
 
 
 /**
@@ -112,11 +116,28 @@ public interface QueueControl
    @Operation(desc = "List the messages scheduled for delivery", impact = MBeanOperationInfo.INFO)
    Map<String, Object>[] listScheduledMessages() throws Exception;
 
+    /**
+     * Lists all the messages scheduled for delivery for this queue using JSON serialization.
+     */
+    @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = MBeanOperationInfo.INFO)
+    String listScheduledMessagesAsJSON() throws Exception;
+
    /**
-    * Lists all the messages scheduled for delivery for this queue using JSON serialization.
+    * Lists all the messages being deliver per consumer.
+    * <br>
+    * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
+    * @throws Exception 
     */
-   @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = MBeanOperationInfo.INFO)
-   String listScheduledMessagesAsJSON() throws Exception;
+   @Operation(desc = "List all messages being delivered per consumer")
+   Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
+   
+   /**
+    * Executes a conversion of {@link #listDeliveringMessages()} to JSON
+    * @return
+    * @throws Exception
+    */
+   @Operation(desc = "list all messages being delivered per consumer using JSON form")
+   String listDeliveringdMessagesAsJSON() throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified filter.
