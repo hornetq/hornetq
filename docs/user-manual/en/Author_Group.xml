@@ -65,4 +65,14 @@
     </affiliation>
     <email>francisco.borges@redhat.com</email>
   </author>
+  <author>
+    <firstname>Justin</firstname>
+    <surname>Bertram</surname>
+    <affiliation>
+      <shortaffil>Red Hat, Inc.</shortaffil>
+      <jobtitle>Core Developer</jobtitle>
+      <orgdiv>JBoss</orgdiv>
+    </affiliation>
+    <email>jbertram@redhat.com</email>
+  </author>
 </authorgroup>
