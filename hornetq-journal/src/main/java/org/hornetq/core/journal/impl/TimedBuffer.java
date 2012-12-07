@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
@@ -129,8 +130,9 @@ public class TimedBuffer
       {
          spinLimiter.acquire();
       }
-      catch (InterruptedException ignore)
+      catch (InterruptedException e)
       {
+         throw new HornetQInterruptedException(e);
       }
 
       timerRunnable = new CheckTimer();
@@ -177,6 +179,7 @@ public class TimedBuffer
          }
          catch (InterruptedException e)
          {
+            throw new HornetQInterruptedException(e);
          }
       }
 
@@ -332,7 +335,7 @@ public class TimedBuffer
                }
                catch (InterruptedException e)
                {
-                  // Ignore
+                  throw new HornetQInterruptedException(e);
                }
 
                spinning = false;
@@ -432,8 +435,9 @@ public class TimedBuffer
 
                spinLimiter.release();
             }
-            catch (InterruptedException ignore)
+            catch (InterruptedException e)
             {
+               throw new HornetQInterruptedException(e);
             }
          }
       }

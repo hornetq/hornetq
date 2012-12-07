@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQDuplicateIdException;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Message;
 import org.hornetq.utils.Pair;
@@ -1329,6 +1330,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
             catch (InterruptedException e1)
             {
+               throw new HornetQInterruptedException(e1);
             }
             if (!isStarted())
                return;
