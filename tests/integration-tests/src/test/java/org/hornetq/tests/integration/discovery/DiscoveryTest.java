@@ -38,6 +38,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
@@ -78,23 +79,10 @@ public class DiscoveryTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      try
+      for (HornetQComponent component : new HornetQComponent[] { bg, bg1, bg2, bg3, dg, dg1, dg2, dg3 })
       {
-         if (bg != null) bg.stop();
-         if (bg1 != null) bg1.stop();
-         if (bg2 != null) bg2.stop();
-         if (bg3 != null) bg3.stop();
-
-         if (dg != null) dg.stop();
-         if (dg1 != null) dg1.stop();
-         if (dg2 != null) dg2.stop();
-         if (dg3 != null) dg3.stop();
+         stopComponent(component);
       }
-      catch (Throwable ignored)
-      {
-         ignored.printStackTrace();
-      }
-
       super.tearDown();
    }
 
