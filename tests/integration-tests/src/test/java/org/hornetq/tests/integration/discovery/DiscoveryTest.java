@@ -126,11 +126,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg, dg);
 
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
@@ -156,12 +152,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(5000);
-
-      Assert.assertTrue(ok);
-
+      verifyBroadcast(bg, dg);
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
    }
@@ -289,11 +280,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg, dg);
 
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
@@ -330,12 +317,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertTrue(ok);
-
+      verifyBroadcast(bg, dg);
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
 
@@ -347,12 +329,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.start();
 
-      bg.broadcastConnectors();
-
-      ok = dg.waitForBroadcast(1000);
-
-      Assert.assertTrue(ok);
-
+      verifyBroadcast(bg, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
    }
@@ -387,12 +364,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertFalse(ok);
-
+      verifyNonBroadcast(bg, dg);
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
 
       Assert.assertNotNull(entries);
@@ -431,11 +403,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertFalse(ok);
+      verifyNonBroadcast(bg, dg);
    }
 
    public void testSimpleBroadcastDifferentAddressAndPort() throws Exception
@@ -469,12 +437,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-
-      boolean ok = dg.waitForBroadcast(1000);
-
-      Assert.assertFalse(ok);
-
+      verifyNonBroadcast(bg, dg);
    }
 
    public void testMultipleGroups() throws Exception
@@ -662,9 +625,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg.broadcastConnectors();
-      boolean ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg, dg);
 
       Assert.assertTrue(listener1.called);
       Assert.assertTrue(listener2.called);
@@ -674,14 +635,33 @@ public class DiscoveryTest extends UnitTestCase
       listener2.called = false;
       listener3.called = false;
 
-      bg.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg, dg);
 
       // Won't be called since connectors haven't changed
       Assert.assertFalse(listener1.called);
       Assert.assertFalse(listener2.called);
       Assert.assertFalse(listener3.called);
+   }
+
+   /**
+    * @param discoveryGroup
+    * @throws Exception
+    */
+   private static void verifyBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup) throws Exception
+   {
+      broadcastGroup.broadcastConnectors();
+      Assert.assertTrue("broadcast received", discoveryGroup.waitForBroadcast(2000));
+   }
+
+   /**
+    * @param discoveryGroup
+    * @throws Exception
+    */
+   private static void verifyNonBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup)
+                                                                                                       throws Exception
+   {
+      broadcastGroup.broadcastConnectors();
+      Assert.assertFalse("NO broadcast received", discoveryGroup.waitForBroadcast(2000));
    }
 
    public void testConnectorsUpdatedMultipleBroadcasters() throws Exception
@@ -741,9 +721,7 @@ public class DiscoveryTest extends UnitTestCase
 
       dg.start();
 
-      bg1.broadcastConnectors();
-      boolean ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg1, dg);
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
       Assert.assertTrue(listener1.called);
@@ -751,9 +729,7 @@ public class DiscoveryTest extends UnitTestCase
       listener1.called = false;
       listener2.called = false;
 
-      bg2.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg2, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1, live2), entries);
       Assert.assertTrue(listener1.called);
@@ -761,9 +737,7 @@ public class DiscoveryTest extends UnitTestCase
       listener1.called = false;
       listener2.called = false;
 
-      bg3.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg3, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1, live2, live3), entries);
       Assert.assertTrue(listener1.called);
@@ -771,9 +745,7 @@ public class DiscoveryTest extends UnitTestCase
       listener1.called = false;
       listener2.called = false;
 
-      bg1.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg1, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1, live2, live3), entries);
       Assert.assertFalse(listener1.called);
@@ -781,9 +753,7 @@ public class DiscoveryTest extends UnitTestCase
       listener1.called = false;
       listener2.called = false;
 
-      bg2.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg2, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1, live2, live3), entries);
       Assert.assertFalse(listener1.called);
@@ -791,9 +761,7 @@ public class DiscoveryTest extends UnitTestCase
       listener1.called = false;
       listener2.called = false;
 
-      bg3.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg3, dg);
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1, live2, live3), entries);
       Assert.assertFalse(listener1.called);
@@ -802,9 +770,7 @@ public class DiscoveryTest extends UnitTestCase
       listener2.called = false;
 
       bg2.removeConnector(live2);
-      bg2.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
-      Assert.assertTrue(ok);
+      verifyBroadcast(bg2, dg);
 
       // Connector2 should still be there since not timed out yet
 
@@ -818,7 +784,7 @@ public class DiscoveryTest extends UnitTestCase
       Thread.sleep(timeout * 2);
 
       bg1.broadcastConnectors();
-      ok = dg.waitForBroadcast(1000);
+      boolean ok = dg.waitForBroadcast(1000);
       bg2.broadcastConnectors();
       ok = dg.waitForBroadcast(1000);
       bg3.broadcastConnectors();
