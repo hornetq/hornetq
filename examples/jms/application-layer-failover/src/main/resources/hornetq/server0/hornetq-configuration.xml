@@ -33,4 +33,7 @@
       </security-setting>
    </security-settings>
 
+   <journal-directory>target/data/journal</journal-directory>
+   <bindings-directory>target/data/bindings</bindings-directory>
+   <large-messages-directory>target/data/large-messages</large-messages-directory>
 </configuration>

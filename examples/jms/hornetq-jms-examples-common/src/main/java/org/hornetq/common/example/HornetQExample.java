@@ -46,9 +46,9 @@ public abstract class HornetQExample
 
    public abstract boolean runExample() throws Exception;
 
-   protected void run(final String[] args)
+   protected void run(final String[] args1)
    {
-      this.args = args;
+      this.args = args1;
       //if we have a cluster of servers wait a while for the cluster to form properly
       if(args != null && args.length > 1)
       {
@@ -170,35 +170,6 @@ public abstract class HornetQExample
       }
    }
 
-   protected void stopServer(final int id) throws Exception
-   {
-      String configDir = System.clearProperty("exampleConfigDir");
-      if(configDir == null)
-      {
-         throw new Exception("exampleConfigDir must be set as a system property");
-      }
-
-      System.out.println("Killing server " + id);
-
-      // We kill the server by creating a new file in the server dir which is checked for by the server
-      // We can't use Process.destroy() since this does not do a hard kill - it causes shutdown hooks
-      // to be called which cleanly shutdown the server
-      System.out.println(configDir + "/server" + id + "/KILL_ME");
-      File file = new File(configDir + "/server" + id + "/KILL_ME");
-
-      file.createNewFile();
-
-      // Sleep longer than the KillChecker check period
-      Thread.sleep(3000);
-   }
-
-/*   protected void stopServer(final int id) throws Exception
-   {
-      System.out.println("Stopping server " + id);
-
-      stopServer(servers[id]);
-   }*/
-
    protected InitialContext getContext(final int serverId) throws Exception
    {
       HornetQExample.log.info("using " + args[serverId] + " for jndi");
@@ -208,81 +179,6 @@ public abstract class HornetQExample
       props.put("java.naming.factory.url.pkgs","org.jboss.naming:org.jnp.interfaces");
       return new InitialContext(props);
    }
-
-/*   protected void startServer(final int index) throws Exception
-   {
-      String config = configs[index];
-      HornetQExample.log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
-      String debugProp = System.getProperty("server" + index);
-      boolean debugServer= "true".equals(debugProp);
-      servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
-                                                "HornetQServer_" + index,
-                                                SpawnedHornetQServer.class.getName(),
-                                                serverProps,
-                                                logServerOutput,
-                                                "STARTED::",
-                                                "FAILED::",
-                                                config,
-                                                debugServer,
-                                                "hornetq-beans.xml");
-   }
-
-   protected void reStartServer(final int index) throws Exception
-   {
-      String config = configs[index];
-      HornetQExample.log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
-      File f = new File(config + "/KILL_ME");
-      f.delete();
-      String debugProp = System.getProperty("server" + index);
-      boolean debugServer= "true".equals(debugProp);
-      servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
-                                                "HornetQServer_" + index,
-                                                SpawnedHornetQServer.class.getName(),
-                                                serverProps,
-                                                logServerOutput,
-                                                "STARTED::",
-                                                "FAILED::",
-                                                config,
-                                                debugServer,
-                                                "hornetq-beans.xml");
-   }
-
-   protected void startServers() throws Exception
-   {
-      servers = new Process[configs.length];
-      for (int i = 0; i < configs.length; i++)
-      {
-         startServer(i);
-      }
-   }
-
-   protected void stopServers() throws Exception
-   {
-      for (Process server : servers)
-      {
-         if (server != null)
-         {
-            stopServer(server);
-         }
-      }
-   }
-
-   protected void stopServer(final Process server) throws Exception
-   {
-      if (!System.getProperty("os.name").contains("Windows") && !System.getProperty("os.name").contains("Mac OS X"))
-      {
-         if (server.getInputStream() != null)
-         {
-            server.getInputStream().close();
-         }
-         if (server.getErrorStream() != null)
-         {
-            server.getErrorStream().close();
-         }
-      }
-      server.destroy();
-   }
-*/
 
    protected int getServer(Connection connection)
    {

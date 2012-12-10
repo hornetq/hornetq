@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -86,7 +87,15 @@ public abstract class XmlDeployer implements Deployer
          for (int i = 0; i < children.getLength(); i++)
          {
             Node node = children.item(i);
-            String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+            String name;
+            try
+            {
+               name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+            }
+            catch (NullPointerException npe)
+            {
+               throw new HornetQException("Could not find " + getKeyAttribute() + " in " + node.getAttributes());
+            }
             added.add(name);
             // if this has never been deployed deploy
             Map<String, Node> map = configuration.get(url);
@@ -198,7 +207,7 @@ public abstract class XmlDeployer implements Deployer
    }
 
    /**
-    * the key attribute for theelement, usually 'name' but can be overridden
+    * The key attribute for the element, usually 'name' but can be overridden
     * @return the key attribute
     */
    public String getKeyAttribute()

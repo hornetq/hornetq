@@ -135,4 +135,14 @@
     <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
   </Match>
 
+  <!-- Examples often verify a null value and use the (null) variable in a sys-out statement -->
+  <Match>
+    <Or>
+      <Class name="org.hornetq.jms.example.TopicHierarchyExample"/>
+      <Class name="org.hornetq.jms.example.TransactionalExample"/>
+    </Or>
+    <Method name="runExample"/>
+    <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+  </Match>
+
 </FindBugsFilter>
