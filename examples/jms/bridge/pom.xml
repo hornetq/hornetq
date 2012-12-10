@@ -15,7 +15,7 @@
    <dependencies>
       <dependency>
          <groupId>org.hornetq.examples.jms</groupId>
-         <artifactId>common</artifactId>
+         <artifactId>hornetq-jms-examples-common</artifactId>
          <version>${project.version}</version>
       </dependency>
       <dependency>
