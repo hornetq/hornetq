@@ -29,6 +29,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.utils.TypedProperties;
@@ -48,7 +49,7 @@ import org.hornetq.utils.TypedProperties;
  * Created 17 Nov 2008 13:21:45
  *
  */
-public final class DiscoveryGroup
+public final class DiscoveryGroup implements HornetQComponent
 {
    private static final boolean isTrace = HornetQClientLogger.LOGGER.isTraceEnabled();
 
