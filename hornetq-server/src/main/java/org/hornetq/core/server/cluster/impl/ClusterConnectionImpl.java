@@ -50,9 +50,9 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -64,6 +64,7 @@ import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.Pair;
@@ -78,7 +79,6 @@ import org.hornetq.utils.TypedProperties;
  */
 public final class ClusterConnectionImpl implements ClusterConnection, AfterConnectInternalListener
 {
-
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private final ExecutorFactory executorFactory;
@@ -117,6 +117,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final int confirmationWindowSize;
 
+   /**
+    * Guard for the field {@link #records}. Note that the field is {@link ConcurrentHashMap},
+    * however we need the guard to synchronize multiple step operations during topology updates.
+    */
+   private final Object recordsGuard = new Object();
    private final Map<String, MessageFlowRecord> records = new ConcurrentHashMap<String, MessageFlowRecord>();
 
    private final ScheduledExecutorService scheduledExecutor;
@@ -650,14 +655,15 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public Map<String, String> getNodes()
    {
-      synchronized (records)
+      synchronized (recordsGuard)
       {
          Map<String, String> nodes = new HashMap<String, String>();
-         for (Entry<String, MessageFlowRecord> record : records.entrySet())
+         for (Entry<String, MessageFlowRecord> entry : records.entrySet())
          {
-            if (record.getValue().getBridge().getForwardingConnection() != null)
+            RemotingConnection fwdConnection = entry.getValue().getBridge().getForwardingConnection();
+            if (fwdConnection != null)
             {
-               nodes.put(record.getKey(), record.getValue().getBridge().getForwardingConnection().getRemoteAddress());
+               nodes.put(entry.getKey(), fwdConnection.getRemoteAddress());
             }
          }
          return nodes;
@@ -846,7 +852,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          return;
       }
 
-      synchronized (records)
+      synchronized (recordsGuard)
       {
          try
          {
@@ -1594,10 +1600,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       out.println(this);
       out.println("***************************************");
       out.println(name + " connected to");
-      for (Entry<String, MessageFlowRecord> messageFlow : records.entrySet())
+      for (MessageFlowRecord messageFlow : records.values())
       {
-         out.println("\t Bridge = " + messageFlow.getValue().getBridge());
-         out.println("\t Flow Record = " + messageFlow.getValue());
+         out.println("\t Bridge = " + messageFlow.getBridge());
+         out.println("\t Flow Record = " + messageFlow);
       }
       out.println("***************************************");
 

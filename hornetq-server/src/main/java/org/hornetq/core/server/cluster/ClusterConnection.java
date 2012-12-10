@@ -47,6 +47,7 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    void removeClusterTopologyListener(ClusterTopologyListener listener);
 
    /**
+    * Only used for tests?
     * @return a Map of node ID and addresses
     */
    Map<String, String> getNodes();

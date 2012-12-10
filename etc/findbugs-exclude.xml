@@ -129,4 +129,10 @@
     <Bug pattern="EQ_UNUSUAL"/>
   </Match>
 
+  <Match>
+    <Class name="org.hornetq.core.server.impl.HornetQServerImpl$SharedNothingLiveActivation"/>
+    <Method name="isNodeIdUsed"/>
+    <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
+  </Match>
+
 </FindBugsFilter>
