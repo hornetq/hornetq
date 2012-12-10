@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <configuration xmlns="urn:hornetq"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
@@ -33,4 +34,7 @@
       </security-setting>
    </security-settings>
 
+   <journal-directory>target/data/journal</journal-directory>
+   <bindings-directory>target/data/bindings</bindings-directory>
+   <large-messages-directory>target/data/large-messages</large-messages-directory>
 </configuration>
