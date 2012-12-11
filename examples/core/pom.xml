@@ -3,19 +3,18 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-pom</artifactId>
+      <groupId>org.hornetq.examples</groupId>
+      <artifactId>hornetq-examples</artifactId>
       <version>2.3.0.BETA-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq.examples</groupId>
-   <artifactId>hornetq-examples</artifactId>
+   <groupId>org.hornetq.examples.core</groupId>
+   <artifactId>core-examples</artifactId>
    <packaging>pom</packaging>
-   <name>HornetQ Examples</name>
+   <name>HornetQ Core Examples</name>
 
-   <modules>
-      <module>core</module>
-      <module>jms</module>
-   </modules>
+   <properties>
+      <udp-address>231.7.7.7</udp-address>
+   </properties>
 
 </project>

@@ -9,34 +9,15 @@
      <h1>Embedded Example</h1>
      <p>This example shows how to setup and run HornetQ embedded with remote clients connecting.</p>
      <p>HornetQ was designed to use POJOs (Plain Old Java Objects), what makes embedding HornetQ as simple as instantiating a few objects.</p>
-     <p>We have limited the server classpath on this example:</p>
-     
-     <ol>
-       <li>hornetq-server.jar</li>
-       <li>netty.jar</li>
-     </ol>
 
-     <p>Similarly we have also limited the classpath on client:</p>
-     
-     <ol>
-       <li>hornetq-core-client.jar</li>
-       <li>netty.jar</li>
-     </ol>
-     
      <p>HornetQ Embedded could be used from very simple use cases with only InVM support to very complex cases with clustering, persistence and fail over.</p>
 
 
      <h2>Example step-by-step</h2>     
-     <p><i>To run the example, simply type <code>mvn verify</code> from this directory</i></p>
+     <p><i>To run the example, simply type <code>mvn -Pserver</code> from this directory to start the server and <code>mvn -Pclient</code> to run the client example</i></p>
      <p>In this we don't use any configuration files. (Everything is embedded). We simply instantiate ConfigurationImpl, HornetQServer, start it and operate on JMS regularly</p>
      <br/>
      <ol>
-     
-        <li>The example is starting the server remotely.</li>
-        <pre class="prettyprint">
-           process = startRemoteEmbedded();
-        </pre>
-     
         <li>On EmbeddedServer: Create the Configuration, and set the properties accordingly</li>
         <pre class="prettyprint">
            Configuration configuration = new ConfigurationImpl();
@@ -98,12 +79,6 @@
            {
               sf.close();
            }
-        </pre>
-
-        <li>Stop the server</li>
-
-        <pre class="prettyprint">
-           process.destroy();
         </pre>
      </ol>
   </body>
