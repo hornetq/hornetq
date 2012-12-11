@@ -18,52 +18,12 @@
      <p>In this example, incoming connector and outgoing conenctor is related to same twitter account.
      So if you send a message to an outgoing address, outgoing connector forwards it to twitter,
      and then incoming connector consumes it and forwards to incoming address.</p>
-     <p>All you need to do is edit the server0/hornetq-configuration.xml to use twitter connector.</p>
- 
- 
-      <pre class="prettyprint">
-      <code>
-      &lt;twitter-connectors&gt;
-         &lt;!-- consumes from twitter and forwards to queue.incomingQueue --&gt;
-         &lt;incoming-twitter-connector name=&quot;my-incoming-tweets&quot;&gt;
-            &lt;queue-name&gt;queue.incomingQueue&lt;/queue-name&gt;
-            &lt;twitter-account&gt;
-               &lt;username&gt;${twitter.username}&lt;/username&gt;
-               &lt;password&gt;${twitter.password}&lt;/password&gt;
-            &lt;/twitter-account&gt;
-            &lt;interval-seconds&gt;60&lt;/interval-seconds&gt;
-         &lt;/incoming-twitter-connector&gt;
-
-         &lt;!-- consumes from queue.outgoingQueue and forwards to twitter --&gt;
-         &lt;outgoing-twitter-connector name=&quot;my-outgoing-tweets&quot;&gt;
-            &lt;queue-name&gt;queue.outgoingQueue&lt;/queue-name&gt;
-            &lt;twitter-account&gt;
-               &lt;username&gt;${twitter.username}&lt;/username&gt;
-               &lt;password&gt;${twitter.password}&lt;/password&gt;
-            &lt;/twitter-account&gt;
-         &lt;/outgoing-twitter-connector&gt;
-      &lt;/twitter-connectors&gt;
-      </code>
-      </pre>
      
      <h2>Example step-by-step</h2>
-     <p><i>To run the example, simply type <code>mvn verify</code> from this directory.
-     Also please remember to set the twitter user/pass in environment variable Before you run.</i></p>
+     <p><i>To run the server, simply type <code>mvn-Dtwitter.consumerKey=consumer -Dtwitter.consumerSecret=secret -Dtwitter.accessToken=token -Dtwitter.accessTokenSecret=secret verify</code>
+         from this directory but replacing the system properties with those of the twitter account you want to use. Then run the example
+     by using the command <code>mvn -Pexample package</code></p>
 
-     on Linux:     
-     <pre class="prettyprint">
-     <code>export TWITTER_USERNAME=your_twitter_username
-export TWITTER_PASSWORD=your_twitter_password
-./build.sh</code>
-     </pre>
-
-	 on Windows:	
-     <pre class="prettyprint">
-     <code>set TWITTER_USERNAME=your_twitter_username
-set TWITTER_PASSWORD=your_twitter_password
-build.bat</code>
-     </pre>
-     </p>
      
      <ol>
         <li>First we need to create a ClientSessionFactory with Netty transport configuration</li>
