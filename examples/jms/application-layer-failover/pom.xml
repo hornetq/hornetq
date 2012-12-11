@@ -15,7 +15,7 @@
    <dependencies>
       <dependency>
          <groupId>org.hornetq.examples.jms</groupId>
-         <artifactId>common</artifactId>
+         <artifactId>hornetq-jms-examples-common</artifactId>
          <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -24,7 +24,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -48,7 +48,7 @@
                      <jndiPort>1199</jndiPort>
                      <jndiRmiPort>1198</jndiRmiPort>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server1</hornetqConfigurationDir>
-                     <serverStartString>INFO: HQ111039</serverStartString>
+                     <serverStartString>INFO: HQ221039</serverStartString>
                      <fork>true</fork>
                   </configuration>
                </execution>
