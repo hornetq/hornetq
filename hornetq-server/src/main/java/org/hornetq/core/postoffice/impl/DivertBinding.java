@@ -23,13 +23,7 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 
 /**
- * A LocalQueueBinding
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 28 Jan 2009 12:42:23
- *
- *
  */
 public class DivertBinding implements Binding
 {
@@ -126,9 +120,6 @@ public class DivertBinding implements Binding
 
 
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -148,9 +139,10 @@ public class DivertBinding implements Binding
              "]";
    }
 
+   @Override
    public String toManagementString()
    {
-       return "DiverBinding[id=" + id + "]";
+      return this.getClass().getSimpleName() + " [id=" + id + "]";
    }
 
    public void close() throws Exception
