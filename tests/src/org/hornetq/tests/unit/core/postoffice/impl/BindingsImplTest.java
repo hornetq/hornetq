@@ -1175,6 +1175,15 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.postoffice.Binding#toManagementString()
+       */
+      @Override
+      public String toManagementString()
+      {
+         return null;
+      }
+
    }
 
    // Package protected ---------------------------------------------
