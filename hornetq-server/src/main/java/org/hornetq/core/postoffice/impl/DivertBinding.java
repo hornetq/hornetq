@@ -148,6 +148,11 @@ public class DivertBinding implements Binding
              "]";
    }
 
+   public String toManagementString()
+   {
+       return "DiverBinding[id=" + id + "]";
+   }
+
    public void close() throws Exception
    {
    }
