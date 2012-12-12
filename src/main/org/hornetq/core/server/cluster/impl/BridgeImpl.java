@@ -15,6 +15,7 @@ package org.hornetq.core.server.cluster.impl;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -271,6 +272,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // There isn't much we can do besides log an error
             log.error("Couldn't cancel reference " + ref2, e);
          }
+      }
+   }
+   
+   public void getDeliveringMessages(List<MessageReference> refList)
+   {
+      synchronized(this)
+      {
+         refList.addAll(refs);
       }
    }
 
@@ -719,6 +728,16 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
              " targetConnector=" +
              this.serverLocator +
              "]";
+   }
+
+   @Override
+   public String toManagementString()
+   {
+      return this.getClass().getSimpleName() +
+               " [name=" +
+               name +
+               ", queue=" +
+               queue.getName() + "/" + queue.getID() + "]";
    }
 
    protected void fail(final boolean permanently)

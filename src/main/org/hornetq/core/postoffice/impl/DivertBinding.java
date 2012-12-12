@@ -147,6 +147,11 @@ public class DivertBinding implements Binding
              exclusive +
              "]";
    }
+   
+   public String toManagementString()
+   {
+      return this.getClass().getSimpleName()+" [id=" + id + "]";
+   }
 
    public void close() throws Exception
    {

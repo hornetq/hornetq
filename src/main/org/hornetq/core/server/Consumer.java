@@ -13,6 +13,8 @@
 
 package org.hornetq.core.server;
 
+import java.util.List;
+
 import org.hornetq.core.filter.Filter;
 
 /**
@@ -27,6 +29,21 @@ public interface Consumer
    HandleStatus handle(MessageReference reference) throws Exception;
 
    Filter getFilter();
+   
+   /**
+    * Add the in-deliver mode messages to the ref-list passed as parameter
+    * @param refList the placeholder for where the output messages will be placed
+    */
+   void getDeliveringMessages(List<MessageReference> refList);
 
    String debug();
+   
+   
+   /**
+    * This method will create a string representation meant for management operations.
+    * This is different from the toString method that's meant for debugging and will contain information that regular users won't understand well
+    * @return
+    */
+   String toManagementString();
+   
 }

@@ -16,6 +16,7 @@ package org.hornetq.tests.unit.core.server.cluster.impl;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.SimpleString;
@@ -694,6 +695,16 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#getDeliveringMessages()
+       */
+      @Override
+      public Map<String, List<MessageReference>> getDeliveringMessages()
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
    }
