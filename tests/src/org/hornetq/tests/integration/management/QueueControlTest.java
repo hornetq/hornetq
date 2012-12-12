@@ -37,6 +37,7 @@ import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -337,6 +338,44 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, messages.length);
 
       ManagementTestBase.consumeMessages(2, session, queue);
+
+      session.deleteQueue(queue);
+   }
+
+   public void testListDeliveringMessages() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      int intValue = RandomUtil.randomInt();
+      session.createQueue(address, queue, null, false);
+      
+      Queue srvqueue = server.locateQueue(queue);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createMessage(false);
+      message.putIntProperty(new SimpleString("key"), intValue);
+      producer.send(message);
+      producer.send(session.createMessage(false));
+      
+      
+      ClientConsumer consumer = session.createConsumer(queue);
+      session.start();
+      ClientMessage msgRec = consumer.receive(5000);
+      assertNotNull(msgRec);
+      assertEquals(msgRec.getIntProperty("key").intValue(), intValue);
+      
+      
+      assertEquals(1, srvqueue.getDeliveringCount());
+      
+      System.out.println(queueControl.listDeliveringdMessagesAsJSON());
+      
+      Map<String, Map<String, Object>[]> deliveringMap = queueControl.listDeliveringMessages();
+      assertEquals(1, deliveringMap.size());
+      //Map<String, Object[]> msgs = deliveringMap.get(key)
+      
+      consumer.close();
 
       session.deleteQueue(queue);
    }

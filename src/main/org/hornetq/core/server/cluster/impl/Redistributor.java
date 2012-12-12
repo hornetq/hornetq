@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.cluster.impl;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.Message;
@@ -85,6 +86,11 @@ public class Redistributor implements Consumer
    {
       return toString();
    }
+   
+   public String toManagementString()
+   {
+      return "Redistributor[" + queue.getName() + "/" + queue.getID() +"]";
+   }
 
    public synchronized void start()
    {
@@ -107,6 +113,11 @@ public class Redistributor implements Consumer
       }
    }
 
+   public void getDeliveringMessages(List<MessageReference> refList)
+   {
+      // noop
+   }
+   
    public synchronized void close()
    {
       Future future = new Future();
