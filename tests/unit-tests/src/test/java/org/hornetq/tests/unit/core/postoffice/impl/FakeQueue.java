@@ -14,6 +14,7 @@
 package org.hornetq.tests.unit.core.postoffice.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -674,5 +675,16 @@ public class FakeQueue implements Queue
    public void destroyPaging()
    {
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#getDeliveringMessages()
+    */
+   @Override
+   public Map<String, List<MessageReference>> getDeliveringMessages()
+   {
+      return null;
+   }
+
+
 
 }

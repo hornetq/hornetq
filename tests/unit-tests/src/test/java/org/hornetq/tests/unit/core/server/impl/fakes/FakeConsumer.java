@@ -151,4 +151,16 @@ public class FakeConsumer implements Consumer
 
       return statusToReturn;
    }
+
+   @Override
+   public void getDeliveringMessages(List<MessageReference> refList)
+   {
+   }
+
+   @Override
+   public String toManagementString()
+   {
+      return toString();
+   }
+
 }
