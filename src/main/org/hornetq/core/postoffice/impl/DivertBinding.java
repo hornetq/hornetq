@@ -150,7 +150,7 @@ public class DivertBinding implements Binding
    
    public String toManagementString()
    {
-      return "DiverBinding[id=" + id + "]";
+      return this.getClass().getSimpleName()+" [id=" + id + "]";
    }
 
    public void close() throws Exception
