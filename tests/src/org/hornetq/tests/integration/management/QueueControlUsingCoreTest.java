@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
@@ -24,7 +25,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -275,13 +275,48 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          {
             return (String)proxy.invokeOperation("listConsumersAsJSON");
          }
+
+         @Override
+         public Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception
+         {
+            // This map code could be done better,
+            // however that's just to convert stuff for the test class, so I
+            // am not going to spend a lot more time on it (Clebert)
+            @SuppressWarnings("rawtypes")
+            Map res = (Map)proxy.invokeOperation("listDeliveringMessages");
+
+            @SuppressWarnings("rawtypes")
+            Map response = new HashMap<String, Map<String, Object>[]>();
+
+            for (Object key: res.keySet())
+            {
+               Object[] value = (Object[])res.get(key);
+
+
+               Map<String, Object>[] results = new Map[value.length];
+               for (int i = 0; i < value.length; i++)
+               {
+                  results[i] = (Map<String, Object>)value[i];
+               }
+
+               response.put(key, results);
+            }
+
+            return response;
+         }
+
+         @Override
+         public String listDeliveringdMessagesAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listDeliveringdMessagesAsJSON");
+         }
       };
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
+   
    @Override
    protected void setUp() throws Exception
    {

@@ -23,6 +23,7 @@ import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
 import twitter4j.http.AccessToken;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -125,6 +126,11 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    {
       return isStarted;  //To change body of implemented methods use File | Settings | File Templates.
    }
+   
+   public void getDeliveringMessages(List<MessageReference> refList)
+   {
+      // noop
+   }
 
    public synchronized void stop() throws Exception
    {
@@ -215,5 +221,14 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
          log.debug(connectorName + ": forwarded to twitter: " + message.getMessageID());
          return HandleStatus.HANDLED;
       }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#toManagementString()
+    */
+   @Override
+   public String toManagementString()
+   {
+      return toString();
    }
 }

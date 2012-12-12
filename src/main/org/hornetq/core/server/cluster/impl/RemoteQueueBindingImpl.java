@@ -274,6 +274,15 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
              "]";
    }
 
+   @Override
+   public String toManagementString()
+   {
+      return "RemoteQueueBindingImpl [address=" + address +
+               ", storeAndForwardQueue=" + storeAndForwardQueue.getName() +
+               ", remoteQueueID=" +
+               remoteQueueID + "]";
+   }
+
    public Set<Filter> getFilters()
    {
       return filters;

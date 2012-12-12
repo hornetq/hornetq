@@ -53,4 +53,11 @@ public interface Binding
    void route(ServerMessage message, RoutingContext context) throws Exception;
 
    void close() throws Exception;
+   
+   /**
+    * This method will create a string represetnation meant for management operations.
+    * This is different from the toString method that's meant for debugging and will contain information that regular users won't understand well
+    * @return
+    */
+   String toManagementString();
 }
