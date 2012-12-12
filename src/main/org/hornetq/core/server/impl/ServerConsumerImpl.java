@@ -15,6 +15,7 @@ package org.hornetq.core.server.impl;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -205,6 +206,14 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    public String getSessionID()
    {
       return this.session.getName();
+   }
+   
+   public void getDeliveringMessages(List<MessageReference> refList)
+   {
+      synchronized(lock)
+      {
+         refList.addAll(deliveringRefs);
+      }
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
@@ -746,6 +755,21 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       return availableCredits;
    }
+   
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "ServerConsumerImpl [id=" + id + ", filter=" + filter + ", binding=" + binding + "]";
+   }
+   
+   public String toManagementString()
+   {
+      return "ServerConsumer [id=" + id + ", filter=" + filter + ", binding=" + binding.toManagementString() + "]";
+   }
+
 
    // Private --------------------------------------------------------------------------------------
 

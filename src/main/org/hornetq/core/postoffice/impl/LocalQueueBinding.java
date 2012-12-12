@@ -159,4 +159,15 @@ public class LocalQueueBinding implements QueueBinding
              "]";
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.Binding#toManagementString()
+    */
+   @Override
+   public String toManagementString()
+   {
+      return "LocalQueueBinding [address=" + address +
+               ", queue=" +
+               queue + "]";
+   }
+
 }
