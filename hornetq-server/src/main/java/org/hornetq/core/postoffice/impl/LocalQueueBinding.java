@@ -24,12 +24,7 @@ import org.hornetq.core.server.ServerMessage;
 
 /**
  * A LocalQueueBinding
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 28 Jan 2009 12:42:23
- *
- *
  */
 public class LocalQueueBinding implements QueueBinding
 {
@@ -138,9 +133,6 @@ public class LocalQueueBinding implements QueueBinding
       queue.close();
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -156,4 +148,9 @@ public class LocalQueueBinding implements QueueBinding
              "]";
    }
 
+   @Override
+   public String toManagementString()
+   {
+      return this.getClass().getSimpleName() + " [address=" + address + ", queue=" + queue + "]";
+   }
 }

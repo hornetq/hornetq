@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
@@ -256,6 +257,39 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          public String listConsumersAsJSON() throws Exception
          {
             return (String)proxy.invokeOperation("listConsumersAsJSON");
+         }
+
+         public Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception
+         {
+            // This map code could be done better,
+            // however that's just to convert stuff for the test class, so I
+            // am not going to spend a lot more time on it (Clebert)
+            @SuppressWarnings("rawtypes")
+            Map res = (Map)proxy.invokeOperation("listDeliveringMessages");
+
+            @SuppressWarnings("rawtypes")
+            Map response = new HashMap();
+
+            for (Object key: res.keySet())
+            {
+               Object[] value = (Object[])res.get(key);
+
+
+               Map<String, Object>[] results = new Map[value.length];
+               for (int i = 0; i < value.length; i++)
+               {
+                  results[i] = (Map<String, Object>)value[i];
+               }
+
+               response.put(key, results);
+            }
+
+            return response;
+         }
+
+         public String listDeliveringdMessagesAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listDeliveringdMessagesAsJSON");
          }
       };
    }
