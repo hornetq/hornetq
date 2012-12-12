@@ -15,6 +15,7 @@ package org.hornetq.core.server;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.SimpleString;
@@ -91,6 +92,13 @@ public interface Queue extends Bindable
    int getScheduledCount();
 
    List<MessageReference> getScheduledMessages();
+
+   /**
+    * Return a Map consisting of consumer.toString and its messages
+    * Delivering message is a property of the consumer, this method will aggregate the results per Server's consumer object
+    * @return
+    */
+   Map<String, List<MessageReference>> getDeliveringMessages();
 
    long getMessagesAdded();
 
