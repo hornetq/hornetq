@@ -118,6 +118,22 @@ public interface QueueControl
    @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = MBeanOperationInfo.INFO)
    String listScheduledMessagesAsJSON() throws Exception;
 
+    /**
+     * Lists all the messages being deliver per consumer.
+     * <br>
+     * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
+     */
+    @Operation(desc = "List all messages being delivered per consumer")
+    Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
+
+    /**
+     * Executes a conversion of {@link #listDeliveringMessages()} to JSON
+     * @return
+     * @throws Exception
+     */
+    @Operation(desc = "list all messages being delivered per consumer using JSON form")
+    String listDeliveringdMessagesAsJSON() throws Exception;
+
    /**
     * Lists all the messages in this queue matching the specified filter.
     * <br>

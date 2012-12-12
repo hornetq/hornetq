@@ -890,6 +890,26 @@ public class QueueImpl implements Queue
       return scheduledDeliveryHandler.getScheduledReferences();
    }
 
+   public Map<String, List<MessageReference>> getDeliveringMessages()
+   {
+
+      List<ConsumerHolder> consumerListClone = cloneConsumersList();
+
+      Map<String, List<MessageReference>> mapReturn = new HashMap<String, List<MessageReference>>();
+
+      for (ConsumerHolder holder : consumerListClone)
+      {
+         LinkedList<MessageReference> msgs = new LinkedList<MessageReference>();
+         holder.consumer.getDeliveringMessages(msgs);
+         if (msgs.size() > 0)
+         {
+            mapReturn.put(holder.consumer.toManagementString(), msgs);
+         }
+      }
+
+      return mapReturn;
+   }
+
    public int getDeliveringCount()
    {
       return deliveringCount.get();
@@ -2264,6 +2284,18 @@ public class QueueImpl implements Queue
       }
 
       return status;
+   }
+
+   private List<ConsumerHolder> cloneConsumersList()
+   {
+      List<ConsumerHolder> consumerListClone;
+
+      synchronized (this)
+      {
+         consumerListClone = new ArrayList<ConsumerHolder>(consumerList.size());
+         consumerListClone.addAll(consumerList);
+      }
+      return consumerListClone;
    }
 
    // Protected as testcases may change this behaviour
