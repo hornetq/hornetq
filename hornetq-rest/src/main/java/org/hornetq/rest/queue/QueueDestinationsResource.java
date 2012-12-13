@@ -139,7 +139,7 @@ public class QueueDestinationsResource
    }
 
    @Path("/{queue-name}")
-   public QueueResource findQueue(@PathParam("queue-name") String name) throws Exception
+   public synchronized QueueResource findQueue(@PathParam("queue-name") String name) throws Exception
    {
       QueueResource queue = queues.get(name);
       if (queue == null)
