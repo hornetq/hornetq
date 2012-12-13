@@ -15,7 +15,7 @@ package org.hornetq.core.postoffice;
 
 import java.util.List;
 
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.transaction.Transaction;
 
 /**

@@ -19,12 +19,12 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager.DeployInfo;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
 
 /**
  *

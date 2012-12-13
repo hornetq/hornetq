@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.Message;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.StorageManager;

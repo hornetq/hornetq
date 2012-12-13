@@ -32,7 +32,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * This implementation looks for any available live node, once tried with no success it is marked as

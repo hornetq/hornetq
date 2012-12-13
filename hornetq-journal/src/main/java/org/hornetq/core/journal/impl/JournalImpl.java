@@ -65,7 +65,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  *

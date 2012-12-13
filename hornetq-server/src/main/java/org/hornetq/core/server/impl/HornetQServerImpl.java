@@ -151,7 +151,7 @@ import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 

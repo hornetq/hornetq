@@ -39,6 +39,7 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -56,7 +57,6 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
 /**

@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
@@ -67,7 +68,6 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.TypedProperties;
 
 /**
