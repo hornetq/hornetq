@@ -24,7 +24,7 @@ import org.jgroups.ReceiverAdapter;
 
 /**
  */
-public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
+public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
    private static final long serialVersionUID = 8952238567248461285L;
 
@@ -54,6 +54,33 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
    public BroadcastEndpointFactory createBroadcastEndpointFactory()
    {
        return factory;
+   }
+
+   @Override
+   public String getLocalBindAddress()
+   {
+      return null;
+   }
+
+   @Override
+   /*
+   * return -1 to force deserialization of object
+   * */
+   public int getLocalBindPort()
+   {
+      return -1;
+   }
+
+   @Override
+   public String getGroupAddress()
+   {
+      return null;
+   }
+
+   @Override
+   public int getGroupPort()
+   {
+      return -1;
    }
 
    /**

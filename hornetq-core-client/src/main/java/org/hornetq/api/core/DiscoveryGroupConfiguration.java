@@ -13,6 +13,9 @@
 
 package org.hornetq.api.core;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.hornetq.utils.UUIDGenerator;
@@ -32,7 +35,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public final class DiscoveryGroupConfiguration implements Serializable
 {
-   private static final long serialVersionUID = -788378590243304842L;
+   private static final long serialVersionUID = 8657206421727863400L;
 
    private String name;
 
@@ -40,7 +43,21 @@ public final class DiscoveryGroupConfiguration implements Serializable
 
    private long discoveryInitialWaitTimeout;
 
-   private final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
+   /*
+   * These 4 fields re needed so we can be backward compatible with 2.2 clients
+   * */
+   private String localBindAddress;
+
+   private int localBindPort;
+
+   private String groupAddress;
+
+   private int groupPort;
+
+   /*
+   * This is the actual object used by the class, it has to be transient so we can handle deserialization with a 2.2 client
+   * */
+   private transient BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
 
    public DiscoveryGroupConfiguration(final String name,
                                       final long refreshTimeout,
@@ -51,6 +68,14 @@ public final class DiscoveryGroupConfiguration implements Serializable
       this.refreshTimeout = refreshTimeout;
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
       this.endpointFactoryConfiguration = endpointFactoryConfiguration;
+      if(endpointFactoryConfiguration instanceof DiscoveryGroupConfigurationCompatibilityHelper)
+      {
+         DiscoveryGroupConfigurationCompatibilityHelper dgcch = (DiscoveryGroupConfigurationCompatibilityHelper) endpointFactoryConfiguration;
+         localBindAddress = dgcch.getLocalBindAddress();
+         localBindPort = dgcch.getLocalBindPort();
+         groupAddress = dgcch.getGroupAddress();
+         groupPort = dgcch.getGroupPort();
+      }
    }
 
    public DiscoveryGroupConfiguration(final long refreshTimeout,
@@ -105,6 +130,28 @@ public final class DiscoveryGroupConfiguration implements Serializable
    public BroadcastEndpointFactoryConfiguration getBroadcastEndpointFactoryConfiguration()
    {
       return endpointFactoryConfiguration;
+   }
+
+   private void writeObject(ObjectOutputStream out) throws IOException
+   {
+      out.defaultWriteObject();
+      if(groupPort < 0)
+      {
+         out.writeObject(endpointFactoryConfiguration);
+      }
+   }
+
+   private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException
+   {
+      in.defaultReadObject();
+      if(groupPort < 0)
+      {
+         endpointFactoryConfiguration = (BroadcastEndpointFactoryConfiguration) in.readObject();
+      }
+      else
+      {
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localBindAddress, localBindPort);
+      }
    }
 
    @Override

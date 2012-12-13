@@ -204,6 +204,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private TransportConfiguration clusterTransportConfiguration;
 
    /*
+   * *************WARNING***************
+   * remember that when adding any new classes that we have to support serialization with previous clients.
+   * If you need to, make them transient and handle the serialization yourself
+   * */
+
+
+   /*
    * we use the client decoder by default but there are times when we want to use the server packet decoder
    */
    private PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;

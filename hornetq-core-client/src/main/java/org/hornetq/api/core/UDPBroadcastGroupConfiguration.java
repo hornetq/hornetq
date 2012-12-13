@@ -37,7 +37,7 @@ import org.hornetq.core.client.HornetQClientLogger;
  * Created 18 Nov 2008 08:44:30
  *
  */
-public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration
+public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
    private static final long serialVersionUID = 1052413739064253955L;
 
