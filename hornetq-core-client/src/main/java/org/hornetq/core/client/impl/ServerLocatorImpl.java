@@ -13,6 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.security.AccessController;
@@ -213,7 +215,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    /*
    * we use the client decoder by default but there are times when we want to use the server packet decoder
    */
-   private PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
+   private transient PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
 
    private final Exception traceException = new Exception();
 
@@ -1692,6 +1694,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+   private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
+   {
+      is.defaultReadObject();
+      //is transient so need to create, for compatibility issues
+      packetDecoder = ClientPacketDecoder.INSTANCE;
+   }
    private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
