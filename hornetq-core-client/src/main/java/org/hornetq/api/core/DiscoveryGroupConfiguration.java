@@ -68,7 +68,7 @@ public final class DiscoveryGroupConfiguration implements Serializable
       this.refreshTimeout = refreshTimeout;
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
       this.endpointFactoryConfiguration = endpointFactoryConfiguration;
-      if(endpointFactoryConfiguration instanceof DiscoveryGroupConfigurationCompatibilityHelper)
+      if (endpointFactoryConfiguration instanceof DiscoveryGroupConfigurationCompatibilityHelper)
       {
          DiscoveryGroupConfigurationCompatibilityHelper dgcch = (DiscoveryGroupConfigurationCompatibilityHelper) endpointFactoryConfiguration;
          localBindAddress = dgcch.getLocalBindAddress();
@@ -135,7 +135,7 @@ public final class DiscoveryGroupConfiguration implements Serializable
    private void writeObject(ObjectOutputStream out) throws IOException
    {
       out.defaultWriteObject();
-      if(groupPort < 0)
+      if (groupPort < 0)
       {
          out.writeObject(endpointFactoryConfiguration);
       }
@@ -144,7 +144,7 @@ public final class DiscoveryGroupConfiguration implements Serializable
    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException
    {
       in.defaultReadObject();
-      if(groupPort < 0)
+      if (groupPort < 0)
       {
          endpointFactoryConfiguration = (BroadcastEndpointFactoryConfiguration) in.readObject();
       }
