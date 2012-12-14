@@ -16,12 +16,15 @@ package org.hornetq.tests.unit.core.journal.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.journal.impl.TimedBufferObserver;
@@ -41,7 +44,7 @@ public class TimedBufferTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private static final int ONE_SECOND = 1000000000; // in nanoseconds
+   private static final int ONE_SECOND_IN_NANOS = 1000000000; // in nanoseconds
 
    // Static --------------------------------------------------------
 
@@ -88,7 +91,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND, false);
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS, false);
 
       timedBuffer.start();
 
@@ -162,7 +165,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND / 10, false);
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 10, false);
 
       timedBuffer.start();
 
@@ -215,6 +218,178 @@ public class TimedBufferTest extends UnitTestCase
          {
             Assert.assertEquals(UnitTestCase.getSamplebyte(i), flushedBuffer.get());
          }
+      }
+      finally
+      {
+         timedBuffer.stop();
+      }
+
+   }
+
+   /**
+    * This test will verify if the system will switch to spin case the system can't perform sleeps timely
+    * due to proper kernel installations
+    * @throws Exception
+    */
+   public void testVerifySwitchToSpin() throws Exception
+   {
+      class TestObserver implements TimedBufferObserver
+      {
+         public void flushBuffer(final ByteBuffer buffer, final boolean sync, final List<IOAsyncTask> callbacks)
+         {
+         }
+
+         /* (non-Javadoc)
+          * @see org.hornetq.utils.timedbuffer.TimedBufferObserver#newBuffer(int, int)
+          */
+         public ByteBuffer newBuffer(final int minSize, final int maxSize)
+         {
+            return ByteBuffer.allocate(maxSize);
+         }
+
+         public int getRemainingBytes()
+         {
+            return 1024 * 1024;
+         }
+      }
+
+      final CountDownLatch sleptLatch = new CountDownLatch(1);
+
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
+      {
+
+         @Override
+         protected void stopSpin()
+         {
+            // keeps spinning forever
+         }
+
+         protected void sleep(int sleepMillis, int sleepNanos) throws InterruptedException
+         {
+            Thread.sleep(10);
+         }
+
+         @Override
+         public void setUseSleep(boolean param)
+         {
+            super.setUseSleep(param);
+            sleptLatch.countDown();
+         }
+
+      };
+
+      timedBuffer.start();
+
+      try
+      {
+
+         timedBuffer.setObserver(new TestObserver());
+
+         int x = 0;
+
+         byte[] bytes = new byte[10];
+         for (int j = 0; j < 10; j++)
+         {
+            bytes[j] = UnitTestCase.getSamplebyte(x++);
+         }
+
+         HornetQBuffer buff = HornetQBuffers.wrappedBuffer(bytes);
+
+         timedBuffer.checkSize(10);
+         timedBuffer.addBytes(buff, true, dummyCallback);
+
+         sleptLatch.await(10, TimeUnit.SECONDS);
+
+         assertFalse(timedBuffer.isUseSleep());
+      }
+      finally
+      {
+         timedBuffer.stop();
+      }
+
+   }
+
+
+   /**
+    * This test will verify if the system will switch to spin case the system can't perform sleeps timely
+    * due to proper kernel installations
+    * @throws Exception
+    */
+   public void testStillSleeps() throws Exception
+   {
+      class TestObserver implements TimedBufferObserver
+      {
+         public void flushBuffer(final ByteBuffer buffer, final boolean sync, final List<IOAsyncTask> callbacks)
+         {
+         }
+
+         /* (non-Javadoc)
+          * @see org.hornetq.utils.timedbuffer.TimedBufferObserver#newBuffer(int, int)
+          */
+         public ByteBuffer newBuffer(final int minSize, final int maxSize)
+         {
+            return ByteBuffer.allocate(maxSize);
+         }
+
+         public int getRemainingBytes()
+         {
+            return 1024 * 1024;
+         }
+      }
+
+      final CountDownLatch sleptLatch = new CountDownLatch(TimedBuffer.MAX_CHECKS_ON_SLEEP);
+
+      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
+      {
+
+         @Override
+         protected void stopSpin()
+         {
+            // keeps spinning forever
+         }
+
+         protected void sleep(int sleepMillis, int sleepNanos) throws InterruptedException
+         {
+            sleptLatch.countDown();
+            // no sleep
+         }
+
+         @Override
+         public void setUseSleep(boolean param)
+         {
+            super.setUseSleep(param);
+            sleptLatch.countDown();
+         }
+
+      };
+
+      timedBuffer.start();
+
+      try
+      {
+
+         timedBuffer.setObserver(new TestObserver());
+
+         int x = 0;
+
+         byte[] bytes = new byte[10];
+         for (int j = 0; j < 10; j++)
+         {
+            bytes[j] = UnitTestCase.getSamplebyte(x++);
+         }
+
+         HornetQBuffer buff = HornetQBuffers.wrappedBuffer(bytes);
+
+         timedBuffer.checkSize(10);
+         timedBuffer.addBytes(buff, true, dummyCallback);
+
+         // waits all the sleeps to be done
+         sleptLatch.await(10, TimeUnit.SECONDS);
+
+         // keeps waiting a bit longer
+         Thread.sleep(100);
+
+         assertTrue(timedBuffer.isUseSleep());
       }
       finally
       {
