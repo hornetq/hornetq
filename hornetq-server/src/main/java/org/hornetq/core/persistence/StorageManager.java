@@ -21,6 +21,7 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
@@ -47,7 +48,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.utils.Pair;
 
 /**
  *

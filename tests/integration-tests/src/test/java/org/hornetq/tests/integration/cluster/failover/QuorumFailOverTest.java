@@ -9,7 +9,7 @@ import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 {

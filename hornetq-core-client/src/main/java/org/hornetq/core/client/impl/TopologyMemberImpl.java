@@ -12,9 +12,9 @@
  */
 package org.hornetq.core.client.impl;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
-import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

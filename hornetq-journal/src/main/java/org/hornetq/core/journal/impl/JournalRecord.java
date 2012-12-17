@@ -16,7 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * This holds the relationship a record has with other files in regard to reference counting.

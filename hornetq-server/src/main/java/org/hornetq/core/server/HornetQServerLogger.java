@@ -49,7 +49,7 @@ import java.util.concurrent.ExecutorService;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;

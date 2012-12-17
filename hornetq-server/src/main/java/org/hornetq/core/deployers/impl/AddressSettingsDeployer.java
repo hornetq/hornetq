@@ -16,7 +16,7 @@ package org.hornetq.core.deployers.impl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.w3c.dom.Node;
 
 /**
