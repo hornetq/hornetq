@@ -24,6 +24,8 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
+import org.jgroups.JChannel;
+
 /**
  * Various utility functions
  *
@@ -264,6 +266,34 @@ public final class HornetQRaUtils
                Object o = aClass.newInstance();
                Method m = aClass.getMethod(locatorMethod);
                return (TransactionManager)m.invoke(o);
+            }
+            catch (Throwable e)
+            {
+               HornetQRALogger.LOGGER.debug(e.getMessage(), e);
+               return null;
+            }
+         }
+      });
+   }
+
+   /**
+    * Within AS7 the RA is loaded by JCA. properties can only be passed in String form. However if
+    * RA is configured using jgroups stack, we need to pass a Channel object. As is impossible with
+    * JCA, we use this method to allow a JChannel object to be located.
+    */
+   public static JChannel locateJGroupsChannel(final String locatorClass, final String name)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<JChannel>()
+      {
+         public JChannel run()
+         {
+            try
+            {
+               ClassLoader loader = Thread.currentThread().getContextClassLoader();
+               Class<?> aClass = loader.loadClass(locatorClass);
+               Object o = aClass.newInstance();
+               Method m = aClass.getMethod("locateChannel", new Class[] {String.class});
+               return (JChannel)m.invoke(o, name);
             }
             catch (Throwable e)
             {

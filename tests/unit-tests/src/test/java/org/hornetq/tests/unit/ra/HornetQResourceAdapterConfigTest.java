@@ -388,16 +388,16 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-value></config-property-value>" +
          "      </config-property>" +
          "      <config-property>" +
-         "         <description>jgroups endpoint factory</description>" +
-         "         <config-property-name>JGroupsEndpointFactory</config-property-name>" +
+         "         <description>Jgroups Channel Locator Class</description>" +
+         "         <config-property-name>JgroupsChannelLocatorClass</config-property-name>" +
          "         <config-property-type>java.lang.String</config-property-type>" +
-         "         <config-property-value>SomeFactoryName</config-property-value>" +
-         "      </config-property>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>"+
          "      <config-property>" +
-         "         <description>connection pool name</description>" +
-         "         <config-property-name>ConnectionPoolName</config-property-name>" +
+         "         <description>Name to locate a JChannel by JGroups Channel locator class</description>" +
+         "         <config-property-name>JgroupsChannelRefName</config-property-name>" +
          "         <config-property-type>java.lang.String</config-property-type>" +
-         "         <config-property-value>SomePoolName</config-property-value>" +
+         "         <config-property-value></config-property-value>" +
          "      </config-property>";
 
 
