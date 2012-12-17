@@ -44,14 +44,23 @@ public final class DiscoveryGroupConfiguration implements Serializable
    private long discoveryInitialWaitTimeout;
 
    /*
-   * These 4 fields re needed so we can be backward compatible with 2.2 clients
+   * The localBindAddress is needed so we can be backward compatible with 2.2 clients
    * */
    private String localBindAddress;
 
+   /*
+   * The localBindPort is needed so we can be backward compatible with 2.2 clients
+   * */
    private int localBindPort;
 
+   /*
+   * The groupAddress is needed so we can be backward compatible with 2.2 clients
+   * */
    private String groupAddress;
 
+   /*
+   * The groupPort is needed so we can be backward compatible with 2.2 clients
+   * */
    private int groupPort;
 
    /*

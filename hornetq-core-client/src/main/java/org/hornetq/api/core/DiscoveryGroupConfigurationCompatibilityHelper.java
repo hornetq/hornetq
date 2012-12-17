@@ -22,6 +22,15 @@
 package org.hornetq.api.core;
 
 /**
+ * This interface is needed for making a DiscoveryGroupConfiguration backward
+ * compatible with version 2.2 clients. It is used to extract from new
+ * {@link org.hornetq.api.core.BroadcastEndpointFactoryConfiguration} the four
+ * UDP attributes in order to form a version 2.2 DiscoveryGroupConfiguration 
+ * in time of serialization. 
+ * 
+ * @see org.hornetq.api.core.DiscoveryGroupConfiguration.readObject(ObjectInputStream)
+ * @see org.hornetq.api.core.DiscoveryGroupConfiguration.writeObject(ObjectOutputStream)
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         12/13/12
  */
