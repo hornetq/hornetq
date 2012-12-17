@@ -49,6 +49,7 @@ import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.ra.recovery.RecoveryManager;
 import org.hornetq.utils.SensitiveDataCodec;
+import org.jgroups.JChannel;
 
 /**
  * The resource adapter for HornetQ
@@ -66,15 +67,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
    
-   /**
-    * We need this purely for AS7 integration.
-    * <p>
-    * Within AS7 the RA is loaded by JCA. properties can only be passed in String form. However if
-    * RA is configured using jgroups stack, we need to pass a Channel object. As is impossible with
-    * JCA, we use a static Map to pass the object.
-    */
-   private static Map<String, JGroupsBroadcastGroupConfiguration> endpointFactories = null;
-
    /**
     * The bootstrap context
     */
@@ -1587,24 +1579,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setSetupInterval(interval);
    }
 
-   public void setConnectionPoolName(String name)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQRALogger.LOGGER.trace("setConnectionPoolName(" + name + ")");
-      }
-      raProperties.setConnectionPoolName(name);
-   }
-
-   public String getConnectionPoolName()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQRALogger.LOGGER.trace("getConnectionPoolName()");
-      }
-      return raProperties.getConnectionPoolName();
-   }
-
    /**
     * Indicates whether some other object is "equal to" this one.
     *
@@ -1800,6 +1774,42 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    /**
     * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getJgroupsChannelLocatorClass()
+    */
+   public String getJgroupsChannelLocatorClass()
+   {
+      return raProperties.getJgroupsChannelLocatorClass();
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#setJgroupsChannelLocatorClass()
+    */
+   public void setJgroupsChannelLocatorClass(String jgroupsChannelLocatorClass)
+   {
+      raProperties.setJgroupsChannelLocatorClass(jgroupsChannelLocatorClass);
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getJgroupsChannelRefName()
+    */
+   public String getJgroupsChannelRefName()
+   {
+      return raProperties.getJgroupsChannelRefName();
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#setJgroupsChannelRefName()
+    */
+   public void setJgroupsChannelRefName(String jgroupsChannelRefName)
+   {
+      raProperties.setJgroupsChannelRefName(jgroupsChannelRefName);
+   }
+
+   /**
+    * @return
     * @see org.hornetq.ra.HornetQRAProperties#getTransactionManagerLocatorMethod()
     */
    public String getTransactionManagerLocatorMethod()
@@ -1833,27 +1843,22 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName()
          : getJgroupsChannelName();
 
-      String poolName = raProperties.getConnectionPoolName();
+      String jgroupsLocatorClassName = raProperties.getJgroupsChannelLocatorClass();
 
       if(ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
-      if (discoveryAddress != null || jgroupsFileName != null || poolName != null)
+      if (discoveryAddress != null || jgroupsFileName != null || jgroupsLocatorClassName != null)
       {
          BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
 
-         if (poolName != null)
+         if (jgroupsLocatorClassName != null)
          {
-            endpointFactoryConfiguration = endpointFactories.get(poolName);
-
-            if (endpointFactoryConfiguration == null)
-            {
-               // TODO: internationalization
-               throw new IllegalArgumentException("Couldn't find a valid Grouping Configuration by the name " + poolName);
-            }
-
+            String jchannelRefName = raProperties.getJgroupsChannelRefName();
+            JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClassName, jchannelRefName);
+            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
          }
          else
          if (discoveryAddress != null)
@@ -1996,10 +2001,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
          else
          {
-             String poolName = raProperties.getConnectionPoolName();
-             if (poolName != null)
+             String jgroupsLocatorClass = raProperties.getJgroupsChannelLocatorClass();
+             if (jgroupsLocatorClass != null)
              {
-            	 endpointFactoryConfiguration = endpointFactories.get(poolName);
+                String jgroupsChannelRefName = raProperties.getJgroupsChannelRefName();
+                JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClass, jgroupsChannelRefName);
+            	 endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
              }
              if (endpointFactoryConfiguration == null)
              {
@@ -2335,14 +2342,5 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public SensitiveDataCodec<String> getCodecInstance()
    {
       return raProperties.getCodecInstance();
-   }
-   
-   public synchronized static void setJGroupsEndpointFactory(String name, JGroupsBroadcastGroupConfiguration factory)
-   {
-      if (endpointFactories == null)
-      {
-         endpointFactories = new HashMap<String, JGroupsBroadcastGroupConfiguration>();
-      }
-      endpointFactories.put(name, factory);
    }
 }
