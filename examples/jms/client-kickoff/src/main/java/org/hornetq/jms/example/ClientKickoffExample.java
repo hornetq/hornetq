@@ -32,7 +32,7 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * An example that shows how to kick off a client connected to HornetQby using JMX.
+ * An example that shows how to kick off a client connected to HornetQ by using JMX.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
