@@ -28,7 +28,7 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * This class will encapsulate the persistent counters for the PagingSubscription

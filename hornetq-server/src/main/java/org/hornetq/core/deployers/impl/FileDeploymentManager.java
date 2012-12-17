@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

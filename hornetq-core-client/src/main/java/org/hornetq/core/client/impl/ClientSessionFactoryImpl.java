@@ -35,6 +35,7 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -74,7 +75,6 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 

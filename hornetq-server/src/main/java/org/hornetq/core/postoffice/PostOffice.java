@@ -13,7 +13,7 @@
 
 package org.hornetq.core.postoffice;
 
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.server.HornetQComponent;

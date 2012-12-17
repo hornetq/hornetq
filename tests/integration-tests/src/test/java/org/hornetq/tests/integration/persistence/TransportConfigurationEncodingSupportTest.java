@@ -25,7 +25,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.server.config.impl.TransportConfigurationEncodingSupport;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 import junit.framework.TestCase;
 

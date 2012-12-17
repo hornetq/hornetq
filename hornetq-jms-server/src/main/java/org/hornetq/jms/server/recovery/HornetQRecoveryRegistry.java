@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
-import org.hornetq.utils.Pair;
 import org.jboss.tm.XAResourceRecovery;
 
 /**

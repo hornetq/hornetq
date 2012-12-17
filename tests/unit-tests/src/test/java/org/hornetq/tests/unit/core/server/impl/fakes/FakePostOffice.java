@@ -27,7 +27,7 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 public class FakePostOffice implements PostOffice
 {

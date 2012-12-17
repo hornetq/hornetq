@@ -25,7 +25,7 @@ import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * A JMSConnectionFactoryConfigurationStorageTest

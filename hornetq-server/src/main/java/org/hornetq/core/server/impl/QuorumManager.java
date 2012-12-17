@@ -25,7 +25,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * Manages a quorum of servers used to determine whether a given server is running or not.

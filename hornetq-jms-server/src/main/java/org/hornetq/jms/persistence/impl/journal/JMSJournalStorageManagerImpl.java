@@ -37,7 +37,7 @@ import org.hornetq.jms.persistence.config.PersistedDestination;
 import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.utils.IDGenerator;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 
 /**
  * A JournalJMSStorageManagerImpl

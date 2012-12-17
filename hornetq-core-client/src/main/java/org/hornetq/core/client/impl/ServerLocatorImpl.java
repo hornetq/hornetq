@@ -13,6 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.security.AccessController;
@@ -39,6 +41,7 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -56,7 +59,6 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
-import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -204,9 +206,16 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private TransportConfiguration clusterTransportConfiguration;
 
    /*
+   * *************WARNING***************
+   * remember that when adding any new classes that we have to support serialization with previous clients.
+   * If you need to, make them transient and handle the serialization yourself
+   * */
+
+
+   /*
    * we use the client decoder by default but there are times when we want to use the server packet decoder
    */
-   private PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
+   private transient PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
 
    private final Exception traceException = new Exception();
 
@@ -406,7 +415,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
       this.discoveryGroupConfiguration = discoveryGroupConfiguration;
 
-      this.initialConnectors = transportConfigs != null ? transportConfigs : new TransportConfiguration[] {};
+      this.initialConnectors = transportConfigs != null ? transportConfigs : null;
 
       this.nodeID = UUIDGenerator.getInstance().generateStringUUID();
 
@@ -594,7 +603,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       synchronized (this)
       {
          // static list of initial connectors
-         if (initialConnectors.length > 0 && discoveryGroup == null)
+         if (getNumInitialConnectors() > 0 && discoveryGroup == null)
          {
             ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect(skipWarnings);
             addFactory(sf);
@@ -764,7 +773,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
       initialise();
 
-      if (initialConnectors.length == 0 && discoveryGroup != null)
+      if (this.getNumInitialConnectors() == 0 && discoveryGroup != null)
       {
          // Wait for an initial broadcast to give us at least one node in the cluster
          long timeout = clusterConnection ? 0 : discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout();
@@ -836,7 +845,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                      {
                         throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
                      }
-                     if (topologyArray == null && attempts == initialConnectors.length)
+                     if (topologyArray == null && attempts == this.getNumInitialConnectors())
                      {
                         throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
                      }
@@ -1185,6 +1194,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public TransportConfiguration[] getStaticTransportConfigurations()
    {
+      if (initialConnectors == null) return new TransportConfiguration[]{};
       return Arrays.copyOf(initialConnectors, initialConnectors.length);
    }
 
@@ -1268,6 +1278,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
          }
       }
+   }
+   
+   private int getNumInitialConnectors()
+   {
+      if (initialConnectors == null) return 0;
+      return initialConnectors.length;
    }
 
    public void setIdentity(String identity)
@@ -1533,12 +1549,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          return "ServerLocatorImpl (identity=" + identity +
                 ") [initialConnectors=" +
-                Arrays.toString(initialConnectors) +
+                Arrays.toString(initialConnectors == null ? new TransportConfiguration[0] : initialConnectors) +
                 ", discoveryGroupConfiguration=" +
                 discoveryGroupConfiguration +
                 "]";
       }
-      return "ServerLocatorImpl [initialConnectors=" + Arrays.toString(initialConnectors) +
+      return "ServerLocatorImpl [initialConnectors=" + Arrays.toString(initialConnectors == null ? new TransportConfiguration[0] : initialConnectors) +
              ", discoveryGroupConfiguration=" +
              discoveryGroupConfiguration +
              "]";
@@ -1585,9 +1601,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
       }
 
-      this.initialConnectors = newInitialconnectors;
+      this.initialConnectors = newInitialconnectors.length == 0 ? null : newInitialconnectors;
 
-      if (clusterConnection && !receivedTopology && initialConnectors.length > 0)
+      if (clusterConnection && !receivedTopology && this.getNumInitialConnectors() > 0)
       {
          // The node is alone in the cluster. We create a connection to the new node
          // to trigger the node notification to form the cluster.
@@ -1685,6 +1701,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+   private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
+   {
+      is.defaultReadObject();
+      //is transient so need to create, for compatibility issues
+      packetDecoder = ClientPacketDecoder.INSTANCE;
+   }
    private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
@@ -1806,9 +1828,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
          }
          connectors = new ArrayList<Connector>();
-         for (TransportConfiguration initialConnector : initialConnectors)
+         if (initialConnectors != null)
          {
-            ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(ServerLocatorImpl.this,
+            for (TransportConfiguration initialConnector : initialConnectors)
+            {
+               ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(ServerLocatorImpl.this,
                                                                                 initialConnector,
                                                                                 callTimeout,
                                                                                 callFailoverTimeout,
@@ -1824,9 +1848,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                                 outgoingInterceptors,
                                                                                 packetDecoder);
 
-            factory.disableFinalizeCheck();
+               factory.disableFinalizeCheck();
 
-            connectors.add(new Connector(initialConnector, factory));
+               connectors.add(new Connector(initialConnector, factory));
+            }
          }
       }
 

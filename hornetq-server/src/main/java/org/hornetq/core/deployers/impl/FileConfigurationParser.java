@@ -50,7 +50,7 @@ import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
-import org.hornetq.utils.Pair;
+import org.hornetq.api.core.Pair;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
 import org.hornetq.utils.XMLConfigurationUtil;
