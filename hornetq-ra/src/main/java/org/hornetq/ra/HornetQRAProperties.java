@@ -71,8 +71,12 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private boolean initialized = false;
 
    private transient SensitiveDataCodec<String> codecInstance;
+
+   /** Class used to get a JChannel */
+   private String jgroupsChannelLocatorClass;
    
-   private String connectionPoolName;
+   /** Name used to locate a JChannel */
+   private String jgroupsChannelRefName;
 
    /**
     * Constructor
@@ -307,14 +311,24 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       return codecInstance;
    }
 
-   public void setConnectionPoolName(String name)
+   public String getJgroupsChannelLocatorClass()
    {
-      this.connectionPoolName = name;
+      return jgroupsChannelLocatorClass;
    }
 
-   public String getConnectionPoolName()
+   public void setJgroupsChannelLocatorClass(String jgroupsChannelLocatorClass)
    {
-      return connectionPoolName;
+      this.jgroupsChannelLocatorClass = jgroupsChannelLocatorClass;
+   }
+
+   public String getJgroupsChannelRefName()
+   {
+      return jgroupsChannelRefName;
+   }
+
+   public void setJgroupsChannelRefName(String jgroupsChannelRefName)
+   {
+      this.jgroupsChannelRefName = jgroupsChannelRefName;
    }
 
 }
