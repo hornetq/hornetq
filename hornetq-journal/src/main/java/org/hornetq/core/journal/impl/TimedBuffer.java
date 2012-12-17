@@ -404,8 +404,8 @@ public class TimedBuffer
       int failedChecks = 0;
       long timeBefore = 0;
 
-      final int sleepMillis = timeout / 999999; // truncates
-      final int sleepNanos = timeout % 999999;
+      final int sleepMillis = timeout / 1000000; // truncates
+      final int sleepNanos = timeout % 1000000;
 
 
       public void run()
@@ -419,10 +419,22 @@ public class TimedBuffer
             // Effectively flushing "resets" the timer
             // On the timeout verification, notice that we ignore the timeout check if we are using sleep
 
-            if (pendingSync && ((bufferObserver != null && System.nanoTime() > lastFlushTime + timeout) || !isUseSleep()))
+            if (pendingSync)
             {
-               flush();
+               if (isUseSleep())
+               {
+                  // if using sleep, we will always flush
+                  flush();
                lastFlushTime = System.nanoTime();
+               }
+               else
+               if (bufferObserver != null && System.nanoTime() > lastFlushTime + timeout)
+               {
+                  // if not using flush we will spin and do the time checks manually
+                  flush();
+                  lastFlushTime = System.nanoTime();
+               }
+
             }
 
             sleepIfPossible();
