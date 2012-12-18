@@ -63,6 +63,8 @@ public class ConnectionFactoryPropertiesTest extends UnitTestCase {
        UNSUPPORTED_RA_PROPERTIES.add("useAutoRecovery");
        UNSUPPORTED_RA_PROPERTIES.add("useLocalTx");
        UNSUPPORTED_RA_PROPERTIES.add("userName");
+       UNSUPPORTED_RA_PROPERTIES.add("jgroupsChannelLocatorClass");
+       UNSUPPORTED_RA_PROPERTIES.add("jgroupsChannelRefName");
 
        // TODO: shouldn't this be also set on the HornetQConnectionFactory:
        // https://community.jboss.org/thread/211815?tstart=0
