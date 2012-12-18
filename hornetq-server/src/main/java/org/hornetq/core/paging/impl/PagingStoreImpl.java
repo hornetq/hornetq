@@ -888,7 +888,7 @@ public class PagingStoreImpl implements PagingStore
             {
                // The address should never be transient when paging (even for non-persistent messages when paging)
                // This will force everything to be persisted
-               message.bodyChanged();
+               message.forceAddress(address);
             }
 
             final long transactionID = tx == null ? -1 : tx.getID();

@@ -165,14 +165,14 @@ public class Page implements Comparable<Page>
                   }
                   else
                   {
-                     markFileAsSuspect(position, messages.size());
+                     markFileAsSuspect(file.getFileName(), position, messages.size());
                      break;
                   }
                }
             }
             else
             {
-               markFileAsSuspect(position, messages.size());
+               markFileAsSuspect(file.getFileName(), position, messages.size());
                break;
             }
          }
@@ -373,9 +373,9 @@ public class Page implements Comparable<Page>
     * @param position
     * @param msgNumber
     */
-   private void markFileAsSuspect(final int position, final int msgNumber)
+   private void markFileAsSuspect(final String fileName, final int position, final int msgNumber)
    {
-      HornetQServerLogger.LOGGER.pageSuspectFile(position, msgNumber);
+      HornetQServerLogger.LOGGER.pageSuspectFile(fileName, position, msgNumber);
       suspiciousRecords = true;
    }
 

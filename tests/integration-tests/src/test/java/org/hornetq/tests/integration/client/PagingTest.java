@@ -2405,6 +2405,9 @@ public class PagingTest extends ServiceTestBase
 
       session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
 
+      Queue queue = server.locateQueue(ADDRESS);
+      queue.getPageSubscription().getPagingStore().startPaging();
+
       ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
       ClientMessage message = null;
@@ -2435,17 +2438,14 @@ public class PagingTest extends ServiceTestBase
       sf.close();
       locator.close();
 
-      if (persistentMessages)
-      {
-         server.stop();
+      server.stop();
 
-         server = createServer(true,
-            config,
-            PagingTest.PAGE_SIZE,
-            PagingTest.PAGE_MAX,
-            new HashMap<String, AddressSettings>());
-         server.start();
-      }
+      server = createServer(true,
+         config,
+         PagingTest.PAGE_SIZE,
+         PagingTest.PAGE_MAX,
+         new HashMap<String, AddressSettings>());
+      server.start();
 
       locator = createInVMNonHALocator();
       sf = createSessionFactory(locator);
@@ -2463,6 +2463,8 @@ public class PagingTest extends ServiceTestBase
          Assert.assertNotNull(message2);
 
          Assert.assertEquals(i, message2.getIntProperty("id").intValue());
+
+         assertEquals(body.length, message2.getBodySize());
 
          message2.acknowledge();
 
