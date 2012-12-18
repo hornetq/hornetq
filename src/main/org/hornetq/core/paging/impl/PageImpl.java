@@ -162,14 +162,14 @@ public class PageImpl implements Page, Comparable<Page>
                   }
                   else
                   {
-                     markFileAsSuspect(position, messages.size());
+                     markFileAsSuspect(file.getFileName(), position, messages.size());
                      break;
                   }
                }
             }
             else
             {
-               markFileAsSuspect(position, messages.size());
+               markFileAsSuspect(file.getFileName(), position, messages.size());
                break;
             }
          }
@@ -382,9 +382,9 @@ public class PageImpl implements Page, Comparable<Page>
     * @param position
     * @param msgNumber
     */
-   private void markFileAsSuspect(final int position, final int msgNumber)
+   private void markFileAsSuspect(final String fileName, final int position, final int msgNumber)
    {
-      PageImpl.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
+      PageImpl.log.warn("Page file " + fileName + " had incomplete records at position " + position + " at record number " + msgNumber);
       suspiciousRecords = true;
    }
 
