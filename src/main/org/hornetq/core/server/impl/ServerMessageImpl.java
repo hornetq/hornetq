@@ -267,6 +267,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       // Otherwise each message would have its own copy of the address String which would take up more memory
       address = pagingStore.getAddress();
    }
+      
+   public synchronized void forceAddress(final SimpleString address)
+   {
+      this.address = address;
+      bufferValid = false;
+   }
 
    public PagingStore getPagingStore()
    {
