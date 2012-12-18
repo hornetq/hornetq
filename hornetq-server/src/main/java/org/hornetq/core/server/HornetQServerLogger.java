@@ -405,8 +405,8 @@ public interface HornetQServerLogger extends BasicLogger
    void pageFinaliseError(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222071, value = "Page file had incomplete records at position {0} at record number {1}", format = Message.Format.MESSAGE_FORMAT)
-   void pageSuspectFile(int position, int msgNumber);
+   @Message(id = 222071, value = "Page file {0} had incomplete records at position {1} at record number {2}", format = Message.Format.MESSAGE_FORMAT)
+   void pageSuspectFile(String fileName, int position, int msgNumber);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222072, value = "Can not delete page transaction id={0}", format = Message.Format.MESSAGE_FORMAT)
