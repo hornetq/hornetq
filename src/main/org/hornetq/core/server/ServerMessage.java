@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
@@ -30,6 +31,13 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
    void setMessageID(long id);
 
    MessageReference createReference(Queue queue);
+   
+   /** 
+    * This will force encoding of the address, and will re-check the buffer
+    * This is to avoid setMessageTransient which set the address without changing the buffer
+    * @param address
+    */
+   void forceAddress(SimpleString address);
 
    int incrementRefCount() throws Exception;
 
