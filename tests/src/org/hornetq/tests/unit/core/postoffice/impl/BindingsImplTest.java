@@ -1033,6 +1033,15 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#forceAddress(org.hornetq.api.core.SimpleString)
+       */
+      @Override
+      public void forceAddress(SimpleString address)
+      {
+         
+      }
+
    }
 
    class FakeFilter implements Filter
