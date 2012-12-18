@@ -58,6 +58,12 @@ public class HornetQAdmin implements Admin
    private ClientSessionFactory sf;
 
    ServerLocator serverLocator;
+   static final boolean serverLifeCycleActive;
+   private static final String SERVER_LIVE_CYCLE_PROPERTY = "org.hornetq.jms.HornetQAdmin.serverLifeCycle";
+
+   static {
+      serverLifeCycleActive = Boolean.getBoolean(System.getProperty(SERVER_LIVE_CYCLE_PROPERTY, "true"));
+   }
 
    public HornetQAdmin()
    {
@@ -77,6 +83,11 @@ public class HornetQAdmin implements Admin
 
    public void start() throws Exception
    {
+      if (!serverLifeCycleActive)
+      {
+         return;
+      }
+
       serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       sf = serverLocator.createSessionFactory();
       clientSession = sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
@@ -88,6 +99,7 @@ public class HornetQAdmin implements Admin
                                        1);
       requestor = new ClientRequestor(clientSession, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
       clientSession.start();
+
    }
 
    public void stop() throws Exception
@@ -277,6 +289,10 @@ public class HornetQAdmin implements Admin
 
    public void stopServer() throws Exception
    {
+      if (!serverLifeCycleActive)
+      {
+         return;
+      }
       OutputStreamWriter osw = new OutputStreamWriter(serverProcess.getOutputStream());
       osw.write("STOP\n");
       osw.flush();
@@ -286,22 +302,6 @@ public class HornetQAdmin implements Admin
          serverProcess.destroy();
       }
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private Object invokeSyncOperation(final String resourceName, final String operationName, final Object... parameters) throws Exception
    {
