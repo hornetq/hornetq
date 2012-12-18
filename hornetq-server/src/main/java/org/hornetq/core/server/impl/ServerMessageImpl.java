@@ -266,6 +266,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       address = pagingStore.getAddress();
    }
 
+   public synchronized void forceAddress(final SimpleString address)
+   {
+      this.address = address;
+      bufferValid = false;
+   }
+
    public PagingStore getPagingStore()
    {
       return pagingStore;
