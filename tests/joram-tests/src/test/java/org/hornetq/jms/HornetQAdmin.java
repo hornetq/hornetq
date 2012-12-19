@@ -58,15 +58,18 @@ public class HornetQAdmin implements Admin
    private ClientSessionFactory sf;
 
    ServerLocator serverLocator;
-   static final boolean serverLifeCycleActive;
+   /**
+    * Determines whether to act or 'no-op' on {@link HornetQAdmin#serverStart()} and
+    * {@link HornetQAdmin#serverStop()}. This is used when testing combinations of client and
+    * servers with different versions.
+    * @see https://github.com/hornetq/hornetq-version-tests
+    */
+   private final boolean serverLifeCycleActive;
    private static final String SERVER_LIVE_CYCLE_PROPERTY = "org.hornetq.jms.HornetQAdmin.serverLifeCycle";
-
-   static {
-      serverLifeCycleActive = Boolean.getBoolean(System.getProperty(SERVER_LIVE_CYCLE_PROPERTY, "true"));
-   }
 
    public HornetQAdmin()
    {
+       serverLifeCycleActive = Boolean.getBoolean(System.getProperty(SERVER_LIVE_CYCLE_PROPERTY, "true"));
       try
       {
          Hashtable<String, String> env = new Hashtable<String, String>();
@@ -83,11 +86,6 @@ public class HornetQAdmin implements Admin
 
    public void start() throws Exception
    {
-      if (!serverLifeCycleActive)
-      {
-         return;
-      }
-
       serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       sf = serverLocator.createSessionFactory();
       clientSession = sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
@@ -245,6 +243,11 @@ public class HornetQAdmin implements Admin
 
    public void startServer() throws Exception
    {
+      if (!serverLifeCycleActive)
+      {
+         return;
+      }
+
       String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
@@ -264,10 +267,10 @@ public class HornetQAdmin implements Admin
                {
                   try
                   {
-                     String line = null;
-                     while ((line = br.readLine()) != null)
+                     String line1 = null;
+                     while ((line1 = br.readLine()) != null)
                      {
-                        System.out.println("SERVER: " + line);
+                        System.out.println("SERVER: " + line1);
                      }
                   }
                   catch (Exception e)
