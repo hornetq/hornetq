@@ -69,7 +69,7 @@ public class HornetQAdmin implements Admin
 
    public HornetQAdmin()
    {
-       serverLifeCycleActive = Boolean.getBoolean(System.getProperty(SERVER_LIVE_CYCLE_PROPERTY, "true"));
+      serverLifeCycleActive = Boolean.valueOf(System.getProperty(SERVER_LIVE_CYCLE_PROPERTY, "true"));
       try
       {
          Hashtable<String, String> env = new Hashtable<String, String>();
