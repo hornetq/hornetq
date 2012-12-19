@@ -24,7 +24,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.journal.impl.TimedBufferObserver;
@@ -264,13 +263,14 @@ public class TimedBufferTest extends UnitTestCase
             // keeps spinning forever
          }
 
+         @Override
          protected void sleep(int sleepMillis, int sleepNanos) throws InterruptedException
          {
             Thread.sleep(10);
          }
 
          @Override
-         public void setUseSleep(boolean param)
+         public synchronized void setUseSleep(boolean param)
          {
             super.setUseSleep(param);
             sleptLatch.countDown();
@@ -348,6 +348,7 @@ public class TimedBufferTest extends UnitTestCase
             // keeps spinning forever
          }
 
+         @Override
          protected void sleep(int sleepMillis, int sleepNanos) throws InterruptedException
          {
             sleptLatch.countDown();
@@ -355,7 +356,7 @@ public class TimedBufferTest extends UnitTestCase
          }
 
          @Override
-         public void setUseSleep(boolean param)
+         public synchronized void setUseSleep(boolean param)
          {
             super.setUseSleep(param);
             sleptLatch.countDown();
@@ -395,15 +396,5 @@ public class TimedBufferTest extends UnitTestCase
       {
          timedBuffer.stop();
       }
-
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
