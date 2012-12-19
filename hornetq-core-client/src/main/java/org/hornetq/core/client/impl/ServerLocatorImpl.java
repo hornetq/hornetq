@@ -539,7 +539,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       // if the ServerLocator is !had, we will always use the initialConnectors
       // on that case if the ServerLocator was configured to be in-vm, it will always be in-vm no matter
       // what updates were sent from the server
-      if (receivedTopology && ha)
+      if (receivedTopology)
       {
          synchronized (topologyArrayGuard)
          {
