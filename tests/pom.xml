@@ -38,7 +38,6 @@
 
    <modules>
       <module>unit-tests</module>
-      <module>integration-tests</module>
       <module>jms-tests</module>
       <module>joram-tests</module>
       <module>soak-tests</module>
@@ -46,5 +45,6 @@
       <module>timing-tests</module>
       <module>concurrent-tests</module>
       <module>performance-tests</module>
+      <module>integration-tests</module>
    </modules>
 </project>
