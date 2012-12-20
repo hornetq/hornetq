@@ -64,7 +64,7 @@ public class PrintData // NO_UCD (unused code)
 
       try
       {
-         JournalStorageManager.describeBindingJournal(arg[0]);
+         DescribeJournal.describeBindingJournal(arg[0]);
       }
       catch (Exception e)
       {
@@ -77,7 +77,7 @@ public class PrintData // NO_UCD (unused code)
 
       try
       {
-         JournalStorageManager.describeMessagesJournal(arg[1]);
+         DescribeJournal.describeMessagesJournal(arg[1]);
       }
       catch (Exception e)
       {
