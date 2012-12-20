@@ -211,7 +211,7 @@ public abstract class HornetQExample
          System.err.println("#####################");
          System.err.println("###    FAILURE!   ###");
          System.err.println("#####################");
-         System.exit(1);
+         throw new RuntimeException("failure in running example");
       }
       else
       {
