@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -483,16 +484,25 @@ public class NettyConnector extends AbstractConnector
          if (sslHandler != null)
          {
             ChannelFuture handshakeFuture = sslHandler.handshake();
-            handshakeFuture.awaitUninterruptibly();
-            if (handshakeFuture.isSuccess())
+            if (handshakeFuture.awaitUninterruptibly(30000))
             {
-               ch.getPipeline().get(HornetQChannelHandler.class).active = true;
+                if (handshakeFuture.isSuccess())
+                {
+                    ch.getPipeline().get(HornetQChannelHandler.class).active = true;
+                }
+                else
+                {
+                    ch.close().awaitUninterruptibly();
+                    return null;
+                }
             }
             else
             {
-               ch.close().awaitUninterruptibly();
-               return null;
+                handshakeFuture.setFailure(new SSLException("Handshake was not completed in 30 seconds"));
+                ch.close().awaitUninterruptibly();
+                return null;
             }
+
          }
          else
          {
