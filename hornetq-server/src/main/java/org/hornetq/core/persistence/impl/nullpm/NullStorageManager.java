@@ -601,6 +601,18 @@ public class NullStorageManager implements StorageManager
    @Override
    public void storeID(final long journalID, final long id) throws Exception
    {
+      // no-op
+   }
 
+   @Override
+   public void readLock()
+   {
+      // no-op
+   }
+
+   @Override
+   public void readUnLock()
+   {
+      // no-op
    }
 }

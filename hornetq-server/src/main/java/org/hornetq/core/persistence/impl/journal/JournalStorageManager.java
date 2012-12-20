@@ -82,6 +82,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicatedJournal;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -367,12 +368,16 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * Starts replication. In practice that means 2 things:<br/>
-    * (1) every persistent piece of data is also replicated (sent) to the backup.<br/>
-    * (2) all currently existing data must be sent to the backup.
+    * Starts replication at the live-server side.
+    * <p>
+    * In practice that means 2 things:<br/>
+    * (1) all currently existing data must be sent to the backup.<br/>
+    * (2) every new persistent information is replicated (sent) to the backup.
     * <p>
     * To achieve this we lock the entire journal while collecting the list of files to send to the
     * backup. The journal does not remain locked during actual synchronization.
+    * <p>
+    * At the backup-side replication is handled by {@link ReplicationEndpoint}.
     * @param replicationManager
     * @param pagingManager
     * @throws HornetQException
@@ -698,9 +703,9 @@ public class JournalStorageManager implements StorageManager
       return newContext(singleThreadExecutor);
    }
 
-   public OperationContext newContext(final Executor executor)
+   public OperationContext newContext(final Executor executor1)
    {
-      return new OperationContextImpl(executor);
+      return new OperationContextImpl(executor1);
    }
 
    public void afterCompleteOperations(final IOAsyncTask run)
@@ -874,12 +879,14 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private void readLock()
+   @Override
+   public void readLock()
    {
       storageManagerLock.readLock().lock();
    }
 
-   private void readUnLock()
+   @Override
+   public void readUnLock()
    {
       storageManagerLock.readLock().unlock();
    }

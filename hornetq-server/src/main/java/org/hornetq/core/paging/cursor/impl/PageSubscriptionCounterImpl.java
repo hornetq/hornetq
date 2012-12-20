@@ -166,8 +166,14 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       tx.commit();
    }
 
-   public synchronized void delete(Transaction tx) throws Exception
+   public void delete(Transaction tx) throws Exception
    {
+      // always lock the StorageManager first.
+      storage.readLock();
+      try
+      {
+      synchronized (this)
+      {
       for (Long record : incrementRecords)
       {
          storage.deleteIncrementRecord(tx.getID(), record.longValue());
@@ -183,7 +189,12 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       recordID = -1;
       value.set(0);
       incrementRecords.clear();
-
+         }
+      }
+      finally
+      {
+         storage.readUnLock();
+      }
    }
 
    public void loadInc(long id, int add)

@@ -327,4 +327,20 @@ public interface StorageManager extends HornetQComponent
     * @throws Exception
     */
    void storeID(long journalID, long id) throws Exception;
+
+   /**
+    * Read lock the StorageManager. USE WITH CARE!
+    * <p>
+    * The main lock is used to write lock the whole manager when starting replication. Sub-systems,
+    * say Paging classes, that use locks of their own AND also write through the StorageManager MUST
+    * first read lock the storageManager before taking their own locks. Otherwise, we may dead-lock
+    * when starting replication sync.
+    */
+   void readLock();
+
+   /**
+    * Unlock the manager.
+    * @see StorageManager#readLock()
+    */
+   void readUnLock();
 }
