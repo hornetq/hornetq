@@ -61,10 +61,6 @@ import org.hornetq.utils.LinkedListIterator;
  */
 class PageSubscriptionImpl implements PageSubscription
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private boolean empty = true;
@@ -102,10 +98,6 @@ class PageSubscriptionImpl implements PageSubscription
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final java.util.Queue<PagePosition> redeliveries = new LinkedList<PagePosition>();
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    PageSubscriptionImpl(final PageCursorProvider cursorProvider,
                         final PagingStore pageStore,
@@ -202,8 +194,10 @@ class PageSubscriptionImpl implements PageSubscription
 
    /**
     * A page marked as complete will be ignored until it's cleared.
-    * Usually paging is a stream of messages but in certain scenarios (such as a pending prepared TX) we may have big holes on the page
-    * streaming, and we will need to ignore such pages on the cursor/subscription.
+    * <p>
+    * Usually paging is a stream of messages but in certain scenarios (such as a pending prepared
+    * TX) we may have big holes on the page streaming, and we will need to ignore such pages on the
+    * cursor/subscription.
     */
    public void reloadPageCompletion(PagePosition position)
    {
@@ -348,7 +342,7 @@ class PageSubscriptionImpl implements PageSubscription
       {
 
          @Override
-         public void afterCommit(final Transaction tx)
+         public void afterCommit(final Transaction tx1)
          {
             executor.execute(new Runnable()
             {
@@ -976,10 +970,11 @@ class PageSubscriptionImpl implements PageSubscription
 
    /**
     * This will hold information about the pending ACKs towards a page.
-    * This instance will be released as soon as the entire page is consumed, releasing the memory at that point
-    * The ref counts are increased also when a message is ignored for any reason.
+    * <p>
+    * This instance will be released as soon as the entire page is consumed, releasing the memory at
+    * that point The ref counts are increased also when a message is ignored for any reason.
     */
-   private class PageCursorInfo
+   private final class PageCursorInfo
    {
       // Number of messages existent on this page
       private final int numberOfMessages;
@@ -1025,14 +1020,6 @@ class PageSubscriptionImpl implements PageSubscription
             this.isDone();
       }
 
-      /**
-       * @return
-       */
-      public int getPendingTX()
-      {
-         return this.pendingTX.intValue();
-      }
-
       public PageCursorInfo(final long pageId, final int numberOfMessages, final PageCache cache)
       {
          this.pageId = pageId;
@@ -1074,11 +1061,6 @@ class PageSubscriptionImpl implements PageSubscription
       public void setPendingDelete()
       {
          pendingDelete = true;
-      }
-
-      public int getConfirmed()
-      {
-         return confirmed.intValue();
       }
 
       /**
@@ -1182,7 +1164,7 @@ class PageSubscriptionImpl implements PageSubscription
 
    }
 
-   private static class PageCursorTX extends TransactionOperationAbstract
+   private static final class PageCursorTX extends TransactionOperationAbstract
    {
       private final Map<PageSubscriptionImpl, List<PagePosition>> pendingPositions =
          new HashMap<PageSubscriptionImpl, List<PagePosition>>();
@@ -1456,12 +1438,9 @@ class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.utils.LinkedListIterator#close()
-       */
+      @Override
       public void close()
       {
       }
    }
-
 }
