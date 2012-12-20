@@ -101,6 +101,33 @@
                      </systemProperties>
                   </configuration>
                </execution>
+               <execution>
+                  <id>stop0</id>
+                  <goals>
+                     <goal>stop</goal>
+                  </goals>
+                  <configuration>
+                     <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server0</hornetqConfigurationDir>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>stop1</id>
+                  <goals>
+                     <goal>stop</goal>
+                  </goals>
+                  <configuration>
+                     <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server1</hornetqConfigurationDir>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>stop2</id>
+                  <goals>
+                     <goal>stop</goal>
+                  </goals>
+                  <configuration>
+                     <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server2</hornetqConfigurationDir>
+                  </configuration>
+               </execution>
             </executions>
             <dependencies>
                <dependency>
