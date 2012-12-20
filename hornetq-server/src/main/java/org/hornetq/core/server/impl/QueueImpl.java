@@ -747,15 +747,15 @@ public class QueueImpl implements Queue
             continue;
          }
 
-         Filter filter = consumer.getFilter();
+         Filter filter1 = consumer.getFilter();
 
-         if (filter == null)
+         if (filter1 == null)
          {
             return true;
          }
          else
          {
-            if (filter.match(message))
+            if (filter1.match(message))
             {
                return true;
             }
@@ -769,7 +769,7 @@ public class QueueImpl implements Queue
       return new SynchronizedIterator(messageReferences.iterator());
    }
 
-   public synchronized MessageReference removeReferenceWithID(final long id) throws Exception
+   public synchronized MessageReference removeReferenceWithID(final long id1) throws Exception
    {
       LinkedListIterator<MessageReference> iterator = iterator();
 
@@ -782,7 +782,7 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = iterator.next();
 
-            if (ref.getMessage().getMessageID() == id)
+            if (ref.getMessage().getMessageID() == id1)
             {
                iterator.remove();
                refRemoved(ref);
@@ -796,7 +796,7 @@ public class QueueImpl implements Queue
          if (removed == null)
          {
             // Look in scheduled deliveries
-            removed = scheduledDeliveryHandler.removeReferenceWithID(id);
+            removed = scheduledDeliveryHandler.removeReferenceWithID(id1);
          }
 
          return removed;
@@ -807,7 +807,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized MessageReference getReference(final long id)
+   public synchronized MessageReference getReference(final long id1)
    {
       LinkedListIterator<MessageReference> iterator = iterator();
 
@@ -818,7 +818,7 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = iterator.next();
 
-            if (ref.getMessage().getMessageID() == id)
+            if (ref.getMessage().getMessageID() == id1)
             {
                return ref;
             }
@@ -1094,9 +1094,9 @@ public class QueueImpl implements Queue
       return deleteMatchingReferences(null);
    }
 
-   public synchronized int deleteMatchingReferences(final Filter filter) throws Exception
+   public synchronized int deleteMatchingReferences(final Filter filter1) throws Exception
    {
-      return iterQueue(filter, new QueueIterateAction()
+      return iterQueue(filter1, new QueueIterateAction()
       {
          @Override
          public void actMessage(Transaction tx, MessageReference ref) throws Exception
@@ -1111,14 +1111,15 @@ public class QueueImpl implements Queue
 
    /**
     * This is a generic method for any method interacting on the Queue to move or delete messages
-    * Instead of duplicate the feature we created an abstract class where you pass the logic for each message.
-    * Too bad there's not such thing as a function pointer in Java (as there is in scala).
-    * @param filter
+    * Instead of duplicate the feature we created an abstract class where you pass the logic for
+    * each message. Too bad there's not such thing as a function pointer in Java (as there is in
+    * scala).
+    * @param filter1
     * @param messageAction
     * @return
     * @throws Exception
     */
-   private synchronized int iterQueue(final Filter filter, QueueIterateAction messageAction) throws Exception
+   private synchronized int iterQueue(final Filter filter1, QueueIterateAction messageAction) throws Exception
    {
       int count = 0;
       int txCount = 0;
@@ -1141,7 +1142,7 @@ public class QueueImpl implements Queue
                continue;
             }
 
-            if (filter == null || filter.match(ref.getMessage()))
+            if (filter1 == null || filter1.match(ref.getMessage()))
             {
                messageAction.actMessage(tx, ref);
                iter.remove();
@@ -1159,7 +1160,7 @@ public class QueueImpl implements Queue
             txCount = 0;
          }
 
-         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
+         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter1);
          for (MessageReference messageReference : cancelled)
          {
             messageAction.actMessage(tx, messageReference);
@@ -1183,7 +1184,7 @@ public class QueueImpl implements Queue
                PagedReference reference = pageIterator.next();
                pageIterator.remove();
 
-               if (filter == null || filter.match(reference.getMessage()))
+               if (filter1 == null || filter1.match(reference.getMessage()))
                {
                   count++;
                   txCount++;
@@ -1211,7 +1212,7 @@ public class QueueImpl implements Queue
 
 
 
-         if (filter != null && pageIterator != null)
+         if (filter1 != null && pageIterator != null)
          {
             scheduleDepage(false);
          }
