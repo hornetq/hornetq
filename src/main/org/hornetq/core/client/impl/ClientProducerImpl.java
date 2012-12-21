@@ -221,8 +221,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       boolean isLarge;
 
+      // a note about the second check on the writerIndexSize,
+      // If it's a server's message, it means this is being done through the bridge or some special consumer on the
+      // server's on which case we can't' convert the message into large at the servers
       if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
-          msgI.getBodyBuffer().writerIndex() > minLargeMessageSize)
+         msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && ! msgI.isServerMessage())
       {
          isLarge = true;
       }
