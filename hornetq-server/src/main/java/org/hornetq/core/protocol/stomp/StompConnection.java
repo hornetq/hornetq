@@ -196,6 +196,14 @@ public class StompConnection implements RemotingConnection
       return res;
    }
 
+   public void checkDestination(String destination) throws HornetQStompException
+   {
+      if (!manager.destinationExists(destination))
+      {
+         throw new HornetQStompException("Destination doesn't exist: " + destination);
+      }
+   }
+
    public HornetQBuffer createBuffer(int size)
    {
       return HornetQBuffers.dynamicBuffer(size);

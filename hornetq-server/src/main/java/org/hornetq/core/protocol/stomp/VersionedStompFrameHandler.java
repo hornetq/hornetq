@@ -166,6 +166,7 @@ public abstract class VersionedStompFrameHandler
       {
          connection.validate();
          String destination = frame.getHeader(Stomp.Headers.Send.DESTINATION);
+         checkDestination(destination);
          String txID = frame.getHeader(Stomp.Headers.TRANSACTION);
 
          long timestamp = System.currentTimeMillis();
@@ -198,6 +199,11 @@ public abstract class VersionedStompFrameHandler
       }
 
       return response;
+   }
+
+   private void checkDestination(String destination) throws HornetQStompException
+   {
+      connection.checkDestination(destination);
    }
 
    public StompFrame onBegin(StompFrame frame)
