@@ -20,6 +20,7 @@ package org.hornetq.tests.integration.stomp.v11;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -2215,6 +2216,25 @@ public class StompV11Test extends StompTestBase2
       frame = connV11.receiveFrame();
       Assert.assertTrue(frame.getCommand().equals("MESSAGE"));
       Assert.assertEquals("shouldBeNextMessage", frame.getBody());
+   }
+
+   public void testSendMessageToNonExistentJmsQueue() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      String guid = UUID.randomUUID().toString();
+      frame.addHeader("destination", "jms.queue.NonExistentQueue" + guid);
+      frame.addHeader("receipt", "1234");
+      frame.setBody("Hello World");
+
+      frame = connV11.sendFrame(frame);
+
+      assertTrue(frame.getCommand().equals("ERROR"));
+      assertEquals("1234", frame.getHeader("receipt-id"));
+      System.out.println("message: " + frame.getHeader("message"));
+
+      connV11.disconnect();
    }
 
 }
