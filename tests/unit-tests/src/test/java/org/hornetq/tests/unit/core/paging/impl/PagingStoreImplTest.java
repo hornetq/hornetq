@@ -15,10 +15,7 @@ package org.hornetq.tests.unit.core.paging.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -30,52 +27,31 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
-import javax.transaction.xa.Xid;
-
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.Journal;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
-import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
-import org.hornetq.core.persistence.GroupingInfo;
-import org.hornetq.core.persistence.OperationContext;
-import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.config.PersistedAddressSetting;
-import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.core.transaction.Transaction;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
@@ -491,10 +467,10 @@ public class PagingStoreImplTest extends UnitTestCase
                   }
                }
             }
-            catch (Exception e)
+            catch (Exception e1)
             {
-               e.printStackTrace();
-               this.e = e;
+               e1.printStackTrace();
+               this.e = e1;
             }
             finally
             {
@@ -503,7 +479,7 @@ public class PagingStoreImplTest extends UnitTestCase
          }
       }
 
-      class ReaderThread extends Thread
+      final class ReaderThread extends Thread
       {
          Exception e;
 
@@ -524,10 +500,10 @@ public class PagingStoreImplTest extends UnitTestCase
                   }
                }
             }
-            catch (Exception e)
+            catch (Exception e1)
             {
-               e.printStackTrace();
-               this.e = e;
+               e1.printStackTrace();
+               this.e = e1;
             }
          }
       }
@@ -909,493 +885,7 @@ public class PagingStoreImplTest extends UnitTestCase
       super.tearDown();
    }
 
-   static class FakeStorageManager implements StorageManager
-   {
-
-      @Override
-      public void commit(final long txID) throws Exception
-      {
-      }
-
-      @Override
-      public LargeServerMessage createLargeMessage()
-      {
-         return null;
-      }
-
-      @Override
-      public void deleteDuplicateID(final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void deleteMessage(final long messageID) throws Exception
-      {
-      }
-
-
-      @Override
-      public void deleteQueueBinding(final long queueBindingID) throws Exception
-      {
-      }
-
-      @Override
-      public long generateUniqueID()
-      {
-         return 0;
-      }
-
-      @Override
-      public long getCurrentUniqueID()
-      {
-         return 0;
-      }
-
-      @Override
-      public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
-                                                       final List<GroupingInfo> groupingInfos) throws Exception
-      {
-         return new JournalLoadInformation();
-      }
-
-      @Override
-      public void addGrouping(final GroupBinding groupBinding) throws Exception
-      {
-      }
-
-      @Override
-      public void deleteGrouping(final GroupBinding groupBinding) throws Exception
-      {
-      }
-
-      @Override
-      public void prepare(final long txID, final Xid xid) throws Exception
-      {
-      }
-
-      @Override
-      public void rollback(final long txID) throws Exception
-      {
-      }
-
-      @Override
-      public void rollbackBindings(final long txID) throws Exception
-      {
-      }
-
-      @Override
-      public void commitBindings(final long txID) throws Exception
-      {
-      }
-
-      @Override
-      public void storeAcknowledge(final long queueID, final long messageID) throws Exception
-      {
-      }
-
-      @Override
-      public void
-               storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID)
-                                                                                                       throws Exception
-      {
-      }
-
-      @Override
-      public void
-               storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void storeDuplicateIDTransactional(final long txID, final SimpleString address, final byte[] duplID,
-                                                final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void storeMessage(final ServerMessage message) throws Exception
-      {
-      }
-
-      @Override
-      public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
-      {
-      }
-
-      @Override
-      public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
-      {
-      }
-
-      @Override
-      public void
-               storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
-      {
-      }
-
-      @Override
-      public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
-      {
-         return -1;
-      }
-
-      @Override
-      public void deleteHeuristicCompletion(final long txID) throws Exception
-      {
-      }
-
-      @Override
-      public void addQueueBinding(final long tx, final Binding binding) throws Exception
-      {
-      }
-
-      @Override
-      public void updateDeliveryCount(final MessageReference ref) throws Exception
-      {
-      }
-
-      @Override
-      public void updateDuplicateIDTransactional(final long txID, final SimpleString address, final byte[] duplID,
-                                                 final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
-      {
-      }
-
-      @Override
-      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref)
-                                                                                                       throws Exception
-      {
-      }
-
-      @Override
-      public boolean isStarted()
-      {
-         return false;
-      }
-
-      @Override
-      public void start() throws Exception
-      {
-
-      }
-
-      @Override
-      public void stop() throws Exception
-      {
-      }
-
-      @Override
-      public LargeServerMessage createLargeMessage(final long messageId, final MessageInternal msg)
-      {
-
-         return null;
-      }
-
-      @Override
-      public SequentialFile createFileForLargeMessage(final long messageID, final String extension)
-      {
-         return null;
-      }
-
-      @Override
-      public void pageClosed(final SimpleString storeName, final int pageNumber)
-      {
-
-      }
-
-      @Override
-      public void pageDeleted(final SimpleString storeName, final int pageNumber)
-      {
-
-      }
-
-      @Override
-      public void pageWrite(final PagedMessage message, final int pageNumber)
-      {
-
-      }
-
-      @Override
-      public boolean waitOnOperations(final long timeout) throws Exception
-      {
-         return true;
-      }
-
-      @Override
-      public void afterCompleteOperations(final IOAsyncTask run)
-      {
-      }
-
-      @Override
-      public void waitOnOperations() throws Exception
-      {
-      }
-
-      @Override
-      public OperationContext getContext()
-      {
-         return null;
-      }
-
-      @Override
-      public OperationContext newContext(final Executor executor)
-      {
-         return null;
-      }
-
-      @Override
-      public void clearContext()
-      {
-      }
-
-      @Override
-      public void setContext(final OperationContext context)
-      {
-      }
-
-      @Override
-      public void storeReference(final long queueID, final long messageID, final boolean last) throws Exception
-      {
-      }
-
-      @Override
-      public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
-      {
-         return Collections.emptyList();
-      }
-
-      @Override
-      public List<PersistedRoles> recoverPersistedRoles() throws Exception
-      {
-         return Collections.emptyList();
-      }
-
-      @Override
-      public void storeAddressSetting(final PersistedAddressSetting addressSetting) throws Exception
-      {
-      }
-
-      @Override
-      public void storeSecurityRoles(final PersistedRoles persistedRoles) throws Exception
-      {
-      }
-
-      @Override
-      public void deleteAddressSetting(final SimpleString addressMatch) throws Exception
-      {
-      }
-
-      @Override
-      public void deleteSecurityRoles(final SimpleString addressMatch) throws Exception
-      {
-      }
-
-      @Override
-      public void deletePageTransactional(final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public JournalLoadInformation
-               loadMessageJournal(final PostOffice postOffice, final PagingManager pagingManager,
-                                  final ResourceManager resourceManager,
-                                  final Map<Long, org.hornetq.core.server.Queue> queues,
-                                  final Map<Long, QueueBindingInfo> queueInfos,
-                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                  final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
-      {
-         return new JournalLoadInformation();
-      }
-
-      @Override
-      public
-               void
-               updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depage)
-                                                                                                                  throws Exception
-      {
-      }
-
-      @Override
-      public void storeCursorAcknowledge(final long queueID, final PagePosition position)
-      {
-         //
-      }
-
-      @Override
-      public void storeCursorAcknowledgeTransactional(final long txID, final long queueID, final PagePosition position)
-      {
-         //
-      }
-
-      @Override
-      public void deleteCursorAcknowledgeTransactional(final long txID, final long ackID) throws Exception
-      {
-         //
-      }
-
-      @Override
-      public void deleteCursorAcknowledge(long ackID) throws Exception
-      {
-      }
-
-      public void storePageCompleteTransactional(long txID, long queueID, PagePosition position) throws Exception
-      {
-      }
-
-      public void deletePageComplete(long ackID) throws Exception
-      {
-      }
-
-      @Override
-      public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depage) throws Exception
-      {
-         //
-      }
-
-      @Override
-      public long storePageCounter(final long txID, final long queueID, final long value) throws Exception
-      {
-         return 0;
-      }
-
-      @Override
-      public void deleteIncrementRecord(final long txID, final long recordID) throws Exception
-      {
-         //
-      }
-
-      @Override
-      public void deletePageCounter(final long txID, final long recordID) throws Exception
-      {
-
-      }
-
-      @Override
-      public long storePageCounterInc(final long txID, final long queueID, final int add) throws Exception
-      {
-         return 0;
-      }
-
-      @Override
-      public long storePageCounterInc(final long queueID, final int add) throws Exception
-      {
-         return 0;
-      }
-
-      @Override
-      public Journal getBindingsJournal()
-      {
-         return null;
-      }
-
-      @Override
-      public Journal getMessageJournal()
-      {
-         return null;
-      }
-
-      @Override
-      public OperationContext newSingleThreadContext()
-      {
-         return getContext();
-      }
-
-      @Override
-      public void commit(final long txID, final boolean lineUpContext) throws Exception
-      {
-
-      }
-
-      @Override
-      public void lineUpContext()
-      {
-      }
-
-      @Override
-      public
-               void
-               confirmPendingLargeMessageTX(final Transaction transaction, final long messageID, final long recordID)
-                                                                                                                     throws Exception
-      {
-      }
-
-      @Override
-      public void confirmPendingLargeMessage(final long recordID) throws Exception
-      {
-      }
-
-      @Override
-      public void stop(final boolean ioCriticalError) throws Exception
-      {
-
-      }
-
-      @Override
-      public void beforePageRead() throws Exception
-      {
-
-      }
-
-      @Override
-      public void afterPageRead() throws Exception
-      {
-
-      }
-
-      @Override
-      public ByteBuffer allocateDirectBuffer(final int size)
-      {
-         return ByteBuffer.allocateDirect(size);
-      }
-
-      @Override
-      public void freeDirectBuffer(final ByteBuffer buffer)
-      {
-
-      }
-
-      @Override
-      public void startReplication(final ReplicationManager replicationManager, final PagingManager pagingManager,
-                                   final String nodeID, final boolean autoFailBack) throws Exception
-      {
-      }
-
-      @Override
-      public void stopReplication()
-      {
-      }
-
-      @Override
-      public
-               void
-               addBytesToLargeMessage(final SequentialFile appendFile, final long messageID, final byte[] bytes)
-                                                                                                                throws Exception
-      {
-      }
-
-      @Override
-      public void storeID(final long journalID, final long id) throws Exception
-      {
-      }
-
-      @Override
-      public boolean
-               addToPage(PagingStore store, ServerMessage m, Transaction tx, RouteContextList listCtx) throws Exception
-      {
-         return false;
-      }
-   }
-
-   class FakeStoreFactory implements PagingStoreFactory
+   static final class FakeStoreFactory implements PagingStoreFactory
    {
 
       final SequentialFileFactory factory;
