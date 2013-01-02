@@ -62,6 +62,7 @@ import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.AckDescribe;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
@@ -243,7 +244,7 @@ public class PagingTest extends ServiceTestBase
 
       HashMap<Integer, AtomicInteger> counts = countJournalLivingRecords(server.getConfiguration());
 
-      AtomicInteger pgComplete = counts.get(JournalStorageManager.PAGE_CURSOR_COMPLETE);
+      AtomicInteger pgComplete = counts.get(JournalRecordIds.PAGE_CURSOR_COMPLETE);
 
       assertTrue(pgComplete == null || pgComplete.get() == 0);
 
@@ -662,8 +663,6 @@ public class PagingTest extends ServiceTestBase
 
       ClientMessage message = null;
 
-      final int MESSAGE_SIZE = 1024;
-
       byte[] body = new byte[MESSAGE_SIZE];
 
       ByteBuffer bb = ByteBuffer.wrap(body);
@@ -726,7 +725,7 @@ public class PagingTest extends ServiceTestBase
       }
 
       assertNull("The system is acking page records instead of just delete data",
-         recordsType.get(new Integer(JournalStorageManager.ACKNOWLEDGE_CURSOR)));
+                 recordsType.get(new Integer(JournalRecordIds.ACKNOWLEDGE_CURSOR)));
 
       Pair<List<RecordInfo>, List<PreparedTransactionInfo>> journalData = loadMessageJournal(config);
 
@@ -734,7 +733,7 @@ public class PagingTest extends ServiceTestBase
 
       for (RecordInfo info : journalData.getA())
       {
-         if (info.getUserRecordType() == JournalStorageManager.ADD_REF)
+         if (info.getUserRecordType() == JournalRecordIds.ADD_REF)
          {
             ReferenceDescribe ref = (ReferenceDescribe)JournalStorageManager.newObjectEncoding(info);
 
@@ -743,7 +742,7 @@ public class PagingTest extends ServiceTestBase
                deletedQueueReferences.add(new Long(info.id));
             }
          }
-         else if (info.getUserRecordType() == JournalStorageManager.ACKNOWLEDGE_REF)
+         else if (info.getUserRecordType() == JournalRecordIds.ACKNOWLEDGE_REF)
          {
             AckDescribe ref = (AckDescribe)JournalStorageManager.newObjectEncoding(info);
 
@@ -1541,9 +1540,9 @@ public class PagingTest extends ServiceTestBase
       // Delete everything from the journal
       for (RecordInfo info : records)
       {
-         if (!info.isUpdate && info.getUserRecordType() != JournalStorageManager.PAGE_CURSOR_COUNTER_VALUE &&
-            info.getUserRecordType() != JournalStorageManager.PAGE_CURSOR_COUNTER_INC &&
-            info.getUserRecordType() != JournalStorageManager.PAGE_CURSOR_COMPLETE)
+         if (!info.isUpdate && info.getUserRecordType() != JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE &&
+                  info.getUserRecordType() != JournalRecordIds.PAGE_CURSOR_COUNTER_INC &&
+                  info.getUserRecordType() != JournalRecordIds.PAGE_CURSOR_COMPLETE)
          {
             jrn.appendDeleteRecord(info.id, false);
          }

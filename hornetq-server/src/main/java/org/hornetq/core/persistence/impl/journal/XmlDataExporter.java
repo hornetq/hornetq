@@ -13,13 +13,13 @@
 
 package org.hornetq.core.persistence.impl.journal;
 
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.ACKNOWLEDGE_CURSOR;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.ACKNOWLEDGE_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.ADD_LARGE_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.ADD_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.ADD_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.PAGE_TRANSACTION;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.QUEUE_BINDING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
 import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.newObjectEncoding;
 
 import java.io.OutputStream;
