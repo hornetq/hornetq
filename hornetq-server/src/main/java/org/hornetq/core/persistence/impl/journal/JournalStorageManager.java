@@ -2255,10 +2255,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#startPageRead()
-    */
    public void beforePageRead() throws Exception
    {
       if (pageMaxConcurrentIO != null)
@@ -2267,9 +2263,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
-    */
    public void afterPageRead() throws Exception
    {
       if (pageMaxConcurrentIO != null)

@@ -36,10 +36,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
  */
 public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
-
-   // Constants -----------------------------------------------------
-
-   static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+   private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private static final int FLUSH_COUNTER = 1000;
 

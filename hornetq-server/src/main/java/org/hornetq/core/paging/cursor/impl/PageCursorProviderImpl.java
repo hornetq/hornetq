@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
@@ -31,12 +32,11 @@ import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A PageProviderIMpl
  *
@@ -58,7 +58,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    /**
     * As an optimization, avoid subsquent schedules as they are unecessary
     */
-   private AtomicInteger scheduledCleanup = new AtomicInteger(0);
+   private final AtomicInteger scheduledCleanup = new AtomicInteger(0);
 
    private final PagingStore pagingStore;
 
@@ -111,9 +111,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return activeCursor;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursorProvider#createCursor()
-    */
    public synchronized PageSubscription getSubscription(long cursorID)
    {
       return activeCursors.get(cursorID);

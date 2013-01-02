@@ -183,6 +183,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
 
       assertEquals(-1, dataInput.read());
+      dataInput.close();
    }
 
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
@@ -217,6 +218,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
 
       assertEquals(-1, dataInput.read());
+      dataInput.close();
    }
 
    public void testReadData() throws Exception
@@ -505,7 +507,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       twaiter.join();
 
       Assert.assertEquals(0, errors.get());
-
+      input.close();
    }
 
    public void testStreamDataWaitCompletionOnCompleteBuffer() throws Exception
@@ -568,6 +570,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Thread sender = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -653,6 +656,7 @@ public class LargeMessageBufferTest extends UnitTestCase
             assertEquals(getSamplebyte(i + j), readBytes[j]);
          }
       }
+      is.close();
    }
 
    /**
@@ -834,67 +838,67 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       public int getBufferSize()
       {
-         
+
          return 0;
       }
 
       public int getClientWindowSize()
       {
-         
+
          return 0;
       }
 
       public SimpleString getFilterString()
       {
-         
+
          return null;
       }
 
       public long getID()
       {
-         
+
          return 0;
       }
 
       public SimpleString getQueueName()
       {
-         
+
          return null;
       }
 
       public void handleLargeMessage(final SessionReceiveLargeMessage largeMessageHeader) throws Exception
       {
-         
+
 
       }
 
       public void handleLargeMessageContinuation(final SessionReceiveContinuationMessage continuation) throws Exception
       {
-         
+
 
       }
 
       public void handleMessage(final ClientMessageInternal message) throws Exception
       {
-         
+
 
       }
 
       public boolean isBrowseOnly()
       {
-         
+
          return false;
       }
 
       public void start()
       {
-         
+
 
       }
 
       public void stop() throws HornetQException
       {
-         
+
 
       }
 
@@ -912,7 +916,7 @@ public class LargeMessageBufferTest extends UnitTestCase
        */
       public ClientSessionInternal getSession()
       {
-         
+
          return null;
       }
 

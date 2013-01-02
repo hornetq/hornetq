@@ -27,8 +27,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
@@ -215,9 +213,11 @@ public class ExpiryAddressTest extends ServiceTestBase
       SimpleString eq = new SimpleString("EA1");
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator1 =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      UnitTestCase.INVM_CONNECTOR_FACTORY)));
 
-      ClientSessionFactory sessionFactory = createSessionFactory(locator);
+      ClientSessionFactory sessionFactory = createSessionFactory(locator1);
 
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);
@@ -254,7 +254,7 @@ public class ExpiryAddressTest extends ServiceTestBase
 
       sendSession.close();
 
-      locator.close();
+      locator1.close();
 
    }
 
