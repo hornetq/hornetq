@@ -27,22 +27,16 @@ import org.hornetq.core.server.MessageReference;
  */
 public abstract class TransactionOperationAbstract implements TransactionOperation
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
    public void beforePrepare(Transaction tx) throws Exception
    {
 
    }
 
-   /** After prepare shouldn't throw any exception. Any verification has to be done on before prepare */
+   /**
+    * After prepare shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before prepare
+    */
    public void afterPrepare(Transaction tx)
    {
 
@@ -52,7 +46,11 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    {
    }
 
-   /** After commit shouldn't throw any exception. Any verification has to be done on before commit */
+   /**
+    * After commit shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before commit
+    */
    public void afterCommit(Transaction tx)
    {
    }
@@ -61,7 +59,11 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    {
    }
 
-   /** After rollback shouldn't throw any exception. Any verification has to be done on before rollback */
+   /**
+    * After rollback shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before rollback
+    */
    public void afterRollback(Transaction tx)
    {
    }
@@ -71,15 +73,4 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    {
       return Collections.emptyList();
    }
-
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

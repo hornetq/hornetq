@@ -55,7 +55,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -2393,7 +2393,7 @@ public class QueueImpl implements Queue
       LinkedListIterator<MessageReference> iter;
    }
 
-   private final class RefsOperation implements TransactionOperation
+   private final class RefsOperation extends TransactionOperationAbstract
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
@@ -2412,14 +2412,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      public void beforeCommit(final Transaction tx) throws Exception
-      {
-      }
-
-      public void afterPrepare(final Transaction tx)
-      {
-      }
-
+      @Override
       public void afterRollback(final Transaction tx)
       {
          Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
@@ -2467,6 +2460,7 @@ public class QueueImpl implements Queue
          }
       }
 
+      @Override
       public void afterCommit(final Transaction tx)
       {
          for (MessageReference ref : refsToAck)
@@ -2493,14 +2487,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-
+      @Override
       public List<MessageReference> getRelatedMessageReferences()
       {
          return refsToAck;
@@ -2509,18 +2496,18 @@ public class QueueImpl implements Queue
 
    private class DelayedAddRedistributor implements Runnable
    {
-      private final Executor executor;
+      private final Executor executor1;
 
       DelayedAddRedistributor(final Executor executor)
       {
-         this.executor = executor;
+         this.executor1 = executor;
       }
 
       public void run()
       {
          synchronized (QueueImpl.this)
          {
-            internalAddRedistributor(executor);
+            internalAddRedistributor(executor1);
 
             futures.remove(this);
          }

@@ -15,24 +15,14 @@ package org.hornetq.core.journal;
 
 /**
  * This is a POJO containing information about the journal during load time.
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalLoadInformation
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
    private int numberOfRecords = 0;
 
    private long maxID = -1;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public JournalLoadInformation()
    {
@@ -49,8 +39,6 @@ public class JournalLoadInformation
       this.numberOfRecords = numberOfRecords;
       this.maxID = maxID;
    }
-
-   // Public --------------------------------------------------------
 
    /**
     * @return the numberOfRecords
@@ -84,9 +72,6 @@ public class JournalLoadInformation
       this.maxID = maxID;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
    @Override
    public int hashCode()
    {
@@ -97,9 +82,6 @@ public class JournalLoadInformation
       return result;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
    @Override
    public boolean equals(final Object obj)
    {
@@ -127,21 +109,9 @@ public class JournalLoadInformation
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
       return "JournalLoadInformation [maxID=" + maxID + ", numberOfRecords=" + numberOfRecords + "]";
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

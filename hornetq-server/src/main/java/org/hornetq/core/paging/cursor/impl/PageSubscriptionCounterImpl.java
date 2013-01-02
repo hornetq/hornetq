@@ -15,7 +15,6 @@ package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,9 +23,9 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 
@@ -315,43 +314,17 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       int ammount;
    }
 
-   private static class CounterOperations implements TransactionOperation
+   private static class CounterOperations extends TransactionOperationAbstract implements TransactionOperation
    {
       LinkedList<ItemOper> operations = new LinkedList<ItemOper>();
 
-      public void beforePrepare(Transaction tx) throws Exception
-      {
-         // no-op
-      }
-
-      public void afterPrepare(Transaction tx)
-      {
-         // no-op
-      }
-
-      public void beforeCommit(Transaction tx) throws Exception
-      {
-      }
-
+      @Override
       public void afterCommit(Transaction tx)
       {
          for (ItemOper oper : operations)
          {
             oper.counter.incrementProcessed(oper.id, oper.ammount);
          }
-      }
-
-      public void beforeRollback(Transaction tx) throws Exception
-      {
-      }
-
-      public void afterRollback(Transaction tx)
-      {
-      }
-
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
       }
    }
 }

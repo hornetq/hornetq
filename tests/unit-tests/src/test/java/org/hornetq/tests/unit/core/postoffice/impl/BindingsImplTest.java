@@ -127,9 +127,6 @@ public class BindingsImplTest extends UnitTestCase
    class FakeTransaction implements Transaction
    {
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#addOperation(org.hornetq.core.transaction.TransactionOperation)
-       */
       public void addOperation(final TransactionOperation sync)
       {
 
@@ -140,79 +137,51 @@ public class BindingsImplTest extends UnitTestCase
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#commit()
-       */
       public void commit() throws Exception
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#commit(boolean)
-       */
       public void commit(final boolean onePhase) throws Exception
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getCreateTime()
-       */
       public long getCreateTime()
       {
 
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getID()
-       */
       public long getID()
       {
 
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getOperationsCount()
-       */
       public int getOperationsCount()
       {
 
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getProperty(int)
-       */
       public Object getProperty(final int index)
       {
 
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getState()
-       */
       public State getState()
       {
 
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getXid()
-       */
       public Xid getXid()
       {
-
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#markAsRollbackOnly(org.hornetq.api.core.exception.HornetQException)
-       */
       public void markAsRollbackOnly(final HornetQException exception)
       {
 
@@ -331,26 +300,17 @@ public class BindingsImplTest extends UnitTestCase
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#getAllOperations()
-       */
       public List<TransactionOperation> getAllOperations()
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#isWaitBeforeCommit()
-       */
       public boolean isWaitBeforeCommit()
       {
 
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#setWaitBeforeCommit(boolean)
-       */
       public void setWaitBeforeCommit(boolean waitBeforeCommit)
       {
 

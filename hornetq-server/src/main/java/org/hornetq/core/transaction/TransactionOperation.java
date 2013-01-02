@@ -28,17 +28,29 @@ public interface TransactionOperation
 {
    void beforePrepare(Transaction tx) throws Exception;
 
-   /** After prepare shouldn't throw any exception. Any verification has to be done on before prepare */
+   /**
+    * After prepare shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before prepare
+    */
    void afterPrepare(Transaction tx);
 
    void beforeCommit(Transaction tx) throws Exception;
 
-   /** After commit shouldn't throw any exception. Any verification has to be done on before commit */
+   /**
+    * After commit shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before commit
+    */
    void afterCommit(Transaction tx);
 
    void beforeRollback(Transaction tx) throws Exception;
 
-   /** After rollback shouldn't throw any exception. Any verification has to be done on before rollback */
+   /**
+    * After rollback shouldn't throw any exception.
+    * <p>
+    * Any verification has to be done on before rollback
+    */
    void afterRollback(Transaction tx);
 
    List<MessageReference> getRelatedMessageReferences();
