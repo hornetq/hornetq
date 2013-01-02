@@ -56,19 +56,9 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    public void testFullConfiguration() throws Exception
    {
-      FileConfiguration fc = new FileConfiguration();
-      fc.setConfigurationUrl("ConfigurationTest-full-config.xml");
+      FileConfiguration fc = new FileConfiguration("ConfigurationTest-full-config.xml");
       fc.start();
 
       Assert.assertEquals(true, fc.isPersistDeliveryCountBeforeDelivery());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

@@ -17,9 +17,12 @@ import java.util.Collections;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.*;
-import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -342,14 +345,10 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
    }
 
-   // Protected ---------------------------------------------------------------------------------------------
-
-   @Override
+    @Override
    protected Configuration createConfiguration() throws Exception
    {
-      FileConfiguration fc = new FileConfiguration();
-
-      fc.setConfigurationUrl("ConfigurationTest-full-config.xml");
+      FileConfiguration fc = new FileConfiguration("ConfigurationTest-full-config.xml");
 
       fc.start();
 

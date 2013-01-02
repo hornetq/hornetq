@@ -145,13 +145,10 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
    @Override
    protected Configuration createConfiguration() throws Exception
    {
-      FileConfiguration fc = new FileConfiguration();
-
-      fc.setConfigurationUrl("ConfigurationTest-defaults.xml");
+      FileConfiguration fc = new FileConfiguration("ConfigurationTest-defaults.xml");
 
       fc.start();
 
       return fc;
    }
-
 }
