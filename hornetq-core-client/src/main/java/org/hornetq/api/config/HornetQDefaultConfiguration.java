@@ -105,6 +105,8 @@ public final class HornetQDefaultConfiguration
    public static final long DEFAULT_FAILBACK_DELAY = 5000; // in milliseconds
    public static final boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
    public static final boolean DEFAULT_MASK_PASSWORD = false;
+   public static final long DEFAULT_CLUSTER_NOTIFICATION_INTERVAL = 1000;
+   public static final int DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS = 2;
 
    //properties passed to acceptor/connectors.
    public static final String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";

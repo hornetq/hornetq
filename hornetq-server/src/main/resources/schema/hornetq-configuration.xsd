@@ -353,6 +353,20 @@
             <xsd:element maxOccurs="1" minOccurs="0" name="max-hops" type="xsd:int"/>
             <xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int"/>
             <xsd:element maxOccurs="1" minOccurs="0" name="call-failover-timeout" type="xsd:long"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xsd:long">
+              <xsd:annotation>
+                  <xsd:documentation>
+                      how often the cluster connection will notify the cluster of its existence
+                  </xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="notification-attempts" type="xsd:int">
+              <xsd:annotation>
+                  <xsd:documentation>
+                      how many times cluster connection will notify the cluster of its existence
+                  </xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
             <xsd:choice>
                 <xsd:element maxOccurs="1" minOccurs="0" name="static-connectors">
                     <xsd:complexType>

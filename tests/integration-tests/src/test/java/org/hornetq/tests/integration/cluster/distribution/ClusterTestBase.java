@@ -163,7 +163,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       log.info("#test tearDown");
-
+      logTopologyDiagram();
       for (int i = 0; i < MAX_SERVERS; i++)
       {
          addHornetQComponent(nodeManagers[i]);
@@ -321,11 +321,81 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             log.error(msg);
 
+            logTopologyDiagram();
+
             throw new Exception(msg);
          }
       }
    }
 
+   private void logTopologyDiagram()
+   {
+      StringBuffer topologyDiagram = new StringBuffer();
+      for (HornetQServer hornetQServer : servers)
+      {
+         if (hornetQServer != null)
+         {
+            topologyDiagram.append("\n").append(hornetQServer.getIdentity()).append("\n");
+            if (hornetQServer.isStarted())
+            {
+               Set<ClusterConnection> ccs = hornetQServer.getClusterManager().getClusterConnections();
+
+               if (ccs.size() >= 1)
+               {
+                  ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
+                  Collection<TopologyMemberImpl> members = clusterConnection.getTopology().getMembers();
+                  for (TopologyMemberImpl member : members)
+                  {
+                     String nodeId = member.getNodeId();
+                     String liveServer = null;
+                     String backupServer = null;
+                     for (HornetQServer server : servers)
+                     {
+                        if(server != null && server.getNodeID() != null && server.isActive() && server.getNodeID().toString().equals(nodeId))
+                        {
+                           if(server.isActive())
+                           {
+                              liveServer = server.getIdentity();
+                              if(member.getLive() != null)
+                              {
+                                 liveServer += "(notified)";
+                              }
+                              else
+                              {
+                                 liveServer += "(not notified)";
+                              }
+                           }
+                           else
+                           {
+                              backupServer = server.getIdentity();
+                              if(member.getBackup() != null)
+                              {
+                                 liveServer += "(notified)";
+                              }
+                              else
+                              {
+                                 liveServer += "(not notified)";
+                              }
+                           }
+                        }
+                     }
+
+                     topologyDiagram.append("\t").append("|\n").append("\t->").append(liveServer).append("/").append(backupServer).append("\n");
+                  }
+               }
+               else
+               {
+                  topologyDiagram.append("-> no cluster connections\n");
+               }
+            } else
+            {
+               topologyDiagram.append("-> stopped\n");
+            }
+         }
+      }
+      topologyDiagram.append("\n");
+      log.info(topologyDiagram.toString());
+   }
    protected void waitForMessages(final int node, final String address, final int count) throws Exception
    {
       HornetQServer server = servers[node];
@@ -1945,7 +2015,9 @@ name, address, connectorFrom.getName(),
             HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
             HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
             reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
-            1024, pairs, false);
+            1024, pairs, false,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL,
+            HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS);
 
       conf.getClusterConfigurations().add(clusterConf);
    }

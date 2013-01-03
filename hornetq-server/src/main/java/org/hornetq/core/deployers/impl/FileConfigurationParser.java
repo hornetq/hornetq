@@ -1153,6 +1153,10 @@ public final class FileConfigurationParser
                                                                    FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                                                                    Validators.GT_ZERO);
 
+      long clusterNotificationInterval = XMLConfigurationUtil.getLong(e, "notification-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL, Validators.GT_ZERO);
+
+      int clusterNotificationAttempts = XMLConfigurationUtil.getInteger(e, "notification-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS, Validators.GT_ZERO);
+
       String discoveryGroupName = null;
 
       List<String> staticConnectorNames = new ArrayList<String>();
@@ -1192,7 +1196,9 @@ public final class FileConfigurationParser
                                                      duplicateDetection, forwardWhenNoConsumers, maxHops,
                                                      confirmationWindowSize,
                                                      staticConnectorNames,
-                                                     allowDirectConnectionsOnly);
+                                                     allowDirectConnectionsOnly,
+                                                     clusterNotificationInterval,
+                                                     clusterNotificationAttempts);
       }
       else
       {
@@ -1210,7 +1216,9 @@ public final class FileConfigurationParser
                                                      forwardWhenNoConsumers,
                                                      maxHops,
                                                      confirmationWindowSize,
-                                                     discoveryGroupName);
+                                                     discoveryGroupName,
+                                                     clusterNotificationInterval,
+                                                     clusterNotificationAttempts);
       }
 
       mainConfig.getClusterConfigurations().add(config);
