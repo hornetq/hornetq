@@ -27,6 +27,11 @@ import org.hornetq.api.core.HornetQException;
  */
 public interface Transaction
 {
+   static enum State
+   {
+      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY
+   }
+
    void prepare() throws Exception;
 
    void commit() throws Exception;
@@ -34,12 +39,6 @@ public interface Transaction
    void commit(boolean onePhase) throws Exception;
 
    void rollback() throws Exception;
-
-   /** Used for pages during commit.
-    *  When paging messages we need to guarantee that they are in the same transaction (but not with the same set of TransactionOperation). */
-   Transaction copy();
-
-   int getOperationsCount();
 
    long getID();
 
@@ -63,8 +62,6 @@ public interface Transaction
 
    boolean hasTimedOut(long currentTime, int defaultTimeout);
 
-   boolean isWaitBeforeCommit();
-
    void setWaitBeforeCommit(boolean waitBeforeCommit);
 
    void putProperty(int index, Object property);
@@ -73,27 +70,5 @@ public interface Transaction
 
    void setContainsPersistent();
 
-   boolean isContainsPersistent();
-
    void setTimeout(int timeout);
-
-   // To be used by sub-contexts. Mainly on paging
-
-   void beforeCommit() throws Exception;
-
-   void beforeRollback() throws Exception;
-
-   void beforePrepare() throws Exception;;
-
-   void afterPrepare();
-
-   void afterCommit();
-
-   void afterRollback();
-
-   static enum State
-   {
-      ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY
-   }
-
 }

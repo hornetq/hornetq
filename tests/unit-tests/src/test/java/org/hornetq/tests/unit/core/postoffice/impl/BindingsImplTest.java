@@ -13,26 +13,19 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.message.BodyEncoder;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.server.Bindable;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -41,8 +34,6 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.TypedProperties;
-import org.hornetq.utils.UUID;
 
 /**
  * A BindingImplTest
@@ -124,7 +115,7 @@ public class BindingsImplTest extends UnitTestCase
       }
    }
 
-   class FakeTransaction implements Transaction
+   private final class FakeTransaction implements Transaction
    {
 
       public void addOperation(final TransactionOperation sync)
@@ -159,12 +150,6 @@ public class BindingsImplTest extends UnitTestCase
          return 0;
       }
 
-      public int getOperationsCount()
-      {
-
-         return 0;
-      }
-
       public Object getProperty(final int index)
       {
 
@@ -187,33 +172,21 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#prepare()
-       */
       public void prepare() throws Exception
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#putProperty(int, java.lang.Object)
-       */
       public void putProperty(final int index, final Object property)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#removeOperation(org.hornetq.core.transaction.TransactionOperation)
-       */
       public void removeOperation(final TransactionOperation sync)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#resume()
-       */
       public void resume()
       {
 
@@ -262,63 +235,17 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      public Transaction copy()
-      {
-         return null;
-      }
-
-      public void afterCommit()
-      {
-      }
-
-      public void afterPrepare()
-      {
-      }
-
-      public void afterRollback()
-      {
-      }
-
-      public void beforeCommit() throws Exception
-      {
-      }
-
-      public void beforePrepare() throws Exception
-      {
-      }
-
-      public void beforeRollback() throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#isContainsPersistent()
-       */
-      public boolean isContainsPersistent()
-      {
-
-         return false;
-      }
-
       public List<TransactionOperation> getAllOperations()
       {
          return null;
       }
 
-      public boolean isWaitBeforeCommit()
-      {
-
-         return false;
-      }
-
       public void setWaitBeforeCommit(boolean waitBeforeCommit)
       {
-
-
       }
    }
 
-   class FakeFilter implements Filter
+   private final class FakeFilter implements Filter
    {
 
       /* (non-Javadoc)
@@ -339,7 +266,7 @@ public class BindingsImplTest extends UnitTestCase
 
    }
 
-   class FakeBinding implements Binding
+   private final class FakeBinding implements Binding
    {
 
       public void close() throws Exception
