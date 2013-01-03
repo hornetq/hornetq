@@ -18,23 +18,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.management.ManagementHelper;
+import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.core.server.management.Notification;
+import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.utils.ConcurrentHashSet;
+import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -42,7 +53,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-class StompProtocolManager implements ProtocolManager
+class StompProtocolManager implements ProtocolManager, NotificationListener
 {
    // Constants -----------------------------------------------------
 
@@ -56,6 +67,8 @@ class StompProtocolManager implements ProtocolManager
 
    // key => connection ID, value => Stomp session
    private final Map<Object, StompSession> sessions = new HashMap<Object, StompSession>();
+   
+   private final Set<String> destinations = new ConcurrentHashSet<String>();
 
    // Static --------------------------------------------------------
 
@@ -65,6 +78,13 @@ class StompProtocolManager implements ProtocolManager
    {
       this.server = server;
       this.executor = server.getExecutorFactory().getExecutor();
+      ManagementService service = server.getManagementService();
+      if (service != null)
+      {
+         //allow management message to pass
+         destinations.add(service.getManagementAddress().toString());
+         service.addNotificationListener(this);
+      }
    }
 
    // ProtocolManager implementation --------------------------------
@@ -403,5 +423,45 @@ class StompProtocolManager implements ProtocolManager
       }
       // create the transacted session
       getTransactedSession(connection, txID);
+   }
+   
+   public boolean destinationExists(String destination)
+   {
+      return destinations.contains(destination);
+   }
+
+   @Override
+   public void onNotification(Notification notification)
+   {
+      NotificationType type = notification.getType();
+
+      switch (type)
+      {
+         case BINDING_ADDED:
+         {
+            TypedProperties props = notification.getProperties();
+
+            if (!props.containsProperty(ManagementHelper.HDR_BINDING_TYPE))
+            {
+               throw HornetQMessageBundle.BUNDLE.bindingTypeNotSpecified();
+            }
+
+            Integer bindingType = props.getIntProperty(ManagementHelper.HDR_BINDING_TYPE);
+
+            if (bindingType == BindingType.DIVERT_INDEX)
+            {
+               return;
+            }
+
+            SimpleString address = props.getSimpleStringProperty(ManagementHelper.HDR_ADDRESS);
+            
+            destinations.add(address.toString());
+            
+            break;
+         }
+         default:
+            //ignore all others
+            break;
+      }
    }
 }
