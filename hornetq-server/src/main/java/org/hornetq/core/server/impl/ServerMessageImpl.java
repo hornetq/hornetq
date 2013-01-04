@@ -314,9 +314,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       buffer.setLong(buffer.getInt(MessageImpl.BUFFER_HEADER_SPACE) + DataConstants.SIZE_INT, messageID);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.ServerMessage#getDuplicateIDBytes()
-    */
+   @Override
    public byte[] getDuplicateIDBytes()
    {
       Object duplicateID = getDuplicateProperty();

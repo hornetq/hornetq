@@ -110,9 +110,7 @@ public class PagedReferenceImpl implements PagedReference
    }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
-    */
+   @Override
    public int getMessageMemoryEstimate()
    {
       if (messageEstimate < 0)
@@ -123,17 +121,13 @@ public class PagedReferenceImpl implements PagedReference
    }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#copy(org.hornetq.core.server.Queue)
-    */
+   @Override
    public MessageReference copy(final Queue queue)
    {
       return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#getScheduledDeliveryTime()
-    */
+   @Override
    public long getScheduledDeliveryTime()
    {
       if (deliveryTime == null)
@@ -151,33 +145,25 @@ public class PagedReferenceImpl implements PagedReference
       return deliveryTime;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#setScheduledDeliveryTime(long)
-    */
+   @Override
    public void setScheduledDeliveryTime(final long scheduledDeliveryTime)
    {
       deliveryTime = scheduledDeliveryTime;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#getDeliveryCount()
-    */
+   @Override
    public int getDeliveryCount()
    {
       return deliveryCount.get();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#setDeliveryCount(int)
-    */
+   @Override
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount.set(deliveryCount);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#incrementDeliveryCount()
-    */
+   @Override
    public void incrementDeliveryCount()
    {
       deliveryCount.incrementAndGet();
@@ -188,9 +174,7 @@ public class PagedReferenceImpl implements PagedReference
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#decrementDeliveryCount()
-    */
+   @Override
    public void decrementDeliveryCount()
    {
       deliveryCount.decrementAndGet();
@@ -200,33 +184,25 @@ public class PagedReferenceImpl implements PagedReference
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#getQueue()
-    */
+   @Override
    public Queue getQueue()
    {
       return subscription.getQueue();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#handled()
-    */
+   @Override
    public void handled()
    {
       getQueue().referenceHandled();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#acknowledge()
-    */
+   @Override
    public void acknowledge() throws Exception
    {
       subscription.ack(this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction)
-    */
+   @Override
    public void acknowledge(final Transaction tx) throws Exception
    {
       subscription.ackTx(tx, this);

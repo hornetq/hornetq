@@ -2253,17 +2253,13 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(long)
-    */
+   @Override
    public ByteBuffer allocateDirectBuffer(int size)
    {
       return journalFF.allocateDirectBuffer(size);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
-    */
+   @Override
    public void freeDirectBuffer(ByteBuffer buffer)
    {
       journalFF.releaseBuffer(buffer);

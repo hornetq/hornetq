@@ -85,9 +85,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
       return retValue;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.IOCompletion#linedUp()
-    */
+   @Override
    public void storeLineUp()
    {
    }

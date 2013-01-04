@@ -752,10 +752,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return added;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.server.JMSServerManager#removeQueueFromJNDI(java.lang.String, java.lang.String)
-    */
-
+   @Override
    public boolean removeQueueFromJNDI(String name, String jndi) throws Exception
    {
       checkInitialised();
@@ -770,9 +767,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return removed;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.server.JMSServerManager#removeQueueFromJNDI(java.lang.String, java.lang.String)
-    */
+   @Override
    public boolean removeQueueFromJNDI(final String name) throws Exception
    {
       final AtomicBoolean valueReturn = new AtomicBoolean(false);
@@ -802,10 +797,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return valueReturn.get();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.server.JMSServerManager#removeTopicFromJNDI(java.lang.String, java.lang.String)
-    */
-
+   @Override
    public boolean removeTopicFromJNDI(String name, String jndi) throws Exception
    {
       checkInitialised();
@@ -853,10 +845,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return valueReturn.get();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.server.JMSServerManager#removeConnectionFactoryFromJNDI(java.lang.String, java.lang.String)
-    */
-
+   @Override
    public boolean removeConnectionFactoryFromJNDI(String name, String jndi) throws Exception
    {
       checkInitialised();
@@ -868,10 +857,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.server.JMSServerManager#removeConnectionFactoryFromJNDI(java.lang.String, java.lang.String)
-    */
-
+   @Override
    public boolean removeConnectionFactoryFromJNDI(String name) throws Exception
    {
       checkInitialised();

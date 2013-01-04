@@ -45,16 +45,12 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       super();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#release()
-    */
+   @Override
    public void releaseResources()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#addBytes(byte[])
-    */
+   @Override
    public synchronized void addBytes(final byte[] bytes)
    {
       if (buffer == null)
@@ -66,21 +62,10 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       buffer.writeBytes(bytes);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#deleteFile()
-    */
+   @Override
    public void deleteFile() throws Exception
    {
       // nothing to be done here.. we don really have a file on this Storage
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#complete()
-    */
-   public void complete() throws Exception
-   {
-      // nothing to be done here.. we don really have a file on this Storage
-
    }
 
    @Override
@@ -89,35 +74,14 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#isComplete()
-    */
-   public boolean isComplete()
-   {
-      // nothing to be done on null persistence
-      return true;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setComplete(boolean)
-    */
-   public void setComplete(final boolean isComplete)
-   {
-      // nothing to be done on null persistence
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#isFileExists()
-    */
+   @Override
    public boolean isFileExists() throws Exception
    {
       // There are no real files on null persistence
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#decrementDelayDeletionCount()
-    */
+   @Override
    public void decrementDelayDeletionCount()
    {
 
@@ -151,9 +115,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#getPendingRecordID()
-    */
+   @Override
    public long getPendingRecordID()
    {
       return -1;

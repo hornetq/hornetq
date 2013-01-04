@@ -82,26 +82,20 @@ public class PersistedConnectionFactory implements EncodingSupport
       return config;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(final HornetQBuffer buffer)
    {
       config = new ConnectionFactoryConfigurationImpl();
       config.decode(buffer);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(final HornetQBuffer buffer)
    {
       config.encode(buffer);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
       return config.getEncodeSize();

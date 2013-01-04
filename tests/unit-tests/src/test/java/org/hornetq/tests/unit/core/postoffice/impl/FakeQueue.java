@@ -39,18 +39,14 @@ import org.hornetq.utils.LinkedListIterator;
 public class FakeQueue implements Queue
 {
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#isInternalQueue()
-    */
+   @Override
    public boolean isInternalQueue()
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#setInternalQueue(boolean)
-    */
+   @Override
    public void setInternalQueue(boolean internalQueue)
    {
       // no-op
@@ -133,252 +129,175 @@ public class FakeQueue implements Queue
       this.id = id;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#acknowledge(org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void acknowledge(final MessageReference ref) throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void acknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addConsumer(org.hornetq.core.server.Consumer)
-    */
+   @Override
    public void addConsumer(final Consumer consumer) throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addFirst(org.hornetq.core.server.MessageReference)
-    */
-   public void addFirst(final MessageReference ref)
-   {
-      // no-op
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addLast(org.hornetq.core.server.MessageReference)
-    */
-   public void addLast(final MessageReference ref)
-   {
-      // no-op
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addRedistributor(long)
-    */
+   @Override
    public void addRedistributor(final long delay)
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void cancel(final Transaction tx, final MessageReference ref)
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#cancelRedistributor()
-    */
+   @Override
    public void cancelRedistributor() throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#changeReferencePriority(long, byte)
-    */
+   @Override
    public boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
       // no-op
       return false;
    }
 
-/* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#changeReferencesPriority(org.hornetq.core.filter.Filter, byte)
-    */
+@Override
    public int changeReferencesPriority(Filter filter, byte newPriority) throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public boolean checkRedelivery(final MessageReference ref, final long timeBase) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deleteAllReferences()
-    */
+   @Override
    public int deleteAllReferences() throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deleteMatchingReferences(org.hornetq.core.filter.Filter)
-    */
+   @Override
    public int deleteMatchingReferences(final Filter filter) throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deleteReference(long)
-    */
+   @Override
    public boolean deleteReference(final long messageID) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deliverAsync()
-    */
+   @Override
    public void deliverAsync()
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#deliverNow()
-    */
-   public void deliverNow()
-   {
-      // no-op
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#expire(org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void expire(final MessageReference ref) throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#expireReference(long)
-    */
+   @Override
    public boolean expireReference(final long messageID) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#expireReferences()
-    */
+   @Override
    public void expireReferences() throws Exception
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#expireReferences(org.hornetq.core.filter.Filter)
-    */
+   @Override
    public int expireReferences(final Filter filter) throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getConsumerCount()
-    */
+   @Override
    public int getConsumerCount()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getConsumers()
-    */
+   @Override
    public Set<Consumer> getConsumers()
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getDeliveringCount()
-    */
+   @Override
    public int getDeliveringCount()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getFilter()
-    */
+   @Override
    public Filter getFilter()
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getMessageCount()
-    */
+   @Override
    public long getMessageCount()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getMessagesAdded()
-    */
+   @Override
    public long getMessagesAdded()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getName()
-    */
+   @Override
    public SimpleString getName()
    {
       return name;
@@ -390,125 +309,83 @@ public class FakeQueue implements Queue
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getID()
-    */
+   @Override
    public long getID()
    {
       return id;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getReference(long)
-    */
-   public MessageReference getReference(final long id)
+   @Override
+   public MessageReference getReference(final long id1)
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getScheduledCount()
-    */
+   @Override
    public int getScheduledCount()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getScheduledMessages()
-    */
+   @Override
    public List<MessageReference> getScheduledMessages()
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#isDurable()
-    */
+   @Override
    public boolean isDurable()
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#isPaused()
-    */
+   @Override
    public boolean isPaused()
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#isTemporary()
-    */
+   @Override
    public boolean isTemporary()
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#iterator()
-    */
+   @Override
    public LinkedListIterator<MessageReference> iterator()
    {
       // no-op
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#list(org.hornetq.core.filter.Filter)
-    */
-   public List<MessageReference> list(final Filter filter)
-   {
-      // no-op
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#lockDelivery()
-    */
-   public void lockDelivery()
-   {
-      // no-op
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#moveReference(long, org.hornetq.utils.SimpleString)
-    */
+   @Override
    public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.utils.SimpleString)
-    */
+   @Override
    public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#pause()
-    */
+   @Override
    public void pause()
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#reacknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-    */
+   @Override
    public void reacknowledge(final Transaction tx, final MessageReference ref) throws Exception
    {
       // no-op
@@ -525,13 +402,13 @@ public class FakeQueue implements Queue
    {
    }
 
-   public MessageReference removeFirstReference(final long id) throws Exception
+   public MessageReference removeFirstReference(final long id1) throws Exception
    {
       // no-op
       return null;
    }
 
-   public MessageReference removeReferenceWithID(final long id) throws Exception
+   public MessageReference removeReferenceWithID(final long id1) throws Exception
    {
       // no-op
       return null;
@@ -555,29 +432,14 @@ public class FakeQueue implements Queue
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#setExpiryAddress(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public void setExpiryAddress(final SimpleString expiryAddress)
    {
       // no-op
 
    }
 
-   // no-op
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#unlockDelivery()
-    */
-   public void unlockDelivery()
-   {
-      // no-op
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Bindable#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
-    */
+   @Override
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // no-op
@@ -585,15 +447,6 @@ public class FakeQueue implements Queue
    }
 
    public boolean hasMatchingConsumer(final ServerMessage message)
-   {
-      // no-op
-      return false;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference, java.util.concurrent.Executor)
-    */
-   public boolean checkDLQ(final MessageReference ref, final Executor ioExecutor) throws Exception
    {
       // no-op
       return false;
@@ -611,9 +464,7 @@ public class FakeQueue implements Queue
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getPageSubscription()
-    */
+   @Override
    public PageSubscription getPageSubscription()
    {
       return subs;
@@ -624,45 +475,35 @@ public class FakeQueue implements Queue
       this.subs = sub;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#moveReference(long, org.hornetq.api.core.SimpleString, boolean)
-    */
+   @Override
    public boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception
    {
       // no-op
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
-    */
+   @Override
    public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#forceDelivery()
-    */
+   @Override
    public void forceDelivery()
    {
       // no-op
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getInstantMessageCount()
-    */
+   @Override
    public long getInstantMessageCount()
    {
       // no-op
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getInstantMessagesAdded()
-    */
+   @Override
    public long getInstantMessagesAdded()
    {
       // no-op

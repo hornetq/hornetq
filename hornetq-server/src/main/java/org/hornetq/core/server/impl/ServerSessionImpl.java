@@ -1416,9 +1416,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return this.creationTime;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.ServerSession#getProducersInfoJSON()
-    */
+   @Override
    public void describeProducersInfo(JSONArray array) throws Exception
    {
       Map<SimpleString, Pair<UUID, AtomicLong>> targetCopy = cloneTargetAddresses();

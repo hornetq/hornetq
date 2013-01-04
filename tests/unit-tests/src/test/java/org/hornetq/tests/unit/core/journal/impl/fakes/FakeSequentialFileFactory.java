@@ -674,103 +674,59 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#createDirs()
-    */
+   @Override
    public void createDirs() throws Exception
    {
       // nothing to be done on the fake Sequential file
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
-    */
+   @Override
    public void releaseBuffer(final ByteBuffer buffer)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#getBufferCallback()
-    */
-   public BufferCallback getBufferCallback()
-   {
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#setBufferCallback(org.hornetq.core.journal.BufferCallback)
-    */
-   public void setBufferCallback(final BufferCallback bufferCallback)
-   {
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#controlBuffersLifeCycle(boolean)
-    */
-   public void controlBuffersLifeCycle(final boolean value)
-   {
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#stop()
-    */
+   @Override
    public void stop()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
-    */
+   @Override
    public void activateBuffer(final SequentialFile file)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#start()
-    */
+   @Override
    public void start()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#deactivate(org.hornetq.core.journal.SequentialFile)
-    */
+   @Override
    public void deactivateBuffer()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#testFlush()
-    */
+   @Override
    public void flush()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
-    */
+   @Override
    public void onIOError(Exception exception, String message, SequentialFile file)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#newDirectBuffer(int)
-    */
+   @Override
    public ByteBuffer allocateDirectBuffer(int size)
    {
       return ByteBuffer.allocateDirect(size);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#releaseDirectBuffer(java.nio.ByteBuffer)
-    */
+   @Override
    public void releaseDirectBuffer(ByteBuffer buffer)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#getDirectory()
-    */
+   @Override
    public String getDirectory()
    {
       // TODO Auto-generated method stub

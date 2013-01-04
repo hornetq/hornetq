@@ -208,9 +208,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.JMSServerControl#createConnectionFactory(java.lang.String, boolean, boolean, int, java.lang.String, java.lang.String, java.lang.String, long, long, long, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String)
-    */
+   @Override
    public void createConnectionFactory(String name,
                                        boolean ha,
                                        boolean useDiscovery,
@@ -284,9 +282,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                               groupId);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.JMSServerControl#createConnectionFactory(java.lang.String, boolean, boolean, int, java.lang.String[], java.lang.String[], java.lang.String, long, long, long, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String)
-    */
+   @Override
    public void createConnectionFactory(String name,
                                        boolean ha,
                                        boolean useDiscovery,
@@ -418,9 +414,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       return createQueue(name, jndiBindings, null, true);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.JMSServerControl#createQueue(java.lang.String, java.lang.String, java.lang.String)
-    */
+   @Override
    public boolean createQueue(String name, String jndiBindings, String selector) throws Exception
    {
       return createQueue(name, jndiBindings, selector, true);

@@ -884,9 +884,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.management.QueueControl#listConsumersAsJSON()
-    */
+   @Override
    public String listConsumersAsJSON() throws Exception
    {
       checkStarted();
