@@ -28,17 +28,6 @@ import org.hornetq.utils.HornetQBufferInputStream;
 public class HornetQBufferInputStreamTest extends UnitTestCase
 {
 
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testReadBytes() throws Exception
    {
       byte bytes[] = new byte[10*1024];
@@ -76,15 +65,6 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
       int sizeRead = is.read(bytes);
 
       assertEquals(-1, sizeRead);
-
+      is.close();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

@@ -461,7 +461,7 @@ public class ReplicationManager implements HornetQComponent
 
    private static class NullEncoding implements EncodingSupport
    {
-      static NullEncoding instance = new NullEncoding();
+      static final NullEncoding instance = new NullEncoding();
 
       public void decode(final HornetQBuffer buffer)
       {

@@ -664,20 +664,20 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       clearData(getTestDir());
    }
 
-   protected void clearData(final String testDir)
+   protected void clearData(final String testDir1)
    {
       // Need to delete the root
 
-      File file = new File(testDir);
+      File file = new File(testDir1);
       deleteDirectory(file);
       file.mkdirs();
 
-      recreateDirectory(getJournalDir(testDir));
-      recreateDirectory(getBindingsDir(testDir));
-      recreateDirectory(getPageDir(testDir));
-      recreateDirectory(getLargeMessagesDir(testDir));
-      recreateDirectory(getClientLargeMessagesDir(testDir));
-      recreateDirectory(getTemporaryDir(testDir));
+      recreateDirectory(getJournalDir(testDir1));
+      recreateDirectory(getBindingsDir(testDir1));
+      recreateDirectory(getPageDir(testDir1));
+      recreateDirectory(getLargeMessagesDir(testDir1));
+      recreateDirectory(getClientLargeMessagesDir(testDir1));
+      recreateDirectory(getTemporaryDir(testDir1));
    }
 
    /**
@@ -688,9 +688,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return getJournalDir(getTestDir());
    }
 
-   protected static String getJournalDir(final String testDir)
+   protected static String getJournalDir(final String testDir1)
    {
-      return testDir + "/journal";
+      return testDir1 + "/journal";
    }
 
    protected static String getJournalDir(final int index, final boolean backup)
@@ -709,9 +709,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir(final String testDir)
+   protected static String getBindingsDir(final String testDir1)
    {
-      return testDir + "/bindings";
+      return testDir1 + "/bindings";
    }
 
    /**
@@ -733,9 +733,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the pageDir
     */
-   protected static String getPageDir(final String testDir)
+   protected static String getPageDir(final String testDir1)
    {
-      return testDir + "/page";
+      return testDir1 + "/page";
    }
 
    protected static String getPageDir(final int index, final boolean backup)
@@ -754,9 +754,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the largeMessagesDir
     */
-   protected static String getLargeMessagesDir(final String testDir)
+   protected static String getLargeMessagesDir(final String testDir1)
    {
-      return testDir + "/large-msg";
+      return testDir1 + "/large-msg";
    }
 
    protected static String getLargeMessagesDir(final int index, final boolean backup)
@@ -782,9 +782,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the clientLargeMessagesDir
     */
-   protected String getClientLargeMessagesDir(final String testDir)
+   protected String getClientLargeMessagesDir(final String testDir1)
    {
-      return testDir + "/client-large-msg";
+      return testDir1 + "/client-large-msg";
    }
 
    /**
@@ -798,9 +798,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the temporaryDir
     */
-   protected String getTemporaryDir(final String testDir)
+   protected String getTemporaryDir(final String testDir1)
    {
-      return testDir + "/temp";
+      return testDir1 + "/temp";
    }
 
    protected static void expectHornetQException(final String message, final HornetQExceptionType errorCode, final HornetQAction action)

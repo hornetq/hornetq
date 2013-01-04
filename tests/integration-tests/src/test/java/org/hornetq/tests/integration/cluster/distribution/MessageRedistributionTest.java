@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.cluster.distribution;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;

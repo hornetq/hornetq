@@ -189,9 +189,7 @@ public class JMSServerStartStopTest extends UnitTestCase
 
    private void start() throws Exception
    {
-      FileConfiguration fc = new FileConfiguration();
-
-      fc.setConfigurationUrl("server-start-stop-config1.xml");
+      FileConfiguration fc = new FileConfiguration("server-start-stop-config1.xml");
 
       fc.start();
 

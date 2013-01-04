@@ -68,6 +68,7 @@ public class CompressionUtilTest extends TestCase
       int compressedDataLength = compresser.deflate(output);
 
       compareByteArray(allCompressed, output, compressedDataLength);
+      reader.close();
    }
 
    public void testDeflaterReader2() throws Exception
@@ -108,6 +109,7 @@ public class CompressionUtilTest extends TestCase
       int compressedDataLength = compresser.deflate(output);
 
       compareByteArray(allCompressed, output, compressedDataLength);
+      reader.close();
    }
 
    public void testInflaterReader() throws Exception
@@ -145,7 +147,7 @@ public class CompressionUtilTest extends TestCase
       String txt = new String(result);
 
       assertEquals(inputString, txt);
-
+      inflater.close();
    }
 
    public void testInflaterWriter() throws Exception
