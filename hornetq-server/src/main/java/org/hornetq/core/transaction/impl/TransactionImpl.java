@@ -151,6 +151,9 @@ public class TransactionImpl implements Transaction
 
    public void prepare() throws Exception
    {
+      storageManager.readLock();
+      try
+      {
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -196,6 +199,11 @@ public class TransactionImpl implements Transaction
                afterPrepare();
             }
          });
+         }
+      }
+      finally
+      {
+         storageManager.readUnLock();
       }
    }
 

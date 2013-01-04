@@ -32,7 +32,7 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -316,7 +316,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
          public void updateRecord(RecordInfo info)
          {
-            if (info.userRecordType == JournalStorageManager.UPDATE_DELIVERY_COUNT)
+            if (info.userRecordType == JournalRecordIds.UPDATE_DELIVERY_COUNT)
             {
                updates.incrementAndGet();
             }

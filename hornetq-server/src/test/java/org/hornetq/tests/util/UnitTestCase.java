@@ -77,6 +77,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
@@ -1543,7 +1544,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       for (RecordInfo info : records)
       {
          Object o = JournalStorageManager.newObjectEncoding(info);
-         if (info.getUserRecordType() == JournalStorageManager.ADD_REF)
+         if (info.getUserRecordType() == JournalRecordIds.ADD_REF)
          {
             ReferenceDescribe ref = (ReferenceDescribe)o;
             AtomicInteger count = messageRefCounts.get(ref.refEncoding.queueID);

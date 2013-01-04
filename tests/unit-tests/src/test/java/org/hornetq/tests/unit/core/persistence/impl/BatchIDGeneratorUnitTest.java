@@ -27,7 +27,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -137,7 +137,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       for (RecordInfo record : records)
       {
-         if (record.userRecordType == JournalStorageManager.ID_COUNTER_RECORD)
+         if (record.userRecordType == JournalRecordIds.ID_COUNTER_RECORD)
          {
             HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(record.data);
             batch.loadState(record.id, buffer);
@@ -161,7 +161,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
          @Override
          public synchronized void storeID(long journalID, long id) throws Exception
          {
-            bindingsJournal.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD,
+            bindingsJournal.appendAddRecord(journalID, JournalRecordIds.ID_COUNTER_RECORD,
                                             BatchingIDGenerator.createIDEncodingSupport(id), true);
          }
       };
