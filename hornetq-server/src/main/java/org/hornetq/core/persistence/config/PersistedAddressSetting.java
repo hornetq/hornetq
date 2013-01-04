@@ -97,9 +97,7 @@ public class PersistedAddressSetting implements EncodingSupport
       return setting;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(HornetQBuffer buffer)
    {
       addressMatch = buffer.readSimpleString();
@@ -108,9 +106,7 @@ public class PersistedAddressSetting implements EncodingSupport
       setting.decode(buffer);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(HornetQBuffer buffer)
    {
       buffer.writeSimpleString(addressMatch);
@@ -118,9 +114,7 @@ public class PersistedAddressSetting implements EncodingSupport
       setting.encode(buffer);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
       return addressMatch.sizeof() + setting.getEncodeSize();

@@ -122,9 +122,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
 
 
    // Public --------------------------------------------------------
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.persistence.JMSStorageManager#recoverConnectionFactories()
-    */
+   @Override
    public List<PersistedConnectionFactory> recoverConnectionFactories()
    {
       List<PersistedConnectionFactory> cfs = new ArrayList<PersistedConnectionFactory>(mapFactories.size());
@@ -132,9 +130,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       return cfs;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.persistence.JMSStorageManager#storeConnectionFactory(org.hornetq.jms.persistence.PersistedConnectionFactory)
-    */
+   @Override
    public void storeConnectionFactory(final PersistedConnectionFactory connectionFactory) throws Exception
    {
       deleteConnectionFactory(connectionFactory.getName());
@@ -153,9 +149,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.persistence.JMSStorageManager#recoverDestinations()
-    */
+   @Override
    public List<PersistedDestination> recoverDestinations()
    {
       List<PersistedDestination> destinations = new ArrayList<PersistedDestination>(this.destinations.size());
@@ -163,9 +157,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       return destinations;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.jms.persistence.JMSStorageManager#storeDestination(org.hornetq.jms.persistence.PersistedDestination)
-    */
+   @Override
    public void storeDestination(final PersistedDestination destination) throws Exception
    {
       deleteDestination(destination.getType(), destination.getName());

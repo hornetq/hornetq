@@ -662,10 +662,8 @@ public class NettyAcceptor implements Acceptor
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.Acceptor#getClusterConnection()
-    */
-    public ClusterConnection getClusterConnection()
+   @Override
+   public ClusterConnection getClusterConnection()
    {
       return clusterConnection;
    }

@@ -32,10 +32,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -397,17 +397,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    // Channel Buffer Implementation ---------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#array()
-    */
-   public byte[] array()
-   {
-      throw new IllegalAccessError("array not supported on LargeMessageBufferImpl");
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#capacity()
-    */
+   @Override
    public int capacity()
    {
       return -1;
@@ -418,9 +408,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return getByte(readerIndex++);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getByte(int)
-    */
+   @Override
    public byte getByte(final int index)
    {
       return getByte((long)index);
@@ -440,9 +428,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
+   @Override
    public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
       byte[] destBytes = new byte[length];
@@ -450,19 +436,14 @@ public class LargeMessageControllerImpl implements LargeMessageController
       dst.setBytes(dstIndex, destBytes);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
-   public void getBytes(final long index, final HornetQBuffer dst, final int dstIndex, final int length)
+   private void getBytes(final long index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
       byte[] destBytes = new byte[length];
       getBytes(index, destBytes);
       dst.setBytes(dstIndex, destBytes);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, byte[], int, int)
-    */
+   @Override
    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
       byte bytesToGet[] = new byte[length];
@@ -481,9 +462,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       System.arraycopy(bytesToGet, 0, dst, dstIndex, length);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getBytes(int, java.nio.ByteBuffer)
-    */
+   @Override
    public void getBytes(final int index, final ByteBuffer dst)
    {
       byte bytesToGet[] = new byte[dst.remaining()];
@@ -533,9 +512,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
              (getByte(index + 3) & 0xff) << 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getLong(int)
-    */
+   @Override
    public long getLong(final int index)
    {
       return ((long)getByte(index) & 0xff) << 56 | ((long)getByte(index + 1) & 0xff) << 48 |
@@ -558,9 +535,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
              ((long)getByte(index + 7) & 0xff) << 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getShort(int)
-    */
+   @Override
    public short getShort(final int index)
    {
       return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
@@ -571,10 +546,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getUnsignedMedium(int)
-    */
-   public int getUnsignedMedium(final int index)
+   private int getUnsignedMedium(final int index)
    {
       return (getByte(index) & 0xff) << 16 | (getByte(index + 1) & 0xff) << 8 | (getByte(index + 2) & 0xff) << 0;
    }
@@ -584,98 +556,50 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return (getByte(index) & 0xff) << 16 | (getByte(index + 1) & 0xff) << 8 | (getByte(index + 2) & 0xff) << 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setByte(int, byte)
-    */
+   @Override
    public void setByte(final int index, final byte value)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
+   @Override
    public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, byte[], int, int)
-    */
+   @Override
    public void setBytes(final int index, final byte[] src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.ByteBuffer)
-    */
+   @Override
    public void setBytes(final int index, final ByteBuffer src)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.io.InputStream, int)
-    */
-   public int setBytes(final int index, final InputStream in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.channels.ScatteringByteChannel, int)
-    */
-   public int setBytes(final int index, final ScatteringByteChannel in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setInt(int, int)
-    */
+   @Override
    public void setInt(final int index, final int value)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setLong(int, long)
-    */
+   @Override
    public void setLong(final int index, final long value)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setMedium(int, int)
-    */
-   public void setMedium(final int index, final int value)
-   {
-      throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setShort(int, short)
-    */
+   @Override
    public void setShort(final int index, final short value)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#toByteBuffer(int, int)
-    */
+   @Override
    public ByteBuffer toByteBuffer(final int index, final int length)
-   {
-      throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#toString(int, int, java.lang.String)
-    */
-   public String toString(final int index, final int length, final String charsetName)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
@@ -1081,17 +1005,13 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return this;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readBoolean()
-    */
+   @Override
    public boolean readBoolean()
    {
       return readByte() != 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readChar()
-    */
+   @Override
    public char readChar()
    {
       return (char)readShort();
@@ -1120,25 +1040,19 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return HornetQBuffers.wrappedBuffer(bytesToGet);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readDouble()
-    */
+   @Override
    public double readDouble()
    {
       return Double.longBitsToDouble(readLong());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readFloat()
-    */
+   @Override
    public float readFloat()
    {
       return Float.intBitsToFloat(readInt());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableSimpleString()
-    */
+   @Override
    public SimpleString readNullableSimpleString()
    {
       int b = readByte();
@@ -1152,9 +1066,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableString()
-    */
+   @Override
    public String readNullableString()
    {
       int b = readByte();
@@ -1168,9 +1080,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readSimpleString()
-    */
+   @Override
    public SimpleString readSimpleString()
    {
       int len = readInt();
@@ -1179,9 +1089,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       return new SimpleString(data);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readString()
-    */
+   @Override
    public String readString()
    {
       int len = readInt();
@@ -1205,94 +1113,66 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readUTF()
-    */
+   @Override
    public String readUTF()
    {
       return UTF8Util.readUTF(this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeBoolean(boolean)
-    */
+   @Override
    public void writeBoolean(final boolean val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeChar(char)
-    */
+   @Override
    public void writeChar(final char val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeDouble(double)
-    */
+   @Override
    public void writeDouble(final double val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeFloat(float)
-    */
+   @Override
    public void writeFloat(final float val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
-    */
+   @Override
    public void writeNullableSimpleString(final SimpleString val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableString(java.lang.String)
-    */
+   @Override
    public void writeNullableString(final String val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
-    */
+   @Override
    public void writeSimpleString(final SimpleString val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeString(java.lang.String)
-    */
+   @Override
    public void writeString(final String val)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeUTF(java.lang.String)
-    */
+   @Override
    public void writeUTF(final String utf)
    {
       throw new IllegalAccessError(LargeMessageControllerImpl.READ_ONLY_ERROR_MESSAGE);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#compareTo(org.hornetq.api.core.buffers.ChannelBuffer)
-    */
-   public int compareTo(final HornetQBuffer buffer)
-   {
-      return -1;
    }
 
    public HornetQBuffer copy()
@@ -1304,12 +1184,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
    {
       throw new UnsupportedOperationException();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    /**
     * @param output

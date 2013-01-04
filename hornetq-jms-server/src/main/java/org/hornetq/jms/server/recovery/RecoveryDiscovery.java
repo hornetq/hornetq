@@ -173,9 +173,7 @@ public class RecoveryDiscovery implements SessionFailureListener
    }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.FailureListener#connectionFailed(org.hornetq.api.core.HornetQException, boolean)
-    */
+   @Override
    public void connectionFailed(HornetQException exception, boolean failedOver)
    {
       if (exception.getType() == HornetQExceptionType.DISCONNECTED)
@@ -191,9 +189,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.SessionFailureListener#beforeReconnect(org.hornetq.api.core.HornetQException)
-    */
+   @Override
    public void beforeReconnect(HornetQException exception)
    {
    }

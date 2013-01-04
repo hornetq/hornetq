@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -27,59 +28,46 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.api.core.Pair;
 
 public class FakePostOffice implements PostOffice
 {
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#isStarted()
-    */
+   @Override
    public boolean isStarted()
    {
 
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#start()
-    */
+   @Override
    public void start() throws Exception
    {
 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#stop()
-    */
+   @Override
    public void stop() throws Exception
    {
 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#addBinding(org.hornetq.core.postoffice.Binding)
-    */
+   @Override
    public void addBinding(final Binding binding) throws Exception
    {
 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getBinding(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public Binding getBinding(final SimpleString uniqueName)
    {
 
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getBindingsForAddress(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public Bindings getBindingsForAddress(final SimpleString address) throws Exception
    {
 
@@ -92,72 +80,42 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getDuplicateIDCache(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
    {
       return new DuplicateIDCacheImpl(address, 2000, new NullStorageManager(), false);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getMatchingBindings(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public Bindings getMatchingBindings(final SimpleString address)
    {
 
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getNotificationLock()
-    */
+   @Override
    public Object getNotificationLock()
    {
 
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#getPagingManager()
-    */
+   @Override
    public PagingManager getPagingManager()
    {
 
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#redistribute(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.Queue, org.hornetq.core.server.RoutingContext)
-    */
-   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
-   {
-
-      return false;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#removeBinding(org.hornetq.utils.SimpleString)
-    */
+   @Override
    public Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
 
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#sendQueueInfoToQueue(org.hornetq.utils.SimpleString, org.hornetq.utils.SimpleString)
-    */
+   @Override
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
-   {
-
-
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage)
-    */
-   public void route(final ServerMessage message) throws Exception
    {
 
 
@@ -204,27 +162,21 @@ public class FakePostOffice implements PostOffice
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext, boolean, boolean)
-    */
+   @Override
    public void route(ServerMessage message, RoutingContext context, boolean direct, boolean rejectDuplicates) throws Exception
    {
 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.transaction.Transaction, boolean, boolean)
-    */
+   @Override
    public void route(ServerMessage message, Transaction tx, boolean direct, boolean rejectDuplicates) throws Exception
    {
 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#processRoute(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext, boolean)
-    */
+   @Override
    public void processRoute(ServerMessage message, RoutingContext context, boolean direct) throws Exception
    {
 

@@ -116,9 +116,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       notifyAll();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFile#waitForClose()
-    */
+   @Override
    public synchronized void waitForClose() throws Exception
    {
       while (isOpen())
@@ -258,9 +256,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    // Public methods
    // -----------------------------------------------------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.asyncio.IOExceptionListener#onException(int, java.lang.String)
-    */
+   @Override
    public void onIOException(Exception code, String message)
    {
       factory.onIOError(code, message, this);

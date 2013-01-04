@@ -164,9 +164,7 @@ public class PersistedRoles implements EncodingSupport
       return manageRoles.toString();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(addressMatch);
@@ -179,9 +177,7 @@ public class PersistedRoles implements EncodingSupport
       buffer.writeNullableSimpleString(manageRoles);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
       return addressMatch.sizeof() + SimpleString.sizeofNullableString(sendRoles) +
@@ -194,9 +190,7 @@ public class PersistedRoles implements EncodingSupport
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(final HornetQBuffer buffer)
    {
       addressMatch = buffer.readSimpleString();

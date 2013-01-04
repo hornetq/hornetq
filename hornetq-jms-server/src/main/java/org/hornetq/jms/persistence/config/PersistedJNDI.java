@@ -63,9 +63,7 @@ public class PersistedJNDI implements EncodingSupport
    }
 
    // Public --------------------------------------------------------
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(HornetQBuffer buffer)
    {
       type = PersistedType.getType(buffer.readByte());
@@ -79,9 +77,7 @@ public class PersistedJNDI implements EncodingSupport
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(HornetQBuffer buffer)
    {
       buffer.writeByte(type.getType());
@@ -93,9 +89,7 @@ public class PersistedJNDI implements EncodingSupport
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
       return DataConstants.SIZE_BYTE +

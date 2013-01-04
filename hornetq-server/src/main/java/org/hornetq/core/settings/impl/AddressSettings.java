@@ -311,9 +311,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(HornetQBuffer buffer)
    {
       SimpleString policyStr = buffer.readNullableSimpleString();
@@ -358,9 +356,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       sendToDLAOnNoRoute = BufferHelper.readNullableBoolean(buffer);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
 
@@ -382,9 +378,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
              BufferHelper.sizeOfNullableBoolean(sendToDLAOnNoRoute);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(HornetQBuffer buffer)
    {
       buffer.writeNullableSimpleString(addressFullMessagePolicy != null ? new SimpleString(addressFullMessagePolicy.toString())

@@ -625,17 +625,13 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.impl.JournalRecordsProvider#getCompactor()
-    */
+   @Override
    public JournalCompactor getCompactor()
    {
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.impl.JournalRecordsProvider#getRecords()
-    */
+   @Override
    public Map<Long, JournalRecord> getRecords()
    {
       return newRecords;

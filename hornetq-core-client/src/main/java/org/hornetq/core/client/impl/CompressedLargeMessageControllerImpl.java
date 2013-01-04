@@ -25,8 +25,8 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.InflaterReader;
@@ -202,10 +202,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#getUnsignedMedium(int)
-    */
-   public int getUnsignedMedium(final int index)
+   private int getUnsignedMedium(final int index)
    {
       positioningNotSupported();
       return 0;
@@ -217,98 +214,50 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setByte(int, byte)
-    */
+   @Override
    public void setByte(final int index, final byte value)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, org.hornetq.api.core.buffers.ChannelBuffer, int, int)
-    */
+   @Override
    public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, byte[], int, int)
-    */
+   @Override
    public void setBytes(final int index, final byte[] src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.ByteBuffer)
-    */
+   @Override
    public void setBytes(final int index, final ByteBuffer src)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.io.InputStream, int)
-    */
-   public int setBytes(final int index, final InputStream in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setBytes(int, java.nio.channels.ScatteringByteChannel, int)
-    */
-   public int setBytes(final int index, final ScatteringByteChannel in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setInt(int, int)
-    */
+   @Override
    public void setInt(final int index, final int value)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setLong(int, long)
-    */
+   @Override
    public void setLong(final int index, final long value)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setMedium(int, int)
-    */
-   public void setMedium(final int index, final int value)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#setShort(int, short)
-    */
+   @Override
    public void setShort(final int index, final short value)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#toByteBuffer(int, int)
-    */
+   @Override
    public ByteBuffer toByteBuffer(final int index, final int length)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.buffers.ChannelBuffer#toString(int, int, java.lang.String)
-    */
-   public String toString(final int index, final int length, final String charsetName)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
@@ -724,17 +673,13 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return this;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readBoolean()
-    */
+   @Override
    public boolean readBoolean()
    {
       return readByte() != 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readChar()
-    */
+   @Override
    public char readChar()
    {
       return (char)readShort();
@@ -762,25 +707,19 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return HornetQBuffers.wrappedBuffer(bytesToGet);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readDouble()
-    */
+   @Override
    public double readDouble()
    {
       return Double.longBitsToDouble(readLong());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readFloat()
-    */
+   @Override
    public float readFloat()
    {
       return Float.intBitsToFloat(readInt());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableSimpleString()
-    */
+   @Override
    public SimpleString readNullableSimpleString()
    {
       int b = readByte();
@@ -794,9 +733,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readNullableString()
-    */
+   @Override
    public String readNullableString()
    {
       int b = readByte();
@@ -810,9 +747,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readSimpleString()
-    */
+   @Override
    public SimpleString readSimpleString()
    {
       int len = readInt();
@@ -821,9 +756,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return new SimpleString(data);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readString()
-    */
+   @Override
    public String readString()
    {
       int len = readInt();
@@ -847,83 +780,63 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#readUTF()
-    */
+   @Override
    public String readUTF()
    {
       return UTF8Util.readUTF(this);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeBoolean(boolean)
-    */
+   @Override
    public void writeBoolean(final boolean val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeChar(char)
-    */
+   @Override
    public void writeChar(final char val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeDouble(double)
-    */
+   @Override
    public void writeDouble(final double val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeFloat(float)
-    */
+   @Override
    public void writeFloat(final float val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
-    */
+   @Override
    public void writeNullableSimpleString(final SimpleString val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeNullableString(java.lang.String)
-    */
+   @Override
    public void writeNullableString(final String val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
-    */
+   @Override
    public void writeSimpleString(final SimpleString val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeString(java.lang.String)
-    */
+   @Override
    public void writeString(final String val)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.remoting.HornetQBuffer#writeUTF(java.lang.String)
-    */
+   @Override
    public void writeUTF(final String utf)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);

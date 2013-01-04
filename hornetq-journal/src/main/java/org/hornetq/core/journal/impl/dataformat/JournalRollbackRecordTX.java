@@ -32,9 +32,7 @@ public class JournalRollbackRecordTX extends JournalInternalRecord
       this.txID = txID;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.buffers.HornetQBuffer)
-    */
+   @Override
    public void encode(final HornetQBuffer buffer)
    {
       buffer.writeByte(JournalImpl.ROLLBACK_RECORD);

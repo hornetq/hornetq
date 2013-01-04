@@ -84,9 +84,7 @@ public class PagePositionImpl implements PagePosition
       return messageNr;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Comparable#compareTo(java.lang.Object)
-    */
+   @Override
    public int compareTo(PagePosition o)
    {
       if (pageNr > o.getPageNr())
