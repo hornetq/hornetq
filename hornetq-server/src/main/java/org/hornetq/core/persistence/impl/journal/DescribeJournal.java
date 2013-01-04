@@ -172,11 +172,11 @@ public final class DescribeJournal
       for (RecordInfo info : records)
       {
          Object o = JournalStorageManager.newObjectEncoding(info);
-         if (info.getUserRecordType() == JournalStorageManager.ADD_MESSAGE)
+         if (info.getUserRecordType() == JournalRecordIds.ADD_MESSAGE)
          {
             messageCount++;
          }
-         else if (info.getUserRecordType() == JournalStorageManager.ADD_REF)
+         else if (info.getUserRecordType() == JournalRecordIds.ADD_REF)
          {
             ReferenceDescribe ref = (ReferenceDescribe)o;
             Integer count = messageRefCounts.get(ref.refEncoding.queueID);
@@ -190,7 +190,7 @@ public final class DescribeJournal
                messageRefCounts.put(ref.refEncoding.queueID, count + 1);
             }
          }
-         else if (info.getUserRecordType() == JournalStorageManager.ACKNOWLEDGE_REF)
+         else if (info.getUserRecordType() == JournalRecordIds.ACKNOWLEDGE_REF)
          {
             AckDescribe ref = (AckDescribe)o;
             Integer count = messageRefCounts.get(ref.refEncoding.queueID);

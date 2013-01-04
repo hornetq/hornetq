@@ -40,7 +40,7 @@ import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.CursorAckRecordEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdateTXEncoding;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -271,7 +271,7 @@ public class PrintPages // NO_UCD (unused code)
 
          HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
-         if (record.userRecordType == JournalStorageManager.ACKNOWLEDGE_CURSOR)
+         if (record.userRecordType == JournalRecordIds.ACKNOWLEDGE_CURSOR)
          {
             CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
             encoding.decode(buff);
@@ -286,7 +286,7 @@ public class PrintPages // NO_UCD (unused code)
 
             set.add(encoding.position);
          }
-         else if (record.userRecordType == JournalStorageManager.PAGE_CURSOR_COMPLETE)
+         else if (record.userRecordType == JournalRecordIds.PAGE_CURSOR_COMPLETE)
          {
             CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
             encoding.decode(buff);
@@ -299,7 +299,7 @@ public class PrintPages // NO_UCD (unused code)
                System.err.println("Page " + pageNR + " has been already set as complete on queue " + queueID);
             }
          }
-         else if (record.userRecordType == JournalStorageManager.PAGE_TRANSACTION)
+         else if (record.userRecordType == JournalRecordIds.PAGE_TRANSACTION)
          {
             if (record.isUpdate)
             {
@@ -322,13 +322,4 @@ public class PrintPages // NO_UCD (unused code)
 
       return cursorInfo;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

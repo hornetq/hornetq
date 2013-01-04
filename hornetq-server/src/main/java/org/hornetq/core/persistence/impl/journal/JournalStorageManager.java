@@ -13,6 +13,25 @@
 
 package org.hornetq.core.persistence.impl.journal;
 
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADDRESS_SETTING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE_PENDING;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.DUPLICATE_ID;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.HEURISTIC_COMPLETION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ID_COUNTER_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COMPLETE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_INC;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SECURITY_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
@@ -82,6 +101,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicatedJournal;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -131,48 +151,6 @@ public class JournalStorageManager implements StorageManager
    // if any other component or any test needs to validate user-record-types from the Journal directly
    // This is where the definitions will exist and this is what these tests should be using
    // to verify the IDs
-
-   // Bindings journal record type
-
-   public static final byte QUEUE_BINDING_RECORD = 21;
-
-   public static final byte ID_COUNTER_RECORD = 24;
-
-   public static final byte ADDRESS_SETTING_RECORD = 25;
-
-   public static final byte SECURITY_RECORD = 26;
-
-   // Message journal record types
-
-   // This is used when a large message is created but not yet stored on the system.
-   // We use this to avoid temporary files missing
-   public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
-
-   public static final byte ADD_LARGE_MESSAGE = 30;
-
-   public static final byte ADD_MESSAGE = 31;
-
-   public static final byte ADD_REF = 32;
-
-   public static final byte ACKNOWLEDGE_REF = 33;
-
-   public static final byte UPDATE_DELIVERY_COUNT = 34;
-
-   public static final byte PAGE_TRANSACTION = 35;
-
-   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
-
-   public static final byte DUPLICATE_ID = 37;
-
-   public static final byte HEURISTIC_COMPLETION = 38;
-
-   public static final byte ACKNOWLEDGE_CURSOR = 39;
-
-   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
-
-   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
-
-   public static final byte PAGE_CURSOR_COMPLETE = 42;
 
    private final Semaphore pageMaxConcurrentIO;
 
@@ -367,12 +345,16 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * Starts replication. In practice that means 2 things:<br/>
-    * (1) every persistent piece of data is also replicated (sent) to the backup.<br/>
-    * (2) all currently existing data must be sent to the backup.
+    * Starts replication at the live-server side.
+    * <p>
+    * In practice that means 2 things:<br/>
+    * (1) all currently existing data must be sent to the backup.<br/>
+    * (2) every new persistent information is replicated (sent) to the backup.
     * <p>
     * To achieve this we lock the entire journal while collecting the list of files to send to the
     * backup. The journal does not remain locked during actual synchronization.
+    * <p>
+    * At the backup-side replication is handled by {@link ReplicationEndpoint}.
     * @param replicationManager
     * @param pagingManager
     * @throws HornetQException
@@ -698,9 +680,9 @@ public class JournalStorageManager implements StorageManager
       return newContext(singleThreadExecutor);
    }
 
-   public OperationContext newContext(final Executor executor)
+   public OperationContext newContext(final Executor executor1)
    {
-      return new OperationContextImpl(executor);
+      return new OperationContextImpl(executor1);
    }
 
    public void afterCompleteOperations(final IOAsyncTask run)
@@ -786,7 +768,7 @@ public class JournalStorageManager implements StorageManager
          long recordID = generateUniqueID();
 
          messageJournal.appendAddRecord(recordID,
-            ADD_LARGE_MESSAGE_PENDING,
+ JournalRecordIds.ADD_LARGE_MESSAGE_PENDING,
             new PendingLargeMessageEncoding(messageID),
             true,
             getContext(true));
@@ -806,7 +788,8 @@ public class JournalStorageManager implements StorageManager
       {
          installLargeMessageConfirmationOnTX(tx, recordID);
          messageJournal.appendDeleteRecordTransactional(tx.getID(), recordID,
-            new DeleteEncoding(ADD_LARGE_MESSAGE_PENDING, messageID));
+                                                        new DeleteEncoding(JournalRecordIds.ADD_LARGE_MESSAGE_PENDING,
+                                                                           messageID));
       }
       finally
       {
@@ -844,13 +827,13 @@ public class JournalStorageManager implements StorageManager
 
          if (message.isLargeMessage())
          {
-            messageJournal.appendAddRecord(message.getMessageID(), JournalStorageManager.ADD_LARGE_MESSAGE,
+            messageJournal.appendAddRecord(message.getMessageID(), JournalRecordIds.ADD_LARGE_MESSAGE,
                new LargeMessageEncoding((LargeServerMessage)message), false,
                getContext(false));
          }
          else
          {
-            messageJournal.appendAddRecord(message.getMessageID(), JournalStorageManager.ADD_MESSAGE, message, false,
+            messageJournal.appendAddRecord(message.getMessageID(), JournalRecordIds.ADD_MESSAGE, message, false,
                getContext(false));
          }
       }
@@ -865,7 +848,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecord(messageID, JournalStorageManager.ADD_REF, new RefEncoding(queueID), last &&
+         messageJournal.appendUpdateRecord(messageID, JournalRecordIds.ADD_REF, new RefEncoding(queueID), last &&
             syncNonTransactional, getContext(last && syncNonTransactional));
       }
       finally
@@ -874,12 +857,14 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private void readLock()
+   @Override
+   public void readLock()
    {
       storageManagerLock.readLock().lock();
    }
 
-   private void readUnLock()
+   @Override
+   public void readUnLock()
    {
       storageManagerLock.readLock().unlock();
    }
@@ -889,7 +874,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecord(messageID, JournalStorageManager.ACKNOWLEDGE_REF, new RefEncoding(queueID),
+         messageJournal.appendUpdateRecord(messageID, JournalRecordIds.ACKNOWLEDGE_REF, new RefEncoding(queueID),
             syncNonTransactional, getContext(syncNonTransactional));
       }
       finally
@@ -906,7 +891,7 @@ public class JournalStorageManager implements StorageManager
          long ackID = idGenerator.generateID();
          position.setRecordID(ackID);
          messageJournal.appendAddRecord(ackID,
-            ACKNOWLEDGE_CURSOR,
+ JournalRecordIds.ACKNOWLEDGE_CURSOR,
             new CursorAckRecordEncoding(queueID, position),
             syncNonTransactional,
             getContext(syncNonTransactional));
@@ -942,7 +927,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
-            JournalStorageManager.SET_SCHEDULED_DELIVERY_TIME,
+                                           JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME,
             encoding,
             syncNonTransactional,
             getContext(syncNonTransactional));
@@ -961,7 +946,7 @@ public class JournalStorageManager implements StorageManager
          DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
          messageJournal.appendAddRecord(recordID,
-            JournalStorageManager.DUPLICATE_ID,
+ JournalRecordIds.DUPLICATE_ID,
             encoding,
             syncNonTransactional,
             getContext(syncNonTransactional));
@@ -1000,13 +985,14 @@ public class JournalStorageManager implements StorageManager
          if (message.isLargeMessage())
          {
             messageJournal.appendAddRecordTransactional(txID, message.getMessageID(),
-               JournalStorageManager.ADD_LARGE_MESSAGE,
+                                                        JournalRecordIds.ADD_LARGE_MESSAGE,
                new LargeMessageEncoding(((LargeServerMessage)message)));
          }
          else
          {
             messageJournal.appendAddRecordTransactional(txID, message.getMessageID(),
-               JournalStorageManager.ADD_MESSAGE, message);
+ JournalRecordIds.ADD_MESSAGE,
+                                                        message);
          }
 
       }
@@ -1023,7 +1009,7 @@ public class JournalStorageManager implements StorageManager
       {
          pageTransaction.setRecordID(generateUniqueID());
          messageJournal.appendAddRecordTransactional(txID, pageTransaction.getRecordID(),
-            JournalStorageManager.PAGE_TRANSACTION, pageTransaction);
+                                                     JournalRecordIds.PAGE_TRANSACTION, pageTransaction);
       }
       finally
       {
@@ -1038,7 +1024,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          messageJournal.appendUpdateRecordTransactional(txID, pageTransaction.getRecordID(),
-            JournalStorageManager.PAGE_TRANSACTION,
+                                                        JournalRecordIds.PAGE_TRANSACTION,
             new PageUpdateTXEncoding(pageTransaction.getTransactionID(),
                depages));
       }
@@ -1054,7 +1040,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecord(pageTransaction.getRecordID(), JournalStorageManager.PAGE_TRANSACTION,
+         messageJournal.appendUpdateRecord(pageTransaction.getRecordID(), JournalRecordIds.PAGE_TRANSACTION,
             new PageUpdateTXEncoding(pageTransaction.getTransactionID(), depages),
             syncNonTransactional, getContext(syncNonTransactional));
       }
@@ -1069,7 +1055,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecordTransactional(txID, messageID, JournalStorageManager.ADD_REF,
+         messageJournal.appendUpdateRecordTransactional(txID, messageID, JournalRecordIds.ADD_REF,
             new RefEncoding(queueID));
       }
       finally
@@ -1084,7 +1070,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecordTransactional(txID, messageID, JournalStorageManager.ACKNOWLEDGE_REF,
+         messageJournal.appendUpdateRecordTransactional(txID, messageID, JournalRecordIds.ACKNOWLEDGE_REF,
             new RefEncoding(queueID));
       }
       finally
@@ -1102,7 +1088,7 @@ public class JournalStorageManager implements StorageManager
          position.setRecordID(ackID);
          messageJournal.appendAddRecordTransactional(txID,
             ackID,
-            ACKNOWLEDGE_CURSOR,
+ JournalRecordIds.ACKNOWLEDGE_CURSOR,
             new CursorAckRecordEncoding(queueID, position));
       }
       finally
@@ -1117,7 +1103,7 @@ public class JournalStorageManager implements StorageManager
       position.setRecordID(recordID);
       messageJournal.appendAddRecordTransactional(txID,
          recordID,
-         PAGE_CURSOR_COMPLETE,
+ JournalRecordIds.PAGE_CURSOR_COMPLETE,
          new CursorAckRecordEncoding(queueID, position));
    }
 
@@ -1152,7 +1138,7 @@ public class JournalStorageManager implements StorageManager
          long id = generateUniqueID();
 
          messageJournal.appendAddRecord(id,
-            JournalStorageManager.HEURISTIC_COMPLETION,
+ JournalRecordIds.HEURISTIC_COMPLETION,
             new HeuristicCompletionEncoding(xid, isCommit),
             true,
             getContext(true));
@@ -1201,7 +1187,7 @@ public class JournalStorageManager implements StorageManager
 
          messageJournal.appendUpdateRecordTransactional(txID,
             ref.getMessage().getMessageID(),
-            JournalStorageManager.SET_SCHEDULED_DELIVERY_TIME,
+                                                        JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME,
             encoding);
       }
       finally
@@ -1282,7 +1268,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendAddRecordTransactional(txID, recordID, JournalStorageManager.DUPLICATE_ID, encoding);
+         messageJournal.appendAddRecordTransactional(txID, recordID, JournalRecordIds.DUPLICATE_ID, encoding);
       }
       finally
       {
@@ -1300,7 +1286,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.appendUpdateRecordTransactional(txID, recordID, JournalStorageManager.DUPLICATE_ID, encoding);
+         messageJournal.appendUpdateRecordTransactional(txID, recordID, JournalRecordIds.DUPLICATE_ID, encoding);
       }
       finally
       {
@@ -1340,7 +1326,8 @@ public class JournalStorageManager implements StorageManager
       try
       {
          messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
-            JournalStorageManager.UPDATE_DELIVERY_COUNT, updateInfo,
+ JournalRecordIds.UPDATE_DELIVERY_COUNT,
+                                           updateInfo,
             syncNonTransactional, getContext(syncNonTransactional));
       }
       finally
@@ -1357,7 +1344,7 @@ public class JournalStorageManager implements StorageManager
       {
          long id = idGenerator.generateID();
          addressSetting.setStoreId(id);
-         bindingsJournal.appendAddRecord(id, ADDRESS_SETTING_RECORD, addressSetting, true);
+         bindingsJournal.appendAddRecord(id, JournalRecordIds.ADDRESS_SETTING_RECORD, addressSetting, true);
          mapPersistedAddressSettings.put(addressSetting.getAddressMatch(), addressSetting);
       }
       finally
@@ -1390,7 +1377,7 @@ public class JournalStorageManager implements StorageManager
       {
          final long id = idGenerator.generateID();
          persistedRoles.setStoreId(id);
-         bindingsJournal.appendAddRecord(id, SECURITY_RECORD, persistedRoles, true);
+         bindingsJournal.appendAddRecord(id, JournalRecordIds.SECURITY_RECORD, persistedRoles, true);
          mapPersistedRoles.put(persistedRoles.getAddressMatch(), persistedRoles);
       }
       finally
@@ -1405,7 +1392,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         bindingsJournal.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD,
+         bindingsJournal.appendAddRecord(journalID, JournalRecordIds.ID_COUNTER_RECORD,
             BatchingIDGenerator.createIDEncodingSupport(id), true);
       }
       finally
@@ -1496,7 +1483,7 @@ public class JournalStorageManager implements StorageManager
 
             switch (recordType)
             {
-               case ADD_LARGE_MESSAGE_PENDING:
+               case JournalRecordIds.ADD_LARGE_MESSAGE_PENDING:
                {
                   PendingLargeMessageEncoding pending = new PendingLargeMessageEncoding();
 
@@ -1509,7 +1496,7 @@ public class JournalStorageManager implements StorageManager
                   }
                   break;
                }
-               case ADD_LARGE_MESSAGE:
+               case JournalRecordIds.ADD_LARGE_MESSAGE:
                {
                   LargeServerMessage largeMessage = parseLargeMessage(messages, buff);
 
@@ -1519,7 +1506,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case ADD_MESSAGE:
+               case JournalRecordIds.ADD_MESSAGE:
                {
                   ServerMessage message = new ServerMessageImpl(record.id, 50);
 
@@ -1529,7 +1516,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case ADD_REF:
+               case JournalRecordIds.ADD_REF:
                {
                   long messageID = record.id;
 
@@ -1559,7 +1546,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case ACKNOWLEDGE_REF:
+               case JournalRecordIds.ACKNOWLEDGE_REF:
                {
                   long messageID = record.id;
 
@@ -1585,7 +1572,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case UPDATE_DELIVERY_COUNT:
+               case JournalRecordIds.UPDATE_DELIVERY_COUNT:
                {
                   long messageID = record.id;
 
@@ -1615,7 +1602,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case PAGE_TRANSACTION:
+               case JournalRecordIds.PAGE_TRANSACTION:
                {
                   if (record.isUpdate)
                   {
@@ -1640,7 +1627,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case SET_SCHEDULED_DELIVERY_TIME:
+               case JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME:
                {
                   long messageID = record.id;
 
@@ -1671,7 +1658,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case DUPLICATE_ID:
+               case JournalRecordIds.DUPLICATE_ID:
                {
                   DuplicateIDEncoding encoding = new DuplicateIDEncoding();
 
@@ -1690,14 +1677,14 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case HEURISTIC_COMPLETION:
+               case JournalRecordIds.HEURISTIC_COMPLETION:
                {
                   HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
                   encoding.decode(buff);
                   resourceManager.putHeuristicCompletion(record.id, encoding.xid, encoding.isCommit);
                   break;
                }
-               case ACKNOWLEDGE_CURSOR:
+               case JournalRecordIds.ACKNOWLEDGE_CURSOR:
                {
                   CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
                   encoding.decode(buff);
@@ -1719,7 +1706,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case PAGE_CURSOR_COUNTER_VALUE:
+               case JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE:
                {
                   PageCountRecord encoding = new PageCountRecord();
 
@@ -1740,7 +1727,7 @@ public class JournalStorageManager implements StorageManager
                   break;
                }
 
-               case PAGE_CURSOR_COUNTER_INC:
+               case JournalRecordIds.PAGE_CURSOR_COUNTER_INC:
                {
                   PageCountRecordInc encoding = new PageCountRecordInc();
 
@@ -1761,7 +1748,7 @@ public class JournalStorageManager implements StorageManager
                   break;
                }
 
-               case PAGE_CURSOR_COMPLETE:
+               case JournalRecordIds.PAGE_CURSOR_COMPLETE:
                {
                   CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
                   encoding.decode(buff);
@@ -2001,7 +1988,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          bindingsJournal.appendAddRecordTransactional(tx, binding.getID(),
-            JournalStorageManager.QUEUE_BINDING_RECORD,
+ JournalRecordIds.QUEUE_BINDING_RECORD,
             bindingEncoding);
       }
       finally
@@ -2029,9 +2016,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          long recordID = idGenerator.generateID();
-         messageJournal.appendAddRecordTransactional(txID,
-            recordID,
-            JournalStorageManager.PAGE_CURSOR_COUNTER_INC,
+         messageJournal.appendAddRecordTransactional(txID, recordID, JournalRecordIds.PAGE_CURSOR_COUNTER_INC,
             new PageCountRecordInc(queueID, value));
          return recordID;
       }
@@ -2048,7 +2033,7 @@ public class JournalStorageManager implements StorageManager
       {
          final long recordID = idGenerator.generateID();
          messageJournal.appendAddRecord(recordID,
-            JournalStorageManager.PAGE_CURSOR_COUNTER_INC,
+ JournalRecordIds.PAGE_CURSOR_COUNTER_INC,
             new PageCountRecordInc(queueID, value),
             true,
             getContext());
@@ -2067,7 +2052,7 @@ public class JournalStorageManager implements StorageManager
       try
       {
          final long recordID = idGenerator.generateID();
-         messageJournal.appendAddRecordTransactional(txID, recordID, JournalStorageManager.PAGE_CURSOR_COUNTER_VALUE,
+         messageJournal.appendAddRecordTransactional(txID, recordID, JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE,
             new PageCountRecord(queueID, value));
          return recordID;
       }
@@ -2121,27 +2106,27 @@ public class JournalStorageManager implements StorageManager
 
          byte rec = record.getUserRecordType();
 
-         if (rec == JournalStorageManager.QUEUE_BINDING_RECORD)
+         if (rec == JournalRecordIds.QUEUE_BINDING_RECORD)
          {
             PersistentQueueBindingEncoding bindingEncoding = newBindingEncoding(id, buffer);
 
             queueBindingInfos.add(bindingEncoding);
          }
-         else if (rec == JournalStorageManager.ID_COUNTER_RECORD)
+         else if (rec == JournalRecordIds.ID_COUNTER_RECORD)
          {
             idGenerator.loadState(record.id, buffer);
          }
-         else if (rec == JournalStorageManager.GROUP_RECORD)
+         else if (rec == JournalRecordIds.GROUP_RECORD)
          {
             GroupingEncoding encoding = newGroupEncoding(id, buffer);
             groupingInfos.add(encoding);
          }
-         else if (rec == JournalStorageManager.ADDRESS_SETTING_RECORD)
+         else if (rec == JournalRecordIds.ADDRESS_SETTING_RECORD)
          {
             PersistedAddressSetting setting = newAddressEncoding(id, buffer);
             mapPersistedAddressSettings.put(setting.getAddressMatch(), setting);
          }
-         else if (rec == JournalStorageManager.SECURITY_RECORD)
+         else if (rec == JournalRecordIds.SECURITY_RECORD)
          {
             PersistedRoles roles = newSecurityRecord(id, buffer);
             mapPersistedRoles.put(roles.getAddressMatch(), roles);
@@ -2155,9 +2140,6 @@ public class JournalStorageManager implements StorageManager
       return bindingsInfo;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
-    */
    public void lineUpContext()
    {
       readLock();
@@ -2462,13 +2444,13 @@ public class JournalStorageManager implements StorageManager
 
             switch (recordType)
             {
-               case ADD_LARGE_MESSAGE:
+               case JournalRecordIds.ADD_LARGE_MESSAGE:
                {
                   messages.put(record.id, parseLargeMessage(messages, buff));
 
                   break;
                }
-               case ADD_MESSAGE:
+               case JournalRecordIds.ADD_MESSAGE:
                {
                   ServerMessage message = new ServerMessageImpl(record.id, 50);
 
@@ -2478,7 +2460,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case ADD_REF:
+               case JournalRecordIds.ADD_REF:
                {
                   long messageID = record.id;
 
@@ -2506,7 +2488,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case ACKNOWLEDGE_REF:
+               case JournalRecordIds.ACKNOWLEDGE_REF:
                {
                   long messageID = record.id;
 
@@ -2534,7 +2516,7 @@ public class JournalStorageManager implements StorageManager
 
                   break;
                }
-               case PAGE_TRANSACTION:
+               case JournalRecordIds.PAGE_TRANSACTION:
                {
 
                   PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
@@ -3581,7 +3563,7 @@ public class JournalStorageManager implements StorageManager
       {
          for (RecordInfo record : records)
          {
-            if (record.userRecordType == JournalStorageManager.ADD_LARGE_MESSAGE)
+            if (record.userRecordType == ADD_LARGE_MESSAGE)
             {
                byte[] data = record.data;
 
@@ -3743,10 +3725,10 @@ public class JournalStorageManager implements StorageManager
             return encoding;
          }
 
-         case JournalStorageManager.QUEUE_BINDING_RECORD:
+         case QUEUE_BINDING_RECORD:
             return newBindingEncoding(id, buffer);
 
-         case JournalStorageManager.ID_COUNTER_RECORD:
+         case ID_COUNTER_RECORD:
             EncodingSupport idReturn = new IDCounterEncoding();
             idReturn.decode(buffer);
 
@@ -3755,10 +3737,10 @@ public class JournalStorageManager implements StorageManager
          case JournalStorageManager.GROUP_RECORD:
             return newGroupEncoding(id, buffer);
 
-         case JournalStorageManager.ADDRESS_SETTING_RECORD:
+         case ADDRESS_SETTING_RECORD:
             return newAddressEncoding(id, buffer);
 
-         case JournalStorageManager.SECURITY_RECORD:
+         case SECURITY_RECORD:
             return newSecurityRecord(id, buffer);
 
          default:
