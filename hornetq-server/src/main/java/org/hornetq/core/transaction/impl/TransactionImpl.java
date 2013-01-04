@@ -79,20 +79,6 @@ public class TransactionImpl implements Transaction
       this.timeoutSeconds = timeoutSeconds;
    }
 
-   /** Used for copying */
-   private TransactionImpl(final TransactionImpl other)
-   {
-      this.storageManager = other.storageManager;
-
-      this.xid = other.xid;
-
-      this.id = other.id;
-
-      this.createTime = other.createTime;
-
-      this.timeoutSeconds = other.timeoutSeconds;
-   }
-
    public TransactionImpl(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
@@ -134,11 +120,6 @@ public class TransactionImpl implements Transaction
    public void setContainsPersistent()
    {
       containsPersistent = true;
-   }
-
-   public boolean isContainsPersistent()
-   {
-      return containsPersistent;
    }
 
    public void setTimeout(final int timeout)
@@ -408,11 +389,6 @@ public class TransactionImpl implements Transaction
       this.state = state;
    }
 
-   public boolean isWaitBeforeCommit()
-   {
-      return waitBeforeCommit;
-   }
-
    public void setWaitBeforeCommit(boolean waitBeforeCommit)
    {
       this.waitBeforeCommit = waitBeforeCommit;
@@ -423,7 +399,7 @@ public class TransactionImpl implements Transaction
       return xid;
    }
 
-   public void markAsRollbackOnly(final HornetQException exception)
+   public void markAsRollbackOnly(final HornetQException exception1)
    {
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
@@ -431,7 +407,7 @@ public class TransactionImpl implements Transaction
       }
       state = State.ROLLBACK_ONLY;
 
-      this.exception = exception;
+      this.exception = exception1;
    }
 
    public synchronized void addOperation(final TransactionOperation operation)
@@ -441,7 +417,7 @@ public class TransactionImpl implements Transaction
       operations.add(operation);
    }
 
-   public int getOperationsCount()
+   private int getOperationsCount()
    {
       checkCreateOperations();
 
@@ -491,12 +467,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public Transaction copy()
-   {
-      return new TransactionImpl(this);
-   }
-
-   public synchronized void afterCommit()
+   private synchronized void afterCommit()
    {
       if (operations != null)
       {
@@ -507,7 +478,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public synchronized void afterRollback()
+   private synchronized void afterRollback()
    {
       if (operations != null)
       {
@@ -518,7 +489,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public synchronized void beforeCommit() throws Exception
+   private synchronized void beforeCommit() throws Exception
    {
       if (operations != null)
       {
@@ -529,7 +500,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public synchronized void beforePrepare() throws Exception
+   private synchronized void beforePrepare() throws Exception
    {
       if (operations != null)
       {
@@ -540,7 +511,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public synchronized void beforeRollback() throws Exception
+   private synchronized void beforeRollback() throws Exception
    {
       if (operations != null)
       {
@@ -551,7 +522,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public synchronized void afterPrepare()
+   private synchronized void afterPrepare()
    {
       if (operations != null)
       {
@@ -562,9 +533,6 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {

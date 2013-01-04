@@ -30,7 +30,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
 import javax.resource.spi.ManagedConnection;

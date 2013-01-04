@@ -25,7 +25,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 
 /**
  * A DuplicateIDCacheImpl
@@ -242,7 +242,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
-   private class AddDuplicateIDOperation implements TransactionOperation
+   private final class AddDuplicateIDOperation extends TransactionOperationAbstract
    {
       final byte[] duplID;
 
@@ -253,7 +253,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       AddDuplicateIDOperation(final byte[] duplID, final long recordID)
       {
          this.duplID = duplID;
-
          this.recordID = recordID;
       }
 
@@ -267,36 +266,17 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          }
       }
 
-      public void beforeCommit(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-
+      @Override
       public void afterCommit(final Transaction tx)
       {
          process();
       }
 
-      public void afterPrepare(final Transaction tx)
-      {
-      }
-
-      public void afterRollback(final Transaction tx)
-      {
-      }
-
+      @Override
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;
       }
-
    }
 
    private static final class ByteArrayHolder

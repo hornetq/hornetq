@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class FileConfiguration extends ConfigurationImpl
+public final class FileConfiguration extends ConfigurationImpl
 {
    private static final long serialVersionUID = -4766689627675039596L;
    // Constants ------------------------------------------------------------------------
@@ -38,15 +38,19 @@ public class FileConfiguration extends ConfigurationImpl
    // For a bridge confirmations must be activated or send acknowledgments won't return
    public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = 1024 * 1024;
 
-   // Static --------------------------------------------------------------------------
+   public FileConfiguration()
+   {
+      configurationUrl = DEFAULT_CONFIGURATION_URL;
+   }
 
-   // Attributes ----------------------------------------------------------------------
+   public FileConfiguration(String configurationUrl)
+   {
+      this.configurationUrl = configurationUrl;
+   }
 
    private String configurationUrl = DEFAULT_CONFIGURATION_URL;
 
    private boolean started;
-
-   // Public -------------------------------------------------------------------------
 
    public synchronized void start() throws Exception
    {
@@ -98,6 +102,4 @@ public class FileConfiguration extends ConfigurationImpl
    {
       this.configurationUrl = configurationUrl;
    }
-
-   // Private -------------------------------------------------------------------------
 }

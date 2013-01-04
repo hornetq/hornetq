@@ -15,20 +15,19 @@ package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.api.core.Pair;
 
 /**
  * This class will encapsulate the persistent counters for the PagingSubscription
@@ -37,12 +36,7 @@ import org.hornetq.api.core.Pair;
  */
 public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
-
-   // Constants -----------------------------------------------------
-
-   static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
-
-   // Attributes ----------------------------------------------------
+   private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private static final int FLUSH_COUNTER = 1000;
 
@@ -125,10 +119,10 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    /**
     * This method will install the prepared TXs
     * @param tx
-    * @param recordID
+    * @param recordID1
     * @param add
     */
-   public void applyIncrement(Transaction tx, long recordID, int add)
+   public void applyIncrement(Transaction tx, long recordID1, int add)
    {
       CounterOperations oper = (CounterOperations)tx.getProperty(TransactionPropertyIndexes.PAGE_COUNT_INC);
 
@@ -139,26 +133,20 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          tx.addOperation(oper);
       }
 
-      oper.operations.add(new ItemOper(this, recordID, add));
+      oper.operations.add(new ItemOper(this, recordID1, add));
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#loadValue(long, long)
-    */
-   public synchronized void loadValue(final long recordID, final long value)
+   public synchronized void loadValue(final long recordID1, final long value1)
    {
       if (this.subscription != null)
       {
          // it could be null on testcases... which is ok
          this.subscription.notEmpty();
       }
-      this.value.set(value);
-      this.recordID = recordID;
+      this.value.set(value1);
+      this.recordID = recordID1;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#incrementProcessed(long, int)
-    */
    public synchronized void incrementProcessed(long id, int add)
    {
       addInc(id, add);
@@ -198,9 +186,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#loadInc(long, int)
-    */
    public void loadInc(long id, int add)
    {
       if (loadList == null)
@@ -211,9 +196,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       loadList.add(new Pair<Long, Integer>(id, add));
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#processReload()
-    */
    public void processReload()
    {
       if (loadList != null)
@@ -234,9 +216,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#addInc(long, int)
-    */
    public void addInc(long id, int variance)
    {
       value.addAndGet(variance);
@@ -277,9 +256,9 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
       try
       {
-         for (Long value : deleteList)
+         for (Long value1 : deleteList)
          {
-            storage.deleteIncrementRecord(txCleanup, value);
+            storage.deleteIncrementRecord(txCleanup, value1);
          }
 
          if (recordID >= 0)
@@ -315,16 +294,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
    private static class ItemOper
    {
 
@@ -342,34 +311,11 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       int ammount;
    }
 
-   private static class CounterOperations implements TransactionOperation
+   private static class CounterOperations extends TransactionOperationAbstract implements TransactionOperation
    {
       LinkedList<ItemOper> operations = new LinkedList<ItemOper>();
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforePrepare(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
-       */
-      public void afterPrepare(Transaction tx)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforeCommit(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
-       */
+      @Override
       public void afterCommit(Transaction tx)
       {
          for (ItemOper oper : operations)
@@ -377,28 +323,5 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
             oper.counter.incrementProcessed(oper.id, oper.ammount);
          }
       }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeRollback(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforeRollback(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterRollback(org.hornetq.core.transaction.Transaction)
-       */
-      public void afterRollback(Transaction tx)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
-       */
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
-      }
    }
-
 }

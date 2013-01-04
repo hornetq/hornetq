@@ -12,11 +12,8 @@
  */
 package org.hornetq.tests.integration.xa;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -36,18 +33,16 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -676,7 +671,7 @@ public class XaTimeoutTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
-   class RollbackCompleteOperation implements TransactionOperation
+   final class RollbackCompleteOperation extends TransactionOperationAbstract
    {
       final CountDownLatch latch;
 
@@ -684,40 +679,10 @@ public class XaTimeoutTest extends UnitTestCase
       {
          this.latch = latch;
       }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeCommit(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-
-      public void afterPrepare(final Transaction tx)
-      {
-      }
-
-      public void afterCommit(final Transaction tx)
-      {
-      }
-
+      @Override
       public void afterRollback(final Transaction tx)
       {
          latch.countDown();
-      }
-
-      public Collection<Queue> getDistinctQueues()
-      {
-         return Collections.emptySet();
-      }
-
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
       }
    }
 }

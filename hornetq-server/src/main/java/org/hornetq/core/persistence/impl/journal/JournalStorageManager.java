@@ -97,6 +97,7 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.DataConstants;
@@ -2254,10 +2255,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#startPageRead()
-    */
    public void beforePageRead() throws Exception
    {
       if (pageMaxConcurrentIO != null)
@@ -2266,9 +2263,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
-    */
    public void afterPageRead() throws Exception
    {
       if (pageMaxConcurrentIO != null)
@@ -3363,14 +3357,17 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   /** This is only used when loading a transaction
-    it might be possible to merge the functionality of this class with {@link PagingStoreImpl.FinishPageMessageOperation}
-
+   /**
+    * This is only used when loading a transaction.
+    * <p>
+    * it might be possible to merge the functionality of this class with
+    * {@link PagingStoreImpl.FinishPageMessageOperation}
     */
    // TODO: merge this class with the one on the PagingStoreImpl
-   private static class FinishPageMessageOperation implements TransactionOperation
+   private static class FinishPageMessageOperation extends TransactionOperationAbstract implements TransactionOperation
    {
 
+      @Override
       public void afterCommit(final Transaction tx)
       {
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
@@ -3385,10 +3382,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      public void afterPrepare(final Transaction tx)
-      {
-      }
-
+      @Override
       public void afterRollback(final Transaction tx)
       {
          PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
@@ -3398,24 +3392,6 @@ public class JournalStorageManager implements StorageManager
             pageTransaction.rollback();
          }
       }
-
-      public void beforeCommit(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
-      }
-
    }
 
    private static final class PageCountRecord implements EncodingSupport
@@ -3544,17 +3520,11 @@ public class JournalStorageManager implements StorageManager
 
       public PagePosition position;
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-       */
       public int getEncodeSize()
       {
          return DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-       */
       public void encode(HornetQBuffer buffer)
       {
          buffer.writeLong(queueID);
@@ -3562,9 +3532,6 @@ public class JournalStorageManager implements StorageManager
          buffer.writeInt(position.getMessageNr());
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-       */
       public void decode(HornetQBuffer buffer)
       {
          queueID = buffer.readLong();
@@ -3961,30 +3928,11 @@ public class JournalStorageManager implements StorageManager
       txoper.confirmedMessages.add(recordID);
    }
 
-   final class TXLargeMessageConfirmationOperation implements TransactionOperation
+   final class TXLargeMessageConfirmationOperation extends TransactionOperationAbstract
    {
       public List<Long> confirmedMessages = new LinkedList<Long>();
 
-      public void beforePrepare(Transaction tx) throws Exception
-      {
-      }
-
-      public void afterPrepare(Transaction tx)
-      {
-      }
-
-      public void beforeCommit(Transaction tx) throws Exception
-      {
-      }
-
-      public void afterCommit(Transaction tx)
-      {
-      }
-
-      public void beforeRollback(Transaction tx) throws Exception
-      {
-      }
-
+      @Override
       public void afterRollback(Transaction tx)
       {
          for (Long msg : confirmedMessages)
@@ -3998,12 +3946,6 @@ public class JournalStorageManager implements StorageManager
                HornetQServerLogger.LOGGER.journalErrorConfirmingLargeMessage(e, msg);
             }
          }
-      }
-
-      @Override
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
       }
    }
 }
