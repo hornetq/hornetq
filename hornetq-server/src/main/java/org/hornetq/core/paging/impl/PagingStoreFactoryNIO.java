@@ -241,32 +241,12 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Protected -----------------------------------------------------
 
-   protected SequentialFileFactory newFileFactory(final String directoryName)
+   private SequentialFileFactory newFileFactory(final String directoryName)
    {
       return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false, critialErrorListener);
    }
-
-   protected PagingManager getPagingManager()
-   {
-      return pagingManager;
-   }
-
-   protected StorageManager getStorageManager()
-   {
-      return storageManager;
-   }
-
    protected PostOffice getPostOffice()
    {
       return postOffice;
    }
-
-   protected ExecutorFactory getExecutorFactory()
-   {
-      return executorFactory;
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
