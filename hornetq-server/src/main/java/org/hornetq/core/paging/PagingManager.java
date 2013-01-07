@@ -46,12 +46,9 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
    /** Returns the PageStore associated with the address. A new page store is created if necessary. */
    PagingStore getPageStore(SimpleString address) throws Exception;
 
-   /** An injection point for the PostOffice to inject itself */
-   void setPostOffice(PostOffice postOffice);
-
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging
-    * */
+    */
    void addTransaction(PageTransactionInfo pageTransaction);
 
    /**

@@ -219,17 +219,6 @@ public class NettyConnectionTest extends UnitTestCase
       {
          return null;
       }
-
-       @Override
-       public Object getAttachment()
-       {
-           return null;
-       }
-
-       @Override
-       public void setAttachment(Object attachment) {
-           // nothing to-do
-       }
    }
 
    class MyListener implements ConnectionLifeCycleListener

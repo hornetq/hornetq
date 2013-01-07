@@ -33,7 +33,6 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -68,8 +67,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    private final long syncTimeout;
 
    private StorageManager storageManager;
-
-   private PostOffice postOffice;
 
    private final IOCriticalErrorListener critialErrorListener;
 
@@ -167,11 +164,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.storageManager = storageManager;
    }
 
-   public void setPostOffice(final PostOffice postOffice)
-   {
-      this.postOffice = postOffice;
-   }
-
    public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
       File pageDirectory = new File(directory);
@@ -237,36 +229,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   protected SequentialFileFactory newFileFactory(final String directoryName)
+   private SequentialFileFactory newFileFactory(final String directoryName)
    {
       return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false, critialErrorListener);
    }
-
-   protected PagingManager getPagingManager()
-   {
-      return pagingManager;
-   }
-
-   protected StorageManager getStorageManager()
-   {
-      return storageManager;
-   }
-
-   protected PostOffice getPostOffice()
-   {
-      return postOffice;
-   }
-
-   protected ExecutorFactory getExecutorFactory()
-   {
-      return executorFactory;
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

@@ -24,9 +24,9 @@ import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIOErrorException;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -151,13 +151,13 @@ public class TemporaryQueueTest extends ServiceTestBase
       Assert.assertNotNull(message);
       message.acknowledge();
 
-      SimpleString[] storeNames = server.getPostOffice().getPagingManager().getStoreNames();
+      SimpleString[] storeNames = server.getPagingManager().getStoreNames();
       assertTrue(Arrays.asList(storeNames).contains(address));
 
       consumer.close();
       session.deleteQueue(queue);
 
-      storeNames = server.getPostOffice().getPagingManager().getStoreNames();
+      storeNames = server.getPagingManager().getStoreNames();
       assertFalse(Arrays.asList(storeNames).contains(address));
 
       session.close();
