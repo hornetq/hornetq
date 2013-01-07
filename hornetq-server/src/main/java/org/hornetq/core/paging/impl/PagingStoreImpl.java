@@ -64,10 +64,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
  */
 public class PagingStoreImpl implements PagingStore
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final SimpleString address;
 
    private final StorageManager storageManager;
@@ -119,11 +115,7 @@ public class PagingStoreImpl implements PagingStore
 
    protected final boolean syncNonTransactional;
 
-   // Static --------------------------------------------------------
-
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
-
-   // Constructors --------------------------------------------------
 
    public PagingStoreImpl(final SimpleString address,
                           final ScheduledExecutorService scheduledExecutor,

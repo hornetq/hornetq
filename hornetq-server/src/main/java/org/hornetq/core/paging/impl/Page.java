@@ -71,10 +71,6 @@ public class Page implements Comparable<Page>
 
    private final SimpleString storeName;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public Page(final SimpleString storeName,
                    final StorageManager storageManager,
                    final SequentialFileFactory factory,
@@ -87,10 +83,6 @@ public class Page implements Comparable<Page>
       this.storageManager = storageManager;
       this.storeName = storeName;
    }
-
-   // Public --------------------------------------------------------
-
-   // PagingFile implementation
 
    public int getPageId()
    {
