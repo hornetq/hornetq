@@ -1153,9 +1153,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
-    */
+   @Override
    public void lineUpContex(IOCompletion callback)
    {
       callback.storeLineUp();

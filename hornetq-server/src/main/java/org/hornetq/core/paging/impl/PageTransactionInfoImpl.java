@@ -271,9 +271,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
              ")";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.PageTransactionInfo#deliverAfterCommit(org.hornetq.core.paging.cursor.PageCursor, org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public synchronized boolean deliverAfterCommit(PageSubscription cursor, PagePosition cursorPos)
    {
       if (committed && useRedelivery)

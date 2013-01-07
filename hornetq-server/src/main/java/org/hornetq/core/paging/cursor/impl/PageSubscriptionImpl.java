@@ -482,9 +482,7 @@ class PageSubscriptionImpl implements PageSubscription
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#confirm(org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public void ack(final PagedReference reference) throws Exception
    {
       // Need to do the ACK and counter atomically (inside a TX) or the counter could get out of sync
@@ -526,9 +524,7 @@ class PageSubscriptionImpl implements PageSubscription
       });
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#getFirstPage()
-    */
+   @Override
    public long getFirstPage()
    {
       synchronized (consumedPages)
@@ -604,18 +600,14 @@ class PageSubscriptionImpl implements PageSubscription
       recoveredACK.add(position);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#recoverPreparedACK(org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public void reloadPreparedACK(final Transaction tx, final PagePosition position)
    {
       deliveredCount.incrementAndGet();
       installTXCallback(tx, position);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#positionIgnored(org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public void positionIgnored(final PagePosition position)
    {
       processACK(position);
@@ -702,9 +694,7 @@ class PageSubscriptionImpl implements PageSubscription
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#getId()
-    */
+   @Override
    public long getId()
    {
       return cursorId;

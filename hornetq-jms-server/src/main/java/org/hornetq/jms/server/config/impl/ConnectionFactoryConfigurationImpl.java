@@ -513,9 +513,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Encoding Support Implementation --------------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void decode(final HornetQBuffer buffer)
    {
       persisted = true;
@@ -603,9 +601,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       factoryType = JMSFactoryType.valueOf(buffer.readInt());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-    */
+   @Override
    public void encode(final HornetQBuffer buffer)
    {
       persisted = true;
@@ -693,9 +689,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       buffer.writeInt(factoryType.intValue());
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-    */
+   @Override
    public int getEncodeSize()
    {
       int size = BufferHelper.sizeOfSimpleString(name) +

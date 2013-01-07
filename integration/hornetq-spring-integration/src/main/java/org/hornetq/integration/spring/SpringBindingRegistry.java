@@ -45,17 +45,13 @@ public class SpringBindingRegistry implements BindingRegistry
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.naming.BindingRegistry#getContext()
-    */
+   @Override
    public Object getContext()
    {
       return this.factory;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.spi.core.naming.BindingRegistry#setContext(java.lang.Object)
-    */
+   @Override
    public void setContext(Object ctx)
    {
       this.factory = (ConfigurableBeanFactory) ctx;

@@ -158,9 +158,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       coreQueueControl.setExpiryAddress(expiryAddres);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.JMSQueueControl#addJNDI(java.lang.String)
-    */
+   @Override
    public void addJNDI(String jndi) throws Exception
    {
       jmsServerManager.addQueueToJndi(managedQueue.getName(), jndi);

@@ -22,6 +22,7 @@ import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.QueueControl;
@@ -33,7 +34,6 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.api.core.Pair;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -76,23 +76,11 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    // TopicControlMBean implementation ------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.JMSQueueControl#addJNDI(java.lang.String)
-    */
+   @Override
    public void addJNDI(String jndi) throws Exception
    {
       jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
-
-
-   /* (non-Javadoc)
-    * @see org.hornetq.api.jms.management.TopicControl#removeJNDI(java.lang.String)
-    */
-   public void removeJNDI(String jndi) throws Exception
-   {
-      jmsServerManager.removeTopicFromJNDI(managedTopic.getName(), jndi);
-   }
-
 
    public String[] getJNDIBindings()
    {

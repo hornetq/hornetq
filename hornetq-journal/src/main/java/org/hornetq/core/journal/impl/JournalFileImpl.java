@@ -199,25 +199,19 @@ public class JournalFileImpl implements JournalFile
       return count;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.impl.JournalFile#addSize(int)
-    */
+   @Override
    public void addSize(final int bytes)
    {
       liveBytes.addAndGet(bytes);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.impl.JournalFile#decSize(int)
-    */
+   @Override
    public void decSize(final int bytes)
    {
       liveBytes.addAndGet(-bytes);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.impl.JournalFile#getSize()
-    */
+   @Override
    public int getLiveSize()
    {
       return liveBytes.get();

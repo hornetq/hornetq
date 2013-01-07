@@ -131,9 +131,7 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
-    */
+   @Override
    public void onIOError(Exception exception, String message, SequentialFile file)
    {
       if (critialErrorListener != null)
@@ -142,9 +140,7 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
-    */
+   @Override
    public void activateBuffer(final SequentialFile file)
    {
       if (timedBuffer != null)

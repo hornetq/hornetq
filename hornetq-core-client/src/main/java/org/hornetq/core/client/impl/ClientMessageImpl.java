@@ -143,9 +143,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       return "ClientMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress() + ",properties=" + properties.toString() + "]";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
-    */
+   @Override
    public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
       try
@@ -161,25 +159,19 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
-    */
+   @Override
    public void setOutputStream(final OutputStream out) throws HornetQException
    {
       saveToOutputStream(out);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ClientMessage#waitOutputStreamCompletion()
-    */
+   @Override
    public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.impl.ClientMessageInternal#discardLargeBody()
-    */
+   @Override
    public void discardBody()
    {
    }

@@ -498,17 +498,13 @@ public class ConfigurationImpl implements Configuration
    }
 
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#getPageMaxConcurrentIO()
-    */
+   @Override
    public int getPageMaxConcurrentIO()
    {
       return maxConcurrentPageIO;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#setPageMaxConcurrentIO(int)
-    */
+   @Override
    public void setPageMaxConcurrentIO(int maxIO)
    {
       this.maxConcurrentPageIO = maxIO;
@@ -1200,33 +1196,25 @@ public class ConfigurationImpl implements Configuration
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#getAddressesSettings()
-    */
+   @Override
    public Map<String, AddressSettings> getAddressesSettings()
    {
       return addressesSettings;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#setAddressesSettings(java.util.Map)
-    */
+   @Override
    public void setAddressesSettings(final Map<String, AddressSettings> addressesSettings)
    {
       this.addressesSettings = addressesSettings;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#getSecurityRoles()
-    */
+   @Override
    public Map<String, Set<Role>> getSecurityRoles()
    {
       return securitySettings;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#setSecuritySettings(java.util.Map)
-    */
+   @Override
    public void setSecurityRoles(final Map<String, Set<Role>> securitySettings)
    {
       this.securitySettings = securitySettings;
@@ -1262,17 +1250,13 @@ public class ConfigurationImpl implements Configuration
       this.connectorServiceConfigurations = configs;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#getName()
-    */
+   @Override
    public String getName()
    {
       return name;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.config.Configuration#setName(java.lang.String)
-    */
+   @Override
    public void setName(String name)
    {
       this.name = name;
