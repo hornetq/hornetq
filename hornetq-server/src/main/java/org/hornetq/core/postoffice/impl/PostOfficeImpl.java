@@ -764,11 +764,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return null;
    }
 
-   public PagingManager getPagingManager()
-   {
-      return pagingManager;
-   }
-
    public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
    {
       DuplicateIDCache cache = duplicateIDCaches.get(address);
