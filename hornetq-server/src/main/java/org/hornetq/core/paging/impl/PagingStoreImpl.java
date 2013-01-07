@@ -974,12 +974,9 @@ public class PagingStoreImpl implements PagingStore
 
    private static class FinishPageMessageOperation implements TransactionOperation
    {
-      public final PageTransactionInfo pageTransaction;
-
+      private final PageTransactionInfo pageTransaction;
       private final StorageManager storageManager;
-
       private final PagingManager pagingManager;
-
       private final Set<PagingStore> usedStores = new HashSet<PagingStore>();
 
       private boolean stored = false;
