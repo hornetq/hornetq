@@ -30,7 +30,7 @@
     </prerequisites>
 
    <properties>
-      <netty.version>3.4.5.Final</netty.version>
+      <netty.version>3.6.1.Final</netty.version>
       <netty.version.string>${netty-version}-2da5b0e</netty.version.string>
       <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
