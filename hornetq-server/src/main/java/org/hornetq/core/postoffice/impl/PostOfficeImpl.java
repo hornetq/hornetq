@@ -50,9 +50,9 @@ import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -175,11 +175,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
 
       managementService.addNotificationListener(this);
-
-      if (pagingManager != null)
-      {
-         pagingManager.setPostOffice(this);
-      }
 
       // Injecting the postoffice (itself) on queueFactory for paging-control
       queueFactory.setPostOffice(this);

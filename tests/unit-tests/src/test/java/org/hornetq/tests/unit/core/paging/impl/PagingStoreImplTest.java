@@ -45,7 +45,6 @@ import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -921,11 +920,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
       @Override
       public void setPagingManager(final PagingManager manager)
-      {
-      }
-
-      @Override
-      public void setPostOffice(final PostOffice office)
       {
       }
 

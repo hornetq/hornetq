@@ -18,7 +18,6 @@ import java.util.List;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -37,8 +36,6 @@ public interface PagingStoreFactory
    void setPagingManager(PagingManager manager);
 
    void setStorageManager(StorageManager storageManager);
-
-   void setPostOffice(PostOffice office);
 
    List<PagingStore> reloadStores(HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 

@@ -36,7 +36,6 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
-import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -63,8 +62,6 @@ public class PagingManagerImplTest extends UnitTestCase
                                                                      100, null,
                                 new OrderedExecutorFactory(Executors.newCachedThreadPool()),
                                 true);
-
-      storeFactory.setPostOffice(new FakePostOffice());
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory,
                                                             new NullStorageManager(),
