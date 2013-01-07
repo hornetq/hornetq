@@ -26,7 +26,6 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -147,14 +146,6 @@ public class PagingManagerImpl implements PagingManager
          return store;
       }
       return newStore(storeName);
-   }
-
-   /** this will be set by the postOffice itself.
-    *  There is no way to set this on the constructor as the PagingManager is constructed before the postOffice.
-    *  (There is a one-to-one relationship here) */
-   public void setPostOffice(final PostOffice postOffice)
-   {
-      pagingStoreFactory.setPostOffice(postOffice);
    }
 
    public void addTransaction(final PageTransactionInfo pageTransaction)
