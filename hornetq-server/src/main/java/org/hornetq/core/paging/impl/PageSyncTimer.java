@@ -23,11 +23,8 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.OperationContext;
 
 /**
- * This will batch multiple calls waiting to perform a sync in a single call
- *
+ * This will batch multiple calls waiting to perform a sync in a single call.
  * @author clebertsuconic
- *
- *
  */
 final class PageSyncTimer
 {
@@ -115,15 +112,4 @@ final class PageSyncTimer
          }
       }
    }
-
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

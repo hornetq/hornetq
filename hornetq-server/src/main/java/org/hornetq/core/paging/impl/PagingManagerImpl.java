@@ -40,12 +40,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
  */
 public class PagingManagerImpl implements PagingManager
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private volatile boolean started = false;
-
 
    /**
     * Lock used at the start of synchronization between a live server and its backup.
