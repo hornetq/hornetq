@@ -2159,16 +2159,16 @@ public class PagingTest extends ServiceTestBase
 
          assertEquals(0, errors.get());
 
-         for (int i = 0; i < 20 && server.getPostOffice().getPagingManager().getTransactions().size() != 0; i++)
+         for (int i = 0; i < 20 && server.getPagingManager().getTransactions().size() != 0; i++)
          {
-            if (server.getPostOffice().getPagingManager().getTransactions().size() != 0)
+            if (server.getPagingManager().getTransactions().size() != 0)
             {
                // The delete may be asynchronous, giving some time case it eventually happen asynchronously
                Thread.sleep(500);
             }
          }
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getTransactions().size());
+         assertEquals(0, server.getPagingManager().getTransactions().size());
 
       }
       finally
@@ -2347,21 +2347,21 @@ public class PagingTest extends ServiceTestBase
 
       assertEquals(0, errors.get());
 
-      for (int i = 0; i < 20 && server.getPostOffice().getPagingManager().getPageStore(ADDRESS).isPaging(); i++)
+      for (int i = 0; i < 20 && server.getPagingManager().getPageStore(ADDRESS).isPaging(); i++)
       {
          // The delete may be asynchronous, giving some time case it eventually happen asynchronously
          Thread.sleep(500);
       }
 
-      assertFalse(server.getPostOffice().getPagingManager().getPageStore(ADDRESS).isPaging());
+      assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
 
-      for (int i = 0; i < 20 && server.getPostOffice().getPagingManager().getTransactions().size() != 0; i++)
+      for (int i = 0; i < 20 && server.getPagingManager().getTransactions().size() != 0; i++)
       {
          // The delete may be asynchronous, giving some time case it eventually happen asynchronously
          Thread.sleep(500);
       }
 
-      assertEquals(0, server.getPostOffice().getPagingManager().getTransactions().size());
+      assertEquals(0, server.getPagingManager().getTransactions().size());
 
    }
 
@@ -2541,7 +2541,7 @@ public class PagingTest extends ServiceTestBase
          message.getBodyBuffer().writeBytes(body);
 
          // Stop sending message as soon as we start paging
-         if (server.getPostOffice().getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging())
+         if (server.getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging())
          {
             break;
          }
@@ -2550,7 +2550,7 @@ public class PagingTest extends ServiceTestBase
          producer.send(message);
       }
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
 
       session.start();
 
@@ -2673,7 +2673,7 @@ public class PagingTest extends ServiceTestBase
          message.putBooleanProperty("new", false);
 
          // Stop sending message as soon as we start paging
-         if (server.getPostOffice().getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging())
+         if (server.getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging())
          {
             break;
          }
@@ -2682,7 +2682,7 @@ public class PagingTest extends ServiceTestBase
          producer.send(message);
       }
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
 
       session.start();
 
@@ -2800,7 +2800,7 @@ public class PagingTest extends ServiceTestBase
                msgSend.getBodyBuffer().writeBytes(new byte[10 * 1024]);
                producerNonTransacted.send(msgSend);
             }
-            assertTrue(server.getPostOffice().getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
+            assertTrue(server.getPagingManager().getPageStore(PagingTest.ADDRESS).isPaging());
          }
          else
          {
@@ -3145,8 +3145,7 @@ public class PagingTest extends ServiceTestBase
          message.getBodyBuffer().writeBytes(body);
          message.putIntProperty(new SimpleString("id"), i);
 
-         PagingStore store = server.getPostOffice()
-            .getPagingManager()
+         PagingStore store = server.getPagingManager()
             .getPageStore(PagingTest.ADDRESS);
 
          // Worse scenario possible... only schedule what's on pages
@@ -3540,8 +3539,7 @@ public class PagingTest extends ServiceTestBase
 
       Assert.assertNull(consumer.receiveImmediate());
 
-      Assert.assertEquals(0, server.getPostOffice()
-         .getPagingManager()
+      Assert.assertEquals(0, server.getPagingManager()
          .getPageStore(PagingTest.ADDRESS)
          .getAddressSize());
 
@@ -3603,7 +3601,7 @@ public class PagingTest extends ServiceTestBase
 
       session.close();
 
-      Assert.assertEquals(0, server.getPostOffice()
+      Assert.assertEquals(0, server
          .getPagingManager()
          .getPageStore(PagingTest.ADDRESS)
          .getAddressSize());
@@ -3917,8 +3915,8 @@ public class PagingTest extends ServiceTestBase
 
       session.close();
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
-      Assert.assertFalse(server.getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
+      Assert.assertFalse(server.getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
 
       session = sf.createSession(false, true, false);
 
@@ -4014,8 +4012,8 @@ public class PagingTest extends ServiceTestBase
 
       session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-      Assert.assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+      Assert.assertFalse(server.getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
       for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
       {
@@ -4028,8 +4026,8 @@ public class PagingTest extends ServiceTestBase
 
       session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
       for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -4042,8 +4040,8 @@ public class PagingTest extends ServiceTestBase
 
       session.close();
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
       session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -4064,7 +4062,7 @@ public class PagingTest extends ServiceTestBase
 
       consumerA.close();
 
-      Assert.assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+      Assert.assertTrue(server.getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
