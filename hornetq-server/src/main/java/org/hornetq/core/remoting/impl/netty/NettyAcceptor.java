@@ -624,18 +624,6 @@ public class NettyAcceptor implements Acceptor
             }
          }
       }
-      // TODO remove workaround when integrating Netty 3.2.x
-      // https://jira.jboss.org/jira/browse/NETTY-256
-      bossExecutor.shutdown();
-      try
-      {
-         bossExecutor.awaitTermination(30, TimeUnit.SECONDS);
-      }
-      catch (InterruptedException e)
-      {
-         throw new HornetQInterruptedException(e);
-      }
-
       paused = true;
    }
 
