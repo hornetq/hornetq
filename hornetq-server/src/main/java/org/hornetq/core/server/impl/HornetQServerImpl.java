@@ -1408,7 +1408,7 @@ public class HornetQServerImpl implements HornetQServer
       // This can't be created until node id is set
       clusterManager =
                new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
-                                  nodeManager, configuration.isBackup());
+                                  nodeManager, configuration.isBackup(), threadPool);
 
       clusterManager.deploy();
 
