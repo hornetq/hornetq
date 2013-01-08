@@ -53,9 +53,9 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.BindingQueryResult;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -1325,7 +1325,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void requestProducerCredits(final SimpleString address, final int credits) throws Exception
    {
-      PagingStore store = postOffice.getPagingManager().getPageStore(address);
+      PagingStore store = server.getPagingManager().getPageStore(address);
 
       if (!store.checkMemory(new Runnable()
       {
@@ -1433,6 +1433,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();

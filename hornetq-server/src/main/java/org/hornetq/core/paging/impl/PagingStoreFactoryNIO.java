@@ -33,7 +33,6 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -67,42 +66,23 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    private final long syncTimeout;
 
-   private StorageManager storageManager;
-
-   private PostOffice postOffice;
+   private final StorageManager storageManager;
 
    private final IOCriticalErrorListener critialErrorListener;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public PagingStoreFactoryNIO(final String directory,
-                                final long syncTimeout,
-                                final ScheduledExecutorService scheduledExecutor,
-                                final ExecutorFactory executorFactory,
-                                final boolean syncNonTransactional)
-   {
-      this(directory, syncTimeout, scheduledExecutor, executorFactory, syncNonTransactional, null);
-   }
-
-   public PagingStoreFactoryNIO(final String directory,
+   public PagingStoreFactoryNIO(final StorageManager storageManager, final String directory,
                                 final long syncTimeout,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final ExecutorFactory executorFactory,
                                 final boolean syncNonTransactional,
                                 final IOCriticalErrorListener critialErrorListener)
    {
+      this.storageManager = storageManager;
       this.directory = directory;
-
       this.executorFactory = executorFactory;
-
       this.syncNonTransactional = syncNonTransactional;
-
       this.scheduledExecutor = scheduledExecutor;
-
       this.syncTimeout = syncTimeout;
-
       this.critialErrorListener = critialErrorListener;
    }
 
@@ -160,16 +140,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    public void setPagingManager(final PagingManager pagingManager)
    {
       this.pagingManager = pagingManager;
-   }
-
-   public void setStorageManager(final StorageManager storageManager)
-   {
-      this.storageManager = storageManager;
-   }
-
-   public void setPostOffice(final PostOffice postOffice)
-   {
-      this.postOffice = postOffice;
    }
 
    public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
@@ -237,36 +207,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   protected SequentialFileFactory newFileFactory(final String directoryName)
+   private SequentialFileFactory newFileFactory(final String directoryName)
    {
       return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false, critialErrorListener);
    }
-
-   protected PagingManager getPagingManager()
-   {
-      return pagingManager;
-   }
-
-   protected StorageManager getStorageManager()
-   {
-      return storageManager;
-   }
-
-   protected PostOffice getPostOffice()
-   {
-      return postOffice;
-   }
-
-   protected ExecutorFactory getExecutorFactory()
-   {
-      return executorFactory;
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

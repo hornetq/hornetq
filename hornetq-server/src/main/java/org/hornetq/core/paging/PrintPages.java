@@ -92,11 +92,12 @@ public class PrintPages // NO_UCD (unused code)
                return executor;
             }
          };
-         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(arg[0], 1000l, scheduled, execfactory, false, null);
+         final StorageManager sm = new NullStorageManager();
+         PagingStoreFactory pageStoreFactory =
+                  new PagingStoreFactoryNIO(sm, arg[0], 1000l, scheduled, execfactory, false, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
-         StorageManager sm = new NullStorageManager();
-         PagingManager manager = new PagingManagerImpl(pageStoreFactory, sm, addressSettingsRepository);
+         PagingManager manager = new PagingManagerImpl(pageStoreFactory, addressSettingsRepository);
 
          manager.start();
 

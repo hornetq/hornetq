@@ -33,8 +33,8 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.HornetQNotConnectedException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -75,7 +75,6 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.TransportConfigurationUtils;
@@ -143,7 +142,7 @@ public final class ReplicationTest extends ServiceTestBase
       backupServer.start();
       if (backup)
       {
-         FailoverTestBase.waitForRemoteBackup(null, 5, true, backupServer);
+         ServiceTestBase.waitForRemoteBackup(null, 5, true, backupServer);
       }
       int count = 0;
       waitForReplication(count);
@@ -583,8 +582,9 @@ public final class ReplicationTest extends ServiceTestBase
    {
 
       PagingManager paging =
-               new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), 1000, null,
-                                                               executorFactory, false), storageManager,
+               new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
+                                                               1000, null,
+ executorFactory, false, null),
                                      addressSettingsRepository);
 
       paging.start();

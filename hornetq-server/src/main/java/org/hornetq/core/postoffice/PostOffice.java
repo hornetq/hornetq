@@ -15,7 +15,6 @@ package org.hornetq.core.postoffice;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -77,8 +76,6 @@ public interface PostOffice extends HornetQComponent
    Pair<RoutingContext, ServerMessage> redistribute(ServerMessage message, final Queue originatingQueue, Transaction tx) throws Exception;
 
    void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception;
-
-   PagingManager getPagingManager();
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
 

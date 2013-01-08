@@ -461,11 +461,13 @@ public final class XmlDataExporter
                return executor;
             }
          };
-         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(config.getPagingDirectory(), 1000l, scheduled, executorFactory, false, null);
+         final StorageManager sm = new NullStorageManager();
+         PagingStoreFactory pageStoreFactory =
+                  new PagingStoreFactoryNIO(sm, config.getPagingDirectory(), 1000l, scheduled, executorFactory, false,
+                                            null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
-         StorageManager sm = new NullStorageManager();
-         PagingManager manager = new PagingManagerImpl(pageStoreFactory, sm, addressSettingsRepository);
+         PagingManager manager = new PagingManagerImpl(pageStoreFactory, addressSettingsRepository);
 
          manager.start();
 

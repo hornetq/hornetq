@@ -28,6 +28,7 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
@@ -36,7 +37,6 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
-import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -58,17 +58,13 @@ public class PagingManagerImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.setDefault(settings);
 
+      final StorageManager storageManager = new NullStorageManager();
 
-      PagingStoreFactoryNIO storeFactory = new PagingStoreFactoryNIO(getPageDir(),
-                                                                     100, null,
-                                new OrderedExecutorFactory(Executors.newCachedThreadPool()),
-                                true);
+      PagingStoreFactoryNIO storeFactory =
+               new PagingStoreFactoryNIO(storageManager, getPageDir(), 100, null,
+                                         new OrderedExecutorFactory(Executors.newCachedThreadPool()), true, null);
 
-      storeFactory.setPostOffice(new FakePostOffice());
-
-      PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory,
-                                                            new NullStorageManager(),
-                                                            addressSettings);
+      PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory, addressSettings);
 
       managerImpl.start();
 

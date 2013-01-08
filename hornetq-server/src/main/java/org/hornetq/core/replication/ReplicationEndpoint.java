@@ -67,8 +67,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage.SyncDataType;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
@@ -287,12 +287,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly(JournalState.SYNCING);
       }
 
-      pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
+         pageManager =
+                  new PagingManagerImpl(new PagingStoreFactoryNIO(storage, config.getPagingDirectory(),
                                                                     config.getJournalBufferSize_NIO(),
                                                                     server.getScheduledPool(),
                                                                     server.getExecutorFactory(),
                                                                     config.isJournalSyncNonTransactional(), criticalErrorListener),
-                                          storage,
                                           server.getAddressSettingsRepository());
 
       pageManager.start();
@@ -481,7 +481,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       Long id = Long.valueOf(msg.getId());
       byte[] data = msg.getData();
-      SequentialFile channel;
+      SequentialFile channel1;
       switch (msg.getFileType())
       {
          case LARGE_MESSAGE:
@@ -493,13 +493,13 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                return;
             }
             LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
-            channel = largeMessageInSync.getSyncFile();
+            channel1 = largeMessageInSync.getSyncFile();
             break;
          }
          case PAGE:
          {
             Page page = getPage(msg.getPageStore(), (int)msg.getId());
-            channel = page.getFile();
+            channel1 = page.getFile();
             break;
          }
          case JOURNAL:
@@ -520,15 +520,15 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
       if (data == null)
       {
-         channel.close();
+         channel1.close();
          return;
       }
 
-      if (!channel.isOpen())
+      if (!channel1.isOpen())
       {
-         channel.open(1, false);
+         channel1.open(1, false);
       }
-      channel.writeDirect(ByteBuffer.wrap(data), true);
+      channel1.writeDirect(ByteBuffer.wrap(data), true);
    }
 
    /**
