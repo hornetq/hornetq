@@ -68,6 +68,10 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private final int minLargeMessageSize;
 
+   private final long clusterNotificationInterval;
+
+   private final int clusterNotificationAttempts;
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -96,7 +100,9 @@ public final class ClusterConnectionConfiguration implements Serializable
          maxHops,
          confirmationWindowSize,
          staticConnectors,
-         allowDirectConnectionsOnly);
+         allowDirectConnectionsOnly,
+         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL,
+         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS);
    }
 
 
@@ -117,7 +123,9 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final int maxHops,
                                          final int confirmationWindowSize,
                                          final List<String> staticConnectors,
-                                         final boolean allowDirectConnectionsOnly)
+                                         final boolean allowDirectConnectionsOnly,
+                                         final long clusterNotificationInterval,
+                                         final int clusterNotificationAttempts)
    {
       this.name = name;
       this.address = address;
@@ -147,6 +155,8 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
       this.minLargeMessageSize = minLargeMessageSize;
+      this.clusterNotificationInterval = clusterNotificationInterval;
+      this.clusterNotificationAttempts = clusterNotificationAttempts;
    }
 
 
@@ -176,7 +186,9 @@ public final class ClusterConnectionConfiguration implements Serializable
          forwardWhenNoConsumers,
          maxHops,
          confirmationWindowSize,
-         discoveryGroupName);
+         discoveryGroupName,
+         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL,
+         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS);
    }
 
 
@@ -196,7 +208,9 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
                                          final int confirmationWindowSize,
-                                         final String discoveryGroupName)
+                                         final String discoveryGroupName,
+                                         final long clusterNotificationInterval,
+                                         final int clusterNotificationAttempts)
    {
       this.name = name;
       this.address = address;
@@ -212,6 +226,8 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
+      this.clusterNotificationInterval = clusterNotificationInterval;
+      this.clusterNotificationAttempts = clusterNotificationAttempts;
       this.staticConnectors = Collections.emptyList();
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
@@ -411,5 +427,18 @@ public final class ClusterConnectionConfiguration implements Serializable
    public void setForwardWhenNoConsumers(boolean forwardWhenNoConsumers)
    {
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
+   }
+
+   /*
+   * returns the cluster update interval
+   * */
+   public long getClusterNotificationInterval()
+   {
+      return clusterNotificationInterval;
+   }
+
+   public int getClusterNotificationAttempts()
+   {
+      return clusterNotificationAttempts;
    }
 }

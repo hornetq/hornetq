@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
@@ -86,6 +87,8 @@ public class ClusterManager implements HornetQComponent
 
    private final Configuration configuration;
 
+   private final ExecutorService threadPool;
+
    enum State
    {
       STOPPED,
@@ -115,12 +118,13 @@ public class ClusterManager implements HornetQComponent
    private final NodeManager nodeManager;
 
    public ClusterManager(final ExecutorFactory executorFactory,
-                             final HornetQServer server,
-                             final PostOffice postOffice,
-                             final ScheduledExecutorService scheduledExecutor,
-                             final ManagementService managementService,
-                             final Configuration configuration,
-                         final NodeManager nodeManager, final boolean backup)
+                         final HornetQServer server,
+                         final PostOffice postOffice,
+                         final ScheduledExecutorService scheduledExecutor,
+                         final ManagementService managementService,
+                         final Configuration configuration,
+                         final NodeManager nodeManager, final boolean backup,
+                         ExecutorService threadPool)
    {
       this.executorFactory = executorFactory;
 
@@ -139,6 +143,8 @@ public class ClusterManager implements HornetQComponent
       this.nodeManager = nodeManager;
 
       this.backup = backup;
+
+      this.threadPool = threadPool;
    }
 
    public String describe()
@@ -707,6 +713,7 @@ public class ClusterManager implements HornetQComponent
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
                                                        executorFactory,
+                                                       threadPool,
                                                        server,
                                                        postOffice,
                                                        managementService,
@@ -716,7 +723,9 @@ public class ClusterManager implements HornetQComponent
                                                        backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
-                                                       config.isAllowDirectConnectionsOnly());
+                                                       config.isAllowDirectConnectionsOnly(),
+                                                       config.getClusterNotificationInterval(),
+                                                       config.getClusterNotificationAttempts());
       }
       else
       {
@@ -746,6 +755,7 @@ public class ClusterManager implements HornetQComponent
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
                                                        executorFactory,
+                                                       threadPool,
                                                        server,
                                                        postOffice,
                                                        managementService,
@@ -755,7 +765,9 @@ public class ClusterManager implements HornetQComponent
                                                        backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
-                                                       config.isAllowDirectConnectionsOnly());
+                                                       config.isAllowDirectConnectionsOnly(),
+                                                       config.getClusterNotificationInterval(),
+                                                       config.getClusterNotificationAttempts());
       }
 
       if (defaultClusterConnection == null)

@@ -25,12 +25,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -80,6 +83,8 @@ import org.hornetq.utils.TypedProperties;
 public final class ClusterConnectionImpl implements ClusterConnection, AfterConnectInternalListener
 {
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+
+   private final ExecutorService threadPool;
 
    private final ExecutorFactory executorFactory;
 
@@ -160,10 +165,15 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private volatile ServerLocatorInternal backupServerLocator;
    private volatile boolean announcingBackup;
    private volatile boolean stopping = false;
+   private LiveNotifier liveNotifier;
+   private final Object liveNotifierGuard = new Object();
+   private final long clusterNotificationInterval;
+   private final int clusterNotificationAttempts;
 
    /**
     * @param staticTranspConfigs notice if {@code null} this is a cluster which won't connect to
     *           anyone, but that can still accept incoming connections.
+    * @param clusterNotificationInterval
     */
    public ClusterConnectionImpl(final ClusterManager manager, final TransportConfiguration[] staticTranspConfigs,
                                 final TransportConfiguration connector,
@@ -182,6 +192,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
                                 final ExecutorFactory executorFactory,
+                                final ExecutorService threadPool,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
@@ -191,7 +202,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
-                                final boolean allowDirectConnectionsOnly) throws Exception
+                                final boolean allowDirectConnectionsOnly,
+                                final long clusterNotificationInterval,
+                                final int clusterNotificationAttempts) throws Exception
    {
       this.nodeManager = nodeManager;
 
@@ -221,7 +234,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.executorFactory = executorFactory;
 
+      this.clusterNotificationInterval = clusterNotificationInterval;
+
+      this.clusterNotificationAttempts = clusterNotificationAttempts;
+
       this.executor = executorFactory.getExecutor();
+
+      this.threadPool = threadPool;
 
       this.topology.setExecutor(executor);
 
@@ -282,6 +301,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    /**
     * @param dg discovery group, notice if {@code null} this is a cluster which won't connect to
     *           anyone, but that can still accept incoming connections.
+    * @param clusterNotificationInterval
     */
    public ClusterConnectionImpl(final ClusterManager manager,
                                 DiscoveryGroupConfiguration dg,
@@ -301,6 +321,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
                                 final ExecutorFactory executorFactory,
+                                final ExecutorService threadPool,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
@@ -310,7 +331,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
-                                final boolean allowDirectConnectionsOnly) throws Exception
+                                final boolean allowDirectConnectionsOnly,
+                                final long clusterNotificationInterval,
+                                final int clusterNotificationAttempts) throws Exception
    {
       this.nodeManager = nodeManager;
 
@@ -346,7 +369,13 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.executorFactory = executorFactory;
 
+      this.clusterNotificationInterval = clusterNotificationInterval;
+
+      this.clusterNotificationAttempts = clusterNotificationAttempts;
+
       this.executor = executorFactory.getExecutor();
+
+      this.threadPool = threadPool;
 
       this.topology.setExecutor(executor);
 
@@ -414,6 +443,14 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug(this + "::stopping ClusterConnection");
+      }
+
+      synchronized (liveNotifierGuard)
+      {
+         if(liveNotifier != null)
+         {
+            liveNotifier.cancel();
+         }
       }
 
       if (serverLocator != null)
@@ -684,8 +721,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       backup = false;
 
-      topology.updateAsLive(manager.getNodeId(), new TopologyMemberImpl(manager.getNodeId(),
-                                                                        manager.getNodeGroupName(), connector, null));
+      synchronized (liveNotifierGuard)
+      {
+         if(stopping)
+         {
+            return;
+         }
+         liveNotifier = new LiveNotifier();
+         threadPool.execute(liveNotifier);
+      }
+
+      liveNotifier.awaitFirstUpdate();
 
       if (backupServerLocator != null)
       {
@@ -1666,5 +1712,50 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    public boolean verify(String clusterUser0, String clusterPassword0)
    {
       return clusterUser.equals(clusterUser0) && clusterPassword.equals(clusterPassword0);
+   }
+
+   private final class LiveNotifier implements Runnable
+   {
+      private CountDownLatch latch = new CountDownLatch(1);
+
+      @Override
+      public synchronized void run()
+      {
+         int notificationsSent = 0;
+         while(notificationsSent < clusterNotificationAttempts && started && !stopping)
+         {
+            topology.updateAsLive(manager.getNodeId(), new TopologyMemberImpl(manager.getNodeId(),
+                  manager.getNodeGroupName(), connector, null));
+            if(notificationsSent++ == 0)
+            {
+               latch.countDown();
+            }
+            try
+            {
+               wait(clusterNotificationInterval);
+            }
+            catch (InterruptedException e1)
+            {
+               throw new HornetQInterruptedException(e1);
+            }
+         }
+      }
+
+      public synchronized void cancel()
+      {
+         notify();
+      }
+
+      public void awaitFirstUpdate()
+      {
+         try
+         {
+            latch.await(clusterNotificationInterval, TimeUnit.MILLISECONDS);
+         }
+         catch (InterruptedException e)
+         {
+            throw new HornetQInterruptedException(e);
+         }
+      }
    }
 }
