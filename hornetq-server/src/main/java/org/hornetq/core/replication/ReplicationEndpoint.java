@@ -481,7 +481,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    {
       Long id = Long.valueOf(msg.getId());
       byte[] data = msg.getData();
-      SequentialFile channel;
+      SequentialFile channel1;
       switch (msg.getFileType())
       {
          case LARGE_MESSAGE:
@@ -493,13 +493,13 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                return;
             }
             LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
-            channel = largeMessageInSync.getSyncFile();
+            channel1 = largeMessageInSync.getSyncFile();
             break;
          }
          case PAGE:
          {
             Page page = getPage(msg.getPageStore(), (int)msg.getId());
-            channel = page.getFile();
+            channel1 = page.getFile();
             break;
          }
          case JOURNAL:
@@ -520,15 +520,15 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
       if (data == null)
       {
-         channel.close();
+         channel1.close();
          return;
       }
 
-      if (!channel.isOpen())
+      if (!channel1.isOpen())
       {
-         channel.open(1, false);
+         channel1.open(1, false);
       }
-      channel.writeDirect(ByteBuffer.wrap(data), true);
+      channel1.writeDirect(ByteBuffer.wrap(data), true);
    }
 
    /**

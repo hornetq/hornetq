@@ -60,7 +60,13 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -160,8 +166,8 @@ public class ManagementServiceImpl implements ManagementService
       this.storageManager = storageManager;
    }
 
-   public HornetQServerControlImpl registerServer(final PostOffice postOffice,
-                                                  final StorageManager storageManager,
+   public HornetQServerControlImpl
+            registerServer(final PostOffice postOffice, final StorageManager storageManager1,
                                                   final Configuration configuration,
                                                   final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                                   final HierarchicalRepository<Set<Role>> securityRepository,
@@ -176,7 +182,7 @@ public class ManagementServiceImpl implements ManagementService
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
-      this.storageManager = storageManager;
+      this.storageManager = storageManager1;
       this.messagingServer = messagingServer;
       this.pagingManager = pagingManager;
 
@@ -190,7 +196,7 @@ public class ManagementServiceImpl implements ManagementService
                                                             remotingService,
                                                             messagingServer,
                                                             messageCounterManager,
-                                                            storageManager,
+ storageManager1,
                                                             broadcaster);
       ObjectName objectName = objectNameBuilder.getHornetQServerObjectName();
       registerInJMX(objectName, messagingServerControl);
