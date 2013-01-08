@@ -924,11 +924,6 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       @Override
-      public void setStorageManager(final StorageManager storageManager)
-      {
-      }
-
-      @Override
       public void stop() throws InterruptedException
       {
       }

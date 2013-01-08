@@ -49,6 +49,7 @@ import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
@@ -151,7 +152,6 @@ import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
-import org.hornetq.api.core.Pair;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
@@ -1271,14 +1271,13 @@ public class HornetQServerImpl implements HornetQServer
    private PagingManager createPagingManager()
    {
 
-      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
+      return new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
          configuration.getJournalBufferSize_NIO(),
          scheduledPool,
          executorFactory,
          configuration.isJournalSyncNonTransactional(),
          shutdownOnCriticalIO),
-         storageManager,
-         addressSettingsRepository);
+      addressSettingsRepository);
    }
 
    /**

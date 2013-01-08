@@ -66,40 +66,23 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    private final long syncTimeout;
 
-   private StorageManager storageManager;
+   private final StorageManager storageManager;
 
    private final IOCriticalErrorListener critialErrorListener;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public PagingStoreFactoryNIO(final String directory,
-                                final long syncTimeout,
-                                final ScheduledExecutorService scheduledExecutor,
-                                final ExecutorFactory executorFactory,
-                                final boolean syncNonTransactional)
-   {
-      this(directory, syncTimeout, scheduledExecutor, executorFactory, syncNonTransactional, null);
-   }
-
-   public PagingStoreFactoryNIO(final String directory,
+   public PagingStoreFactoryNIO(final StorageManager storageManager, final String directory,
                                 final long syncTimeout,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final ExecutorFactory executorFactory,
                                 final boolean syncNonTransactional,
                                 final IOCriticalErrorListener critialErrorListener)
    {
+      this.storageManager = storageManager;
       this.directory = directory;
-
       this.executorFactory = executorFactory;
-
       this.syncNonTransactional = syncNonTransactional;
-
       this.scheduledExecutor = scheduledExecutor;
-
       this.syncTimeout = syncTimeout;
-
       this.critialErrorListener = critialErrorListener;
    }
 
@@ -157,11 +140,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    public void setPagingManager(final PagingManager pagingManager)
    {
       this.pagingManager = pagingManager;
-   }
-
-   public void setStorageManager(final StorageManager storageManager)
-   {
-      this.storageManager = storageManager;
    }
 
    public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception

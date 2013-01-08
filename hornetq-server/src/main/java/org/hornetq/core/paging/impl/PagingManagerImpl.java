@@ -25,7 +25,6 @@ import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
-import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -55,8 +54,6 @@ public class PagingManagerImpl implements PagingManager
 
    private final PagingStoreFactory pagingStoreFactory;
 
-   private final StorageManager storageManager;
-
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions =
             new ConcurrentHashMap<Long, PageTransactionInfo>();
 
@@ -69,13 +66,11 @@ public class PagingManagerImpl implements PagingManager
    // --------------------------------------------------------------------------------------------------------------------
 
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
-                            final StorageManager storageManager,
                             final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       addressSettingsRepository.registerListener(this);
-      this.storageManager = storageManager;
    }
 
    @Override
@@ -200,8 +195,6 @@ public class PagingManagerImpl implements PagingManager
          }
 
          pagingStoreFactory.setPagingManager(this);
-
-         pagingStoreFactory.setStorageManager(storageManager);
 
          reloadStores();
 

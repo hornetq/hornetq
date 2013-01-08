@@ -67,8 +67,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage.SyncDataType;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
@@ -287,12 +287,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly(JournalState.SYNCING);
       }
 
-      pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
+         pageManager =
+                  new PagingManagerImpl(new PagingStoreFactoryNIO(storage, config.getPagingDirectory(),
                                                                     config.getJournalBufferSize_NIO(),
                                                                     server.getScheduledPool(),
                                                                     server.getExecutorFactory(),
                                                                     config.isJournalSyncNonTransactional(), criticalErrorListener),
-                                          storage,
                                           server.getAddressSettingsRepository());
 
       pageManager.start();
