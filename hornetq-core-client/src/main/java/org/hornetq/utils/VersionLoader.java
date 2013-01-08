@@ -33,7 +33,7 @@ import org.hornetq.core.version.impl.VersionImpl;
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class VersionLoader
+public final class VersionLoader
 {
    public static final String VERSION_PROP_FILE_KEY = "hornetq.version.property.filename";
 

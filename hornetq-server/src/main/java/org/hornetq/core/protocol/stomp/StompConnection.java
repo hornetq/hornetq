@@ -34,6 +34,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.VersionLoader;
 
 /**
  * A StompConnection
@@ -42,9 +43,11 @@ import org.hornetq.utils.ConfigurationHelper;
  *
  *
  */
-public class StompConnection implements RemotingConnection
+public final class StompConnection implements RemotingConnection
 {
    protected static final String CONNECTION_ID_PROP = "__HQ_CID";
+   private static final String SERVER_NAME = "HornetQ/" + VersionLoader.getVersion().getFullVersion() +
+            " HornetQ Messaging Engine";
 
    private final StompProtocolManager manager;
 
@@ -501,13 +504,13 @@ public class StompConnection implements RemotingConnection
       manager.sendReply(this, frame);
    }
 
-   public boolean validateUser(String login, String passcode)
+   public boolean validateUser(final String login1, final String passcode1)
    {
-      this.valid = manager.validateUser(login, passcode);
+      this.valid = manager.validateUser(login1, passcode1);
       if (valid)
       {
-         this.login = login;
-         this.passcode = passcode;
+         this.login = login1;
+         this.passcode = passcode1;
       }
       return valid;
    }
@@ -703,8 +706,7 @@ public class StompConnection implements RemotingConnection
 
    public String getHornetQServerName()
    {
-      //hard coded, review later.
-      return "HornetQ/2.2.5 HornetQ Messaging Engine";
+      return SERVER_NAME;
    }
 
    public StompFrame createStompMessage(ServerMessage serverMessage,
