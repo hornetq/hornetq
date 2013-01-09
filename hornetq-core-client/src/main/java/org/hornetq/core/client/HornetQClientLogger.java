@@ -21,23 +21,13 @@
 */
 package org.hornetq.core.client;
 
-/**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         3/8/12
- *
- * Logger Code 21
- *
- * each message id must be 6 digits long starting with 10, the 3rd digit donates the level so
- *
- * INF0  1
- * WARN  2
- * DEBUG 3
- * ERROR 4
- * TRACE 5
- * FATAL 6
- *
- * so an INFO message would be 101000 to 101999
- */
+import java.io.File;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
@@ -55,13 +45,23 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.netty.channel.Channel;
 import org.w3c.dom.Node;
 
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.Executor;
-
+/**
+ * Logger Code 21
+ * <p>
+ * Each message id must be 6 digits long starting with 10, the 3rd digit donates the level so
+ * 
+ * <pre>
+ * INF0  1
+ * WARN  2
+ * DEBUG 3
+ * ERROR 4
+ * TRACE 5
+ * FATAL 6
+ * </pre>
+ * 
+ * so an INFO message would be 101000 to 101999
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ */
 @MessageLogger(projectCode = "HQ")
 public interface HornetQClientLogger extends BasicLogger
 {
