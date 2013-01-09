@@ -44,9 +44,9 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerSessionImpl;
@@ -262,18 +262,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failureCheckAndFlushThread.start();
 
       started = true;
-   }
-
-   public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
-   {
-      defaultInvmSecurityPrincipal = principal;
-      for (Acceptor acceptor : acceptors)
-      {
-         if(acceptor.isUnsecurable())
-         {
-            acceptor.setDefaultHornetQPrincipal(principal);
-         }
-      }
    }
 
    public synchronized void freeze(final CoreRemotingConnection backupRemotingConnection)
@@ -506,43 +494,29 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
    }
 
-   public void addInterceptor(final Interceptor interceptor)
-   {
-      addIncomingInterceptor(interceptor);
-   }
-
-   public boolean removeInterceptor(final Interceptor interceptor)
-   {
-      return removeIncomingInterceptor(interceptor);
-   }
-
+   @Override
    public void addIncomingInterceptor(final Interceptor interceptor)
    {
       incomingInterceptors.add(interceptor);
    }
 
+   @Override
    public boolean removeIncomingInterceptor(final Interceptor interceptor)
    {
       return incomingInterceptors.remove(interceptor);
    }
 
+   @Override
    public void addOutgoingInterceptor(final Interceptor interceptor)
    {
       outgoingInterceptors.add(interceptor);
    }
 
+   @Override
    public boolean removeOutgoingInterceptor(final Interceptor interceptor)
    {
       return outgoingInterceptors.remove(interceptor);
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private ClusterConnection lookupClusterConnection(TransportConfiguration acceptorConfig)
    {

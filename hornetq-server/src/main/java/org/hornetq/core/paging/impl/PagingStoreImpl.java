@@ -113,7 +113,7 @@ public class PagingStoreImpl implements PagingStore
 
    private volatile boolean running = false;
 
-   protected final boolean syncNonTransactional;
+   private final boolean syncNonTransactional;
 
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
@@ -232,11 +232,6 @@ public class PagingStoreImpl implements PagingStore
    public long getFirstPage()
    {
       return firstPageId;
-   }
-
-   public long getTopPage()
-   {
-      return currentPageId;
    }
 
    public SimpleString getAddress()

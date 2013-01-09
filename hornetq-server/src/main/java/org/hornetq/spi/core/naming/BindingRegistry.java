@@ -14,6 +14,7 @@ public interface BindingRegistry
     *   as this could be reused by others Registries (e.g set/get the Map on MapRegistry)
     * @return
     */
+   // XXX Unused?
    Object getContext();
 
    void setContext(Object ctx);

@@ -55,8 +55,6 @@ public interface PagingStore extends HornetQComponent
 
    long getFirstPage();
 
-   long getTopPage();
-
    long getPageSizeBytes();
 
    long getAddressSize();

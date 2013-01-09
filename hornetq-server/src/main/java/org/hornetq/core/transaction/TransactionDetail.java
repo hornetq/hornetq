@@ -53,9 +53,9 @@ public abstract class TransactionDetail
 
    public static final String KEY_MSG_PROPERTIES = "message_properties";
 
-   private Xid xid;
-   private Transaction transaction;
-   private Long creationTime;
+   private final Xid xid;
+   private final Transaction transaction;
+   private final Long creationTime;
 
    public TransactionDetail(Xid xid, Transaction tx, Long creation)
    {

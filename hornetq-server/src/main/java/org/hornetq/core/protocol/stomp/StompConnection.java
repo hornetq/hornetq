@@ -38,10 +38,7 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * A StompConnection
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public final class StompConnection implements RemotingConnection
 {
@@ -76,7 +73,7 @@ public final class StompConnection implements RemotingConnection
 
    private final Object failLock = new Object();
 
-   private volatile boolean dataReceived;
+   private boolean dataReceived;
 
    private final boolean enableMessageID;
 
@@ -113,6 +110,7 @@ public final class StompConnection implements RemotingConnection
                                                                  acceptorUsed.getConfiguration());
    }
 
+   @Override
    public void addFailureListener(final FailureListener listener)
    {
       if (listener == null)
@@ -123,6 +121,7 @@ public final class StompConnection implements RemotingConnection
       failureListeners.add(listener);
    }
 
+   @Override
    public boolean removeFailureListener(final FailureListener listener)
    {
       if (listener == null)
@@ -133,6 +132,7 @@ public final class StompConnection implements RemotingConnection
       return failureListeners.remove(listener);
    }
 
+   @Override
    public void addCloseListener(final CloseListener listener)
    {
       if (listener == null)
@@ -143,6 +143,7 @@ public final class StompConnection implements RemotingConnection
       closeListeners.add(listener);
    }
 
+   @Override
    public boolean removeCloseListener(final CloseListener listener)
    {
       if (listener == null)
@@ -153,6 +154,7 @@ public final class StompConnection implements RemotingConnection
       return closeListeners.remove(listener);
    }
 
+   @Override
    public List<CloseListener> removeCloseListeners()
    {
       List<CloseListener> ret = new ArrayList<CloseListener>(closeListeners);
@@ -162,6 +164,7 @@ public final class StompConnection implements RemotingConnection
       return ret;
    }
 
+   @Override
    public List<FailureListener> removeFailureListeners()
    {
       List<FailureListener> ret = new ArrayList<FailureListener>(failureListeners);
@@ -171,6 +174,7 @@ public final class StompConnection implements RemotingConnection
       return ret;
    }
 
+   @Override
    public void setCloseListeners(List<CloseListener> listeners)
    {
       closeListeners.clear();
@@ -178,6 +182,7 @@ public final class StompConnection implements RemotingConnection
       closeListeners.addAll(listeners);
    }
 
+   @Override
    public void setFailureListeners(final List<FailureListener> listeners)
    {
       failureListeners.clear();
@@ -185,12 +190,12 @@ public final class StompConnection implements RemotingConnection
       failureListeners.addAll(listeners);
    }
 
-   public void setDataReceived()
+   protected synchronized void setDataReceived()
    {
       dataReceived = true;
    }
 
-   public boolean checkDataReceived()
+   public synchronized boolean checkDataReceived()
    {
       boolean res = dataReceived;
 
@@ -207,6 +212,7 @@ public final class StompConnection implements RemotingConnection
       }
    }
 
+   @Override
    public HornetQBuffer createBuffer(int size)
    {
       return HornetQBuffers.dynamicBuffer(size);
@@ -311,19 +317,9 @@ public final class StompConnection implements RemotingConnection
       manager.handleBuffer(this, buffer);
    }
 
-   public void setLogin(String login)
-   {
-      this.login = login;
-   }
-
    public String getLogin()
    {
       return login;
-   }
-
-   public void setPasscode(String passcode)
-   {
-      this.passcode = passcode;
    }
 
    public String getPasscode()
@@ -542,7 +538,7 @@ public final class StompConnection implements RemotingConnection
       return session;
    }
 
-   public void validate() throws HornetQStompException
+   protected void validate() throws HornetQStompException
    {
       if (!this.valid)
       {
@@ -550,7 +546,7 @@ public final class StompConnection implements RemotingConnection
       }
    }
 
-   public void sendServerMessage(ServerMessageImpl message, String txID) throws HornetQStompException
+   protected void sendServerMessage(ServerMessageImpl message, String txID) throws HornetQStompException
    {
       StompSession stompSession = getSession(txID);
 
@@ -574,7 +570,7 @@ public final class StompConnection implements RemotingConnection
       destroy();
    }
 
-   public void beginTransaction(String txID) throws HornetQStompException
+   protected void beginTransaction(String txID) throws HornetQStompException
    {
       try
       {
@@ -618,7 +614,7 @@ public final class StompConnection implements RemotingConnection
       }
    }
 
-   public void subscribe(String destination, String selector, String ack,
+   void subscribe(String destination, String selector, String ack,
          String id, String durableSubscriptionName, boolean noLocal) throws HornetQStompException
    {
       if (noLocal)

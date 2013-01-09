@@ -247,12 +247,6 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
       }
    }
 
-   public boolean isFileExists() throws Exception
-   {
-      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), durable);
-      return localfile.exists();
-   }
-
    // We cache this
    private volatile int memoryEstimate = -1;
 

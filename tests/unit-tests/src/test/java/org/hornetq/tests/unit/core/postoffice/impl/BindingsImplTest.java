@@ -24,7 +24,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
-import org.hornetq.core.postoffice.impl.BindingsImpl;
+import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
@@ -78,7 +78,7 @@ public class BindingsImplTest extends UnitTestCase
    {
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
 
-      final BindingsImpl bind = new BindingsImpl(null, null, null);
+      final Bindings bind = new Bindings(null, null, null);
       bind.addBinding(fake);
       bind.addBinding(new FakeBinding(new SimpleString("a")));
       bind.addBinding(new FakeBinding(new SimpleString("a")));

@@ -25,11 +25,11 @@ import org.hornetq.core.postoffice.Address;
  */
 public class AddressImpl implements Address
 {
-   private SimpleString address;
+   private final SimpleString address;
 
-   private SimpleString[] addressParts;
+   private final SimpleString[] addressParts;
 
-   private boolean containsWildCard;
+   private final boolean containsWildCard;
 
    private final List<Address> linkedAddresses = new ArrayList<Address>();
 
@@ -71,28 +71,6 @@ public class AddressImpl implements Address
    public void removeLinkedAddress(final Address actualAddress)
    {
       linkedAddresses.remove(actualAddress);
-   }
-
-   public void removeAddressPart(final int pos)
-   {
-      SimpleString newAddress = new SimpleString("");
-      boolean started = false;
-      for (int i = 0; i < addressParts.length; i++)
-      {
-         SimpleString addressPart = addressParts[i];
-         if (i != pos)
-         {
-            if (started)
-            {
-               newAddress = newAddress.concat('.');
-            }
-            newAddress = newAddress.concat(addressPart);
-            started = true;
-         }
-      }
-      address = newAddress;
-      addressParts = address.split(WildcardAddressManager.DELIM);
-      containsWildCard = address.contains(WildcardAddressManager.SINGLE_WORD);
    }
 
    public boolean matches(final Address add)

@@ -3519,21 +3519,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
+   private final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
    {
 
       public PageCompleteCursorAckRecordEncoding()
       {
          super();
-      }
-
-      /**
-       * @param queueID
-       * @param position
-       */
-      public PageCompleteCursorAckRecordEncoding(long queueID, PagePosition position)
-      {
-         super(queueID, position);
       }
 
       @Override
