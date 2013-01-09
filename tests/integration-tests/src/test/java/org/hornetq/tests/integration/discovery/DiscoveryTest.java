@@ -58,6 +58,14 @@ import org.hornetq.utils.UUIDGenerator;
  * <p>
  * Or ultimately you may also turn off IPV6: {@literal -Djava.net.preferIPv4Stack=true}
  * <p>
+ * Note when you are not sure about your IP settings of your test machine, you should make sure
+ * that the jgroups.bind_addr and java.net.preferXXStack by defining them explicitly, for example
+ * if you would like to use IPV6, set BOTH properties to your JVM like the following:
+ * -Djgroups.bind_addr=::1 -Djava.net.preferIPv6Addresses=true
+ * <p>
+ * or if you prefer IPV4:
+ * -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true
+ * <p>
  * Also: Make sure you add integration-tests/src/tests/resources to your project path on the
  * tests/integration-tests
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
