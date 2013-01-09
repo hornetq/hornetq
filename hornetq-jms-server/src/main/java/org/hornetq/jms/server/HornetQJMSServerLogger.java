@@ -115,11 +115,11 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void connectionLeftOpen(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122009, value = "Queue {0} doesn't exist on the topic {1}. It was deleted manually probably." , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 122009, value = "Queue {0} does not exist on the topic {1}. It was deleted manually probably." , format = Message.Format.MESSAGE_FORMAT)
    void noQueueOnTopic(String queueName, String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122010, value = "XA Recovery Can't connect to any hornetq server on recovery {0}"  , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 122010, value = "XA Recovery can not connect to any hornetq server on recovery {0}"  , format = Message.Format.MESSAGE_FORMAT)
    void recoveryConnectFailed(String s);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -152,7 +152,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void xaRecoverConnectionError(@Cause Exception e, ClientSessionFactory csf);
 
       @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122018, value = "Can't connect to {0} on auto-generated resource recovery" ,
+   @Message(id = 122018, value = "Can not connect to {0} on auto-generated resource recovery" ,
          format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverAutoConnectionError(@Cause Throwable e, XARecoveryConfig csf);
 
@@ -166,8 +166,8 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void failedToCorrectHost(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122021, value = "Couldn't start recovery discovery on {0}, we will retry every recovery scan until the server is available" ,
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 122021, value = "Could not start recovery discovery on {0}, we will retry every recovery scan until the server is available",
+           format = Message.Format.MESSAGE_FORMAT)
    void xaRecoveryStartError(XARecoveryConfig e);
 
    @LogMessage(level = Logger.Level.ERROR)
