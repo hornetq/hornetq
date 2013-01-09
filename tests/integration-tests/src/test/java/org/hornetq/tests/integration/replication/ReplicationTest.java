@@ -770,14 +770,6 @@ public final class ReplicationTest extends ServiceTestBase
 
       public void appendAddRecord(final long id,
                                   final byte recordType,
-                                  final byte[] record,
-                                  final boolean sync,
-                                  final IOCompletion completionCallback) throws Exception
-      {
-      }
-
-      public void appendAddRecord(final long id,
-                                  final byte recordType,
                                   final EncodingSupport record,
                                   final boolean sync,
                                   final IOCompletion completionCallback) throws Exception
@@ -801,24 +793,9 @@ public final class ReplicationTest extends ServiceTestBase
       {
       }
 
-      public void appendPrepareRecord(final long txID,
-                                      final byte[] transactionData,
-                                      final boolean sync,
-                                      final IOCompletion callback) throws Exception
-      {
-      }
-
       public
                void
                appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
-      {
-      }
-
-      public void appendUpdateRecord(final long id,
-                                     final byte recordType,
-                                     final byte[] record,
-                                     final boolean sync,
-                                     final IOCompletion completionCallback) throws Exception
       {
       }
 

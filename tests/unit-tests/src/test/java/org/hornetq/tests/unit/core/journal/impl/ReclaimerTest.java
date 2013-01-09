@@ -896,23 +896,11 @@ public class ReclaimerTest extends UnitTestCase
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.impl.JournalFile#clearCounts()
-       */
-      public void clearCounts()
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.impl.JournalFile#addSize(int)
-       */
       public void addSize(final int bytes)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.journal.impl.JournalFile#decSize(int)
-       */
+      @Override
       public void decSize(final int bytes)
       {
       }

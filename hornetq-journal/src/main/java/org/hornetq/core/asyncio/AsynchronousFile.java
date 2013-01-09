@@ -57,8 +57,4 @@ public interface AsynchronousFile
    void setBufferCallback(BufferCallback callback);
 
    int getBlockSize();
-
-   String getFileName();
-
-
 }

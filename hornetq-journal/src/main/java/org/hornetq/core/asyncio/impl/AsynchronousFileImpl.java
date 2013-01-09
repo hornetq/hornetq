@@ -419,11 +419,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
       return 512;
    }
 
-   public String getFileName()
-   {
-      return fileName;
-   }
-
    /**
     * This needs to be synchronized because of
     * http://bugs.sun.com/view_bug.do?bug_id=6791815
