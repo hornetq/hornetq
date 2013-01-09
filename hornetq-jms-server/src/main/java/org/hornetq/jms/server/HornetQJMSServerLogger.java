@@ -21,12 +21,17 @@
 */
 package org.hornetq.jms.server;
 
+import javax.management.ObjectName;
+
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
-import org.jboss.logging.*;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageLogger;
 import org.w3c.dom.Node;
-
-import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -110,11 +115,6 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void bridgeFailure();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122008, value = "I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly before letting them go out of scope!" +
-   "see stacktrace to find out where it was created" , format = Message.Format.MESSAGE_FORMAT)
-   void connectionLeftOpen(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122009, value = "Queue {0} does not exist on the topic {1}. It was deleted manually probably." , format = Message.Format.MESSAGE_FORMAT)
    void noQueueOnTopic(String queueName, String name);
 
@@ -129,10 +129,6 @@ public interface HornetQJMSServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122012, value = "Failed to connect JMS Bridge", format = Message.Format.MESSAGE_FORMAT)
    void bridgeConnectError(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122013, value = "Unhandled exception thrown from onMessage" , format = Message.Format.MESSAGE_FORMAT)
-   void onMessageError(@Cause Exception e);
 
       @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122014, value = "error unbinding {0} from JNDI" , format = Message.Format.MESSAGE_FORMAT)
@@ -181,33 +177,4 @@ public interface HornetQJMSServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124003, value = "Failed to start JMS deployer" , format = Message.Format.MESSAGE_FORMAT)
    void jmsDeployerStartError(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124004, value = "Failed to call JMS exception listener" , format = Message.Format.MESSAGE_FORMAT)
-   void errorCallingExcListener(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124005, value = "Consumer Failed to prepare message for delivery", format = Message.Format.MESSAGE_FORMAT)
-   void errorPreparingMessage(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124006, value = "Queue Browser failed to create message" , format = Message.Format.MESSAGE_FORMAT)
-   void errorCreatingMessage(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124007, value = "Message Listener failed to prepare message for receipt" , format = Message.Format.MESSAGE_FORMAT)
-   void errorPreparingMessageForReceipt(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124008, value = "Message Listener failed to process message" , format = Message.Format.MESSAGE_FORMAT)
-   void errorProcessingMessage(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124009, value = "Message Listener failed to recover session" , format = Message.Format.MESSAGE_FORMAT)
-   void errorRecoveringSession(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124010, value = "Failed to call Failover listener" , format = Message.Format.MESSAGE_FORMAT)
-   void errorCallingFailoverListener(@Cause Exception e);
-
 }
