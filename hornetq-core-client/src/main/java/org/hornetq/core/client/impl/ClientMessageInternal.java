@@ -13,7 +13,6 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.message.impl.MessageInternal;
 
@@ -40,8 +39,6 @@ public interface ClientMessageInternal extends ClientMessage, MessageInternal
     * Discard unused packets (used on large-message)
     */
    void discardBody();
-
-   void setBuffer(HornetQBuffer buffer);
 
    boolean isCompressed();
 }

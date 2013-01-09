@@ -23,9 +23,9 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 
 /**
  *
@@ -192,16 +192,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       this.bodyInputStream = bodyInputStream;
    }
 
-   public void setBuffer(final HornetQBuffer buffer)
-   {
-      this.buffer = buffer;
-
-      if (bodyBuffer != null)
-      {
-         bodyBuffer.setBuffer(buffer);
-      }
-   }
-
    @Override
    public BodyEncoder getBodyEncoder() throws HornetQException
    {
@@ -237,8 +227,8 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
       public int encode(final ByteBuffer bufferRead) throws HornetQException
       {
-         HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bufferRead);
-         return encode(buffer, bufferRead.capacity());
+         HornetQBuffer buffer1 = HornetQBuffers.wrappedBuffer(bufferRead);
+         return encode(buffer1, bufferRead.capacity());
       }
 
       public int encode(final HornetQBuffer bufferOut, final int size)

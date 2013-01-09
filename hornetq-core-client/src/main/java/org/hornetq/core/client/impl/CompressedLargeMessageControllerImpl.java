@@ -14,12 +14,9 @@
 package org.hornetq.core.client.impl;
 
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.GatheringByteChannel;
-import java.nio.channels.ScatteringByteChannel;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -177,12 +174,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return 0;
    }
 
-   public int getInt(final long index)
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
    @Override
    public long getLong(final int index)
    {
@@ -192,23 +183,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    @Override
    public short getShort(final int index)
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
-   public short getShort(final long index)
-   {
-      return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
-   }
-
-   private int getUnsignedMedium(final int index)
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
-   public int getUnsignedMedium(final long index)
    {
       positioningNotSupported();
       return 0;
@@ -352,31 +326,12 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return getShort(index) & 0xFFFF;
    }
 
-   public int getMedium(final int index)
-   {
-      int value = getUnsignedMedium(index);
-      if ((value & 0x800000) != 0)
-      {
-         value |= 0xff000000;
-      }
-      return value;
-   }
-
    public long getUnsignedInt(final int index)
    {
       return getInt(index) & 0xFFFFFFFFL;
    }
 
    public void getBytes(int index, final byte[] dst)
-   {
-      // TODO: optimize this by using System.arraycopy
-      for (int i = 0; i < dst.length; i++)
-      {
-         dst[i] = getByte(index++);
-      }
-   }
-
-   public void getBytes(long index, final byte[] dst)
    {
       // TODO: optimize this by using System.arraycopy
       for (int i = 0; i < dst.length; i++)
@@ -411,11 +366,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    }
 
    public void setBytes(final int index, final HornetQBuffer src, final int length)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public void setZero(final int index, final int length)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
@@ -456,22 +406,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
    }
 
-   public int readMedium()
-   {
-      int value = readUnsignedMedium();
-      if ((value & 0x800000) != 0)
-      {
-         value |= 0xff000000;
-      }
-      return value;
-   }
-
-
-   public int readUnsignedMedium()
-   {
-      return (readByte() & 0xff) << 16 | (readByte() & 0xff) << 8 | (readByte() & 0xff) << 0;
-   }
-
    public int readInt()
    {
       try
@@ -482,12 +416,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       {
          throw new IllegalStateException(e.getMessage(), e);
       }
-   }
-
-   public int readInt(final int pos)
-   {
-      positioningNotSupported();
-      return 0;
    }
 
    public long readUnsignedInt()
@@ -557,16 +485,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       dst.put(bytesToGet);
    }
 
-   public int readBytes(final GatheringByteChannel out, final int length) throws IOException
-   {
-      throw new IllegalStateException("Not implemented!");
-   }
-
-   public void readBytes(final OutputStream out, final int length) throws IOException
-   {
-      throw new IllegalStateException("Not implemented!");
-   }
-
    public void skipBytes(final int length)
    {
 
@@ -593,11 +511,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   public void writeMedium(final int value)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
    public void writeInt(final int value)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
@@ -618,11 +531,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   public void writeBytes(final HornetQBuffer src)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
    public void writeBytes(final HornetQBuffer src, final int length)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
@@ -633,37 +541,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
 
-   public int writeBytes(final InputStream in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public int writeBytes(final ScatteringByteChannel in, final int length) throws IOException
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public void writeZero(final int length)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
    public ByteBuffer toByteBuffer()
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public ByteBuffer[] toByteBuffers()
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public ByteBuffer[] toByteBuffers(final int index, final int length)
-   {
-      throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
-   }
-
-   public String toString(final String charsetName)
    {
       throw new IllegalAccessError(OPERATION_NOT_SUPPORTED);
    }
