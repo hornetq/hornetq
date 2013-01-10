@@ -350,13 +350,6 @@ public class ConfigurationImpl implements Configuration
       return getIncomingInterceptorClassNames();
    }
 
-   @Deprecated
-   @Override
-   public void setInterceptorClassNames(final List<String> interceptors)
-   {
-      setIncomingInterceptorClassNames(interceptors);
-   }
-
    public List<String> getIncomingInterceptorClassNames()
    {
       return incomingInterceptorClassNames;
@@ -912,291 +905,6 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public boolean equals(final Object obj)
-   {
-      if (this == obj)
-      {
-         return true;
-      }
-      if (obj == null)
-      {
-         return false;
-      }
-      if (getClass() != obj.getClass())
-      {
-         return false;
-      }
-      ConfigurationImpl other = (ConfigurationImpl)obj;
-      if (asyncConnectionExecutionEnabled != other.asyncConnectionExecutionEnabled)
-      {
-         return false;
-      }
-      if (backup != other.backup)
-      {
-         return false;
-      }
-      if (sharedStore != other.sharedStore)
-      {
-         return false;
-      }
-      if (bindingsDirectory == null)
-      {
-         if (other.bindingsDirectory != null)
-         {
-            return false;
-         }
-      }
-      else if (!bindingsDirectory.equals(other.bindingsDirectory))
-      {
-         return false;
-      }
-      if (connectionTTLOverride != other.connectionTTLOverride)
-      {
-         return false;
-      }
-      if (createBindingsDir != other.createBindingsDir)
-      {
-         return false;
-      }
-      if (createJournalDir != other.createJournalDir)
-      {
-         return false;
-      }
-
-      if (fileDeploymentEnabled != other.fileDeploymentEnabled)
-      {
-         return false;
-      }
-      if (fileDeploymentScanPeriod != other.fileDeploymentScanPeriod)
-      {
-         return false;
-      }
-      if (idCacheSize != other.idCacheSize)
-      {
-         return false;
-      }
-      if (jmxManagementEnabled != other.jmxManagementEnabled)
-      {
-         return false;
-      }
-      if (journalBufferSize_AIO != other.journalBufferSize_AIO)
-      {
-         return false;
-      }
-      if (journalBufferTimeout_AIO != other.journalBufferTimeout_AIO)
-      {
-         return false;
-      }
-      if (journalMaxIO_AIO != other.journalMaxIO_AIO)
-      {
-         return false;
-      }
-      if (journalBufferSize_NIO != other.journalBufferSize_NIO)
-      {
-         return false;
-      }
-      if (journalBufferTimeout_NIO != other.journalBufferTimeout_NIO)
-      {
-         return false;
-      }
-      if (journalMaxIO_NIO != other.journalMaxIO_NIO)
-      {
-         return false;
-      }
-      if (journalCompactMinFiles != other.journalCompactMinFiles)
-      {
-         return false;
-      }
-      if (journalCompactPercentage != other.journalCompactPercentage)
-      {
-         return false;
-      }
-      if (journalDirectory == null)
-      {
-         if (other.journalDirectory != null)
-         {
-            return false;
-         }
-      }
-      else if (!journalDirectory.equals(other.journalDirectory))
-      {
-         return false;
-      }
-      if (journalFileSize != other.journalFileSize)
-      {
-         return false;
-      }
-
-      if (journalMinFiles != other.journalMinFiles)
-      {
-         return false;
-      }
-      if (journalPerfBlastPages != other.journalPerfBlastPages)
-      {
-         return false;
-      }
-      if (journalSyncNonTransactional != other.journalSyncNonTransactional)
-      {
-         return false;
-      }
-      if (journalSyncTransactional != other.journalSyncTransactional)
-      {
-         return false;
-      }
-      if (journalType == null)
-      {
-         if (other.journalType != null)
-         {
-            return false;
-         }
-      }
-      else if (!journalType.equals(other.journalType))
-      {
-         return false;
-      }
-      if (largeMessagesDirectory == null)
-      {
-         if (other.largeMessagesDirectory != null)
-         {
-            return false;
-         }
-      }
-      else if (!largeMessagesDirectory.equals(other.largeMessagesDirectory))
-      {
-         return false;
-      }
-      if (logJournalWriteRate != other.logJournalWriteRate)
-      {
-         return false;
-      }
-      if (managementAddress == null)
-      {
-         if (other.managementAddress != null)
-         {
-            return false;
-         }
-      }
-      else if (!managementAddress.equals(other.managementAddress))
-      {
-         return false;
-      }
-      if (failoverOnServerShutdown != other.isFailoverOnServerShutdown())
-      {
-         return false;
-      }
-      if (clusterPassword == null)
-      {
-         if (other.clusterPassword != null)
-         {
-            return false;
-         }
-      }
-      else if (!clusterPassword.equals(other.clusterPassword))
-      {
-         return false;
-      }
-      if (clusterUser == null)
-      {
-         if (other.clusterUser != null)
-         {
-            return false;
-         }
-      }
-      else if (!clusterUser.equals(other.clusterUser))
-      {
-         return false;
-      }
-      if (managementNotificationAddress == null)
-      {
-         if (other.managementNotificationAddress != null)
-         {
-            return false;
-         }
-      }
-      else if (!managementNotificationAddress.equals(other.managementNotificationAddress))
-      {
-         return false;
-      }
-      if (messageCounterEnabled != other.messageCounterEnabled)
-      {
-         return false;
-      }
-      if (messageCounterMaxDayHistory != other.messageCounterMaxDayHistory)
-      {
-         return false;
-      }
-      if (messageCounterSamplePeriod != other.messageCounterSamplePeriod)
-      {
-         return false;
-      }
-      if (messageExpiryScanPeriod != other.messageExpiryScanPeriod)
-      {
-         return false;
-      }
-      if (messageExpiryThreadPriority != other.messageExpiryThreadPriority)
-      {
-         return false;
-      }
-      if (pagingDirectory == null)
-      {
-         if (other.pagingDirectory != null)
-         {
-            return false;
-         }
-      }
-      else if (!pagingDirectory.equals(other.pagingDirectory))
-      {
-         return false;
-      }
-      if (persistDeliveryCountBeforeDelivery != other.persistDeliveryCountBeforeDelivery)
-      {
-         return false;
-      }
-      if (persistIDCache != other.persistIDCache)
-      {
-         return false;
-      }
-      if (persistenceEnabled != other.persistenceEnabled)
-      {
-         return false;
-      }
-      if (scheduledThreadPoolMaxSize != other.scheduledThreadPoolMaxSize)
-      {
-         return false;
-      }
-      if (securityEnabled != other.securityEnabled)
-      {
-         return false;
-      }
-      if (securityInvalidationInterval != other.securityInvalidationInterval)
-      {
-         return false;
-      }
-      if (serverDumpInterval != other.serverDumpInterval)
-      {
-         return false;
-      }
-      if (threadPoolMaxSize != other.threadPoolMaxSize)
-      {
-         return false;
-      }
-      if (transactionTimeout != other.transactionTimeout)
-      {
-         return false;
-      }
-      if (transactionTimeoutScanPeriod != other.transactionTimeoutScanPeriod)
-      {
-         return false;
-      }
-      if (wildcardRoutingEnabled != other.wildcardRoutingEnabled)
-      {
-         return false;
-      }
-
-      return true;
-   }
-
-   @Override
    public Map<String, AddressSettings> getAddressesSettings()
    {
       return addressesSettings;
@@ -1317,6 +1025,393 @@ public class ConfigurationImpl implements Configuration
    public String getReplicationClustername()
    {
       return replicationClusterName;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((acceptorConfigs == null) ? 0 : acceptorConfigs.hashCode());
+      result = prime * result + ((addressesSettings == null) ? 0 : addressesSettings.hashCode());
+      result = prime * result + (allowAutoFailBack ? 1231 : 1237);
+      result = prime * result + (asyncConnectionExecutionEnabled ? 1231 : 1237);
+      result = prime * result + (backup ? 1231 : 1237);
+      result = prime * result + ((bindingsDirectory == null) ? 0 : bindingsDirectory.hashCode());
+      result = prime * result + ((bridgeConfigurations == null) ? 0 : bridgeConfigurations.hashCode());
+      result = prime * result + ((broadcastGroupConfigurations == null) ? 0 : broadcastGroupConfigurations.hashCode());
+      result = prime * result + (checkForLiveServer ? 1231 : 1237);
+      result = prime * result + ((clusterConfigurations == null) ? 0 : clusterConfigurations.hashCode());
+      result = prime * result + ((clusterPassword == null) ? 0 : clusterPassword.hashCode());
+      result = prime * result + ((clusterUser == null) ? 0 : clusterUser.hashCode());
+      result = prime * result + (int)(connectionTTLOverride ^ (connectionTTLOverride >>> 32));
+      result = prime * result + ((connectorConfigs == null) ? 0 : connectorConfigs.hashCode());
+      result =
+               prime * result +
+                        ((connectorServiceConfigurations == null) ? 0 : connectorServiceConfigurations.hashCode());
+      result = prime * result + (createBindingsDir ? 1231 : 1237);
+      result = prime * result + (createJournalDir ? 1231 : 1237);
+      result = prime * result + ((discoveryGroupConfigurations == null) ? 0 : discoveryGroupConfigurations.hashCode());
+      result = prime * result + ((divertConfigurations == null) ? 0 : divertConfigurations.hashCode());
+      result = prime * result + (int)(failbackDelay ^ (failbackDelay >>> 32));
+      result = prime * result + (failoverOnServerShutdown ? 1231 : 1237);
+      result = prime * result + (fileDeploymentEnabled ? 1231 : 1237);
+      result = prime * result + (int)(fileDeploymentScanPeriod ^ (fileDeploymentScanPeriod >>> 32));
+      result = prime * result + ((groupingHandlerConfiguration == null) ? 0 : groupingHandlerConfiguration.hashCode());
+      result = prime * result + idCacheSize;
+      result =
+               prime * result +
+                        ((incomingInterceptorClassNames == null) ? 0 : incomingInterceptorClassNames.hashCode());
+      result = prime * result + ((jmxDomain == null) ? 0 : jmxDomain.hashCode());
+      result = prime * result + (jmxManagementEnabled ? 1231 : 1237);
+      result = prime * result + journalBufferSize_AIO;
+      result = prime * result + journalBufferSize_NIO;
+      result = prime * result + journalBufferTimeout_AIO;
+      result = prime * result + journalBufferTimeout_NIO;
+      result = prime * result + journalCompactMinFiles;
+      result = prime * result + journalCompactPercentage;
+      result = prime * result + ((journalDirectory == null) ? 0 : journalDirectory.hashCode());
+      result = prime * result + journalFileSize;
+      result = prime * result + journalMaxIO_AIO;
+      result = prime * result + journalMaxIO_NIO;
+      result = prime * result + journalMinFiles;
+      result = prime * result + journalPerfBlastPages;
+      result = prime * result + (journalSyncNonTransactional ? 1231 : 1237);
+      result = prime * result + (journalSyncTransactional ? 1231 : 1237);
+      result = prime * result + ((journalType == null) ? 0 : journalType.hashCode());
+      result = prime * result + ((largeMessagesDirectory == null) ? 0 : largeMessagesDirectory.hashCode());
+      result = prime * result + (logJournalWriteRate ? 1231 : 1237);
+      result = prime * result + ((managementAddress == null) ? 0 : managementAddress.hashCode());
+      result =
+               prime * result +
+                        ((managementNotificationAddress == null) ? 0 : managementNotificationAddress.hashCode());
+      result = prime * result + (maskPassword ? 1231 : 1237);
+      result = prime * result + maxConcurrentPageIO;
+      result = prime * result + (int)(memoryMeasureInterval ^ (memoryMeasureInterval >>> 32));
+      result = prime * result + memoryWarningThreshold;
+      result = prime * result + (messageCounterEnabled ? 1231 : 1237);
+      result = prime * result + messageCounterMaxDayHistory;
+      result = prime * result + (int)(messageCounterSamplePeriod ^ (messageCounterSamplePeriod >>> 32));
+      result = prime * result + (int)(messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
+      result = prime * result + messageExpiryThreadPriority;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((nodeGroupName == null) ? 0 : nodeGroupName.hashCode());
+      result =
+               prime * result +
+                        ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
+      result = prime * result + ((pagingDirectory == null) ? 0 : pagingDirectory.hashCode());
+      result = prime * result + (persistDeliveryCountBeforeDelivery ? 1231 : 1237);
+      result = prime * result + (persistIDCache ? 1231 : 1237);
+      result = prime * result + (persistenceEnabled ? 1231 : 1237);
+      result = prime * result + ((queueConfigurations == null) ? 0 : queueConfigurations.hashCode());
+      result = prime * result + ((replicationClusterName == null) ? 0 : replicationClusterName.hashCode());
+      result = prime * result + (runSyncSpeedTest ? 1231 : 1237);
+      result = prime * result + scheduledThreadPoolMaxSize;
+      result = prime * result + (securityEnabled ? 1231 : 1237);
+      result = prime * result + (int)(securityInvalidationInterval ^ (securityInvalidationInterval >>> 32));
+      result = prime * result + ((securitySettings == null) ? 0 : securitySettings.hashCode());
+      result = prime * result + (int)(serverDumpInterval ^ (serverDumpInterval >>> 32));
+      result = prime * result + (sharedStore ? 1231 : 1237);
+      result = prime * result + threadPoolMaxSize;
+      result = prime * result + (int)(transactionTimeout ^ (transactionTimeout >>> 32));
+      result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
+      result = prime * result + (wildcardRoutingEnabled ? 1231 : 1237);
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ConfigurationImpl other = (ConfigurationImpl)obj;
+      if (acceptorConfigs == null)
+      {
+         if (other.acceptorConfigs != null)
+            return false;
+      }
+      else if (!acceptorConfigs.equals(other.acceptorConfigs))
+         return false;
+      if (addressesSettings == null)
+      {
+         if (other.addressesSettings != null)
+            return false;
+      }
+      else if (!addressesSettings.equals(other.addressesSettings))
+         return false;
+      if (allowAutoFailBack != other.allowAutoFailBack)
+         return false;
+      if (asyncConnectionExecutionEnabled != other.asyncConnectionExecutionEnabled)
+         return false;
+      if (backup != other.backup)
+         return false;
+      if (bindingsDirectory == null)
+      {
+         if (other.bindingsDirectory != null)
+            return false;
+      }
+      else if (!bindingsDirectory.equals(other.bindingsDirectory))
+         return false;
+      if (bridgeConfigurations == null)
+      {
+         if (other.bridgeConfigurations != null)
+            return false;
+      }
+      else if (!bridgeConfigurations.equals(other.bridgeConfigurations))
+         return false;
+      if (broadcastGroupConfigurations == null)
+      {
+         if (other.broadcastGroupConfigurations != null)
+            return false;
+      }
+      else if (!broadcastGroupConfigurations.equals(other.broadcastGroupConfigurations))
+         return false;
+      if (checkForLiveServer != other.checkForLiveServer)
+         return false;
+      if (clusterConfigurations == null)
+      {
+         if (other.clusterConfigurations != null)
+            return false;
+      }
+      else if (!clusterConfigurations.equals(other.clusterConfigurations))
+         return false;
+      if (clusterPassword == null)
+      {
+         if (other.clusterPassword != null)
+            return false;
+      }
+      else if (!clusterPassword.equals(other.clusterPassword))
+         return false;
+      if (clusterUser == null)
+      {
+         if (other.clusterUser != null)
+            return false;
+      }
+      else if (!clusterUser.equals(other.clusterUser))
+         return false;
+      if (connectionTTLOverride != other.connectionTTLOverride)
+         return false;
+      if (connectorConfigs == null)
+      {
+         if (other.connectorConfigs != null)
+            return false;
+      }
+      else if (!connectorConfigs.equals(other.connectorConfigs))
+         return false;
+      if (connectorServiceConfigurations == null)
+      {
+         if (other.connectorServiceConfigurations != null)
+            return false;
+      }
+      else if (!connectorServiceConfigurations.equals(other.connectorServiceConfigurations))
+         return false;
+      if (createBindingsDir != other.createBindingsDir)
+         return false;
+      if (createJournalDir != other.createJournalDir)
+         return false;
+      if (discoveryGroupConfigurations == null)
+      {
+         if (other.discoveryGroupConfigurations != null)
+            return false;
+      }
+      else if (!discoveryGroupConfigurations.equals(other.discoveryGroupConfigurations))
+         return false;
+      if (divertConfigurations == null)
+      {
+         if (other.divertConfigurations != null)
+            return false;
+      }
+      else if (!divertConfigurations.equals(other.divertConfigurations))
+         return false;
+      if (failbackDelay != other.failbackDelay)
+         return false;
+      if (failoverOnServerShutdown != other.failoverOnServerShutdown)
+         return false;
+      if (fileDeploymentEnabled != other.fileDeploymentEnabled)
+         return false;
+      if (fileDeploymentScanPeriod != other.fileDeploymentScanPeriod)
+         return false;
+      if (groupingHandlerConfiguration == null)
+      {
+         if (other.groupingHandlerConfiguration != null)
+            return false;
+      }
+      else if (!groupingHandlerConfiguration.equals(other.groupingHandlerConfiguration))
+         return false;
+      if (idCacheSize != other.idCacheSize)
+         return false;
+      if (incomingInterceptorClassNames == null)
+      {
+         if (other.incomingInterceptorClassNames != null)
+            return false;
+      }
+      else if (!incomingInterceptorClassNames.equals(other.incomingInterceptorClassNames))
+         return false;
+      if (jmxDomain == null)
+      {
+         if (other.jmxDomain != null)
+            return false;
+      }
+      else if (!jmxDomain.equals(other.jmxDomain))
+         return false;
+      if (jmxManagementEnabled != other.jmxManagementEnabled)
+         return false;
+      if (journalBufferSize_AIO != other.journalBufferSize_AIO)
+         return false;
+      if (journalBufferSize_NIO != other.journalBufferSize_NIO)
+         return false;
+      if (journalBufferTimeout_AIO != other.journalBufferTimeout_AIO)
+         return false;
+      if (journalBufferTimeout_NIO != other.journalBufferTimeout_NIO)
+         return false;
+      if (journalCompactMinFiles != other.journalCompactMinFiles)
+         return false;
+      if (journalCompactPercentage != other.journalCompactPercentage)
+         return false;
+      if (journalDirectory == null)
+      {
+         if (other.journalDirectory != null)
+            return false;
+      }
+      else if (!journalDirectory.equals(other.journalDirectory))
+         return false;
+      if (journalFileSize != other.journalFileSize)
+         return false;
+      if (journalMaxIO_AIO != other.journalMaxIO_AIO)
+         return false;
+      if (journalMaxIO_NIO != other.journalMaxIO_NIO)
+         return false;
+      if (journalMinFiles != other.journalMinFiles)
+         return false;
+      if (journalPerfBlastPages != other.journalPerfBlastPages)
+         return false;
+      if (journalSyncNonTransactional != other.journalSyncNonTransactional)
+         return false;
+      if (journalSyncTransactional != other.journalSyncTransactional)
+         return false;
+      if (journalType != other.journalType)
+         return false;
+      if (largeMessagesDirectory == null)
+      {
+         if (other.largeMessagesDirectory != null)
+            return false;
+      }
+      else if (!largeMessagesDirectory.equals(other.largeMessagesDirectory))
+         return false;
+      if (logJournalWriteRate != other.logJournalWriteRate)
+         return false;
+      if (managementAddress == null)
+      {
+         if (other.managementAddress != null)
+            return false;
+      }
+      else if (!managementAddress.equals(other.managementAddress))
+         return false;
+      if (managementNotificationAddress == null)
+      {
+         if (other.managementNotificationAddress != null)
+            return false;
+      }
+      else if (!managementNotificationAddress.equals(other.managementNotificationAddress))
+         return false;
+      if (maskPassword != other.maskPassword)
+         return false;
+      if (maxConcurrentPageIO != other.maxConcurrentPageIO)
+         return false;
+      if (memoryMeasureInterval != other.memoryMeasureInterval)
+         return false;
+      if (memoryWarningThreshold != other.memoryWarningThreshold)
+         return false;
+      if (messageCounterEnabled != other.messageCounterEnabled)
+         return false;
+      if (messageCounterMaxDayHistory != other.messageCounterMaxDayHistory)
+         return false;
+      if (messageCounterSamplePeriod != other.messageCounterSamplePeriod)
+         return false;
+      if (messageExpiryScanPeriod != other.messageExpiryScanPeriod)
+         return false;
+      if (messageExpiryThreadPriority != other.messageExpiryThreadPriority)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (nodeGroupName == null)
+      {
+         if (other.nodeGroupName != null)
+            return false;
+      }
+      else if (!nodeGroupName.equals(other.nodeGroupName))
+         return false;
+      if (outgoingInterceptorClassNames == null)
+      {
+         if (other.outgoingInterceptorClassNames != null)
+            return false;
+      }
+      else if (!outgoingInterceptorClassNames.equals(other.outgoingInterceptorClassNames))
+         return false;
+      if (pagingDirectory == null)
+      {
+         if (other.pagingDirectory != null)
+            return false;
+      }
+      else if (!pagingDirectory.equals(other.pagingDirectory))
+         return false;
+      if (persistDeliveryCountBeforeDelivery != other.persistDeliveryCountBeforeDelivery)
+         return false;
+      if (persistIDCache != other.persistIDCache)
+         return false;
+      if (persistenceEnabled != other.persistenceEnabled)
+         return false;
+      if (queueConfigurations == null)
+      {
+         if (other.queueConfigurations != null)
+            return false;
+      }
+      else if (!queueConfigurations.equals(other.queueConfigurations))
+         return false;
+      if (replicationClusterName == null)
+      {
+         if (other.replicationClusterName != null)
+            return false;
+      }
+      else if (!replicationClusterName.equals(other.replicationClusterName))
+         return false;
+      if (runSyncSpeedTest != other.runSyncSpeedTest)
+         return false;
+      if (scheduledThreadPoolMaxSize != other.scheduledThreadPoolMaxSize)
+         return false;
+      if (securityEnabled != other.securityEnabled)
+         return false;
+      if (securityInvalidationInterval != other.securityInvalidationInterval)
+         return false;
+      if (securitySettings == null)
+      {
+         if (other.securitySettings != null)
+            return false;
+      }
+      else if (!securitySettings.equals(other.securitySettings))
+         return false;
+      if (serverDumpInterval != other.serverDumpInterval)
+         return false;
+      if (sharedStore != other.sharedStore)
+         return false;
+      if (threadPoolMaxSize != other.threadPoolMaxSize)
+         return false;
+      if (transactionTimeout != other.transactionTimeout)
+         return false;
+      if (transactionTimeoutScanPeriod != other.transactionTimeoutScanPeriod)
+         return false;
+      if (wildcardRoutingEnabled != other.wildcardRoutingEnabled)
+         return false;
+      return true;
    }
 
 }

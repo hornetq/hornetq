@@ -34,29 +34,6 @@ public enum BindingType
 
    public static final int DIVERT_INDEX = 2;
 
-   public static BindingType fromOrdinal(final int index)
-   {
-      switch (index)
-      {
-         case LOCAL_QUEUE_INDEX:
-         {
-            return BindingType.LOCAL_QUEUE;
-         }
-         case REMOTE_QUEUE_INDEX:
-         {
-            return BindingType.REMOTE_QUEUE;
-         }
-         case DIVERT_INDEX:
-         {
-            return BindingType.DIVERT;
-         }
-         default:
-         {
-            throw HornetQMessageBundle.BUNDLE.invalidIndex(index);
-         }
-      }
-   }
-
    public int toInt()
    {
       if (equals(BindingType.LOCAL_QUEUE))

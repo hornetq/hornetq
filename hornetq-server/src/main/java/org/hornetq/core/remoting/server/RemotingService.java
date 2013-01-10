@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -38,30 +37,9 @@ public interface RemotingService
 
    Set<RemotingConnection> getConnections();
 
-   /**
-    * Adds an interceptor for incoming messages. Invoking this method is equivalent to invoking
-    * <code>addIncomingInterceptor(Interceptor)</code>.
-    *
-    * @param interceptor
-    * @deprecated As of HornetQ 2.3.0.Final, replaced by
-    * {@link #addIncomingInterceptor(Interceptor)} and
-    * {@link #addOutgoingInterceptor(Interceptor)}
-    */
-   @Deprecated
-   void addInterceptor(Interceptor interceptor);
-
    void addIncomingInterceptor(Interceptor interceptor);
 
    void addOutgoingInterceptor(Interceptor interceptor);
-
-   /**
-    * @param interceptor
-    * @deprecated As of HornetQ 2.3.0.Final, replaced by
-    * {@link #removeIncomingInterceptor(Interceptor)} and
-    * {@link #removeOutgoingInterceptor(Interceptor)}
-    */
-   @Deprecated
-   boolean removeInterceptor(Interceptor interceptor);
 
    boolean removeIncomingInterceptor(Interceptor interceptor);
 
@@ -72,12 +50,6 @@ public interface RemotingService
    void start() throws Exception;
 
    boolean isStarted();
-
-   /**
-    * allow acceptors to use this as their default security Principal if applicable
-    * @param principal
-    */
-   void allowInvmSecurityOverride(HornetQPrincipal principal);
 
    /**
     * Freezes and then disconnects all connections except the given one.

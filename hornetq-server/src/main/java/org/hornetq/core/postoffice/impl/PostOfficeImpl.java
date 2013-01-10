@@ -1412,6 +1412,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public Bindings createBindings(final SimpleString address) throws Exception
    {
-      return new BindingsImpl(address, server.getGroupingHandler(), pagingManager.getPageStore(address));
+      return new Bindings(address, server.getGroupingHandler(), pagingManager.getPageStore(address));
    }
 }

@@ -17,8 +17,7 @@ import java.util.List;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * USed to hold a hierarchichal style address, delimited by a '.'.
- *
+ * USed to hold a hierarchical style address, delimited by a '.'.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public interface Address
@@ -34,8 +33,6 @@ public interface Address
    void addLinkedAddress(Address address);
 
    void removeLinkedAddress(Address actualAddress);
-
-   void removeAddressPart(int pos);
 
    boolean matches(Address add);
 }

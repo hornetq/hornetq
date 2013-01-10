@@ -61,14 +61,6 @@ public class JournalFileImpl implements JournalFile
       recordID = (int)(fileID & Integer.MAX_VALUE);
    }
 
-   public void clearCounts()
-   {
-      negCounts.clear();
-      posCount.set(0);
-      liveBytes.set(0);
-      totalNegativeToOthers.set(0);
-   }
-
    public int getPosCount()
    {
       return posCount.intValue();
@@ -114,11 +106,6 @@ public class JournalFileImpl implements JournalFile
       return version;
    }
 
-   public boolean resetNegCount(final JournalFile file)
-   {
-      return negCounts.remove(file) != null;
-   }
-
    public void incPosCount()
    {
       posCount.incrementAndGet();
@@ -127,11 +114,6 @@ public class JournalFileImpl implements JournalFile
    public void decPosCount()
    {
       posCount.decrementAndGet();
-   }
-
-   public void extendOffset(final int delta)
-   {
-      offset += delta;
    }
 
    public long getOffset()

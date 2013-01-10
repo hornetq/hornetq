@@ -34,15 +34,13 @@ import org.hornetq.api.core.HornetQBuffers;
  */
 public class StompFrame
 {
-   protected static final byte[] NO_DATA = new byte[] {};
-
    private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-   protected String command;
+   protected final String command;
 
-   protected Map<String, String> headers;
+   protected final Map<String, String> headers;
 
-   protected String body;
+   private String body;
 
    protected byte[] bytesBody;
 
@@ -50,9 +48,9 @@ public class StompFrame
 
    protected int size;
 
-   protected boolean disconnect;
+   private boolean disconnect;
 
-   protected boolean isPing;
+   private boolean isPing;
 
    public StompFrame(String command)
    {

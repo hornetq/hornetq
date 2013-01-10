@@ -42,12 +42,6 @@ public class LivePageCacheImpl implements LivePageCache
    }
 
    @Override
-   public Page getPage()
-   {
-      return page;
-   }
-
-   @Override
    public long getPageId()
    {
       return page.getPageId();

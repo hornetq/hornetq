@@ -60,15 +60,11 @@ public interface Journal extends HornetQComponent
 
    void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
-   void appendAddRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback) throws Exception;
-
    void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
    void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion completionCallback) throws Exception;
 
    void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
-
-   void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback) throws Exception;
 
    void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
@@ -128,8 +124,6 @@ public interface Journal extends HornetQComponent
    void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback) throws Exception;
 
    void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception;
-
-   void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion callback) throws Exception;
 
    void appendRollbackRecord(long txID, boolean sync) throws Exception;
 

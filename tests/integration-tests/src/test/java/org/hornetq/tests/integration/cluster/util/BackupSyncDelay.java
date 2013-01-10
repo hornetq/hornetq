@@ -51,7 +51,7 @@ public class BackupSyncDelay implements Interceptor
 
    public void deliverUpToDateMsg()
    {
-      live.getRemotingService().removeInterceptor(this);
+      live.getRemotingService().removeIncomingInterceptor(this);
       if (backup.isStarted())
          handler.deliver();
    }
@@ -92,7 +92,7 @@ public class BackupSyncDelay implements Interceptor
             Channel repChannel = repEnd.getChannel();
             repChannel.setHandler(handler);
             handler.setChannel(repChannel);
-            live.getRemotingService().removeInterceptor(this);
+            live.getRemotingService().removeIncomingInterceptor(this);
          }
          catch (Exception e)
          {

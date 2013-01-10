@@ -20,25 +20,10 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
  * A NullStorageLargeServerMessage
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created 30-Sep-08 1:51:42 PM
- *
- *
  */
-public class NullStorageLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
+class NullStorageLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public NullStorageLargeServerMessage()
    {
@@ -71,13 +56,6 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    @Override
    public boolean isLargeMessage()
    {
-      return true;
-   }
-
-   @Override
-   public boolean isFileExists() throws Exception
-   {
-      // There are no real files on null persistence
       return true;
    }
 

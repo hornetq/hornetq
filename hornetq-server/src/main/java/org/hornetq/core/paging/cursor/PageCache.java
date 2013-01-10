@@ -14,7 +14,6 @@
 package org.hornetq.core.paging.cursor;
 
 import org.hornetq.core.paging.PagedMessage;
-import org.hornetq.core.paging.impl.Page;
 import org.hornetq.utils.SoftValueHashMap;
 
 /**
@@ -26,8 +25,6 @@ import org.hornetq.utils.SoftValueHashMap;
  */
 public interface PageCache extends SoftValueHashMap.ValueCache
 {
-   Page getPage();
-
    long getPageId();
 
    int getNumberOfMessages();

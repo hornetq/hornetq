@@ -88,11 +88,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    // Public --------------------------------------------------------
 
-   public PagingStore getAssociatedStore()
-   {
-      return pagingStore;
-   }
-
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
@@ -216,11 +211,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          softCache.put(cache.getPageId(), cache);
       }
-   }
-
-   public int getCacheMaxSize()
-   {
-      return softCache.getMaxEelements();
    }
 
    public void setCacheMaxSize(final int size)

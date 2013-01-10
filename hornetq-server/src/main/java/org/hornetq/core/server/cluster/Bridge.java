@@ -38,10 +38,6 @@ public interface Bridge extends Consumer, HornetQComponent
 
    SimpleString getForwardingAddress();
 
-   Transformer getTransformer();
-
-   boolean isUseDuplicateDetection();
-
    void activate();
 
    void flushExecutor();

@@ -24,15 +24,9 @@ import org.hornetq.core.journal.SequentialFile;
  */
 public interface JournalFile
 {
-
-   /** Used during compacting (clearing counters) */
-   void clearCounts();
-
    int getNegCount(JournalFile file);
 
    void incNegCount(JournalFile file);
-
-   boolean resetNegCount(JournalFile file);
 
    int getPosCount();
 
@@ -61,8 +55,6 @@ public interface JournalFile
     * @return {@code true} if the file can already be deleted.
     */
    boolean isCanReclaim();
-
-   long getOffset();
 
    /** This is a field to identify that records on this file actually belong to the current file.
     *  The possible implementation for this is fileID & Integer.MAX_VALUE */
