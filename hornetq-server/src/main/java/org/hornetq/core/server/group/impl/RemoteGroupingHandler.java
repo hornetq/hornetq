@@ -39,7 +39,7 @@ import org.hornetq.utils.TypedProperties;
  * handler to make proposals.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class RemoteGroupingHandler implements GroupingHandler
+public final class RemoteGroupingHandler implements GroupingHandler
 {
    private final SimpleString name;
 
