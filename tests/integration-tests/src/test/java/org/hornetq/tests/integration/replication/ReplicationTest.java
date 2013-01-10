@@ -125,7 +125,7 @@ public final class ReplicationTest extends ServiceTestBase
       if (interceptors.length > 0)
       {
          List<String> interceptorsList = Arrays.asList(interceptors);
-         backupConfig.setInterceptorClassNames(interceptorsList);
+         backupConfig.setIncomingInterceptorClassNames(interceptorsList);
       }
 
       ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,

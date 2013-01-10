@@ -350,13 +350,6 @@ public class ConfigurationImpl implements Configuration
       return getIncomingInterceptorClassNames();
    }
 
-   @Deprecated
-   @Override
-   public void setInterceptorClassNames(final List<String> interceptors)
-   {
-      setIncomingInterceptorClassNames(interceptors);
-   }
-
    public List<String> getIncomingInterceptorClassNames()
    {
       return incomingInterceptorClassNames;
