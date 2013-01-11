@@ -66,7 +66,7 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private final boolean allowDirectConnectionsOnly;
 
-   private final int minLargeMessageSize;
+   private int minLargeMessageSize;
 
    private final long clusterNotificationInterval;
 
@@ -347,6 +347,14 @@ public final class ClusterConnectionConfiguration implements Serializable
    public int getMinLargeMessageSize()
    {
       return minLargeMessageSize;
+   }
+
+   /**
+    * @param minLargeMessageSize the minLargeMessageSize to set
+    */
+   public void setMinLargeMessageSize(final int minLargeMessageSize)
+   {
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    /**

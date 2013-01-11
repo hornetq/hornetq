@@ -207,7 +207,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected static Configuration createDefaultConfig(final int index,
                                                       final Map<String, Object> params,
-                                                      final String... acceptors) throws Exception
+                                                      final String... acceptors)
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -232,7 +232,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     * @return
     * @throws Exception
     */
-   protected static final ConfigurationImpl createBasicConfig(final int serverID) throws Exception
+   protected static final ConfigurationImpl createBasicConfig(final int serverID)
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
