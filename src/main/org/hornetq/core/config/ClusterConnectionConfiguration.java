@@ -66,7 +66,7 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final boolean allowDirectConnectionsOnly;
 
-   private final int minLargeMessageSize;
+   private int minLargeMessageSize;
 
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
@@ -308,6 +308,14 @@ public class ClusterConnectionConfiguration implements Serializable
    public int getMinLargeMessageSize()
    {
       return minLargeMessageSize;
+   }
+   
+   /**
+    * @param minLargeMessageSize the minLargeMessageSize to set
+    */
+   public void setMinLargeMessageSize(final int minLargeMessageSize)
+   {
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    /**

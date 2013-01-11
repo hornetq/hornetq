@@ -28,6 +28,7 @@ import javax.management.MBeanServer;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -40,13 +41,17 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.QueueBinding;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -58,6 +63,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -852,6 +858,76 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
 
       Assert.assertEquals(expect, largeMessagesFileDir.listFiles().length);
+   }
+
+   /**
+    * @param server the server where's being checked
+    * @param address the name of the address being checked
+    * @param local if true we are looking for local bindings, false we are looking for remoting servers
+    * @param expectedBindingCount the expected number of counts
+    * @param expectedConsumerCount the expected number of consumers
+    * @param timeout the timeout used on the check
+    * @return
+    * @throws Exception
+    * @throws InterruptedException
+    */
+   protected boolean waitForBindings(final HornetQServer server,
+                                    final String address,
+                                    final boolean local,
+                                    final int expectedBindingCount,
+                                    final int expectedConsumerCount,
+                                    long timeout) throws Exception, InterruptedException
+   {
+      final PostOffice po = server.getPostOffice();
+      
+      long start = System.currentTimeMillis();
+
+      int bindingCount = 0;
+
+      int totConsumers = 0;
+
+      do
+      {
+         bindingCount = 0;
+
+         totConsumers = 0;
+
+         Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
+
+         for (Binding binding : bindings.getBindings())
+         {
+            if (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local)
+            {
+               QueueBinding qBinding = (QueueBinding)binding;
+
+               bindingCount++;
+
+               totConsumers += qBinding.consumerCount();
+            }
+         }
+
+         if (bindingCount == expectedBindingCount && totConsumers == expectedConsumerCount)
+         {
+            return true;
+         }
+
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < timeout);
+
+      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
+                   " (expecting " +
+                   expectedBindingCount +
+                   ") " +
+                   ", totConsumers = " +
+                   totConsumers +
+                   " (expecting " +
+                   expectedConsumerCount +
+                   ")" +
+                   ")";
+
+      log.error(msg);
+      return false;
    }
 
    /**
