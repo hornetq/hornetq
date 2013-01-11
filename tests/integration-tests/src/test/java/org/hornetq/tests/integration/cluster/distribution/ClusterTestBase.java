@@ -448,14 +448,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                   final boolean local) throws Exception
    {
       log.debug("waiting for bindings on node " + node +
-                " address " +
-                address +
-                " expectedBindingCount " +
-                expectedBindingCount +
-                " consumerCount " +
-                expectedConsumerCount +
-                " local " +
-                local);
+         " address " +
+         address +
+         " expectedBindingCount " +
+         expectedBindingCount +
+         " consumerCount " +
+         expectedConsumerCount +
+         " local " +
+         local);
 
       HornetQServer server = servers[node];
 
@@ -464,54 +464,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No server at " + node);
       }
 
-      PostOffice po = server.getPostOffice();
+      long timeout = ClusterTestBase.WAIT_TIMEOUT;
 
-      long start = System.currentTimeMillis();
 
-      int bindingCount;
-      int totConsumers;
-
-      do
+      if  (waitForBindings(server, address, local, expectedBindingCount, expectedConsumerCount, timeout))
       {
-         bindingCount = 0;
-         totConsumers = 0;
-
-         Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
-
-         for (Binding binding : bindings.getBindings())
-         {
-            if ((binding instanceof LocalQueueBinding && local) || (binding instanceof RemoteQueueBinding && !local))
-            {
-               QueueBinding qBinding = (QueueBinding)binding;
-
-               bindingCount++;
-
-               totConsumers += qBinding.consumerCount();
-            }
-         }
-
-         if (bindingCount == expectedBindingCount && totConsumers == expectedConsumerCount)
-         {
-            return;
-         }
-
-         Thread.sleep(10);
+         return;
       }
-      while (System.currentTimeMillis() - start < ServiceTestBase.WAIT_TIMEOUT);
 
-      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
-                   " (expecting " +
-                   expectedBindingCount +
-                   ") " +
-                   ", totConsumers = " +
-                   totConsumers +
-                   " (expecting " +
-                   expectedConsumerCount +
-                   ")" +
-                   ")";
 
-      log.error(msg);
-
+      PostOffice po = server.getPostOffice();
       Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
 
       System.out.println("=======================================================================");
@@ -538,8 +500,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
             {
                out.println(clusterDescription(hornetQServer));
                out.println(debugBindings(hornetQServer, hornetQServer.getConfiguration()
-                                                                     .getManagementNotificationAddress()
-                                                                     .toString()));
+                  .getManagementNotificationAddress()
+                  .toString()));
             }
          }
 
@@ -549,8 +511,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (hornetQServer != null)
             {
                out.println(debugBindings(hornetQServer, hornetQServer.getConfiguration()
-                                                                     .getManagementNotificationAddress()
-                                                                     .toString()));
+                  .getManagementNotificationAddress()
+                  .toString()));
             }
          }
       }
@@ -560,7 +522,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       logAndSystemOut(writer.toString());
 
-      throw new IllegalStateException(msg);
+      throw new IllegalStateException("Didn't get the expected number of bindings, look at the logging for more information");
    }
 
    protected String debugBindings(final HornetQServer server, final String address) throws Exception
