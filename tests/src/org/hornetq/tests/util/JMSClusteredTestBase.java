@@ -92,6 +92,9 @@ public class JMSClusteredTestBase extends ServiceTestBase
       jmsServer2.createQueue(false, name, null, true, "/queue/" + name);
       jmsServer1.createQueue(false, name, null, true, "/queue/" + name);
 
+      assertTrue(waitForBindings(server1, "jms.queue." + name, false, 1, 0, 10000));
+      assertTrue(waitForBindings(server2, "jms.queue." + name, false, 1, 0, 10000));
+
       return (Queue)context1.lookup("/queue/" + name);
    }
 
@@ -135,6 +138,21 @@ public class JMSClusteredTestBase extends ServiceTestBase
     */
    private void setupServer2() throws Exception
    {
+      Configuration conf2 = createConfigServer2();
+
+      JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
+
+      server2 = HornetQServers.newHornetQServer(conf2, false);
+      jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
+      context2 = new InVMContext();
+      jmsServer2.setContext(context2);
+   }
+
+   /**
+    * @return
+    */
+   protected Configuration createConfigServer2()
+   {
       List<String> toOtherServerPair = new ArrayList<String>();
       toOtherServerPair.add("toServer1");
 
@@ -161,16 +179,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                               MAX_HOPS,
                                                                               1024,
                                                                               toOtherServerPair, false));
-
-
-      JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
-      //jmsconfig.getTopicConfigurations().add(new TopicConfigurationImpl("t1", "topic/t1"));
-
-
-      server2 = HornetQServers.newHornetQServer(conf2, false);
-      jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
-      context2 = new InVMContext();
-      jmsServer2.setContext(context2);
+      return conf2;
    }
 
    /**
@@ -178,6 +187,21 @@ public class JMSClusteredTestBase extends ServiceTestBase
     * @throws Exception
     */
    private void setupServer1() throws Exception
+   {
+      Configuration conf1 = createConfigServer1();
+
+      JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
+
+      server1 = HornetQServers.newHornetQServer(conf1, false);
+      jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
+      context1 = new InVMContext();
+      jmsServer1.setContext(context1);
+   }
+
+   /**
+    * @return
+    */
+   protected Configuration createConfigServer1()
    {
       List<String> toOtherServerPair = new ArrayList<String>();
       toOtherServerPair.add("toServer2");
@@ -206,15 +230,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                               MAX_HOPS,
                                                                               1024,
                                                                               toOtherServerPair, false));
-
-
-      JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
-      //jmsconfig.getTopicConfigurations().add(new TopicConfigurationImpl("t1", "topic/t1"));
-
-      server1 = HornetQServers.newHornetQServer(conf1, false);
-      jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
-      context1 = new InVMContext();
-      jmsServer1.setContext(context1);
+      return conf1;
    }
 
    @Override
@@ -233,9 +249,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       {
          log.warn("Can't stop server2", e);
       }
-
-      Thread.sleep(500);
-
+      
       ((HornetQConnectionFactory)cf1).close();
 
       ((HornetQConnectionFactory)cf2).close();
