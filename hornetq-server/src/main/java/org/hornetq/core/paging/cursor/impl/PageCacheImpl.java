@@ -52,12 +52,6 @@ class PageCacheImpl implements PageCache
    // Public --------------------------------------------------------
 
    @Override
-   public Page getPage()
-   {
-      return page;
-   }
-
-   @Override
    public PagedMessage getMessage(final int messageNumber)
    {
       lock.readLock().lock();

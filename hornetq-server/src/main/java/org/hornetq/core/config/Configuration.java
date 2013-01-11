@@ -248,19 +248,6 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
-    * the server from clients).  Invoking this method is the same as invoking <code>setIncomingInterceptorClassNames(List)</code>
-    * <br />
-    * Classes must implement {@link Interceptor}.
-    *
-    * @deprecated As of HornetQ 2.3.0.Final, replaced by
-    * {@link #setIncomingInterceptorClassNames(List)} and
-    * {@link #setOutgoingInterceptorClassNames(List)}
-    */
-   @Deprecated
-   void setInterceptorClassNames(List<String> interceptors);
-
-   /**
-    * Sets the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
     * the server from clients).
     * <br />
     * Classes must implement {@link Interceptor}.

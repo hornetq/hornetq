@@ -9,7 +9,7 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  *  implied.  See the License for the specific language governing
  *  permissions and limitations under the License.
- */ 
+ */
 
 options {
    LOOKAHEAD=1;
@@ -35,7 +35,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.SimpleStringReader;
 
 // CHECKSTYLE:OFF
-// NO_UCD
 /**
  * A JavaCC 2.0 grammar for HornetQ filters
  *
@@ -43,7 +42,7 @@ import org.hornetq.core.filter.impl.SimpleStringReader;
  * @author adrian@jboss.org
  * @version $Revision: 2681 $
  */
-@SuppressWarnings(value = { "unused", "rawtypes", "unchecked" })
+@SuppressWarnings(value = { "unused", "rawtypes", "unchecked", "ucd" })
 public class FilterParser
 {
    private static final String LOFFER_L = "l";

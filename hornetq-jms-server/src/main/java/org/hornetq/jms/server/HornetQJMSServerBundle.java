@@ -1,7 +1,9 @@
 package org.hornetq.jms.server;
 
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQAddressExistsException;
+import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -45,7 +47,4 @@ public interface HornetQJMSServerBundle
 
    @Message(id = 129008, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
-
-   @Message(id = 129009, value =  "Invalid filter: {0}", format = Message.Format.MESSAGE_FORMAT)
-   HornetQInvalidFilterExpressionException invalidFilter(@Cause Throwable e, SimpleString filter);
 }

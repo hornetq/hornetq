@@ -86,15 +86,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendAddRecord(id, recordType, record, sync);
    }
 
-   public void appendAddRecord(final long id,
-                               final byte recordType,
-                               final byte[] record,
-                               final boolean sync,
-                               final IOCompletion completionCallback) throws Exception
-   {
-      this.appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync, completionCallback);
-   }
-
    /**
     * @param id
     * @param recordType
@@ -302,14 +293,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendPrepareRecord(txID, transactionData, sync, callback);
    }
 
-   public void appendPrepareRecord(final long txID,
-                                   final byte[] transactionData,
-                                   final boolean sync,
-                                   final IOCompletion callback) throws Exception
-   {
-      this.appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync, callback);
-   }
-
    /**
     * @param txID
     * @param sync
@@ -365,15 +348,6 @@ public class ReplicatedJournal implements Journal
       }
       replicationManager.appendUpdateRecord(journalID, id, recordType, record);
       localJournal.appendUpdateRecord(id, recordType, record, sync);
-   }
-
-   public void appendUpdateRecord(final long id,
-                                  final byte recordType,
-                                  final byte[] record,
-                                  final boolean sync,
-                                  final IOCompletion completionCallback) throws Exception
-   {
-      this.appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync, completionCallback);
    }
 
    public void appendUpdateRecord(final long id,

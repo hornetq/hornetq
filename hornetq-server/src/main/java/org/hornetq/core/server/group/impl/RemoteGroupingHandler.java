@@ -33,12 +33,13 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.utils.TypedProperties;
 
 /**
- * A remote Grouping handler. This will use management notifications to communicate with the node that has the Local
- * Grouping handler to make proposals.
- *
+ * A remote Grouping handler.
+ * <p>
+ * This will use management notifications to communicate with the node that has the Local Grouping
+ * handler to make proposals.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class RemoteGroupingHandler implements GroupingHandler
+public final class RemoteGroupingHandler implements GroupingHandler
 {
    private final SimpleString name;
 

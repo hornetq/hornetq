@@ -247,11 +247,6 @@ public interface HornetQServerLogger extends BasicLogger
    void messageWithDuplicateID(Object duplicateProperty, SimpleString toAddress, SimpleString address, SimpleString simpleString);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221042, value =  "Message with duplicate ID {0} was already set at {1}. Move from {2} being ignored",
-         format = Message.Format.MESSAGE_FORMAT)
-   void messageWithDuplicateID(Object duplicateProperty, SimpleString toAddress, SimpleString address);
-
-   @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221044, value = "{0} to become \'live\'", format = Message.Format.MESSAGE_FORMAT)
    void becomingLive(HornetQServer server);
 
@@ -653,10 +648,6 @@ public interface HornetQServerLogger extends BasicLogger
    void largeMessageNotAvailable(long messageId);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222135, value = "Error completing callback on replication manager", format = Message.Format.MESSAGE_FORMAT)
-   void errorCompletingReplicationCallback(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222136, value = "The backup node has been shut-down, replication will now stop", format = Message.Format.MESSAGE_FORMAT)
    void replicationStopOnBackupShutdown();
 
@@ -667,10 +658,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222138, value = "Timed out waiting to stop Bridge", format = Message.Format.MESSAGE_FORMAT)
    void timedOutWaitingToStopBridge();
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222139, value = "Bridge unable to send notification when broadcast group is stopped", format = Message.Format.MESSAGE_FORMAT)
-   void bridgeNotificationOnGroupStopped(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222140, value = "Bridge unable to send message {0}, will try again once bridge reconnects", format = Message.Format.MESSAGE_FORMAT)
@@ -717,10 +704,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222150, value = "IO Error completing the transaction, code = {0}, message = {1}", format = Message.Format.MESSAGE_FORMAT)
    void ioErrorOnTX(Integer errorCode, String errorMessage);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222153, value = "Property {0} must be an Boolean, it is {1}", format = Message.Format.MESSAGE_FORMAT)
-   void propertyNotBoolean(String propName, String name);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222156, value = "Could not finish context execution in 10 seconds",
@@ -1085,10 +1068,6 @@ public interface HornetQServerLogger extends BasicLogger
    void failedToHandleCreateQueue(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224035, value = "Unexpected error handling packet {0}", format = Message.Format.MESSAGE_FORMAT)
-   void errorHandlingPacket(@Cause Throwable t, Packet packet);
-
-   @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224036, value = "Failed to decode packet", format = Message.Format.MESSAGE_FORMAT)
    void errorDecodingPacket(@Cause Exception e);
 
@@ -1115,10 +1094,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224042, value = "Failed to write to handler on invm connector {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorWritingToInvmConnector(@Cause Exception e, Runnable runnable);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224043, value = "error flushing invm channel", format = Message.Format.MESSAGE_FORMAT)
-   void errorflushingInvmChannel(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224046, value = "Failed to stop acceptor", format = Message.Format.MESSAGE_FORMAT)

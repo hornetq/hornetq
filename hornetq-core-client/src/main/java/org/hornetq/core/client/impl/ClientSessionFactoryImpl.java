@@ -572,11 +572,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       stopPingingAfterOne = true;
    }
 
-   public void resumePinging()
-   {
-      stopPingingAfterOne = false;
-   }
-
    private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
       try

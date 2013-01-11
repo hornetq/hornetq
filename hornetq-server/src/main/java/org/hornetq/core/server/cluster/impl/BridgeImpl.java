@@ -427,16 +427,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return forwardingAddress;
    }
 
-   public Transformer getTransformer()
-   {
-      return transformer;
-   }
-
-   public boolean isUseDuplicateDetection()
-   {
-      return useDuplicateDetection;
-   }
-
    // For testing only
    public RemotingConnection getForwardingConnection()
    {
@@ -448,13 +438,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return session.getConnection();
       }
-   }
-
-   // for testing only
-   public void setupRetry(final int currentCount, final int maxRetry)
-   {
-      this.retryCount = currentCount;
-      this.reconnectAttemptsInUse = maxRetry;
    }
 
    // SendAcknowledgementHandler implementation ---------------------
@@ -775,14 +758,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          futureScheduledReconnection.cancel(true);
          futureScheduledReconnection = null;
       }
-   }
-
-   /**
-    * @return
-    */
-   protected ClientSessionFactoryInternal getCurrentFactory()
-   {
-      return csf;
    }
 
    /* Hook for creating session factory */

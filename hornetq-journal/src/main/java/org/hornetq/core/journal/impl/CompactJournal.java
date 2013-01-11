@@ -26,7 +26,7 @@ import org.hornetq.core.journal.IOCriticalErrorListener;
  *
  *
  */
-public final class CompactJournal
+public final class CompactJournal // NO_UCD
 {
 
    public static void main(final String arg[])

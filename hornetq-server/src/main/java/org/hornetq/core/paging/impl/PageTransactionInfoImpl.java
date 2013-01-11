@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Pair;
-import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
@@ -107,15 +106,6 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
          pagingManager.removeTransaction(this.transactionID);
       }
-   }
-
-   public void increment(final boolean persistent)
-   {
-      if (persistent)
-      {
-         numberOfPersistentMessages.incrementAndGet();
-      }
-      numberOfMessages.incrementAndGet();
    }
 
    public void increment(final int durableSize, final int nonDurableSize)
@@ -211,24 +201,6 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
       return pgtxUpdate;
    }
-
-   public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager) throws Exception
-   {
-      storageManager.updatePageTransaction(this, 1);
-      storageManager.afterCompleteOperations(new IOAsyncTask()
-      {
-         public void onError(int errorCode, String errorMessage)
-         {
-         }
-
-         public void done()
-         {
-            PageTransactionInfoImpl.this.onUpdate(1, storageManager, pagingManager);
-         }
-      });
-   }
-
-
 
    public boolean isCommit()
    {

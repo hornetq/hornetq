@@ -434,11 +434,6 @@ public class ClusterManager implements HornetQComponent
                                                      configuration.getClusterPassword(), attemptingFailBack));
    }
 
-   public void addClusterLocator(final ServerLocatorInternal serverLocator)
-   {
-      this.clusterLocators.add(serverLocator);
-   }
-
    public void removeClusterLocator(final ServerLocatorInternal serverLocator)
    {
       this.clusterLocators.remove(serverLocator);

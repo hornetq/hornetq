@@ -26,10 +26,10 @@ public class HornetQStompException extends Exception {
 
    private final List<Header> headers = new ArrayList<Header>(10);
    private String body;
-   private VersionedStompFrameHandler handler;
+   private final VersionedStompFrameHandler handler;
    private boolean disconnect;
 
-   public HornetQStompException(StompConnection connection, String msg)
+   HornetQStompException(StompConnection connection, String msg)
    {
       super(msg);
       handler = connection.getFrameHandler();
@@ -37,20 +37,17 @@ public class HornetQStompException extends Exception {
    public HornetQStompException(String msg)
    {
       super(msg);
+      handler = null;
    }
 
    public HornetQStompException(String msg, Throwable t)
    {
       super(msg, t);
       this.body = t.getMessage();
+      handler = null;
    }
 
-   public HornetQStompException(Throwable t)
-   {
-      super(t);
-   }
-
-   public void addHeader(String header, String value)
+   void addHeader(String header, String value)
    {
       headers.add(new Header(header, value));
    }

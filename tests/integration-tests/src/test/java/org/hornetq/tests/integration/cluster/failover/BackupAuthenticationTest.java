@@ -47,7 +47,7 @@ public class BackupAuthenticationTest extends FailoverTestBase
    {
       createReplicatedConfigs();
       backupConfig.setClusterPassword("crocodile");
-      liveConfig.setInterceptorClassNames(Arrays.asList(NotifyingInterceptor.class.getName()));
+      liveConfig.setIncomingInterceptorClassNames(Arrays.asList(NotifyingInterceptor.class.getName()));
    }
 
    @Override

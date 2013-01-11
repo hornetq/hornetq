@@ -38,14 +38,6 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
    private long largeMessageSize;
 
    /**
-    * @return the largeMessageSize
-    */
-   public long getLargeMessageSize()
-   {
-      return largeMessageSize;
-   }
-
-   /**
     * @param largeMessageSize the largeMessageSize to set
     */
    public void setLargeMessageSize(long largeMessageSize)
@@ -187,9 +179,9 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
 
    // Inner classes -------------------------------------------------
 
-   protected static class HornetQOutputStream extends OutputStream
+   private static class HornetQOutputStream extends OutputStream
    {
-      HornetQBuffer bufferOut;
+      private final HornetQBuffer bufferOut;
 
       HornetQOutputStream(HornetQBuffer out)
       {

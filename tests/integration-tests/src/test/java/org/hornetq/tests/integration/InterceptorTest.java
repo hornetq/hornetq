@@ -377,7 +377,7 @@ public class InterceptorTest extends ServiceTestBase
          Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
       }
 
-      server.getRemotingService().removeInterceptor(interceptor);
+      server.getRemotingService().removeIncomingInterceptor(interceptor);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -691,7 +691,7 @@ public class InterceptorTest extends ServiceTestBase
          Assert.assertEquals(4, message.getIntProperty("d").intValue());
       }
 
-      server.getRemotingService().removeInterceptor(interceptor2);
+      server.getRemotingService().removeIncomingInterceptor(interceptor2);
 
       for (int i = 0; i < numMessages; i++)
       {
