@@ -293,56 +293,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No server at " + node);
       }
 
-      PostOffice po = server.getPostOffice();
+      long timeout = ClusterTestBase.WAIT_TIMEOUT;
+      
 
-      long start = System.currentTimeMillis();
-
-      int bindingCount = 0;
-
-      int totConsumers = 0;
-
-      do
+      if  (waitForBindings(server, address, local, expectedBindingCount, expectedConsumerCount, timeout))
       {
-         bindingCount = 0;
-
-         totConsumers = 0;
-
-         Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
-
-         for (Binding binding : bindings.getBindings())
-         {
-            if (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local)
-            {
-               QueueBinding qBinding = (QueueBinding)binding;
-
-               bindingCount++;
-
-               totConsumers += qBinding.consumerCount();
-            }
-         }
-
-         if (bindingCount == expectedBindingCount && totConsumers == expectedConsumerCount)
-         {
-            return;
-         }
-
-         Thread.sleep(10);
+         return;
       }
-      while (System.currentTimeMillis() - start < ClusterTestBase.WAIT_TIMEOUT);
 
-      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
-                   " (expecting " +
-                   expectedBindingCount +
-                   ") " +
-                   ", totConsumers = " +
-                   totConsumers +
-                   " (expecting " +
-                   expectedConsumerCount +
-                   ")" +
-                   ")";
-
-      log.error(msg);
-
+      
+      PostOffice po = server.getPostOffice();
       Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
 
       System.out.println("=======================================================================");
@@ -391,7 +351,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       logAndSystemOut(writer.toString());
 
-      throw new IllegalStateException(msg);
+      throw new IllegalStateException("Didn't get the expected number of bindings, look at the logging for more information");
    }
 
    protected String debugBindings(final HornetQServer server, final String address) throws Exception
