@@ -20,12 +20,7 @@ import org.hornetq.api.core.client.HornetQClient;
 
 /**
  * A BridgeConfiguration
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 13 Jan 2009 09:32:43
- *
- *
  */
 public class BridgeConfiguration implements Serializable
 {
@@ -48,7 +43,6 @@ public class BridgeConfiguration implements Serializable
    private String transformerClassName;
 
    private long retryInterval;
-
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
@@ -109,6 +103,7 @@ public class BridgeConfiguration implements Serializable
       this.password = password;
       this.connectionTTL = connectionTTL;
       this.maxRetryInterval = maxRetryInterval;
+      this.ha = ha;
       discoveryGroupName = null;
    }
 
