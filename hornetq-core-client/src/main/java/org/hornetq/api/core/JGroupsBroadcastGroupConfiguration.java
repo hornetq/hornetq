@@ -87,7 +87,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
     * This class is the implementation of HornetQ members discovery that will use JGroups.
     * @author Howard Gao
     */
-   private static class JGroupsBroadcastEndpoint implements BroadcastEndpoint
+   private final static class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    {
       private final BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
 

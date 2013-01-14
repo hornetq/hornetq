@@ -449,4 +449,115 @@ public final class ClusterConnectionConfiguration implements Serializable
    {
       return clusterNotificationAttempts;
    }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + (allowDirectConnectionsOnly ? 1231 : 1237);
+      result = prime * result + (int)(callFailoverTimeout ^ (callFailoverTimeout >>> 32));
+      result = prime * result + (int)(callTimeout ^ (callTimeout >>> 32));
+      result = prime * result + (int)(clientFailureCheckPeriod ^ (clientFailureCheckPeriod >>> 32));
+      result = prime * result + clusterNotificationAttempts;
+      result = prime * result + (int)(clusterNotificationInterval ^ (clusterNotificationInterval >>> 32));
+      result = prime * result + confirmationWindowSize;
+      result = prime * result + (int)(connectionTTL ^ (connectionTTL >>> 32));
+      result = prime * result + ((connectorName == null) ? 0 : connectorName.hashCode());
+      result = prime * result + ((discoveryGroupName == null) ? 0 : discoveryGroupName.hashCode());
+      result = prime * result + (duplicateDetection ? 1231 : 1237);
+      result = prime * result + (forwardWhenNoConsumers ? 1231 : 1237);
+      result = prime * result + maxHops;
+      result = prime * result + (int)(maxRetryInterval ^ (maxRetryInterval >>> 32));
+      result = prime * result + minLargeMessageSize;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + reconnectAttempts;
+      result = prime * result + (int)(retryInterval ^ (retryInterval >>> 32));
+      long temp;
+      temp = Double.doubleToLongBits(retryIntervalMultiplier);
+      result = prime * result + (int)(temp ^ (temp >>> 32));
+      result = prime * result + ((staticConnectors == null) ? 0 : staticConnectors.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ClusterConnectionConfiguration other = (ClusterConnectionConfiguration)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (allowDirectConnectionsOnly != other.allowDirectConnectionsOnly)
+         return false;
+      if (callFailoverTimeout != other.callFailoverTimeout)
+         return false;
+      if (callTimeout != other.callTimeout)
+         return false;
+      if (clientFailureCheckPeriod != other.clientFailureCheckPeriod)
+         return false;
+      if (clusterNotificationAttempts != other.clusterNotificationAttempts)
+         return false;
+      if (clusterNotificationInterval != other.clusterNotificationInterval)
+         return false;
+      if (confirmationWindowSize != other.confirmationWindowSize)
+         return false;
+      if (connectionTTL != other.connectionTTL)
+         return false;
+      if (connectorName == null)
+      {
+         if (other.connectorName != null)
+            return false;
+      }
+      else if (!connectorName.equals(other.connectorName))
+         return false;
+      if (discoveryGroupName == null)
+      {
+         if (other.discoveryGroupName != null)
+            return false;
+      }
+      else if (!discoveryGroupName.equals(other.discoveryGroupName))
+         return false;
+      if (duplicateDetection != other.duplicateDetection)
+         return false;
+      if (forwardWhenNoConsumers != other.forwardWhenNoConsumers)
+         return false;
+      if (maxHops != other.maxHops)
+         return false;
+      if (maxRetryInterval != other.maxRetryInterval)
+         return false;
+      if (minLargeMessageSize != other.minLargeMessageSize)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (reconnectAttempts != other.reconnectAttempts)
+         return false;
+      if (retryInterval != other.retryInterval)
+         return false;
+      if (Double.doubleToLongBits(retryIntervalMultiplier) != Double.doubleToLongBits(other.retryIntervalMultiplier))
+         return false;
+      if (staticConnectors == null)
+      {
+         if (other.staticConnectors != null)
+            return false;
+      }
+      else if (!staticConnectors.equals(other.staticConnectors))
+         return false;
+      return true;
+   }
 }

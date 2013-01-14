@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -50,6 +51,14 @@ public interface RemotingService
    void start() throws Exception;
 
    boolean isStarted();
+
+   /**
+    * Allow acceptors to use this as their default security Principal if applicable.
+    * <p>
+    * Used by AS7 integration code.
+    * @param principal
+    */
+   void allowInvmSecurityOverride(HornetQPrincipal principal);
 
    /**
     * Freezes and then disconnects all connections except the given one.

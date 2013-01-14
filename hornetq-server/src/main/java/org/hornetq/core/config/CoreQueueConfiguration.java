@@ -17,12 +17,7 @@ import java.io.Serializable;
 
 /**
  * A QueueConfiguration
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 13 Jan 2009 09:39:21
- *
- *
  */
 public class CoreQueueConfiguration implements Serializable
 {
@@ -94,5 +89,53 @@ public class CoreQueueConfiguration implements Serializable
    public void setDurable(final boolean durable)
    {
       this.durable = durable;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + (durable ? 1231 : 1237);
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      CoreQueueConfiguration other = (CoreQueueConfiguration)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (durable != other.durable)
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      return true;
    }
 }

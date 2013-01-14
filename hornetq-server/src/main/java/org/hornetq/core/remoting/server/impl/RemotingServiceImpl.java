@@ -264,6 +264,18 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       started = true;
    }
 
+   public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
+   {
+      defaultInvmSecurityPrincipal = principal;
+      for (Acceptor acceptor : acceptors)
+      {
+         if(acceptor.isUnsecurable())
+         {
+            acceptor.setDefaultHornetQPrincipal(principal);
+         }
+      }
+   }
+
    public synchronized void freeze(final CoreRemotingConnection backupRemotingConnection)
    {
       for (Acceptor acceptor : acceptors)

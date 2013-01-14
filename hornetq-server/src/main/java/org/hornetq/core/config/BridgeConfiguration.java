@@ -20,12 +20,7 @@ import org.hornetq.api.core.client.HornetQClient;
 
 /**
  * A BridgeConfiguration
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 13 Jan 2009 09:32:43
- *
- *
  */
 public class BridgeConfiguration implements Serializable
 {
@@ -48,7 +43,6 @@ public class BridgeConfiguration implements Serializable
    private String transformerClassName;
 
    private long retryInterval;
-
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
@@ -109,6 +103,7 @@ public class BridgeConfiguration implements Serializable
       this.password = password;
       this.connectionTTL = connectionTTL;
       this.maxRetryInterval = maxRetryInterval;
+      this.ha = ha;
       discoveryGroupName = null;
    }
 
@@ -391,5 +386,132 @@ public class BridgeConfiguration implements Serializable
       this.callTimeout = callTimeout;
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (int)(callTimeout ^ (callTimeout >>> 32));
+      result = prime * result + (int)(clientFailureCheckPeriod ^ (clientFailureCheckPeriod >>> 32));
+      result = prime * result + confirmationWindowSize;
+      result = prime * result + (int)(connectionTTL ^ (connectionTTL >>> 32));
+      result = prime * result + ((discoveryGroupName == null) ? 0 : discoveryGroupName.hashCode());
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + ((forwardingAddress == null) ? 0 : forwardingAddress.hashCode());
+      result = prime * result + (ha ? 1231 : 1237);
+      result = prime * result + (int)(maxRetryInterval ^ (maxRetryInterval >>> 32));
+      result = prime * result + minLargeMessageSize;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((password == null) ? 0 : password.hashCode());
+      result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      result = prime * result + reconnectAttempts;
+      result = prime * result + (int)(retryInterval ^ (retryInterval >>> 32));
+      long temp;
+      temp = Double.doubleToLongBits(retryIntervalMultiplier);
+      result = prime * result + (int)(temp ^ (temp >>> 32));
+      result = prime * result + ((staticConnectors == null) ? 0 : staticConnectors.hashCode());
+      result = prime * result + ((transformerClassName == null) ? 0 : transformerClassName.hashCode());
+      result = prime * result + (useDuplicateDetection ? 1231 : 1237);
+      result = prime * result + ((user == null) ? 0 : user.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      BridgeConfiguration other = (BridgeConfiguration)obj;
+      if (callTimeout != other.callTimeout)
+         return false;
+      if (clientFailureCheckPeriod != other.clientFailureCheckPeriod)
+         return false;
+      if (confirmationWindowSize != other.confirmationWindowSize)
+         return false;
+      if (connectionTTL != other.connectionTTL)
+         return false;
+      if (discoveryGroupName == null)
+      {
+         if (other.discoveryGroupName != null)
+            return false;
+      }
+      else if (!discoveryGroupName.equals(other.discoveryGroupName))
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (forwardingAddress == null)
+      {
+         if (other.forwardingAddress != null)
+            return false;
+      }
+      else if (!forwardingAddress.equals(other.forwardingAddress))
+         return false;
+      if (ha != other.ha)
+         return false;
+      if (maxRetryInterval != other.maxRetryInterval)
+         return false;
+      if (minLargeMessageSize != other.minLargeMessageSize)
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (password == null)
+      {
+         if (other.password != null)
+            return false;
+      }
+      else if (!password.equals(other.password))
+         return false;
+      if (queueName == null)
+      {
+         if (other.queueName != null)
+            return false;
+      }
+      else if (!queueName.equals(other.queueName))
+         return false;
+      if (reconnectAttempts != other.reconnectAttempts)
+         return false;
+      if (retryInterval != other.retryInterval)
+         return false;
+      if (Double.doubleToLongBits(retryIntervalMultiplier) != Double.doubleToLongBits(other.retryIntervalMultiplier))
+         return false;
+      if (staticConnectors == null)
+      {
+         if (other.staticConnectors != null)
+            return false;
+      }
+      else if (!staticConnectors.equals(other.staticConnectors))
+         return false;
+      if (transformerClassName == null)
+      {
+         if (other.transformerClassName != null)
+            return false;
+      }
+      else if (!transformerClassName.equals(other.transformerClassName))
+         return false;
+      if (useDuplicateDetection != other.useDuplicateDetection)
+         return false;
+      if (user == null)
+      {
+         if (other.user != null)
+            return false;
+      }
+      else if (!user.equals(other.user))
+         return false;
+      return true;
+   }
 
 }
