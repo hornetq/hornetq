@@ -267,4 +267,47 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
       }
 
    }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((groupAddress == null) ? 0 : groupAddress.hashCode());
+      result = prime * result + groupPort;
+      result = prime * result + ((localBindAddress == null) ? 0 : localBindAddress.hashCode());
+      result = prime * result + localBindPort;
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      UDPBroadcastGroupConfiguration other = (UDPBroadcastGroupConfiguration)obj;
+      if (groupAddress == null)
+      {
+         if (other.groupAddress != null)
+            return false;
+      }
+      else if (!groupAddress.equals(other.groupAddress))
+         return false;
+      if (groupPort != other.groupPort)
+         return false;
+      if (localBindAddress == null)
+      {
+         if (other.localBindAddress != null)
+            return false;
+      }
+      else if (!localBindAddress.equals(other.localBindAddress))
+         return false;
+      if (localBindPort != other.localBindPort)
+         return false;
+      return true;
+   }
 }

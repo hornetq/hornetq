@@ -21,10 +21,6 @@ import org.hornetq.utils.UUIDGenerator;
  * A DivertConfiguration
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 13 Jan 2009 09:36:19
- *
- *
  */
 public class DivertConfiguration implements Serializable
 {
@@ -157,5 +153,77 @@ public class DivertConfiguration implements Serializable
    public void setTransformerClassName(final String transformerClassName)
    {
       this.transformerClassName = transformerClassName;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((address == null) ? 0 : address.hashCode());
+      result = prime * result + (exclusive ? 1231 : 1237);
+      result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
+      result = prime * result + ((forwardingAddress == null) ? 0 : forwardingAddress.hashCode());
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((routingName == null) ? 0 : routingName.hashCode());
+      result = prime * result + ((transformerClassName == null) ? 0 : transformerClassName.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      DivertConfiguration other = (DivertConfiguration)obj;
+      if (address == null)
+      {
+         if (other.address != null)
+            return false;
+      }
+      else if (!address.equals(other.address))
+         return false;
+      if (exclusive != other.exclusive)
+         return false;
+      if (filterString == null)
+      {
+         if (other.filterString != null)
+            return false;
+      }
+      else if (!filterString.equals(other.filterString))
+         return false;
+      if (forwardingAddress == null)
+      {
+         if (other.forwardingAddress != null)
+            return false;
+      }
+      else if (!forwardingAddress.equals(other.forwardingAddress))
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      if (routingName == null)
+      {
+         if (other.routingName != null)
+            return false;
+      }
+      else if (!routingName.equals(other.routingName))
+         return false;
+      if (transformerClassName == null)
+      {
+         if (other.transformerClassName != null)
+            return false;
+      }
+      else if (!transformerClassName.equals(other.transformerClassName))
+         return false;
+      return true;
    }
 }

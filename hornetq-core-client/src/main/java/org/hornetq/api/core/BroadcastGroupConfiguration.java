@@ -82,4 +82,52 @@ public final class BroadcastGroupConfiguration implements Serializable
    {
       return endpointFactoryConfiguration;
    }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (int)(broadcastPeriod ^ (broadcastPeriod >>> 32));
+      result = prime * result + ((connectorInfos == null) ? 0 : connectorInfos.hashCode());
+      result = prime * result + ((endpointFactoryConfiguration == null) ? 0 : endpointFactoryConfiguration.hashCode());
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      BroadcastGroupConfiguration other = (BroadcastGroupConfiguration)obj;
+      if (broadcastPeriod != other.broadcastPeriod)
+         return false;
+      if (connectorInfos == null)
+      {
+         if (other.connectorInfos != null)
+            return false;
+      }
+      else if (!connectorInfos.equals(other.connectorInfos))
+         return false;
+      if (endpointFactoryConfiguration == null)
+      {
+         if (other.endpointFactoryConfiguration != null)
+            return false;
+      }
+      else if (!endpointFactoryConfiguration.equals(other.endpointFactoryConfiguration))
+         return false;
+      if (name == null)
+      {
+         if (other.name != null)
+            return false;
+      }
+      else if (!name.equals(other.name))
+         return false;
+      return true;
+   }
 }
