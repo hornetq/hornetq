@@ -2,6 +2,7 @@ package org.hornetq.rest;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ import org.hornetq.rest.util.LinkHeaderLinkStrategy;
 import org.hornetq.rest.util.LinkStrategy;
 import org.hornetq.rest.util.TimeoutTask;
 import org.hornetq.spi.core.naming.BindingRegistry;
+import org.hornetq.utils.XMLUtil;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -124,9 +126,10 @@ public class MessageServiceManager
             }
             JAXBContext jaxb = JAXBContext.newInstance(MessageServiceConfiguration.class);
             Reader reader = new InputStreamReader(url.openStream());
-            configuration = (MessageServiceConfiguration) jaxb.createUnmarshaller().unmarshal(reader);
-
-
+            String xml = XMLUtil.readerToString(reader);
+            xml = XMLUtil.replaceSystemProps(xml);
+            configuration = (MessageServiceConfiguration) jaxb.createUnmarshaller().unmarshal(
+                    new StringReader(xml));
          }
       }
       if (threadPool == null) threadPool = Executors.newCachedThreadPool();
