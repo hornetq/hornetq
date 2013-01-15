@@ -95,7 +95,7 @@ Content-Type: application/xml
     </section>
 
 
-    <section>
+    <section id="install">
         <title>Installation and Configuration</title>
 
         <para>HornetQ's REST interface is installed as a Web archive (WAR). It
@@ -112,7 +112,7 @@ Content-Type: application/xml
         <section>
             <title>Installing Within Pre-configured Environment</title>
 
-            <para>The section should be used when you want to use the HornetQ REST
+            <para>This section should be used when you want to use the HornetQ REST
                 interface in an environment that already has HornetQ installed and
                 running, e.g. JBoss AS 7. You must create a Web archive
                 (.WAR) file with the following web.xml settings:
@@ -212,6 +212,21 @@ Content-Type: application/xml
       &lt;/archive>
    &lt;/configuration>
 &lt;/plugin></programlisting>
+            </note>
+
+            <para>
+                It's worth noting that when deploying a WAR in a Java EE application server
+                like AS7 the URL for the resulting application will include the name of the
+                WAR by default.  For example, if you've constructed a WAR as described above
+                named "hornetq-rest.war" then clients will access it at, e.g.
+                http://localhost:8080/hornetq-rest/[queues|topics].  We'll see more about
+                this later.
+            </para>
+            <note>
+                <para>
+                    It is possible to put the WAR file at the "root context" of AS7, but
+                    that is beyond the scope of this documentation.
+                </para>
             </note>
         </section>
 
@@ -464,11 +479,12 @@ Content-Type: application/xml
 /topics/{name}</programlisting>
 
             <para>The base of the URI is the base URL of the WAR you deployed the
-                HornetQ REST server within as defined in the Installation and
-                Configuration section of this document. Replace the
-                <literal>{name}</literal> string within the above URI pattern with the
-                name of the queue or topic you are interested in interacting with. For
-                example if you have configured a JMS topic named "foo" within your
+                HornetQ REST server within as defined in the
+                <link linkend="install">Installation and Configuration</link>
+                section of this document. Replace the <literal>{name}</literal>
+                string within the above URI pattern with the name of the queue or
+                topic you are interested in interacting with. For example if you
+                have configured a JMS topic named "foo" within your
                 <literal>hornetq-jms.xml</literal> file, the URI name should be
                 "jms.topic.foo". If you have configured a JMS queue name "bar" within
                 your <literal>hornetq-jms.xml</literal> file, the URI name should be
@@ -485,8 +501,19 @@ Host: example.com
 --- Response ---
 HTTP/1.1 200 Ok
 msg-create: http://example.com/queues/jms.queue.bar/create
+msg-create-with-id: http://example.com/queues/jms.queue.bar/create/{id}
 msg-pull-consumers: http://example.com/queues/jms.queue.bar/pull-consumers
 msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</programlisting>
+
+            <note>
+                <para>
+                    You can use the "curl" utility to test this easily. Simply execute
+                    a command like this:
+                </para>
+
+                <programlisting>
+curl --head http://example.com/queues/jms.queue.bar</programlisting>
+            </note>
 
             <para>The HEAD or GET response contains a number of custom response
                 headers that are URLs to additional REST resources that allow you to
@@ -515,16 +542,17 @@ msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</prog
                     </para>
                 </listitem>
                 <listitem>
-                    <para><literal>msg-create-with-id</literal>. This is a URL template
-                        you POST message to. The semantics of this link are described
-                        in <link linkend="posting-messages">Posting Messages</link>.
+                    <para><literal>msg-create-with-id</literal>. This is a URL
+                        <emphasis>template</emphasis> you can use to POST messages.
+                        The semantics of this link are described in
+                        <link linkend="posting-messages">Posting Messages</link>.
                     </para>
                 </listitem>
                 <listitem>
                     <para><literal>msg-pull-consumers</literal>. This is a URL for
                         creating consumers that will pull from a queue. The semantics
-                        of this link are described in <link linkend="basics">HornetQ
-                        REST Interface Basics</link>.
+                        of this link are described in
+                        <link linkend="message-pull">Consuming Messages via Pull</link>.
                     </para>
                 </listitem>
                 <listitem>
@@ -553,9 +581,9 @@ msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</prog
                 </listitem>
                 <listitem>
                     <para><literal>msg-create-with-id</literal>. This is a URL
-                        template you POST messages to. The semantics of this link
-                        are described in <link linkend="posting-messages">Posting
-                        Messages</link>.
+                        <emphasis>template</emphasis> you can use to POST messages.
+                        The semantics of this link are described in
+                        <link linkend="posting-messages">Posting Messages</link>.
                     </para>
                 </listitem>
                 <listitem>
@@ -582,14 +610,23 @@ msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</prog
         <title>Posting Messages</title>
 
         <para>This chapter discusses the protocol for posting messages to a queue
-            or a topic. In <link linkend="basics">HornetQ REST Interface Basics</link>, you saw that a queue or topic resource publishes
-            variable custom headers that are links to other RESTful resources. The
-            <literal>msg-create</literal> header is the URL you post messages to.
-            Messages are published to a queue or topic by sending a simple HTTP
-            message to the URL published by the msg-create header. The HTTP message
-            contains whatever content you want to publish to the HornetQ destination.
-            Here's an example scenario:
+            or a topic. In <link linkend="basics">HornetQ REST Interface Basics</link>,
+            you saw that a queue or topic resource publishes variable custom headers
+            that are links to other RESTful resources. The <literal>msg-create</literal>
+            header is a URL you can post a message to. Messages are published to a queue
+            or topic by sending a simple HTTP message to the URL published by the
+            <literal>msg-create</literal> header. The HTTP message contains whatever
+            content you want to publish to the HornetQ destination. Here's an example
+            scenario:
         </para>
+
+        <note>
+            <para>You can also post messages to the URL template found in
+                <literal>msg-create-with-id</literal>, but this is a more advanced
+                use-case involving duplicate detection that we will discuss later in
+                this section.
+            </para>
+        </note>
 
         <orderedlist>
             <listitem>
@@ -627,7 +664,15 @@ Content-Type: application/xml
 
 --- Response ---
 HTTP/1.1 201 Created
-msg-create-next: http://example.com/queues/jms.queue.bar/create/002</programlisting>
+msg-create-next: http://example.com/queues/jms.queue.bar/create</programlisting>
+
+                <note>
+                    <para>You can use the "curl" utility to test this easily. Simply execute
+                        a command like this:
+                    </para>
+                    <programlisting>
+curl --verbose --data "123" http://example.com/queues/jms.queue.bar/create</programlisting>
+                </note>
 
                 <para>A successful response will return a 201 response code. Also
                     notice that a <literal>msg-create-next</literal> response header
@@ -637,13 +682,11 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/002</programlist
 
             <listitem>
                 <para>POST your next message to the queue using the URL returned in
-                    the
-                    <literal>msg-create-next</literal>
-                    header.
+                    the <literal>msg-create-next</literal> header.
                 </para>
 
                 <programlisting>
-POST /queues/jms.queue.bar/create/002
+POST /queues/jms.queue.bar/create
 Host: example.com
 Content-Type: application/xml
 
@@ -655,7 +698,7 @@ Content-Type: application/xml
 
 --- Response --
 HTTP/1.1 201 Created
-msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlisting>
+msg-create-next: http://example.com/queues/jms.queue.bar/create</programlisting>
                 <para>Continue using the new <literal>msg-create-next</literal>
                     header returned with each response.
                 </para>
@@ -664,10 +707,13 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
 
         <warning>
             <para>It is <emphasis>VERY IMPORTANT</emphasis> that you never re-use returned
-                <literal>msg-create-next</literal> headers to post new messages. This URL may
-                be uniquely generated for each message and used for duplicate detection. If
-                you lose the URL within the <literal>msg-create-next</literal> header, then
-                just go back to the queue or topic resource to get the msg-create URL.
+                <literal>msg-create-next</literal> headers to post new messages. If the
+                <literal>dups-ok</literal> configuration property is set to
+                <literal>false</literal> on the server then this URL will be uniquely
+                generated for each message and used for duplicate detection. If you lose
+                the URL within the <literal>msg-create-next</literal> header, then just
+                go back to the queue or topic resource to get the
+                <literal>msg-create</literal> URL again.
             </para>
         </warning>
 
@@ -682,10 +728,11 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
                 REST interface is configured to accept and post duplicate messages. You
                 can change this by turning on duplicate message detection by setting the
                 <literal>dups-ok</literal> config option to <literal>false</literal>
-                as described in <link linkend="basics">HornetQ REST Interface Basics</link>. When you do this, the initial POST to the
-                msg-create URL will redirect you, using the standard HTTP 307
-                redirection mechanism to a unique URL to POST to. All other interactions
-                remain the same as discussed earlier. Here's an example:
+                as described in <link linkend="basics">HornetQ REST Interface Basics</link>.
+                When you do this, the initial POST to the <literal>msg-create</literal>
+                URL will redirect you, using the standard HTTP 307 redirection mechanism
+                to a unique URL to POST to. All other interactions remain the same as
+                discussed earlier. Here's an example:
             </para>
 
             <orderedlist>
@@ -724,7 +771,8 @@ Content-Type: application/xml
 
 --- Response ---
 HTTP/1.1 307 Redirect
-Location: http://example.com/queues/jms.queue.bar/create/001</programlisting>
+Location: http://example.com/queues/jms.queue.bar/create/13582001787372</programlisting>
+
                     <para>A successful response will return a 307 response code. This
                         is standard HTTP protocol. It is telling you that you must re-POST
                         to the URL contained within the <literal>Location</literal>
@@ -738,7 +786,7 @@ Location: http://example.com/queues/jms.queue.bar/create/001</programlisting>
                     </para>
 
                     <programlisting>
-POST /queues/jms.queue.bar/create/001
+POST /queues/jms.queue.bar/create/13582001787372
 Host: example.com
 Content-Type: application/xml
 
@@ -750,7 +798,7 @@ Content-Type: application/xml
 
 --- Response --
 HTTP/1.1 201 Created
-msg-create-next: http://example.com/queues/jms.queue.bar/create/002</programlisting>
+msg-create-next: http://example.com/queues/jms.queue.bar/create/13582001787373</programlisting>
                     <para>You should receive a 201 Created response. If there is a
                         network failure, just re-POST to the Location header. For new
                         messages, use the returned <literal>msg-create-next</literal>
@@ -764,7 +812,7 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/002</programlist
                     </para>
 
                     <programlisting>
-POST /queues/jms.queue.bar/create/002
+POST /queues/jms.queue.bar/create/13582001787373
 Host: example.com
 Content-Type: application/xml
 
@@ -776,7 +824,7 @@ Content-Type: application/xml
 
 --- Response --
 HTTP/1.1 201 Created
-msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlisting>
+msg-create-next: http://example.com/queues/jms.queue.bar/create/13582001787374</programlisting>
                     <para>If there ever is a network problem, just repost to the URL
                         provided in the <literal>msg-create-next</literal> header.
                     </para>
@@ -792,6 +840,13 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
                 that is actually posted to the system.
             </para>
 
+            <para>If you happen to use the same ID more than once you'll see a message
+                like this on the server:
+            </para>
+            <programlisting>
+WARN  [org.hornetq.core.server] (Thread-3 (HornetQ-remoting-threads-HornetQServerImpl::serverUUID=8d6be6f8-5e8b-11e2-80db-51bbde66f473-26319292-267207)) HQ112098: Duplicate message detected - message will not be routed. Message information:
+ServerMessage[messageID=20,priority=4, bodySize=1500,expiration=0, durable=true, address=jms.queue.bar,properties=TypedProperties[{http_content$type=application/x-www-form-urlencoded, http_content$length=3, postedAsHttpMessage=true, _HQ_DUPL_ID=42}]]@12835058</programlisting>
+
             <para>An alternative to this approach is to use the <literal>msg-create-with-id</literal>
                 header. This is not an invokable URL, but a URL template. The idea is that
                 the client provides the <literal>DUPLICATE_DETECTION_ID</literal> and creates
@@ -799,7 +854,8 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
                 header looks like this (you've see it in previous examples, but we haven't used it):
             </para>
 
-            <programlisting>msg-create-with-id: http://example.com/queues/jms.queue.bar/create/{id}</programlisting>
+            <programlisting>
+msg-create-with-id: http://example.com/queues/jms.queue.bar/create/{id}</programlisting>
 
             <para>You see that it is a regular URL appended with a <literal>{id}</literal>. This
                 <literal>{id}</literal> is a pattern matching substring. A client would generate its
@@ -813,8 +869,7 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
 
             <para>The advantage of this approach is that the client does not have to
                 repost the message. It also only has to come up with a unique
-                <literal>DUPLICATE_DETECTION_ID</literal>
-                once.
+                <literal>DUPLICATE_DETECTION_ID</literal> once.
             </para>
         </section>
 
@@ -826,7 +881,7 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003</programlist
                 modifying the default configuration as expressed in Chapter 2 so that
                 all messages are persisted when sent. Alternatively, you can set a URL
                 query parameter called <literal>durable</literal> to true when you post
-                your messages to the URLs returned in the<literal>msg-create</literal>,
+                your messages to the URLs returned in the <literal>msg-create</literal>,
                 <literal>msg-create-with-id</literal>, or <literal>msg-create-next</literal>
                 headers. here's an example of that.
             </para>
