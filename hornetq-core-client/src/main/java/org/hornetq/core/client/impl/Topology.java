@@ -116,6 +116,23 @@ public final class Topology implements Serializable
       }
    }
 
+   /**
+    * After the node is started, it will resend the notifyLive a couple of times to avoid gossip between two servers
+    * @param nodeId
+    */
+   public void resendNode(final String nodeId)
+   {
+      synchronized (this)
+      {
+         TopologyMemberImpl memberInput = topology.get(nodeId);
+         if (memberInput != null)
+         {
+            memberInput.setUniqueEventID(System.currentTimeMillis());
+            sendMemberUp(nodeId, memberInput);
+         }
+      }
+   }
+
    /** This is called by the server when the node is activated from backup state. It will always succeed */
    public final TopologyMemberImpl updateBackup(final TopologyMemberImpl memberInput)
    {

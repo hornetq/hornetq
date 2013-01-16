@@ -165,8 +165,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private volatile ServerLocatorInternal backupServerLocator;
    private volatile boolean announcingBackup;
    private volatile boolean stopping = false;
-   private LiveNotifier liveNotifier;
-   private final Object liveNotifierGuard = new Object();
+   private LiveNotifier liveNotifier = null;
    private final long clusterNotificationInterval;
    private final int clusterNotificationAttempts;
 
@@ -445,14 +444,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          HornetQServerLogger.LOGGER.debug(this + "::stopping ClusterConnection");
       }
 
-      synchronized (liveNotifierGuard)
-      {
-         if(liveNotifier != null)
-         {
-            liveNotifier.cancel();
-         }
-      }
-
       if (serverLocator != null)
       {
          serverLocator.removeClusterTopologyListener(this);
@@ -721,17 +712,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       backup = false;
 
-      synchronized (liveNotifierGuard)
-      {
-         if(stopping)
-         {
-            return;
-         }
-         liveNotifier = new LiveNotifier();
-         threadPool.execute(liveNotifier);
-      }
-
-      liveNotifier.awaitFirstUpdate();
+      liveNotifier = new LiveNotifier();
+      liveNotifier.updateAsLive();
+      liveNotifier.schedule();
 
       if (backupServerLocator != null)
       {
@@ -1716,45 +1699,39 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final class LiveNotifier implements Runnable
    {
-      private CountDownLatch latch = new CountDownLatch(1);
+      int notificationsSent = 0;
+
 
       @Override
-      public synchronized void run()
+      public void run()
       {
-         int notificationsSent = 0;
-         while(notificationsSent < clusterNotificationAttempts && started && !stopping)
+         resendLive();
+
+         schedule();
+      }
+
+      public void schedule()
+      {
+         if (started && !stopping && notificationsSent++ < clusterNotificationAttempts)
+         {
+            scheduledExecutor.schedule(this, clusterNotificationInterval, TimeUnit.MILLISECONDS);
+         }
+      }
+
+      public void updateAsLive()
+      {
+         if (!stopping && started)
          {
             topology.updateAsLive(manager.getNodeId(), new TopologyMemberImpl(manager.getNodeId(),
-                  manager.getNodeGroupName(), connector, null));
-            if(notificationsSent++ == 0)
-            {
-               latch.countDown();
-            }
-            try
-            {
-               wait(clusterNotificationInterval);
-            }
-            catch (InterruptedException e1)
-            {
-               throw new HornetQInterruptedException(e1);
-            }
+               manager.getNodeGroupName(), connector, null));
          }
       }
 
-      public synchronized void cancel()
+      public void resendLive()
       {
-         notify();
-      }
-
-      public void awaitFirstUpdate()
-      {
-         try
+         if (!stopping && started)
          {
-            latch.await(clusterNotificationInterval, TimeUnit.MILLISECONDS);
-         }
-         catch (InterruptedException e)
-         {
-            throw new HornetQInterruptedException(e);
+            topology.resendNode(manager.getNodeId());
          }
       }
    }
