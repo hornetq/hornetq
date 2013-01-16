@@ -120,13 +120,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       this.broadcaster = broadcaster;
    }
 
-   // Public --------------------------------------------------------
-
-   public Configuration getConfiguration()
-   {
-      return configuration;
-   }
-
    // HornetQServerControlMBean implementation --------------------
 
    public boolean isStarted()
@@ -1995,9 +1988,9 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          return list;
       }
       String[] values = commaSeparatedString.split(",");
-      for (int i = 0; i < values.length; i++)
+      for (String value : values)
       {
-         list.add(values[i].trim());
+         list.add(value.trim());
       }
       return list;
    }
