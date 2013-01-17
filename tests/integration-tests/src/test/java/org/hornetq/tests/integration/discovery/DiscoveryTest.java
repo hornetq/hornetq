@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.BroadcastEndpoint;
+import org.hornetq.api.core.BroadcastEndpointFactory;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -151,6 +152,215 @@ public class DiscoveryTest extends UnitTestCase
       verifyBroadcast(bg, dg);
       List<DiscoveryEntry> entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
+   }
+
+   /**
+    * Create one broadcaster and 100 receivers. Make sure broadcasting works.
+    * Then stop 99 of the receivers, the last one could still be working.
+    * @throws Exception
+    */
+   public void testJGropusChannelReferenceCounting() throws Exception
+   {
+      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
+      BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
+      broadcaster.openBroadcaster();
+
+      int num = 100;
+      BroadcastEndpoint[] receivers = new BroadcastEndpoint[num];
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i] = factory.createBroadcastEndpoint();
+         receivers[i].openClient();
+      }
+      
+      final byte[] data = new byte[] {1,2,3,4,5};
+      broadcaster.broadcast(data);
+      
+      for (int i = 0; i < num; i++)
+      {
+         byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
+         assertNotNull(received);
+         assertEquals(5, received.length);
+         assertEquals(1, received[0]);
+         assertEquals(2, received[1]);
+         assertEquals(3, received[2]);
+         assertEquals(4, received[3]);
+         assertEquals(5, received[4]);
+      }
+      
+      for (int i = 0; i < num -1; i++)
+      {
+         receivers[i].close(false);
+      }
+      
+      byte[] data1 = receivers[num - 1].receiveBroadcast(5, TimeUnit.SECONDS);
+      assertNull(data1);
+      
+      broadcaster.broadcast(data);
+      data1 = receivers[num - 1].receiveBroadcast(5, TimeUnit.SECONDS);
+
+      assertNotNull(data1);
+      assertEquals(5, data1.length);
+      assertEquals(1, data1[0]);
+      assertEquals(2, data1[1]);
+      assertEquals(3, data1[2]);
+      assertEquals(4, data1[3]);
+      assertEquals(5, data1[4]);
+      
+      receivers[num - 1].close(false);
+      broadcaster.close(true);
+   }
+
+   /**
+    * Create one broadcaster and 50 receivers. Make sure broadcasting works.
+    * Then stop all of the receivers, and create 50 new ones. Make sure the
+    * 50 new ones are receiving data from the broadcasting.
+    * 
+    * @throws Exception
+    */
+   public void testJGropusChannelReferenceCounting1() throws Exception
+   {
+      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
+      BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
+      broadcaster.openBroadcaster();
+
+      int num = 50;
+      BroadcastEndpoint[] receivers = new BroadcastEndpoint[num];
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i] = factory.createBroadcastEndpoint();
+         receivers[i].openClient();
+      }
+      
+      final byte[] data = new byte[] {1,2,3,4,5};
+      broadcaster.broadcast(data);
+      
+      for (int i = 0; i < num; i++)
+      {
+         byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
+         assertNotNull(received);
+         assertEquals(5, received.length);
+         assertEquals(1, received[0]);
+         assertEquals(2, received[1]);
+         assertEquals(3, received[2]);
+         assertEquals(4, received[3]);
+         assertEquals(5, received[4]);
+      }
+      
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i].close(false);
+      }
+
+      //new ones
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i] = factory.createBroadcastEndpoint();
+         receivers[i].openClient();
+      }
+
+      broadcaster.broadcast(data);
+      
+      for (int i = 0; i < num; i++)
+      {
+         byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
+         assertNotNull(received);
+         assertEquals(5, received.length);
+         assertEquals(1, received[0]);
+         assertEquals(2, received[1]);
+         assertEquals(3, received[2]);
+         assertEquals(4, received[3]);
+         assertEquals(5, received[4]);
+      }
+      
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i].close(false);
+      }
+      broadcaster.close(true);
+   }
+
+   /**
+    * Create one broadcaster and 50 receivers. Then stop half of the receivers.
+    * Then add the half back, plus some more. Make sure all receivers receive data.
+    * 
+    * @throws Exception
+    */
+   public void testJGropusChannelReferenceCounting2() throws Exception
+   {
+      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
+      BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
+      broadcaster.openBroadcaster();
+
+      int num = 50;
+      BroadcastEndpoint[] receivers = new BroadcastEndpoint[num];
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i] = factory.createBroadcastEndpoint();
+         receivers[i].openClient();
+      }
+      
+      for (int i = 0; i < num/2; i++)
+      {
+         receivers[i].close(false);
+      }
+
+      for (int i = 0; i < num/2; i++)
+      {
+         receivers[i] = factory.createBroadcastEndpoint();
+         receivers[i].openClient();
+      }
+
+      int num2 = 10;
+      BroadcastEndpoint[] moreReceivers = new BroadcastEndpoint[num2];
+      
+      for (int i = 0; i < num2; i++)
+      {
+         moreReceivers[i] = factory.createBroadcastEndpoint();
+         moreReceivers[i].openClient();
+      }
+      
+      final byte[] data = new byte[] {1,2,3,4,5};
+      broadcaster.broadcast(data);
+      
+      for (int i = 0; i < num; i++)
+      {
+         byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
+         assertNotNull(received);
+         assertEquals(5, received.length);
+         assertEquals(1, received[0]);
+         assertEquals(2, received[1]);
+         assertEquals(3, received[2]);
+         assertEquals(4, received[3]);
+         assertEquals(5, received[4]);
+      }
+
+      for (int i = 0; i < num2; i++)
+      {
+         byte[] received = moreReceivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
+         assertNotNull(received);
+         assertEquals(5, received.length);
+         assertEquals(1, received[0]);
+         assertEquals(2, received[1]);
+         assertEquals(3, received[2]);
+         assertEquals(4, received[3]);
+         assertEquals(5, received[4]);
+      }
+      
+      for (int i = 0; i < num; i++)
+      {
+         receivers[i].close(false);
+      }
+      
+      for (int i = 0; i < num2; i++)
+      {
+         moreReceivers[i].close(false);
+      }
+
+      broadcaster.close(true);
    }
 
    public void testStraightSendReceiveJGroups() throws Exception
