@@ -14,14 +14,11 @@
 package org.hornetq.api.core.client;
 
 /**
- *
  * A MessageHandler is used to receive message <em>asynchronously</em>.
- *
- * To receive messages asynchronously, a MessageHandler is set on a ClientConsumer.
- * Every time the consumer will receive a message, it will call the handler's {@code onMessage()} method.
- *
+ * <p>
+ * To receive messages asynchronously, a MessageHandler is set on a ClientConsumer. Every time the
+ * consumer will receive a message, it will call the handler's {@code onMessage()} method.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @see ClientConsumer#setMessageHandler(MessageHandler)
  */
 public interface MessageHandler
