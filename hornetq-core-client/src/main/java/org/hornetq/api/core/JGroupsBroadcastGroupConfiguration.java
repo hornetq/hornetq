@@ -14,6 +14,10 @@
 package org.hornetq.api.core;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +27,25 @@ import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 
 /**
+ * The configuration for creating broadcasting/discovery groups using JGroups channels
+ * There are two ways to constructing a JGroups channel (JChannel):
+ * <ol>
+ * <li> by passing in a JGroups configuration file</li>
+ * The file must exists in the hornetq classpath. HornetQ creates a JChannel with the 
+ * configuration file and use it for broadcasting and discovery. In standalone server
+ * mode HornetQ uses this way for constructing JChannels.
+ * <li> by passing in a JChannel instance </li>
+ * This is useful when HornetQ needs to get a JChannel from a running JGroups service as in the 
+ * case of AS7 integration.
+ * </ol>
+ * <p>
+ * Note only one JChannel is needed in a VM. To avoid the channel being prematurely disconnected
+ * by any party, a wrapper class is used.
+ * 
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
+ *
+ * @see JChannelWrapper, JChannelManager
  */
 public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
@@ -35,7 +58,9 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       factory = new BroadcastEndpointFactory() {
          @Override
          public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-            return new JGroupsBroadcastEndpoint(jgroupsFile, channelName);
+            JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint();
+            endpoint.initChannel(jgroupsFile, channelName);
+            return endpoint;
          }
       };
    }
@@ -45,7 +70,9 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       factory = new BroadcastEndpointFactory() {
          @Override
          public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-            return new JGroupsBroadcastEndpoint(channel, channelName);
+            JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint();
+            endpoint.initChannel(channel, channelName);
+            return endpoint;
          }
       };
    }
@@ -89,39 +116,22 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
     */
    private final static class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    {
-      private final BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
-
       private boolean clientOpened;
 
       private boolean broadcastOpened;
 
-      private final String channelName;
+      private JChannelWrapper<?> channel;
+      
+      private JGroupsReceiver receiver;
 
-      private final JChannel channel;
-
-      public JGroupsBroadcastEndpoint(final String fileName, final String channelName) throws Exception
-      {
-         URL configURL = Thread.currentThread().getContextClassLoader().getResource(fileName);
-         if (configURL == null)
-         {
-            throw new RuntimeException("couldn't find JGroups configuration " + fileName);
-         }
-         this.channel = new JChannel(configURL);
-         this.channelName = channelName;
-      }
-
-      public JGroupsBroadcastEndpoint(final JChannel channel, final String channelName)
-      {
-         this.channel = channel;
-         this.channelName = channelName;
-      }
-
-      public void broadcast(byte[] data) throws Exception
+      public void broadcast(final byte[] data) throws Exception
       {
          if (broadcastOpened)
          {
             Message msg = new Message();
+
             msg.setBuffer(data);
+
             channel.send(msg);
          }
       }
@@ -130,7 +140,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       {
          if (clientOpened)
          {
-            return dequeue.take();
+            return receiver.receiveBroadcast();
          }
          else
          {
@@ -142,7 +152,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       {
          if (clientOpened)
          {
-            return dequeue.poll(time, unit);
+            return receiver.receiveBroadcast(time, unit);
          }
          else
          {
@@ -157,7 +167,8 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
             return;
          }
          internalOpen();
-         channel.setReceiver(new JGroupsReceiver());
+         receiver = new JGroupsReceiver();
+         channel.setReceiver(receiver);
          clientOpened = true;
       }
 
@@ -168,11 +179,24 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
          broadcastOpened = true;
       }
 
+      private void initChannel(final String fileName, final String channelName) throws Exception
+      {
+         URL configURL = Thread.currentThread().getContextClassLoader().getResource(fileName);
+         if (configURL == null)
+         {
+            throw new RuntimeException("couldn't find JGroups configuration " + fileName);
+         }
+         this.channel = JChannelManager.getJChannel(channelName, configURL);         
+      }
+
+      private void initChannel(final JChannel channel, final String channelName) throws Exception
+      {
+         this.channel = JChannelManager.getJChannel(channelName, channel);
+      }
 
       protected void internalOpen() throws Exception
       {
-         if (channel.isConnected()) return;
-         channel.connect(this.channelName);
+         channel.connect();
       }
 
       public synchronized void close(boolean isBroadcast) throws Exception
@@ -183,18 +207,208 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
          }
          else
          {
-            channel.setReceiver(null);
+            channel.removeReceiver(receiver);
             clientOpened = false;
          }
          channel.close();
       }
 
+      /**
+       * This class is used to receive messages from a JGroups channel.
+       * Incoming messages are put into a queue.
+       */
       private class JGroupsReceiver extends ReceiverAdapter
       {
+         private final BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
+
          @Override
          public void receive(org.jgroups.Message msg)
          {
             dequeue.add(msg.getBuffer());
+         }
+
+         public byte[] receiveBroadcast() throws Exception
+         {
+            return dequeue.take();
+         }
+
+         public byte[] receiveBroadcast(long time, TimeUnit unit) throws Exception
+         {
+            return dequeue.poll(time, unit);
+         }
+      }
+
+      /**
+       * This is used for identifying a unique JChannel instance.
+       * Because we have two ways to get a JChannel (by configuration
+       * or by passing in a JChannel instance), the key needs to take 
+       * this into consideration when doing comparison. 
+       * @param <T> : either being a JChannel or a URL representing the JGroups
+       * configuration file.
+       */
+      private static class ChannelKey<T>
+      {
+         private String name;
+         private T channelSource;
+
+         public ChannelKey(String name, T t)
+         {
+            this.name = name;
+            this.channelSource = t;
+         }
+         
+         @Override
+         public int hashCode()
+         {
+            return name.hashCode();
+         }
+
+         @Override
+         public boolean equals(Object t)
+         {
+            if (t == null || (!(t instanceof ChannelKey)))
+            {
+               return false;
+            }
+            
+            ChannelKey<?> key = (ChannelKey<?>)t;
+            return (name.equals(key.name) && channelSource.equals(key.channelSource));
+         }
+      }
+
+      /**
+       * This class wraps a JChannel with a reference counter. The reference counter
+       * controls the life of the JChannel. When reference count is zero, the channel
+       * will be disconnected.
+       * @param <T>
+       */
+      private static class JChannelWrapper<T>
+      {
+         int refCount = 1;
+         JChannel channel;
+         String channelName;
+         T source;
+         List<JGroupsReceiver> receivers = new ArrayList<JGroupsReceiver>();
+
+         public JChannelWrapper(String channelName, T t) throws Exception
+         {
+            this.refCount = 1;
+            this.channelName = channelName;
+            if (t instanceof URL)
+            {
+               this.channel = new JChannel((URL)t);
+            }
+            else if (t instanceof JChannel)
+            {
+               this.channel = (JChannel)t;
+            }
+            else
+            {
+               throw new IllegalArgumentException("Unsupported type " + t);
+            }
+            this.source = t;
+         }
+
+         public synchronized void close()
+         {
+            refCount--;
+            if (refCount == 0)
+            {
+               JChannelManager.closeChannel(new ChannelKey<T>(this.channelName, source), this.channelName, channel);
+            }
+         }
+
+         public void removeReceiver(JGroupsReceiver receiver)
+         {
+            synchronized(receivers)
+            {
+               receivers.remove(receiver);
+            }
+         }
+
+         public synchronized void connect() throws Exception
+         {
+            if (channel.isConnected()) return;
+            channel.setReceiver(new ReceiverAdapter() {
+
+               @Override
+               public void receive(Message msg)
+               {
+                  synchronized(receivers)
+                  {
+                     for (JGroupsReceiver r : receivers)
+                     {
+                        r.receive(msg);
+                     }
+                  }
+               }
+            });
+            channel.connect(channelName);
+         }
+
+         public void setReceiver(JGroupsReceiver jGroupsReceiver)
+         {
+            synchronized(receivers)
+            {
+               receivers.add(jGroupsReceiver);
+            }
+         }
+
+         public void send(Message msg) throws Exception
+         {
+            channel.send(msg);
+         }
+
+         public JChannelWrapper<T> addRef()
+         {
+            this.refCount++;
+            return this;
+         }
+
+         @Override
+         public String toString()
+         {
+            return "JChannelWrapper of [" + channel + "] " + refCount + " " + channelName;
+         }
+      }
+
+      /**
+       * This class maintain a global Map of JChannels wrapped in JChannelWrapper for
+       * the purpose of reference counting.
+       * 
+       * Whereever a JChannel is needed it should only get it by calling the getChannel()
+       * method of this class. The real disconnect of channels are also done here only.
+       */
+      private static class JChannelManager
+      {
+         private static Map<ChannelKey<?>, JChannelWrapper<?>> channels;
+
+         public static synchronized <T> JChannelWrapper<?> getJChannel(String channelName, T t) throws Exception
+         {
+            if (channels == null)
+            {
+               channels = new HashMap<ChannelKey<?>, JChannelWrapper<?>>();
+            }
+            ChannelKey<T> key = new ChannelKey<T>(channelName, t);
+            JChannelWrapper<?> wrapper = channels.get(key);
+            if (wrapper == null)
+            {
+               wrapper = new JChannelWrapper<T>(channelName, t);
+               channels.put(key, wrapper);
+               return wrapper;
+            }
+            return wrapper.addRef();
+         }
+
+         public static synchronized void closeChannel(ChannelKey<?> key, String channelName, JChannel channel)
+         {
+            channel.setReceiver(null);
+            channel.disconnect();
+            JChannelWrapper<?> wrapper = channels.remove(key);
+            if (wrapper == null)
+            {
+               throw new IllegalStateException("Did not find channel " + channelName);
+            }
          }
       }
    }
