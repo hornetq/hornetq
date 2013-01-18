@@ -183,7 +183,7 @@ abstract class JournalBase implements Journal
       return null;
    }
 
-   private static class NullEncoding implements EncodingSupport
+   private static final class NullEncoding implements EncodingSupport
    {
 
       private static NullEncoding instance = new NullEncoding();

@@ -1,6 +1,8 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -29,7 +31,6 @@ import org.hornetq.utils.UUID;
 
 public class BackupSyncJournalTest extends FailoverTestBase
 {
-
    private static final int BACKUP_WAIT_TIME = 20;
    private ServerLocatorInternal locator;
    protected ClientSessionFactoryInternal sessionFactory;
@@ -51,7 +52,6 @@ public class BackupSyncJournalTest extends FailoverTestBase
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
    }
 
-
    public void testNodeID() throws Exception
    {
       startBackupFinishSyncing();
@@ -62,7 +62,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    public void testReserveFileIdValuesOnBackup() throws Exception
    {
-      final int totalRounds = 5;
+      final int totalRounds = 50;
       createProducerSendSomeMessages();
       JournalImpl messageJournal = getMessageJournalFromServer(liveServer);
       for (int i = 0; i < totalRounds; i++)
@@ -70,12 +70,11 @@ public class BackupSyncJournalTest extends FailoverTestBase
          messageJournal.forceMoveNextFile();
          sendMessages(session, producer, n_msgs);
       }
-      Set<Pair<Long, Integer>> preSyncFileIDs = getFileIds(messageJournal);
-
       backupServer.start();
 
       // Deliver messages with Backup in-sync
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
+
       final JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       sendMessages(session, producer, n_msgs);
 
@@ -98,12 +97,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertEquals("file sizes must be the same", size, backupMsgJournal.getFileSize());
       Set<Pair<Long, Integer>> backupIds = getFileIds(backupMsgJournal);
 
-      for (Pair<Long, Integer> pair : preSyncFileIDs)
-      {
-         assertTrue("sanity check", liveIds.remove(pair));
-         assertTrue("backup must have the same file " + pair, backupIds.remove(pair));
-      }
-      int total = 0;
+           int total = 0;
       for (Pair<Long, Integer> pair : liveIds)
       {
          total += pair.getB();
@@ -163,8 +157,21 @@ public class BackupSyncJournalTest extends FailoverTestBase
       syncDelay.deliverUpToDateMsg();
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
       assertFalse("should not be initialized", backupServer.getServer().isActive());
+
       crash(session);
-      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
+      assertTrue("backup initialized", backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS));
+
+      assertNodeIdWasSaved();
+   }
+
+   /**
+    * @throws FileNotFoundException
+    * @throws IOException
+    * @throws InterruptedException
+    */
+   private void assertNodeIdWasSaved() throws Exception
+   {
+      assertTrue("backup initialized", backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS));
 
       // assert that nodeID was saved (to the right file!)
 
@@ -173,22 +180,25 @@ public class BackupSyncJournalTest extends FailoverTestBase
       File serverLockFile = new File(journalDirectory, "server.lock");
       assertTrue("server.lock must exist!\n " + serverLockFile, serverLockFile.exists());
       RandomAccessFile raFile = new RandomAccessFile(serverLockFile, "r");
-
-      // verify the nodeID was written correctly
-      FileChannel channel = raFile.getChannel();
-      final int size = 16;
-      ByteBuffer id = ByteBuffer.allocateDirect(size);
-      int read = channel.read(id, 3);
-      assertEquals("tried to read " + size + " bytes", size, read);
-      byte[] bytes = new byte[16];
-      id.position(0);
-      id.get(bytes);
-      UUID uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
-      SimpleString storedNodeId = new SimpleString(uuid.toString());
-      assertEquals("nodeId must match", backupServer.getServer().getNodeID(), storedNodeId);
-
-      raFile.close();
-
+      try
+      {
+         // verify the nodeID was written correctly
+         FileChannel channel = raFile.getChannel();
+         final int size = 16;
+         ByteBuffer id = ByteBuffer.allocateDirect(size);
+         int read = channel.read(id, 3);
+         assertEquals("tried to read " + size + " bytes", size, read);
+         byte[] bytes = new byte[16];
+         id.position(0);
+         id.get(bytes);
+         UUID uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
+         SimpleString storedNodeId = new SimpleString(uuid.toString());
+         assertEquals("nodeId must match", backupServer.getServer().getNodeID(), storedNodeId);
+      }
+      finally
+      {
+         raFile.close();
+      }
    }
 
    public void testMessageSyncSimple() throws Exception
