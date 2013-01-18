@@ -538,4 +538,22 @@ public class ReplicatedJournal implements Journal
    {
       return localJournal.getFileSize();
    }
+
+   @Override
+   public void scheduleCompactAndBlock(int timeout) throws Exception
+   {
+      localJournal.scheduleCompactAndBlock(timeout);
+   }
+
+   @Override
+   public void replicationSyncPreserveOldFiles()
+   {
+      throw new UnsupportedOperationException("should never get called");
+   }
+
+   @Override
+   public void replicationSyncFinished()
+   {
+      throw new UnsupportedOperationException("should never get called");
+   }
 }

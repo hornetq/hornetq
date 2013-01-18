@@ -1096,6 +1096,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
 
       checkFilesUsage();
+         // System.out.println("SLEEP!");
+         // Thread.sleep(60000);
       clearData();
       super.tearDown();
    }

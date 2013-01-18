@@ -72,9 +72,6 @@ import org.hornetq.utils.ExecutorFactory;
 public class ReplicationManager implements HornetQComponent
 {
 
-   // Constants -----------------------------------------------------
-   // Attributes ----------------------------------------------------
-
    private final ResponseHandler responseHandler = new ResponseHandler();
 
    private final Channel replicatingChannel;
@@ -354,12 +351,6 @@ public class ReplicationManager implements HornetQComponent
       replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private void sendReplicatePacket(final Packet packet)
    {
       sendReplicatePacket(packet, true);
@@ -459,7 +450,7 @@ public class ReplicationManager implements HornetQComponent
 
    }
 
-   private static class NullEncoding implements EncodingSupport
+   private static final class NullEncoding implements EncodingSupport
    {
       static final NullEncoding instance = new NullEncoding();
 

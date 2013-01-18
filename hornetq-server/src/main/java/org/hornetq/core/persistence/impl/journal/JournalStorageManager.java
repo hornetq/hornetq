@@ -33,9 +33,12 @@ import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCH
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
+import java.security.DigestInputStream;
 import java.security.InvalidParameterException;
+import java.security.MessageDigest;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,6 +123,7 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.utils.Base64;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -377,12 +381,18 @@ public class JournalStorageManager implements StorageManager
       {
          throw HornetQMessageBundle.BUNDLE.notJournalImpl();
       }
+
+
+      // We first do a compact without any locks, to avoid copying unecessary data over the network.
+      // We do this without holding the storageManager lock, so the journal stays open while compact is being done
+      originalMessageJournal.scheduleCompactAndBlock(-1);
+      originalBindingsJournal.scheduleCompactAndBlock(-1);
+
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
       try
       {
-
          Map<String, Long> largeMessageFilesToSync;
          Map<SimpleString, Collection<Integer>> pageFilesToSync;
          storageManagerLock.writeLock().lock();
@@ -391,10 +401,16 @@ public class JournalStorageManager implements StorageManager
             if (isReplicated())
                throw new HornetQIllegalStateException("already replicating");
             replicator = replicationManager;
+
+            // Establishes lock
             originalMessageJournal.synchronizationLock();
             originalBindingsJournal.synchronizationLock();
+
             try
             {
+               originalBindingsJournal.replicationSyncPreserveOldFiles();
+               originalMessageJournal.replicationSyncPreserveOldFiles();
+
                pagingManager.lock();
                try
                {
@@ -446,6 +462,36 @@ public class JournalStorageManager implements StorageManager
       {
          stopReplication();
          throw e;
+      }
+      finally
+      {
+         // Re-enable compact and reclaim of journal files
+         originalBindingsJournal.replicationSyncFinished();
+         originalMessageJournal.replicationSyncFinished();
+      }
+   }
+
+   public static String md5(File file)
+   {
+      try
+      {
+         byte[] buffer = new byte[1 << 4];
+         MessageDigest md = MessageDigest.getInstance("MD5");
+
+         FileInputStream is = new FileInputStream(file);
+         DigestInputStream is2 = new DigestInputStream(is, md);
+         while (is2.read(buffer) > 0)
+         {
+            continue;
+         }
+         byte[] digest = md.digest();
+         is.close();
+         is2.close();
+         return Base64.encodeBytes(digest);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e);
       }
    }
 
