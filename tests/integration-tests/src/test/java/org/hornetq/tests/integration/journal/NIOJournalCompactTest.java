@@ -244,15 +244,15 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.stop();
 
-      List<RecordInfo> records = new ArrayList<RecordInfo>();
+      List<RecordInfo> records1 = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedRecords = new ArrayList<PreparedTransactionInfo>();
 
       journal.start();
 
-      journal.load(records, preparedRecords, null);
+      journal.load(records1, preparedRecords, null);
 
-      assertEquals(1, records.size());
+      assertEquals(1, records1.size());
 
    }
 

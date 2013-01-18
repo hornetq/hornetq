@@ -373,12 +373,18 @@ public class JournalStorageManager implements StorageManager
       {
          throw HornetQMessageBundle.BUNDLE.notJournalImpl();
       }
+
+
+      // We first do a compact without any locks, to avoid copying unecessary data over the network.
+      // We do this without holding the storageManager lock, so the journal stays open while compact is being done
+      originalMessageJournal.scheduleCompactAndBlock(-1);
+      originalBindingsJournal.scheduleCompactAndBlock(-1);
+
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
       try
       {
-
          Map<String, Long> largeMessageFilesToSync;
          Map<SimpleString, Collection<Integer>> pageFilesToSync;
          storageManagerLock.writeLock().lock();
@@ -387,10 +393,17 @@ public class JournalStorageManager implements StorageManager
             if (isReplicated())
                throw new HornetQIllegalStateException("already replicating");
             replicator = replicationManager;
+
+            // Establishes lock
             originalMessageJournal.synchronizationLock();
             originalBindingsJournal.synchronizationLock();
+
+
             try
             {
+               originalBindingsJournal.replicationSyncPreserveOldFiles();
+               originalMessageJournal.replicationSyncPreserveOldFiles();
+
                pagingManager.lock();
                try
                {
@@ -442,6 +455,12 @@ public class JournalStorageManager implements StorageManager
       {
          stopReplication();
          throw e;
+      }
+      finally
+      {
+         // Re-enable compact and reclaim of journal files
+         originalBindingsJournal.replicationSyncFinished();
+         originalMessageJournal.replicationSyncFinished();
       }
    }
 

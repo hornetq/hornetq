@@ -112,10 +112,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected void checkAndReclaimFiles() throws Exception
    {
       journal.debugWait();
-      boolean isReclaim = journal.isAutoReclaim();
+      boolean originalAutoReclaim = journal.isAutoReclaim();
       journal.setAutoReclaim(true);
       journal.checkReclaimStatus();
-      journal.setAutoReclaim(isReclaim);
+      journal.setAutoReclaim(originalAutoReclaim);
       journal.debugWait();
    }
 
@@ -615,7 +615,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
              "***************************************************\n";
    }
 
-   class TransactionHolder
+   static final class TransactionHolder
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 

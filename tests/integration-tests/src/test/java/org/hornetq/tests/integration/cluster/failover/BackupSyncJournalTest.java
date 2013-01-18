@@ -70,8 +70,6 @@ public class BackupSyncJournalTest extends FailoverTestBase
          messageJournal.forceMoveNextFile();
          sendMessages(session, producer, n_msgs);
       }
-      Set<Pair<Long, Integer>> preSyncFileIDs = getFileIds(messageJournal);
-
       backupServer.start();
 
       // Deliver messages with Backup in-sync
@@ -85,7 +83,6 @@ public class BackupSyncJournalTest extends FailoverTestBase
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, n_msgs);
 
-      Set<Pair<Long, Integer>> liveIds = getFileIds(messageJournal);
       int size = messageJournal.getFileSize();
       PagingStore ps = liveServer.getServer().getPagingManager().getPageStore(ADDRESS);
       if (ps.getPageSizeBytes() == PAGE_SIZE)
@@ -93,15 +90,17 @@ public class BackupSyncJournalTest extends FailoverTestBase
          assertTrue("isStarted", ps.isStarted());
          assertFalse("start paging should return false, because we expect paging to be running", ps.startPaging());
       }
+      final Set<Pair<Long, Integer>> liveIds = getFileIds(messageJournal);
       finishSyncAndFailover();
 
       assertEquals("file sizes must be the same", size, backupMsgJournal.getFileSize());
-      Set<Pair<Long, Integer>> backupIds = getFileIds(backupMsgJournal);
+      final Set<Pair<Long, Integer>> backupIds = getFileIds(backupMsgJournal);
 
-      for (Pair<Long, Integer> pair : preSyncFileIDs)
+      for (Pair<Long, Integer> pair : liveIds)
       {
-         assertTrue("sanity check", liveIds.remove(pair));
-         assertTrue("backup must have the same file " + pair, backupIds.remove(pair));
+         if (pair.getB() == 0)
+            continue;
+         assertTrue("backup must have the same file " + pair + ". backupIds=" + backupIds, backupIds.contains(pair));
       }
       int total = 0;
       for (Pair<Long, Integer> pair : liveIds)
@@ -280,7 +279,11 @@ public class BackupSyncJournalTest extends FailoverTestBase
       {
          results.add(getPair(jf));
       }
-      results.add(getPair(journal.getCurrentFile()));
+      JournalFile current = journal.getCurrentFile();
+      if (current != null)
+      {
+         results.add(getPair(journal.getCurrentFile()));
+      }
       return results;
    }
 
