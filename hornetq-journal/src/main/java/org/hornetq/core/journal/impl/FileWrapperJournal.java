@@ -313,4 +313,22 @@ public final class FileWrapperJournal extends JournalBase
       throw new UnsupportedOperationException();
    }
 
+   @Override
+   public void scheduleCompactAndBlock(int timeout) throws Exception
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void replicationSyncPreserveOldFiles()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void replicationSyncFinished()
+   {
+      throw new UnsupportedOperationException();
+   }
+
 }

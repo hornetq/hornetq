@@ -202,4 +202,27 @@ public interface Journal extends HornetQComponent
    SequentialFileFactory getFileFactory();
 
    int getFileSize();
+
+   /**
+    * This method will start compact using the compactorExecutor and block up to timeout seconds
+    * @param timeout the timeout in seconds or block forever if <= 0
+    * @throws Exception
+    */
+   void scheduleCompactAndBlock(int timeout) throws Exception;
+
+   /**
+    * Stops any operation that may delete or modify old (stale) data.
+    * <p>
+    * Meant to be used during synchronization of data between a live server and its replicating
+    * (remote) backup. Old files must not be compacted or deleted during synchronization.
+    */
+   void replicationSyncPreserveOldFiles();
+
+   /**
+    * Restarts file reclaim and compacting on the journal.
+    * <p>
+    * Meant to be used to revert the effect of {@link #replicationSyncPreserveOldFiles()}. it should
+    * only be called once the synchronization of the backup and live servers is completed.
+    */
+   void replicationSyncFinished();
 }

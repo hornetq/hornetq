@@ -413,9 +413,9 @@ public final class ReplicationTest extends ServiceTestBase
    }
 
    /**
-    * @param manager
+    * @param manager1
     */
-   private void blockOnReplication(final StorageManager storage, final ReplicationManager manager) throws Exception
+   private void blockOnReplication(final StorageManager storage, final ReplicationManager manager1) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
       storage.afterCompleteOperations(new IOAsyncTask()
@@ -882,5 +882,21 @@ public final class ReplicationTest extends ServiceTestBase
          return 0;
       }
 
+      @Override
+      public void scheduleCompactAndBlock(int timeout) throws Exception
+      {
+      }
+
+      @Override
+      public void replicationSyncPreserveOldFiles()
+      {
+         // no-op
+      }
+
+      @Override
+      public void replicationSyncFinished()
+      {
+         // no-op
+      }
    }
 }
