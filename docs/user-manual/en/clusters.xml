@@ -407,7 +407,8 @@ final String groupAddress = "231.7.7.7";
 final int groupPort = 9876;
 
 ConnectionFactory jmsConnectionFactory =
-HornetQJMSClient.createConnectionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort), , JMSFactoryType.CF);
+HornetQJMSClient.createConnectionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort,
+                       new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, -1)), JMSFactoryType.CF);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -432,7 +433,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         <programlisting>
 final String groupAddress = "231.7.7.7";
 final int groupPort = 9876;
-ServerLocator factory = HornetQClient.createServerLocatorWithHA(new DiscoveryGroupConfiguration(groupAddress, groupPort));
+ServerLocator factory = HornetQClient.createServerLocatorWithHA(new DiscoveryGroupConfiguration(groupAddress, groupPort,
+                           new UDPBroadcastGroupConfiguration(groupAddress, groupPort, null, -1))));
 ClientSessionFactory factory = locator.createSessionFactory();
 ClientSession session1 = factory.createSession();
 ClientSession session2 = factory.createSession();</programlisting>
@@ -567,10 +569,21 @@ ClientSession session = factory.createSession();</programlisting>
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
       &lt;address>jms&lt;/address>
+      &lt;check-period>1000&lt;/check-period>
+      &lt;connection-ttl>5000@lt;/connection-ttl>
+      &lt;min-large-message-size>50000&lt;/min-large-message-size>
+      &lt;call-timeout>5000&lt;/call-timeout>
       &lt;retry-interval>500&lt;/retry-interval>
+      &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
+      &lt;max-retry-interval>5000&lt;/max-retry-interval>
+      &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
       &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
       &lt;forward-when-no-consumers>false&lt;/forward-when-no-consumers>
       &lt;max-hops>1&lt;/max-hops>
+      &lt;confirmation-window-size>32000&lt;/confirmation-window-size>
+      &lt;call-failover-timeout>30000&lt;/call-failover-timeout>
+      &lt;notification-interval>1000&lt;/notification-interval>
+      &lt;notification-attempts>2&lt;/notification-attempts>
       &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
    &lt;/cluster-connection>
 &lt;/cluster-connections></programlisting>
@@ -597,6 +610,21 @@ ClientSession session = factory.createSession();</programlisting>
                     <para>This parameter is mandatory.</para>
                 </listitem>
                 <listitem>
+                   <para><literal>check-period</literal>. The period (in milliseconds) used to check if the cluster connection
+                      has failed to receive pings from another server</para>
+                </listitem>
+                <listitem>
+                   <para><literal>connection-ttl</literal>. This is how long a cluster connection should stay alive if it
+                   stops receiving messages from a specific node in the cluster</para>
+                </listitem>
+                <listitem>
+                   <para><literal>min-large-message-size</literal></para>
+                </listitem>
+                <listitem>
+                   <para><literal>call-timeout</literal>. When a packet is sent via a cluster connection and is a blocking
+                   call, i.e. for acknowledgements, this is how long it will wait for the reply before throwing an exception</para>
+                </listitem>
+                <listitem>
                    <para><literal>max-retry-interval</literal>. This is how many times a cluster connection should try
                    to reconnect if the connection fails, -1 means for ever.</para>
                 </listitem>
@@ -616,6 +644,12 @@ ClientSession session = factory.createSession();</programlisting>
                 <listitem>
                    <para><literal>retry-interval-multiplier</literal>. This is a multiplier used to increase the
                    <literal>retry-interval</literal> after each reconnect attempt, default is 1.</para>
+                </listitem>
+                <listitem>
+                   <para><literal>max-retry-interval</literal>. The maximum delay for retries</para>
+                </listitem>
+                <listitem>
+                   <para><literal>reconnect-attempts</literal>. How many attempts should be made to reconnect after failure</para>
                 </listitem>
                 <listitem>
                     <para><literal>use-duplicate-detection</literal>. Internally cluster connections
@@ -678,29 +712,25 @@ ClientSession session = factory.createSession();</programlisting>
                         connected to this server. This parameter is optional.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>discovery-group-ref</literal>. This parameter determines which
-                        discovery group is used to obtain the list of other servers in the cluster
-                        that this cluster connection will make connections to.</para>
-                </listitem>
-                <listitem>
-                   <para><literal>connection-ttl</literal>. This is how long a cluster connection should stay alive if it
-                   stops receiving messages from a specific node in the cluster</para>
-                </listitem>
-                <listitem>
-                   <para><literal>check-period</literal>. The period (in milliseconds) used to check if the cluster connection
-                      has failed to receive pings from another server</para>
-                </listitem>
-                <listitem>
-                   <para><literal>call-timeout</literal>. When a packet is sent via a cluster connection and is a blocking
-                   call, i.e. for acknowledgements, this is how long it will wait for the reply before throwing an exception</para>
+                   <para><literal>confirmation-window-size</literal>. The size of the window used for sending confirmations
+                      from the server connected to, default is -1 which is no window.</para>
                 </listitem>
                 <listitem>
                    <para><literal>call-failover-timeout</literal>. Similar to <literal>call-timeout</literal> but used
                    when a call is made during a failover attempt</para>
                 </listitem>
                 <listitem>
-                   <para><literal>confirmation-window-size</literal>. The size of the window used for sending confirmations
-                      from the server connected to, default is -1 which is no window.</para>
+                   <para><literal>notification-interval</literal>. How often the cluster connection should broadcast itself
+                   when attaching to the cluster</para>
+                </listitem>
+                <listitem>
+                   <para><literal>notification-attempts</literal>. How many times the cluster connection should broadcast itself
+                   when connecting to the cluster</para>
+                </listitem>
+                <listitem>
+                    <para><literal>discovery-group-ref</literal>. This parameter determines which
+                        discovery group is used to obtain the list of other servers in the cluster
+                        that this cluster connection will make connections to.</para>
                 </listitem>
             </itemizedlist>
             <para>
