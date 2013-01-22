@@ -523,6 +523,17 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
+         props.putLongProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
+
+         if (binding.getFilter() == null)
+         {
+            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, null);
+         }
+         else
+         {
+            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, binding.getFilter().getFilterString());
+         }
+
          managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
       }
 
