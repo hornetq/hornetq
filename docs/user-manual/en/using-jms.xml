@@ -187,14 +187,16 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
                 <literal>hornetq-beans.xml</literal> by setting properties on the <literal
                 >JNDIServer</literal> bean:</para>
         <programlisting>
-&lt;bean name="JNDIServer" class="org.jnp.server.Main">
-   &lt;property name="namingInfo">
-      &lt;inject bean="Naming"/>
-   &lt;/property>
-   &lt;property name="port">1099&lt;/property>
-   &lt;property name="bindAddress">localhost&lt;/property>
-   &lt;property name="rmiPort">1098&lt;/property>
-   &lt;property name="rmiBindAddress">localhost&lt;/property>
+&lt;bean name="StandaloneServer" class="org.hornetq.jms.server.impl.StandaloneNamingServer">
+   &lt;constructor>
+      &lt;parameter>
+         &lt;inject bean="HornetQServer"/>
+      &lt;/parameter>
+   &lt;/constructor>
+   &lt;property name="port">${jnp.port:1099}&lt;/property>
+   &lt;property name="bindAddress">${jnp.host:localhost}&lt;/property>
+   &lt;property name="rmiPort">${jnp.rmiPort:1098}&lt;/property>
+   &lt;property name="rmiBindAddress">${jnp.host:localhost}&lt;/property>
 &lt;/bean></programlisting>
         <note>
             <para>If you want your JNDI server to be available to non local clients make sure you
