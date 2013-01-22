@@ -20,14 +20,14 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- *
- * Most methods on the journal provide a blocking version where you select the sync mode and a non blocking mode where you pass a completion callback as a parameter.
- *
- * Notice also that even on the callback methods it's possible to pass the sync mode. That will only make sense on the NIO operations.
- *
+ * Most methods on the journal provide a blocking version where you select the sync mode and a non
+ * blocking mode where you pass a completion callback as a parameter.
+ * <p>
+ * Notice also that even on the callback methods it's possible to pass the sync mode. That will only
+ * make sense on the NIO operations.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
+ * @see org.hornetq.utils.IDGenerator
  */
 public interface Journal extends HornetQComponent
 {

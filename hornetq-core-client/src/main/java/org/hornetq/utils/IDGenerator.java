@@ -14,13 +14,15 @@
 package org.hornetq.utils;
 
 /**
- * A IDGenerator
- *
+ * Generator of record IDs for the journals.
+ * <p>
+ * Notice that while the bindings and messages journals are independent from one another they use
+ * the same {@link IDGenerator} instance.
+ * <p>
+ * The next recordID should be persisted in the journals during a normal shutdown. The lack of such
+ * a record indicates a server crash. During server restart, if the journals lack a
+ * {@literal next-recordID} record, we use the last recorded ID plus {@code MAX_INT}.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 25 Sep 2008 10:28:52
- *
- *
  */
 public interface IDGenerator
 {
