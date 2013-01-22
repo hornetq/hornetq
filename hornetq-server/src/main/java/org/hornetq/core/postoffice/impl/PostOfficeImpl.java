@@ -529,7 +529,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (binding.getFilter() == null)
          {
-            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, new SimpleString(""));
+            props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, null);
          }
          else
          {
