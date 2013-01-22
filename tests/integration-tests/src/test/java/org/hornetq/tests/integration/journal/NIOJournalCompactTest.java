@@ -1395,13 +1395,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out1.dmp");
-
-      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out2.dmp");
-
       rollback(tx);
-
-      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out3.dmp");
 
       journal.forceMoveNextFile();
       journal.checkReclaimStatus();
