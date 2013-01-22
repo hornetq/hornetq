@@ -31,7 +31,7 @@
 
    <properties>
       <netty.version>3.6.2.Final</netty.version>
-      <netty.version.string>${netty-version}-2da5b0e</netty.version.string>
+      <netty.version.string>${netty.version}-c0d783c</netty.version.string>
       <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>

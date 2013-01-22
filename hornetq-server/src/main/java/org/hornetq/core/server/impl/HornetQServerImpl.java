@@ -1353,7 +1353,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (configuration.getMemoryMeasureInterval() != -1)
       {
-         memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(),
+         memoryManager = new MemoryManager(configuration.getMemoryWarningThreshold(),
             configuration.getMemoryMeasureInterval());
 
          memoryManager.start();
