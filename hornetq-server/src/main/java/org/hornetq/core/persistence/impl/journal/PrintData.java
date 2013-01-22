@@ -15,15 +15,16 @@ package org.hornetq.core.persistence.impl.journal;
 
 import java.io.File;
 
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 
 /**
- * A PrintData
+ * Writes a human-readable interpretation of the contents of a HornetQ {@link Journal}.
  * <p>
  * To run this class with Maven, use:
  *
  * <pre>
- * cd hornetq-core
+ * cd hornetq-server
  * mvn -q exec:java -Dexec.args="/foo/hornetq/bindings /foo/hornetq/journal" -Dexec.mainClass="org.hornetq.core.persistence.impl.journal.PrintData"
  * </pre>
  * @author clebertsuconic
@@ -35,7 +36,9 @@ public class PrintData // NO_UCD (unused code)
    {
       if (arg.length != 2)
       {
-         System.out.println("Use: java -cp hornetq-core.jar <bindings directory> <message directory>");
+         System.err.println("Standalone Usage:\n java -cp hornetq-core.jar <bindings directory> <message directory>");
+         System.err.println("\nMaven Usage:\n  cd hornetq-server && "
+                  + "mvn -q exec:java -Dexec.args=\"/foo/hornetq/bindings /foo/hornetq/journal\" -Dexec.mainClass=\"org.hornetq.core.persistence.impl.journal.PrintData\"");
          System.exit(-1);
       }
 

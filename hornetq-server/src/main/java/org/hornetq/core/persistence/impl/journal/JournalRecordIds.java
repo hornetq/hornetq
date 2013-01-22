@@ -3,6 +3,8 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
+import org.hornetq.utils.IDGenerator;
+
 /**
  * These record IDs definitions are meant to be public.
  * <p>
@@ -19,6 +21,11 @@ public final class JournalRecordIds
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
+   /**
+    * Records storing the current recordID number.
+    * @see IDGenerator
+    * @see BatchingIDGenerator
+    */
    public static final byte ID_COUNTER_RECORD = 24;
 
    public static final byte ADDRESS_SETTING_RECORD = 25;
