@@ -1260,7 +1260,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return fileFactory.getAlignment();
    }
 
-   private static class DummyLoader implements LoaderCallback
+   private static final class DummyLoader implements LoaderCallback
    {
       static final LoaderCallback INSTANCE = new DummyLoader();
       public void failedTransaction(final long transactionID, final List<RecordInfo> records,
