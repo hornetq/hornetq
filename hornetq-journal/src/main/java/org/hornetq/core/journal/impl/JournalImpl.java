@@ -2938,7 +2938,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // ---------------------------------------------------------------------------
 
    // Used on Load
-   private static class TransactionHolder
+   private static final class TransactionHolder
    {
       public TransactionHolder(final long id)
       {
@@ -2959,7 +2959,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    }
 
-   private static class JournalFileComparator implements Comparator<JournalFile>, Serializable
+   private static final class JournalFileComparator implements Comparator<JournalFile>, Serializable
    {
       private static final long serialVersionUID = -6264728973604070321L;
 

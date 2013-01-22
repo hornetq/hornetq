@@ -29,9 +29,8 @@ import org.hornetq.utils.IDGenerator;
  * @author <mailto:tim.fox@jboss.org">Tim Fox</a>
  * @see IDGenerator
  */
-public class BatchingIDGenerator implements IDGenerator
+public final class BatchingIDGenerator implements IDGenerator
 {
-
    private final AtomicLong counter;
 
    private final long checkpointSize;
@@ -54,7 +53,8 @@ public class BatchingIDGenerator implements IDGenerator
 
    public void close()
    {
-      storeID(counter.incrementAndGet(), counter.get());
+      final long recordID = counter.incrementAndGet();
+      storeID(recordID, recordID);
    }
 
    public void loadState(final long journalID, final HornetQBuffer buffer)
