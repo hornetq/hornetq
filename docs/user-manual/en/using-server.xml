@@ -202,40 +202,27 @@
         <para>
             <programlisting>
 &lt;?xml version="1.0" encoding="UTF-8"?>
+
 &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
-   &lt;bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
-   &lt;!-- JNDI server. Disable this if you don't want JNDI -->
-   &lt;bean name="JNDIServer" class="org.jnp.server.Main">
-      &lt;property name="namingInfo">
-         &lt;inject bean="Naming"/>
-      &lt;/property>
-      &lt;property name="port">1099&lt;/property>
-      &lt;property name="bindAddress">localhost&lt;/property>
-      &lt;property name="rmiPort">1098&lt;/property>
-      &lt;property name="rmiBindAddress">localhost&lt;/property>
-   &lt;/bean>
 
    &lt;!-- MBean server -->
    &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
       &lt;constructor factoryClass="java.lang.management.ManagementFactory"
-         factoryMethod="getPlatformMBeanServer"/>
+                   factoryMethod="getPlatformMBeanServer"/>
    &lt;/bean>
 
    &lt;!-- The core configuration -->
    &lt;bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration">
    &lt;/bean>
 
-   &lt;!-- The security manager -->
-   &lt;bean name="HornetQSecurityManager"
-         class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl">
+    &lt;!-- The security manager -->
+   &lt;bean name="HornetQSecurityManager" class="org.hornetq.spi.core.security.HornetQSecurityManagerImpl">
       &lt;start ignored="true"/>
       &lt;stop ignored="true"/>
    &lt;/bean>
 
-   &lt;!-- The core server -->
+    &lt;!-- The core server -->
    &lt;bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
-      &lt;start ignored="true"/>
-      &lt;stop ignored="true"/>
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="Configuration"/>
@@ -247,28 +234,38 @@
             &lt;inject bean="HornetQSecurityManager"/>
          &lt;/parameter>
       &lt;/constructor>
+      &lt;start ignored="true"/>
+      &lt;stop ignored="true"/>
+   &lt;/bean>
+
+    &lt;!-- The Stand alone server that controls the jndi server-->
+   &lt;bean name="StandaloneServer" class="org.hornetq.jms.server.impl.StandaloneNamingServer">
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="HornetQServer"/>
+         &lt;/parameter>
+      &lt;/constructor>
+      &lt;property name="port">${jnp.port:1099}&lt;/property>
+      &lt;property name="bindAddress">${jnp.host:localhost}&lt;/property>
+      &lt;property name="rmiPort">${jnp.rmiPort:1098}&lt;/property>
+      &lt;property name="rmiBindAddress">${jnp.host:localhost}&lt;/property>
    &lt;/bean>
 
    &lt;!-- The JMS server -->
-   &lt;bean name="JMSServerManager"
-         class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+   &lt;bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="HornetQServer"/>
          &lt;/parameter>
       &lt;/constructor>
    &lt;/bean>
+
+
 &lt;/deployment></programlisting>
         </para>
         <para>We can see that, as well as the core HornetQ server, the stand-alone server
             instantiates various different POJOs, lets look at them in turn:</para>
         <itemizedlist>
-            <listitem>
-                <para>JNDIServer</para>
-                <para>Many clients like to look up JMS Objects from JNDI so we provide a JNDI server
-                    for them to do that. If you don't need JNDI this can be commented out or
-                    removed.</para>
-            </listitem>
             <listitem>
                 <para>MBeanServer</para>
                 <para>In order to provide a JMX management interface a JMS MBean server is necessary
@@ -296,6 +293,12 @@
             <listitem>
                 <para>HornetQServer</para>
                 <para>This is the core server. It's where 99% of the magic happens</para>
+            </listitem>
+            <listitem>
+                <para>StandaloneServer</para>
+                <para>Many clients like to look up JMS Objects from JNDI so we provide a JNDI server
+                    for them to do that. This class is a wrapper around the JBoss naming server.
+                   If you don't need JNDI this can be commented out or removed.</para>
             </listitem>
             <listitem id="bean-jmsservermanager">
                 <para>JMSServerManager</para>

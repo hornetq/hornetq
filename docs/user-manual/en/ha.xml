@@ -118,8 +118,6 @@
 .
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
-      &lt;cluster-user>fish&lt;cluster-user>
-      &lt;cluster-password>ILikeToSwim&lt;cluster-password>
       ...
    &lt;/cluster-connection>
 &lt;/cluster-connections></programlisting>

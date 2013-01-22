@@ -83,6 +83,11 @@
                 connections given an IP address using the JMX management API.</para>
         </section>
         <section>
+            <title>Client side failover listener</title>
+            <para>The <literal>client-side-failoverlistener</literal> example shows how to register a listener to monitor
+            failover events</para>
+        </section>
+        <section>
             <title>Client-Side Load-Balancing</title>
             <para>The <literal>client-side-load-balancing</literal> example demonstrates how
                 sessions created from a single JMS <literal>Connection</literal> can
@@ -213,9 +218,10 @@
                 These "expired" messages can later be consumed from the expiry address for
                 further inspection.</para>
         </section>
-        <section id="examples.failover.manual.stop">
-            <title>Failover Manual Stop</title>
-            <para>This examples shows how to stop the server manually and cause failover</para>
+        <section id="examples.hornetq-ra-rar">
+            <title>HornetQ Resource Adapter example</title>
+            <para>This examples shows how to build the hornetq resource adapteras a rar for deployment in other Application
+            Server's</para>
         </section>
         <section>
             <title>HTTP Transport</title>
@@ -417,8 +423,30 @@
                the network.</para>
         </section>
         <section>
+            <title>Replicated Failback example</title>
+            <para>An example showing how failback works when using replication, In this example a live server will replicate
+               all its Journal to a backup server as it updates it. When the live server crashes the backup takes over
+            from the live server and the client reconnects and carries on from where it left off.</para>
+        </section>
+        <section>
+            <title>Replicated Failback static example</title>
+            <para>An example showing how failback works when using replication, but this time with static connectors</para>
+        </section>
+        <section>
+            <title>Replicated multiple failover example</title>
+            <para>An example showing how to configure multiple backups when using replication</para>
+        </section>
+        <section>
+            <title>Replicated Failover transaction example</title>
+            <para>An example showing how failover works with a transaction when using replication</para>
+        </section>
+        <section>
             <title>Request-Reply example</title>
             <para>A simple example showing the JMS request-response pattern.</para>
+        </section>
+        <section>
+            <title>Rest example</title>
+            <para>An example showing how to use the HornetQ Rest API</para>
         </section>
         <section id="examples.scheduled-message">
             <title>Scheduled Message</title>
@@ -561,17 +589,12 @@
     <section>
         <title>Java EE Examples</title>
         <para>Most of the Java EE examples can be run the following way. simply cd into the
-            appropriate example directory and type <literal>ant deploy</literal>. This will create a
-            new JBoss AS profile and start the server. When the server is started from a different
-            window type <literal>ant run</literal> to run the example. Some examples require further
-            steps, please refer to the examples documentation for further instructions.</para>
+            appropriate example directory and type <literal>mvn test</literal>. This will use Arquillian to run the Application
+            Server and deploy the application. Note that you must have jboss AS 7 installed and the JBOSS_HOME environment
+            variable set. Please refer to the examples documentation for further instructions.</para>
         <section>
             <title>EJB/JMS Transaction</title>
             <para>An example that shows using an EJB and JMS together within a transaction.</para>
-        </section>
-        <section>
-            <title>HAJNDI (High Availability)</title>
-            <para>A simple example demonstrating using JNDI within a cluster.</para>
         </section>
         <section>
             <title>Resource Adapter Configuration</title>
