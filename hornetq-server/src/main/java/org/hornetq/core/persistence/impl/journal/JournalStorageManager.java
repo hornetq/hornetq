@@ -134,7 +134,8 @@ import org.hornetq.utils.XidCodecSupport;
  * <p>
  * Notice that, turning on and off replication (on the live server side) is _mostly_ a matter of
  * using {@link ReplicatedJournal}s instead of regular {@link JournalImpl}, and sync the existing
- * data.
+ * data. For details see the Javadoc of
+ * {@link #startReplication(ReplicationManager, PagingManager, String, boolean)}.
  * <p>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -351,8 +352,11 @@ public class JournalStorageManager implements StorageManager
     * (1) all currently existing data must be sent to the backup.<br/>
     * (2) every new persistent information is replicated (sent) to the backup.
     * <p>
-    * To achieve this we lock the entire journal while collecting the list of files to send to the
+    * To achieve (1), we lock the entire journal while collecting the list of files to send to the
     * backup. The journal does not remain locked during actual synchronization.
+    * <p>
+    * To achieve (2), instead of writing directly to instances of {@link JournalImpl}, we write to
+    * instances of {@link ReplicatedJournal}.
     * <p>
     * At the backup-side replication is handled by {@link ReplicationEndpoint}.
     * @param replicationManager

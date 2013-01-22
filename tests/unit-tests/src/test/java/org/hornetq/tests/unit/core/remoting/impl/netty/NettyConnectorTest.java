@@ -29,25 +29,21 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.VersionLoader;
 
 /**
- *
- * A MinaConnectorTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class NettyConnectorTest extends UnitTestCase
 {
-   // Constants -----------------------------------------------------
 
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   public void testVersionPropertiesAreCorrect()
+   {
+      assertTrue("pom.xml 'netty.version.string' property set to expect\n'" +
+                          VersionLoader.getVersion().getNettyVersion() + "'\nGetting\n'" +
+                          org.jboss.netty.util.Version.ID + "'",
+                 org.jboss.netty.util.Version.ID.equals(VersionLoader.getVersion().getNettyVersion()));
+   }
 
    public void testStartStop() throws Exception
    {
