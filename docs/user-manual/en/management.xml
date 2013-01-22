@@ -828,12 +828,145 @@ notificationConsumer.setMessageListener(new MessageListener()
    }
 });</programlisting>
       </section>
-      <section>
-         <title>Example</title>
-         <para>See <xref linkend="examples.management-notifications"/> for an example which shows
-            how to use a JMS <literal>MessageListener</literal> to receive management notifications
-            from HornetQ server.</para>
-      </section>
+       <section>
+           <title>Example</title>
+           <para>See <xref linkend="examples.management-notifications"/> for an example which shows
+               how to use a JMS <literal>MessageListener</literal> to receive management notifications
+               from HornetQ server.</para>
+       </section>
+       <section>
+           <title>Notification Types and Headers</title>
+           <para>Below is a list of all the different kinds of notifications as well as which headers are
+                on the messages.  Every notification has a <literal>_HQ_NotifType</literal> (value noted in parentheses)
+                and <literal>_HQ_NotifTimestamp</literal> header.  The timestamp is the un-formatted result of a call
+                to <literal>java.lang.System.currentTimeMillis()</literal>.</para>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BINDING_ADDED</literal> (0)</para>
+                   <para><literal>_HQ_Binding_Type</literal>, <literal>_HQ_Address</literal>,
+                       <literal>_HQ_ClusterName</literal>, <literal>_HQ_RoutingName</literal>,
+                       <literal>_HQ_Binding_ID</literal>, <literal>_HQ_Distance</literal>,
+                       <literal>_HQ_FilterString</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BINDING_REMOVED</literal> (1)</para>
+                   <para><literal>_HQ_Address</literal>, <literal>_HQ_ClusterName</literal>,
+                       <literal>_HQ_RoutingName</literal>, <literal>_HQ_Binding_ID</literal>,
+                       <literal>_HQ_Distance</literal>, <literal>_HQ_FilterString</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>CONSUMER_CREATED</literal> (2)</para>
+                   <para><literal>_HQ_Address</literal>, <literal>_HQ_ClusterName</literal>,
+                       <literal>_HQ_RoutingName</literal>, <literal>_HQ_Distance</literal>,
+                       <literal>_HQ_ConsumerCount</literal>, <literal>_HQ_User</literal>,
+                       <literal>_HQ_RemoteAddress</literal>, <literal>_HQ_SessionName</literal>,
+                       <literal>_HQ_FilterString</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>CONSUMER_CLOSED</literal> (3)</para>
+                   <para><literal>_HQ_Address</literal>, <literal>_HQ_ClusterName</literal>,
+                       <literal>_HQ_RoutingName</literal>, <literal>_HQ_Distance</literal>,
+                       <literal>_HQ_ConsumerCount</literal>, <literal>_HQ_User</literal>,
+                       <literal>_HQ_RemoteAddress</literal>, <literal>_HQ_SessionName</literal>,
+                       <literal>_HQ_FilterString</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>SECURITY_AUTHENTICATION_VIOLATION</literal> (6)</para>
+                   <para><literal>_HQ_User</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>SECURITY_PERMISSION_VIOLATION</literal> (7)</para>
+                   <para><literal>_HQ_Address</literal>, <literal>_HQ_CheckType</literal>,
+                       <literal>_HQ_User</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>DISCOVERY_GROUP_STARTED</literal> (8)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>DISCOVERY_GROUP_STOPPED</literal> (9)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BROADCAST_GROUP_STARTED</literal> (10)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BROADCAST_GROUP_STOPPED</literal> (11)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BRIDGE_STARTED</literal> (12)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>BRIDGE_STOPPED</literal> (13)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>CLUSTER_CONNECTION_STARTED</literal> (14)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>CLUSTER_CONNECTION_STOPPED</literal> (15)</para>
+                   <para><literal>name</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>ACCEPTOR_STARTED</literal> (16)</para>
+                   <para><literal>factory</literal>, <literal>id</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>ACCEPTOR_STOPPED</literal> (17)</para>
+                   <para><literal>factory</literal>, <literal>id</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>PROPOSAL</literal> (18)</para>
+                   <para><literal>_JBM_ProposalGroupId</literal>, <literal>_JBM_ProposalValue</literal>,
+                       <literal>_HQ_Binding_Type</literal>, <literal>_HQ_Address</literal>,
+                       <literal>_HQ_Distance</literal></para>
+               </listitem>
+           </itemizedlist>
+           <itemizedlist>
+               <listitem>
+                   <para><literal>PROPOSAL_RESPONSE</literal> (19)</para>
+                   <para><literal>_JBM_ProposalGroupId</literal>, <literal>_JBM_ProposalValue</literal>,
+                       <literal>_JBM_ProposalAltValue</literal>, <literal>_HQ_Binding_Type</literal>,
+                       <literal>_HQ_Address</literal>, <literal>_HQ_Distance</literal></para>
+               </listitem>
+           </itemizedlist>
+       </section>
    </section>
    <section id="management.message-counters">
       <title>Message Counters</title>
