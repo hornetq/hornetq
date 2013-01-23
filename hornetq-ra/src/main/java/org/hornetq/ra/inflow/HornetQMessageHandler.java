@@ -126,7 +126,16 @@ public class HornetQMessageHandler implements MessageHandler
             // As a deployed MDB could set up multiple instances in order to process messages in parallel.
             if (sessionNr == 0 && subResponse.getConsumerCount() > 0)
             {
-               throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               if (!spec.isShareSubscriptions())
+               {
+                  throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               }
+               else if (HornetQRALogger.LOGGER.isDebugEnabled())
+               {
+                  HornetQRALogger.LOGGER.debug("the mdb on destination " + queueName + " already had " +
+                     subResponse.getConsumerCount() +
+                     " consumers but the MDB is configured to share subscriptions, so no exceptions are thrown");
+               }
             }
 
             SimpleString oldFilterString = subResponse.getFilterString();

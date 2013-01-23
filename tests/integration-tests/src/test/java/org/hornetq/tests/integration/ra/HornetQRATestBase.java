@@ -33,21 +33,17 @@ import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Jul 6, 2010
  */
-public abstract class HornetQRATestBase  extends ServiceTestBase
+public abstract class HornetQRATestBase  extends JMSTestBase
 {
-   protected Configuration configuration;
-
-   protected HornetQServer server;
-
    protected ServerLocator locator;
 
    protected static final String MDBQUEUE = "mdbQueue";
@@ -58,20 +54,33 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       locator = createInVMNonHALocator();
-      configuration = createDefaultConfig(true);
-      configuration.setSecurityEnabled(isSecure());
-      server = createServer(true, configuration);
-      server.start();
-      server.createQueue(MDBQUEUEPREFIXEDSIMPLE, MDBQUEUEPREFIXEDSIMPLE, null, true, false);
+      createQueue(MDBQUEUE);
    }
 
-    public abstract boolean isSecure();
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+
+      super.tearDown();
+   }
+
+   protected HornetQResourceAdapter newResourceAdapter()
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      // We don't have a TM on these tests.. This would cause the lookup to take at least 10 seconds if we didn't set to ""
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.setTransactionManagerLocatorMethod("");
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      return qResourceAdapter;
+   }
+
+
 
    class DummyMessageEndpointFactory implements MessageEndpointFactory
    {
-      private final DummyMessageEndpoint endpoint;
+      private DummyMessageEndpoint endpoint;
 
       private final boolean isDeliveryTransacted;
 
@@ -122,7 +131,6 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
          {
             latch.countDown();
          }
-         System.out.println("lastMessage = " + lastMessage);
       }
 
       public void release()

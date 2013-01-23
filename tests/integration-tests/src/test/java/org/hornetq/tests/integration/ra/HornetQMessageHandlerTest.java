@@ -12,13 +12,19 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.Message;
+import javax.resource.spi.ActivationSpec;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.postoffice.Binding;
@@ -28,13 +34,6 @@ import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
 
-import javax.jms.Message;
-import javax.resource.spi.ActivationSpec;
-
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created May 20, 2010
@@ -42,20 +41,15 @@ import java.util.concurrent.TimeUnit;
 public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
 
-   private static final String JMS_TOPIC_MDB_TOPIC = "jms.topic.mdbTopic";
-
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return false;
    }
 
    public void testSimpleMessageReceivedOnQueue() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -68,9 +62,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
-      ClientSession session = sf.createSession();
-      ClientProducer clientProducer = addClientProducer(session.createProducer(MDBQUEUEPREFIXED));
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
       clientProducer.send(message);
@@ -85,11 +78,21 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   /**
+    * @return
+    */
+   protected HornetQResourceAdapter newResourceAdapter()
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.setTransactionManagerLocatorMethod("");
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      return qResourceAdapter;
+   }
 
    public void testServerShutdownAndReconnect() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setReconnectAttempts(-1);
       qResourceAdapter.setCallTimeout(500l);
       qResourceAdapter.setTransactionManagerLocatorClass("");
@@ -146,10 +149,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testInvalidAckMode() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -167,10 +167,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testSimpleMessageReceivedOnQueueInLocalTX() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setUseLocalTx(true);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
@@ -184,7 +181,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       ExceptionDummyMessageEndpoint endpoint = new ExceptionDummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -206,10 +203,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testSimpleMessageReceivedOnQueueWithSelector() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -223,7 +217,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("blue");
@@ -245,10 +239,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testEndpointDeactivated() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -271,10 +262,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testMaxSessions() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -296,10 +284,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testSimpleTopic() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -312,8 +297,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
-      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("test");
       clientProducer.send(message);
@@ -329,10 +314,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testDurableSubscription() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -348,8 +330,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
-      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       clientProducer.send(message);
@@ -388,10 +370,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testNonDurableSubscription() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -404,8 +383,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
-      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       clientProducer.send(message);
@@ -439,8 +418,9 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    //https://issues.jboss.org/browse/JBPAPP-8017
    public void testNonDurableSubscriptionDeleteAfterCrash() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.setTransactionManagerLocatorMethod("");
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -485,12 +465,12 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    public void testSelectorChangedWithTopic() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+
       MyBootstrapContext ctx = new MyBootstrapContext();
+
       qResourceAdapter.start(ctx);
+
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
@@ -500,13 +480,16 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setSubscriptionName("durable-mdb");
       spec.setClientID("id-1");
       spec.setMessageSelector("foo='bar'");
+
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+
       CountDownLatch latch = new CountDownLatch(1);
+
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
-      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       message.putStringProperty("foo", "bar");
@@ -542,12 +525,73 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   public void testSharedSubscription() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      spec.setSubscriptionDurability("Durable");
+      spec.setSubscriptionName("durable-mdb");
+      spec.setClientID("id-1");
+      spec.setSetupAttempts(1);
+      spec.setShareSubscriptions(true);
+      spec.setMaxSession(1);
+
+      HornetQActivationSpec spec2 = new HornetQActivationSpec();
+      spec2.setResourceAdapter(qResourceAdapter);
+      spec2.setUseJNDI(false);
+      spec2.setDestinationType("javax.jms.Topic");
+      spec2.setDestination("mdbTopic");
+      spec2.setSubscriptionDurability("Durable");
+      spec2.setSubscriptionName("durable-mdb");
+      spec2.setClientID("id-1");
+      spec2.setSetupAttempts(1);
+      spec2.setShareSubscriptions(true);
+      spec2.setMaxSession(1);
+
+
+      CountDownLatch latch = new CountDownLatch(5);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+
+      CountDownLatch latch2 = new CountDownLatch(5);
+      DummyMessageEndpoint endpoint2 = new DummyMessageEndpoint(latch2);
+      DummyMessageEndpointFactory endpointFactory2 = new DummyMessageEndpointFactory(endpoint2, false);
+      qResourceAdapter.endpointActivation(endpointFactory2, spec2);
+
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+
+      for (int i = 0 ; i < 10; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeString("" + i);
+         clientProducer.send(message);
+      }
+      session.commit();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+
+      assertNotNull(endpoint.lastMessage);
+      assertNotNull(endpoint2.lastMessage);
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.endpointDeactivation(endpointFactory2, spec2);
+      qResourceAdapter.stop();
+
+   }
+
    public void testSelectorNotChangedWithTopic() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -564,8 +608,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = addSessionFactory(createSessionFactory(locator)).createSession();
-      ClientProducer clientProducer = session.createProducer(JMS_TOPIC_MDB_TOPIC);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("1");
       message.putStringProperty("foo", "bar");
