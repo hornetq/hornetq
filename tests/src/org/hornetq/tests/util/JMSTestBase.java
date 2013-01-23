@@ -120,10 +120,8 @@ public class JMSTestBase extends ServiceTestBase
 
       mbeanServer = MBeanServerFactory.createMBeanServer();
 
-      Configuration conf = createDefaultConfig(false);
-
-      conf.getAcceptorConfigurations().clear();
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      Configuration conf = createDefaultConfig(true);
+      conf.setSecurityEnabled(useSecurity());
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());

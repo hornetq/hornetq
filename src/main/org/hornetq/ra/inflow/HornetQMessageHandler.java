@@ -24,7 +24,6 @@ import javax.transaction.TransactionManager;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -129,11 +128,19 @@ public class HornetQMessageHandler implements MessageHandler
          }
          else
          {
+            
             // The check for already exists should be done only at the first session
             // As a deployed MDB could set up multiple instances in order to process messages in parallel.
             if (sessionNr == 0 && subResponse.getConsumerCount() > 0)
             {
-               throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               if (!spec.isShareSubscriptions())
+               {
+                  throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               }
+               else if (log.isDebugEnabled())
+               {
+                  log.debug("the mdb on destination " + queueName + " already had " + subResponse.getConsumerCount() + " consumers but the MDB is configured to share subscriptions, so no exceptions are thrown");
+               }
             }
 
             SimpleString oldFilterString = subResponse.getFilterString();
