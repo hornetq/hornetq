@@ -143,12 +143,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       return 0;
    }
 
-   private byte getByte(final long index)
-   {
-      positioningNotSupported();
-      return 0;
-   }
-
    @Override
    public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
