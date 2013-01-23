@@ -31,17 +31,17 @@ import org.jgroups.ReceiverAdapter;
  * There are two ways to constructing a JGroups channel (JChannel):
  * <ol>
  * <li> by passing in a JGroups configuration file</li>
- * The file must exists in the hornetq classpath. HornetQ creates a JChannel with the 
+ * The file must exists in the hornetq classpath. HornetQ creates a JChannel with the
  * configuration file and use it for broadcasting and discovery. In standalone server
  * mode HornetQ uses this way for constructing JChannels.
  * <li> by passing in a JChannel instance </li>
- * This is useful when HornetQ needs to get a JChannel from a running JGroups service as in the 
+ * This is useful when HornetQ needs to get a JChannel from a running JGroups service as in the
  * case of AS7 integration.
  * </ol>
  * <p>
  * Note only one JChannel is needed in a VM. To avoid the channel being prematurely disconnected
  * by any party, a wrapper class is used.
- * 
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
@@ -121,7 +121,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       private boolean broadcastOpened;
 
       private JChannelWrapper<?> channel;
-      
+
       private JGroupsReceiver receiver;
 
       public void broadcast(final byte[] data) throws Exception
@@ -186,12 +186,12 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
          {
             throw new RuntimeException("couldn't find JGroups configuration " + fileName);
          }
-         this.channel = JChannelManager.getJChannel(channelName, configURL);         
+         this.channel = JChannelManager.getJChannel(channelName, configURL);
       }
 
-      private void initChannel(final JChannel channel, final String channelName) throws Exception
+      private void initChannel(final JChannel channel1, final String channelName) throws Exception
       {
-         this.channel = JChannelManager.getJChannel(channelName, channel);
+         this.channel = JChannelManager.getJChannel(channelName, channel1);
       }
 
       protected void internalOpen() throws Exception
@@ -217,7 +217,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
        * This class is used to receive messages from a JGroups channel.
        * Incoming messages are put into a queue.
        */
-      private class JGroupsReceiver extends ReceiverAdapter
+      private static final class JGroupsReceiver extends ReceiverAdapter
       {
          private final BlockingQueue<byte[]> dequeue = new LinkedBlockingDeque<byte[]>();
 
@@ -241,22 +241,22 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       /**
        * This is used for identifying a unique JChannel instance.
        * Because we have two ways to get a JChannel (by configuration
-       * or by passing in a JChannel instance), the key needs to take 
-       * this into consideration when doing comparison. 
+       * or by passing in a JChannel instance), the key needs to take
+       * this into consideration when doing comparison.
        * @param <T> : either being a JChannel or a URL representing the JGroups
        * configuration file.
        */
       private static class ChannelKey<T>
       {
-         private String name;
-         private T channelSource;
+         private final String name;
+         private final T channelSource;
 
          public ChannelKey(String name, T t)
          {
             this.name = name;
             this.channelSource = t;
          }
-         
+
          @Override
          public int hashCode()
          {
@@ -270,7 +270,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
             {
                return false;
             }
-            
+
             ChannelKey<?> key = (ChannelKey<?>)t;
             return (name.equals(key.name) && channelSource.equals(key.channelSource));
          }
@@ -375,7 +375,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       /**
        * This class maintain a global Map of JChannels wrapped in JChannelWrapper for
        * the purpose of reference counting.
-       * 
+       *
        * Whereever a JChannel is needed it should only get it by calling the getChannel()
        * method of this class. The real disconnect of channels are also done here only.
        */
