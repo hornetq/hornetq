@@ -200,6 +200,13 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private final AtomicInteger concurrentCall = new AtomicInteger(0);
 
+   /**
+    * This is used as a safe precaution about HORNETQ-1117.
+    * An user was facing cases where the response was being returned out of order causing ClassCastException
+    * And I'm adding this as an extra precaution in case that was being caused by reconnections and new Channels created.
+    */
+   private final Object xaGuard = new Object();
+
    // Constructors ----------------------------------------------------------------------------
 
    ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
@@ -1354,47 +1361,50 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       checkXA();
 
-      // we should never throw rollback if we have already prepared
-      if (rollbackOnly)
+      synchronized (xaGuard)
       {
-         HornetQClientLogger.LOGGER.commitAfterFailover();
-      }
-
-      // Note - don't need to flush acks since the previous end would have
-      // done this
-
-      SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
-
-      startCall();
-      try
-      {
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
-
-         workDone = false;
-
-         if (response.isError())
+         // we should never throw rollback if we have already prepared
+         if (rollbackOnly)
          {
-            throw new XAException(response.getResponseCode());
+            HornetQClientLogger.LOGGER.commitAfterFailover();
          }
 
-         if (HornetQClientLogger.LOGGER.isTraceEnabled())
-         {
-            HornetQClientLogger.LOGGER.trace("finished commit on " + convert(xid) + " with response = " + response);
-         }
-      }
-      catch (HornetQException e)
-      {
-         HornetQClientLogger.LOGGER.failoverDuringCommit();
+         // Note - don't need to flush acks since the previous end would have
+         // done this
 
-         // Unblocked on failover
-         xaRetry = true;
-         // Any error on commit -> RETRY
-         // We can't rollback a Prepared TX for definition
-         throw new XAException(XAException.XA_RETRY);
-      }
-      finally
-      {
-         endCall();
+         SessionXACommitMessage packet = new SessionXACommitMessage(xid, onePhase);
+
+         startCall();
+         try
+         {
+            SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+            workDone = false;
+
+            if (response.isError())
+            {
+               throw new XAException(response.getResponseCode());
+            }
+
+            if (HornetQClientLogger.LOGGER.isTraceEnabled())
+            {
+               HornetQClientLogger.LOGGER.trace("finished commit on " + convert(xid) + " with response = " + response);
+            }
+         }
+         catch (HornetQException e)
+         {
+            HornetQClientLogger.LOGGER.failoverDuringCommit();
+
+            // Unblocked on failover
+            xaRetry = true;
+            // Any error on commit -> RETRY
+            // We can't rollback a Prepared TX for definition
+            throw new XAException(XAException.XA_RETRY);
+         }
+         finally
+         {
+            endCall();
+         }
       }
    }
 
@@ -1407,79 +1417,85 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       checkXA();
 
-      if (rollbackOnly)
+      synchronized (xaGuard)
       {
-         throw new XAException(XAException.XA_RBOTHER);
-      }
-
-      try
-      {
-         Packet packet;
-
-         if (flags == XAResource.TMSUSPEND)
+         if (rollbackOnly)
          {
-            packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
-         }
-         else if (flags == XAResource.TMSUCCESS)
-         {
-            packet = new SessionXAEndMessage(xid, false);
-         }
-         else if (flags == XAResource.TMFAIL)
-         {
-            packet = new SessionXAEndMessage(xid, true);
-         }
-         else
-         {
-            throw new XAException(XAException.XAER_INVAL);
+            throw new XAException(XAException.XA_RBOTHER);
          }
 
-         flushAcks();
-
-         SessionXAResponseMessage response;
-         startCall();
          try
          {
-            response = (SessionXAResponseMessage)channel.sendBlocking(packet);
-         }
-         finally
-         {
-            endCall();
-         }
+            Packet packet;
 
-         if (response.isError())
-         {
-            throw new XAException(response.getResponseCode());
+            if (flags == XAResource.TMSUSPEND)
+            {
+               packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+            }
+            else if (flags == XAResource.TMSUCCESS)
+            {
+               packet = new SessionXAEndMessage(xid, false);
+            }
+            else if (flags == XAResource.TMFAIL)
+            {
+               packet = new SessionXAEndMessage(xid, true);
+            }
+            else
+            {
+               throw new XAException(XAException.XAER_INVAL);
+            }
+
+            flushAcks();
+
+            SessionXAResponseMessage response;
+            startCall();
+            try
+            {
+               response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+            }
+            finally
+            {
+               endCall();
+            }
+
+            if (response.isError())
+            {
+               throw new XAException(response.getResponseCode());
+            }
          }
-      }
-      catch (HornetQException e)
-      {
-         HornetQClientLogger.LOGGER.errorCallingEnd(e);
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         catch (HornetQException e)
+         {
+            HornetQClientLogger.LOGGER.errorCallingEnd(e);
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
+         }
       }
    }
 
    public void forget(final Xid xid) throws XAException
    {
       checkXA();
-      startCall();
-      try
+      synchronized (xaGuard)
       {
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(new SessionXAForgetMessage(xid));
-
-         if (response.isError())
+         startCall();
+         try
          {
-            throw new XAException(response.getResponseCode());
+            SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(new SessionXAForgetMessage(xid));
+
+            if (response.isError())
+            {
+               throw new XAException(response.getResponseCode());
+            }
          }
-      }
-      catch (HornetQException e)
-      {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
-      }
-      finally
-      {
-         endCall();
+         catch (HornetQException e)
+         {
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
+         }
+         finally
+         {
+            endCall();
+         }
       }
    }
 
@@ -1487,16 +1503,19 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       checkXA();
 
-      try
+      synchronized (xaGuard)
       {
-         SessionXAGetTimeoutResponseMessage response = (SessionXAGetTimeoutResponseMessage)channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT));
+         try
+         {
+            SessionXAGetTimeoutResponseMessage response = (SessionXAGetTimeoutResponseMessage)channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_GET_TIMEOUT));
 
-         return response.getTimeoutSeconds();
-      }
-      catch (HornetQException e)
-      {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+            return response.getTimeoutSeconds();
+         }
+         catch (HornetQException e)
+         {
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
+         }
       }
    }
 
@@ -1522,82 +1541,86 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    public int prepare(final Xid xid) throws XAException
    {
       checkXA();
-      if (HornetQClientLogger.LOGGER.isTraceEnabled())
+
+      synchronized (xaGuard)
       {
-         HornetQClientLogger.LOGGER.trace("Calling prepare:: " + convert(xid));
-      }
-
-
-      if (rollbackOnly)
-      {
-         throw new XAException(XAException.XA_RBOTHER);
-      }
-
-      // Note - don't need to flush acks since the previous end would have
-      // done this
-
-      SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
-
-      startCall();
-      try
-      {
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
-
-         if (response.isError())
+         if (HornetQClientLogger.LOGGER.isTraceEnabled())
          {
-            throw new XAException(response.getResponseCode());
+            HornetQClientLogger.LOGGER.trace("Calling prepare:: " + convert(xid));
          }
-         else
+
+
+         if (rollbackOnly)
          {
-            xaRetry = false;
-            return response.getResponseCode();
+            throw new XAException(XAException.XA_RBOTHER);
          }
-      }
-      catch (HornetQException e)
-      {
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
+
+         // Note - don't need to flush acks since the previous end would have
+         // done this
+
+         SessionXAPrepareMessage packet = new SessionXAPrepareMessage(xid);
+
+         startCall();
+         try
          {
-            // Unblocked on failover
-            try
+            SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+            if (response.isError())
             {
-               HornetQClientLogger.LOGGER.failoverDuringPrepare();
-               SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
-
-               if (response.isError())
-               {
-                  throw new XAException(response.getResponseCode());
-               }
-
+               throw new XAException(response.getResponseCode());
+            }
+            else
+            {
                xaRetry = false;
                return response.getResponseCode();
             }
-            catch (HornetQException e1)
+         }
+         catch (HornetQException e)
+         {
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
             {
-               // ignore and rollback
-            }
-            HornetQClientLogger.LOGGER.failoverDuringPrepareRollingBack();
-            try
-            {
-               rollback(false);
-            }
-            catch (HornetQException e2)
-            {
-               throw new XAException(XAException.XAER_RMERR);
+               // Unblocked on failover
+               try
+               {
+                  HornetQClientLogger.LOGGER.failoverDuringPrepare();
+                  SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+                  if (response.isError())
+                  {
+                     throw new XAException(response.getResponseCode());
+                  }
+
+                  xaRetry = false;
+                  return response.getResponseCode();
+               }
+               catch (HornetQException e1)
+               {
+                  // ignore and rollback
+               }
+               HornetQClientLogger.LOGGER.failoverDuringPrepareRollingBack();
+               try
+               {
+                  rollback(false);
+               }
+               catch (HornetQException e2)
+               {
+                  throw new XAException(XAException.XAER_RMERR);
+               }
+
+               HornetQClientLogger.LOGGER.errorDuringPrepare(e);
+
+               throw new XAException(XAException.XA_RBOTHER);
             }
 
             HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
-            throw new XAException(XAException.XA_RBOTHER);
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
          }
-
-         HornetQClientLogger.LOGGER.errorDuringPrepare(e);
-
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
-      }
-      finally
-      {
-         endCall();
+         finally
+         {
+            endCall();
+         }
       }
 
    }
@@ -1606,80 +1629,87 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       checkXA();
 
-      if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
+      synchronized (xaGuard)
       {
-         try
+         if ((flags & XAResource.TMSTARTRSCAN) == XAResource.TMSTARTRSCAN)
          {
-            SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS));
+            try
+            {
+               SessionXAGetInDoubtXidsResponseMessage response = (SessionXAGetInDoubtXidsResponseMessage)channel.sendBlocking(new PacketImpl(PacketImpl.SESS_XA_INDOUBT_XIDS));
 
-            List<Xid> xids = response.getXids();
+               List<Xid> xids = response.getXids();
 
-            Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
+               Xid[] xidArray = xids.toArray(new Xid[xids.size()]);
 
-            return xidArray;
+               return xidArray;
+            }
+            catch (HornetQException e)
+            {
+               // This should never occur
+               throw new XAException(XAException.XAER_RMERR);
+            }
          }
-         catch (HornetQException e)
-         {
-            // This should never occur
-            throw new XAException(XAException.XAER_RMERR);
-         }
+
+         return new Xid[0];
       }
-
-      return new Xid[0];
    }
 
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
 
-      if (HornetQClientLogger.LOGGER.isTraceEnabled())
+      synchronized (xaGuard)
       {
-         HornetQClientLogger.LOGGER.trace("Calling rollback:: " + convert(xid));
-      }
 
-      try
-      {
-         boolean wasStarted = started;
-
-         if (wasStarted)
+         if (HornetQClientLogger.LOGGER.isTraceEnabled())
          {
-            stop(false);
+            HornetQClientLogger.LOGGER.trace("Calling rollback:: " + convert(xid));
          }
 
-         // We need to make sure we don't get any inflight messages
-         for (ClientConsumerInternal consumer : cloneConsumers())
+         try
          {
-            consumer.clear(false);
+            boolean wasStarted = started;
+
+            if (wasStarted)
+            {
+               stop(false);
+            }
+
+            // We need to make sure we don't get any inflight messages
+            for (ClientConsumerInternal consumer : cloneConsumers())
+            {
+               consumer.clear(false);
+            }
+
+            flushAcks();
+
+            SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
+
+            SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+            if (wasStarted)
+            {
+               start();
+            }
+
+            workDone = false;
+
+            if (response.isError())
+            {
+               throw new XAException(response.getResponseCode());
+            }
          }
-
-         flushAcks();
-
-         SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
-
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
-
-         if (wasStarted)
+         catch (HornetQException e)
          {
-            start();
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
+            {
+               // Unblocked on failover
+               xaRetry = true;
+               throw new XAException(XAException.XA_RETRY);
+            }
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
          }
-
-         workDone = false;
-
-         if (response.isError())
-         {
-            throw new XAException(response.getResponseCode());
-         }
-      }
-      catch (HornetQException e)
-      {
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
-         {
-            // Unblocked on failover
-            xaRetry = true;
-            throw new XAException(XAException.XA_RETRY);
-         }
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
       }
    }
 
@@ -1687,16 +1717,19 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       checkXA();
 
-      try
+      synchronized (xaGuard)
       {
-         SessionXASetTimeoutResponseMessage response = (SessionXASetTimeoutResponseMessage)channel.sendBlocking(new SessionXASetTimeoutMessage(seconds));
+         try
+         {
+            SessionXASetTimeoutResponseMessage response = (SessionXASetTimeoutResponseMessage)channel.sendBlocking(new SessionXASetTimeoutMessage(seconds));
 
-         return response.isOK();
-      }
-      catch (HornetQException e)
-      {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+            return response.isOK();
+         }
+         catch (HornetQException e)
+         {
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
+         }
       }
    }
 
@@ -1709,62 +1742,65 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       checkXA();
 
-      Packet packet = null;
-
-      try
+      synchronized (xaGuard)
       {
-         if (flags == XAResource.TMJOIN)
-         {
-            packet = new SessionXAJoinMessage(xid);
-         }
-         else if (flags == XAResource.TMRESUME)
-         {
-            packet = new SessionXAResumeMessage(xid);
-         }
-         else if (flags == XAResource.TMNOFLAGS)
-         {
-            // Don't need to flush since the previous end will have done this
-            packet = new SessionXAStartMessage(xid);
-         }
-         else
-         {
-            throw new XAException(XAException.XAER_INVAL);
-         }
 
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+         Packet packet = null;
 
-         if (response.isError())
+         try
          {
-            HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
-            throw new XAException(response.getResponseCode());
-         }
-      }
-      catch (HornetQException e)
-      {
-         // we can retry this only because we know for sure that no work would have been done
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
-         {
-            try
+            if (flags == XAResource.TMJOIN)
             {
-               SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+               packet = new SessionXAJoinMessage(xid);
+            }
+            else if (flags == XAResource.TMRESUME)
+            {
+               packet = new SessionXAResumeMessage(xid);
+            }
+            else if (flags == XAResource.TMNOFLAGS)
+            {
+               // Don't need to flush since the previous end will have done this
+               packet = new SessionXAStartMessage(xid);
+            }
+            else
+            {
+               throw new XAException(XAException.XAER_INVAL);
+            }
 
-               if (response.isError())
+            SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+            if (response.isError())
+            {
+               HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
+               throw new XAException(response.getResponseCode());
+            }
+         }
+         catch (HornetQException e)
+         {
+            // we can retry this only because we know for sure that no work would have been done
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
+            {
+               try
                {
-                  HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
-                  throw new XAException(response.getResponseCode());
+                  SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+                  if (response.isError())
+                  {
+                     HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
+                     throw new XAException(response.getResponseCode());
+                  }
+               }
+               catch (HornetQException e1)
+               {
+                  // This should never occur
+                  throw new XAException(XAException.XAER_RMERR);
                }
             }
-            catch (HornetQException e1)
-            {
-               // This should never occur
-               throw new XAException(XAException.XAER_RMERR);
-            }
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
          }
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
       }
    }
-
    // FailureListener implementation --------------------------------------------
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
