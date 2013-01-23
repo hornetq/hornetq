@@ -36,15 +36,14 @@ import java.util.concurrent.TimeUnit;
 public class HornetQMessageHandlerXATest extends HornetQRATestBase
 {
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return false;
    }
 
    public void testXACommit() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -75,7 +74,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
 
    public void testXARollback() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
