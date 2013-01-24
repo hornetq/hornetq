@@ -822,7 +822,7 @@ private ConnectionFactory connectionFactory;</programlisting>
                             <row>
                                 <entry>ShareSubscriptions</entry>
                                 <entry>Boolean</entry>
-                                <entry>When true, durable subscriptions can use the same </literal></entry>
+                                <entry>When true, multiple MDBs can share the same <literal>Durable</literal> subscription</entry>
                             </row>
                             <row>
                                 <entry>SubscriptionName</entry>
