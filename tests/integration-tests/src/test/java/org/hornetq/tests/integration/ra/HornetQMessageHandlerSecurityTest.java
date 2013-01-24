@@ -22,6 +22,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Jul 6, 2010
@@ -29,18 +30,15 @@ import org.hornetq.tests.util.UnitTestCase;
 public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
 {
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return true;
    }
 
    public void testSimpleMessageReceivedOnQueueWithSecurityFails() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -56,7 +54,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
-      assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 0);
+      assertEquals(0, ((LocalQueueBinding)binding).getQueue().getConsumerCount());
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
       qResourceAdapter.stop();
    }
@@ -66,13 +64,10 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       server.getSecurityManager().addUser("testuser", "testpassword");
       server.getSecurityManager().addRole("testuser", "arole");
       Role role = new Role("arole", false, true, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-       server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setTransactionManagerLocatorClass("");
-      qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();

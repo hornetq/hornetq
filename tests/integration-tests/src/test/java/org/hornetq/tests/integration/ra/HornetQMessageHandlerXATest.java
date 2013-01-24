@@ -12,15 +12,6 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.resource.ResourceException;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -30,6 +21,14 @@ import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
+import javax.resource.ResourceException;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Jul 6, 2010
@@ -37,15 +36,14 @@ import org.hornetq.utils.UUIDGenerator;
 public class HornetQMessageHandlerXATest extends HornetQRATestBase
 {
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return false;
    }
 
    public void testXACommit() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -58,7 +56,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = createSessionFactory(locator).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -76,7 +74,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
 
    public void testXARollback() throws Exception
    {
-      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
@@ -91,7 +89,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = createSessionFactory(locator).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
