@@ -172,7 +172,7 @@ public class DummyXid implements Xid
 
    private String stringRep(final byte[] bytes)
    {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       for (int i = 0; i < bytes.length; i++)
       {
          byte b = bytes[i];

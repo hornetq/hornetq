@@ -3785,7 +3785,7 @@ public class JournalStorageManager implements StorageManager
       @Override
       public String toString()
       {
-         StringBuffer buffer = new StringBuffer();
+         StringBuilder buffer = new StringBuilder();
          buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
          buffer.append("messageID=" + msg.getMessageID());
          buffer.append(";properties=[");
