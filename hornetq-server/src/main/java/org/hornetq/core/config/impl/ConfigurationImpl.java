@@ -990,7 +990,7 @@ public class ConfigurationImpl implements Configuration
    @Override
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("HornetQ Configuration (");
+      StringBuilder sb = new StringBuilder("HornetQ Configuration (");
       sb.append("clustered=").append(isClustered()).append(",");
       sb.append("backup=").append(backup).append(",");
       sb.append("sharedStore=").append(sharedStore).append(",");

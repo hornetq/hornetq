@@ -13,6 +13,8 @@
 
 package org.hornetq.ra;
 
+import java.util.Arrays;
+
 import javax.jms.JMSException;
 import javax.jms.StreamMessage;
 
@@ -83,7 +85,7 @@ public class HornetQRAStreamMessage extends HornetQRAMessage implements StreamMe
    {
       if (HornetQRAStreamMessage.trace)
       {
-         HornetQRALogger.LOGGER.trace("readBytes(" + value + ")");
+         HornetQRALogger.LOGGER.trace("readBytes(" + Arrays.toString(value) + ")");
       }
 
       return ((StreamMessage)message).readBytes(value);

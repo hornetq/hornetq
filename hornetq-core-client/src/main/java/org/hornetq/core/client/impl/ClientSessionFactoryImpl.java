@@ -247,7 +247,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       if (connection == null)
       {
-         StringBuffer msg = new StringBuffer("Unable to connect to server using configuration ").append(connectorConfig);
+         StringBuilder msg =
+                  new StringBuilder("Unable to connect to server using configuration ").append(connectorConfig);
          if (backupConfig != null)
          {
             msg.append(" and backup configuration ").append(backupConfig);
