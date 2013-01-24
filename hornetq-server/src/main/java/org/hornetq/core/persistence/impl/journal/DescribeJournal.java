@@ -1,15 +1,40 @@
 package org.hornetq.core.persistence.impl.journal;
 
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADDRESS_SETTING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE_PENDING;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.DUPLICATE_ID;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.HEURISTIC_COMPLETION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ID_COUNTER_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COMPLETE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_INC;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SECURITY_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
+
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -18,8 +43,23 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
+import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator.IDCounterEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.AckDescribe;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.CursorAckRecordEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.DeliveryCountUpdateEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.DuplicateIDEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.HeuristicCompletionEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.LargeMessageEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountRecord;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountRecordInc;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdateTXEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PendingLargeMessageEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.RefEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ScheduledDeliveryEncoding;
+import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.Base64;
 import org.hornetq.utils.XidCodecSupport;
 
@@ -30,7 +70,7 @@ import org.hornetq.utils.XidCodecSupport;
  */
 public final class DescribeJournal
 {
-   static final void describeBindingJournal(final String bindingsDir) throws Exception
+   public static final void describeBindingsJournal(final String bindingsDir) throws Exception
    {
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, null);
@@ -39,7 +79,7 @@ public final class DescribeJournal
       describeJournal(bindingsFF, bindings, bindingsDir);
    }
 
-   static final void describeMessagesJournal(final String messagesDir) throws Exception
+   public static final void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
@@ -171,7 +211,7 @@ public final class DescribeJournal
 
       for (RecordInfo info : records)
       {
-         Object o = JournalStorageManager.newObjectEncoding(info);
+         Object o = newObjectEncoding(info);
          if (info.getUserRecordType() == JournalRecordIds.ADD_MESSAGE)
          {
             messageCount++;
@@ -214,7 +254,7 @@ public final class DescribeJournal
          System.out.println(tx.id);
          for (RecordInfo info : tx.records)
          {
-            Object o = JournalStorageManager.newObjectEncoding(info);
+            Object o = newObjectEncoding(info);
             out.println("- " + describeRecord(info, o));
             if (info.getUserRecordType() == 31)
             {
@@ -273,7 +313,7 @@ public final class DescribeJournal
    private static String describeRecord(RecordInfo info)
    {
       return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" +
-               JournalStorageManager.newObjectEncoding(info);
+               newObjectEncoding(info);
    }
 
    private static String describeRecord(RecordInfo info, Object o)
@@ -297,4 +337,268 @@ public final class DescribeJournal
          return null;
       }
    }
+
+   public static Object newObjectEncoding(RecordInfo info)
+   {
+      return newObjectEncoding(info, null);
+   }
+
+   public static Object newObjectEncoding(RecordInfo info, JournalStorageManager storageManager)
+   {
+      HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
+      long id = info.id;
+      int rec = info.getUserRecordType();
+
+      switch (rec)
+      {
+         case ADD_LARGE_MESSAGE_PENDING:
+         {
+            PendingLargeMessageEncoding lmEncoding = new PendingLargeMessageEncoding();
+            lmEncoding.decode(buffer);
+
+            return lmEncoding;
+         }
+         case ADD_LARGE_MESSAGE:
+         {
+
+            LargeServerMessage largeMessage = new LargeServerMessageImpl(storageManager);
+
+            LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+
+            messageEncoding.decode(buffer);
+
+            return new MessageDescribe(largeMessage);
+         }
+         case ADD_MESSAGE:
+         {
+            ServerMessage message = new ServerMessageImpl(rec, 50);
+
+            message.decode(buffer);
+
+            return new MessageDescribe(message);
+         }
+         case ADD_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new ReferenceDescribe(encoding);
+         }
+
+         case ACKNOWLEDGE_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new AckDescribe(encoding);
+         }
+
+         case UPDATE_DELIVERY_COUNT:
+         {
+            DeliveryCountUpdateEncoding updateDeliveryCount = new DeliveryCountUpdateEncoding();
+            updateDeliveryCount.decode(buffer);
+            return updateDeliveryCount;
+         }
+
+         case PAGE_TRANSACTION:
+         {
+            if (info.isUpdate)
+            {
+               PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
+
+               pageUpdate.decode(buffer);
+
+               return pageUpdate;
+            }
+            else
+            {
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+
+               pageTransactionInfo.decode(buffer);
+
+               pageTransactionInfo.setRecordID(info.id);
+
+               return pageTransactionInfo;
+            }
+         }
+
+         case SET_SCHEDULED_DELIVERY_TIME:
+         {
+            ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case DUPLICATE_ID:
+         {
+            DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case HEURISTIC_COMPLETION:
+         {
+            HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case ACKNOWLEDGE_CURSOR:
+         {
+            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case PAGE_CURSOR_COUNTER_VALUE:
+         {
+            PageCountRecord encoding = new PageCountRecord();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case PAGE_CURSOR_COMPLETE:
+         {
+            CursorAckRecordEncoding encoding = new PageCompleteCursorAckRecordEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case PAGE_CURSOR_COUNTER_INC:
+         {
+            PageCountRecordInc encoding = new PageCountRecordInc();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case QUEUE_BINDING_RECORD:
+            return JournalStorageManager.newBindingEncoding(id, buffer);
+
+         case ID_COUNTER_RECORD:
+            EncodingSupport idReturn = new IDCounterEncoding();
+            idReturn.decode(buffer);
+
+            return idReturn;
+
+         case JournalRecordIds.GROUP_RECORD:
+            return JournalStorageManager.newGroupEncoding(id, buffer);
+
+         case ADDRESS_SETTING_RECORD:
+            return JournalStorageManager.newAddressEncoding(id, buffer);
+
+         case SECURITY_RECORD:
+            return JournalStorageManager.newSecurityRecord(id, buffer);
+
+         default:
+            return null;
+      }
+   }
+
+   private final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
+   {
+
+      @Override
+      public String toString()
+      {
+         return "PGComplete [queueID=" + queueID + ", position=" + position + "]";
+      }
+   }
+
+   public static final class MessageDescribe
+   {
+      public MessageDescribe(Message msg)
+      {
+         this.msg = msg;
+      }
+
+      Message msg;
+
+      @Override
+      public String toString()
+      {
+         StringBuffer buffer = new StringBuffer();
+         buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
+         buffer.append("messageID=" + msg.getMessageID());
+         buffer.append(";properties=[");
+
+         Set<SimpleString> properties = msg.getPropertyNames();
+
+         for (SimpleString prop : properties)
+         {
+            Object value = msg.getObjectProperty(prop);
+            if (value instanceof byte[])
+            {
+               buffer.append(prop + "=" + Arrays.toString((byte[])value) + ",");
+
+            }
+            else
+            {
+               buffer.append(prop + "=" + value + ",");
+            }
+         }
+
+         buffer.append("#properties = " + properties.size());
+
+         buffer.append("]");
+
+         buffer.append(" - " + msg.toString());
+
+         return buffer.toString();
+      }
+
+   }
+
+   public static final class ReferenceDescribe
+   {
+      public RefEncoding refEncoding;
+
+      public ReferenceDescribe(RefEncoding refEncoding)
+      {
+         this.refEncoding = refEncoding;
+      }
+
+      @Override
+      public String toString()
+      {
+         return "AddRef;" + refEncoding;
+      }
+
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((refEncoding == null) ? 0 : refEncoding.hashCode());
+         return result;
+      }
+
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (!(obj instanceof ReferenceDescribe))
+            return false;
+         ReferenceDescribe other = (ReferenceDescribe)obj;
+         if (refEncoding == null)
+         {
+            if (other.refEncoding != null)
+               return false;
+         }
+         else if (!refEncoding.equals(other.refEncoding))
+            return false;
+         return true;
+      }
+   }
+
 }

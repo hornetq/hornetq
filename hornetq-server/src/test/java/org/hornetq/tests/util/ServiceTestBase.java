@@ -790,8 +790,9 @@ public abstract class ServiceTestBase extends UnitTestCase
          Object prop = message.getObjectProperty(SEND_CALL_NUMBER);
          if (prop == null)
             prop = Integer.valueOf(-1);
-         Assert.assertEquals("property['counter']=" + i + " sendNumber=" + prop, i,
-                             message.getIntProperty("counter").intValue());
+         final int actual = message.getIntProperty("counter").intValue();
+         Assert.assertEquals("expected=" + i + ". Got: property['counter']=" + actual + " sendNumber=" + prop, i,
+                             actual);
          assertMessageBody(i, message);
          if (ack)
             message.acknowledge();

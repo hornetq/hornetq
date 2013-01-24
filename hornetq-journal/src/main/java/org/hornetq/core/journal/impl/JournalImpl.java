@@ -42,6 +42,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
@@ -65,7 +66,6 @@ import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.api.core.Pair;
 
 /**
  *
@@ -187,7 +187,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // This will be set only while the JournalCompactor is being executed
    private volatile JournalCompactor compactor;
 
-   private final AtomicBoolean compactorRunning = new AtomicBoolean();
+   private final AtomicBoolean compactorEnabled = new AtomicBoolean();
 
    private ExecutorService filesExecutor = null;
 
@@ -1260,7 +1260,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return fileFactory.getAlignment();
    }
 
-   private static class DummyLoader implements LoaderCallback
+   private static final class DummyLoader implements LoaderCallback
    {
       static final LoaderCallback INSTANCE = new DummyLoader();
       public void failedTransaction(final long transactionID, final List<RecordInfo> records,
@@ -1392,13 +1392,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
 
-   public void testCompact() throws Exception
+   public void scheduleCompactAndBlock(int timeout) throws Exception
    {
       final AtomicInteger errors = new AtomicInteger(0);
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      compactorRunning.set(true);
+      compactorEnabled.set(true);
 
       // We can't use the executor for the compacting... or we would dead lock because of file open and creation
       // operations (that will use the executor)
@@ -1426,33 +1426,39 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       try
       {
-         if (!latch.await(60, TimeUnit.SECONDS))
+
+         if (timeout <= 0)
          {
-            throw new RuntimeException("Didn't finish compact timely");
+            latch.await();
+         }
+         else
+         {
+            if (!latch.await(timeout, TimeUnit.SECONDS))
+            {
+               throw new RuntimeException("Didn't finish compact timely");
+            }
          }
 
          if (errors.get() > 0)
          {
-            throw new RuntimeException("Error during testCompact, look at the logs");
+            throw new RuntimeException("Error during compact, look at the logs");
          }
       }
       finally
       {
-         compactorRunning.set(false);
+         compactorEnabled.set(false);
       }
    }
 
    /**
-    *
-    *  Note: This method can't be called from the main executor, as it will invoke other methods depending on it.
-    *
-    *  Note: only synchronized methods on journal are methods responsible for the life-cycle such as stop, start
-    *        records will still come as this is being executed
-    *
+    * Note: This method can't be called from the main executor, as it will invoke other methods
+    * depending on it.
+    * <p>
+    * Note: only synchronized methods on journal are methods responsible for the life-cycle such as
+    * stop, start records will still come as this is being executed
     */
    protected synchronized void compact() throws Exception
    {
-
       if (compactor != null)
       {
          throw new IllegalStateException("There is pending compacting operation");
@@ -2062,7 +2068,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public final boolean checkReclaimStatus() throws Exception
    {
 
-      if (compactorRunning.get())
+      if (compactorEnabled.get())
       {
          return false;
       }
@@ -2139,7 +2145,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return;
       }
 
-      if (!compactorRunning.get() && needsCompact())
+      if (!compactorEnabled.get() && needsCompact())
       {
          scheduleCompact();
       }
@@ -2147,7 +2153,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private void scheduleCompact()
    {
-      if (!compactorRunning.compareAndSet(false, true))
+      if (!compactorEnabled.compareAndSet(false, true))
       {
          return;
       }
@@ -2169,7 +2175,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             }
             finally
             {
-               compactorRunning.set(false);
+               compactorEnabled.set(false);
             }
          }
       });
@@ -2452,11 +2458,17 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return records.size();
    }
 
-   // Public
-   // -----------------------------------------------------------------------------
 
-   // Protected
-   // -----------------------------------------------------------------------------
+   public void disableCompact()
+   {
+      compactorEnabled.set(false);
+   }
+
+   public void enableCompact()
+   {
+      compactorEnabled.set(true);
+   }
+
 
    protected SequentialFile createControlFile(final List<JournalFile> files,
                                               final List<JournalFile> newFiles,
@@ -2562,7 +2574,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * For details see {@link JournalCompleteRecordTX} about how the transaction-summary is recorded.
     * @param journalTransaction
     * @param orderedFiles
-    * @param recordedSummary
+    * @param numberOfRecords
     * @return
     */
    private boolean checkTransactionHealth(final JournalFile currentFile,
@@ -2803,7 +2815,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return;
       }
 
-      if (isAutoReclaim() && !compactorRunning.get())
+      if (isAutoReclaim() && !compactorEnabled.get())
       {
          compactorExecutor.execute(new Runnable()
          {
@@ -2938,7 +2950,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // ---------------------------------------------------------------------------
 
    // Used on Load
-   private static class TransactionHolder
+   private static final class TransactionHolder
    {
       public TransactionHolder(final long id)
       {
@@ -2959,7 +2971,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    }
 
-   private static class JournalFileComparator implements Comparator<JournalFile>, Serializable
+   private static final class JournalFileComparator implements Comparator<JournalFile>, Serializable
    {
       private static final long serialVersionUID = -6264728973604070321L;
 
@@ -3027,12 +3039,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    {
       compactorLock.writeLock().lock();
       journalLock.writeLock().lock();
-      setAutoReclaim(false);
    }
 
    public final void synchronizationUnlock()
    {
-      setAutoReclaim(true);
       try
       {
          compactorLock.writeLock().unlock();
@@ -3156,5 +3166,32 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
 
       fileFactory.activateBuffer(currentFile.getFile());
+   }
+
+   @Override
+   public void replicationSyncPreserveOldFiles()
+   {
+      setAutoReclaim(false);
+      disableCompact();
+   }
+
+   @Override
+   public void replicationSyncFinished()
+   {
+      enableCompact();
+      setAutoReclaim(true);
+   }
+
+   @Override
+   public void testCompact()
+   {
+      try
+      {
+         scheduleCompactAndBlock(60);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e);
+      }
    }
 }
