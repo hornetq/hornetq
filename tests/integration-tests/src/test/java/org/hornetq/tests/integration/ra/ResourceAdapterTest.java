@@ -31,7 +31,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -49,11 +48,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
 {
    public void testStartStopActivationManyTimes() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      server.start();
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = createSessionFactory(locator);
+      ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(false, false, false);
       HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
       session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
@@ -112,6 +108,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       System.out.println("after RA stop => " + factories.size());
       assertEquals(factories.size(), 0);
       locator.close();
+
    }
 
    public void testStartStop() throws Exception
@@ -153,15 +150,28 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testpass = "testpass";
       String testuser = "testuser";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      testParams(b, l, i, d, className, backupConn, testConfig, testid, testBalancer, testParams, testaddress, testpass, testuser, qResourceAdapter);
+      testParams(b,
+         l,
+         i,
+         d,
+         className,
+         backupConn,
+         testConfig,
+         testid,
+         testBalancer,
+         testParams,
+         testaddress,
+         testpass,
+         testuser,
+         qResourceAdapter);
    }
 
    public void testSetters2() throws Exception
    {
       Boolean b = Boolean.FALSE;
-      Long l = (long) 2000;
+      Long l = (long)2000;
       Integer i = 2000;
-      Double d = (double) 2000;
+      Double d = (double)2000;
       String className = "testConnector2";
       String backupConn = "testBackupConnector2";
       String testConfig = "key2=val2";
@@ -173,11 +183,36 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testpass = "testpass2";
       String testuser = "testuser2";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
-      testParams(b, l, i, d, className, backupConn, testConfig, testid, testBalancer, testParams, testaddress, testpass, testuser, qResourceAdapter);
+      testParams(b,
+         l,
+         i,
+         d,
+         className,
+         backupConn,
+         testConfig,
+         testid,
+         testBalancer,
+         testParams,
+         testaddress,
+         testpass,
+         testuser,
+         qResourceAdapter);
    }
 
-
-   private void testParams(Boolean b, Long l, Integer i, Double d, String className, String backupConn, String testConfig, String testid, String testBalancer, String testParams, String testaddress, String testpass, String testuser, HornetQResourceAdapter qResourceAdapter)
+   private void testParams(Boolean b,
+                           Long l,
+                           Integer i,
+                           Double d,
+                           String className,
+                           String backupConn,
+                           String testConfig,
+                           String testid,
+                           String testBalancer,
+                           String testParams,
+                           String testaddress,
+                           String testpass,
+                           String testuser,
+                           HornetQResourceAdapter qResourceAdapter)
    {
       qResourceAdapter.setUseLocalTx(b);
       qResourceAdapter.setConnectorClassName(className);
@@ -216,7 +251,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getUseLocalTx(), b);
       assertEquals(qResourceAdapter.getConnectorClassName(), className);
       assertEquals(qResourceAdapter.getAutoGroup(), b);
-      //assertEquals(qResourceAdapter.getBackupTransportConfiguration(),"testConfig");
+      // assertEquals(qResourceAdapter.getBackupTransportConfiguration(),"testConfig");
       assertEquals(qResourceAdapter.getBlockOnAcknowledge(), b);
       assertEquals(qResourceAdapter.getBlockOnDurableSend(), b);
       assertEquals(qResourceAdapter.getBlockOnNonDurableSend(), b);
@@ -249,7 +284,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getUserName(), testuser);
    }
 
-   //https://issues.jboss.org/browse/JBPAPP-5790
+   // https://issues.jboss.org/browse/JBPAPP-5790
    public void testResourceAdapterSetup() throws Exception
    {
       HornetQResourceAdapter adapter = new HornetQResourceAdapter();
@@ -259,7 +294,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
       int port = ((UDPBroadcastGroupConfiguration)factory.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getGroupPort();
 
-      //defaults
+      // defaults
       assertEquals(10000l, refresh);
       assertEquals(10000l, initWait);
       assertEquals(9876, port);
@@ -272,7 +307,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
-      //override refresh timeout
+      // override refresh timeout
       assertEquals(1234l, refresh);
       assertEquals(10000l, initWait);
 
@@ -284,7 +319,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
-      //override initial wait
+      // override initial wait
       assertEquals(10000l, refresh);
       assertEquals(9999l, initWait);
 
@@ -296,13 +331,13 @@ public class ResourceAdapterTest extends HornetQRATestBase
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
-      //override initial wait
+      // override initial wait
       assertEquals(10000l, refresh);
       assertEquals(9999l, initWait);
 
    }
 
-    //https://issues.jboss.org/browse/JBPAPP-5836
+   // https://issues.jboss.org/browse/JBPAPP-5836
    public void testResourceAdapterSetupOverrideCFParams() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -317,11 +352,10 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
-      //now override the connector class
+      // now override the connector class
       spec.setConnectorClassName(NETTY_CONNECTOR_FACTORY);
       spec.setConnectionParameters("port=5445");
-      CountDownLatch latch = new CountDownLatch(1);
-      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(new CountDownLatch(1));
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       qResourceAdapter.stop();
@@ -347,7 +381,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      checkUpdates(qResourceAdapter, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
       assertTrue(endpoint.released);
    }
 
@@ -382,7 +417,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setDiscoveryAddress("231.7.7.7");
 
-      //qResourceAdapter.getTransactionManagerLocatorClass
+      // qResourceAdapter.getTransactionManagerLocatorClass
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
 
       qResourceAdapter.setTransactionManagerLocatorClass("");
@@ -428,7 +463,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       assertTrue(fac.isHA());
 
-      checkUpdates(qResourceAdapter, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
    }
 
    public void testResourceAdapterSetupNoHADefault() throws Exception
@@ -450,9 +486,9 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       assertFalse(fac.isHA());
 
-      checkUpdates(qResourceAdapter, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
    }
-
 
    public void testResourceAdapterSetupHAOverride() throws Exception
    {
@@ -497,7 +533,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       assertEquals(100, fac.getReconnectAttempts());
 
-      checkUpdates(qResourceAdapter, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
    }
 
    public void testResourceAdapterSetupReconnectAttemptDefault() throws Exception
@@ -519,17 +556,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       assertEquals(-1, fac.getReconnectAttempts());
 
-      checkUpdates(qResourceAdapter, spec);
-   }
-
-   /**
-    * @param qResourceAdapter
-    * @param spec
-    */
-   private void checkUpdates(HornetQResourceAdapter qResourceAdapter, HornetQActivationSpec spec)
-   {
       qResourceAdapter.stop();
-      assertFalse("spec should not be updated", spec.isHasBeenUpdated());
+      assertFalse(spec.isHasBeenUpdated());
    }
 
    public void testResourceAdapterSetupReconnectAttemptsOverride() throws Exception
@@ -637,7 +665,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
    }
 
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return false;
    }
@@ -646,17 +674,17 @@ public class ResourceAdapterTest extends HornetQRATestBase
    {
       public void beforeDelivery(Method method) throws NoSuchMethodException, ResourceException
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       public void afterDelivery() throws ResourceException
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       public void release()
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
    }
 }

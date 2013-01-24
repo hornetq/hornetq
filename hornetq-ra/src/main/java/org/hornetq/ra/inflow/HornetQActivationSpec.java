@@ -69,6 +69,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /** The subscription name */
    private String subscriptionName;
 
+   /**
+    * If this is true, a durable subscription could be shared by multiple MDB instances
+    */
+   private boolean shareSubscriptions;
+
    /** The user */
    private String user;
 
@@ -419,6 +424,34 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
 
       subscriptionName = value;
+   }
+
+
+
+   /**
+    * @return the shareDurableSubscriptions
+    */
+   public boolean isShareSubscriptions()
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isShareSubscriptions() = " + shareSubscriptions);
+      }
+
+      return shareSubscriptions;
+   }
+
+   /**
+    * @param shareSubscriptions the shareDurableSubscriptions to set
+    */
+   public void setShareSubscriptions(boolean shareSubscriptions)
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setShareSubscriptions(" +  shareSubscriptions + ")");
+      }
+
+      this.shareSubscriptions = shareSubscriptions;
    }
 
    /**
