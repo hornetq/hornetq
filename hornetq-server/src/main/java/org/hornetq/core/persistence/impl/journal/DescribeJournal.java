@@ -211,7 +211,7 @@ public final class DescribeJournal
 
       for (PreparedTransactionInfo tx : preparedTransactions)
       {
-         System.out.println(tx.id);
+         out.println(tx.id);
          for (RecordInfo info : tx.records)
          {
             Object o = JournalStorageManager.newObjectEncoding(info);

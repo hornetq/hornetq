@@ -276,7 +276,7 @@ public class JournalFilesRepository
 
    public String debugFiles()
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
 
       buffer.append("**********\nCurrent File = "  + journal.getCurrentFile() + "\n");
       buffer.append("**********\nDataFiles:\n");

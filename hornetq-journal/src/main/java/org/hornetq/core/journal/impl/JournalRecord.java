@@ -77,7 +77,7 @@ public class JournalRecord
    @Override
    public String toString()
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("JournalRecord(add=" + addFile.getFile().getFileName());
 
       if (updateFiles != null)

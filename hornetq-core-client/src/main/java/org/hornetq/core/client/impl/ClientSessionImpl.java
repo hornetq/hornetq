@@ -40,6 +40,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CommandConfirmationHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -84,8 +86,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutMessage
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.IDGenerator;
@@ -1792,13 +1792,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       return remotingConnection;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       synchronized (metadata)
       {
          for (Map.Entry<String, String> entry : metadata.entrySet())
@@ -1818,15 +1815,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
              ")]@" +
              Integer.toHexString(hashCode());
    }
-
-   // Protected
-   // ----------------------------------------------------------------------------
-
-   // Package Private
-   // ----------------------------------------------------------------------------
-
-   // Private
-   // ----------------------------------------------------------------------------
 
    private int calcWindowSize(final int windowSize)
    {

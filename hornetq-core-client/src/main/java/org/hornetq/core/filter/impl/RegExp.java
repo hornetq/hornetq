@@ -59,7 +59,7 @@ final class RegExp
    {
       int patternLen = pattern.length();
 
-      StringBuffer REpattern = new StringBuffer(patternLen + 10);
+      final StringBuilder REpattern = new StringBuilder(patternLen + 10);
 
       boolean useEscape = escapeChar != null;
 
