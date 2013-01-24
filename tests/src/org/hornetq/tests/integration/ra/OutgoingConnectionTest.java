@@ -52,7 +52,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    private HornetQResourceAdapter resourceAdapter;
 
    @Override
-   public boolean isSecure()
+   public boolean useSecurity()
    {
       return true;
    }
@@ -85,6 +85,9 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleMessageSendAndReceive() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass("");
+      resourceAdapter.setTransactionManagerLocatorMethod("");
+      
       resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
@@ -112,8 +115,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleMessageSendAndReceiveXA() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -149,8 +151,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testSimpleMessageSendAndReceiveTransacted() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter = newResourceAdapter();
       resourceAdapter.setUseLocalTx(true);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
@@ -183,8 +184,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testMultipleSessionsThrowsException() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -210,8 +210,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testConnectionCredentials() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
@@ -236,8 +235,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testConnectionCredentialsFail() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
