@@ -175,7 +175,7 @@ public interface HornetQServerLogger extends BasicLogger
    void journalUnreferencedMessage(Long messageID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221024, value = "Started Netty Acceptor version {0} {1}:{2} for {3} protocol", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 221024, value = "Started Netty Acceptor version {0} {1}:{2,number,#} for {3} protocol", format = Message.Format.MESSAGE_FORMAT)
    void startedNettyAcceptor(String id, String host, Integer port, ProtocolType protocol);
 
    @LogMessage(level = Logger.Level.INFO)
