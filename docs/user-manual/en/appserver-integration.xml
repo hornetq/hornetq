@@ -820,6 +820,11 @@ private ConnectionFactory connectionFactory;</programlisting>
                                 <entry>Type of the subscription, either <literal>Durable</literal> or <literal>NonDurable</literal></entry>
                             </row>
                             <row>
+                                <entry>ShareSubscriptions</entry>
+                                <entry>Boolean</entry>
+                                <entry>When true, multiple MDBs can share the same <literal>Durable</literal> subscription</entry>
+                            </row>
+                            <row>
                                 <entry>SubscriptionName</entry>
                                 <entry>String</entry>
                                 <entry>Name of the subscription</entry>
