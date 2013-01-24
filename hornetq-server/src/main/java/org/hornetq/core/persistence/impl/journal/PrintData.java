@@ -67,7 +67,7 @@ public class PrintData // NO_UCD (unused code)
 
       try
       {
-         DescribeJournal.describeBindingJournal(arg[0]);
+         DescribeJournal.describeBindingsJournal(arg[0]);
       }
       catch (Exception e)
       {

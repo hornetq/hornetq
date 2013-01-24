@@ -70,7 +70,7 @@ import org.hornetq.utils.XidCodecSupport;
  */
 public final class DescribeJournal
 {
-   static final void describeBindingJournal(final String bindingsDir) throws Exception
+   public static final void describeBindingsJournal(final String bindingsDir) throws Exception
    {
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, null);
@@ -79,7 +79,7 @@ public final class DescribeJournal
       describeJournal(bindingsFF, bindings, bindingsDir);
    }
 
-   static final void describeMessagesJournal(final String messagesDir) throws Exception
+   public static final void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);

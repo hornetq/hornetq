@@ -20,9 +20,11 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -97,7 +99,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertEquals("file sizes must be the same", size, backupMsgJournal.getFileSize());
       Set<Pair<Long, Integer>> backupIds = getFileIds(backupMsgJournal);
 
-           int total = 0;
+      int total = 0;
       for (Pair<Long, Integer> pair : liveIds)
       {
          total += pair.getB();
@@ -137,19 +139,44 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    public void testReplicationDuringSync() throws Exception
    {
-      createProducerSendSomeMessages();
-      backupServer.start();
-      waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
+      try
+      {
+         createProducerSendSomeMessages();
+         backupServer.start();
+         waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
 
-      sendMessages(session, producer, n_msgs);
-      session.commit();
-      receiveMsgsInRange(0, n_msgs);
+         sendMessages(session, producer, n_msgs);
+         session.commit();
+         receiveMsgsInRange(0, n_msgs);
 
-      finishSyncAndFailover();
+         finishSyncAndFailover();
 
-      receiveMsgsInRange(0, n_msgs);
-      assertNoMoreMessages();
+         receiveMsgsInRange(0, n_msgs);
+         assertNoMoreMessages();
+      }
+      catch (junit.framework.AssertionFailedError error)
+      {
+         printJournal(liveServer);
+         printJournal(backupServer);
+         // test failed
+         throw error;
+      }
+   }
 
+   void printJournal(TestableServer server)
+   {
+      try
+      {
+         System.out.println("\n\n BINDINGS JOURNAL\n\n");
+         Configuration config = server.getServer().getConfiguration();
+         DescribeJournal.describeBindingsJournal(config.getBindingsDirectory());
+         System.out.println("\n\n MESSAGES JOURNAL\n\n");
+         DescribeJournal.describeMessagesJournal(config.getJournalDirectory());
+      }
+      catch (Exception ignored)
+      {
+         ignored.printStackTrace();
+      }
    }
 
    private void finishSyncAndFailover() throws Exception
