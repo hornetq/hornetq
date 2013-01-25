@@ -184,6 +184,9 @@ public class JournalFilesRepository
    /**
     * Set the {link #nextFileID} value to {@code targetUpdate} if the current value is less than
     * {@code targetUpdate}.
+    * <p>
+    * Notice that {@code nextFileID} is incremented before being used, see
+    * {@link JournalFilesRepository#generateFileID()}.
     * @param targetUpdate
     */
    public void setNextFileID(final long targetUpdate)

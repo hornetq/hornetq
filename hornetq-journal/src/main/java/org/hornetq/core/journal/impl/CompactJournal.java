@@ -17,14 +17,11 @@ import org.hornetq.core.journal.IOCriticalErrorListener;
 
 /**
  * This is an undocumented class, that will open a journal and force compacting on it.
- * It may be used under special cases, but it shouldn't be needed under regular circumstances as the system should detect
- * the need for compacting.
- *
- * The regular use is to configure min-compact parameters.
- *
+ * <p>
+ * It may be used under special cases, but it shouldn't be needed under regular circumstances as the
+ * system should detect the need for compacting. The regular use is to configure min-compact
+ * parameters.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public final class CompactJournal // NO_UCD
 {
@@ -48,7 +45,7 @@ public final class CompactJournal // NO_UCD
 
    }
 
-   public static void compactJournal(final String directory,
+   static void compactJournal(final String directory,
                                      final String journalPrefix,
                                      final String journalSuffix,
                                      final int minFiles,
@@ -67,13 +64,4 @@ public final class CompactJournal // NO_UCD
 
       journal.stop();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

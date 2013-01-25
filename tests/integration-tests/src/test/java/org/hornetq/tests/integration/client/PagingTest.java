@@ -62,10 +62,10 @@ import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.AckDescribe;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -735,7 +735,7 @@ public class PagingTest extends ServiceTestBase
       {
          if (info.getUserRecordType() == JournalRecordIds.ADD_REF)
          {
-            ReferenceDescribe ref = (ReferenceDescribe)JournalStorageManager.newObjectEncoding(info);
+            DescribeJournal.ReferenceDescribe ref = (ReferenceDescribe)DescribeJournal.newObjectEncoding(info);
 
             if (ref.refEncoding.queueID == deletedQueueID)
             {
@@ -744,7 +744,7 @@ public class PagingTest extends ServiceTestBase
          }
          else if (info.getUserRecordType() == JournalRecordIds.ACKNOWLEDGE_REF)
          {
-            AckDescribe ref = (AckDescribe)JournalStorageManager.newObjectEncoding(info);
+            AckDescribe ref = (AckDescribe)DescribeJournal.newObjectEncoding(info);
 
             if (ref.refEncoding.queueID == deletedQueueID)
             {

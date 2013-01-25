@@ -210,7 +210,6 @@ public class JoramAggregationTest extends TestCase
          Properties props = getProviderProperties();
          admin = AdminFactory.getAdmin(props);
          admin.startServer();
-
       }
 
       @Override
@@ -219,6 +218,5 @@ public class JoramAggregationTest extends TestCase
          admin.stopServer();
          JMSTestCase.startServer = true;
       }
-
    }
 }

@@ -1344,7 +1344,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          SessionSendContinuationMessage scm = (SessionSendContinuationMessage) packet;
          if (!scm.isContinues())
          {
-            sendAckHandler.sendAcknowledged(scm.getMessage());                                     q
+            sendAckHandler.sendAcknowledged(scm.getMessage());
          }
       }
 

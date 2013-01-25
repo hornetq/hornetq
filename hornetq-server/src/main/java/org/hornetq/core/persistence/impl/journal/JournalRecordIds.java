@@ -3,6 +3,8 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
+import org.hornetq.utils.IDGenerator;
+
 /**
  * These record IDs definitions are meant to be public.
  * <p>
@@ -19,6 +21,11 @@ public final class JournalRecordIds
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
+   /**
+    * Records storing the current recordID number.
+    * @see IDGenerator
+    * @see BatchingIDGenerator
+    */
    public static final byte ID_COUNTER_RECORD = 24;
 
    public static final byte ADDRESS_SETTING_RECORD = 25;
@@ -27,8 +34,11 @@ public final class JournalRecordIds
 
    // Message journal record types
 
-   // This is used when a large message is created but not yet stored on the system.
-   // We use this to avoid temporary files missing
+   /**
+    * This is used when a large message is created but not yet stored on the system.
+    * <p>
+    * We use this to avoid temporary files missing
+    */
    public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
    public static final byte ADD_LARGE_MESSAGE = 30;
