@@ -354,6 +354,4 @@ public abstract class FailoverTestBase extends ServiceTestBase
          //To change body of implemented methods use File | Settings | File Templates.
       }
    }
-
-
 }

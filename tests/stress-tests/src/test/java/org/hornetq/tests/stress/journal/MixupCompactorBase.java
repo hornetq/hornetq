@@ -208,11 +208,6 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
 
    protected abstract void internalTest() throws Exception;
 
-   /**
-    * @param releaseCompactingLatch
-    * @param tCompact
-    * @throws InterruptedException
-    */
    private void joinCompact() throws InterruptedException
    {
       releaseCompactingLatch.countDown();
@@ -222,10 +217,6 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
       tCompact = null;
    }
 
-   /**
-    * @param startedCompactingLatch
-    * @throws InterruptedException
-    */
    private void threadCompact() throws InterruptedException
    {
       tCompact = new Thread()

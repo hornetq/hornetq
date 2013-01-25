@@ -20,7 +20,6 @@ import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MES
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
-import static org.hornetq.core.persistence.impl.journal.JournalStorageManager.newObjectEncoding;
 
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
@@ -66,12 +65,12 @@ import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal.MessageDescribe;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.AckDescribe;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.CursorAckRecordEncoding;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager.MessageDescribe;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdateTXEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PersistentQueueBindingEncoding;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.JournalType;
@@ -194,12 +193,6 @@ public final class XmlDataExporter
       HornetQServerLogger.LOGGER.debug("Output " + messagesPrinted + " messages and " + bindingsPrinted + " bindings.");
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    /**
     * Read through the message journal and stuff all the events/data we care about into local data structures.  We'll
     * use this data later to print all the right information.
@@ -225,18 +218,18 @@ public final class XmlDataExporter
       TransactionFailureCallback transactionFailureCallback = new TransactionFailureCallback()
       {
          @Override
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         public void failedTransaction(long transactionID, List<RecordInfo> records1, List<RecordInfo> recordsToDelete)
          {
             StringBuilder message = new StringBuilder();
             message.append("Encountered failed journal transaction: " + transactionID);
-            for (int i = 0; i < records.size(); i++)
+            for (int i = 0; i < records1.size(); i++)
             {
                if (i == 0)
                {
                   message.append("; Records: ");
                }
-               message.append(records.get(i));
-               if (i != (records.size() - 1))
+               message.append(records1.get(i));
+               if (i != (records1.size() - 1))
                {
                   message.append(", ");
                }
@@ -270,7 +263,7 @@ public final class XmlDataExporter
 
          HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
 
-         Object o = newObjectEncoding(info, storageManager);
+         Object o = DescribeJournal.newObjectEncoding(info, storageManager);
          if (info.getUserRecordType() == ADD_MESSAGE)
          {
             messages.put(info.id, ((MessageDescribe) o).msg);
@@ -348,7 +341,7 @@ public final class XmlDataExporter
    {
       for (RecordInfo info : acks)
       {
-         AckDescribe ack = (AckDescribe) newObjectEncoding(info, null);
+         AckDescribe ack = (AckDescribe)DescribeJournal.newObjectEncoding(info, null);
          HashMap<Long, ReferenceDescribe> referenceDescribeHashMap = messageRefs.get(info.id);
          referenceDescribeHashMap.remove(ack.refEncoding.queueID);
          if (referenceDescribeHashMap.size() == 0)
@@ -380,7 +373,8 @@ public final class XmlDataExporter
       {
          if (info.getUserRecordType() == QUEUE_BINDING_RECORD)
          {
-            PersistentQueueBindingEncoding bindingEncoding = (PersistentQueueBindingEncoding) newObjectEncoding(info, null);
+            PersistentQueueBindingEncoding bindingEncoding =
+                     (PersistentQueueBindingEncoding)DescribeJournal.newObjectEncoding(info, null);
             queueBindings.put(bindingEncoding.getId(), bindingEncoding);
          }
       }
