@@ -46,5 +46,4 @@ public class ConsumedObjectMessage extends ConsumedMessage
       }
       builder.entity(readObject);
    }
-
 }

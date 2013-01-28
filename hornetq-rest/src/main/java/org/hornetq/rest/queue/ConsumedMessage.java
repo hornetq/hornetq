@@ -58,6 +58,5 @@ public abstract class ConsumedMessage
       {
          throw new IllegalArgumentException("ClientMessage must be an HTTP message or an Object message: " + message + " type: " + message.getType());
       }
-
    }
 }

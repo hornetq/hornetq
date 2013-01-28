@@ -52,5 +52,4 @@ public class PushSubscription extends PushConsumer
          }
       }
    }
-
 }

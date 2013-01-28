@@ -147,6 +147,7 @@ public class MessageServiceManager
 
 
       ServerLocator consumerLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      HornetQRestLogger.LOGGER.debug("Created ServerLocator: " + consumerLocator);
 
       if (configuration.getConsumerWindowSize() != -1)
       {
@@ -154,6 +155,7 @@ public class MessageServiceManager
       }
 
       ClientSessionFactory consumerSessionFactory = consumerLocator.createSessionFactory();
+      HornetQRestLogger.LOGGER.debug("Created ClientSessionFactory: " + consumerSessionFactory);
 
       ServerLocator defaultLocator =  new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
 
@@ -204,5 +206,4 @@ public class MessageServiceManager
       if (topicManager != null) topicManager.stop();
       topicManager = null;
    }
-
 }
