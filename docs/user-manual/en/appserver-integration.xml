@@ -168,7 +168,7 @@ public class MDB_BMPExample implements MessageListener
                     >Dups-ok-acknowledge</literal>. Please note that because the message delivery is outside
                 the scope of the transaction a failure within the MDB will not cause the message to
                 be redelivered.</para>
-            <para>A user would control the lifecycle of the transaction something like the
+            <para>A user would control the life-cycle of the transaction something like the
                 following:</para>
             <programlisting>
 @Resource
@@ -336,7 +336,7 @@ public class MyMDB implements MessageListener
    &lt;config-property>
       &lt;description>The transport configuration. These values must be in the form of key=val;key=val;,
          if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
-         Each set of params maps to the connector classname specified.&lt;/description>
+         Each set of parameters maps to the connector classname specified.&lt;/description>
       &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
       &lt;config-property-type>java.lang.String&lt;/config-property-type>
       &lt;config-property-value>server-id=0&lt;/config-property-value>
@@ -451,7 +451,7 @@ public class MyMDB implements MessageListener
                             <entry>String</entry>
                             <entry>The transport configuration. These parameters must be in the form of
                                 <literal>key1=val1;key2=val2;</literal> and will be specific to the connector used. If
-                               multiple connectors are configured then params should be supplied for each connector
+                               multiple connectors are configured then parameters should be supplied for each connector
                                separated by a comma.
                             </entry>
                         </row>
@@ -479,7 +479,7 @@ public class MyMDB implements MessageListener
                             <entry>
                                <link linkend="configuration.discovery-group.group-address">DiscoveryAddress</link></entry>
                             <entry>String</entry>
-                            <entry>The discovery group address to use to autodetect a server</entry>
+                            <entry>The discovery group address to use to auto-detect a server</entry>
                         </row>
                         <row>
                             <entry>
@@ -616,7 +616,7 @@ public class MyMDB implements MessageListener
                                <link linkend="configuration.connection-factory.reconnect-attempts">ReconnectAttempts</link>
                             </entry>
                             <entry>Integer</entry>
-                            <entry>maximum number of retry attempts, default for the resource adpater is -1 (infinite attempts)</entry>
+                            <entry>maximum number of retry attempts, default for the resource adapter is -1 (infinite attempts)</entry>
                         </row>
                         <row>
                             <entry>
@@ -687,7 +687,7 @@ public class MyMDB implements MessageListener
                         <row>
                             <entry>SetupInterval</entry>
                             <entry>Long</entry>
-                            <entry>Interval in milliseconds between consecutive attemps to setup a JMS connection (default is 2000m). This applies only for inbound connections</entry>
+                            <entry>Interval in milliseconds between consecutive attempts to setup a JMS connection (default is 2000m). This applies only for inbound connections</entry>
                         </row>
                     </tbody>
                 </tgroup>
@@ -726,7 +726,7 @@ public class MyMDB implements MessageListener
 &lt;/tx-connection-factory></programlisting>
            <warning>
               <title>overriding connectors</title>
-              <para>If the connector class name is overridden the all params must also be supplied.</para>
+              <para>If the connector class name is overridden the all parameters must also be supplied.</para>
            </warning>
             <para>In this example the connection factory will be bound to JNDI with the name
                     <literal>RemoteJmsXA</literal> and can be looked up in the usual way using JNDI
@@ -890,7 +890,7 @@ private ConnectionFactory connectionFactory;</programlisting>
                    <literal>deploy/hornet-ra.rar/META-INF</literal>
                    and change the transport type to
                    use a netty connector (instead of the invm connector that is defined) and configure its transport
-                   params.
+                   parameters.
                    Heres an example of what this would look like:
                 </para>
                 <programlisting>
@@ -927,9 +927,9 @@ private ConnectionFactory connectionFactory;</programlisting>
    &lt;config-property-value>host=127.0.0.1;port=5446,host=127.0.0.2;port=5447&lt;/config-property-value>
 &lt;/config-property></programlisting>
                 <warning>
-                   <title>provide all params</title>
+                   <title>provide all parameters</title>
                    <para>
-                      Make sure you provide parameters for each connector configured. The position of the params in the
+                      Make sure you provide parameters for each connector configured. The position of the parameters in the
                       list maps to each connector provided.
                    </para>
                 </warning>
@@ -942,7 +942,7 @@ private ConnectionFactory connectionFactory;</programlisting>
                 <title>Configuring the outgoing adaptor</title>
                 <para>You will also need to configure the outbound connection by creating a <literal>hornetq-ds.xml</literal>
                    and placing it under any directory that will be deployed under the <literal>deploy</literal> directory.
-                   In a standard HornetQ jboss configuration this would be under <literal>horneq</literal> or <literal>hornetq.sar</literal>
+                   In a standard HornetQ jboss configuration this would be under <literal>hornetq</literal> or <literal>hornetq.sar</literal>
                    but you can place it where ever you like. Actually as long as it ends in <literal>-ds.xml</literal> you can
                    call it anything you like. You can again find a template for this file under the config directory of the
                    HornetQ distribution but called <literal>jms-ds.xml</literal> which is the jboss default.
@@ -991,7 +991,7 @@ private ConnectionFactory connectionFactory;</programlisting>
                             <row>
                                 <entry>hornetq-ra.jar</entry>
                                 <entry>The HornetQ resource adaptor classes</entry>
-                                <entry>deploy/hornetq-ra.rar or equivelant</entry>
+                                <entry>deploy/hornetq-ra.rar or equivalent</entry>
                             </row>
                             <row>
                                 <entry>hornetq-core-client.jar</entry>
@@ -1023,7 +1023,7 @@ private ConnectionFactory connectionFactory;</programlisting>
         <section>
             <title>Configuring Jboss 5</title>
             <para>Firstly download and install JBoss AS 5 as per the JBoss installation guide and HornetQ as per the
-                HornetQ installation guide. After thatt he following steps are required</para>
+                HornetQ installation guide. After that the following steps are required</para>
             <itemizedlist>
                 <listitem>
                     <para>Copy the following jars from the HornetQ distribution to the <literal>lib</literal> directory of

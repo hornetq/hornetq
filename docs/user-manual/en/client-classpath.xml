@@ -55,7 +55,7 @@
     <section>
         <title>JMS Client with JNDI</title>
         <para>If you are looking up JMS resources from the JNDI server co-located with the HornetQ
-            standalone server, you wil also need the jar <literal>jnp-client.jar</literal> jar on
+            standalone server, you will also need the jar <literal>jnp-client.jar</literal> jar on
             your client classpath as well as any other jars mentioned previously.</para>
     </section>
 </chapter>

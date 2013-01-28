@@ -945,7 +945,7 @@
                             <entry><link linkend="security.settings.roles"
                                     >security-settings.permission</link></entry>
                             <entry>Security Permission</entry>
-                            <entry>a permision to add to the address</entry>
+                            <entry>a permission to add to the address</entry>
                             <entry/>
                         </row>
                         <row>
@@ -1417,7 +1417,7 @@
 
         <section>
            <title>Using Masked Passwords in Configuration Files</title>
-           <para>By default all passwords in HornetQ server's configuration files are in plaintext form. This usually poses no security issues as those 
+           <para>By default all passwords in HornetQ server's configuration files are in plain text form. This usually poses no security issues as those 
            files should be well protected from unauthorized accessing. However, in some circumstances a user doesn't want to expose its passwords to more 
            eyes than necessary. </para>
 
@@ -1459,7 +1459,7 @@
                  as needed and any other implementations will have access to these to use if they so wish.</para>
                  </section>
 
-                 <section> <title>Passwords in Core Bridge cofigurations</title>
+                 <section> <title>Passwords in Core Bridge configurations</title>
 
                  <para>Core Bridges are configured in the server configuration file and so the masking of its 'password' properties 
                  follows the same rules as that of 'cluster-password'.</para>
@@ -1516,7 +1516,7 @@
 <programlisting>
 &lt;cluster-password>bbc&lt;/cluster-password></programlisting>
 
-<para>This indicates the cluster password is a plaintext value ("bbc").</para>
+<para>This indicates the cluster password is a plain text value ("bbc").</para>
 
 <para>example 2</para>
 
@@ -1524,7 +1524,7 @@
 &lt;mask-password>true&lt;/mask-password>
 &lt;cluster-password>80cf731af62c290&lt;/cluster-password></programlisting>
 
-              <para>This indicates the cluster password is a masked value and HorentQ will use its built-in decoder to decode it. All other
+              <para>This indicates the cluster password is a masked value and HornetQ will use its built-in decoder to decode it. All other
               passwords in the configuration file, Connectors, Acceptors and Bridges, will also use masked passwords.</para>
               </section>
            </section>
@@ -1551,7 +1551,7 @@
 
            </section>
 
-           <section> <title>Masking passwords in HorentQ ResourceAdapters and MDB activation configurations</title>
+           <section> <title>Masking passwords in HornetQ ResourceAdapters and MDB activation configurations</title>
 
            <para>Both ra.xml and MDB activation configuration have a 'password' property that can be masked. They are controlled by the following two 
            optional Resource Adapter properties in ra.xml:</para>
@@ -1599,7 +1599,7 @@
            <section> <title>Choosing a decoder for password masking</title>
 
            <para>As described in the previous sections, all password masking requires a decoder. A decoder uses an algorithm to 
-           convert a masked password into its original cleartext form in order to be used in various security operations. The algorithm 
+           convert a masked password into its original clear text form in order to be used in various security operations. The algorithm 
            used for decoding must match that for encoding. Otherwise the decoding may not be successful.</para>
 
            <para>For user's convenience HornetQ provides a default built-in Decoder. However a user can if they so wish implement their own.</para>
@@ -1646,7 +1646,7 @@ Encoded password: 80cf731af62c290</programlisting>
               It also process all passwords using the new defined decoder.</para>
               </section>
 
-              <section><title>Implementing your own ocdecs</title>
+              <section><title>Implementing your own codecs</title>
 
               <para>To use a different decoder than the built-in one, you either pick one from existing libraries or you implement it yourself.
               All decoders must implement the <literal>org.hornetq.utils.SensitiveDataCodec&lt;T></literal> interface:</para>
@@ -1667,7 +1667,7 @@ public class MyNewDecoder implements SensitiveDataCodec&lt;String>
 {
    public String decode(Object mask) throws Exception
    {
-      //decode the mask into cleartext passord
+      //decode the mask into clear text password
       return "the password";
    }
 

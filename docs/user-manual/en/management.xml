@@ -1078,18 +1078,18 @@ messageCounter.getDepthDelta());</programlisting>
          <para>The name and JNDI name cant be changed, if you want to change these recreate the queue with the appropriate
          settings. The rest of the configuration options, apart from security roles, relate to address settings for a particular
          address. The default address settings are picked up from the servers configuration, if you change any of these
-         settings or create a queue via the console a new Address Settings enrty will be added. For a full explanation on
+         settings or create a queue via the console a new Address Settings entry will be added. For a full explanation on
          Address Settings see <xref linkend="queue-attributes.address-settings"/></para>
          <para>To delete a queue simply click on the delete button beside the queue name in the main JMS Queues screen.
          This will also delete any address settings or security settings previously created for the queues address</para>
          <para>The last part of the configuration options are security roles. If non are provided on creation then the
-            servers default security settings will be shown. If these are changed or updated then new securty settings are
-         created for the address of this queue. For more information on securuty setting see <xref linkend="security"/> </para>
+            servers default security settings will be shown. If these are changed or updated then new security settings are
+         created for the address of this queue. For more information on security setting see <xref linkend="security"/> </para>
          <para>It is also possible via the metrics tab to view statistics for this queue. This will show statistics such
             as message count, consumer count etc.</para>
          <para>Operations can be performed on a queue via the control tab. This will allow you to start and stop the queue,
          list,move,expire and delete messages from the queue and other useful operations. To invoke an operation click on
-         the button for the operation you want, this will take you to a screen where you can parameters for the opertion can be set.
+         the button for the operation you want, this will take you to a screen where you can parameters for the operation can be set.
          Once set clicking the ok button will invoke the operation, results appear at the bottom of the screen.</para>
       </section>
       <section>

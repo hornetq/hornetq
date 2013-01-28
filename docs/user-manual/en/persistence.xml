@@ -74,7 +74,7 @@
                 install libaio please see <xref linkend="installing-aio"/>.</para>
             <para>Also, please note that AIO will only work with the following file systems: ext2,
                 ext3, ext4, jfs, xfs. With other file systems, e.g. NFS it may appear to work, but
-                it will fall back to a slower sychronous behaviour. Don't put the journal on a NFS
+                it will fall back to a slower synchronous behaviour. Don't put the journal on a NFS
                 share!</para>
             <para>For more information on libaio please see <xref linkend="libaio"/>.</para>
             <para>libaio is part of the kernel project.</para>
@@ -206,7 +206,7 @@
                         >journal-min-files</literal> number of files.</para>
                 <para>Creating journal files and filling them with padding is a fairly expensive
                     operation and we want to minimise doing this at run-time as files get filled. By
-                    precreating files, as one is filled the journal can immediately resume with the
+                    pre-creating files, as one is filled the journal can immediately resume with the
                     next one without pausing to create it.</para>
                 <para>Depending on how much data you expect your queues to contain at steady state
                     you should tune this number of files to match that total amount of data.</para>
@@ -220,7 +220,7 @@
                 <para>When using NIO, this value should always be equal to <literal
                     >1</literal></para>
                 <para>When using AIO, the default should be <literal>500</literal>.</para>
-                <para>The system maintains different defaults for this parameter depening on whether
+                <para>The system maintains different defaults for this parameter depending on whether
                     it's NIO or AIO (default for NIO is 1, default for AIO is 500)</para>
                 <para>There is a limit and the total max AIO can't be higher than what is configured
                     at the OS level (/proc/sys/fs/aio-max-nr) usually at 65536.</para>

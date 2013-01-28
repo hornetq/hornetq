@@ -38,7 +38,7 @@
         to use JMS with HornetQ without using any JNDI.</para>
     <section>
         <title>A simple ordering system</title>
-        <para>For this chapter we're going to use a very simple ordering system as our example. It's
+        <para>For this chapter we're going to use a very simple ordering system as our example. It is
             a somewhat contrived example because of its extreme simplicity, but it serves to
             demonstrate the very basics of setting up and using JMS.</para>
         <para>We will have a single JMS Queue called <literal>OrderQueue</literal>, and we will have
@@ -46,8 +46,8 @@
             single <literal>MessageConsumer</literal> consuming the order message from the
             queue.</para>
         <para>The queue will be a <literal>durable</literal> queue, i.e. it will survive a server
-            restart or crash. We also want to predeploy the queue, i.e. specify the queue in the
-            server JMS configuration so it's created automatically without us having to explicitly
+            restart or crash. We also want to pre-deploy the queue, i.e. specify the queue in the
+            server JMS configuration so it is created automatically without us having to explicitly
             create it from the client.</para>
     </section>
     <section id="using-jms.server.configuration">
@@ -200,7 +200,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
 &lt;/bean></programlisting>
         <note>
             <para>If you want your JNDI server to be available to non local clients make sure you
-                change it's bind address to something other than <literal
+                change its bind address to something other than <literal
                 >localhost</literal>!</para>
         </note>
         <note>
@@ -236,12 +236,12 @@ producer.send(message);</programlisting>
         <para>And we consume the message:</para>
         <programlisting>TextMessage receivedMessage = (TextMessage)consumer.receive();
 System.out.println("Got order: " + receivedMessage.getText());</programlisting>
-        <para>It's as simple as that. For a wide range of working JMS examples please see the
+        <para>It is as simple as that. For a wide range of working JMS examples please see the
             examples directory in the distribution.</para>
         <warning>
             <para>Please note that JMS connections, sessions, producers and consumers are
                     <emphasis>designed to be re-used</emphasis>.</para>
-            <para>It's an anti-pattern to create new connections, sessions, producers and consumers
+            <para>It is an anti-pattern to create new connections, sessions, producers and consumers
                 for each message you produce or consume. If you do this, your application will
                 perform very poorly. This is discussed further in the section on performance tuning
                     <xref linkend="perf-tuning"/>.</para>
@@ -249,7 +249,7 @@ System.out.println("Got order: " + receivedMessage.getText());</programlisting>
     </section>
     <section>
         <title>Directly instantiating JMS Resources without using JNDI</title>
-        <para>Although it's a very common JMS usage pattern to lookup JMS <emphasis>Administered
+        <para>Although it is a very common JMS usage pattern to lookup JMS <emphasis>Administered
                 Objects</emphasis> (that's JMS Queue, Topic and ConnectionFactory instances) from
             JNDI, in some cases a JNDI server is not available and you still want to use JMS, or you
             just think "Why do I need JNDI? Why can't I just instantiate these objects
