@@ -28,8 +28,8 @@ import org.hornetq.utils.UUIDGenerator;
  * {@code null}.<br/>
  * If using JGroups, all the UDP properties will be -1 or {@code null} and the jgroups properties
  * will be filled.<br/>
- * If by any reason, on an user misconfiguration both properties are filled, the JGroups takes
- * precedence, that means. if jgroupsFile != null the Grouping method used will be JGroups
+ * If by any reason, both properties are filled, the JGroups takes precedence. That means, if
+ * {@code jgroupsFile != null} then the Grouping method used will be JGroups.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
  */
