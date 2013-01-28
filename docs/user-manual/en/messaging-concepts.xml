@@ -34,7 +34,7 @@
         you can skip this chapter.</para>
     <section>
         <title>Messaging Concepts</title>
-        <para>Messaging systems allow you to loosely couple heteregenous systems together, whilst
+        <para>Messaging systems allow you to loosely couple heterogeneous systems together, whilst
             typically providing reliability, transactions and many other features.</para>
         <para>Unlike systems based on a <ulink
                 url="http://en.wikipedia.org/wiki/Remote_procedure_call">Remote Procedure
@@ -194,7 +194,7 @@
                 recently.</para>
             <para>It seems plausible that API standards for cloud computing may converge on a REST
                 style set of interfaces and consequently a REST messaging approach is a very strong
-                contender for becoming the defacto method for messaging interoperability.</para>
+                contender for becoming the de-facto method for messaging interoperability.</para>
             <para>With a REST approach messaging resources are manipulated as resources defined by a
                 URI and typically using a simple set of operations on those resources, e.g. PUT,
                 POST, GET etc. REST approaches to messaging often use HTTP as their underlying

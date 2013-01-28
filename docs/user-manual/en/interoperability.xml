@@ -105,7 +105,7 @@
       </section>
       
         <section>
-          <title>Stomp and JMS interoperabilty</title>
+          <title>Stomp and JMS interoperability</title>
           <section>
             <title>Using JMS destinations</title>
             <para>As explained in <xref linkend="jms-core-mapping" />, JMS destinations are also mapped to HornetQ addresses and queues.

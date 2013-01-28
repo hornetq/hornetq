@@ -23,9 +23,9 @@
 ]>
 <chapter id="libaio">
     <title>Libaio Native Libraries</title>
-    <para>HornetQ distributes a native library, used as a bridge between HornetQ and linux
+    <para>HornetQ distributes a native library, used as a bridge between HornetQ and Linux
         libaio.</para>
-    <para><literal>libaio</literal> is a library, developed as part of the linux kernel project.
+    <para><literal>libaio</literal> is a library, developed as part of the Linux kernel project.
         With <literal>libaio</literal> we submit writes to the operating system where they are
         processed asynchronously. Some time later the OS will call our code back when they have been
         processed.</para>
@@ -89,11 +89,11 @@
             <para>To perform this installation on RHEL or Fedora, you can simply type this at a
                 command line:</para>
             <programlisting>sudo yum install automake libtool autoconf gcc-c++ gcc libaio libaio-devel make</programlisting>
-            <para>Or on debian systems:</para>
+            <para>Or on Debian systems:</para>
             <programlisting>sudo apt-get install automake libtool autoconf gcc-g++ gcc libaio libaio-dev make</programlisting>
             <note>
                 <para>You could find a slight variation of the package names depending on the
-                    version and linux distribution. (for example gcc-c++ on Fedora versus g++ on
+                    version and Linux distribution. (for example gcc-c++ on Fedora versus g++ on
                     Debian systems)</para>
             </note>
         </section>

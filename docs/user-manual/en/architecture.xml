@@ -27,7 +27,7 @@
     <section>
         <title>Core Architecture</title>
         <para>HornetQ core is designed simply as set of Plain Old Java Objects (POJOs) - we hope you
-            like it's clean-cut design.</para>
+            like its clean-cut design.</para>
         <para>We've also designed it to have as few dependencies on external jars as possible. In
             fact, HornetQ core has only one jar dependency, netty.jar,
             other than the standard JDK classes! This is because we use some of the netty buffer classes
@@ -56,7 +56,7 @@
         </para>
         <para>JMS semantics are implemented by a thin JMS facade layer on the client side.</para>
         <para>The HornetQ server does not speak JMS and in fact does not know anything about JMS,
-            it's a protocol agnostic messaging server designed to be used with multiple different
+            it is a protocol agnostic messaging server designed to be used with multiple different
             protocols.</para>
         <para>When a user uses the JMS API on the client side, all JMS interactions are translated
             into operations on the HornetQ core client API before being transferred over the wire

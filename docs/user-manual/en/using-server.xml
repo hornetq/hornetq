@@ -34,7 +34,7 @@
     <section>
         <title>Starting and Stopping the standalone server</title>
         <para>In the distribution you will find a directory called <literal>bin</literal>.</para>
-        <para><literal>cd</literal> into that directory and you'll find a unix/linux script called
+        <para><literal>cd</literal> into that directory and you will find a Unix/Linux script called
                 <literal>run.sh</literal> and a windows batch file called <literal
             >run.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./run.sh</literal></para>
@@ -42,7 +42,7 @@
         <para>These scripts are very simple and basically just set-up the classpath and some JVM
             parameters and start the JBoss Microcontainer. The Microcontainer is a light weight
             container used to deploy the HornetQ POJO's</para>
-        <para>To stop the server you'll also find a unix/linux script <literal>stop.sh</literal> and
+        <para>To stop the server you will also find a Unix/Linux script <literal>stop.sh</literal> and
             a windows batch file <literal>stop.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./stop.sh</literal></para>
         <para>To run on Windows type <literal>stop.bat</literal></para>
@@ -314,7 +314,7 @@
     <section id="server.microkernel.configuration">
         <title>JBoss AS4 MBean Service.</title>
         <note>
-            <para>The section is only to configure HornetQ on JBoss AS4. The service funtionality is
+            <para>The section is only to configure HornetQ on JBoss AS4. The service functionality is
                 similar to Microcontainer Beans</para>
         </note>
         <para>
@@ -348,7 +348,7 @@
 &lt;/server></programlisting>
         </para>
         <para>This jboss-service.xml configuration file is included inside the hornetq-service.sar
-            on AS4 with embebbed HornetQ. As you can see, on this configuration file we are starting
+            on AS4 with embedded HornetQ. As you can see, on this configuration file we are starting
             various services:</para>
         <itemizedlist>
             <listitem>

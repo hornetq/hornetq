@@ -101,7 +101,7 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();</prog
             <para>If you specify the boolean property <literal>compress-large-message</literal> on
                 the <literal>server locator</literal> or <literal>ConnectionFactory</literal> The
                 system will use the ZIP algorithm to compress the message body as the message is
-                transfered to the server's side. Notice that there's no special treatment at the
+                transferred to the server's side. Notice that there's no special treatment at the
                 server's side, all the compressing and uncompressing is done at the client.</para>
         </section>
     </section>

@@ -118,7 +118,7 @@
          decide between them which route the message should take.</para>
       <para>There are 2 types of handlers; Local and Remote. Each cluster should choose 1 node to
          have a local grouping handler and all the other nodes should have remote handlers- it's the
-         local handler that actually makes the decsion as to what route should be used, all the
+         local handler that actually makes the decision as to what route should be used, all the
          other remote handlers converse with this. Here is a sample config for both types of
          handler, this should be configured in the <emphasis role="italic"
             >hornetq-configuration.xml</emphasis>
@@ -136,7 +136,7 @@
 &lt;/grouping-handler></programlisting></para>
       <para>The <emphasis role="italic">address</emphasis> attribute refers to a cluster connection
          and the address it uses, refer to the clustering section on how to configure clusters. The
-            <emphasis role="italic">timeout</emphasis> attribute referes to how long to wait for a
+            <emphasis role="italic">timeout</emphasis> attribute referees to how long to wait for a
          decision to be made, an exception will be thrown during the send if this timeout is
          reached, this ensures that strict ordering is kept.</para>
       <para>The decision as to where a message should be routed to is initially proposed by the node
@@ -172,7 +172,7 @@
                      it. This can be avoided by making sure that the queue is deleted by the session
                      that is sending the messages. This means that when the next message is sent it
                      is sent to the node where the queue was deleted meaning a new proposal can
-                     succesfully take place. Alternatively you could just start using a different
+                     successfully take place. Alternatively you could just start using a different
                      group id.</para>
                </listitem>
                <listitem>

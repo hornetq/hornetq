@@ -416,7 +416,7 @@
               If this occurs then the bridge will try <literal>Max Retries</literal> to reconnect every
               <literal>Failure Retry Interval</literal> milliseconds as specified in the JMS Bridge definition.</para>
               <para>However since a third party JNDI is used, in this case the JBoss naming server, it is possible for the
-              JNDI lookup to hang if the network were to disappear during the JNDI lookup. To stop this occuring the JNDI
+              JNDI lookup to hang if the network were to disappear during the JNDI lookup. To stop this from occurring the JNDI
               definition can be configured to time out if this occurs. To do this set the <literal>jnp.timeout</literal>
                and the <literal>jnp.sotimeout</literal> on the Initial Context definition. The first sets the connection
               timeout for the initial connection and the second the read timeout for the socket.</para>

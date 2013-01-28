@@ -215,7 +215,7 @@ Content-Type: application/xml
             </note>
 
             <para>
-                It's worth noting that when deploying a WAR in a Java EE application server
+                It is worth noting that when deploying a WAR in a Java EE application server
                 like AS7 the URL for the resulting application will include the name of the
                 WAR by default.  For example, if you've constructed a WAR as described above
                 named "hornetq-rest.war" then clients will access it at, e.g.
@@ -566,7 +566,7 @@ curl --head http://example.com/queues/jms.queue.bar</programlisting>
         </section>
 
         <section>
-            <title>Topic Resource Respones Headers</title>
+            <title>Topic Resource Response Headers</title>
 
             <para>Below is a list of response headers you should expect when
                 interacting with a Topic resource.
@@ -850,7 +850,7 @@ ServerMessage[messageID=20,priority=4, bodySize=1500,expiration=0, durable=true,
             <para>An alternative to this approach is to use the <literal>msg-create-with-id</literal>
                 header. This is not an invokable URL, but a URL template. The idea is that
                 the client provides the <literal>DUPLICATE_DETECTION_ID</literal> and creates
-                it's own <literal>create-next</literal> URL. The <literal>msg-create-with-id</literal>
+                its own <literal>create-next</literal> URL. The <literal>msg-create-with-id</literal>
                 header looks like this (you've see it in previous examples, but we haven't used it):
             </para>
 
@@ -941,13 +941,13 @@ Content-Type: application/xml
 
         <para>You create consumer resources by doing a simple POST to the URL
             published by the <literal>msg-pull-consumers</literal>
-            response header if you're interacting with a queue, the
+            response header if you are interacting with a queue, the
             <literal>msg-pull-subscribers</literal> response header if you're
             interacting with a topic. These headers are provided by the main queue or
             topic resource discussed in <link linkend="basics">HornetQ REST Interface
             Basics</link>. Doing an empty POST to one of these
             URLs will create a consumer resource that follows an auto-acknowledge
-            protocol and, if you're interacting with a topic, creates a temporty
+            protocol and, if you are interacting with a topic, creates a temporarily 
             subscription to the topic. If you want to use the acknowledgement protocol
             and/or create a durable subscription (topics only), then you must use the
             form parameters (<literal>application/x-www-form-urlencoded</literal>)
@@ -981,7 +981,7 @@ Content-Type: application/xml
                 <para><literal>selector</literal>. This is an optional JMS selector
                     string. The HornetQ REST interface adds HTTP headers to the
                     JMS message for REST produced messages. HTTP headers are
-                    prefixed with "http_" and every '-' charactor is converted
+                    prefixed with "http_" and every '-' character is converted
                     to a '$'.
                 </para>
             </listitem>
@@ -1214,7 +1214,7 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
                             a 503 response back. As per the HTTP 1.1 spec, a 503 response may
                             return a Retry-After head specifying the time in seconds that you
                             should retry a post. Also notice, that another new
-                            msg-consume-next URL is present. Although it probabley is the same
+                            msg-consume-next URL is present. Although it probably is the same
                             URL you used last post, get in the habit of using URLs returned in
                             response headers as future versions of HornetQ REST might be
                             redirecting you or adding additional data to the URL after
@@ -1296,7 +1296,7 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
             <para>The manual acknowledgement protocol is similar to the auto-ack
                 protocol except there is an additional round trip to the server to tell
                 it that you have received the message and that the server can internally
-                ack the message. Here is a list of the respone headers you will be
+                ack the message. Here is a list of the response headers you will be
                 interested in.
             </para>
 
@@ -1904,7 +1904,7 @@ Location: http://example.com/topics/jms.topic.bar/push-subscriptions/1-333-1212<
                 element, you must define a unique id attribute. You must also define a
                 destination element to specify the queue you should register a consumer
                 with. For a topic, the destination element is the name of the
-                subscription that will be reated. For a topic, you must also specify the
+                subscription that will be created. For a topic, you must also specify the
                 topic name within the topic element.
             </para>
 
@@ -2122,7 +2122,7 @@ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
     <section>
         <title>Mixing JMS and REST</title>
 
-        <para>The HornetQ REST interface supports mixing JMS and REST producres
+        <para>The HornetQ REST interface supports mixing JMS and REST producers
             and consumers. You can send an ObjectMessage through a JMS Producer, and
             have a REST client consume it. You can have a REST client POST a message
             to a topic and have a JMS Consumer receive it. Some simple transformations

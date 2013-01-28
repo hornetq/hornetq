@@ -112,7 +112,7 @@
    &lt;/address-setting>
 &lt;/address-settings></programlisting>
         <para>The idea with address settings, is you can provide a block of settings which will be
-            applied against any adresses that match the string in the <literal>match</literal> attribute. In the
+            applied against any addresses that match the string in the <literal>match</literal> attribute. In the
             above example the settings would only be applied to any addresses which exactly match
             the address <literal>jms.queue.exampleQueue</literal>, but you can also use wildcards to apply sets of
             configuration against many addresses. The wildcard syntax used is described <link linkend="wildcard-syntax">here</link>.</para>

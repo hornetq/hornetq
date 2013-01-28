@@ -137,7 +137,7 @@
                         <para><literal>local-bind-port</literal>. If you want to specify a local port to
                             which the datagram socket is bound you can specify it here. Normally you
                             would just use the default value of <literal>-1</literal> which signifies
-                            that an anonymous port should be used. This parameter is alawys specified in conjunction with
+                            that an anonymous port should be used. This parameter is always specified in conjunction with
                             <literal>local-bind-address</literal>. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
@@ -320,7 +320,7 @@
                             address with this parameter. This parameter is optional. This is a UDP specific attribute.</para>
                     </listitem>
                     <listitem>
-                        <para><literal>group-address</literal>. This is the multicast ip address of the
+                        <para><literal>group-address</literal>. This is the multicast IP address of the
                             group to listen on. It should match the <literal>group-address</literal> in
                             the broadcast group that you wish to listen from. This parameter is
                             mandatory.  This is a UDP specific attribute.</para>
