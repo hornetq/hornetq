@@ -159,7 +159,7 @@
                 <para>Send messages non blocking. Setting <literal>block-on-durable-send</literal>
                     and <literal>block-on-non-durable-send</literal> to <literal>false</literal> in
                         <literal>hornetq-jms.xml</literal> (if you're using JMS and JNDI) or
-                    directly on the ClientSessionFactory. This means you don't have to wait a whole
+                    directly on the ServerLocator. This means you don't have to wait a whole
                     network round trip for every message sent. See <xref linkend="send-guarantees"/>
                     for more information.</para>
             </listitem>

@@ -65,7 +65,7 @@
         <section id="large-messages.core.config">
             <title>Using Core API</title>
             <para>If the HornetQ Core API is used, the minimal large message size is specified by
-                    <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
+                    <literal>ServerLocator.setMinLargeMessageSize</literal>.</para>
             <programlisting>
 ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()))
 
