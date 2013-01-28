@@ -343,10 +343,34 @@
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>remoting-interceptors</entry>
-                            <entry>todo</entry>
-                            <entry>todo</entry>
-                            <entry>todo</entry>
+                            <entry><link linkend="intercepting-operations">remoting-interceptors</link></entry>
+                            <entry>String</entry>
+                            <entry>deprecated; see remoting-incoming-interceptors and/or remoting-outgoing-interceptors</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="intercepting-operations">remoting-incoming-interceptors</link></entry>
+                            <entry>String</entry>
+                            <entry>a list of classes to use for interceptor incoming remoting packets</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="intercepting-operations">remoting-outgoing-interceptors</link></entry>
+                            <entry>String</entry>
+                            <entry>a list of classes to use for interceptor outgoing remoting packets</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="intercepting-operations">remoting-incoming-interceptors.class-name</link></entry>
+                            <entry>String</entry>
+                            <entry>the fully qualified name of the interceptor class</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="intercepting-operations">remoting-outgoing-interceptors.class-name</link></entry>
+                            <entry>String</entry>
+                            <entry>the fully qualified name of the interceptor class</entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry><link linkend="ha.mode.shared">shared-store</link></entry>
