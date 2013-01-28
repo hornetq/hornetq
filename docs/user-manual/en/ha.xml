@@ -73,11 +73,14 @@
                 amount of data to be synchronized and the connection speed.</para>
                <note>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
                current clients.</note>
-                <para>The replicating live and backup pair must be part of a cluster, meaning that even tho you may have
-                   a single live/backup it is still regarded as a cluster and must have a cluster connection configured in
-                   both the live and tha backup's for the same address. Also all servers must be on the same cluster,
-                   and have the same cluster user and password.</para>
-                <para>There are two ways that a backup server will locate a live server to replicate from, these are:</para>
+                <para>The replicating live and backup pair must be part of a cluster.  The Cluster
+                Connection also defines how backup servers will find the remote live servers to pair
+                with.  Refer to <xref linkend="clusters"/> for details on how this is done, and how
+                to configure a cluster connection. Notice that:
+<itemizedlist><listime>Both live and backup servers must be part of the same cluster.  Notice that even a simple live/backup replicating pair will require a cluster configuration.</listime>
+<listitem>their cluster user and password must match</listitem></itemizedlist>
+</para>
+                <para>Within a cluster, there are two ways that a backup server will locate a live server to replicate from, these are:</para>
                 <itemizedlist>
                    <listitem>
                       <para><literal>specifying a node group</literal>. You can specify a group of live servers that a backup
@@ -90,6 +93,17 @@
                       will allow a backup server to connect to any live server</para>
                    </listitem>
                 </itemizedlist>
+                <note>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup servers:
+                <itemizedlist>
+                <lisitem><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></lisitem>
+    <lisitem><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></lisitem>
+    <lisitem><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></lisitem>
+    <lisitem><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></lisitem>
+</itemizedlist>
+<para>After joining the cluster the backups with <literal>backup-group-name=fish</literal> will search for live servers with <literal>backup-group-name=fish</literal> to pair with. Since there is one backup too many, the <literal>fish</literal> will remain with one spare backup.</para>
+<para>The 2 backups with <literal>backup-group-name=bird</literal> (<literal>backup5</literal> and <literal>backup6</literal>) will pair with live servers <literal>live4</literal> and <literal>live5</literal>.
+</para>
+</note>
                 <para>The backup will search for any live server that it is configured to connect to. It then tries to
                    replicate with each live server in turn until it finds a live server that has no current backup configured.
                 If no live server is available it will wait until the cluster topology changes and repeats the process.</para>
@@ -109,34 +123,27 @@
                 <title>Configuration</title>
 
                 <para>To configure the live and backup servers to be a replicating pair, configure
-                both <literal>hornetq-configuration.xml</literal> to have:</para>
+                both servers' <literal>hornetq-configuration.xml</literal> to have:</para>
 
                 <programlisting>
+&lt;!-- FOR BOTH LIVE AND BACKUP SERVERS' -->
 &lt;shared-store>false&lt;/shared-store>
-.
 .
 .
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
       ...
    &lt;/cluster-connection>
-&lt;/cluster-connections></programlisting>
+&lt;/cluster-connections>
+</programlisting>
 
-                <para>The backup server must be flagged explicitly as a backup.</para>
+                <para>The backup server must also be configured as a backup.</para>
                 <programlisting>
 &lt;backup>true&lt;/backup>
-&lt;connectors>
-   &lt;connector name="nameOfConfiguredLiveServerConnector">
-      &lt;factory-class>
-         org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-      &lt;/factory-class>
-   &lt;param key="port" value="5445"/>
-   &lt;/connector>
-&lt;!-- a real configuration could have more connectors here -->
-&lt;connectors></programlisting>
+</programlisting>
                 </section>
-
             </section>
+
             <section id="ha.mode.shared">
                 <title>Shared Store</title>
                 <para>When using a shared store, both live and backup servers share the
@@ -182,7 +189,7 @@
                    </note>
                     <para>Also each node, live and backups, will need to have a cluster connection defined even if not
                         part of a cluster. The Cluster Connection info defines how backup servers announce there presence
-                        to it's live server or any other nodes in the cluster. refer to <xref linkend="clusters"/> for details
+                        to its live server or any other nodes in the cluster. Refer to <xref linkend="clusters"/> for details
                         on how this is done.</para>
                 </section>
             </section>
@@ -233,7 +240,7 @@
         </itemizedlist>
         <para>HornetQ also provides 100% transparent automatic reattachment of connections to the
             same server (e.g. in case of transient network problems). This is similar to failover,
-            except it's reconnecting to the same server and is discussed in <xref
+            except it is reconnecting to the same server and is discussed in <xref
                 linkend="client-reconnection"/></para>
         <para>During failover, if the client has consumers on any non persistent or temporary
             queues, those queues will be automatically recreated during failover on the backup node,
@@ -271,8 +278,8 @@
             <section>
                 <title>Failing over on the Initial Connection</title>
                 <para>
-                    Since the client doesn't learn about the full topology until after the first
-                    connection is made there is a window where it doesn't know about the backup. If a failure happens at
+                    Since the client does not learn about the full topology until after the first
+                    connection is made there is a window where it does not know about the backup. If a failure happens at
                     this point the client can only try reconnecting to the original live server. To configure
                     how many attempts the client will make you can set the property <literal>initialConnectAttempts</literal>
                     on the <literal>ClientSessionFactoryImpl</literal> or <literal >HornetQConnectionFactory</literal> or
@@ -372,7 +379,7 @@
                      If XA is being used either via JMS or through the core API then an <literal>XAException.XA_RETRY</literal>
                      is thrown. This is to inform Transaction Managers that a retry should occur at some point. At
                      some later point in time the Transaction Manager will retry the commit. If the original
-                     commit hadn't occurred then it will still exist and be committed, if it doesn't exist
+                     commit has not occurred then it will still exist and be committed, if it does not exist
                      then it is assumed to have been committed although the transaction manager may log a warning.
                   </para>
                </note>
