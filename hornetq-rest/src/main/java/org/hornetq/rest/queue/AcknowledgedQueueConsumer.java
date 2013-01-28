@@ -5,6 +5,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.util.Constants;
 import org.hornetq.rest.util.LinkStrategy;
 
@@ -49,6 +50,8 @@ public class AcknowledgedQueueConsumer extends QueueConsumer
                                      @PathParam("index") long index,
                                      @Context UriInfo info)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + info.getPath() + "\"");
+
       if (closed)
       {
          UriBuilder builder = info.getBaseUriBuilder();
@@ -83,6 +86,8 @@ public class AcknowledgedQueueConsumer extends QueueConsumer
            @FormParam("acknowledge") boolean doAcknowledge,
            @Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
+
       ping();
       String basePath = uriInfo.getMatchedURIs().get(1);
       if (closed)

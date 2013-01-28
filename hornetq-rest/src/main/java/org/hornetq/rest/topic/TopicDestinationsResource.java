@@ -7,6 +7,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.DestinationSettings;
 import org.hornetq.rest.queue.PostMessage;
 import org.hornetq.rest.queue.PostMessageDupsOk;
@@ -46,6 +47,8 @@ public class TopicDestinationsResource
    @Consumes("application/hornetq.jms.topic+xml")
    public Response createJmsQueue(@Context UriInfo uriInfo, Document document)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
+
       try
       {
          JMSServerConfigParserImpl parser = new JMSServerConfigParserImpl();
@@ -90,8 +93,10 @@ public class TopicDestinationsResource
 
    @DELETE
    @Path("/{topic-name}")
-   public void deleteTopic(@PathParam("topic-name") String name) throws Exception
+   public void deleteTopic(@Context UriInfo uriInfo, @PathParam("topic-name") String name) throws Exception
    {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
       TopicResource topic = topics.remove(name);
       if (topic != null)
       {
@@ -211,7 +216,6 @@ public class TopicDestinationsResource
             push.addRegistration(reg);
          }
       }
-
 
       getTopics().put(topicName, topicResource);
       topicResource.start();

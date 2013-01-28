@@ -1,7 +1,9 @@
 package org.hornetq.rest.queue;
 
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumerResource;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
@@ -33,8 +35,9 @@ public class QueueResource extends DestinationResource
 
    @GET
    @Produces("application/xml")
-   public Response get(@Context UriInfo uriInfo)
+   public Response get(@Context UriInfo uriInfo, @Context HttpServletRequest requestContext)
    {
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + destination + "\" from " + requestContext.getRemoteAddr() + ":" + requestContext.getRemotePort());
 
       StringBuilder msg = new StringBuilder();
       msg.append("<queue>")
@@ -58,6 +61,8 @@ public class QueueResource extends DestinationResource
    @Produces("application/xml")
    public Response head(@Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling HEAD request for \"" + uriInfo.getRequestUri() + "\"");
+
       Response.ResponseBuilder builder = Response.ok();
       setSenderLink(builder, uriInfo);
       setSenderWithIdLink(builder, uriInfo);

@@ -36,6 +36,4 @@ public class ConsumedHttpMessage extends ConsumedMessage
       }
       builder.entity(data);
    }
-
-
 }

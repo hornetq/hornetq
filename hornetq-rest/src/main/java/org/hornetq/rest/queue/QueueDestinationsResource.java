@@ -7,6 +7,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumerResource;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 import org.hornetq.rest.util.Constants;
@@ -45,6 +46,8 @@ public class QueueDestinationsResource
    @Consumes("application/hornetq.jms.queue+xml")
    public Response createJmsQueue(@Context UriInfo uriInfo, Document document)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
+
       try
       {
          JMSServerConfigParserImpl parser = new JMSServerConfigParserImpl();
@@ -101,8 +104,10 @@ public class QueueDestinationsResource
 
    @DELETE
    @Path("/{queue-name}")
-   public void deleteQueue(@PathParam("queue-name") String name) throws Exception
+   public void deleteQueue(@Context UriInfo uriInfo, @PathParam("queue-name") String name) throws Exception
    {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
       QueueResource queue = queues.remove(name);
       if (queue != null)
       {

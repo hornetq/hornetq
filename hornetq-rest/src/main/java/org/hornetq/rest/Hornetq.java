@@ -167,5 +167,4 @@ public class Hornetq
       Boolean aBoolean = msg.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
       return aBoolean != null && aBoolean.booleanValue() == true;
    }
-
 }

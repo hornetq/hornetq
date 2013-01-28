@@ -1,6 +1,7 @@
 package org.hornetq.rest.queue.push;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 
 import javax.ws.rs.Consumes;
@@ -67,7 +68,7 @@ public class PushConsumerResource
    @Consumes("application/xml")
    public Response create(@Context UriInfo uriInfo, PushRegistration registration)
    {
-      //System.out.println("PushRegistration: " + registration);
+       HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
 
       // todo put some logic here to check for duplicates
       String genId = sessionCounter.getAndIncrement() + "-" + startup;
@@ -97,8 +98,10 @@ public class PushConsumerResource
    @GET
    @Path("{consumer-id}")
    @Produces("application/xml")
-   public PushRegistration getConsumer(@PathParam("consumer-id") String consumerId)
+   public PushRegistration getConsumer(@Context UriInfo uriInfo, @PathParam("consumer-id") String consumerId)
    {
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + uriInfo.getPath() + "\"");
+
       PushConsumer consumer = consumers.get(consumerId);
       if (consumer == null)
       {
@@ -109,8 +112,10 @@ public class PushConsumerResource
 
    @DELETE
    @Path("{consumer-id}")
-   public void deleteConsumer(@PathParam("consumer-id") String consumerId)
+   public void deleteConsumer(@Context UriInfo uriInfo, @PathParam("consumer-id") String consumerId)
    {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
       PushConsumer consumer = consumers.remove(consumerId);
       if (consumer == null)
       {

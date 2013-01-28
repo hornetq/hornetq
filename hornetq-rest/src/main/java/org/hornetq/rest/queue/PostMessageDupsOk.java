@@ -3,6 +3,7 @@ package org.hornetq.rest.queue;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.rest.HornetQRestLogger;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
@@ -34,6 +35,7 @@ public class PostMessageDupsOk extends PostMessage
          ClientProducer producer = pooled.producer;
          ClientMessage message = createHornetQMessage(headers, body, durable, ttl, expiration, priority, pooled.session);
          producer.send(message);
+         HornetQRestLogger.LOGGER.debug("Sent message: " + message);
          pool.add(pooled);
       }
       catch (Exception ex)
@@ -59,6 +61,8 @@ public class PostMessageDupsOk extends PostMessage
                           @Context UriInfo uriInfo,
                           byte[] body)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getRequestUri() + "\"");
+
       try
       {
          boolean isDurable = defaultDurable;
@@ -82,5 +86,4 @@ public class PostMessageDupsOk extends PostMessage
       serviceManager.getLinkStrategy().setLinkHeader(builder, "create-next", "create-next", next.toString(), "*/*");
       return builder.build();
    }
-
 }

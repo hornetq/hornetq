@@ -14,7 +14,6 @@ public class TopicDeployment extends DestinationSettings
    {
    }
 
-
    public TopicDeployment(String name, boolean duplicatesAllowed)
    {
       this.name = name;
@@ -30,5 +29,4 @@ public class TopicDeployment extends DestinationSettings
    {
       this.name = name;
    }
-
 }

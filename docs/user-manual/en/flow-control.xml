@@ -107,7 +107,7 @@
          <section id="flow-control.core.api">
             <title>Using Core API</title>
             <para>If HornetQ Core API is used, the consumer window size is specified by <literal
-                  >ClientSessionFactory.setConsumerWindowSize()</literal> method and some of the
+                  >ServerLocator.setConsumerWindowSize()</literal> method and some of the
                   <literal>ClientSession.createConsumer()</literal> methods.</para>
          </section>
          <section>
@@ -148,7 +148,7 @@
          <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
             <para>If the HornetQ core API is being used the rate can be set via the <literal
-                  >ClientSessionFactory.setConsumerMaxRate(int consumerMaxRate)</literal> method or
+                  >ServerLocator.setConsumerMaxRate(int consumerMaxRate)</literal> method or
                alternatively via some of the <literal>ClientSession.createConsumer()</literal>
                methods. </para>
          </section>
@@ -204,7 +204,7 @@
          <section>
             <title>Using Core API</title>
             <para>If the HornetQ core API is being used, window size can be set via the <literal
-                  >ClientSessionFactory.setProducerWindowSize(int producerWindowSize)</literal>
+                  >ServerLocator.setProducerWindowSize(int producerWindowSize)</literal>
                method.</para>
          </section>
          <section>
@@ -287,7 +287,7 @@
          <section id="flow-control.producer.rate.core.api">
             <title>Using Core API</title>
             <para>If the HornetQ core API is being used the rate can be set via the <literal
-                  >ClientSessionFactory.setProducerMaxRate(int consumerMaxRate)</literal> method or
+                  >ServerLocator.setProducerMaxRate(int consumerMaxRate)</literal> method or
                alternatively via some of the <literal>ClientSession.createProducer()</literal>
                methods. </para>
          </section>

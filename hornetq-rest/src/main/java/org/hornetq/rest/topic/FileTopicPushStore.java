@@ -32,5 +32,4 @@ public class FileTopicPushStore extends FilePushStore implements TopicPushStore
       }
       return list;
    }
-
 }

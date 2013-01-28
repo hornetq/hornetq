@@ -142,5 +142,4 @@ public class MessageServiceConfiguration
    {
       this.consumerWindowSize = consumerWindowSize;
    }
-
 }
