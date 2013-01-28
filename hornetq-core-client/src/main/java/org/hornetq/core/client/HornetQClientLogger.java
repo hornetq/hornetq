@@ -387,4 +387,11 @@ public interface HornetQClientLogger extends BasicLogger
       value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
       format = Message.Format.MESSAGE_FORMAT)
    void invalidConcurrentSessionUsage(@Cause Throwable t);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214085,
+      value = "Packet {0} was answered out of sequence due to a previous server timeout and it's being ignored",
+      format = Message.Format.MESSAGE_FORMAT)
+   void packetOutOfOrder(Object obj);
+
 }
