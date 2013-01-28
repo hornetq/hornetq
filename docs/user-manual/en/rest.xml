@@ -999,6 +999,14 @@ Content-Type: application/xml
             </listitem>
         </itemizedlist>
 
+        <note>
+            <para>If you have multiple pull-consumers active at the same time
+                on the same destination be aware that unless the
+                <literal>consumer-window-size</literal> is 0 then one consumer
+                might buffer messages while the other consumer gets none.
+            </para>
+        </note>
+
         <section>
             <title>Auto-Acknowledge</title>
 
@@ -1145,8 +1153,7 @@ http://example.com/topics/jms.topic.foo/pull-subscriptions/auto-ack/222/consume-
                 <para>After you have created a consumer resource, you are ready to
                     start pulling messages from the server. Notice that when you created
                     the consumer for either the queue or topic, the response contained a
-                    <literal>msg-consume-next</literal>
-                    response header. POST to the URL
+                    <literal>msg-consume-next</literal> response header. POST to the URL
                     contained within this header to consume the next message in the queue
                     or topic subscription. A successful POST causes the server to extract
                     a message from the queue or topic subscription, acknowledge it, and
@@ -1415,14 +1422,10 @@ msg-push-subscriptions: http://example.com/topics/jms.topic.foo/push-subscriptio
                     <listitem>
                         <para>Next do a POST to the URL returned in the
                             <literal>msg-pull-subscriptions</literal>
-                            header passing in a
-                            <literal>true</literal>
-                            value for the
-                            <literal>durable</literal>
-                            form parameter and a
-                            <literal>false</literal>
-                            value to the
-                            <literal>autoAck</literal>
+                            header passing in a <literal>true</literal>
+                            value for the <literal>durable</literal>
+                            form parameter and a <literal>false</literal>
+                            value to the <literal>autoAck</literal>
                             form parameter.
                         </para>
 
@@ -1440,8 +1443,7 @@ msg-acknowledge-next:
 http://example.com/topics/jms.topic.foo/pull-subscriptions/acknowledged/222/consume-next-1</programlisting>
 
                         <para>The
-                            <literal>Location</literal>
-                            header points to the JMS
+                            <literal>Location</literal> header points to the JMS
                             subscription resource that was created on the server. It is good
                             to remember this URL, although, as you'll see later, it is
                             transmitted with each response just to remind you.
@@ -1456,8 +1458,7 @@ http://example.com/topics/jms.topic.foo/pull-subscriptions/acknowledged/222/cons
                 <para>After you have created a consumer resource, you are ready to
                     start pulling messages from the server. Notice that when you created
                     the consumer for either the queue or topic, the response contained a
-                    <literal>msg-acknowledge-next</literal>
-                    response header. POST to the
+                    <literal>msg-acknowledge-next</literal> response header. POST to the
                     URL contained within this header to consume the next message in the
                     queue or topic subscription. If there are no messages in the queue or
                     topic subscription, a 503 (Service Unavailable) HTTP code is returned.
@@ -1496,8 +1497,7 @@ msg-consumer: http://example.com/queues/jms.queue.bar/pull-consumers/333
                         <para>The POST returns the message consumed from the queue. It
                             also returns a<literal>msg-acknowledgemen</literal>t link. You
                             will use this new link to acknowledge the message. Notice also a
-                            <literal>msg-consumer</literal>
-                            response header is returned. This
+                            <literal>msg-consumer</literal> response header is returned. This
                             is a URL that points back to the consumer or subscription
                             resource. You will need that to clean up your connection after you
                             are finished using the queue or topic.
@@ -1506,16 +1506,10 @@ msg-consumer: http://example.com/queues/jms.queue.bar/pull-consumers/333
 
                     <listitem>
                         <para>Acknowledge or unacknowledge the message by doing a POST to
-                            the URL contained in the
-                            <literal>msg-acknowledgement</literal>
-                            header. You must pass an
-                            <literal>acknowledge</literal>
-                            form
-                            parameter set to
-                            <literal>true</literal>
-                            or
-                            <literal>false</literal>
-                            depending on whether you want to
+                            the URL contained in the <literal>msg-acknowledgement</literal>
+                            header. You must pass an <literal>acknowledge</literal>
+                            form parameter set to <literal>true</literal>
+                            or <literal>false</literal> depending on whether you want to
                             acknowledge or unacknowledge the message on the server.
                         </para>
 
@@ -1546,8 +1540,7 @@ http://example.com/queues/jms.queue.bar/pull-consumers/333/acknowledge-next-2</p
                     to a
                     <literal>msg-acknowledge-next</literal>
                     or
-                    <literal>msg-acknowledgement</literal>
-                    URL was successful or not, just
+                    <literal>msg-acknowledgement</literal> URL was successful or not, just
                     re-do your POST. A POST to one of these URLs is idempotent, meaning
                     that it will return the same result if you re-post. Behind the scenes,
                     the consumer resource keeps track of its current state. If the last
@@ -1566,32 +1559,25 @@ http://example.com/queues/jms.queue.bar/pull-consumers/333/acknowledge-next-2</p
                 <title>Recovering From Client or Server Crashes</title>
 
                 <para>If the server crashes and while you are doing a POST to the
-                    <literal>msg-acknowledge-next</literal>
-                    URL, just re-post. Everything
+                    <literal>msg-acknowledge-next</literal> URL, just re-post. Everything
                     should reconnect all right. On the other hand, if the server crashes
                     while you are doing a POST to<literal>msg-acknowledgement</literal>,
                     the server will return a 412 (Preconditions Failed) response code.
                     This is telling you that the URL you are using is out of sync with the
                     server and the message you are acknowledging was probably re-enqueued.
-                    The response will contain a new
-                    <literal>msg-acknowledge-next</literal>
+                    The response will contain a new <literal>msg-acknowledge-next</literal>
                     header to invoke on.
                 </para>
 
                 <para>As long as you have "bookmarked" the consumer resource URL
-                    (returned from
-                    <literal>Location</literal>
-                    header on a create, or the
-                    <literal>msg-consumer</literal>
-                    header), you can recover from client
+                    (returned from <literal>Location</literal> header on a create, or the
+                    <literal>msg-consumer</literal> header), you can recover from client
                     crashes by doing a GET or HEAD request on the consumer resource to
                     obtain what state you are in. If the consumer resource is expecting
                     you to acknowledge a message, it will return a
-                    <literal>msg-acknowledgement</literal>
-                    header in the response. If the
+                    <literal>msg-acknowledgement</literal> header in the response. If the
                     consumer resource is expecting you to pull for the next message, the
-                    <literal>msg-acknowledge-next</literal>
-                    header will be in the
+                    <literal>msg-acknowledge-next</literal> header will be in the
                     response. With manual acknowledgement you are pretty much guaranteed
                     to avoid skipped messages. For topic subscriptions that were created
                     with a name parameter, you do not have to "bookmark" the returned URL.
@@ -1609,9 +1595,7 @@ http://example.com/queues/jms.queue.bar/pull-consumers/333/acknowledge-next-2</p
                 though it, if you use the pull protocol, you're going to be receiving a
                 lot of 503 responses as you continuously pull the server for new
                 messages. To alleviate this problem, the HornetQ REST interface provides
-                the
-                <literal>Accept-Wait</literal>
-                header. This is a generic HTTP
+                the <literal>Accept-Wait</literal> header. This is a generic HTTP
                 request header that is a hint to the server for how long the client is
                 willing to wait for a response from the server. The value of this header
                 is the time in seconds the client is willing to block for. You would
@@ -1714,8 +1698,7 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
             </para>
 
             <para>The
-                <literal>disableOnFailure</literal>
-                element, if set to true,
+                <literal>disableOnFailure</literal> element, if set to true,
                 will disable the registration if all retries have failed. It will not
                 disable the connection on non-connection-failure issues (like a bad
                 request for instance). In these cases, the dead letter queue logic of
@@ -1995,9 +1978,7 @@ Content-Type: application/hornetq.jms.queue+xml
 HTTP/1.1 201 Created
 Location: http://example.com/queues/jms.queue.testQueue</programlisting>
 
-        <para>Notice that the Content-Type is
-            application/hornetq.jms.queue+xml.
-        </para>
+        <para>Notice that the Content-Type is application/hornetq.jms.queue+xml.</para>
 
         <para>Here's what creating a topic would look like:</para>
 
@@ -2044,17 +2025,13 @@ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
                         <row>
                             <entry>/queues</entry>
 
-                            <entry>secure the POST operation to secure queue
-                                creation
-                            </entry>
+                            <entry>secure the POST operation to secure queue creation</entry>
                         </row>
 
                         <row>
                             <entry>/queues/{queue-name}</entry>
 
-                            <entry>secure the GET HEAD operation to getting information
-                                about the queue.
-                            </entry>
+                            <entry>secure the GET HEAD operation to getting information about the queue.</entry>
                         </row>
 
                         <row>
@@ -2066,9 +2043,7 @@ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
                         <row>
                             <entry>/queues/{queue-name}/pull-consumers/*</entry>
 
-                            <entry>secure this URL pattern for pulling messages
-                                messages.
-                            </entry>
+                            <entry>secure this URL pattern for pulling messages.</entry>
                         </row>
 
                         <row>
@@ -2080,17 +2055,13 @@ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
                         <row>
                             <entry>/topics</entry>
 
-                            <entry>secure the POST operation to secure topic
-                                creation
-                            </entry>
+                            <entry>secure the POST operation to secure topic creation</entry>
                         </row>
 
                         <row>
                             <entry>/topics/{topic-name}</entry>
 
-                            <entry>secure the GET HEAD operation to getting information
-                                about the topic.
-                            </entry>
+                            <entry>secure the GET HEAD operation to getting information about the topic.</entry>
                         </row>
 
                         <row>
@@ -2102,9 +2073,7 @@ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
                         <row>
                             <entry>/topics/{topic-name}/pull-subscriptions/*</entry>
 
-                            <entry>secure this URL pattern for pulling messages
-                                messages.
-                            </entry>
+                            <entry>secure this URL pattern for pulling messages.</entry>
                         </row>
 
                         <row>
@@ -2170,9 +2139,7 @@ public void onMessage(Message message)
    MyType obj = org.hornetq.rest.Jms.getEntity(message, MyType.class);
 }</programlisting>
 
-            <para>The way the
-                <literal>getEntity()</literal>
-                method works is that if
+            <para>The way the <literal>getEntity()</literal> method works is that if
                 the message is an ObjectMessage, it will try to extract the desired type
                 from it like any other JMS message. If a REST producer sent the message,
                 then the method uses RESTEasy to convert the HTTP body to the Java
