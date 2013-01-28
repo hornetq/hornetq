@@ -228,7 +228,12 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public Packet sendBlocking(final Packet packet) throws HornetQException
+   /**
+    * Due to networking issues or server issues the server may take longer to answer than expected.. the client may timeout the call throwing an exception
+    * and the client could eventually retry another call, but the server could then answer a previous command issuing a class-cast-exception.
+    * The expectedPacket will be used to filter out undesirable packets that would belong to previous calls.
+    */
+   public Packet sendBlocking(final Packet packet, byte expectedPacket) throws HornetQException
    {
       if (closed)
       {
@@ -278,7 +283,8 @@ public class ChannelImpl implements Channel
 
             long start = System.currentTimeMillis();
 
-            while (!closed && response == null && toWait > 0)
+            while (!closed && (response == null || (response.getType() != PacketImpl.EXCEPTION &&
+                     response.getType() != expectedPacket)) && toWait > 0)
             {
                try
                {
@@ -287,6 +293,11 @@ public class ChannelImpl implements Channel
                catch (InterruptedException e)
                {
                   throw new HornetQInterruptedException(e);
+               }
+               
+               if (response != null && response.getType() != PacketImpl.EXCEPTION && response.getType() != expectedPacket)
+               {
+                  log.warn("Packet " + response + " was answered out of sequence due to a previous server timeout and it's being ignored", new Exception ("trace"));
                }
 
                if (closed)
