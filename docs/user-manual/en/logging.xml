@@ -25,7 +25,7 @@
     <title>Logging</title>
     <para>HornetQ uses the JBoss Logging framework to do its logging and is configurable via the <literal>logging.properties</literal>
        file found in the configuration directories. This is configured by Default to log to both the console and to a file.</para>
-   <para>There are 6 loggers availabe which are as follows:</para>
+   <para>There are 6 loggers available which are as follows:</para>
     <table frame="topbot" border="2">
        <title>Global Configuration Properties</title>
        <tgroup cols="2">

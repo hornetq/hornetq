@@ -140,7 +140,7 @@ Destination destination = jms.lookup("/example/queue");
 
     <para>Create the configuration object - this contains configuration
     information for a HornetQ instance. The setter methods of this class allow
-    you to programmitcally set configuration options as describe in the <xref
+    you to programmatically set configuration options as describe in the <xref
     linkend="server.configuration" /> section.</para>
 
     <para>The acceptors are configured through
@@ -226,7 +226,7 @@ jmsServer.start();</programlisting>
     <trademark>JBoss Micro Container</trademark> or <trademark>Spring
     Framework</trademark>. See <xref linkend="spring.integration" /> for more
     details on Spring and HornetQ, but here's how you would do things with the
-    JBoss Micro Contaier.</para>
+    JBoss Micro Container.</para>
 
     <para>HornetQ standalone uses JBoss Micro Container as the injection
     framework. <literal>HornetQBootstrapServer</literal> and

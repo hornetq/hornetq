@@ -220,7 +220,7 @@
         </section>
         <section id="examples.hornetq-ra-rar">
             <title>HornetQ Resource Adapter example</title>
-            <para>This examples shows how to build the hornetq resource adapteras a rar for deployment in other Application
+            <para>This examples shows how to build the hornetq resource adapters a rar for deployment in other Application
             Server's</para>
         </section>
         <section>

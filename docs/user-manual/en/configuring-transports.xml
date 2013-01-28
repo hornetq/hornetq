@@ -219,9 +219,9 @@ etc</programlisting>
                         specifying the host for a connector; a connector makes a connection to one
                         specific address.</para>
                     <note>
-                        <para>Don't forget to specify a host name or ip address! If you want your
+                        <para>Don't forget to specify a host name or IP address! If you want your
                             server able to accept connections from other nodes you must specify a
-                            hostname or ip address at which the acceptor will bind and listen for
+                            hostname or IP address at which the acceptor will bind and listen for
                             incoming connections. The default is localhost which of course is not
                             accessible from remote nodes!</para>
                     </note>
@@ -329,7 +329,7 @@ buffer_size = bandwidth * RTT.</programlisting>
         <section>
             <title>Configuring Netty HTTP</title>
             <para>Netty HTTP tunnels packets over the HTTP protocol. It can be useful in scenarios
-                where firewalls only allow HTTP traffice to pass.</para>
+                where firewalls only allow HTTP traffic to pass.</para>
             <para>Please see the examples for a full working example of using Netty HTTP.</para>
             <para>Netty HTTP uses the same properties as Netty TCP but adds the following additional
                 properties:</para>
@@ -458,8 +458,8 @@ buffer_size = bandwidth * RTT.</programlisting>
    &lt;param key="use-servlet" value="true"/>
    &lt;param key="servlet-path" value="/messaging/HornetQServlet"/>
    &lt;param key="ssl-enabled" value="true"/>
-   &lt;param key="key-store-path" value="path to a keystoree"/>
-   &lt;param key="key-store-password" value="keystore password"/>
+   &lt;param key="key-store-path" value="path to a key-store"/>
+   &lt;param key="key-store-password" value="key-store password"/>
 &lt;/connector></programlisting>
             <para>You will also have to configure the Application server to use a KeyStore. Edit the
                     <literal>server.xml</literal> file that can be found under <literal

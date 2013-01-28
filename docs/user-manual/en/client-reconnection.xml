@@ -29,7 +29,7 @@
         <title>100% Transparent session re-attachment</title>
         <para>If the failure was due to some transient failure such as a temporary network failure,
             and the target server was not restarted, then the sessions will still be existent on the
-            server, asssuming the client hasn't been disconnected for more than connection-ttl <xref
+            server, assuming the client hasn't been disconnected for more than connection-ttl <xref
                 linkend="connection-ttl"/>.</para>
         <para>In this scenario, HornetQ will automatically re-attach the client sessions to the
             server sessions when the connection reconnects. This is done 100% transparently and the
