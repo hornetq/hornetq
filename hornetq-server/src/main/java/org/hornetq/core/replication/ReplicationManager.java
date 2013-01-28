@@ -348,7 +348,7 @@ public class ReplicationManager implements HornetQComponent
 
    public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
    {
-      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
+      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo), PacketImpl.NULL_RESPONSE);
    }
 
    private void sendReplicatePacket(final Packet packet)
