@@ -48,7 +48,6 @@ public final class ChannelImpl implements Channel
 
       /**
        * Used for core protocol management.
-       * @see CoreProtocolManager
        */
       PING(0),
       /** Session creation and attachment. */
@@ -271,7 +270,12 @@ public final class ChannelImpl implements Channel
       }
    }
 
-   public Packet sendBlocking(final Packet packet) throws HornetQException
+   /**
+    * Due to networking issues or server issues the server may take longer to answer than expected.. the client may timeout the call throwing an exception
+    * and the client could eventually retry another call, but the server could then answer a previous command issuing a class-cast-exception.
+    * The expectedPacket will be used to filter out undesirable packets that would belong to previous calls.
+    */
+   public Packet sendBlocking(final Packet packet, byte expectedPacket) throws HornetQException
    {
       String interceptionResult = invokeInterceptors(packet, interceptors, connection);
 
@@ -341,7 +345,8 @@ public final class ChannelImpl implements Channel
 
             long start = System.currentTimeMillis();
 
-            while (!closed && response == null && toWait > 0)
+            while (!closed && (response == null || (response.getType() != PacketImpl.EXCEPTION &&
+               response.getType() != expectedPacket)) && toWait > 0)
             {
                try
                {
@@ -350,6 +355,11 @@ public final class ChannelImpl implements Channel
                catch (InterruptedException e)
                {
                   throw new HornetQInterruptedException(e);
+               }
+
+               if (response != null && response.getType() != PacketImpl.EXCEPTION && response.getType() != expectedPacket)
+               {
+                  HornetQClientLogger.LOGGER.packetOutOfOrder(response, new Exception ("trace"));
                }
 
                if (closed)
