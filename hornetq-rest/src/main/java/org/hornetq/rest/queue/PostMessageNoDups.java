@@ -1,5 +1,7 @@
 package org.hornetq.rest.queue;
 
+import org.hornetq.rest.HornetQRestLogger;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -17,10 +19,11 @@ public class PostMessageNoDups extends PostMessage
    @POST
    public Response redirectCreation(@Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
+
       String id = generateDupId();
       Response.ResponseBuilder res = Response.status(Response.Status.TEMPORARY_REDIRECT.getStatusCode());
       res.location(uriInfo.getAbsolutePathBuilder().path(id).build());
       return res.build();
    }
-
 }

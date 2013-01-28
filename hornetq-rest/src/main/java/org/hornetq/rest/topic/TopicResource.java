@@ -1,5 +1,6 @@
 package org.hornetq.rest.topic;
 
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.DestinationResource;
 import org.hornetq.rest.queue.PostMessage;
 
@@ -36,6 +37,7 @@ public class TopicResource extends DestinationResource
    @Produces("application/xml")
    public Response get(@Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + uriInfo.getPath() + "\"");
 
       StringBuilder msg = new StringBuilder();
       msg.append("<topic>")
@@ -59,6 +61,8 @@ public class TopicResource extends DestinationResource
    @Produces("application/xml")
    public Response head(@Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling HEAD request for \"" + uriInfo.getPath() + "\"");
+
       Response.ResponseBuilder builder = Response.ok();
       setSenderLink(builder, uriInfo);
       setSenderWithIdLink(builder, uriInfo);
@@ -123,7 +127,6 @@ public class TopicResource extends DestinationResource
       String uri = builder.build().toString();
       return uri;
    }
-
 
    public void setSubscriptions(SubscriptionsResource subscriptions)
    {

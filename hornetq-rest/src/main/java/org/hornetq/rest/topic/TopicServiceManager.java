@@ -69,8 +69,7 @@ public class TopicServiceManager extends DestinationServiceManager
       }
    }
 
-   public void deploy(TopicDeployment topicDeployment)
-           throws Exception
+   public void deploy(TopicDeployment topicDeployment) throws Exception
    {
       if (!started)
       {

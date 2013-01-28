@@ -142,7 +142,7 @@ public class ClientAckQueueTest extends MessageTestBase
 
       String data = Integer.toString(start);
       System.out.println("Sending: " + data);
-     ClientResponse<?> res = sender.request().body("text/plain", data).post();
+      ClientResponse<?> res = sender.request().body("text/plain", data).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 

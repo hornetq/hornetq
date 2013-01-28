@@ -107,6 +107,8 @@ public class ConsumersResource implements TimeoutTask.Callback
                                       @FormParam("selector") String selector,
                                       @Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
+
       try
       {
          QueueConsumer consumer = null;
@@ -183,6 +185,8 @@ public class ConsumersResource implements TimeoutTask.Callback
                                @PathParam("consumer-id") String consumerId,
                                @Context UriInfo uriInfo) throws Exception
    {
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + uriInfo.getPath() + "\"");
+
       return headConsumer(attributes, consumerId, uriInfo);
    }
 
@@ -192,6 +196,8 @@ public class ConsumersResource implements TimeoutTask.Callback
                                 @PathParam("consumer-id") String consumerId,
                                 @Context UriInfo uriInfo) throws Exception
    {
+      HornetQRestLogger.LOGGER.debug("Handling HEAD request for \"" + uriInfo.getPath() + "\"");
+
       QueueConsumer consumer = findConsumer(attributes, consumerId, uriInfo);
       Response.ResponseBuilder builder = Response.noContent();
       // we synchronize just in case a failed request is still processing
@@ -275,8 +281,11 @@ public class ConsumersResource implements TimeoutTask.Callback
    @Path("attributes-{attributes}/{consumer-id}")
    @DELETE
    public void closeSession(
-           @PathParam("consumer-id") String consumerId)
+           @PathParam("consumer-id") String consumerId,
+           @Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
       QueueConsumer consumer = queueConsumers.remove(consumerId);
       if (consumer == null)
       {

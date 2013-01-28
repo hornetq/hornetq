@@ -130,6 +130,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
                                       @FormParam("idle-timeout") Long timeout,
                                       @Context UriInfo uriInfo)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
 
       if (timeout == null)
          timeout = Long.valueOf(consumerTimeoutSeconds * 1000);
@@ -258,7 +259,9 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    public Response getAutoAckSubscription(@PathParam("consumer-id") String consumerId,
                                           @Context UriInfo uriInfo) throws Exception
    {
-      return headAutoAckSubscription(consumerId, uriInfo);
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + uriInfo.getPath() + "\"");
+
+      return internalHeadAutoAckSubscription(uriInfo, consumerId);
    }
 
    @Path("auto-ack/{consumer-id}")
@@ -266,11 +269,18 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    public Response headAutoAckSubscription(@PathParam("consumer-id") String consumerId,
                                            @Context UriInfo uriInfo) throws Exception
    {
-      QueueConsumer consumer = findAutoAckSubscription(consumerId);
-      Response.ResponseBuilder builder = Response.noContent();
-      headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
+      HornetQRestLogger.LOGGER.debug("Handling HEAD request for \"" + uriInfo.getPath() + "\"");
 
-      return builder.build();
+      return internalHeadAutoAckSubscription(uriInfo, consumerId);
+   }
+
+   private Response internalHeadAutoAckSubscription(UriInfo uriInfo, String consumerId)
+   {
+       QueueConsumer consumer = findAutoAckSubscription(consumerId);
+       Response.ResponseBuilder builder = Response.noContent();
+       headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
+
+       return builder.build();
    }
 
    private void headAutoAckSubscriptionResponse(UriInfo uriInfo, QueueConsumer consumer, Response.ResponseBuilder builder)
@@ -281,7 +291,6 @@ public class SubscriptionsResource implements TimeoutTask.Callback
          QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId(), Long.toString(consumer.getConsumeIndex()));
       }
    }
-
 
    @Path("auto-ack/{subscription-id}")
    public QueueConsumer findAutoAckSubscription(
@@ -300,13 +309,22 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    public Response getAcknowledgedConsumer(@PathParam("consumer-id") String consumerId,
                                            @Context UriInfo uriInfo) throws Exception
    {
-      return headAcknowledgedConsumer(consumerId, uriInfo);
+      HornetQRestLogger.LOGGER.debug("Handling GET request for \"" + uriInfo.getPath() + "\"");
+
+      return internalHeadAcknowledgedConsumer(uriInfo, consumerId);
    }
 
    @Path("acknowledged/{consumer-id}")
    @HEAD
    public Response headAcknowledgedConsumer(@PathParam("consumer-id") String consumerId,
                                             @Context UriInfo uriInfo) throws Exception
+   {
+      HornetQRestLogger.LOGGER.debug("Handling HEAD request for \"" + uriInfo.getPath() + "\"");
+
+      return internalHeadAcknowledgedConsumer(uriInfo, consumerId);
+   }
+
+   private Response internalHeadAcknowledgedConsumer(UriInfo uriInfo, String consumerId)
    {
       AcknowledgedQueueConsumer consumer = (AcknowledgedQueueConsumer) findAcknoledgeSubscription(consumerId);
       Response.ResponseBuilder builder = Response.ok();
@@ -371,7 +389,6 @@ public class SubscriptionsResource implements TimeoutTask.Callback
             }
          }
       }
-
    }
 
    private QueueConsumer recreateTopicConsumer(String subscriptionId, boolean autoAck)
@@ -411,28 +428,34 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    @Path("acknowledged/{subscription-id}")
    @DELETE
-   public void deleteAckSubscription(
-           @PathParam("subscription-id") String consumerId)
+   public void deleteAckSubscription(@Context UriInfo uriInfo, @PathParam("subscription-id") String consumerId)
    {
-      deleteSubscription(consumerId);
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
+      internalDeleteSubscription(consumerId);
    }
 
    @Path("auto-ack/{subscription-id}")
    @DELETE
-   public void deleteSubscription(
-           @PathParam("subscription-id") String consumerId)
+   public void deleteSubscription(@Context UriInfo uriInfo, @PathParam("subscription-id") String consumerId)
+   {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
+      internalDeleteSubscription(consumerId);
+   }
+
+   private void internalDeleteSubscription(String consumerId)
    {
       QueueConsumer consumer = queueConsumers.remove(consumerId);
       if (consumer == null)
       {
          String msg = "Failed to match a subscription to URL " + consumerId;
          throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                 .entity(msg)
-                 .type("text/plain").build());
+                  .entity(msg)
+                  .type("text/plain").build());
       }
       consumer.shutdown();
       deleteSubscriberQueue(consumer);
-
    }
 
    private void deleteSubscriberQueue(QueueConsumer consumer)

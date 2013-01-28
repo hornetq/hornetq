@@ -19,6 +19,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.util.Constants;
 import org.hornetq.rest.util.LinkStrategy;
 
@@ -102,6 +103,7 @@ public class QueueConsumer
       try
       {
          consumer.close();
+         HornetQRestLogger.LOGGER.debug("Closed consumer: " + consumer);
       }
       catch (Exception e)
       {
@@ -110,6 +112,7 @@ public class QueueConsumer
       try
       {
          session.close();
+         HornetQRestLogger.LOGGER.debug("Closed session: " + session);
       }
       catch (Exception e)
       {
@@ -125,6 +128,8 @@ public class QueueConsumer
                                      @PathParam("index") long index,
                                      @Context UriInfo info)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + info.getRequestUri() + "\"");
+
       if (closed)
       {
          UriBuilder builder = info.getBaseUriBuilder();
@@ -160,7 +165,6 @@ public class QueueConsumer
          }
       }
 
-
       try
       {
          return pollWithIndex(wait, info, basePath, index);
@@ -195,10 +199,10 @@ public class QueueConsumer
       }
    }
 
-   protected void createSession()
-           throws HornetQException
+   protected void createSession() throws HornetQException
    {
       session = factory.createSession(true, true, 0);
+      HornetQRestLogger.LOGGER.debug("Created session: " + session);
       if (selector == null)
       {
          consumer = session.createConsumer(destination);
@@ -207,20 +211,25 @@ public class QueueConsumer
       {
          consumer = session.createConsumer(destination, SelectorTranslator.convertToHornetQFilterString(selector));
       }
+      HornetQRestLogger.LOGGER.debug("Created consumer: " + consumer);
       session.start();
    }
 
    protected ClientMessage receiveFromConsumer(long timeoutSecs) throws Exception
    {
+      ClientMessage m = null;
       if (timeoutSecs <= 0)
       {
-         return consumer.receive(1);
+          m = consumer.receive(1);
       }
       else
       {
-         return consumer.receive(timeoutSecs * 1000);
+         m = consumer.receive(timeoutSecs * 1000);
       }
 
+      HornetQRestLogger.LOGGER.debug("Returning message " + m + " from consumer: " + consumer);
+
+      return m;
    }
 
    protected ClientMessage receive(long timeoutSecs) throws Exception

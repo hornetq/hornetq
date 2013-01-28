@@ -5,6 +5,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.util.HttpMessageHelper;
 import org.hornetq.api.core.Message;
 import org.hornetq.utils.UUID;
@@ -39,6 +40,8 @@ public class PostMessage
    private AtomicLong counter = new AtomicLong(1);
    private final String startupTime = Long.toString(System.currentTimeMillis());
    protected long producerTimeToLive;
+   protected ArrayBlockingQueue<Pooled> pool;
+   protected int poolSize = 10;
 
    protected static class Pooled
    {
@@ -51,9 +54,6 @@ public class PostMessage
          this.producer = producer;
       }
    }
-
-   protected ArrayBlockingQueue<Pooled> pool;
-   protected int poolSize = 10;
 
    protected String generateDupId()
    {
@@ -73,6 +73,7 @@ public class PostMessage
          ClientMessage message = createHornetQMessage(headers, body, durable, ttl, expiration, priority, pooled.session);
          message.putStringProperty(ClientMessage.HDR_DUPLICATE_DETECTION_ID.toString(), dup);
          producer.send(message);
+         HornetQRestLogger.LOGGER.debug("Sent message: " + message);
          pool.add(pooled);
       }
       catch (Exception ex)
@@ -97,7 +98,9 @@ public class PostMessage
                              @QueryParam("priority") Integer priority,
                              @Context HttpHeaders headers, @Context UriInfo uriInfo, byte[] body)
    {
-      return postWithId(dupId, durable, ttl, expiration, priority, headers, uriInfo, body);
+      HornetQRestLogger.LOGGER.debug("Handling PUT request for \"" + uriInfo.getRequestUri() + "\"");
+
+      return internalPostWithId(dupId, durable, ttl, expiration, priority, headers, uriInfo, body);
    }
 
    @POST
@@ -108,6 +111,12 @@ public class PostMessage
                               @QueryParam("priority") Integer priority,
                               @Context HttpHeaders headers, @Context UriInfo uriInfo, byte[] body)
    {
+      HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getRequestUri() + "\"");
+
+      return internalPostWithId(dupId, durable, ttl, expiration, priority, headers, uriInfo, body);
+   }
+
+   private Response internalPostWithId(String dupId, Boolean durable, Long ttl, Long expiration, Integer priority, HttpHeaders headers, UriInfo uriInfo, byte[] body) {
       String matched = uriInfo.getMatchedURIs().get(1);
       UriBuilder nextBuilder = uriInfo.getBaseUriBuilder();
       String nextId = generateDupId();
@@ -277,5 +286,4 @@ public class PostMessage
       HttpMessageHelper.writeHttpMessage(headers, body, message);
       return message;
    }
-
 }
