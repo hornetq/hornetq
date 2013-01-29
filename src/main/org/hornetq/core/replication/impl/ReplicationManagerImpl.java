@@ -323,7 +323,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID);
 
-      mainChannel.sendBlocking(replicationStartPackage);
+      mainChannel.sendBlocking(replicationStartPackage, PacketImpl.NULL_RESPONSE);
 
       failureListener = new SessionFailureListener()
       {
@@ -429,7 +429,7 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
    {
-      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
+      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo), PacketImpl.NULL_RESPONSE);
    }
 
    // Package protected ---------------------------------------------

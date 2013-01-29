@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -1143,7 +1144,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (sendCloseMessage)
          {
-            channel.sendBlocking(new SessionConsumerCloseMessage(id));
+            channel.sendBlocking(new SessionConsumerCloseMessage(id), PacketImpl.NULL_RESPONSE);
          }
       }
       catch (Throwable t)
