@@ -496,7 +496,7 @@ public class TimedBuffer
                {
                   if (failedChecks > MAX_CHECKS_ON_SLEEP * 0.5)
                   {
-                     HornetQJournalLogger.LOGGER.nanoSleepNotWorking();
+                     HornetQJournalLogger.LOGGER.debug("Thread.sleep with nano seconds is not working as expected, Your kernel possibly doesn't support real time. the Journal TimedBuffer will spin for timeouts");
                      setUseSleep(false);
                   }
                }
