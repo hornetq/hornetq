@@ -281,8 +281,4 @@ public interface HornetQJournalLogger extends BasicLogger
    @Message(id = 144007, value = "IOError code {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
    void ioError(final int errorCode, final String errorMessage);
 
-   @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 144008, value = "Thread.sleep with nano seconds is not working as expected, Your kernel possibly doesn't support real time. the Journal TimedBuffer will spin for timeouts", format = Message.Format.MESSAGE_FORMAT)
-   void nanoSleepNotWorking();
-
 }

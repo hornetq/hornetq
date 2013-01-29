@@ -340,7 +340,7 @@ class CoreProtocolManager implements ProtocolManager
             BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
             ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
 
-            if (clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
+            if (!config.isSecurityEnabled() || clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
             {
                try
                {
