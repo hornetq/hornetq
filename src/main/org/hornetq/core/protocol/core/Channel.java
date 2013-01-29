@@ -65,10 +65,11 @@ public interface Channel
     * sends a packet on this channel and then blocks until a response is received or a timeout occurs.
     *
     * @param packet the packet to send
+    * @param expectedPacket the packet being expected.
     * @return the response
     * @throws HornetQException if an error occurs during the send
     */
-   Packet sendBlocking(Packet packet) throws HornetQException;
+   Packet sendBlocking(Packet packet, byte expectedPacket) throws HornetQException;
 
    /**
     * sets the {@link org.hornetq.core.protocol.core.ChannelHandler} that this channel should forward received packets to.
