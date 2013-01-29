@@ -240,7 +240,7 @@ public class BackupSyncDelay implements Interceptor
       }
 
       @Override
-      public Packet sendBlocking(Packet packet) throws HornetQException
+      public Packet sendBlocking(Packet packet, byte expected) throws HornetQException
       {
          throw new UnsupportedOperationException();
       }

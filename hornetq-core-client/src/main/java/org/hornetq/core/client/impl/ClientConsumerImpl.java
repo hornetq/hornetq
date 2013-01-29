@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -452,7 +453,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    /**
     * To be used by MDBs
-    * @param interruptConsumer it will send an interrupt to the thread
     * @throws HornetQException
     */
    public void interruptHandlers() throws HornetQException
@@ -1124,7 +1124,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
          if (sendCloseMessage)
          {
-            channel.sendBlocking(new SessionConsumerCloseMessage(id));
+            channel.sendBlocking(new SessionConsumerCloseMessage(id), PacketImpl.NULL_RESPONSE);
          }
       }
       catch (Throwable t)
