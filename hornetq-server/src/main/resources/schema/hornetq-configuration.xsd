@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="urn:hornetq" xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:hornetq" version="1.0">
+<xsd:schema xmlns="urn:hornetq"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:hornetq" version="1.0">
 
     <xsd:element name="configuration">
         <xsd:complexType>
             <xsd:all>
-                <xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="clustered">
-                 <xsd:annotation>
-                        <xsd:documentation>
-                            DEPRECATED. This option is deprecated and its value will be ignored. A HornetQ server will be "clustered" when its configuration contain a cluster-configuration. 
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    </xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Whether or not we should check the cluster for a live server when starting up. This setting only applies to replicated servers.
-                        </xsd:documentation>
-                    </xsd:annotation>
+              <xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string"/>
+
+              <xsd:element maxOccurs="1" minOccurs="0" name="clustered"
+                           type="xsd:boolean" default="false">
+                <xsd:annotation hq:linkend="clusters">
+                  <xsd:documentation
+                    >DEPRECATED. This option is deprecated and its value will be ignored. A HornetQ server will be "clustered" when its configuration contain a cluster-configuration.
+                  </xsd:documentation>
+                </xsd:annotation>
+              </xsd:element>
+
+              <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
+                <xsd:annotation>
+                  <xsd:documentation
+                    >Whether or not we should check the cluster for a live server when starting up. This setting only applies to replicated servers.
+                  </xsd:documentation>
+                </xsd:annotation>
+              </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="file-deployment-enabled" type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="using-server.configuration">
+                    <xsd:documentation>true means that the server will
+                    load configuration from the configuration
+                    files</xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="file-deployment-enabled"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="persistence-enabled"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="persistence-enabled" type="xsd:boolean"
+                             default="true">
+                  <xsd:annotation hq:linkend="persistence.enabled">
+                    <xsd:documentation>true means that the server will use the file based journal for
+                                persistence.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="scheduled-thread-pool-max-size" type="xsd:int">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -35,86 +56,208 @@
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="security-enabled" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="security-invalidation-interval" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="wild-card-routing-enabled" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="management-address" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="management-notification-address" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xsd:string">
-                <xsd:annotation>
-                  <xsd:documentation>
-                    Cluster username. It applies to any cluster configuration.
-                  </xsd:documentation>
-                 </xsd:annotation>
-                 </xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string">
-                  <xsd:annotation>
-                  <xsd:documentation>
-                    Cluster password. It applies to any cluster configuration.
-                  </xsd:documentation>
-                 </xsd:annotation>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="management-address" type="xsd:string"
+                             default="jms.queue.hornetq.management">
+                  <xsd:annotation hq:linkend="management.core.configuration">
+                    <xsd:documentation>the name of the management address to send management messages to</xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                name="management-notification-address"
+                type="xsd:string" default="hornetq.notifications">
+                  <xsd:annotation hq:linkend="management.notifications.core.configuration">
+                    <xsd:documentation>the name of the address that consumers bind to receive management notifications</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="cluster-user" type="xsd:string" default="HORNETQ.CLUSTER.ADMIN.USER">
+                  <xsd:annotation hq:linkend="clusters">
+                    <xsd:documentation>Cluster username. It applies to any cluster configuration.
+                    </xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="cluster-password" type="xsd:string" default="CHANGE ME!!">
+                  <xsd:annotation hq:linkend="clusters">
+                    <xsd:documentation>Cluster password. It applies to any cluster configuration.
+                    </xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="replication-clustername" type="xsd:string">
-                 <xsd:annotation>
-                  <xsd:documentation>
-                   Name of the cluster configuration to use for replication. 
-                   This setting is only necessary in case you configure multiple cluster connections. 
-                   It is used by a replicating backups and by live servers that may attempt fail-back.
-                  </xsd:documentation>
-                 </xsd:annotation>
+                  <xsd:annotation>
+                    <xsd:documentation>
+                      Name of the cluster configuration to use for replication.
+                      This setting is only necessary in case you configure multiple cluster connections.
+                      It is used by a replicating backups and by live servers that may attempt fail-back.
+                    </xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="password-codec" type="xsd:string"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="mask-password" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="jmx-domain" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-enabled" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-sample-period" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-max-day-history" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl-override" type="xsd:long"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="log-delegate-factory-class-name"
+                             type="xsd:string">
+                  <xsd:annotation >
+                    <xsd:documentation>XXX</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="jmx-management-enabled" type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="management.jmx.configuration">
+                    <xsd:documentation>true means that the management API is available via JMX</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="jmx-domain" type="xsd:string" default="org.hornetq">
+                  <xsd:annotation hq:linkend="management.jmx.configuration">
+                    <xsd:documentation>the JMX domain used to registered HornetQ MBeans in the
+                      MBeanServer</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="message-counter-enabled" type="xsd:boolean" default="false">
+                  <xsd:annotation hq:linkend="configuring.message.counters">
+                    <xsd:documentation>true means that message counters are enabled</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                name="message-counter-sample-period" type="xsd:long" default="1000">
+                  <xsd:annotation hq:linkend="configuring.message.counters">
+                    <xsd:documentation>the sample period (in ms) to use for message counters</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="message-counter-max-day-history" type="xsd:int" default="10">
+                  <xsd:annotation hq:linkend="configuring.message.counters">
+                    <xsd:documentation>how many days to keep message counter history</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="connection-ttl-override"
+                             type="xsd:long" default="-1">
+                  <xsd:annotation hq:linkend="connection-ttl">
+                    <xsd:documentation>if set, this will override how long (in ms) to keep a connection
+                      alive without receiving a ping.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="async-connection-execution-enabled" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="transaction-timeout" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="transaction-timeout-scan-period" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="message-expiry-scan-period" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="message-expiry-thread-priority" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="id-cache-size" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="persist-id-cache" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-interceptors">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            DEPRECATED. This option is deprecated, but it will still be honored. Any interceptor specified here will be considered an "incoming" interceptor. See &lt;remoting-incoming-interceptors&gt; and &lt;remoting-outgoing-interceptors&gt;.
-                        </xsd:documentation>
-                    </xsd:annotation>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="message-expiry-scan-period" type="xsd:long" default="30000">
+                  <xsd:annotation hq:linkend="configuring.expiry.reaper">
+                    <xsd:documentation>how often (in ms) to scan for expired messages</xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-incoming-interceptors"/>
-                <xsd:element maxOccurs="1" minOccurs="0" ref="remoting-outgoing-interceptors"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="backup" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xsd:boolean">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Whether a server will automatically stop when a another places a request to take over its place.
-                            The use case is when a regular server stops and its backup takes over its duties, later the main
-                            server restarts and requests the server (the former backup) to stop operating.
-                        </xsd:documentation>
-                    </xsd:annotation>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="message-expiry-thread-priority"
+                             type="xsd:int" default="3">
+                  <xsd:annotation hq:linkend="configuring.expiry.reaper">
+                    <xsd:documentation>the priority of the thread expiring messages</xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="id-cache-size" type="xsd:int" default="2000">
+                  <xsd:annotation hq:linkend="duplicate.id.cache">
+                    <xsd:documentation>the size of the cache for pre-creating message id's</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="persist-id-cache" type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="duplicate.id.cache">
+                    <xsd:documentation>true means that id's are persisted to the journal</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="remoting-interceptors" type="class-name-sequence">
+                  <xsd:annotation hq:linkend="intercepting-operations">
+                    <xsd:documentation>
+                      DEPRECATED. This option is deprecated, but it will still be honored. Any interceptor specified here will be considered an "incoming" interceptor. See &lt;remoting-incoming-interceptors&gt; and &lt;remoting-outgoing-interceptors&gt;.
+                    </xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="remoting-incoming-interceptors" type="class-name-sequence"/>
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="remoting-outgoing-interceptors" type="class-name-sequence"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0" name="backup"
+                             type="xsd:boolean" default="false">
+                  <xsd:annotation hq:linkend="XXX">
+                    <xsd:documentation>Is this server a backup server</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="allow-failback" type="xsd:boolean" default="false">
+                  <xsd:annotation hq:linkend="ha.allow-fail-back">
+                    <xsd:documentation>
+                      Whether a server will automatically stop when a another places a request to take over its place.
+                      The use case is when a regular server stops and its backup takes over its duties, later the main
+                      server restarts and requests the server (the former backup) to stop operating.
+                    </xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="backup-group-name" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            used for replication, if set, (remote) backup servers will only pair with live servers with matching backup-group-name
-                        </xsd:documentation>
-                    </xsd:annotation>
+                  <xsd:annotation>
+                    <xsd:documentation>
+                      used for replication, if set, (remote) backup servers will only pair with live servers with matching backup-group-name
+                    </xsd:documentation>
+                  </xsd:annotation>
                 </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="failback-delay" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xsd:boolean"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="failover-on-shutdown"
+                             type="xsd:boolean" default="false">
+                  <xsd:annotation hq:linkend="ha.allow-fail-back">
+                    <xsd:documentation>Will this backup server come live on a normal server shutdown</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation>
+                        <xsd:documentation hq:linkend="ha.mode.shared">
                             'shared-store' applies to live and backup pairs, and it indicates if the live/backup pair share storage or if the data is replicated among them.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xsd:boolean"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="persist-delivery-count-before-delivery"
+                             type="xsd:boolean" default="false">
+                  <xsd:annotation hq:linkend="configuring.delivery.count.persistence">
+                    <xsd:documentation>True means that the delivery count is persisted before delivery.
+                                False means that this only happens after a message has been
+                                cancelled.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="connectors">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -166,44 +309,162 @@
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="paging-directory" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xsd:boolean"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="paging-directory" type="xsd:string" default="data/paging">
+                  <xsd:annotation hq:linkend="paging.main.config">
+                    <xsd:documentation>the directory to store paged messages in</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="bindings-directory" type="xsd:string" default="data/bindings">
+                  <xsd:annotation hq:linkend="configuring.bindings.journal">
+                    <xsd:documentation>the directory to store the persisted bindings to</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="create-bindings-dir" type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="configuring.bindings.journal">
+                    <xsd:documentation>true means that the server will create the bindings
+                      directory on start up</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-directory" type="xsd:string"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-transactional" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional" type="xsd:boolean"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-directory" type="xsd:string"
+                             default="data/journal">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-directory">
+                    <xsd:documentation>the directory to store the journal files in
+                    </xsd:documentation>
+                  </xsd:annotation>
+                  </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="create-journal-dir"
+                             type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="configuring.message.journal.create-journal-dir">
+                    <xsd:documentation>true means that the journal
+                      directory will be created</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-type" default="ASYNCIO">
+                  <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                      <xsd:enumeration value="ASYNCIO"/>
+                      <xsd:enumeration value="NIO"/>
+                    </xsd:restriction>
+                    <xsd:annotation hq:linkend="configuring.message.journal.journal-type">
+                      <xsd:documentation>the type of journal to use</xsd:documentation>
+                    </xsd:annotation>
+                  </xsd:simpleType>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-buffer-timeout" type="xsd:long" default="20000">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-timeout">
+                    <xsd:documentation>The timeout (in nanoseconds) used to flush internal
+                      buffers on the journal.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-buffer-size" type="xsd:long" default="128">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size">
+                    <xsd:documentation>The size of the internal buffer on the journal in KiB.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-sync-transactional" type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-sync-transactional">
+                    <xsd:documentation>if true wait for transaction data to be synchronized to the
+                      journal before returning response to client</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-sync-non-transactional"
+                             type="xsd:boolean" default="true">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-sync-non-transactional">
+                    <xsd:documentation>if true wait for non transaction data to be synced to the journal
+                                before returning response to client.</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="log-journal-write-rate" type="xsd:boolean"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-file-size" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-min-files" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xsd:int"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="journal-max-io" type="xsd:int"/>
+
+                <!-- XXX 10 * 1024 * 1024 (10 MiB) -->
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-file-size" type="xsd:long">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-file-size">
+                    <xsd:documentation>the size (in bytes) of each journal file</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-min-files" type="xsd:int" default="2">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-min-files">
+                    <xsd:documentation>how many journal files to pre-create</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-compact-percentage" type="xsd:int" default="30">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-percentage">
+                    <xsd:documentation>The percentage of live data on which we consider compacting the
+                      journal</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="journal-compact-min-files"
+                             type="xsd:int" default="10">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-min-files">
+                    <xsd:documentation>The minimal number of data files before we can start
+                      compacting</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
+                <xsd:element name="journal-max-io" maxOccurs="1"
+                             minOccurs="0" type="xsd:int" default="500">
+                  <xsd:annotation hq:linkend="configuring.message.journal.journal-max-io">
+                    <xsd:documentation>the maximum number of write requests that can be in the AIO queue
+                      at any one time</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xsd:int"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xsd:boolean"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xsd:long"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xsd:int"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xsd:long"/>
-                <xsd:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="xsd:string"/>
+
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="large-messages-directory" type="xsd:string" default="data/largemessages">
+                  <xsd:annotation hq:linkend="large.message.configuring">
+                    <xsd:documentation>the directory to store large messages</xsd:documentation>
+                  </xsd:annotation>
+                </xsd:element>
+
                 <xsd:element maxOccurs="1" minOccurs="0" name="security-settings"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="address-settings"/>
                 <xsd:element maxOccurs="1" minOccurs="0" name="connector-services">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-service" type="connectorServiceType"/>
-                        </xsd:sequence>
-                    </xsd:complexType>
+                  <xsd:complexType>
+                    <xsd:sequence>
+                      <xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-service" type="connectorServiceType"/>
+                    </xsd:sequence>
+                  </xsd:complexType>
                 </xsd:element>
             </xsd:all>
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="clustered" type="xsd:boolean"/>
-    <xsd:element name="file-deployment-enabled" type="xsd:boolean"/>
-    <xsd:element name="persistence-enabled" type="xsd:boolean"/>
+
     <xsd:element name="local-bind-address" type="xsd:string"/>
     <xsd:element name="local-bind-port" type="xsd:int"/>
     <xsd:element name="group-address" type="xsd:string"/>
@@ -250,29 +511,11 @@
         </xsd:complexType>
     </xsd:element>
 
-    <xsd:element name="remoting-interceptors">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="remoting-incoming-interceptors">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="remoting-outgoing-interceptors">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+    <xsd:complexType  name="class-name-sequence">
+      <xsd:sequence>
+        <xsd:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
 
     <xsd:complexType name="paramType">
         <xsd:attribute name="key" type="xsd:string" use="required"/>
@@ -402,12 +645,6 @@
         <xsd:attribute name="name" type="xsd:string" use="required"/>
     </xsd:complexType>
 
-    <xsd:simpleType name="journalType">
-        <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="ASYNCIO"/>
-            <xsd:enumeration value="NIO"/>
-        </xsd:restriction>
-    </xsd:simpleType>
 
     <xsd:complexType name="groupingHandlerType">
         <xsd:sequence>

@@ -76,7 +76,7 @@
                                 >connection-ttl-override</link></entry>
                             <entry>Long</entry>
                             <entry>if set, this will override how long (in ms) to keep a connection
-                                alive without receiving a ping. </entry>
+                                alive without receiving a ping.</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
@@ -115,38 +115,43 @@
                                 configuration files</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="ha.allow-fail-back">failover-on-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>Will this backup server come live on a normal server shutdown</entry>
                             <entry>false</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the cache for pre creating message id's</entry>
                             <entry>2000</entry>
                         </row>
+
                         <row>
                             <entry><link
                                     linkend="configuring.message.journal.journal-buffer-size"
                                     >journal-buffer-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The size of the internal buffer on the journal.</entry>
+                            <entry>The size of the internal buffer on the journal in KiB.</entry>
                             <entry>128 KiB</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-buffer-timeout"
+                                       linkend="configuring.message.journal.journal-buffer-timeout"
                                     >journal-buffer-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>The timeout (in nanoseconds) used to flush internal
                                 buffers on the journal.</entry>
                             <entry>20000</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-compact-min-files"
+                                       linkend="configuring.message.journal.journal-compact-min-files"
                                     >journal-compact-min-files</link></entry>
                             <entry>Integer</entry>
                             <entry>The minimal number of data files before we can start
@@ -155,13 +160,14 @@
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-compact-percentage"
+                                       linkend="configuring.message.journal.journal-compact-percentage"
                                     >journal-compact-percentage</link></entry>
                             <entry>Integer</entry>
                             <entry>The percentage of live data on which we consider compacting the
                                 journal</entry>
                             <entry>30</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-directory"
                                     >journal-directory</link></entry>
@@ -169,13 +175,15 @@
                             <entry>the directory to store the journal files in</entry>
                             <entry>data/journal</entry>
                         </row>
+
                         <row>
-                            <entry><link linkend="configuring.message.journal.journal-file-size"
+                          <entry><link linkend="configuring.message.journal.journal-file-size"
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>the size (in bytes) of each journal file</entry>
                             <entry>10 * 1024 * 1024 (10 MiB)</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-max-io"
                                     >journal-max-io</link></entry>
@@ -184,6 +192,7 @@
                                 at any one time</entry>
                             <entry>500</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-min-files"
                                     >journal-min-files</link></entry>
@@ -191,15 +200,17 @@
                             <entry>how many journal files to pre-create</entry>
                             <entry>2</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-sync-transactional"
+                                       linkend="configuring.message.journal.journal-sync-transactional"
                                     >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for transaction data to be synchronized to the
-                                journal before returning response to client</entry>
+                            journal before returning response to client</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link
                                     linkend="configuring.message.journal.journal-sync-non-transactional"
@@ -209,6 +220,7 @@
                                 before returning response to client.</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-type"
                                     >journal-type</link></entry>
@@ -216,6 +228,7 @@
                             <entry>the type of journal to use</entry>
                             <entry>ASYNCIO</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.jmx.configuration"
                                     >jmx-management-enabled</link></entry>
@@ -231,12 +244,14 @@
                                 MBeanServer</entry>
                             <entry>org.hornetq</entry>
                         </row>
+
                         <row>
                             <entry>log-delegate-factory-class-name</entry>
                             <entry>String</entry>
                             <entry>todo</entry>
                             <entry>todo</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="large.message.configuring"
                                     >large-messages-directory</link></entry>
@@ -244,6 +259,7 @@
                             <entry>the directory to store large messages</entry>
                             <entry>data/largemessages</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
@@ -252,6 +268,7 @@
                                 to</entry>
                             <entry>jms.queue.hornetq.management</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="clusters"
                                     >cluster-user</link></entry>
@@ -260,6 +277,7 @@
                                 clustered nodes</entry>
                             <entry>HORNETQ.CLUSTER.ADMIN.USER</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="clusters"
                                     >cluster-password</link></entry>
@@ -268,14 +286,16 @@
                                 clustered nodes</entry>
                             <entry>CHANGE ME!!</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.notifications.core.configuration"
                                     >management-notification-address</link></entry>
                             <entry>String</entry>
                             <entry>the name of the address that consumers bind to receive management
-                                notifications</entry>
+                            notifications</entry>
                             <entry>hornetq.notifications</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-enabled</link></entry>
@@ -290,6 +310,7 @@
                             <entry>how many days to keep message counter history</entry>
                             <entry>10</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-sample-period</link></entry>
@@ -297,13 +318,15 @@
                             <entry>the sample period (in ms) to use for message counters</entry>
                             <entry>10000</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
-                                    >message-expiry-scan-period</link></entry>
+                                         >message-expiry-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>how often (in ms) to scan for expired messages</entry>
                             <entry>30000</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
                                     >message-expiry-thread-priority</link></entry>
@@ -311,13 +334,15 @@
                             <entry>the priority of the thread expiring messages</entry>
                             <entry>3</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="paging.main.config"
-                                >paging-directory</link></entry>
+                                         >paging-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store paged messages in</entry>
                             <entry>data/paging</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.delivery.count.persistence">
                                     persist-delivery-count-before-delivery</link></entry>
@@ -327,14 +352,16 @@
                                 cancelled.</entry>
                             <entry>false</entry>
                         </row>
+
                         <row>
-                            <entry><link linkend="persistence.enabled"
+                          <entry><link linkend="persistence.enabled"
                                 >persistence-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the server will use the file based journal for
                                 persistence.</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="duplicate.id.cache"
                                 >persist-id-cache</link></entry>
@@ -342,6 +369,7 @@
                             <entry>true means that id's are persisted to the journal</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="intercepting-operations">remoting-interceptors</link></entry>
                             <entry>String</entry>
