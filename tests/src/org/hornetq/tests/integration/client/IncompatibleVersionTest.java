@@ -31,6 +31,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
@@ -159,9 +160,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
       if (compatible)
       {
-         Packet packet = channel1.sendBlocking(request);
+         CreateSessionResponseMessage packet = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
          assertNotNull(packet);
-         assertTrue(packet instanceof CreateSessionResponseMessage);
          // 1 connection on the server
          assertEquals(1, server.getConnectionCount());
       }
@@ -169,7 +169,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       {
          try
          {
-            channel1.sendBlocking(request);
+            channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
             fail();
          }
          catch (HornetQException e)
