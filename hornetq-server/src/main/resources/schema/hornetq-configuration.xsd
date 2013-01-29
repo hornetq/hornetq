@@ -240,7 +240,8 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                   </xsd:annotation>
                 </xsd:element>
 
-                <xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
+                <xsd:element maxOccurs="1" minOccurs="0"
+                             name="shared-store" type="xsd:boolean" default="true">
                     <xsd:annotation>
                         <xsd:documentation hq:linkend="ha.mode.shared">
                             'shared-store' applies to live and backup pairs, and it indicates if the live/backup pair share storage or if the data is replicated among them.

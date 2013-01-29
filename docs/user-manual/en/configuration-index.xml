@@ -400,11 +400,12 @@
                             <entry>the fully qualified name of the interceptor class</entry>
                             <entry/>
                         </row>
+
                         <row>
                             <entry><link linkend="ha.mode.shared">shared-store</link></entry>
                             <entry>Boolean</entry>
                             <entry>is this server using a shared store for failover</entry>
-                            <entry>false</entry>
+                            <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="server.scheduled.thread.pool"
