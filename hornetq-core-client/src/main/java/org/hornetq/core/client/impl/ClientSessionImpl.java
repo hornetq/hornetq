@@ -385,7 +385,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       startCall();
       try
       {
-         SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request, PacketImpl.SESS_BINDINGQUERY_RESP);
+         SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request, PacketImpl.SESS_QUEUEQUERY_RESP);
 
          return new QueueQueryImpl(response.isDurable(),
             response.getConsumerCount(),
