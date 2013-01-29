@@ -340,6 +340,15 @@
                       the JMS Bridge MBean (must be unique)</para>
                </listitem>
             </itemizedlist>
+            <para>The "transactionManager" property points to a JTA transaction manager implementation.
+                HornetQ doesn't ship with such an implementation, but one is available in the JBoss
+                Community.  If you are running HornetQ in standalone mode and wish to use a JMS bridge
+                simply download the latest version of JBossTS from http://www.jboss.org/jbosstm/downloads
+                and add it to HornetQ's classpath.  If you are running HornetQ with JBoss AS then you
+                won't need to do this as JBoss AS ships with a JTA transaction manager already.  The
+                bean definition for the transaction manager would look something like this:
+            </para>
+            <programlisting>&lt;bean name="RealTransactionManager" class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/></programlisting>
         </section>
         <section>
             <title>Source and Target Connection Factories</title>
