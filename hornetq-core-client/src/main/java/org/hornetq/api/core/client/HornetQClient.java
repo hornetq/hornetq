@@ -42,6 +42,8 @@ public final class HornetQClient
 
    public static final boolean DEFAULT_COMPRESS_LARGE_MESSAGES = false;
 
+   public static final boolean DEFAULT_AVOID_LARGE_MESSAGES = false;
+
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 
    public static final int DEFAULT_CONSUMER_MAX_RATE = -1;

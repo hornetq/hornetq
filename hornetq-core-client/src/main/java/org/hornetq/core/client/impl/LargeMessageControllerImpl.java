@@ -90,6 +90,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private final FileCache fileCache;
 
+   private boolean local = false;
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -131,10 +132,16 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    // Public --------------------------------------------------------
 
+   public void setLocal(boolean local)
+   {
+      this.local = local;
+   }
+
    public void discardUnusedPackets()
    {
       if (outStream == null)
       {
+         if (local) return;
          try
          {
             checkForPacket(totalSize - 1);

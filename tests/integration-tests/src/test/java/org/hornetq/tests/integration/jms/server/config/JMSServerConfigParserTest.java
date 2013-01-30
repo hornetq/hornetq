@@ -75,6 +75,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals(789, cfConfig.getProducerMaxRate());
       assertEquals(12, cfConfig.getMinLargeMessageSize());
       assertEquals(true, cfConfig.isCompressLargeMessages());
+      assertEquals(false, cfConfig.isAvoidLargeMessages());
       assertEquals("TestClientID", cfConfig.getClientID());
       assertEquals(3456, cfConfig.getDupsOKBatchSize());
       assertEquals(4567, cfConfig.getTransactionBatchSize());
