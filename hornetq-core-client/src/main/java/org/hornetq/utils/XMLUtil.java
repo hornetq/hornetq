@@ -66,7 +66,7 @@ public final class XMLUtil
    public static String readerToString(final Reader r) throws Exception
    {
       // Read into string
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       int c;
       while ((c = r.read()) != -1)
       {

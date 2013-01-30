@@ -501,13 +501,18 @@ public interface Configuration extends Serializable
     */
    void setBindingsDirectory(String dir);
 
-   /** The max number of concurrent reads allowed on paging.
-    *
-    *  Default = 5 */
+   /**
+    * The max number of concurrent reads allowed on paging.
+    * <p>
+    * Default = 5
+    */
    int getPageMaxConcurrentIO();
 
-   /** The max number of concurrent reads allowed on paging.
-    *  Default = 5 */
+   /**
+    * The max number of concurrent reads allowed on paging.
+    * <p>
+    * Default = 5
+    */
    void setPageMaxConcurrentIO(int maxIO);
 
    /**
