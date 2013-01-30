@@ -18,6 +18,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTIN
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_MSG;
 
+import org.hornetq.api.core.Message;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
@@ -69,8 +70,15 @@ final class ClientSessionPacketHandler implements ChannelHandler
             case SESS_RECEIVE_MSG:
             {
                SessionReceiveMessage message = (SessionReceiveMessage)packet;
-
-               clientSession.handleReceiveMessage(message.getConsumerID(), message);
+               
+               if (message.getMessage().getBooleanProperty(Message.HDR_LARGE_COMPRESSED))
+               {
+                  clientSession.handleReceiveCompressedMessage(message.getConsumerID(), message);
+               }
+               else
+               {
+                  clientSession.handleReceiveMessage(message.getConsumerID(), message);
+               }
 
                break;
             }

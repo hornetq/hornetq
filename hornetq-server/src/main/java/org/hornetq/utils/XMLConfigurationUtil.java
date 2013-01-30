@@ -113,6 +113,20 @@ public class XMLConfigurationUtil
       }
    }
 
+   //with this method we can know if this property is absent in config or not by passing a null default
+   public static Boolean getNullableBoolean(final Element e, final String name, final Boolean def)
+   {
+      NodeList nl = e.getElementsByTagName(name);
+      if (nl.getLength() > 0)
+      {
+         return org.hornetq.utils.XMLUtil.parseBoolean(nl.item(0));
+      }
+      else
+      {
+         return def;
+      }
+   }
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------

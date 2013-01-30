@@ -887,6 +887,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      serverLocator.isCacheLargeMessagesClient(),
                                                                      serverLocator.getMinLargeMessageSize(),
                                                                      serverLocator.isCompressLargeMessage(),
+                                                                     serverLocator.isAvoidLargeMessage(),
                                                                      serverLocator.getInitialMessagePacketSize(),
                                                                      serverLocator.getGroupID(),
                                                                      connection,

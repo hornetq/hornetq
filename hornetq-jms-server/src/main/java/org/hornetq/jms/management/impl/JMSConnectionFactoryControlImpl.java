@@ -81,6 +81,17 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       recreateCF();
    }
 
+   public boolean isAvoidLargeMessages()
+   {
+      return cf.isAvoidLargeMessage();
+   }
+
+   public void setAvoidLargeMessages(final boolean compress)
+   {
+      cfConfig.setAvoidLargeMessages(compress);
+      recreateCF();
+   }
+
    public boolean isHA()
    {
       return cfConfig.isHA();

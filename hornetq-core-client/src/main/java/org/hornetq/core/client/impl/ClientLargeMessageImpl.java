@@ -45,6 +45,11 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
       this.largeMessageSize = largeMessageSize;
    }
 
+   public long getLargeMessageSize()
+   {
+      return this.largeMessageSize;
+   }
+
    // we only need this constructor as this is only used at decoding large messages on client
    public ClientLargeMessageImpl()
    {
@@ -193,5 +198,20 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
       {
          bufferOut.writeByte((byte)(b & 0xff));
       }
+   }
+
+   public void retrieveExistingData(ClientMessageImpl clMessage)
+   {
+      this.messageID = clMessage.getMessageID();
+      this.address = clMessage.getAddress();
+      this.setUserID(clMessage.getUserID());
+
+      this.type = clMessage.getType();
+      this.durable = clMessage.isDurable();
+      this.setExpiration(clMessage.getExpiration());
+      this.timestamp = clMessage.getTimestamp();
+      this.priority = clMessage.getPriority();
+      this.properties = clMessage.getProperties();
+      this.largeMessageSize = clMessage.getLongProperty(HDR_LARGE_BODY_SIZE);
    }
 }

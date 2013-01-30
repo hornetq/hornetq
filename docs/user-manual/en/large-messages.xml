@@ -98,11 +98,47 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();</prog
         </section>
         <section>
             <title>Compressed Large Messages</title>
-            <para>If you specify the boolean property <literal>compress-large-message</literal> on
+            <para>
+				You can choose to send large messages in compressed form. There are two options that
+				controls how large messages are compressed and sent, i.e. <literal>
+				compress-large-messages</literal> and <literal>avoid-large-messages</literal>.
+            </para>
+            <section>
+				<title><literal>compress-large-messages</literal></title>
+                <para>If you specify the boolean property <literal>compress-large-messages</literal> on
                 the <literal>server locator</literal> or <literal>ConnectionFactory</literal> The
                 system will use the ZIP algorithm to compress the message body as the message is
                 transferred to the server's side. Notice that there's no special treatment at the
                 server's side, all the compressing and uncompressing is done at the client.</para>
+            </section>
+            <section>
+				<title><literal>avoid-large-messages</literal></title>
+                <para>If you specify the boolean property <literal>avoid-large-messages</literal> on
+                the <literal>server locator</literal> or <literal>ConnectionFactory</literal>, large
+                messages are compressed the same way as if <literal>compress-large-message</literal>
+                is set to true and, if the compressed size is below <literal>
+			    min-large-message-size</literal>, are sent to server as regular messages. This means
+			    that those compress large messages won't be written into the server's large-message
+			    data directory, thus reducing the disk I/O.</para>
+            </section>
+            <section>
+				<para>Note that you only need to set one of the two above attributes that suits your needs.
+				Setting <literal>avoid-large-messages</literal> automatically makes 
+				<literal>compress-large-message</literal> true. Setting <literal>
+				compress-large-message</literal> to false automatically makes <literal>avoid-large-message</literal>
+				to be false.</para>
+				<para>If you use JMS, you can achieve large messages compression by configuring your 
+				connection factories. For example,</para>
+            <programlisting>...
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty"/>
+   &lt;/connectors>
+...
+   &lt;compress-large-messages>true&lt;/compress-large-messages>
+&lt;/connection-factory>
+...</programlisting>
+            </section>
         </section>
     </section>
     <section>

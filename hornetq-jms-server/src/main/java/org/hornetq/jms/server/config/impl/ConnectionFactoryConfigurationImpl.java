@@ -68,6 +68,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
    private boolean compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
+   
+   private boolean avoidLargeMessages = HornetQClient.DEFAULT_AVOID_LARGE_MESSAGES;
 
    private int consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
 
@@ -279,6 +281,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setCompressLargeMessages(final boolean compress)
    {
       this.compressLargeMessage = compress;
+      if (!compress) this.avoidLargeMessages = false;
    }
 
    public int getConsumerWindowSize()
@@ -809,6 +812,19 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public JMSFactoryType getFactoryType()
    {
       return factoryType;
+   }
+
+   @Override
+   public void setAvoidLargeMessages(boolean avoidLargeMessages)
+   {
+      this.avoidLargeMessages = avoidLargeMessages;
+      if (avoidLargeMessages) this.compressLargeMessage = true;
+   }
+
+   @Override
+   public boolean isAvoidLargeMessages()
+   {
+      return this.avoidLargeMessages;
    }
 
    // Public --------------------------------------------------------

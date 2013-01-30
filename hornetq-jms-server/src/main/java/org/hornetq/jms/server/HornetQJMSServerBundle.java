@@ -47,4 +47,7 @@ public interface HornetQJMSServerBundle
 
    @Message(id = 129008, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
+
+   @Message(id = 129009, value = "Either '{0}' or '{1}' can be presented in the configuration, not both", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInternalErrorException oneOfViolationParsingCF(String param1, String param2);
 }

@@ -711,4 +711,8 @@ public interface ServerLocator
    void addClusterTopologyListener(ClusterTopologyListener listener);
 
    void removeClusterTopologyListener(ClusterTopologyListener listener);
+
+   boolean isAvoidLargeMessage();
+
+   void setAvoidLargeMessage(boolean avoidLargeMessages);
 }

@@ -74,6 +74,8 @@ public class ConnectionFactoryProperties
 
    private Boolean compressLargeMessage;
 
+   private Boolean avoidLargeMessage;
+
    private Integer consumerWindowSize;
 
    private Integer producerWindowSize;
@@ -170,10 +172,21 @@ public class ConnectionFactoryProperties
       return compressLargeMessage;
    }
 
+   public Boolean isAvoidLargeMessage()
+   {
+      return avoidLargeMessage;
+   }
+
    public void setCompressLargeMessage(Boolean compressLargeMessage)
    {
       hasBeenUpdated = true;
       this.compressLargeMessage = compressLargeMessage;
+   }
+
+   public void setAvoidLargeMessage(Boolean avoidLargeMessage)
+   {
+      hasBeenUpdated = true;
+      this.avoidLargeMessage = avoidLargeMessage;
    }
 
    public String getConnectionLoadBalancingPolicyClassName()

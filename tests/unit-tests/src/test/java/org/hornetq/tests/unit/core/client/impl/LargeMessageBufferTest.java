@@ -41,6 +41,7 @@ import org.hornetq.core.client.impl.LargeMessageControllerImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQBufferInputStream;
@@ -924,6 +925,12 @@ public class LargeMessageBufferTest extends UnitTestCase
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
        */
       public void interruptHandlers() throws HornetQException
+      {
+      }
+
+      @Override
+      public void handleCompressedMessage(SessionReceiveMessage message)
+            throws Exception
       {
       }
 

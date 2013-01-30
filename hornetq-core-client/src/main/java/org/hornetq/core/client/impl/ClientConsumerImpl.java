@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
@@ -35,6 +36,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.utils.FutureLatch;
@@ -605,6 +607,48 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
+   public void handleCompressedMessage(SessionReceiveMessage message) throws Exception
+   {
+      if (closing)
+      {
+         return;
+      }
+      ClientMessageImpl clMessage = (ClientMessageImpl) message.getMessage();
+      //create a ClientLargeMessageInternal out of the message
+      ClientLargeMessageImpl largeMessage = new ClientLargeMessageImpl();
+      largeMessage.retrieveExistingData(clMessage);
+
+      largeMessage.setDeliveryCount(message.getDeliveryCount());
+      largeMessage.setFlowControlSize(message.getPacketSize());
+
+      File largeMessageCache = null;
+
+      if (session.isCacheLargeMessageClient())
+      {
+         largeMessageCache = File.createTempFile("tmp-large-message-" + largeMessage.getMessageID() + "-",
+                                                 ".tmp");
+         largeMessageCache.deleteOnExit();
+      }
+
+      ClientSessionFactory sf = session.getSessionFactory();
+      ServerLocator locator = sf.getServerLocator();
+      long callTimeout = locator.getCallTimeout();
+
+      currentLargeMessageController = new LargeMessageControllerImpl(this, largeMessage.getLargeMessageSize(), callTimeout, largeMessageCache);
+      currentLargeMessageController.setLocal(true);
+
+      //sets the packet
+      HornetQBuffer qbuff = clMessage.getBodyBuffer();
+      int bytesToRead = qbuff.writerIndex() - qbuff.readerIndex();
+      final byte[] body = qbuff.readBytes(bytesToRead).toByteBuffer().array();
+
+      largeMessage.setLargeMessageController(new CompressedLargeMessageControllerImpl(currentLargeMessageController));
+      SessionReceiveContinuationMessage packet = new SessionReceiveContinuationMessage(this.getID(), body, false, false, body.length);
+      currentLargeMessageController.addPacket(packet);
+
+      handleMessage(largeMessage);
+   }
+
    public synchronized void handleLargeMessage(final SessionReceiveLargeMessage packet) throws Exception
    {
       if (closing)
@@ -614,7 +658,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Flow control for the first packet, we will have others
-
       ClientLargeMessageInternal currentChunkMessage = (ClientLargeMessageInternal)packet.getLargeMessage();
 
       currentChunkMessage.setFlowControlSize(packet.getPacketSize());

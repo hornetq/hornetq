@@ -628,6 +628,21 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
+    * Get avoidLargeMessage
+    *
+    * @return The value
+    */
+   public Boolean isAvoidLargeMessage()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isAvoidLargeMessage()");
+      }
+
+      return raProperties.isAvoidLargeMessage();
+   }
+
+   /**
     * Set failoverOnInitialConnection
     *
     * @param failoverOnInitialConnection The value
@@ -670,6 +685,21 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setCompressLargeMessage(compressLargeMessage);
+   }
+
+   /**
+    * Set avoidLargeMessage
+    *
+    * @param avoidLargeMessage The value
+    */
+   public void setAvoidLargeMessage(final Boolean avoidLargeMessage)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setAvoidLargeMessage(" + avoidLargeMessage + ")");
+      }
+
+      raProperties.setCompressLargeMessage(avoidLargeMessage);
    }
 
    /**
@@ -2181,6 +2211,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val != null)
       {
          cf.setCompressLargeMessage(val);
+      }
+
+      val = overrideProperties.isAvoidLargeMessage() != null ? overrideProperties.isAvoidLargeMessage()
+                                                                    : raProperties.isAvoidLargeMessage();
+      if (val != null)
+      {
+         cf.setAvoidLargeMessage(val);
       }
 
       val = overrideProperties.isFailoverOnInitialConnection() != null ? overrideProperties.isFailoverOnInitialConnection()
