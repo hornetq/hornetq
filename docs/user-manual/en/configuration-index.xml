@@ -1490,7 +1490,7 @@
             </informaltable>
         </section>
 
-        <section>
+        <section id="configuration.masked-password">
            <title>Using Masked Passwords in Configuration Files</title>
            <para>By default all passwords in HornetQ server's configuration files are in plain text form. This usually poses no security issues as those
            files should be well protected from unauthorized accessing. However, in some circumstances a user doesn't want to expose its passwords to more
