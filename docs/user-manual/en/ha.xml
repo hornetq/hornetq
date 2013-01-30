@@ -77,7 +77,7 @@
                 Connection also defines how backup servers will find the remote live servers to pair
                 with.  Refer to <xref linkend="clusters"/> for details on how this is done, and how
                 to configure a cluster connection. Notice that:
-<itemizedlist><listime>Both live and backup servers must be part of the same cluster.  Notice that even a simple live/backup replicating pair will require a cluster configuration.</listime>
+<itemizedlist><listitem>Both live and backup servers must be part of the same cluster.  Notice that even a simple live/backup replicating pair will require a cluster configuration.</listitem>
 <listitem>their cluster user and password must match</listitem></itemizedlist>
 </para>
                 <para>Within a cluster, there are two ways that a backup server will locate a live server to replicate from, these are:</para>
@@ -95,10 +95,10 @@
                 </itemizedlist>
                 <note>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup servers:
                 <itemizedlist>
-                <lisitem><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></lisitem>
-    <lisitem><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></lisitem>
-    <lisitem><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></lisitem>
-    <lisitem><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></lisitem>
+                <listitem><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></listitem>
+    <listitem><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></listitem>
+    <listitem><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></listitem>
+    <listitem><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></listitem>
 </itemizedlist>
 <para>After joining the cluster the backups with <literal>backup-group-name=fish</literal> will search for live servers with <literal>backup-group-name=fish</literal> to pair with. Since there is one backup too many, the <literal>fish</literal> will remain with one spare backup.</para>
 <para>The 2 backups with <literal>backup-group-name=bird</literal> (<literal>backup5</literal> and <literal>backup6</literal>) will pair with live servers <literal>live4</literal> and <literal>live5</literal>.
