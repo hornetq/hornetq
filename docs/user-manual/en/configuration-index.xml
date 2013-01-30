@@ -47,6 +47,10 @@
                     </thead>
                     <tbody>
                         <row>
+                          <!--
+                               <xi:include href="generated-options-reference.xml"
+                               xmlns:xi="http://www.w3.org/2001/XInclude"/>
+                          -->
                             <entry><link linkend="ha.allow-fail-back">allow-failback</link></entry>
                             <entry>Boolean</entry>
                             <entry>Will this server automatically shutdown if the original live server comes back up</entry>

@@ -5,6 +5,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
     <xsd:element name="configuration">
         <xsd:complexType>
             <xsd:all>
+              <!-- XXX UNDOCUMENTED -->
               <xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string"/>
 
               <xsd:element maxOccurs="1" minOccurs="0" name="clustered"
@@ -18,8 +19,8 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
 
               <xsd:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xsd:string">
                 <xsd:annotation>
-                  <xsd:documentation
-                    >Whether or not we should check the cluster for a live server when starting up. This setting only applies to replicated servers.
+                  <xsd:documentation>
+                    Whether to check the cluster for a live server (using our own server ID) when starting up. This setting only applies to replicated servers.
                   </xsd:documentation>
                 </xsd:annotation>
               </xsd:element>
@@ -83,8 +84,6 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                   </xsd:annotation>
                 </xsd:element>
 
-
-
                 <xsd:element maxOccurs="1" minOccurs="0"
                              name="management-address" type="xsd:string"
                              default="jms.queue.hornetq.management">
@@ -136,11 +135,10 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                 <xsd:element maxOccurs="1" minOccurs="0"
                              name="log-delegate-factory-class-name"
                              type="xsd:string">
-                  <xsd:annotation >
-                    <xsd:documentation>XXX</xsd:documentation>
+                  <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
                   </xsd:annotation>
                 </xsd:element>
-
 
                 <xsd:element maxOccurs="1" minOccurs="0"
                              name="jmx-management-enabled" type="xsd:boolean" default="true">
@@ -256,7 +254,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                              name="remoting-incoming-interceptors"
                              type="class-name-sequence">
                   <xsd:annotation hq:linkend="intercepting-operations">
-                    <xsd:documentation>a list of &lt;class-name/> elements
+                    <xsd:documentation>a list of &lt;class-name/&gt; elements
                       with the names of classes to use for interceptor incoming remoting packets</xsd:documentation>
                   </xsd:annotation>
                 </xsd:element>
@@ -265,14 +263,14 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                              name="remoting-outgoing-interceptors"
                              type="class-name-sequence">
                   <xsd:annotation hq:linkend="intercepting-operations">
-                    <xsd:documentation>a list of &lt;class-name/> elements
+                    <xsd:documentation>a list of &lt;class-name/&gt; elements
                       with the names of classes to use for interceptor outcoming remoting packets</xsd:documentation>
                   </xsd:annotation>
                 </xsd:element>
 
                 <xsd:element maxOccurs="1" minOccurs="0" name="backup"
                              type="xsd:boolean" default="false">
-                  <xsd:annotation hq:linkend="XXX">
+                  <xsd:annotation hq:linkend="ha">
                     <xsd:documentation>Is this server a backup server</xsd:documentation>
                   </xsd:annotation>
                 </xsd:element>
@@ -471,10 +469,9 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                   </xsd:annotation>
                 </xsd:element>
 
-                <!-- XXX UNDOCUMENTED -->
                 <xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int">
-                  <xsd:annotation>
-                    <xsd:documentation></xsd:documentation>
+                  <xsd:annotation hq:linkend="paging.mode">
+                    <xsd:documentation>The max number of concurrent reads allowed on paging</xsd:documentation>
                   </xsd:annotation>
                 </xsd:element>
 
