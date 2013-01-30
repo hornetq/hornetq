@@ -76,7 +76,7 @@
                                 >connection-ttl-override</link></entry>
                             <entry>Long</entry>
                             <entry>if set, this will override how long (in ms) to keep a connection
-                                alive without receiving a ping. </entry>
+                                alive without receiving a ping.</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
@@ -115,38 +115,43 @@
                                 configuration files</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="ha.allow-fail-back">failover-on-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>Will this backup server come live on a normal server shutdown</entry>
                             <entry>false</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the cache for pre creating message id's</entry>
                             <entry>2000</entry>
                         </row>
+
                         <row>
                             <entry><link
                                     linkend="configuring.message.journal.journal-buffer-size"
                                     >journal-buffer-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The size of the internal buffer on the journal.</entry>
+                            <entry>The size of the internal buffer on the journal in KiB.</entry>
                             <entry>128 KiB</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-buffer-timeout"
+                                       linkend="configuring.message.journal.journal-buffer-timeout"
                                     >journal-buffer-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>The timeout (in nanoseconds) used to flush internal
                                 buffers on the journal.</entry>
                             <entry>20000</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-compact-min-files"
+                                       linkend="configuring.message.journal.journal-compact-min-files"
                                     >journal-compact-min-files</link></entry>
                             <entry>Integer</entry>
                             <entry>The minimal number of data files before we can start
@@ -155,13 +160,14 @@
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-compact-percentage"
+                                       linkend="configuring.message.journal.journal-compact-percentage"
                                     >journal-compact-percentage</link></entry>
                             <entry>Integer</entry>
                             <entry>The percentage of live data on which we consider compacting the
                                 journal</entry>
                             <entry>30</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-directory"
                                     >journal-directory</link></entry>
@@ -169,13 +175,15 @@
                             <entry>the directory to store the journal files in</entry>
                             <entry>data/journal</entry>
                         </row>
+
                         <row>
-                            <entry><link linkend="configuring.message.journal.journal-file-size"
+                          <entry><link linkend="configuring.message.journal.journal-file-size"
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>the size (in bytes) of each journal file</entry>
                             <entry>10 * 1024 * 1024 (10 MiB)</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-max-io"
                                     >journal-max-io</link></entry>
@@ -184,6 +192,7 @@
                                 at any one time</entry>
                             <entry>500</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-min-files"
                                     >journal-min-files</link></entry>
@@ -191,15 +200,17 @@
                             <entry>how many journal files to pre-create</entry>
                             <entry>2</entry>
                         </row>
+
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-sync-transactional"
+                                       linkend="configuring.message.journal.journal-sync-transactional"
                                     >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for transaction data to be synchronized to the
-                                journal before returning response to client</entry>
+                            journal before returning response to client</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link
                                     linkend="configuring.message.journal.journal-sync-non-transactional"
@@ -209,6 +220,7 @@
                                 before returning response to client.</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-type"
                                     >journal-type</link></entry>
@@ -216,6 +228,7 @@
                             <entry>the type of journal to use</entry>
                             <entry>ASYNCIO</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.jmx.configuration"
                                     >jmx-management-enabled</link></entry>
@@ -231,12 +244,14 @@
                                 MBeanServer</entry>
                             <entry>org.hornetq</entry>
                         </row>
+
                         <row>
                             <entry>log-delegate-factory-class-name</entry>
                             <entry>String</entry>
                             <entry>todo</entry>
                             <entry>todo</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="large.message.configuring"
                                     >large-messages-directory</link></entry>
@@ -244,6 +259,7 @@
                             <entry>the directory to store large messages</entry>
                             <entry>data/largemessages</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
@@ -252,6 +268,7 @@
                                 to</entry>
                             <entry>jms.queue.hornetq.management</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="clusters"
                                     >cluster-user</link></entry>
@@ -260,6 +277,7 @@
                                 clustered nodes</entry>
                             <entry>HORNETQ.CLUSTER.ADMIN.USER</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="clusters"
                                     >cluster-password</link></entry>
@@ -268,14 +286,16 @@
                                 clustered nodes</entry>
                             <entry>CHANGE ME!!</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="management.notifications.core.configuration"
                                     >management-notification-address</link></entry>
                             <entry>String</entry>
                             <entry>the name of the address that consumers bind to receive management
-                                notifications</entry>
+                            notifications</entry>
                             <entry>hornetq.notifications</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-enabled</link></entry>
@@ -290,6 +310,7 @@
                             <entry>how many days to keep message counter history</entry>
                             <entry>10</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-sample-period</link></entry>
@@ -297,13 +318,15 @@
                             <entry>the sample period (in ms) to use for message counters</entry>
                             <entry>10000</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
-                                    >message-expiry-scan-period</link></entry>
+                                         >message-expiry-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>how often (in ms) to scan for expired messages</entry>
                             <entry>30000</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
                                     >message-expiry-thread-priority</link></entry>
@@ -311,13 +334,15 @@
                             <entry>the priority of the thread expiring messages</entry>
                             <entry>3</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="paging.main.config"
-                                >paging-directory</link></entry>
+                                         >paging-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store paged messages in</entry>
                             <entry>data/paging</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring.delivery.count.persistence">
                                     persist-delivery-count-before-delivery</link></entry>
@@ -327,14 +352,16 @@
                                 cancelled.</entry>
                             <entry>false</entry>
                         </row>
+
                         <row>
-                            <entry><link linkend="persistence.enabled"
+                          <entry><link linkend="persistence.enabled"
                                 >persistence-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the server will use the file based journal for
                                 persistence.</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="duplicate.id.cache"
                                 >persist-id-cache</link></entry>
@@ -342,6 +369,7 @@
                             <entry>true means that id's are persisted to the journal</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="intercepting-operations">remoting-interceptors</link></entry>
                             <entry>String</entry>
@@ -372,11 +400,12 @@
                             <entry>the fully qualified name of the interceptor class</entry>
                             <entry/>
                         </row>
+
                         <row>
                             <entry><link linkend="ha.mode.shared">shared-store</link></entry>
                             <entry>Boolean</entry>
                             <entry>is this server using a shared store for failover</entry>
-                            <entry>false</entry>
+                            <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="server.scheduled.thread.pool"
@@ -386,6 +415,7 @@
                                 has.</entry>
                             <entry>5</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="security">security-enabled</link></entry>
                             <entry>Boolean</entry>
@@ -400,6 +430,7 @@
                                 cache</entry>
                             <entry>10000</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="server.scheduled.thread.pool"
                                     >thread-pool-max-size</link></entry>
@@ -439,6 +470,7 @@
                             <entry>true means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="perf-tuning.memory"
                                 >memory-measure-interval</link></entry>
@@ -453,6 +485,7 @@
                             <entry>Percentage of available memory which threshold a warning log</entry>
                             <entry>25</entry>
                         </row>
+
                         <row>
                             <entry><link linkend="configuring-transports.connectors"
                                 >connectors</link></entry>
@@ -1030,7 +1063,7 @@
                             <entry>boolean</entry>
                             <entry>whether to treat the queue as a last value queue</entry>
                             <entry>false</entry>
-                        </row>                        
+                        </row>
                         <row>
                             <entry><link linkend="paging"
                                 >address-settings.page-size-bytes</link></entry>
@@ -1163,7 +1196,7 @@
                             <entry>the initial time to wait (in ms) for discovery groups to wait for
                                 broadcasts</entry>
                             <entry>10000</entry>
-                        </row>                        
+                        </row>
                         <row>
                             <entry id="configuration.connection-factory.block-on-acknowledge">
                                <link linkend="send-guarantees.nontrans.acks">connection-factory.block-on-acknowledge</link>
@@ -1455,16 +1488,16 @@
 
         <section>
            <title>Using Masked Passwords in Configuration Files</title>
-           <para>By default all passwords in HornetQ server's configuration files are in plain text form. This usually poses no security issues as those 
-           files should be well protected from unauthorized accessing. However, in some circumstances a user doesn't want to expose its passwords to more 
+           <para>By default all passwords in HornetQ server's configuration files are in plain text form. This usually poses no security issues as those
+           files should be well protected from unauthorized accessing. However, in some circumstances a user doesn't want to expose its passwords to more
            eyes than necessary. </para>
 
            <para>HornetQ can be configured to use 'masked' passwords in its configuration files. A masked password is an obscure string representation
            of a real password. To mask a password a user will use an 'encoder'. The encoder takes in the real password and outputs the masked version.
-           A user can then replace the real password in the configuration files with the new masked password. 
+           A user can then replace the real password in the configuration files with the new masked password.
            When HornetQ loads a masked password, it uses a suitable 'decoder' to decode it into real password.</para>
 
-           <para>Hornetq provides a default password encoder and decoder. Optionally users can use or implement their own encoder and decoder for 
+           <para>Hornetq provides a default password encoder and decoder. Optionally users can use or implement their own encoder and decoder for
            masking the passwords.</para>
 
            <section> <title>Password Masking in Server Configuration File</title>
@@ -1473,7 +1506,7 @@
 
               <para>The server configuration file has a property that defines the default masking behaviors over the entire file scope.</para>
 
-              <para><literal>mask-password</literal>: this boolean type property indicates if a password should be masked or not. Set it to "true" 
+              <para><literal>mask-password</literal>: this boolean type property indicates if a password should be masked or not. Set it to "true"
               if you want your passwords masked. The default value is "false".</para>
               </section>
 
@@ -1481,7 +1514,7 @@
 
                  <section> <title>cluster-password</title>
 
-                 <para>The nature of the value of cluster-password is subject to the value of property 'mask-password'. If it is true 
+                 <para>The nature of the value of cluster-password is subject to the value of property 'mask-password'. If it is true
                  the cluster-password is masked.</para>
                  </section>
 
@@ -1499,7 +1532,7 @@
 
                  <section> <title>Passwords in Core Bridge configurations</title>
 
-                 <para>Core Bridges are configured in the server configuration file and so the masking of its 'password' properties 
+                 <para>Core Bridges are configured in the server configuration file and so the masking of its 'password' properties
                  follows the same rules as that of 'cluster-password'.</para>
                  </section>
               </section>
@@ -1569,13 +1602,13 @@
 
            <section> <title>JMS Bridge password masking</title>
 
-           <para>The JMS Bridges are configured and deployed as separate beans so they need separate configuration to control the password masking. 
-           A JMS Bridge has two password parameters in its constructor, SourcePassword and TargetPassword. It uses the following two optional 
+           <para>The JMS Bridges are configured and deployed as separate beans so they need separate configuration to control the password masking.
+           A JMS Bridge has two password parameters in its constructor, SourcePassword and TargetPassword. It uses the following two optional
            properties to control their masking:</para>
 
            <para><literal>useMaskedPassword</literal> -- If set to "true" the passwords are masked. Default is false.</para>
-           <para><literal>passwordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. Ignored if 
-           <literal>useMaskedPassword</literal> is false. The format of this property is a full qualified class name optionally followed by key/value pairs, 
+           <para><literal>passwordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. Ignored if
+           <literal>useMaskedPassword</literal> is false. The format of this property is a full qualified class name optionally followed by key/value pairs,
            separated by semi-colons. For example:</para>
 
 <literal>
@@ -1584,19 +1617,19 @@
 <literal>
 &lt;property name="passwordCodec">com.foo.FooDecoder;key=value&lt;/property>
 </literal>
-           <para>HornetQ will load this property and initialize the class with a parameter map containing the "key"->"value" pair. 
+           <para>HornetQ will load this property and initialize the class with a parameter map containing the "key"->"value" pair.
            If <literal>passwordCodec</literal> is not specified, the built-in decoder is used.</para>
 
            </section>
 
            <section> <title>Masking passwords in HornetQ ResourceAdapters and MDB activation configurations</title>
 
-           <para>Both ra.xml and MDB activation configuration have a 'password' property that can be masked. They are controlled by the following two 
+           <para>Both ra.xml and MDB activation configuration have a 'password' property that can be masked. They are controlled by the following two
            optional Resource Adapter properties in ra.xml:</para>
 
            <para><literal>UseMaskedPassword</literal> -- If setting to "true" the passwords are masked. Default is false.</para>
-           <para><literal>PasswordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. 
-              Ignored if UseMaskedPassword is false. The format of this property is a full qualified class name optionally followed by key/value pairs. 
+           <para><literal>PasswordCodec</literal> -- Class name and its parameters for the Decoder used to decode the masked password.
+              Ignored if UseMaskedPassword is false. The format of this property is a full qualified class name optionally followed by key/value pairs.
               It is the same format as that for JMS Bridges. Example:</para>
 
 <programlisting>
@@ -1617,36 +1650,36 @@
 
            <section> <title>Masking passwords in hornetq-users.xml</title>
 
-           <para>HornetQ's built-in security manager uses plain configuration files where the user passwords are specified in plaintext 
+           <para>HornetQ's built-in security manager uses plain configuration files where the user passwords are specified in plaintext
            forms by default. To mask those parameters the following two properties are needed:</para>
 
            <para> <literal>mask-password</literal> -- If set to "true" all the passwords are masked. Default is false.</para>
-           <para> <literal>password-codec</literal> -- Class name and its parameters for the Decoder used to decode the masked password. 
-           Ignored if <literal>mask-password</literal> is false. The format of this property is a full qualified class name optionally 
+           <para> <literal>password-codec</literal> -- Class name and its parameters for the Decoder used to decode the masked password.
+           Ignored if <literal>mask-password</literal> is false. The format of this property is a full qualified class name optionally
            followed by key/value pairs. It is the same format as that for JMS Bridges. Example:</para>
 
 <programlisting>
 &lt;mask-password>true&lt;/mask-password>
 &lt;password-codec>org.hornetq.utils.DefaultSensitiveStringCodec;key=hello world&lt;/password-codec></programlisting>
 
-           <para>When so configured, the HornetQ security manager will initialize a DefaultSensitiveStringCodec with the parameters 
+           <para>When so configured, the HornetQ security manager will initialize a DefaultSensitiveStringCodec with the parameters
            "key"->"hello world", then use it to decode all the masked passwords in this configuration file.</para>
 
            </section>
 
            <section> <title>Choosing a decoder for password masking</title>
 
-           <para>As described in the previous sections, all password masking requires a decoder. A decoder uses an algorithm to 
-           convert a masked password into its original clear text form in order to be used in various security operations. The algorithm 
+           <para>As described in the previous sections, all password masking requires a decoder. A decoder uses an algorithm to
+           convert a masked password into its original clear text form in order to be used in various security operations. The algorithm
            used for decoding must match that for encoding. Otherwise the decoding may not be successful.</para>
 
            <para>For user's convenience HornetQ provides a default built-in Decoder. However a user can if they so wish implement their own.</para>
 
               <section><title>The built-in Decoder</title>
 
-              <para>Whenever no decoder is specified in the configuration file, the built-in decoder is used. The class name for the built-in 
-              decoder is org.hornetq.utils.DefaultSensitiveStringCodec. It has both encoding and decoding capabilities. It uses java.crypto.Cipher 
-              utilities to encrypt (encode) a plaintext password and decrypt a mask string using same algorithm. Using this decoder/encoder is 
+              <para>Whenever no decoder is specified in the configuration file, the built-in decoder is used. The class name for the built-in
+              decoder is org.hornetq.utils.DefaultSensitiveStringCodec. It has both encoding and decoding capabilities. It uses java.crypto.Cipher
+              utilities to encrypt (encode) a plaintext password and decrypt a mask string using same algorithm. Using this decoder/encoder is
               pretty straightforward. To get a mask for a password, just run the following in command line:</para>
 
 <programlisting>
@@ -1680,7 +1713,7 @@ Encoded password: 80cf731af62c290</programlisting>
 &lt;mask-password>true&lt;/mask-password>
 &lt;cluster-password>masked_password&lt;/cluster-password></programlisting>
 
-              <para>When HornetQ reads the cluster-password it will initialize the NewDecoder and use it to decode "mask_password". 
+              <para>When HornetQ reads the cluster-password it will initialize the NewDecoder and use it to decode "mask_password".
               It also process all passwords using the new defined decoder.</para>
               </section>
 
@@ -1697,7 +1730,7 @@ public interface SensitiveDataCodec&lt;T>
    void init(Map&lt;String, String> params);
 }</programlisting>
 
-              <para>This is a generic type interface but normally for a password you just need String type. 
+              <para>This is a generic type interface but normally for a password you just need String type.
                   So a new decoder would be defined like </para>
 
 <programlisting>
@@ -1715,7 +1748,7 @@ public class MyNewDecoder implements SensitiveDataCodec&lt;String>
    }
 }</programlisting>
 
-             <para>Last but not least, once you get your own decoder, please add it to the classpath. Otherwise HornetQ will 
+             <para>Last but not least, once you get your own decoder, please add it to the classpath. Otherwise HornetQ will
              fail to load it!</para>
              </section>
         </section>
