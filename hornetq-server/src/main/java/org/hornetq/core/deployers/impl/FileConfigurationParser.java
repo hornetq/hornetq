@@ -25,14 +25,15 @@ import java.util.Set;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
@@ -50,7 +51,6 @@ import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
-import org.hornetq.api.core.Pair;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
 import org.hornetq.utils.XMLConfigurationUtil;
@@ -674,7 +674,7 @@ public final class FileConfigurationParser
       if (elements.getLength() != 0)
       {
          Element node = (Element)elements.item(0);
-         NodeList list = node.getElementsByTagName("security-setting");
+         NodeList list = node.getElementsByTagName(SECURITY_ELEMENT_NAME);
          for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, Set<Role>> securityItem = parseSecurityRoles(list.item(i));
