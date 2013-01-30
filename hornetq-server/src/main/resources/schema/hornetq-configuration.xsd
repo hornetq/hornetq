@@ -127,7 +127,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                 </xsd:element>
 
                 <xsd:element maxOccurs="1" minOccurs="0" name="password-codec" type="xsd:string" default="org.hornetq.utils.DefaultSensitiveStringCodec">
-                  <xsd:annotation hq:linkend="configuration-index">
+                  <xsd:annotation hq:linkend="configuration.masked-password">
                     <xsd:documentation>
                        Class name and its parameters for the Decoder used to decode the masked password. 
                        Ignored if mask-password is false. The format of this property is a full qualified
@@ -137,7 +137,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hq="urn:org.hornetq" attribut
                 </xsd:element>
 
                 <xsd:element maxOccurs="1" minOccurs="0" name="mask-password" type="xsd:boolean" default="false">
-                  <xsd:annotation hq:linkend="configuration-index">
+                  <xsd:annotation hq:linkend="configuration.masked-password">
                     <xsd:documentation>
                       This option controls whether passwords in server configuration need be masked.
                       If set to "true" the passwords are masked.
