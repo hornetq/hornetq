@@ -56,38 +56,38 @@ public interface HornetQRestLogger extends BasicLogger
    HornetQRestLogger LOGGER = Logger.getMessageLogger(HornetQRestLogger.class, HornetQRestLogger.class.getPackage().getName());
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 181001, value = "Loading REST push store from: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 181000, value = "Loading REST push store from: {0}", format = Message.Format.MESSAGE_FORMAT)
    void loadingRestStore(String path);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 181002, value = "adding REST push registration: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 181001, value = "adding REST push registration: {0}", format = Message.Format.MESSAGE_FORMAT)
    void addingPushRegistration(String id);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 181003, value = "Push consumer started for: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 181002, value = "Push consumer started for: {0}", format = Message.Format.MESSAGE_FORMAT)
    void startingPushConsumer(XmlLink link);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 182001, value = "shutdown REST consumer because of timeout for: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 182000, value = "shutdown REST consumer because of timeout for: {0}", format = Message.Format.MESSAGE_FORMAT)
    void shutdownRestConsumer(String id);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 182002, value = "shutdown REST subscription because of timeout for: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 182001, value = "shutdown REST subscription because of timeout for: {0}", format = Message.Format.MESSAGE_FORMAT)
    void shutdownRestSubscription(String id);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 184001, value = "Failed to load push store {0}, it is probably corrupted", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 184000, value = "Failed to load push store {0}, it is probably corrupted", format = Message.Format.MESSAGE_FORMAT)
    void errorLoadingStore(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 184002, value = "Error updating store", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 184001, value = "Error updating store", format = Message.Format.MESSAGE_FORMAT)
    void errorUpdatingStore(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 184003, value = "Failed to push message to {0} disabling push registration...", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 184002, value = "Failed to push message to {0} disabling push registration...", format = Message.Format.MESSAGE_FORMAT)
    void errorPushingMessage(XmlLink link);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 184004, value = "Error deleting Subscriber queue", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 184003, value = "Error deleting Subscriber queue", format = Message.Format.MESSAGE_FORMAT)
    void errorDeletingSubscriberQueue(@Cause HornetQException e);
 }

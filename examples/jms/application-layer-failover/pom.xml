@@ -48,7 +48,7 @@
                      <jndiPort>1199</jndiPort>
                      <jndiRmiPort>1198</jndiRmiPort>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server1</hornetqConfigurationDir>
-                     <serverStartString>INFO: HQ221039</serverStartString>
+                     <serverStartString>INFO: HQ221034</serverStartString>
                      <fork>true</fork>
                   </configuration>
                </execution>

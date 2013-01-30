@@ -58,87 +58,79 @@ public interface HornetQRALogger extends BasicLogger
    HornetQRALogger LOGGER = Logger.getMessageLogger(HornetQRALogger.class, HornetQRALogger.class.getPackage().getName());
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151001, value = "awaiting topic/queue creation {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151000, value = "awaiting topic/queue creation {0}", format = Message.Format.MESSAGE_FORMAT)
    void awaitingTopicQueueCreation(String destination);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151002, value = "Attempting to reconnect {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151001, value = "Attempting to reconnect {0}", format = Message.Format.MESSAGE_FORMAT)
    void attemptingReconnect(HornetQActivationSpec spec);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151003, value = "Reconnected with HornetQ", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151002, value = "Reconnected with HornetQ", format = Message.Format.MESSAGE_FORMAT)
    void reconnected();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151004, value = "HornetQ resource adaptor started", format = Message.Format.MESSAGE_FORMAT)
-   void raStarted();
-
-   @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151005, value = "HornetQ resource adaptor stopped", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151003, value = "HornetQ resource adaptor stopped", format = Message.Format.MESSAGE_FORMAT)
    void raStopped();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151006, value = "Unable to retrieve {0} from JNDI. Creating a new {1} named \"{2}\" to be used by the MDB.", format = Message.Format.MESSAGE_FORMAT)
-   void unableToRetrieveDestinationFromJNDI(String destinationName, String destinationType, String calculatedDestinationName);
-
-   @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151007, value = "Instantiating {0} \"{1}\" directly since UseJNDI=false.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151004, value = "Instantiating {0} \"{1}\" directly since UseJNDI=false.", format = Message.Format.MESSAGE_FORMAT)
    void instantiatingDestination(String destinationType, String destination);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 151008, value = "awaiting HornetQ Server availability", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 151005, value = "awaiting HornetQ Server availability", format = Message.Format.MESSAGE_FORMAT)
    void awaitingJMSServerCreation();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152001, value = "It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod" +
+   @Message(id = 152000, value = "It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod" +
          "\nHornetQ Resource Adapter won't be able to set and verify transaction timeouts in certain cases.", format = Message.Format.MESSAGE_FORMAT)
    void noTXLocator();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152002, value = "problem resetting HornetQ xa session after failure" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152001, value = "problem resetting HornetQ xa session after failure" , format = Message.Format.MESSAGE_FORMAT)
    void problemResettingXASession();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152003, value = "Unable to roll local transaction back" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152002, value = "Unable to roll local transaction back" , format = Message.Format.MESSAGE_FORMAT)
    void unableToRollbackTX();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152004, value = "unable to reset session after failure" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152003, value = "unable to reset session after failure" , format = Message.Format.MESSAGE_FORMAT)
    void unableToResetSession();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152005, value = "Handling JMS exception failure" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152004, value = "Handling JMS exception failure" , format = Message.Format.MESSAGE_FORMAT)
    void handlingJMSFailure(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152006, value = "Failure in HornetQ activation {0}" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152005, value = "Failure in HornetQ activation {0}" , format = Message.Format.MESSAGE_FORMAT)
    void failureInActivation(@Cause Throwable t, HornetQActivationSpec spec);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152007, value = "Unable to call after delivery" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152006, value = "Unable to call after delivery" , format = Message.Format.MESSAGE_FORMAT)
    void unableToCallAfterDelivery(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152008, value = "unable to clear the transaction" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 152007, value = "unable to clear the transaction" , format = Message.Format.MESSAGE_FORMAT)
    void unableToClearTX(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154001, value = "Error while creating object Reference." , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 154000, value = "Error while creating object Reference." , format = Message.Format.MESSAGE_FORMAT)
    void errorCreatingReference(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154002, value = "Unable to stop HornetQ resource adapter." , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 154001, value = "Unable to stop HornetQ resource adapter." , format = Message.Format.MESSAGE_FORMAT)
    void errorStoppingRA(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154003, value = "Could not create session", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 154002, value = "Could not create session", format = Message.Format.MESSAGE_FORMAT)
    void errorCreatingSession(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154004, value = "Unable to reconnect {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 154003, value = "Unable to reconnect {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorReconnecting(@Cause Throwable t, HornetQActivationSpec spec);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154005, value = "Failed to deliver message", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 154004, value = "Failed to deliver message", format = Message.Format.MESSAGE_FORMAT)
    void errorDeliveringMessage(@Cause Throwable t);
 }

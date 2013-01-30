@@ -22,15 +22,15 @@ public interface HornetQUtilBundle
 {
    HornetQUtilBundle BUNDLE = Messages.getBundle(HornetQUtilBundle.class);
 
-   @Message(id = 209001, value = "invalid property: {0}" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 209000, value = "invalid property: {0}" , format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException invalidProperty(String part);
 
-   @Message(id = 209002, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 209001, value = "Invalid type: {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException invalidType(Byte type);
 
-   @Message(id = 209003, value = "the specified string is too long ({0})", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 209002, value = "the specified string is too long ({0})", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException stringTooLong(Integer length);
 
-   @Message(id = 209004, value = "Error instantiating codec {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 209003, value = "Error instantiating codec {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException errorCreatingCodec(@Cause Exception e, String codecClassName);
 }
