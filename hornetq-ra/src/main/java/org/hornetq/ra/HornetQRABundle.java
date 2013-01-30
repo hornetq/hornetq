@@ -22,7 +22,7 @@ public interface HornetQRABundle
 {
    HornetQRABundle BUNDLE = Messages.getBundle(HornetQRABundle.class);
 
-   @Message(id = 159001, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 159000, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException errorDecodingPassword(@Cause Exception e);
 
 

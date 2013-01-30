@@ -54,22 +54,22 @@ public interface HornetQBootstrapLogger extends BasicLogger
    HornetQBootstrapLogger LOGGER = Logger.getMessageLogger(HornetQBootstrapLogger.class, HornetQBootstrapLogger.class.getPackage().getName());
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 101001, value = "Starting HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 101000, value = "Starting HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
    void serverStarting();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 101002, value = "Stopping HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 101001, value = "Stopping HornetQ Server", format = Message.Format.MESSAGE_FORMAT)
    void serverStopping();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 102001, value = "Error during undeployment: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 102000, value = "Error during undeployment: {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorDuringUndeployment(@Cause Throwable t, String name);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 104001, value = "Failed to delete file {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 104000, value = "Failed to delete file {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorDeletingFile(String name);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 104002, value = "Failed to start server", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 104001, value = "Failed to start server", format = Message.Format.MESSAGE_FORMAT)
    void errorStartingServer(@Cause Exception e);
 }

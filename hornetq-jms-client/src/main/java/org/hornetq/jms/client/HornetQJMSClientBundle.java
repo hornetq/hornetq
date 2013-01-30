@@ -23,6 +23,6 @@ public interface HornetQJMSClientBundle
 {
    HornetQJMSClientBundle BUNDLE = Messages.getBundle(HornetQJMSClientBundle.class);
 
-   @Message(id = 129009, value =  "Invalid filter: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 129000, value =  "Invalid filter: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQInvalidFilterExpressionException invalidFilter(@Cause Throwable e, SimpleString filter);
 }
