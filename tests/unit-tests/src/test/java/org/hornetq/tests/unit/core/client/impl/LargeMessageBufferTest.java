@@ -35,7 +35,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
-import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.LargeMessageControllerImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -879,7 +878,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       }
 
-      public void handleMessage(final ClientMessageInternal message) throws Exception
+      public void handleMessage(final SessionReceiveMessage message) throws Exception
       {
 
 
@@ -927,13 +926,6 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void interruptHandlers() throws HornetQException
       {
       }
-
-      @Override
-      public void handleCompressedMessage(SessionReceiveMessage message)
-            throws Exception
-      {
-      }
-
    }
 
 }

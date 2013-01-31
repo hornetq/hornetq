@@ -354,9 +354,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          msgI.putBooleanProperty(Message.HDR_LARGE_COMPRESSED, true);
 
-         boolean avoidLarge = session.isAvoidLargeMessages();
-
-         if (avoidLarge && (!msgI.isServerMessage()))
+         if (!msgI.isServerMessage())
          {
             InputStream input = msgI.getBodyInputStream();
             if (input == null)

@@ -273,31 +273,9 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                 Validators.GT_ZERO);
 
-      Boolean compressLargeMessages = XMLConfigurationUtil.getNullableBoolean(e,
+      boolean compressLargeMessages = XMLConfigurationUtil.getBoolean(e,
                                                                 "compress-large-messages",
-                                                                null);
-
-      Boolean avoidLargeMessages = XMLConfigurationUtil.getNullableBoolean(e,
-                                                                "avoid-large-messages",
-                                                                null);
-
-      if (compressLargeMessages != null)
-      {
-         if (avoidLargeMessages != null)
-         {
-            throw HornetQJMSServerBundle.BUNDLE.oneOfViolationParsingCF("compress-large-messages", "avoid-large-messages");         
-         }
-         avoidLargeMessages = false;
-      }
-      else if (avoidLargeMessages != null)
-      {
-         compressLargeMessages = avoidLargeMessages;
-      }
-      else
-      {
-         compressLargeMessages = false;
-         avoidLargeMessages = false;
-      }
+                                                                HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES);
 
       boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                    "block-on-acknowledge",
@@ -425,7 +403,6 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       cfConfig.setCacheLargeMessagesClient(cacheLargeMessagesClient);
       cfConfig.setMinLargeMessageSize(minLargeMessageSize);
       cfConfig.setCompressLargeMessages(compressLargeMessages);
-      cfConfig.setAvoidLargeMessages(avoidLargeMessages);
       cfConfig.setConsumerWindowSize(consumerWindowSize);
       cfConfig.setConsumerMaxRate(consumerMaxRate);
       cfConfig.setConfirmationWindowSize(confirmationWindowSize);

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -565,7 +566,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       return browseOnly;
    }
 
-   public synchronized void handleMessage(final ClientMessageInternal message) throws Exception
+   public synchronized void handleMessage(final SessionReceiveMessage message) throws Exception
    {
       if (closing)
       {
@@ -573,6 +574,24 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
+      if (message.getMessage().getBooleanProperty(Message.HDR_LARGE_COMPRESSED))
+      {
+         handleCompressedMessage(message);
+      }
+      else
+      {
+         ClientMessageInternal clMessage = (ClientMessageInternal)message.getMessage();
+
+         clMessage.setDeliveryCount(message.getDeliveryCount());
+
+         clMessage.setFlowControlSize(message.getPacketSize());
+
+         handleRegularMessage((ClientMessageInternal)message.getMessage());
+      }
+   }
+
+   private void handleRegularMessage(final ClientMessageInternal message) throws Exception
+   {
       ClientMessageInternal messageToHandle = message;
 
       if (messageToHandle.getAddress() == null)
@@ -607,12 +626,14 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public void handleCompressedMessage(SessionReceiveMessage message) throws Exception
+   /**
+    * This method deals with messages arrived as regular message but its contents are compressed.
+    * Such messages come from message senders who are configured to compress large messages, and
+    * if some of the messages are compressed below the min-large-message-size limit, they are sent
+    * as regular messages (see avoid-large-messages option).
+    */
+   private void handleCompressedMessage(final SessionReceiveMessage message) throws Exception
    {
-      if (closing)
-      {
-         return;
-      }
       ClientMessageImpl clMessage = (ClientMessageImpl) message.getMessage();
       //create a ClientLargeMessageInternal out of the message
       ClientLargeMessageImpl largeMessage = new ClientLargeMessageImpl();
@@ -646,7 +667,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       SessionReceiveContinuationMessage packet = new SessionReceiveContinuationMessage(this.getID(), body, false, false, body.length);
       currentLargeMessageController.addPacket(packet);
 
-      handleMessage(largeMessage);
+      handleRegularMessage(largeMessage);
    }
 
    public synchronized void handleLargeMessage(final SessionReceiveLargeMessage packet) throws Exception
@@ -688,7 +709,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          currentChunkMessage.setLargeMessageController(currentLargeMessageController);
       }
 
-      handleMessage(currentChunkMessage);
+      handleRegularMessage(currentChunkMessage);
    }
 
    public synchronized void handleLargeMessageContinuation(final SessionReceiveContinuationMessage chunk) throws Exception

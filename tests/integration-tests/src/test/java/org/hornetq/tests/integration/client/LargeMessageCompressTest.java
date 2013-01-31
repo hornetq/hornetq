@@ -43,6 +43,10 @@ import org.hornetq.tests.util.UnitTestCase;
 public class LargeMessageCompressTest extends LargeMessageTest
 {
    // Constructors --------------------------------------------------
+   public LargeMessageCompressTest()
+   {
+      isCompressedTest = true;
+   }
 
    @Override
    protected boolean isNetty()
