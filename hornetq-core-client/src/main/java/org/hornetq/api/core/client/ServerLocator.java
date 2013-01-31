@@ -706,13 +706,9 @@ public interface ServerLocator
 
    boolean isCompressLargeMessage();
 
-   void setCompressLargeMessage(boolean compress);
+   void setCompressLargeMessage(boolean avoidLargeMessages);
 
    void addClusterTopologyListener(ClusterTopologyListener listener);
 
    void removeClusterTopologyListener(ClusterTopologyListener listener);
-
-   boolean isAvoidLargeMessage();
-
-   void setAvoidLargeMessage(boolean avoidLargeMessages);
 }

@@ -987,7 +987,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setCallFailoverTimeout(callFailoverTimeout);
          configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
-         configuration.setCompressLargeMessages(compressLargeMessage);
          configuration.setConsumerWindowSize(consumerWindowSize);
          configuration.setConsumerMaxRate(consumerMaxRate);
          configuration.setConfirmationWindowSize(confirmationWindowSize);
@@ -1388,7 +1387,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       cf.setReconnectAttempts(cfConfig.getReconnectAttempts());
       cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
       cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
-      cf.setAvoidLargeMessage(cfConfig.isAvoidLargeMessages());
       cf.setGroupID(cfConfig.getGroupID());
       return cf;
    }

@@ -39,13 +39,11 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    boolean isBrowseOnly();
 
-   void handleMessage(ClientMessageInternal message) throws Exception;
+   void handleMessage(SessionReceiveMessage message) throws Exception;
 
    void handleLargeMessage(SessionReceiveLargeMessage largeMessageHeader) throws Exception;
 
    void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
-
-   void handleCompressedMessage(SessionReceiveMessage message) throws Exception;
 
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 

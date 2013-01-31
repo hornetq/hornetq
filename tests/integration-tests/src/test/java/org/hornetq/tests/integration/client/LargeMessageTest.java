@@ -72,6 +72,8 @@ public class LargeMessageTest extends LargeMessageTestBase
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected ServerLocator locator;
+   
+   protected boolean isCompressedTest = false;
 
    // Constructors --------------------------------------------------
 
@@ -407,7 +409,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
 
-         validateNoFilesOnLargeDir(1);
+         validateNoFilesOnLargeDir(isCompressedTest ? 0 : 1);
 
          consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
 

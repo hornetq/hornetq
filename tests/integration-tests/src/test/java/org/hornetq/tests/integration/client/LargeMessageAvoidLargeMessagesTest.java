@@ -41,6 +41,11 @@ import org.hornetq.utils.DeflaterReader;
 public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 {
 
+   public LargeMessageAvoidLargeMessagesTest()
+   {
+      isCompressedTest = true;
+   }
+
    @Override
    protected boolean isNetty()
    {
@@ -52,7 +57,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    {
       ServerLocator locator1 = super.createFactory(isNetty);
       locator1.setMinLargeMessageSize(10240);
-      locator1.setAvoidLargeMessage(true);
+      locator1.setCompressLargeMessage(true);
       return locator1;
    }
 
