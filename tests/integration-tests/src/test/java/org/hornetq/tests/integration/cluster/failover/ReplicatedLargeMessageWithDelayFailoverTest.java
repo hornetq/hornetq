@@ -1,5 +1,6 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import junit.framework.TestSuite;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 
@@ -9,6 +10,17 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLargeMessageFailoverTest
 {
    private BackupSyncDelay syncDelay;
+
+   public ReplicatedLargeMessageWithDelayFailoverTest(String name)
+   {
+      super(name);
+   }
+
+   public ReplicatedLargeMessageWithDelayFailoverTest()
+   {
+      super();
+   }
+
 
    @Override
    protected void setUp() throws Exception

@@ -62,6 +62,19 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverTest extends FailoverTestBase
 {
+
+
+   public FailoverTest(String name)
+   {
+      super(name);
+   }
+
+   public FailoverTest()
+   {
+      super();
+   }
+
+
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final int NUM_MESSAGES = 100;
@@ -648,6 +661,7 @@ public class FailoverTest extends FailoverTestBase
 
       backupServer.stop(); // Backup stops!
       backupServer.start();
+      assertTrue(backupServer.getServer().waitForBackupSync(10, TimeUnit.SECONDS));
 
       session.start();
       ClientConsumer consumer = addClientConsumer(session.createConsumer(FailoverTestBase.ADDRESS));
@@ -664,13 +678,13 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      assertTrue(backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
+      assertTrue(backupServer.getServer().waitForBackupSync(10, TimeUnit.SECONDS));
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
       beforeRestart(liveServer);
       liveServer.start();
-      assertTrue(liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
+      liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
 
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
