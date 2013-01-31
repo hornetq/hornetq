@@ -166,8 +166,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private final boolean compressLargeMessages;
 
-   private final boolean avoidLargeMessages;
-
    private volatile int initialMessagePacketSize;
 
    private final boolean cacheLargeMessageClient;
@@ -224,7 +222,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                             final boolean cacheLargeMessageClient,
                             final int minLargeMessageSize,
                             final boolean compressLargeMessages,
-                            final boolean avoidLargeMessages,
                             final int initialMessagePacketSize,
                             final String groupID,
                             final CoreRemotingConnection remotingConnection,
@@ -282,8 +279,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       this.minLargeMessageSize = minLargeMessageSize;
 
       this.compressLargeMessages = compressLargeMessages;
-
-      this.avoidLargeMessages = avoidLargeMessages;
 
       this.initialMessagePacketSize = initialMessagePacketSize;
 
@@ -765,11 +760,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       return compressLargeMessages;
    }
 
-   public boolean isAvoidLargeMessages()
-   {
-      return avoidLargeMessages;
-   }
-
    /**
     * @return the cacheLargeMessageClient
     */
@@ -906,18 +896,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          clMessage.setFlowControlSize(message.getPacketSize());
 
-         consumer.handleMessage(clMessage);
+         consumer.handleMessage(message);
       }
-   }
-
-   public void handleReceiveCompressedMessage(long consumerID, SessionReceiveMessage message) throws Exception
-   {
-      ClientConsumerInternal consumer = getConsumer(consumerID);
-
-      if (consumer != null)
-      {
-         consumer.handleCompressedMessage(message);
-      }      
    }
 
    public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveLargeMessage message) throws Exception

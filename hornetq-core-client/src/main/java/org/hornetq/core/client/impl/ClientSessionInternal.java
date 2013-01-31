@@ -43,8 +43,6 @@ public interface ClientSessionInternal extends ClientSession
 
    boolean isCompressLargeMessages();
 
-   boolean isAvoidLargeMessages();
-
    void expire(long consumerID, long messageID) throws HornetQException;
 
    void addConsumer(ClientConsumerInternal consumer);
@@ -60,14 +58,6 @@ public interface ClientSessionInternal extends ClientSession
    void handleReceiveLargeMessage(long consumerID, SessionReceiveLargeMessage message) throws Exception;
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
-
-   /**
-    * This method deals with messages arrived as regular message but its contents are compressed.
-    * Such messages come from message senders who are configured to compress large messages, and
-    * if some of the messages are compressed below the min-large-message-size limit, they are sent
-    * as regular messages (see avoid-large-messages option).
-    */
-   void handleReceiveCompressedMessage(long consumerID, SessionReceiveMessage message) throws Exception;
 
    void preHandleFailover(CoreRemotingConnection connection);
 

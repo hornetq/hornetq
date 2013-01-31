@@ -205,8 +205,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private TransportConfiguration clusterTransportConfiguration;
 
-   private boolean avoidLargeMessage;
-
    /*
    * *************WARNING***************
    * remember that when adding any new classes that we have to support serialization with previous clients.
@@ -480,8 +478,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
       compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
-
-      avoidLargeMessage = HornetQClient.DEFAULT_AVOID_LARGE_MESSAGES;
 
       clusterConnection = false;
    }
@@ -1268,21 +1264,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       return compressLargeMessage;
    }
 
-   public void setCompressLargeMessage(boolean compress)
+   public void setCompressLargeMessage(boolean avoid)
    {
-      this.compressLargeMessage = compress;
-      if (!compress) this.avoidLargeMessage = false;
-   }
-
-   public boolean isAvoidLargeMessage()
-   {
-      return avoidLargeMessage;
-   }
-
-   public void setAvoidLargeMessage(boolean avoid)
-   {
-      this.avoidLargeMessage = avoid;
-      if (avoid) this.compressLargeMessage = true;
+      this.compressLargeMessage = avoid;
    }
 
    private void checkWrite()

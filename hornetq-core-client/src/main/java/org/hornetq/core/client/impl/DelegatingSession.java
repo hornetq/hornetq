@@ -399,11 +399,6 @@ public class DelegatingSession implements ClientSessionInternal
       session.handleReceiveMessage(consumerID, message);
    }
 
-   public void handleReceiveCompressedMessage(long consumerID, SessionReceiveMessage message) throws Exception
-   {
-      session.handleReceiveCompressedMessage(consumerID, message);
-   }
-
    public boolean isAutoCommitAcks()
    {
       return session.isAutoCommitAcks();
@@ -592,11 +587,6 @@ public class DelegatingSession implements ClientSessionInternal
    public boolean isCompressLargeMessages()
    {
       return session.isCompressLargeMessages();
-   }
-
-   public boolean isAvoidLargeMessages()
-   {
-      return session.isAvoidLargeMessages();
    }
 
    @Override

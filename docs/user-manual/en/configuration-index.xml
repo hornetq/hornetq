@@ -1311,13 +1311,6 @@
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
-                            <entry id="configuration.connection-factory.compress-large-messages">
-                               <link linkend="large.message.configuring">connection-factory.compress-large-messages</link></entry>
-                            <entry>Boolean</entry>
-                            <entry>If compress large messages when sending</entry>
-                            <entry>false</entry>
-                        </row>
-                        <row>
                             <entry id="configuration.connection-factory.avoid-large-messages">
                                <link linkend="large.message.configuring">connection-factory.avoid-large-messages</link></entry>
                             <entry>Boolean</entry>
