@@ -160,7 +160,12 @@ public class FailoverTest extends FailoverTestBase
       assertTrue("latch released", latch.await(10, TimeUnit.SECONDS));
       crash(session);
       t.join(5000);
-      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
+      if (t.isAlive())
+      {
+         t.interrupt();
+         fail("Thread still alive");
+      }
+      assertTrue(backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS));
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
       session.start();
       for (int i = 0; i < 500; i++)
@@ -659,13 +664,13 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
+      assertTrue(backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
       beforeRestart(liveServer);
       liveServer.start();
-      liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
+      assertTrue(liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
 
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
@@ -726,7 +731,7 @@ public class FailoverTest extends FailoverTestBase
          backupServer.stop();
          beforeRestart(backupServer);
          backupServer.start();
-         backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
+         assertTrue(backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
       }
 
       ClientSession session2 = createSession(sf, false, false);
