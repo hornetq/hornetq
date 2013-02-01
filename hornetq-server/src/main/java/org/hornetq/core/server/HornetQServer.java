@@ -152,6 +152,17 @@ public interface HornetQServer extends HornetQComponent
     */
    boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException;
 
+   /**
+    * Wait for backup synchronization when using synchronization
+    * @param timeout
+    * @param unit
+    * @see CountDownLatch#await(long, TimeUnit)
+    * @return {@code true} if the server was already initialized or if it was initialized within the
+    *         timeout period, {@code false} otherwise.
+    * @throws InterruptedException
+    */
+   boolean waitForBackupSync(long timeout, TimeUnit unit) throws InterruptedException;
+
    Queue createQueue(SimpleString address,
                      SimpleString queueName,
                      SimpleString filter,
