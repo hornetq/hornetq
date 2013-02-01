@@ -172,7 +172,7 @@ public class QueueImpl implements Queue
 
    private boolean internalQueue;
 
-   private volatile boolean checkDirect;
+   private volatile long lastDirectDeliveryCheck = 0;
 
    private volatile boolean directDeliver = true;
 
@@ -306,24 +306,6 @@ public class QueueImpl implements Queue
 
       this.executor = executor;
 
-      try
-      {
-         checkQueueSizeFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable()
-         {
-            public void run()
-            {
-               // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
-               // is empty
-               // We don't want to evaluate that on every delivery since that's too expensive
-
-               checkDirect = true;
-            }
-         }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
-      }
-      catch (RejectedExecutionException ignored)
-      {
-         // This could happen on a server shutdown
-      }
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -444,10 +426,13 @@ public class QueueImpl implements Queue
       // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
       // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
       // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
-      if (checkDirect)
+      if (!directDeliver &&
+          direct &&
+         System.currentTimeMillis() - lastDirectDeliveryCheck > CHECK_QUEUE_SIZE_PERIOD)
       {
-         if (direct && !directDeliver &&
-             intermediateMessageReferences.isEmpty() &&
+         lastDirectDeliveryCheck = System.currentTimeMillis();
+
+         if (intermediateMessageReferences.isEmpty() &&
              messageReferences.isEmpty() &&
              !pageIterator.hasNext() &&
              !pageSubscription.isPaging())
@@ -460,7 +445,6 @@ public class QueueImpl implements Queue
                directDeliver = true;
             }
          }
-         checkDirect = false;
       }
 
       if (direct && directDeliver && deliverDirect(ref))
