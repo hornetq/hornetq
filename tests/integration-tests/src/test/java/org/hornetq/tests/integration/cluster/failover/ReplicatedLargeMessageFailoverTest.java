@@ -30,6 +30,17 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
       createReplicatedConfigs();
    }
 
+   public ReplicatedLargeMessageFailoverTest(String name)
+   {
+      super(name);
+   }
+
+   public ReplicatedLargeMessageFailoverTest()
+   {
+      super();
+   }
+
+
    @Override
    protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {

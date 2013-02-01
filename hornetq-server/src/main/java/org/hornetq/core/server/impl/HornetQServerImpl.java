@@ -152,6 +152,7 @@ import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
@@ -252,11 +253,12 @@ public class HornetQServerImpl implements HornetQServer
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    /**
-    * We guard the {@code activationLatch} field because if we restart a {@code HornetQServer}, we
-    * need to replace the {@code CountDownLatch} by a new one.
+    * This class here has the same principle of CountDownLatch but you can reuse the counters.
+    * It's based on the same super classes of {@code CountDownLatch}
     */
-   private final Object activationLatchGuard = new Object();
-   private CountDownLatch activationLatch = new CountDownLatch(1);
+   private final ReusableLatch activationLatch = new ReusableLatch(0);
+
+   private final ReusableLatch backupSyncLatch = new ReusableLatch(0);
 
    private final Object replicationLock = new Object();
 
@@ -379,6 +381,9 @@ public class HornetQServerImpl implements HornetQServer
          cancelFailBackChecker = false;
       }
       state = SERVER_STATE.STARTING;
+
+      activationLatch.setCount(1);
+
       HornetQServerLogger.LOGGER.debug("Starting server " + this);
 
       OperationContextImpl.clearContext();
@@ -430,6 +435,7 @@ public class HornetQServerImpl implements HornetQServer
                nodeManager =
                         createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), true);
                backupUpToDate = false;
+               backupSyncLatch.setCount(1);
                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
                activation = new SharedNothingBackupActivation(wasLive);
             }
@@ -691,13 +697,8 @@ public class HornetQServerImpl implements HornetQServer
          sessions.clear();
 
          state = SERVER_STATE.STOPPED;
-         synchronized (activationLatchGuard)
-         {
-            // replace the latch only if necessary. It could still be '1' in case of errors
-            // during start-up.
-            if (activationLatch.getCount() < 1)
-               activationLatch = new CountDownLatch(1);
-         }
+
+         activationLatch.setCount(1);
 
          // to display in the log message
          SimpleString tempNodeID = getNodeID();
@@ -981,21 +982,26 @@ public class HornetQServerImpl implements HornetQServer
    @Override
    public boolean isActive()
    {
-      synchronized (activationLatchGuard)
-      {
-         return activationLatch.getCount() < 1;
-      }
+      return activationLatch.getCount() < 1;
    }
 
    @Override
    public boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException
    {
-      CountDownLatch latch;
-      synchronized (activationLatchGuard)
+      return activationLatch.await(timeout, unit);
+   }
+
+   @Override
+   public boolean waitForBackupSync(long timeout, TimeUnit unit) throws InterruptedException
+   {
+      if (configuration.isBackup() && !configuration.isSharedStore())
       {
-         latch = activationLatch;
+         return backupSyncLatch.await(timeout, unit);
       }
-      return latch.await(timeout, unit);
+      else
+      {
+         return true;
+      }
    }
 
    public HornetQServerControlImpl getHornetQServerControl()
@@ -1545,10 +1551,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
-      synchronized (activationLatchGuard)
-      {
-         activationLatch.countDown();
-      }
+      activationLatch.countDown();
    }
 
    /**
@@ -2770,6 +2773,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       clusterManager.announceBackup();
       backupUpToDate = true;
+      backupSyncLatch.countDown();
    }
 
    private final class ReplicationFailureListener implements FailureListener, CloseListener
