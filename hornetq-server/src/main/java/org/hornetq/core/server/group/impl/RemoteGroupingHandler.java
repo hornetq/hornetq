@@ -53,14 +53,14 @@ public final class RemoteGroupingHandler implements GroupingHandler
 
    private final Condition sendCondition = lock.newCondition();
 
-   private final int timeout;
+   private final long timeout;
 
    private final ConcurrentMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
 
    public RemoteGroupingHandler(final ManagementService managementService,
                                 final SimpleString name,
                                 final SimpleString address,
-                                final int timeout)
+                                final long timeout)
    {
       this.name = name;
       this.address = address;
