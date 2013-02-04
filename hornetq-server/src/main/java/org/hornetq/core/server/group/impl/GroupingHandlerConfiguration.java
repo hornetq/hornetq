@@ -31,7 +31,7 @@ public class GroupingHandlerConfiguration implements Serializable
 
    private final SimpleString address;
 
-   private final int timeout;
+   private final long timeout;
 
    public static final int DEFAULT_TIMEOUT = 5000;
 
@@ -66,7 +66,7 @@ public class GroupingHandlerConfiguration implements Serializable
       return address;
    }
 
-   public int getTimeout()
+   public long getTimeout()
    {
       return timeout;
    }
@@ -95,7 +95,7 @@ public class GroupingHandlerConfiguration implements Serializable
       int result = 1;
       result = prime * result + ((address == null) ? 0 : address.hashCode());
       result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + timeout;
+      result = prime * result + (int) (timeout ^ (timeout >>> 32));
       result = prime * result + ((type == null) ? 0 : type.hashCode());
       return result;
    }

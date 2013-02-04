@@ -48,13 +48,13 @@ public final class LocalGroupingHandler implements GroupingHandler
 
    private final StorageManager storageManager;
 
-   private final int timeout;
+   private final long timeout;
 
    public LocalGroupingHandler(final ManagementService managementService,
                                final SimpleString name,
                                final SimpleString address,
                                final StorageManager storageManager,
-                               final int timeout)
+                               final long timeout)
    {
       this.managementService = managementService;
       this.name = name;
