@@ -42,7 +42,7 @@ import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -1849,7 +1849,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public MBeanNotificationInfo[] getNotificationInfo()
    {
-      NotificationType[] values = NotificationType.values();
+      CoreNotificationType[] values = CoreNotificationType.values();
       String[] names = new String[values.length];
       for (int i = 0; i < values.length; i++)
       {

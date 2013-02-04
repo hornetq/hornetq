@@ -35,7 +35,7 @@ import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
@@ -1130,7 +1130,7 @@ public class DiscoveryTest extends UnitTestCase
 
       Assert.assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
-      Assert.assertEquals(NotificationType.DISCOVERY_GROUP_STARTED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.DISCOVERY_GROUP_STARTED, notif.getType());
       Assert.assertEquals(dg.getName(), notif.getProperties()
          .getSimpleStringProperty(new SimpleString("name"))
          .toString());
@@ -1139,7 +1139,7 @@ public class DiscoveryTest extends UnitTestCase
 
       Assert.assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
-      Assert.assertEquals(NotificationType.DISCOVERY_GROUP_STOPPED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.DISCOVERY_GROUP_STOPPED, notif.getType());
       Assert.assertEquals(dg.getName(), notif.getProperties()
          .getSimpleStringProperty(new SimpleString("name"))
          .toString());
@@ -1169,7 +1169,7 @@ public class DiscoveryTest extends UnitTestCase
 
       Assert.assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
-      Assert.assertEquals(NotificationType.BROADCAST_GROUP_STARTED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.BROADCAST_GROUP_STARTED, notif.getType());
       Assert.assertEquals(bg.getName(), notif.getProperties()
          .getSimpleStringProperty(new SimpleString("name"))
          .toString());
@@ -1178,7 +1178,7 @@ public class DiscoveryTest extends UnitTestCase
 
       Assert.assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
-      Assert.assertEquals(NotificationType.BROADCAST_GROUP_STOPPED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.BROADCAST_GROUP_STOPPED, notif.getType());
       Assert.assertEquals(bg.getName(), notif.getProperties()
          .getSimpleStringProperty(new SimpleString("name"))
          .toString());

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -22,11 +24,14 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.TopicSubscriber;
+import javax.management.Notification;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.SubscriptionInfo;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
@@ -36,6 +41,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.jms.server.management.JMSNotificationType;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -499,6 +505,45 @@ public class TopicControlTest extends ManagementTestBase
       connection_1.close();
       connection_2.close();
       connection_3.close();
+   }
+
+   //make sure notifications are always received no matter whether 
+   //a Topic is created via JMSServerControl or by JMSServerManager directly. 
+   public void testCreateTopicNotification() throws Exception
+   {
+      JMSUtil.JMXListener listener = new JMSUtil.JMXListener();
+      this.mbeanServer.addNotificationListener(ObjectNameBuilder.DEFAULT.getJMSServerObjectName(), listener, null, null);
+
+      List<String> connectors = new ArrayList<String>();
+      connectors.add("invm");
+
+      String testTopicName = "newTopic";
+      serverManager.createTopic(true, testTopicName, testTopicName);
+
+      Notification notif = listener.getNotification();
+      
+      assertEquals(JMSNotificationType.TOPIC_CREATED.toString(), notif.getType());
+      assertEquals(testTopicName, notif.getMessage());
+
+      this.serverManager.destroyTopic(testTopicName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.TOPIC_DESTROYED.toString(), notif.getType());
+      assertEquals(testTopicName, notif.getMessage());
+
+      JMSServerControl control = ManagementControlHelper.createJMSServerControl(mbeanServer);
+      
+      control.createTopic(testTopicName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.TOPIC_CREATED.toString(), notif.getType());
+      assertEquals(testTopicName, notif.getMessage());
+
+      control.destroyTopic(testTopicName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.TOPIC_DESTROYED.toString(), notif.getType());
+      assertEquals(testTopicName, notif.getMessage());
    }
 
    // Package protected ---------------------------------------------

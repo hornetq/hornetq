@@ -19,7 +19,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
@@ -110,7 +110,7 @@ public final class InVMAcceptor implements Acceptor
          props.putSimpleStringProperty(new SimpleString("factory"),
                                        new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
-         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
+         Notification notification = new Notification(null, CoreNotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
       }
 
@@ -144,7 +144,7 @@ public final class InVMAcceptor implements Acceptor
          props.putSimpleStringProperty(new SimpleString("factory"),
                                        new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
-         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
+         Notification notification = new Notification(null, CoreNotificationType.ACCEPTOR_STOPPED, props);
          try
          {
             notificationService.sendNotification(notification);

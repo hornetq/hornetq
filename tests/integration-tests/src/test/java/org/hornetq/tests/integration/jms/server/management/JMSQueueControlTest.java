@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +25,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.management.Notification;
 import javax.naming.Context;
 
 import junit.framework.Assert;
@@ -35,9 +38,11 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
+import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -47,6 +52,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.jms.server.management.JMSNotificationType;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -1223,6 +1229,45 @@ public class JMSQueueControlTest extends ManagementTestBase
          }
       }
       assertTrue(newBindingAdded);
+   }
+
+   //make sure notifications are always received no matter whether 
+   //a Queue is created via JMSServerControl or by JMSServerManager directly. 
+   public void testCreateQueueNotification() throws Exception
+   {
+      JMSUtil.JMXListener listener = new JMSUtil.JMXListener();
+      this.mbeanServer.addNotificationListener(ObjectNameBuilder.DEFAULT.getJMSServerObjectName(), listener, null, null);
+
+      List<String> connectors = new ArrayList<String>();
+      connectors.add("invm");
+
+      String testQueueName = "newQueue";
+      serverManager.createQueue(true, testQueueName, null, true, testQueueName);
+
+      Notification notif = listener.getNotification();
+      
+      assertEquals(JMSNotificationType.QUEUE_CREATED.toString(), notif.getType());
+      assertEquals(testQueueName, notif.getMessage());
+
+      this.serverManager.destroyQueue(testQueueName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.QUEUE_DESTROYED.toString(), notif.getType());
+      assertEquals(testQueueName, notif.getMessage());
+
+      JMSServerControl control = ManagementControlHelper.createJMSServerControl(mbeanServer);
+      
+      control.createQueue(testQueueName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.QUEUE_CREATED.toString(), notif.getType());
+      assertEquals(testQueueName, notif.getMessage());
+
+      control.destroyQueue(testQueueName);
+      
+      notif = listener.getNotification();
+      assertEquals(JMSNotificationType.QUEUE_DESTROYED.toString(), notif.getType());
+      assertEquals(testQueueName, notif.getMessage());
    }
 
    // Package protected ---------------------------------------------

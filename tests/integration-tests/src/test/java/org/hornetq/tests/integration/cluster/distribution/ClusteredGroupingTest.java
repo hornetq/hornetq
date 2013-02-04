@@ -20,7 +20,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -525,7 +525,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          {
             public void onNotification(final Notification notification)
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (!(notification.getType() instanceof CoreNotificationType)) return;
+               if (CoreNotificationType.BINDING_REMOVED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -535,7 +536,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                      latch.countDown();
                   }
                }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
+               else if (CoreNotificationType.BINDING_ADDED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -617,7 +618,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          {
             public void onNotification(final Notification notification)
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (!(notification.getType() instanceof CoreNotificationType)) return;
+               if (CoreNotificationType.BINDING_REMOVED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -627,7 +629,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                      latch.countDown();
                   }
                }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
+               else if (CoreNotificationType.BINDING_ADDED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -708,7 +710,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          {
             public void onNotification(final Notification notification)
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (!(notification.getType() instanceof CoreNotificationType)) return;
+               if (CoreNotificationType.BINDING_REMOVED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -718,7 +721,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                      latch.countDown();
                   }
                }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
+               else if (CoreNotificationType.BINDING_ADDED == notification.getType())
                {
                   if (notification.getProperties()
                                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)

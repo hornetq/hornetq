@@ -13,9 +13,6 @@
 
 package org.hornetq.core.server.cluster.impl;
 
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -25,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -33,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -42,7 +37,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.client.impl.AfterConnectInternalListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
@@ -474,7 +469,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeManager.getNodeId().toString(),
-                                                      NotificationType.CLUSTER_CONNECTION_STOPPED,
+                                                      CoreNotificationType.CLUSTER_CONNECTION_STOPPED,
                                                       props);
          managementService.sendNotification(notification);
       }
@@ -782,7 +777,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeManager.getNodeId().toString(),
-                                                      NotificationType.CLUSTER_CONNECTION_STARTED,
+                                                      CoreNotificationType.CLUSTER_CONNECTION_STARTED,
                                                       props);
          HornetQServerLogger.LOGGER.debug("sending notification: " + notification);
          managementService.sendNotification(notification);
@@ -1263,7 +1258,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             // a list of integers
             SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
 
-            NotificationType ntype = NotificationType.valueOf(type.toString());
+            CoreNotificationType ntype = CoreNotificationType.valueOf(type.toString());
 
             switch (ntype)
             {
@@ -1536,7 +1531,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
          }
 
-         Notification notification = new Notification(null, CONSUMER_CREATED, props);
+         Notification notification = new Notification(null, CoreNotificationType.CONSUMER_CREATED, props);
 
          managementService.sendNotification(notification);
       }
@@ -1593,7 +1588,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          {
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
          }
-         Notification notification = new Notification(null, CONSUMER_CLOSED, props);
+         Notification notification = new Notification(null, CoreNotificationType.CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);
       }

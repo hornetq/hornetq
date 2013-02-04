@@ -34,6 +34,7 @@ import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.filter.Filter;
@@ -217,13 +218,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void onNotification(final Notification notification)
    {
+      if (!(notification.getType() instanceof CoreNotificationType)) return;
       if (isTrace)
       {
          HornetQServerLogger.LOGGER.trace("Receiving notification : " + notification + " on server " + this.server);
       }
       synchronized (notificationLock)
       {
-         NotificationType type = notification.getType();
+         CoreNotificationType type = (CoreNotificationType) notification.getType();
 
          switch (type)
          {
@@ -482,7 +484,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          HornetQServerLogger.LOGGER.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
       }
 
-      managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
+      managementService.sendNotification(new Notification(uid, CoreNotificationType.BINDING_ADDED, props));
    }
 
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
@@ -536,7 +538,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, binding.getFilter().getFilterString());
          }
 
-         managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
+         managementService.sendNotification(new Notification(null, CoreNotificationType.BINDING_REMOVED, props));
       }
 
       binding.close();
@@ -837,7 +839,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
             if (info.getAddress().startsWith(address))
             {
-               message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
+               message = createQueueInfoMessage(CoreNotificationType.BINDING_ADDED, queueName);
 
                message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
@@ -852,7 +854,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
                {
-                  message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+                  message = createQueueInfoMessage(CoreNotificationType.CONSUMER_CREATED, queueName);
 
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                   message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
@@ -866,7 +868,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   for (SimpleString filterString : info.getFilterStrings())
                   {
-                     message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+                     message = createQueueInfoMessage(CoreNotificationType.CONSUMER_CREATED, queueName);
 
                      message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                      message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
