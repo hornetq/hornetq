@@ -26,7 +26,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.message.BodyEncoder;
@@ -393,7 +393,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME, SimpleString.toSimpleString(session.getName()));
 
-         Notification notification = new Notification(null, NotificationType.CONSUMER_CLOSED, props);
+         Notification notification = new Notification(null, CoreNotificationType.CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);
       }
