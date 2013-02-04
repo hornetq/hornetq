@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -122,7 +123,7 @@ public class QueueImpl implements Queue
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
 
-   private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
+   private final List<ConsumerHolder> consumerList = new CopyOnWriteArrayList<ConsumerHolder>();
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
@@ -720,7 +721,7 @@ public class QueueImpl implements Queue
       return consumerSet;
    }
 
-   public synchronized boolean hasMatchingConsumer(final ServerMessage message)
+   public boolean hasMatchingConsumer(final ServerMessage message)
    {
       for (ConsumerHolder holder : consumerList)
       {
