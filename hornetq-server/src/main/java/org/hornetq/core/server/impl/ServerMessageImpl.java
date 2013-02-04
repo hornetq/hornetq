@@ -14,6 +14,7 @@
 package org.hornetq.core.server.impl;
 
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -38,9 +39,9 @@ import org.hornetq.utils.TypedProperties;
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
 
-   private int durableRefCount;
+    private final AtomicInteger durableRefCount = new AtomicInteger();
 
-   private int refCount;
+    private final AtomicInteger refCount  = new AtomicInteger();
 
    private PagingStore pagingStore;
 
@@ -119,75 +120,79 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return properties.hasInternalProperties();
    }
 
-   public synchronized int incrementRefCount() throws Exception
-   {
-      refCount++;
+    public int incrementRefCount() throws Exception
+    {
+        int count = refCount.incrementAndGet();
 
-      if (pagingStore != null)
-      {
-         if (refCount == 1)
-         {
-            pagingStore.addSize(getMemoryEstimate() + MessageReferenceImpl.getMemoryEstimate());
-         }
-         else
-         {
-            pagingStore.addSize(MessageReferenceImpl.getMemoryEstimate());
-         }
-      }
+        if (pagingStore != null)
+        {
+            if (count == 1)
+            {
+                pagingStore.addSize(getMemoryEstimate() + MessageReferenceImpl.getMemoryEstimate());
+            }
+            else
+            {
+                pagingStore.addSize(MessageReferenceImpl.getMemoryEstimate());
+            }
+        }
 
-      return refCount;
-   }
+        return count;
+    }
 
-   public synchronized int decrementRefCount() throws Exception
-   {
-      int count = --refCount;
+    public int decrementRefCount() throws Exception
+    {
+        int count = refCount.decrementAndGet();
 
-      if (pagingStore != null)
-      {
-         if (count == 0)
-         {
-            pagingStore.addSize(-getMemoryEstimate() - MessageReferenceImpl.getMemoryEstimate());
-         }
-         else
-         {
-            pagingStore.addSize(-MessageReferenceImpl.getMemoryEstimate());
-         }
-      }
+        if (pagingStore != null)
+        {
+            if (count == 0)
+            {
+                pagingStore.addSize(-getMemoryEstimate() - MessageReferenceImpl.getMemoryEstimate());
+            }
+            else
+            {
+                pagingStore.addSize(-MessageReferenceImpl.getMemoryEstimate());
+            }
+        }
 
-      return count;
-   }
+        return count;
+    }
 
-   public synchronized int incrementDurableRefCount()
-   {
-      return ++durableRefCount;
-   }
+    public int incrementDurableRefCount()
+    {
+        return durableRefCount.getAndIncrement();
+    }
 
-   public synchronized int decrementDurableRefCount()
-   {
-      return --durableRefCount;
-   }
+    public int decrementDurableRefCount()
+    {
+        return durableRefCount.getAndDecrement();
+    }
 
-   public synchronized int getRefCount()
-   {
-      return refCount;
-   }
+    public int getRefCount()
+    {
+        return refCount.get();
+    }
 
    public boolean isLargeMessage()
    {
       return false;
    }
 
-   private volatile int memoryEstimate = -1;
+    private static final int UNDEFINED = -1;
+    private int memoryEstimate = UNDEFINED;
 
-   public int getMemoryEstimate()
-   {
-      if (memoryEstimate == -1)
-      {
-         memoryEstimate = ServerMessageImpl.memoryOffset + buffer.capacity() + properties.getMemoryOffset();
-      }
+    public int getMemoryEstimate()
+    {
+        if (memoryEstimate == UNDEFINED)
+        {
+            synchronized (this)
+            {
+                memoryEstimate = ServerMessageImpl.memoryOffset + buffer.capacity() + properties.getMemoryOffset();
+            }
+        }
 
-      return memoryEstimate;
-   }
+        return memoryEstimate;
+    }
 
    public ServerMessage copy(final long newID)
    {
