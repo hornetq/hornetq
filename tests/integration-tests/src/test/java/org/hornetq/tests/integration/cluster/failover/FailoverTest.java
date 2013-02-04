@@ -119,12 +119,12 @@ public class FailoverTest extends FailoverTestBase
    // https://issues.jboss.org/browse/HORNETQ-685
    public void testTimeoutOnFailover() throws Exception
    {
-      locator.setCallTimeout(5000);
+      locator.setCallTimeout(1000);
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
-      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+      ((InVMNodeManager)nodeManager).failoverPause = 500;
 
       ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
 
@@ -135,6 +135,7 @@ public class FailoverTest extends FailoverTestBase
       final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
       final CountDownLatch latch = new CountDownLatch(10);
+      final CountDownLatch latchFailed = new CountDownLatch(1);
 
       Runnable r = new Runnable()
       {
@@ -146,13 +147,18 @@ public class FailoverTest extends FailoverTestBase
                message.putIntProperty("counter", i);
                try
                {
+                  System.out.println("Sent " + i);
                   producer.send(message);
                   if (i < 10)
                   {
                      latch.countDown();
+                     if (latch.getCount() == 0)
+                     {
+                        latchFailed.await(10, TimeUnit.SECONDS);
+                     }
                   }
                }
-               catch (HornetQException e)
+               catch (Exception e)
                {
                   // this is our retry
                   try
@@ -172,6 +178,7 @@ public class FailoverTest extends FailoverTestBase
       t.start();
       assertTrue("latch released", latch.await(10, TimeUnit.SECONDS));
       crash(session);
+      latchFailed.countDown();
       t.join(5000);
       if (t.isAlive())
       {
