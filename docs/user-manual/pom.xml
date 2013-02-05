@@ -80,7 +80,6 @@
     </pluginRepositories>
 
     <profiles>
-
         <!-- mvn compile -->
         <profile>
             <id>all</id>
@@ -189,8 +188,8 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -260,7 +259,44 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-    </build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <transformationSets>
+                <transformationSet>
+                  <dir>../../hornetq-server/src/main/resources/schema</dir>
+                  <stylesheet>./src/main/resources/schemaToTable.xsl</stylesheet>
+                  <includes>
+                    <include>hornetq-configuration.xsd</include>
+                  </includes>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                      <targetExtension>.xml</targetExtension>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+              </transformationSets>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>saxon</artifactId>
+                <version>8.7</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+
     <!--<build>
           <plugins>
               <plugin>
