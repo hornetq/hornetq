@@ -72,7 +72,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected ServerLocator locator;
-   
+
    protected boolean isCompressedTest = false;
 
    // Constructors --------------------------------------------------
@@ -205,46 +205,46 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(false, false, false));
 
-         session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessage(session, messageSize, true);
 
-         producer.send(clientFile);
+      producer.send(clientFile);
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-         ClientMessage msg1 = consumer.receive(1000);
-         msg1.acknowledge();
-         session.commit();
-         Assert.assertNotNull(msg1);
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientMessage msg1 = consumer.receive(1000);
+      msg1.acknowledge();
+      session.commit();
+      Assert.assertNotNull(msg1);
 
-         consumer.close();
+      consumer.close();
 
-         try
-         {
-            msg1.getBodyBuffer().readByte();
-            Assert.fail("Exception was expected");
-         }
-         catch (Throwable ignored)
-         {
-         }
+      try
+      {
+         msg1.getBodyBuffer().readByte();
+         Assert.fail("Exception was expected");
+      }
+      catch (Throwable ignored)
+      {
+      }
 
-         session.close();
+      session.close();
 
-         validateNoFilesOnLargeDir();
+      validateNoFilesOnLargeDir();
    }
 
    public void testLargeBufferTransacted() throws Exception
@@ -265,65 +265,65 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-         Configuration config = createDefaultConfig(isNetty());
-         config.setJournalFileSize(journalsize);
+      Configuration config = createDefaultConfig(isNetty());
+      config.setJournalFileSize(journalsize);
 
-         config.setJournalBufferSize_AIO(10 * 1024);
-         config.setJournalBufferSize_NIO(10 * 1024);
+      config.setJournalBufferSize_AIO(10 * 1024);
+      config.setJournalBufferSize_NIO(10 * 1024);
 
-         HornetQServer server = createServer(true, config);
+      HornetQServer server = createServer(true, config);
 
-         server.start();
+      server.start();
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(!transacted, !transacted, 0));
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = session.createMessage(true);
-         for (int i = 0; i < messageSize; i++)
-         {
-            clientFile.getBodyBuffer().writeByte(getSamplebyte(i));
-         }
+      Message clientFile = session.createMessage(true);
+      for (int i = 0; i < messageSize; i++)
+      {
+         clientFile.getBodyBuffer().writeByte(getSamplebyte(i));
+      }
 
-         producer.send(clientFile);
+      producer.send(clientFile);
 
-         if (transacted)
-         {
-            session.commit();
-         }
+      if (transacted)
+      {
+         session.commit();
+      }
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-         ClientMessage msg1 = consumer.receive(5000);
-         assertNotNull(msg1);
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientMessage msg1 = consumer.receive(5000);
+      assertNotNull(msg1);
 
-         Assert.assertNotNull(msg1);
+      Assert.assertNotNull(msg1);
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            // System.out.print(msg1.getBodyBuffer().readByte() + "  ");
-            // if (i % 100 == 0) System.out.println();
-            assertEquals("position = " + i, getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
+      for (int i = 0; i < messageSize; i++)
+      {
+         // System.out.print(msg1.getBodyBuffer().readByte() + "  ");
+         // if (i % 100 == 0) System.out.println();
+         assertEquals("position = " + i, getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
 
-         msg1.acknowledge();
+      msg1.acknowledge();
 
-         consumer.close();
+      consumer.close();
 
-         if (transacted)
-         {
-            session.commit();
-         }
+      if (transacted)
+      {
+         session.commit();
+      }
 
-         session.close();
+      session.close();
 
-         validateNoFilesOnLargeDir();
-         }
+      validateNoFilesOnLargeDir();
+   }
 
    public void testDLALargeMessage() throws Exception
    {
@@ -331,105 +331,105 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
       session = addClientSession(sf.createSession(false, false, false));
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-2"), true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-2"), true);
 
-         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
 
-         AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettings = new AddressSettings();
 
-         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
-         addressSettings.setMaxDeliveryAttempts(1);
+      addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+      addressSettings.setMaxDeliveryAttempts(1);
 
-         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+      server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+      session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessage(session, messageSize, true);
 
-         producer.send(clientFile);
+      producer.send(clientFile);
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
+      ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
 
-         ClientConsumer consumerRollback = session.createConsumer(LargeMessageTest.ADDRESS);
-         ClientMessage msg1 = consumerRollback.receive(1000);
-         Assert.assertNotNull(msg1);
-         msg1.acknowledge();
-         session.rollback();
-         consumerRollback.close();
+      ClientConsumer consumerRollback = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientMessage msg1 = consumerRollback.receive(1000);
+      Assert.assertNotNull(msg1);
+      msg1.acknowledge();
+      session.rollback();
+      consumerRollback.close();
 
-         msg1 = consumer.receive(10000);
+      msg1 = consumer.receive(10000);
 
-         Assert.assertNotNull(msg1);
+      Assert.assertNotNull(msg1);
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
 
-         session.close();
-         server.stop();
+      session.close();
+      server.stop();
 
-         server = createServer(true, isNetty());
+      server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
-         sf = createSessionFactory(locator);
+      sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, false, false);
+      session = sf.createSession(false, false, false);
 
-         session.start();
+      session.start();
 
-         consumer = session.createConsumer(ADDRESS_DLA);
+      consumer = session.createConsumer(ADDRESS_DLA);
 
-         msg1 = consumer.receive(10000);
+      msg1 = consumer.receive(10000);
 
-         Assert.assertNotNull(msg1);
+      Assert.assertNotNull(msg1);
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
 
-         msg1.acknowledge();
+      msg1.acknowledge();
 
-         session.commit();
+      session.commit();
 
-         validateNoFilesOnLargeDir(isCompressedTest ? 0 : 1);
+      validateNoFilesOnLargeDir(isCompressedTest ? 0 : 1);
 
-         consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
+      consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
 
-         msg1 = consumer.receive(10000);
+      msg1 = consumer.receive(10000);
 
-         Assert.assertNotNull(msg1);
+      Assert.assertNotNull(msg1);
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
 
-         msg1.acknowledge();
+      msg1.acknowledge();
 
-         session.commit();
+      session.commit();
 
-         session.close();
+      session.close();
 
-         validateNoFilesOnLargeDir();
-         }
+      validateNoFilesOnLargeDir();
+   }
 
    public void testDeliveryCount() throws Exception
    {
@@ -437,60 +437,60 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
-         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-         session = sf.createSession(false, false, false);
+      session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
-         producer.send(clientFile);
+      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      producer.send(clientFile);
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
-         ClientMessage msg = consumer.receive(10000);
-         Assert.assertNotNull(msg);
-         msg.acknowledge();
-         Assert.assertEquals(1, msg.getDeliveryCount());
+      ClientMessage msg = consumer.receive(10000);
+      Assert.assertNotNull(msg);
+      msg.acknowledge();
+      Assert.assertEquals(1, msg.getDeliveryCount());
 
-         log.info("body buffer is " + msg.getBodyBuffer());
+      log.info("body buffer is " + msg.getBodyBuffer());
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
-         }
-         session.rollback();
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
+      }
+      session.rollback();
 
-         session.close();
+      session.close();
 
-         session = sf.createSession(false, false, false);
-         session.start();
+      session = sf.createSession(false, false, false);
+      session.start();
 
-         consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-         msg = consumer.receive(10000);
-         Assert.assertNotNull(msg);
-         msg.acknowledge();
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
-         }
-         Assert.assertEquals(2, msg.getDeliveryCount());
-         msg.acknowledge();
-         consumer.close();
+      consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      msg = consumer.receive(10000);
+      Assert.assertNotNull(msg);
+      msg.acknowledge();
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
+      }
+      Assert.assertEquals(2, msg.getDeliveryCount());
+      msg.acknowledge();
+      consumer.close();
 
-         session.commit();
+      session.commit();
 
-         validateNoFilesOnLargeDir();
+      validateNoFilesOnLargeDir();
 
    }
 
@@ -500,50 +500,68 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = null;
 
-         HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
-         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
-         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
+      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+      SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
 
-         AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettings = new AddressSettings();
 
-         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
-         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
-         addressSettings.setMaxDeliveryAttempts(1);
+      addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+      addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+      addressSettings.setMaxDeliveryAttempts(1);
 
-         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+      server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         session = sf.createSession(false, false, false);
+      session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
-         session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
+      session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+      session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, false);
-         clientFile.setExpiration(System.currentTimeMillis());
+      Message clientFile = createLargeClientMessage(session, messageSize, false);
+      clientFile.setExpiration(System.currentTimeMillis());
 
-         producer.send(clientFile);
+      producer.send(clientFile);
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
-         // to kick expiry quicker than waiting reaper thread
-         Assert.assertNull(consumerExpired.receiveImmediate());
-         consumerExpired.close();
+      ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
+      // to kick expiry quicker than waiting reaper thread
+      Assert.assertNull(consumerExpired.receiveImmediate());
+      consumerExpired.close();
 
-         ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
+      ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
 
-         ClientMessage msg1 = consumerExpiry.receive(5000);
-         assertTrue(msg1.isLargeMessage());
+      ClientMessage msg1 = consumerExpiry.receive(5000);
+      assertTrue(msg1.isLargeMessage());
+      Assert.assertNotNull(msg1);
+      msg1.acknowledge();
+
+      for (int j = 0; j < messageSize; j++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
+      }
+
+      session.rollback();
+
+      consumerExpiry.close();
+
+      for (int i = 0; i < 10; i++)
+      {
+
+         consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+         msg1 = consumerExpiry.receive(5000);
          Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
@@ -555,58 +573,40 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.rollback();
 
          consumerExpiry.close();
+      }
 
-         for (int i = 0; i < 10; i++)
-         {
+      session.close();
 
-            consumerExpiry = session.createConsumer(ADDRESS_DLA);
+      session = sf.createSession(false, false, false);
 
-            msg1 = consumerExpiry.receive(5000);
-            Assert.assertNotNull(msg1);
-            msg1.acknowledge();
+      session.start();
 
-            for (int j = 0; j < messageSize; j++)
-            {
-               Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
-            }
+      consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
-            session.rollback();
+      msg1 = consumerExpiry.receive(5000);
 
-            consumerExpiry.close();
-         }
+      Assert.assertNotNull(msg1);
 
-         session.close();
+      msg1.acknowledge();
 
-         session = sf.createSession(false, false, false);
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
 
-         session.start();
+      session.commit();
 
-         consumerExpiry = session.createConsumer(ADDRESS_DLA);
+      consumerExpiry.close();
 
-         msg1 = consumerExpiry.receive(5000);
+      session.commit();
 
-         Assert.assertNotNull(msg1);
+      session.close();
 
-         msg1.acknowledge();
+      server.stop();
 
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
+      server.start();
 
-         session.commit();
-
-         consumerExpiry.close();
-
-         session.commit();
-
-         session.close();
-
-         server.stop();
-
-         server.start();
-
-         validateNoFilesOnLargeDir();
+      validateNoFilesOnLargeDir();
 
    }
 
@@ -618,47 +618,64 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       HornetQServer server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
-         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-         SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
-         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
+      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+      SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
 
-         AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettings = new AddressSettings();
 
-         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
-         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
-         addressSettings.setMaxDeliveryAttempts(1);
+      addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+      addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+      addressSettings.setMaxDeliveryAttempts(1);
 
-         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+      server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         session = sf.createSession(false, false, false);
+      session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
-         session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
+      session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+      session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
-         clientFile.setExpiration(System.currentTimeMillis());
+      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      clientFile.setExpiration(System.currentTimeMillis());
 
-         producer.send(clientFile);
+      producer.send(clientFile);
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
-         // to kick expiry quicker than waiting reaper thread
-         Assert.assertNull(consumerExpired.receiveImmediate());
-         consumerExpired.close();
+      ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
+      // to kick expiry quicker than waiting reaper thread
+      Assert.assertNull(consumerExpired.receiveImmediate());
+      consumerExpired.close();
 
-         ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
+      ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
 
-         ClientMessage msg1 = consumerExpiry.receive(5000);
+      ClientMessage msg1 = consumerExpiry.receive(5000);
+      Assert.assertNotNull(msg1);
+      msg1.acknowledge();
+
+      for (int j = 0; j < messageSize; j++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
+      }
+
+      session.rollback();
+
+      consumerExpiry.close();
+
+      for (int i = 0; i < 10; i++)
+      {
+         consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+         msg1 = consumerExpiry.receive(5000);
          Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
@@ -670,59 +687,42 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.rollback();
 
          consumerExpiry.close();
-
-         for (int i = 0; i < 10; i++)
-         {
-            consumerExpiry = session.createConsumer(ADDRESS_DLA);
-
-            msg1 = consumerExpiry.receive(5000);
-            Assert.assertNotNull(msg1);
-            msg1.acknowledge();
-
-            for (int j = 0; j < messageSize; j++)
-            {
-               Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
-            }
-
-            session.rollback();
-
-            consumerExpiry.close();
-         }
-
-         session.close();
-         server.stop();
-
-         server = createServer(true, isNetty());
-
-         server.start();
-
-         sf = createSessionFactory(locator);
-
-         session = sf.createSession(false, false, false);
-
-         session.start();
-
-         consumerExpiry = session.createConsumer(ADDRESS_DLA);
-
-         msg1 = consumerExpiry.receive(5000);
-         Assert.assertNotNull(msg1);
-         msg1.acknowledge();
-
-         for (int i = 0; i < messageSize; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
-         }
-
-         session.commit();
-
-         consumerExpiry.close();
-
-         session.commit();
-
-         session.close();
-
-         validateNoFilesOnLargeDir();
       }
+
+      session.close();
+      server.stop();
+
+      server = createServer(true, isNetty());
+
+      server.start();
+
+      sf = createSessionFactory(locator);
+
+      session = sf.createSession(false, false, false);
+
+      session.start();
+
+      consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+      msg1 = consumerExpiry.receive(5000);
+      Assert.assertNotNull(msg1);
+      msg1.acknowledge();
+
+      for (int i = 0; i < messageSize; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1.getBodyBuffer().readByte());
+      }
+
+      session.commit();
+
+      consumerExpiry.close();
+
+      session.commit();
+
+      session.close();
+
+      validateNoFilesOnLargeDir();
+   }
 
    public void testExpiryLargeMessage() throws Exception
    {
@@ -2126,7 +2126,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
-       HornetQServer server = createServer(true, isNetty());
+      HornetQServer server = createServer(true, isNetty());
 
       server.start();
 
@@ -2784,60 +2784,60 @@ public class LargeMessageTest extends LargeMessageTestBase
       final int SIZE = 10 * 1024;
       final int NUMBER_OF_MESSAGES = 1;
 
-         server = createServer(true, isNetty());
+      server = createServer(true, isNetty());
 
-         server.start();
+      server.start();
 
-         locator.setMinLargeMessageSize(1024);
+      locator.setMinLargeMessageSize(1024);
 
-         ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-         session = sf.createSession(null, null, false, true, true, false, 0);
+      session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            ClientMessage msg = session.createMessage(true);
-            msg.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
-            msg.putIntProperty(new SimpleString("key"), i);
-            producer.send(msg);
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
+         msg.putIntProperty(new SimpleString("key"), i);
+         producer.send(msg);
 
-            log.debug("Sent msg " + i);
-         }
+         log.debug("Sent msg " + i);
+      }
 
-         session.start();
+      session.start();
 
-         log.debug("Sending");
+      log.debug("Sending");
 
-         producer.close();
+      producer.close();
 
-         log.debug("Waiting");
+      log.debug("Waiting");
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
 
-         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            ClientMessage msg = consumer.receive(50000);
-            Assert.assertNotNull(msg);
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = consumer.receive(50000);
+         Assert.assertNotNull(msg);
 
-            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
+         Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
 
-            msg.acknowledge();
-         }
+         msg.acknowledge();
+      }
 
-         consumer.close();
+      consumer.close();
 
-         session.commit();
+      session.commit();
 
-         Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
-         Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
+      Assert.assertEquals(0,
+                          ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+      Assert.assertEquals(0,
+                          ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
 
-         log.debug("Thread done");
+      log.debug("Thread done");
    }
 
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
@@ -2852,48 +2852,48 @@ public class LargeMessageTest extends LargeMessageTestBase
       ClientSession session = sf.createSession(false, false);
 
       LargeServerMessageImpl fileMessage =
-               new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
+         new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
 
-         fileMessage.setMessageID(1005);
+      fileMessage.setMessageID(1005);
 
-         for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
-         {
-            fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
-         }
+      for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
+      {
+         fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
+      }
 
-         // The server would be doing this
-         fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, LARGE_MESSAGE_SIZE);
+      // The server would be doing this
+      fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, LARGE_MESSAGE_SIZE);
 
-         fileMessage.releaseResources();
+      fileMessage.releaseResources();
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
 
-         ClientProducer prod = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer prod = session.createProducer(LargeMessageTest.ADDRESS);
 
-         prod.send(fileMessage);
+      prod.send(fileMessage);
 
-         fileMessage.deleteFile();
+      fileMessage.deleteFile();
 
-         session.commit();
+      session.commit();
 
-         session.start();
+      session.start();
 
-         ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
 
-         ClientMessage msg = cons.receive(5000);
+      ClientMessage msg = cons.receive(5000);
 
-         Assert.assertNotNull(msg);
+      Assert.assertNotNull(msg);
 
-         Assert.assertEquals(msg.getBodySize(), LARGE_MESSAGE_SIZE);
+      Assert.assertEquals(msg.getBodySize(), LARGE_MESSAGE_SIZE);
 
-         for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
-         }
+      for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
+      }
 
-         msg.acknowledge();
+      msg.acknowledge();
 
-         session.commit();
+      session.commit();
    }
 
    // Package protected ---------------------------------------------

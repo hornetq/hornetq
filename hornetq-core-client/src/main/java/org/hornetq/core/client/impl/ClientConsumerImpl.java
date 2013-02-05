@@ -580,26 +580,27 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
       else
       {
-         ClientMessageInternal clMessage = (ClientMessageInternal)message.getMessage();
-
-         clMessage.setDeliveryCount(message.getDeliveryCount());
-
-         clMessage.setFlowControlSize(message.getPacketSize());
-
-         handleRegularMessage((ClientMessageInternal)message.getMessage());
+         handleRegularMessage((ClientMessageInternal)message.getMessage(), message);
       }
    }
 
-   private void handleRegularMessage(final ClientMessageInternal message) throws Exception
+   private void handleRegularMessage(final ClientMessageInternal message, final SessionReceiveMessage messagePacket) throws Exception
    {
-      ClientMessageInternal messageToHandle = message;
+      message.setDeliveryCount(messagePacket.getDeliveryCount());
 
-      if (messageToHandle.getAddress() == null)
+      message.setFlowControlSize(messagePacket.getPacketSize());
+
+      handleRegularMessage(message);
+   }
+
+   private void handleRegularMessage(ClientMessageInternal message)
+   {
+      if (message.getAddress() == null)
       {
-         messageToHandle.setAddressTransient(queueInfo.getAddress());
+         message.setAddressTransient(queueInfo.getAddress());
       }
 
-      messageToHandle.onReceipt(this);
+      message.onReceipt(this);
 
       if (message.getPriority() != 4)
       {
@@ -610,7 +611,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Add it to the buffer
-      buffer.addTail(messageToHandle, messageToHandle.getPriority());
+      buffer.addTail(message, message.getPriority());
 
       if (handler != null)
       {
@@ -630,7 +631,13 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
     * This method deals with messages arrived as regular message but its contents are compressed.
     * Such messages come from message senders who are configured to compress large messages, and
     * if some of the messages are compressed below the min-large-message-size limit, they are sent
-    * as regular messages (see avoid-large-messages option).
+    * as regular messages.
+    *
+    * However when decompressing the message, we are not sure how large the message could be..
+    * for that reason we fake a large message controller that will deal with the message as it was a large message
+    *
+    * Say that you sent a 1G message full of spaces. That could be just bellow 100K compressed but you wouldn't have
+    * enough memory to decompress it
     */
    private void handleCompressedMessage(final SessionReceiveMessage message) throws Exception
    {
@@ -638,9 +645,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       //create a ClientLargeMessageInternal out of the message
       ClientLargeMessageImpl largeMessage = new ClientLargeMessageImpl();
       largeMessage.retrieveExistingData(clMessage);
-
-      largeMessage.setDeliveryCount(message.getDeliveryCount());
-      largeMessage.setFlowControlSize(message.getPacketSize());
 
       File largeMessageCache = null;
 
@@ -667,7 +671,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       SessionReceiveContinuationMessage packet = new SessionReceiveContinuationMessage(this.getID(), body, false, false, body.length);
       currentLargeMessageController.addPacket(packet);
 
-      handleRegularMessage(largeMessage);
+      handleRegularMessage(largeMessage, message);
    }
 
    public synchronized void handleLargeMessage(final SessionReceiveLargeMessage packet) throws Exception
