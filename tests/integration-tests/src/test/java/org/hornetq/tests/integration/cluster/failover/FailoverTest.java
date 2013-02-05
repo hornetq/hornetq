@@ -179,7 +179,7 @@ public class FailoverTest extends FailoverTestBase
       assertTrue("latch released", latch.await(10, TimeUnit.SECONDS));
       crash(session);
       latchFailed.countDown();
-      t.join(5000);
+      t.join(30000);
       if (t.isAlive())
       {
          t.interrupt();
