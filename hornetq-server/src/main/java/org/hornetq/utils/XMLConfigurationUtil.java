@@ -19,12 +19,9 @@ import org.w3c.dom.NodeList;
 
 /**
  * A XMLConfigurationUtil
- *
  * @author jmesnil
- *
- *
  */
-public class XMLConfigurationUtil
+public final class XMLConfigurationUtil
 {
 
    public static Double getDouble(final Element e,
@@ -112,23 +109,4 @@ public class XMLConfigurationUtil
          return def;
       }
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
