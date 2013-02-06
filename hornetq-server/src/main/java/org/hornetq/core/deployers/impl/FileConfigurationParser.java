@@ -61,13 +61,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This class will parse the XML associated with the File Configuration XSD
- *
+ * Parses an XML document according to the {@literal hornetq-configuration.xsd} schema.
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public final class FileConfigurationParser
 {
@@ -139,12 +136,6 @@ public final class FileConfigurationParser
    // Attributes ----------------------------------------------------
 
    private boolean validateAIO = false;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * @return the validateAIO
@@ -497,7 +488,7 @@ public final class FileConfigurationParser
 
       config.setPageMaxConcurrentIO(XMLConfigurationUtil.getInteger(e,
                                                                     "page-max-concurrent-io",
-                                                                    5,
+                                                                    config.getPageMaxConcurrentIO(),
                                                                     Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setPagingDirectory(XMLConfigurationUtil.getString(e,
