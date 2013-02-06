@@ -49,6 +49,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       locator = getServerLocator();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
       sessionFactory = createSessionFactoryAndWaitForTopology(locator, 1);
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
