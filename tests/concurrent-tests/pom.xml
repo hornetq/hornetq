@@ -69,49 +69,8 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-jca-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.security</groupId>
-         <artifactId>jboss-security-spi</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.security</groupId>
-         <artifactId>jbosssx</artifactId>
-      </dependency>
-      <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.naming</groupId>
-         <artifactId>jnpserver</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossts-common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>apache-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.spec.javax.transaction</groupId>
-         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-      </dependency>
-      <!--this specifically for the JMS Bridge-->
-      <dependency>
-         <groupId>org.jboss</groupId>
-         <artifactId>jboss-transaction-spi</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-jaspi-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.spec.javax.jms</groupId>
-         <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
    </dependencies>
 
