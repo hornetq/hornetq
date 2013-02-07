@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -122,7 +123,7 @@ public class QueueImpl implements Queue
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
 
-   private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
+   private final List<ConsumerHolder> consumerList = new CopyOnWriteArrayList<ConsumerHolder>();
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
@@ -582,24 +583,15 @@ public class QueueImpl implements Queue
 
    public synchronized void removeConsumer(final Consumer consumer)
    {
-      Iterator<ConsumerHolder> iter = consumerList.iterator();
-
-      while (iter.hasNext())
-      {
-         ConsumerHolder holder = iter.next();
-
-         if (holder.consumer == consumer)
-         {
-            if (holder.iter != null)
-            {
-               holder.iter.close();
-            }
-
-            iter.remove();
-
-            break;
-         }
-      }
+       for (ConsumerHolder holder : consumerList) {
+           if (holder.consumer == consumer) {
+               if (holder.iter != null) {
+                   holder.iter.close();
+               }
+               consumerList.remove(holder);
+               break;
+           }
+       }
 
       if (pos > 0 && pos >= consumerList.size())
       {
@@ -608,19 +600,12 @@ public class QueueImpl implements Queue
 
       consumerSet.remove(consumer);
 
-      List<SimpleString> gids = new ArrayList<SimpleString>();
-
       for (SimpleString groupID : groups.keySet())
       {
          if (consumer == groups.get(groupID))
          {
-            gids.add(groupID);
+             groups.remove(groupID);
          }
-      }
-
-      for (SimpleString gid : gids)
-      {
-         groups.remove(gid);
       }
 
       if (consumer.getFilter() != null)
@@ -720,7 +705,7 @@ public class QueueImpl implements Queue
       return consumerSet;
    }
 
-   public synchronized boolean hasMatchingConsumer(final ServerMessage message)
+   public boolean hasMatchingConsumer(final ServerMessage message)
    {
       for (ConsumerHolder holder : consumerList)
       {
@@ -2375,6 +2360,7 @@ public class QueueImpl implements Queue
       final Consumer consumer;
 
       LinkedListIterator<MessageReference> iter;
+
    }
 
    private final class RefsOperation extends TransactionOperationAbstract

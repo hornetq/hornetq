@@ -14,6 +14,7 @@
 package org.hornetq.core.server.impl;
 
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -38,9 +39,9 @@ import org.hornetq.utils.TypedProperties;
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
 
-   private int durableRefCount;
+   private final AtomicInteger durableRefCount = new AtomicInteger();
 
-   private int refCount;
+   private final AtomicInteger refCount = new AtomicInteger();
 
    private PagingStore pagingStore;
 
@@ -119,13 +120,13 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return properties.hasInternalProperties();
    }
 
-   public synchronized int incrementRefCount() throws Exception
+   public int incrementRefCount() throws Exception
    {
-      refCount++;
+       int count = refCount.incrementAndGet();
 
-      if (pagingStore != null)
+       if (pagingStore != null)
       {
-         if (refCount == 1)
+         if (count == 1)
          {
             pagingStore.addSize(getMemoryEstimate() + MessageReferenceImpl.getMemoryEstimate());
          }
@@ -135,12 +136,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          }
       }
 
-      return refCount;
+      return count;
    }
 
-   public synchronized int decrementRefCount() throws Exception
+   public int decrementRefCount() throws Exception
    {
-      int count = --refCount;
+      int count = refCount.decrementAndGet();
 
       if (pagingStore != null)
       {
@@ -157,19 +158,19 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return count;
    }
 
-   public synchronized int incrementDurableRefCount()
+   public int incrementDurableRefCount()
    {
-      return ++durableRefCount;
+      return durableRefCount.incrementAndGet();
    }
 
-   public synchronized int decrementDurableRefCount()
+   public int decrementDurableRefCount()
    {
-      return --durableRefCount;
+      return durableRefCount.decrementAndGet();
    }
 
-   public synchronized int getRefCount()
+   public int getRefCount()
    {
-      return refCount;
+      return refCount.get();
    }
 
    public boolean isLargeMessage()
