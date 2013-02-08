@@ -93,21 +93,12 @@ import org.hornetq.utils.SimpleIDGenerator;
 import org.hornetq.utils.TokenBucketLimiterImpl;
 import org.hornetq.utils.XidCodecSupport;
 
-/*
+/**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
- * @version <tt>$Revision: 3603 $</tt> $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
- *
- * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
- *
  */
 final class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
@@ -436,11 +427,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    public void createQueue(final String address, final String queueName) throws HornetQException
    {
-      internalCreateQueue(SimpleString.toSimpleString(address),
-                          SimpleString.toSimpleString(queueName),
-                          null,
-                          true,
-                          false);
+      createQueue(SimpleString.toSimpleString(address), SimpleString.toSimpleString(queueName));
    }
 
    public ClientConsumer createConsumer(final String queueName, final String filterString) throws HornetQException
