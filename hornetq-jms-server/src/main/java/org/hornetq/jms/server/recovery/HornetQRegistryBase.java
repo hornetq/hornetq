@@ -52,6 +52,15 @@ public abstract class HornetQRegistryBase
       HornetQRecoveryRegistry.getInstance().unRegister(resourceConfig);
    }
 
+   public void stop()
+   {
+      if (started.compareAndSet(true, false) && getTMRegistry() != null)
+      {
+         getTMRegistry().removeXAResourceRecovery(HornetQRecoveryRegistry.getInstance());
+         HornetQRecoveryRegistry.getInstance().stop();
+      }
+   }
+
    private void init()
    {
       if (started.compareAndSet(false, true) && getTMRegistry() != null)
