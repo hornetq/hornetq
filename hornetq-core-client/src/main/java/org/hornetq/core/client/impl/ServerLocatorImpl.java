@@ -536,18 +536,20 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private synchronized TransportConfiguration selectConnector()
    {
-      // if the ServerLocator is !had, we will always use the initialConnectors
-      // on that case if the ServerLocator was configured to be in-vm, it will always be in-vm no matter
-      // what updates were sent from the server
-      if (receivedTopology)
-      {
-         synchronized (topologyArrayGuard)
-         {
-            int pos = loadBalancingPolicy.select(topologyArray.length);
-            Pair<TransportConfiguration, TransportConfiguration> pair = topologyArray[pos];
+      Pair<TransportConfiguration, TransportConfiguration>[] usedTopology;
 
-            return pair.getA();
-         }
+      synchronized (topologyArrayGuard)
+      {
+         usedTopology = topologyArray;
+      }
+
+      // if the topologyArray is null, we will use the initialConnectors
+      if (usedTopology != null)
+      {
+         int pos = loadBalancingPolicy.select(usedTopology.length);
+         Pair<TransportConfiguration, TransportConfiguration> pair = usedTopology[pos];
+
+         return pair.getA();
       }
       else
       {
@@ -877,7 +879,14 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
          }
 
-         if (isClosed() || !receivedTopology)
+
+         // We are waiting for the topology here,
+         // however to avoid a race where the connection is closed (and receivedtopology set to true)
+         // between the wait and this timeout here, we redo the check for timeout.
+         // if this becomes false there's no big deal and we will just ignore the issue
+         // notice that we can't add more locks here otherwise there wouldn't be able to avoid a deadlock
+         final boolean hasTimedOut = timeout > System.currentTimeMillis();
+         if (!hasTimedOut && !receivedTopology)
          {
             if (factory != null)
                factory.cleanup();
@@ -1567,15 +1576,17 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          Collection<TopologyMemberImpl> membersCopy = topology.getMembers();
 
-         topologyArray =
+         Pair<TransportConfiguration, TransportConfiguration>[] topologyArrayLocal =
                   (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                                 membersCopy.size());
 
          int count = 0;
          for (TopologyMemberImpl pair : membersCopy)
          {
-            topologyArray[count++] = pair.getConnector();
+            topologyArrayLocal[count++] = pair.getConnector();
          }
+
+         this.topologyArray = topologyArrayLocal;
       }
    }
 

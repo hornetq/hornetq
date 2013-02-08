@@ -4686,7 +4686,7 @@ public class PagingTest extends ServiceTestBase
 
          session.createQueue(ADDRESS, ADDRESS, true);
 
-         session.createQueue("DLA", "DLA");
+         session.createQueue("DLA", "DLA", true);
 
          PagingStore pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
          pgStoreAddress.startPaging();
@@ -4928,7 +4928,7 @@ public class PagingTest extends ServiceTestBase
 
          session.createQueue(ADDRESS, ADDRESS, true);
 
-         session.createQueue("DLA", "DLA");
+         session.createQueue("DLA", "DLA", true);
 
          PagingStore pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
          pgStoreAddress.startPaging();
