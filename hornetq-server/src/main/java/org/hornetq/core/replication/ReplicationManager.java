@@ -285,6 +285,7 @@ public class ReplicationManager implements HornetQComponent
          enabled = false;
          clearReplicationTokens();
       }
+
       if (replicatingChannel != null)
       {
          replicatingChannel.close();

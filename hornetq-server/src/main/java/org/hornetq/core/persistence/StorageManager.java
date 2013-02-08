@@ -46,10 +46,8 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.utils.IDGenerator;
 
 /**
  *
@@ -345,12 +343,4 @@ public interface StorageManager extends HornetQComponent
     * @see StorageManager#readLock()
     */
    void readUnLock();
-
-   /**
-    * Closes the {@link IDGenerator} persisting the current record ID.
-    * <p>
-    * Effectively a "pre-stop" method. Necessary due to the "stop"-order at
-    * {@link HornetQServerImpl}
-    */
-   void closeIdGenerator();
 }
