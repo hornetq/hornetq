@@ -24,7 +24,6 @@ package org.hornetq.core.protocol;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND_TX;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMPARE_DATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_DELETE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_DELETE_TX;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
@@ -47,7 +46,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
@@ -150,11 +148,6 @@ public class ServerPacketDecoder extends PacketDecoder
          case REPLICATION_LARGE_MESSAGE_WRITE:
          {
             packet = new ReplicationLargeMessageWriteMessage();
-            break;
-         }
-         case REPLICATION_COMPARE_DATA:
-         {
-            packet = new ReplicationCompareDataMessage();
             break;
          }
          case PacketImpl.BACKUP_REGISTRATION:

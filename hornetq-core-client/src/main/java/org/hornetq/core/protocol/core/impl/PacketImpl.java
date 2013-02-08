@@ -175,7 +175,10 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 101;
 
-   public static final byte REPLICATION_COMPARE_DATA = 102;
+   /*
+    * code 102 was REPLICATION_COMPARE_DATA, released into production as a message, but as part of
+    * the (then) non-function replication system.
+    */
 
    public static final byte REPLICATION_SYNC_FILE = 103;
 
