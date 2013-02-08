@@ -276,7 +276,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   public synchronized void freeze(final CoreRemotingConnection backupRemotingConnection)
+   public synchronized void freeze(final CoreRemotingConnection connectionToKeepOpen)
    {
       for (Acceptor acceptor : acceptors)
       {
@@ -297,12 +297,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.getValue().connection;
 
+         if (conn.equals(connectionToKeepOpen))
+            continue;
+
          if (HornetQServerLogger.LOGGER.isTraceEnabled())
          {
             HornetQServerLogger.LOGGER.trace("Sending connection.disconnection packet to " + conn);
          }
 
-         if (!conn.equals(backupRemotingConnection) && !conn.isClient())
+         if (!conn.isClient())
          {
             conn.disconnect(false);
             connections.remove(entry.getKey());
