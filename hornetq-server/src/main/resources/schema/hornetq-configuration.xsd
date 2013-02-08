@@ -313,9 +313,9 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="failback-delay" type="xsd:long" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+        <xsd:element name="failback-delay" type="xsd:long" default="5000" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)">
+            <xsd:documentation>delay to wait before fail-back occurs on (live's) restart</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -423,7 +423,6 @@
           </xsd:complexType>
         </xsd:element>
 
-                <!-- XXX -->
         <xsd:element maxOccurs="1" minOccurs="0" name="discovery-groups">
           <xsd:annotation hq:linkend="clusters">
             <xsd:documentation>a list of discovery groups to create
@@ -499,7 +498,6 @@
           </xsd:complexType>
         </xsd:element>
 
-        <!-- XXX -->
         <xsd:element name="cluster-connections" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="clusters">
             <xsd:documentation>a list of cluster connections
@@ -561,7 +559,6 @@
           </xsd:annotation>
         </xsd:element>
 
-        <!-- XXX restriction -->
         <xsd:element name="journal-type" default="ASYNCIO" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-type">
             <xsd:documentation>the type of journal to use
@@ -607,9 +604,10 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="log-journal-write-rate" type="xsd:boolean">
+        <xsd:element name="log-journal-write-rate" type="xsd:boolean" default="false"
+                     maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>Whether to log messages about the journal write rate</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -846,7 +844,7 @@
         </xsd:element>
 
         <xsd:element name="refresh-timeout" type="xsd:int" default="5000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:id="configuration.discovery-group.refresh-timeout"
+          <xsd:annotation hq:linkend="configuration.discovery-group.refresh-timeout"
                           hq:default="(in milliseconds)">
             <xsd:documentation>Period the discovery group waits after receiving the last broadcast
             from a particular server before removing that servers connector pair entry from its
@@ -856,9 +854,9 @@
 
         <xsd:element ref="local-bind-address"   maxOccurs="1" minOccurs="0" />
         <xsd:element ref="local-bind-port"   maxOccurs="1" minOccurs="0" />
-        <xsd:element name="initial-wait-timeout" type="xsd:int" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>XXXX</xsd:documentation>
+        <xsd:element name="initial-wait-timeout" type="xsd:int" default="10000" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:default="(milliseconds)" hq:linkend="XXX">
+            <xsd:documentation>time to wait for an initial broadcast to give us at least one node in the cluster</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
       </xsd:all>
@@ -923,10 +921,12 @@
 
       <xsd:element name="ha" type="xsd:boolean"                      maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>whether this bridge supports fail-over</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
+
       <xsd:element name="filter"                                       maxOccurs="1" minOccurs="0"/>
+
 
       <xsd:element name="transformer-class-name" type="xsd:string"    maxOccurs="1" minOccurs="0"    >
         <xsd:annotation>
@@ -1226,7 +1226,7 @@
 
   <xsd:complexType name="groupingHandlerType">
     <xsd:all>
-      <xsd:element maxOccurs="1" minOccurs="1" name="type">
+      <xsd:element name="type" maxOccurs="1" minOccurs="1">
         <xsd:annotation>
           <xsd:documentation>XXX</xsd:documentation>
         </xsd:annotation>

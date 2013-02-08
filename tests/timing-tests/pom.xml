@@ -68,11 +68,6 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
-         <artifactId>hornetq-ra</artifactId>
-         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-bootstrap</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -99,10 +94,6 @@
       <dependency>
          <groupId>jboss.jbossts</groupId>
          <artifactId>jbossts-common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>apache-logging</groupId>
-         <artifactId>commons-logging</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss.spec.javax.transaction</groupId>
