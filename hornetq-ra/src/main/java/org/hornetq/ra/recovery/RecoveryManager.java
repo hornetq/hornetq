@@ -106,7 +106,10 @@ public final class RecoveryManager
          {
             registry.unRegister(recovery);
          }
+         registry.stop();
       }
+
+
       resources.clear();
    }
 

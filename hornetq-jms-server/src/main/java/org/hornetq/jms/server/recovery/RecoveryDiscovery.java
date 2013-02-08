@@ -167,7 +167,8 @@ public class RecoveryDiscovery implements SessionFailureListener
 
       public void nodeDown(long eventUID, String nodeID)
       {
-         // I'm not putting any node down, since it may have previous transactions hanging
+         // I'm not putting any node down, since it may have previous transactions hanging, however at some point we may
+         //change it have some sort of timeout for removal
       }
 
    }

@@ -129,6 +129,24 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
    }
 
    /**
+   * We need to make sure that all resources are closed, we don't actually do this when a resourceConfig is closed but
+   * maybe we should.
+   */
+   public void stop()
+   {
+      for (RecoveryDiscovery recoveryDiscovery : configSet.values())
+      {
+         recoveryDiscovery.stop();
+      }
+      for (HornetQXAResourceWrapper hornetQXAResourceWrapper : recoveries.values())
+      {
+         hornetQXAResourceWrapper.close();
+      }
+      recoveries.clear();
+      configSet.clear();
+   }
+
+   /**
     * in case of a failure the Discovery will register itslef to retry
     * @param failedDiscovery
     */
