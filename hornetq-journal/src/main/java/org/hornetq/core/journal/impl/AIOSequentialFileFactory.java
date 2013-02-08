@@ -36,7 +36,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  * @author clebert.suconic@jboss.com
  *
  */
-public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
+public final class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 {
    private static final boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
 
