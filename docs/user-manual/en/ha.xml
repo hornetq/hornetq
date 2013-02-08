@@ -196,9 +196,9 @@
             <section id="ha.allow-fail-back">
                 <title>Failing Back to live Server</title>
                 <para>After a live server has failed and a backup taken has taken over its duties, you may want to
-                    restart the live server and have clients fail back. To do this simply restart the original live
+                    restart the live server and have clients fail back. In case of "shared disk", simply restart the original live
                     server and kill the new live server. You can do this by killing the process itself or just waiting
-                    for the server to crash naturally </para>
+                    for the server to crash naturally. In case of a replicating live server replaced by a remote backup you will need to also set <link linkend="hq.check-for-live-server">check-for-live-server</link>.</para>
                 <para>
                     It is also possible to cause failover to occur on normal server shutdown, to enable
                     this set the following property to true in the <literal>hornetq-configuration.xml</literal>
@@ -212,16 +212,15 @@
                     API as explained at <xref linkend="management.core.server"/>
                 </para>
                 <para>
-                    You can also force the new live server to shutdown when the old live server comes back up allowing
+                    You can also force the running live server to shutdown when the old live server comes back up allowing
                     the original live server to take over automatically by setting the following property in the
                 <literal>hornetq-configuration.xml</literal> configuration file as follows:
                 </para>
                 <programlisting>
 &lt;allow-failback>true&lt;/allow-failback></programlisting>
-                <para>
+                <para id="hq.check-for-live-server">
                     In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
-                    to <literal>true</literal> in order to force the new live server to shutdown when the old live server 
-                    comes back up in <literal>hornetq-configuration.xml</literal> configuration file as follows:
+                    to <literal>true</literal>. If set to true, during start-up a live server will first search the cluster for another server using its nodeID. If it finds one, it will contact this server and try to "fail-back". Since this is a remote replication scenario, the "starting live" will have to synchronize its data with the server running with its ID, once they are in sync, it will request the other server (which it assumes it is a back that has assumed its duties) to shutdown for it to take over. This is necessary because otherwise the live server has no means to know whether there was a fail-over or not, and if there was if the server that took its duties is still running or not. To configure this option at your <literal>hornetq-configuration.xml</literal> configuration file as follows:
                 </para>
                 <programlisting>
 &lt;check-for-live-server>true&lt;/check-for-live-server></programlisting>

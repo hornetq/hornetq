@@ -22,9 +22,9 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="check-for-live-server" type="xsd:string" maxOccurs="1"
+        <xsd:element name="check-for-live-server" type="xsd:boolean" default="false" maxOccurs="1"
                      minOccurs="0">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="hq.check-for-live-server">
             <xsd:documentation>
               Whether to check the cluster for a live server (using our own server ID) when starting
               up. This setting only applies to replicated servers.
