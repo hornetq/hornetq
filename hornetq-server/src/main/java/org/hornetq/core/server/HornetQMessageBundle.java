@@ -115,7 +115,7 @@ public interface HornetQMessageBundle
    @Message(id = 119016, value =  "queue {0} has been removed cannot deliver message, queues should not be removed when grouping is used", format = Message.Format.MESSAGE_FORMAT)
    HornetQNonExistentQueueException groupingQueueRemoved(SimpleString chosenClusterName);
 
-   @Message(id = 119017, value =  "Queue {0}does not exist", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119017, value =  "Queue {0} does not exist", format = Message.Format.MESSAGE_FORMAT)
    HornetQNonExistentQueueException noSuchQueue(SimpleString queueName);
 
    @Message(id = 119018, value =  "Binding already exists {0}", format = Message.Format.MESSAGE_FORMAT)

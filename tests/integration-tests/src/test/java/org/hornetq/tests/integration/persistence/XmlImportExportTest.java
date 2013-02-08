@@ -55,7 +55,7 @@ public class XmlImportExportTest extends ServiceTestBase
    {
       ClientSession session = basicSetUp();
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -151,7 +151,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       ClientSession session = basicSetUp();
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -213,7 +213,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       ClientSession session = basicSetUp();
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -256,7 +256,7 @@ public class XmlImportExportTest extends ServiceTestBase
    {
       ClientSession session = basicSetUp();
 
-      session.createQueue("addressName1", "queueName1");
+      session.createQueue("addressName1", "queueName1", true);
       session.createQueue("addressName1", "queueName2", "bob", true);
 
       session.close();
@@ -312,7 +312,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       fileMessage.releaseResources();
 
-      session.createQueue("A", "A");
+      session.createQueue("A", "A", true);
 
       ClientProducer prod = session.createProducer("A");
 
@@ -365,8 +365,8 @@ public class XmlImportExportTest extends ServiceTestBase
    {
       ClientSession session = basicSetUp();
 
-      session.createQueue("myAddress", "myQueue1");
-      session.createQueue("myAddress", "myQueue2");
+      session.createQueue("myAddress", "myQueue1", true);
+      session.createQueue("myAddress", "myQueue2", true);
 
       ClientProducer producer = session.createProducer("myAddress");
 
@@ -480,7 +480,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       ClientSession session = basicSetUp();
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -523,7 +523,7 @@ public class XmlImportExportTest extends ServiceTestBase
       ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(false, true, true);
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -571,7 +571,7 @@ public class XmlImportExportTest extends ServiceTestBase
       ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(false, true, true);
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 

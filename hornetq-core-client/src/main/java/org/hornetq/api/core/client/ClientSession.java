@@ -218,8 +218,7 @@ public interface ClientSession extends XAResource
    void createQueue(String address, String queueName, String filter, boolean durable) throws HornetQException;
 
    /**
-    * Creates a <em>temporary</em> queue. <br/>
-    * This queue is also <em>non-durable</em>.
+    * Creates a <em>temporary</em> queue.
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
@@ -227,8 +226,7 @@ public interface ClientSession extends XAResource
    void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException;
 
    /**
-    * Creates a <em>temporary</em> queue. <br/>
-    * This queue is also <em>non-durable</em>.
+    * Creates a <em>temporary</em> queue.
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
