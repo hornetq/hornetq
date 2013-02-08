@@ -532,14 +532,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private synchronized TransportConfiguration selectConnector()
    {
+      Pair<TransportConfiguration, TransportConfiguration>[] usedTopology = topologyArray;
       // if the ServerLocator is !had, we will always use the initialConnectors
       // on that case if the ServerLocator was configured to be in-vm, it will always be in-vm no matter
       // what updates were sent from the server
-      if (receivedTopology && ha)
+      if (ha && usedTopology != null)
       {
          int pos = loadBalancingPolicy.select(topologyArray.length);
 
-         Pair<TransportConfiguration, TransportConfiguration> pair = topologyArray[pos];
+         Pair<TransportConfiguration, TransportConfiguration> pair = usedTopology[pos];
 
          return pair.getA();
       }
@@ -1475,14 +1476,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       Collection<TopologyMember> membersCopy = topology.getMembers();
 
-      topologyArray = (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
+      
+      Pair<TransportConfiguration, TransportConfiguration>[] topologyArrayLocal = (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                                 membersCopy.size());
 
       int count = 0;
       for (TopologyMember pair : membersCopy)
       {
-         topologyArray[count++] = pair.getConnector();
+         topologyArrayLocal[count++] = pair.getConnector();
       }
+      
+      this.topologyArray = topologyArrayLocal;
    }
 
    public synchronized void connectorsChanged()
