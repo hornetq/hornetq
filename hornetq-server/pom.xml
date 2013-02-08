@@ -18,24 +18,14 @@
            <artifactId>jboss-logging-processor</artifactId>
        </dependency>
 
-       <dependency>
-           <groupId>org.jgroups</groupId>
-           <artifactId>jgroups</artifactId>
-       </dependency>
-
-
        <!--
            JBoss Logging
        -->
        <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging</artifactId>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
        </dependency>
-      <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
-      </dependency>
-      <dependency>
+       <dependency>
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-commons</artifactId>
          <version>${project.version}</version>

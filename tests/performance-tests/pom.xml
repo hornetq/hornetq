@@ -73,14 +73,6 @@
          <artifactId>jboss-jca-api</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.security</groupId>
-         <artifactId>jboss-security-spi</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.security</groupId>
-         <artifactId>jbosssx</artifactId>
-      </dependency>
-      <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
       </dependency>
@@ -91,10 +83,6 @@
       <dependency>
          <groupId>jboss.jbossts</groupId>
          <artifactId>jbossts-common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>apache-logging</groupId>
-         <artifactId>commons-logging</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss.spec.javax.transaction</groupId>
