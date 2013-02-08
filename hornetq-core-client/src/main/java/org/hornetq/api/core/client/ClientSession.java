@@ -27,7 +27,6 @@ import org.hornetq.api.core.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public interface ClientSession extends XAResource
 {
@@ -219,8 +218,8 @@ public interface ClientSession extends XAResource
    void createQueue(String address, String queueName, String filter, boolean durable) throws HornetQException;
 
    /**
-    * Creates a <em>temporary</em> queue.
-    *
+    * Creates a <em>temporary</em> queue. <br/>
+    * This queue is also <em>non-durable</em>.
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
@@ -228,8 +227,8 @@ public interface ClientSession extends XAResource
    void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException;
 
    /**
-    * Creates a <em>temporary</em> queue.
-    *
+    * Creates a <em>temporary</em> queue. <br/>
+    * This queue is also <em>non-durable</em>.
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
