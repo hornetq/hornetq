@@ -13,14 +13,7 @@
 
 package org.hornetq.tests.unit.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import junit.framework.Assert;
-
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.security.CheckType;
@@ -29,8 +22,15 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.XMLUtil;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * tests BasicUserCredentialsDeployer
@@ -39,21 +39,26 @@ import org.w3c.dom.NodeList;
  */
 public class BasicUserCredentialsDeployerTest extends UnitTestCase
 {
-   private BasicUserCredentialsDeployer deployer;
+   private FakeDeployer deployer;
 
-   FakeHornetQUpdateableSecurityManager securityManager;
+   private FakeHornetQUpdateableSecurityManager securityManager;
 
-   private static final String simpleSecurityXml = "<configuration>\n" + "<defaultuser name=\"guest\" password=\"guest\">\n"
+   private URI url;
+
+   private static final String simpleSecurityXml = "<configuration>\n"
+                                                   + "<defaultuser name=\"guest\" password=\"guest\">\n"
                                                    + "      <role name=\"guest\"/>\n"
                                                    + "   </defaultuser>"
                                                    + "</configuration>";
 
-   private static final String singleUserXml = "<configuration>\n" + "      <user name=\"guest\" password=\"guest\">\n"
+   private static final String singleUserXml = "<configuration>\n"
+                                               + "      <user name=\"guest\" password=\"guest\">\n"
                                                + "         <role name=\"guest\"/>\n"
                                                + "      </user>\n"
                                                + "</configuration>";
 
-   private static final String multipleUserXml = "<configuration>\n" + "      <user name=\"guest\" password=\"guest\">\n"
+   private static final String multipleUserXml = "<configuration>\n"
+                                                 + "      <user name=\"guest\" password=\"guest\">\n"
                                                  + "         <role name=\"guest\"/>\n"
                                                  + "         <role name=\"foo\"/>\n"
                                                  + "      </user>\n"
@@ -103,7 +108,9 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       super.setUp();
       DeploymentManager deploymentManager = new FakeDeploymentManager();
       securityManager = new FakeHornetQUpdateableSecurityManager();
-      deployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
+      deployer = new FakeDeployer(deploymentManager, securityManager);
+
+      url = new URI("http://localhost");
    }
 
    @Override
@@ -114,36 +121,12 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       super.tearDown();
    }
 
-   private void deploy(final String xml) throws Exception
-   {
-      NodeList children = XMLUtil.stringToElement(xml).getChildNodes();
-      for (int i = 0; i < children.getLength(); i++)
-      {
-         Node node = children.item(i);
-         String name = node.getNodeName();
-         if (name.equals("user") || name.equals("defaultuser") || name.equals("mask-password") || name.equals("password-codec"))
-         {
-            deployer.deploy(node);
-         }
-      }
-   }
-
-   private void undeploy(final String xml) throws Exception
-   {
-      NodeList children = XMLUtil.stringToElement(xml).getChildNodes();
-      for (int i = 0; i < children.getLength(); i++)
-      {
-         Node node = children.item(i);
-         if (node.getNodeName().equals("user"))
-         {
-            deployer.undeploy(node);
-         }
-      }
-   }
-
    public void testSimpleDefaultSecurity() throws Exception
    {
-      deploy(BasicUserCredentialsDeployerTest.simpleSecurityXml);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.simpleSecurityXml));
+      deployer.deploy(url);
+
       Assert.assertEquals("guest", securityManager.defaultUser);
       User user = securityManager.users.get("guest");
       Assert.assertNotNull(user);
@@ -157,7 +140,10 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
 
    public void testSingleUserDeploySecurity() throws Exception
    {
-      deploy(BasicUserCredentialsDeployerTest.singleUserXml);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.singleUserXml));
+      deployer.deploy(url);
+
       Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
       Assert.assertNotNull(user);
@@ -171,7 +157,10 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
 
    public void testMultipleUserDeploySecurity() throws Exception
    {
-      deploy(BasicUserCredentialsDeployerTest.multipleUserXml);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.multipleUserXml));
+      deployer.deploy(url);
+
       Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
       Assert.assertNotNull(user);
@@ -209,7 +198,8 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       config = config.replace("PASSWORD_TOKEN2", mask2);
       config = config.replace("PASSWORD_TOKEN3", mask3);
 
-      deploy(config);
+      deployer.setElement(XMLUtil.stringToElement(config));
+      deployer.deploy(url);
 
       User user1 = securityManager.users.get("guest");
       User user2 = securityManager.users.get("user1");
@@ -241,7 +231,8 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       config = config.replace("PASSWORD_CODEC_TOKEN", codec.getClass()
             .getName() + ";key=blahblah");
 
-      deploy(config);
+      deployer.setElement(XMLUtil.stringToElement(config));
+      deployer.deploy(url);
 
       User user1 = securityManager.users.get("guest");
       User user2 = securityManager.users.get("user1");
@@ -254,13 +245,38 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
 
    public void testUndeploy() throws Exception
    {
-      deploy(BasicUserCredentialsDeployerTest.multipleUserXml);
-      undeploy(BasicUserCredentialsDeployerTest.singleUserXml);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.simpleSecurityXml));
+      deployer.deploy(url);
+
+      deployer.undeploy(url);
+
+      User user = securityManager.users.get("guest");
+      Assert.assertNull(user);
+      List<String> roles = securityManager.roles.get("guest");
+      Assert.assertNull(roles);
+   }
+
+   public void testUndeployDifferentXml() throws Exception
+   {
+
+      URI otherUrl = new URI("http://otherHost");
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.multipleUserXml));
+      deployer.deploy(url);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.singleUserXml));
+      deployer.deploy(otherUrl);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.singleUserXml));
+      deployer.undeploy(otherUrl);
+
       Assert.assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
       Assert.assertNull(user);
       List<String> roles = securityManager.roles.get("guest");
       Assert.assertNull(roles);
+
       user = securityManager.users.get("anotherguest");
       Assert.assertNotNull(user);
       Assert.assertEquals("anotherguest", user.user);
@@ -272,6 +288,97 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("foo", roles.get(1));
       Assert.assertEquals("bar", roles.get(2));
    }
+
+   public void testRedeploySingleUser() throws Exception
+   {
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.multipleUserXml));
+      deployer.deploy(url);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.singleUserXml));
+      deployer.redeploy(url);
+
+      Assert.assertNull(securityManager.defaultUser);
+
+      User user = securityManager.users.get("guest");
+      Assert.assertNotNull(user);
+      Assert.assertEquals("guest", user.user);
+      Assert.assertEquals("guest", user.password);
+      List<String> roles = securityManager.roles.get("guest");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(1, roles.size());
+      Assert.assertEquals("guest", roles.get(0));
+
+      user = securityManager.users.get("anotherguest");
+      Assert.assertNull(user);
+      roles = securityManager.roles.get("anotherguest");
+      Assert.assertNull(roles);
+   }
+
+   public void testRedeployMultipleUser() throws Exception
+   {
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.singleUserXml));
+      deployer.deploy(url);
+
+      deployer.setElement(XMLUtil.stringToElement(BasicUserCredentialsDeployerTest.multipleUserXml));
+      deployer.redeploy(url);
+
+      Assert.assertNull(securityManager.defaultUser);
+
+      User user = securityManager.users.get("guest");
+      Assert.assertNotNull(user);
+      Assert.assertEquals("guest", user.user);
+      Assert.assertEquals("guest", user.password);
+      List<String> roles = securityManager.roles.get("guest");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(2, roles.size());
+      Assert.assertEquals("guest", roles.get(0));
+      Assert.assertEquals("foo", roles.get(1));
+
+      user = securityManager.users.get("anotherguest");
+      Assert.assertNotNull(user);
+      Assert.assertEquals("anotherguest", user.user);
+      Assert.assertEquals("anotherguest", user.password);
+      roles = securityManager.roles.get("anotherguest");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
+      Assert.assertEquals("anotherguest", roles.get(0));
+      Assert.assertEquals("foo", roles.get(1));
+      Assert.assertEquals("bar", roles.get(2));
+   }
+
+    class FakeDeployer extends BasicUserCredentialsDeployer
+    {
+       private Element element;
+
+       public FakeDeployer(DeploymentManager deploymentManager, HornetQSecurityManager hornetQSecurityManager)
+       {
+          super(deploymentManager, hornetQSecurityManager);
+       }
+
+       public Element getElement()
+       {
+          return element;
+       }
+
+       public void setElement(Element element)
+       {
+          this.element = element;
+       }
+
+       @Override
+       protected Element getRootElement(URI url) throws Exception
+       {
+          return this.element;
+       }
+
+       @Override
+       public void validate(Node rootNode) throws Exception
+       {
+
+       }
+    }
 
    class FakeHornetQUpdateableSecurityManager implements HornetQSecurityManager
    {
