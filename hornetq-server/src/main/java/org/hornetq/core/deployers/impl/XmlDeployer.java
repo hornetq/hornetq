@@ -27,6 +27,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -78,6 +79,9 @@ public abstract class XmlDeployer implements Deployer
    public synchronized void redeploy(final URI url) throws Exception
    {
       Element e = getRootElement(url);
+
+      validate(e);
+
       List<String> added = new ArrayList<String>();
       // pull out the elements that need deploying
       String elements[] = getElementTagName();
@@ -87,15 +91,9 @@ public abstract class XmlDeployer implements Deployer
          for (int i = 0; i < children.getLength(); i++)
          {
             Node node = children.item(i);
-            String name;
-            try
-            {
-               name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-            }
-            catch (NullPointerException npe)
-            {
-               throw new HornetQException("Could not find " + getKeyAttribute() + " in " + node.getAttributes());
-            }
+
+            String name = getName(node);
+
             added.add(name);
             // if this has never been deployed deploy
             Map<String, Node> map = configuration.get(url);
@@ -177,20 +175,7 @@ public abstract class XmlDeployer implements Deployer
          {
             Node node = children.item(i);
 
-            String keyAttr = getKeyAttribute();
-            String name = null;
-
-            if (keyAttr != null)
-            {
-               Node keyNode = node.getAttributes().getNamedItem(
-                     getKeyAttribute());
-               if (keyNode == null)
-               {
-                  HornetQServerLogger.LOGGER.keyAttributeMissing(node);
-                  continue;
-               }
-               name = keyNode.getNodeValue();
-            }
+            String name = getName(node);
 
             try
             {
@@ -201,6 +186,7 @@ public abstract class XmlDeployer implements Deployer
                HornetQServerLogger.LOGGER.unableToDeployNode(e1, node);
                continue;
             }
+
             addToConfiguration(url, name, node);
          }
       }
@@ -311,6 +297,35 @@ public abstract class XmlDeployer implements Deployer
       String newTextContent = child.getTextContent();
       String origTextContent = configuration.get(url).get(name).getTextContent();
       return !newTextContent.equals(origTextContent);
+   }
+
+   private String getName(Node node) throws HornetQException
+   {
+
+      String name;
+
+      if (node.hasAttributes())
+      {
+
+         try
+         {
+            Node keyNode = node.getAttributes().getNamedItem(
+                  getKeyAttribute());
+
+            name = keyNode.getNodeValue();
+         }
+         catch (NullPointerException e)
+         {
+            throw new HornetQException("Could not find " + getKeyAttribute() + " in " + XMLUtil.elementToString(node));
+         }
+      }
+      else
+      {
+
+         name = node.getLocalName();
+      }
+
+      return name;
    }
 
 }

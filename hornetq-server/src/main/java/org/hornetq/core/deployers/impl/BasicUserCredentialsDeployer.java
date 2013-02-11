@@ -131,12 +131,6 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    }
 
    @Override
-   public String getKeyAttribute()
-   {
-      return null;
-   }
-
-   @Override
    public void undeploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem("name").getNodeValue();
