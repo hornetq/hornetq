@@ -208,7 +208,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return new ServerMessageImpl(this);
    }
 
-   public ServerMessage makeCopyForExpiryOrDLA(final long newID, final boolean expiry) throws Exception
+   public ServerMessage makeCopyForExpiryOrDLA(final long newID, MessageReference originalReference,
+                                               final boolean expiry) throws Exception
    {
       /*
        We copy the message and send that to the dla/expiry queue - this is
@@ -222,24 +223,38 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       ServerMessage copy = copy(newID);
       copy.finishCopy();
 
-      copy.setOriginalHeaders(this, expiry);
+      copy.setOriginalHeaders(this, originalReference, expiry);
 
       return copy;
    }
 
-   public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
+   @Override
+   public void setOriginalHeaders(final ServerMessage other, final MessageReference originalReference, final boolean expiry)
    {
       if (other.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
       {
          putStringProperty(Message.HDR_ORIGINAL_ADDRESS, other.getSimpleStringProperty(Message.HDR_ORIGINAL_ADDRESS));
 
+         SimpleString originalQueue = other.getSimpleStringProperty(Message.HDR_ORIGINAL_QUEUE);
+
+         if (originalQueue != null)
+         {
+            putStringProperty(Message.HDR_ORIGINAL_QUEUE, originalQueue);
+         }
+
          putLongProperty(Message.HDR_ORIG_MESSAGE_ID, other.getLongProperty(Message.HDR_ORIG_MESSAGE_ID));
       }
       else
       {
-         SimpleString originalQueue = other.getAddress();
+         putStringProperty(Message.HDR_ORIGINAL_ADDRESS, other.getAddress());
 
-         putStringProperty(Message.HDR_ORIGINAL_ADDRESS, originalQueue);
+         /**
+          * This could be null in some DLA cases since the message wasn't routed yet
+          */
+         if (originalReference != null)
+         {
+            putStringProperty(Message.HDR_ORIGINAL_QUEUE, originalReference.getQueue().getName());
+         }
 
          putLongProperty(Message.HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }

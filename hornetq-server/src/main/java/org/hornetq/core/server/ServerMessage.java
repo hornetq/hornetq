@@ -57,9 +57,9 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
 
    int getRefCount();
 
-   ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception;
+   ServerMessage makeCopyForExpiryOrDLA(long newID, MessageReference originalReference, boolean expiry) throws Exception;
 
-   void setOriginalHeaders(ServerMessage other, boolean expiry);
+   void setOriginalHeaders(ServerMessage other, MessageReference originalReference, boolean expiry);
 
    void setPagingStore(PagingStore store);
 

@@ -59,6 +59,8 @@ public interface Message
 
    public static final SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
 
+   public static final SimpleString HDR_ORIGINAL_QUEUE = new SimpleString("_HQ_ORIG_QUEUE");
+
    public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
 
    public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
