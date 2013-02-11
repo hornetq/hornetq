@@ -2066,7 +2066,7 @@ public class QueueImpl implements Queue
 
       long newID = storageManager.generateUniqueID();
 
-      ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, expiry);
+      ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, ref, expiry);
 
       return copy;
    }
