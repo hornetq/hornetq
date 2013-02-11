@@ -553,21 +553,60 @@ public class HornetQServerImpl implements HornetQServer
             localReplicationManager = replicationManager;
          }
 
-         if (localReplicationManager != null)
+         // Freeze all connections
+         if (localReplicationManager == null)
          {
+            remotingService.freeze(null);
+         }
+         else
+         {
+            // if we are replicating, we keep the channel to the backup open
             remotingService.freeze(localReplicationManager.getBackupTransportConnection());
-            if (!criticalIOError)
-               storageManager.closeIdGenerator();
-            // Schedule for 10 seconds
-            scheduledPool.schedule(new Runnable() {
+            scheduledPool.schedule(new Runnable()
+            {
                @Override
                public void run()
                {
                   localReplicationManager.clearReplicationTokens();
                }
-            }, 10, TimeUnit.SECONDS);
-            localReplicationManager.sendLiveIsStopping();
-            stopComponent(localReplicationManager);
+               }, 20, TimeUnit.SECONDS);
+         }
+
+         // We close all the exception in an attempt to let any pending IO to finish
+         // to avoid scenarios where the send or ACK got to disk but the response didn't get to the
+         // client
+         // It may still be possible to have this scenario on a real failure (without the use of XA)
+         // But at least we will do our best to avoid it on regular shutdowns
+         for (ServerSession session : sessions.values())
+         {
+            try
+            {
+               storageManager.setContext(session.getSessionContext());
+               session.close(true);
+               if (!criticalIOError)
+               {
+                  session.waitContextCompletion();
+               }
+            }
+            catch (Exception e)
+            {
+               // If anything went wrong with closing sessions.. we should ignore it
+               // such as transactions.. etc.
+               HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
+            }
+         }
+
+         // all serverSessions are CLOSED ==================
+
+         // close the pagingManager
+         stopComponent(pagingManager);
+         try
+         {
+            storageManager.stop(criticalIOError);
+         }
+         catch (Exception ignored)
+         {
+            // no-op
          }
 
          stopComponent(connectorsService);
@@ -587,29 +626,6 @@ public class HornetQServerImpl implements HornetQServer
       // error shutdown
       if (remotingService != null)
          remotingService.stop(criticalIOError);
-
-      // We close all the exception in an attempt to let any pending IO to finish
-      // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
-      // It may still be possible to have this scenario on a real failure (without the use of XA)
-      // But at least we will do our best to avoid it on regular shutdowns
-      for (ServerSession session : sessions.values())
-      {
-         try
-         {
-            storageManager.setContext(session.getSessionContext());
-            session.close(true);
-            if (!criticalIOError)
-            {
-               session.waitContextCompletion();
-            }
-         }
-         catch (Exception e)
-         {
-            // If anything went wrong with closing sessions.. we should ignore it
-            // such as transactions.. etc.
-            HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
-         }
-      }
 
       if (storageManager != null)
       storageManager.clearContext();
@@ -632,8 +648,8 @@ public class HornetQServerImpl implements HornetQServer
             managementService.unregisterServer();
 
          stopComponent(managementService);
-         stopComponent(replicationManager);
-         stopComponent(replicationEndpoint);
+         stopComponent(replicationManager); // applies to a "live" server
+         stopComponent(replicationEndpoint); // applies to a "backup" server
          stopComponent(pagingManager);
 
          if (!criticalIOError)
@@ -1497,8 +1513,6 @@ public class HornetQServerImpl implements HornetQServer
 
       JournalLoadInformation[] journalInfo = loadJournals();
 
-      compareJournals(journalInfo);
-
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
 
       long dumpInfoInterval = configuration.getServerDumpInterval();
@@ -1552,17 +1566,6 @@ public class HornetQServerImpl implements HornetQServer
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
       activationLatch.countDown();
-   }
-
-   /**
-    * @param journalInfo
-    */
-   private void compareJournals(final JournalLoadInformation[] journalInfo) throws Exception
-   {
-      if (replicationManager != null)
-      {
-         replicationManager.compareJournals(journalInfo);
-      }
    }
 
    private void deploySecurityFromConfiguration()

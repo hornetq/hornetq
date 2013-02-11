@@ -28,7 +28,6 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
@@ -45,7 +44,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
@@ -285,9 +283,9 @@ public class ReplicationManager implements HornetQComponent
       synchronized (replicationLock)
       {
          enabled = false;
-
-      clearReplicationTokens();
+         clearReplicationTokens();
       }
+
       if (replicatingChannel != null)
       {
          replicatingChannel.close();
@@ -344,11 +342,6 @@ public class ReplicationManager implements HornetQComponent
 
       return activeContexts;
 
-   }
-
-   public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
-   {
-      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo), PacketImpl.NULL_RESPONSE);
    }
 
    private void sendReplicatePacket(final Packet packet)

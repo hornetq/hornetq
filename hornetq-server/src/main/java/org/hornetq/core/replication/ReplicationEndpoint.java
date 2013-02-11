@@ -80,7 +80,6 @@ import org.hornetq.core.server.impl.QuorumManager;
  */
 public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
-
    private static final boolean trace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private final IOCriticalErrorListener criticalErrorListener;

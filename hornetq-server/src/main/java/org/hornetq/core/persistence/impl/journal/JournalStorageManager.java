@@ -2217,16 +2217,6 @@ public class JournalStorageManager implements StorageManager
       stop(false);
    }
 
-   @Override
-   public synchronized void closeIdGenerator()
-   {
-      if (journalLoaded && idGenerator != null)
-      {
-         // Must call close to make sure last id is persisted
-         idGenerator.close();
-      }
-   }
-
    public synchronized void stop(boolean ioCriticalError) throws Exception
    {
       if (!started)
@@ -2241,7 +2231,11 @@ public class JournalStorageManager implements StorageManager
       }
 
       if (replicator != null)
+      {
+         replicator.sendLiveIsStopping();
+         waitOnOperations(5000);
          replicator.stop();
+      }
 
       bindingsJournal.stop();
 
