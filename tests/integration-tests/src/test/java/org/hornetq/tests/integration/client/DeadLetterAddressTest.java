@@ -57,14 +57,15 @@ public class DeadLetterAddressTest extends ServiceTestBase
    {
       SimpleString dla = new SimpleString("DLA");
       SimpleString qName = new SimpleString("q1");
+      SimpleString adName = new SimpleString("ad1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(1);
       addressSettings.setDeadLetterAddress(dla);
-      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(adName.toString(), addressSettings);
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
-      clientSession.createQueue(qName, qName, null, false);
-      ClientProducer producer = clientSession.createProducer(qName);
+      clientSession.createQueue(adName, qName, null, false);
+      ClientProducer producer = clientSession.createProducer(adName);
       producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
@@ -80,6 +81,8 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientConsumer = clientSession.createConsumer(dlq);
       m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
+      assertEquals("q1", m.getStringProperty(Message.HDR_ORIGINAL_QUEUE));
+      assertEquals("ad1", m.getStringProperty(Message.HDR_ORIGINAL_ADDRESS));
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 

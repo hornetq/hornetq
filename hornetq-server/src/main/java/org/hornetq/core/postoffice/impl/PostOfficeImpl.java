@@ -673,7 +673,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
             else
             {
-               message.setOriginalHeaders(message, false);
+               message.setOriginalHeaders(message, null, false);
 
                message.setAddress(dlaAddress);
 

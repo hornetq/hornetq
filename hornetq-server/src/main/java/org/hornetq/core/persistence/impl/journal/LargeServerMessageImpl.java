@@ -25,6 +25,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
@@ -283,9 +284,9 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
 
    @Override
-   public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
+   public void setOriginalHeaders(final ServerMessage other, final MessageReference originalReference, final boolean expiry)
    {
-      super.setOriginalHeaders(other, expiry);
+      super.setOriginalHeaders(other, originalReference, expiry);
 
       LargeServerMessageImpl otherLM = (LargeServerMessageImpl)other;
       this.paged = otherLM.paged;

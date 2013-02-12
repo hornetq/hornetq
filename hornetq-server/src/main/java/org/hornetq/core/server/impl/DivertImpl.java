@@ -94,7 +94,7 @@ public class DivertImpl implements Divert
       copy.finishCopy();
 
       // This will set the original MessageId, and the original address
-      copy.setOriginalHeaders(message, false);
+      copy.setOriginalHeaders(message, null, false);
 
       copy.setAddress(forwardAddress);
 
