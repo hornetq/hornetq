@@ -67,7 +67,7 @@ import org.hornetq.utils.FutureLatch;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
  */
-public class ClusterManager implements HornetQComponent
+public final class ClusterManager implements HornetQComponent
 {
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
 

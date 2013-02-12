@@ -557,7 +557,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             remotingService.freeze(localReplicationManager.getBackupTransportConnection());
             if (!criticalIOError)
+            {
                storageManager.closeIdGenerator();
+            }
             // Schedule for 10 seconds
             scheduledPool.schedule(new Runnable() {
                @Override
@@ -632,8 +634,8 @@ public class HornetQServerImpl implements HornetQServer
             managementService.unregisterServer();
 
          stopComponent(managementService);
-         stopComponent(replicationManager);
-         stopComponent(replicationEndpoint);
+         stopComponent(replicationManager); // applies to a "live" server
+         stopComponent(replicationEndpoint); // applies to a "backup" server
          stopComponent(pagingManager);
 
          if (!criticalIOError)
@@ -1497,8 +1499,6 @@ public class HornetQServerImpl implements HornetQServer
 
       JournalLoadInformation[] journalInfo = loadJournals();
 
-      compareJournals(journalInfo);
-
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
 
       long dumpInfoInterval = configuration.getServerDumpInterval();
@@ -1552,17 +1552,6 @@ public class HornetQServerImpl implements HornetQServer
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
       activationLatch.countDown();
-   }
-
-   /**
-    * @param journalInfo
-    */
-   private void compareJournals(final JournalLoadInformation[] journalInfo) throws Exception
-   {
-      if (replicationManager != null)
-      {
-         replicationManager.compareJournals(journalInfo);
-      }
    }
 
    private void deploySecurityFromConfiguration()
