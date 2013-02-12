@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Session;
+import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -142,6 +143,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    public void endpointActivation(final MessageEndpointFactory endpointFactory, final ActivationSpec spec) throws ResourceException
    {
+      if(spec == null)
+      {
+         throw HornetQRABundle.BUNDLE.noActivationSpec();
+      }
       if (!configured.getAndSet(true))
       {
          try
