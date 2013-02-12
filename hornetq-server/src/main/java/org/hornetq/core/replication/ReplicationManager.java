@@ -58,6 +58,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -356,6 +357,11 @@ public class ReplicationManager implements HornetQComponent
       sendReplicatePacket(packet, true);
    }
 
+   /**
+    * @param packet
+    * @param lineUp ignored parameter. At the time of this writing, this parameter is only false for
+    *           rollback and for {@link TransactionImpl#asyncAppendCommit()}.
+    */
    private void sendReplicatePacket(final Packet packet, boolean lineUp)
    {
       if (!enabled)
@@ -363,10 +369,9 @@ public class ReplicationManager implements HornetQComponent
       boolean runItNow = false;
 
       OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
-      if (lineUp)
-      {
-         repliToken.replicationLineUp();
-      }
+
+      // always lineUp.
+      repliToken.replicationLineUp();
 
       synchronized (replicationLock)
       {
@@ -438,7 +443,7 @@ public class ReplicationManager implements HornetQComponent
       }
    }
 
-   private class ResponseHandler implements ChannelHandler
+   private final class ResponseHandler implements ChannelHandler
    {
      public void handlePacket(final Packet packet)
       {
