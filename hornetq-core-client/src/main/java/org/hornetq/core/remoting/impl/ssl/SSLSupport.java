@@ -51,44 +51,13 @@ public class SSLSupport
 
    // Public --------------------------------------------------------
 
-   public static SSLContext createServerContext(final String keystorePath,
-                                                final String keystorePassword,
-                                                final String trustStorePath,
-                                                final String trustStorePassword) throws Exception
-   {
-
-      // Initialize the SSLContext to work with our key managers.
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-      KeyManager[] keyManagers = SSLSupport.loadKeyManagers(keystorePath, keystorePassword);
-      TrustManager[] trustManagers = SSLSupport.loadTrustManager(false, trustStorePath, trustStorePassword);
-      sslContext.init(keyManagers, trustManagers, new SecureRandom());
-
-      return sslContext;
-   }
-
-   public static SSLContext createClientContext(final String keystorePath, final String keystorePassword) throws Exception
+   public static SSLContext createContext(final String keystorePath, final String keystorePassword, final String trustStorePath, final String trustStorePassword) throws Exception
    {
       SSLContext context = SSLContext.getInstance("TLS");
       KeyManager[] keyManagers = SSLSupport.loadKeyManagers(keystorePath, keystorePassword);
-      TrustManager[] trustManagers = SSLSupport.loadTrustManager(true, null, null);
+      TrustManager[] trustManagers = SSLSupport.loadTrustManager(trustStorePath, trustStorePassword);
       context.init(keyManagers, trustManagers, new SecureRandom());
       return context;
-   }
-
-   public static SSLContext getInstance(final boolean client,
-                                        final String keystorePath,
-                                        final String keystorePassword,
-                                        final String trustStorePath,
-                                        final String trustStorePassword) throws GeneralSecurityException, Exception
-   {
-      if (client)
-      {
-         return SSLSupport.createClientContext(keystorePath, keystorePassword);
-      }
-      else
-      {
-         return SSLSupport.createServerContext(keystorePath, keystorePassword, trustStorePath, trustStorePassword);
-      }
    }
 
    // Package protected ---------------------------------------------
@@ -97,30 +66,12 @@ public class SSLSupport
 
    // Private -------------------------------------------------------
 
-   private static TrustManager[] loadTrustManager(final boolean clientMode,
-                                                  final String trustStorePath,
+   private static TrustManager[] loadTrustManager(final String trustStorePath,
                                                   final String trustStorePassword) throws Exception
    {
-      if (clientMode)
+      if (trustStorePath == null)
       {
-         // we are in client mode and do not want to perform server cert
-         // authentication
-         // return a trust manager that trusts all certs
-         return new TrustManager[] { new X509TrustManager()
-         {
-            public void checkClientTrusted(final X509Certificate[] chain, final String authType)
-            {
-            }
-
-            public void checkServerTrusted(final X509Certificate[] chain, final String authType)
-            {
-            }
-
-            public X509Certificate[] getAcceptedIssuers()
-            {
-               return null;
-            }
-         } };
+         return null;
       }
       else
       {
@@ -163,11 +114,18 @@ public class SSLSupport
 
    private static KeyManager[] loadKeyManagers(final String keystorePath, final String keystorePassword) throws Exception
    {
-      KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      KeyStore ks = SSLSupport.loadKeystore(keystorePath, keystorePassword);
-      kmf.init(ks, keystorePassword.toCharArray());
+      if (keystorePath == null)
+      {
+         return null;
+      }
+      else
+      {
+         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+         KeyStore ks = SSLSupport.loadKeystore(keystorePath, keystorePassword);
+         kmf.init(ks, keystorePassword.toCharArray());
 
-      return kmf.getKeyManagers();
+         return kmf.getKeyManagers();
+      }
    }
 
    private static URL validateStoreURL(final String storePath) throws Exception

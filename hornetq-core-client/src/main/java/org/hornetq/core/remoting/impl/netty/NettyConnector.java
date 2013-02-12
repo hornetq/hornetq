@@ -95,6 +95,8 @@ public class NettyConnector extends AbstractConnector
    // Constants -----------------------------------------------------
    public static final String JAVAX_KEYSTORE_PATH_PROP_NAME = "javax.net.ssl.keyStore";
    public static final String JAVAX_KEYSTORE_PASSWORD_PROP_NAME = "javax.net.ssl.keyStorePassword";
+   public static final String JAVAX_TRUSTSTORE_PATH_PROP_NAME = "javax.net.ssl.trustStore";
+   public static final String JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME = "javax.net.ssl.trustStorePassword";
 
    // Attributes ----------------------------------------------------
 
@@ -129,6 +131,10 @@ public class NettyConnector extends AbstractConnector
    private final String keyStorePath;
 
    private final String keyStorePassword;
+
+    private final String trustStorePath;
+
+    private final String trustStorePassword;
 
    private final boolean tcpNoDelay;
 
@@ -237,11 +243,22 @@ public class NettyConnector extends AbstractConnector
                                                                   configuration,
                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD,
                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
+
+         trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
+                                                                TransportConstants.DEFAULT_TRUSTSTORE_PATH,
+                                                                configuration);
+         trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
+                                                                   TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                   configuration,
+                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD,
+                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
       }
       else
       {
          keyStorePath = null;
          keyStorePassword = null;
+         trustStorePath = null;
+         trustStorePassword = null;
       }
 
       tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
@@ -350,12 +367,23 @@ public class NettyConnector extends AbstractConnector
             {
                realKeyStorePassword = System.getProperty(JAVAX_KEYSTORE_PASSWORD_PROP_NAME);
             }
-            context = SSLSupport.getInstance(true, realKeyStorePath, realKeyStorePassword, null, null);
+
+            String realTrustStorePath = trustStorePath;
+            String realTrustStorePassword = trustStorePassword;
+            if (System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME) != null)
+            {
+                realTrustStorePath = System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME);
+            }
+            if (System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME) != null)
+            {
+                realTrustStorePassword = System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME);
+            }
+            context = SSLSupport.createContext(realKeyStorePath, realKeyStorePassword, realTrustStorePath, realTrustStorePassword);
          }
          catch (Exception e)
          {
             close();
-            IllegalStateException ise = new IllegalStateException("Unable to create NettyConnector for " + host);
+            IllegalStateException ise = new IllegalStateException("Unable to create NettyConnector for " + host + ":" + port);
             ise.initCause(e);
             throw ise;
          }
@@ -521,6 +549,7 @@ public class NettyConnector extends AbstractConnector
                 else
                 {
                     ch.close().awaitUninterruptibly();
+                    HornetQClientLogger.LOGGER.errorCreatingNettyConnection(handshakeFuture.getCause());
                     return null;
                 }
             }
