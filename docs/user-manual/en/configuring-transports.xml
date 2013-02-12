@@ -303,26 +303,50 @@ buffer_size = bandwidth * RTT.</programlisting>
                         SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>key-store-path</literal>. This is the path to the SSL key store
-                        on the client which holds the client certificates. Although this value is
-                        configured on the server, it is downloaded and used by the client. However,
-                        it can be overridden on the client-side by using the customary
-                        "javax.net.ssl.keyStore" system property.</para>
+                    <para><literal>key-store-path</literal></para>
+                    <para>When used on an <literal>acceptor</literal> this is the path to the SSL key
+                        store on the server which holds the server's certificates (whether self-signed
+                        or signed by an authority).</para>
+                    <para>When used on a <literal>connector</literal> this is the path to the client-side
+                        SSL key store which holds the client certificates. This is only relevant
+                        for a <literal>connector</literal> if you are using 2-way SSL (i.e. mutual
+                        authentication). Although this value is configured on the server, it is
+                        downloaded and used by the client. Furthermore, it can be overridden on the
+                        client-side by using the customary "javax.net.ssl.keyStore" system property.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>key-store-password</literal>. This is the password for the client
-                        certificate key store on the client. Although this value is configured on
-                        the server, it is downloaded and used by the client. However, it can be
-                        overridden on the client-side by using the customary
+                    <para><literal>key-store-password</literal></para>
+                    <para>When used on an <literal>acceptor</literal> this is the password for the
+                        server-side keystore.</para>
+                    <para>When used on a <literal>connector</literal> this is the password for the
+                        client-side keystore.  This is only relevant for a <literal>connector</literal>
+                        if you are using 2-way SSL (i.e. mutual authentication). Although this value can
+                        be configured on the server, it is downloaded and used by the client. If
+                        necessary, it can be overridden on the client-side by using the customary
                         "javax.net.ssl.keyStorePassword" system property.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>trust-store-path</literal>. This is the path to the trusted
-                        client certificate store on the server.</para>
+                    <para><literal>trust-store-path</literal></para>
+                    <para>When used on an <literal>acceptor</literal> this is the path to the server-side
+                        SSL key store that holds the keys of all the clients that the server trusts.  This
+                        is only relevant for an <literal>acceptor</literal> if you are using 2-way SSL
+                        (i.e. mutual authentication).</para>
+                    <para>When used on a <literal>connector</literal> this is the path to the client-side
+                        SSL key store which holds the public keys of all the servers that the client
+                        trusts. Although this value can be configured on the server, it is downloaded and
+                        used by the client. If necessary, it can be overridden on the client-side by using
+                        the customary "javax.net.ssl.trustStore" system property.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>trust-store-password</literal>. This is the password to the
-                        trusted client certificate store on the server.</para>
+                    <para><literal>trust-store-password</literal></para>
+                    <para>When used on an <literal>acceptor</literal> this is the password for the
+                        server-side trust store.  This is only relevant for an <literal>acceptor</literal>
+                        if you are using 2-way SSL (i.e. mutual authentication).</para>
+                    <para>When used on a <literal>connector</literal> this is the password for the
+                        client-side truststore. Although this value can be configured on the server, it is
+                        downloaded and used by the client. If necessary, it can be overridden on the
+                        client-side by using the customary "javax.net.ssl.trustStorePassword" system
+                        property.</para>
                 </listitem>
             </itemizedlist>
         </section>

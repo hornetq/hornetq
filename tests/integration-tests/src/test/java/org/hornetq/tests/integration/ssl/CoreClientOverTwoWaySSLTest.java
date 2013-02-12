@@ -13,11 +13,7 @@
 
 package org.hornetq.tests.integration.ssl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -37,44 +33,51 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision: 3716 $</tt>
  *
  */
-public class CoreClientOverSSLTest extends ServiceTestBase
+public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
-   public static final String MESSAGE_TEXT_FROM_CLIENT = CoreClientOverSSLTest.class.getSimpleName() + " from client";
-
    public static final SimpleString QUEUE = new SimpleString("QueueOverSSL");
 
-   public static final int SSL_PORT = 5402;
+   public static final String SERVER_SIDE_KEYSTORE = "server-side.keystore";
+   public static final String SERVER_SIDE_TRUSTSTORE = "server-side.truststore";
+   public static final String CLIENT_SIDE_TRUSTSTORE = "client-side.truststore";
+   public static final String CLIENT_SIDE_KEYSTORE = "client-side.keystore";
+   public static final String PASSWORD = "secureexample";
 
    private HornetQServer server;
 
    private TransportConfiguration tc;
 
-   public void testSSL() throws Exception
+   public void testTwoWaySSL() throws Exception
    {
       String text = RandomUtil.randomString();
 
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-      tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
-      tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, CLIENT_SIDE_KEYSTORE);
+      tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
-      session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
-      ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
+      session.createQueue(CoreClientOverTwoWaySSLTest.QUEUE, CoreClientOverTwoWaySSLTest.QUEUE, false);
+      ClientProducer producer = session.createProducer(CoreClientOverTwoWaySSLTest.QUEUE);
 
       ClientMessage message = createTextMessage(session, text);
       producer.send(message);
 
-      ClientConsumer consumer = session.createConsumer(CoreClientOverSSLTest.QUEUE);
+      ClientConsumer consumer = session.createConsumer(CoreClientOverTwoWaySSLTest.QUEUE);
       session.start();
 
       Message m = consumer.receive(1000);
@@ -82,45 +85,19 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       Assert.assertEquals(text, m.getBodyBuffer().readString());
    }
 
-   public void testSSLWithIncorrectKeyStorePassword() throws Exception
+   public void testTwoWaySSLWithoutClientKeyStore() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
-      tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
-      tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "invalid password");
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
-      try
-      {
-         ClientSessionFactory sf = createSessionFactory(locator);
-         Assert.fail();
-      }
-      catch(HornetQNotConnectedException se)
-      {
-         //ok
-      }
-      catch (HornetQException e)
-      {
-         fail("Invalid Exception type:" + e.getType());
-      }
-   }
-
-   // see https://jira.jboss.org/jira/browse/HORNETQ-234
-   public void testPlainConnectionToSSLEndpoint() throws Exception
-   {
-      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
-
-      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
-      locator.setCallTimeout(2000);
       try
       {
          createSessionFactory(locator);
-         fail("expecting exception");
+         Assert.fail();
       }
       catch(HornetQNotConnectedException se)
-      {
-         //ok
-      }
-      catch(HornetQConnectionTimedOutException ctoe)
       {
          //ok
       }
@@ -140,6 +117,11 @@ public class CoreClientOverSSLTest extends ServiceTestBase
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      params.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, SERVER_SIDE_KEYSTORE);
+      params.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      params.put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, SERVER_SIDE_TRUSTSTORE);
+      params.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      params.put(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME, true);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
       server = createServer(false, config);
       server.start();
