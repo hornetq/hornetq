@@ -49,11 +49,9 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
@@ -80,7 +78,6 @@ import org.hornetq.core.server.impl.QuorumManager;
  */
 public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
-
    private static final boolean trace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private final IOCriticalErrorListener criticalErrorListener;
@@ -203,11 +200,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
             {
                handleLargeMessageEnd((ReplicationLargeMessageEndMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_COMPARE_DATA)
-            {
-               handleCompareDataMessage((ReplicationCompareDataMessage) packet);
-               response = new NullResponseMessage();
             }
             else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
             {
@@ -622,14 +614,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          message.addBytes(packet.getBody());
       }
-   }
-
-   /**
-   * @param request
-   */
-   private void handleCompareDataMessage(final ReplicationCompareDataMessage request) throws HornetQException
-   {
-      compareJournalInformation(request.getJournalInformation());
    }
 
    private ReplicatedLargeMessage lookupLargeMessage(final long messageId, final boolean delete)
