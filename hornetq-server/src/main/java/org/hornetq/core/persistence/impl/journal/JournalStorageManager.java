@@ -2175,7 +2175,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.lineUpContex(getContext());
+         messageJournal.lineUpContext(getContext());
       }
       finally
       {
