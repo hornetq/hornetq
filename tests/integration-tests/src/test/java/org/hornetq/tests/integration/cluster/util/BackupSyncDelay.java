@@ -251,6 +251,11 @@ public class BackupSyncDelay implements Interceptor
          throw new UnsupportedOperationException();
       }
 
+      public ChannelHandler getHandler()
+      {
+         throw new UnsupportedOperationException();
+      }
+
       @Override
       public void close()
       {

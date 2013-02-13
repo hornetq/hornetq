@@ -103,6 +103,31 @@ public class CreateQueueMessage extends PacketImpl
       return requiresResponse;
    }
 
+   public void setAddress(SimpleString address)
+   {
+      this.address = address;
+   }
+
+   public void setQueueName(SimpleString queueName)
+   {
+      this.queueName = queueName;
+   }
+
+   public void setFilterString(SimpleString filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   public void setDurable(boolean durable)
+   {
+      this.durable = durable;
+   }
+
+   public void setTemporary(boolean temporary)
+   {
+      this.temporary = temporary;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {

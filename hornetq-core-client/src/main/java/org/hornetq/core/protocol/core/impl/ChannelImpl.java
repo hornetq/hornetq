@@ -456,6 +456,11 @@ public final class ChannelImpl implements Channel
       this.handler = handler;
    }
 
+   public ChannelHandler getHandler()
+   {
+      return handler;
+   }
+
    public void close()
    {
       if (closed)
