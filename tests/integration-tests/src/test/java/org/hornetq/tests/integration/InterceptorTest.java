@@ -62,7 +62,7 @@ public class InterceptorTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(true, true);
+      server = createServer(false, true);
 
       server.start();
 
