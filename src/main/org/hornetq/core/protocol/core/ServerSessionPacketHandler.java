@@ -150,6 +150,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
    }
 
+   public ServerSession getSession()
+   {
+      return session;
+   }
+
    public long getID()
    {
       return channel.getID();
