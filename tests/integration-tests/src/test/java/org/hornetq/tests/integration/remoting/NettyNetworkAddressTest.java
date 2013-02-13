@@ -44,6 +44,12 @@ public class NettyNetworkAddressTest extends NetworkAddressTestBase
       return TransportConstants.HOST_PROP_NAME;
    }
 
+   @Override
+   protected String getLocalPortProperty()
+   {
+      return TransportConstants.LOCAL_PORT_PROP_NAME;
+   }
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

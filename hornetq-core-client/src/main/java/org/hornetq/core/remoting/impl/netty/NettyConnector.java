@@ -128,13 +128,17 @@ public class NettyConnector extends AbstractConnector
 
    private final int port;
 
+   private final String localAddress;
+
+   private final int localPort;
+
    private final String keyStorePath;
 
    private final String keyStorePassword;
 
-    private final String trustStorePath;
+   private final String trustStorePath;
 
-    private final String trustStorePassword;
+   private final String trustStorePassword;
 
    private final boolean tcpNoDelay;
 
@@ -232,6 +236,13 @@ public class NettyConnector extends AbstractConnector
                                                    configuration);
       port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
                                                 TransportConstants.DEFAULT_PORT,
+                                                configuration);
+      localAddress = ConfigurationHelper.getStringProperty(TransportConstants.LOCAL_ADDRESS_PROP_NAME,
+                                                           TransportConstants.DEFAULT_LOCAL_ADDRESS,
+                                                           configuration);
+
+      localPort = ConfigurationHelper.getIntProperty(TransportConstants.LOCAL_PORT_PROP_NAME,
+                                                TransportConstants.DEFAULT_LOCAL_PORT,
                                                 configuration);
       if (sslEnabled)
       {
@@ -496,6 +507,7 @@ public class NettyConnector extends AbstractConnector
       }
 
       SocketAddress remoteDestination;
+      SocketAddress localDestination;
       if (useServlet)
       {
          try
@@ -529,8 +541,17 @@ public class NettyConnector extends AbstractConnector
          }
       }
       HornetQClientLogger.LOGGER.debug("Remote destination: " + remoteDestination);
+      //default local port of zero means use any available port
+      if(localAddress != null)
+      {
+         localDestination = new InetSocketAddress(localAddress, localPort);
+      }
+      else
+      {
+         localDestination = new InetSocketAddress(localPort);
+      }
 
-      ChannelFuture future = bootstrap.connect(remoteDestination);
+      ChannelFuture future = bootstrap.connect(remoteDestination, localDestination);
       future.awaitUninterruptibly();
 
       if (future.isSuccess())

@@ -288,6 +288,19 @@ buffer_size = bandwidth * RTT.</programlisting>
                         parameter is <literal>-1</literal> which means use the value from <literal
                             >Runtime.getRuntime().availableProcessors()</literal> * 3.</para>
                 </listitem>
+                <listitem>
+                    <para><literal>local-address</literal>. When configured a Netty Connector it is possible to specify
+                        which local address the client will use when connecting to the remote address. This is typically used
+                        in the Application Server or when running Embedded to control which address is used for outbound
+                        connections. If the local-address is not set then the connector will use any local address available</para>
+                </listitem>
+                <listitem>
+                    <para><literal>local-port</literal>. When configured a Netty Connector it is possible to specify
+                        which local port the client will use when connecting to the remote address. This is typically used
+                        in the Application Server or when running Embedded to control which port is used for outbound
+                        connections. If the local-port default is used, which is 0, then the connector will let the
+                       system pick up an ephemeral port. valid ports are 0 to 65535</para>
+                </listitem>
             </itemizedlist>
         </section>
         <section>
