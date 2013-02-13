@@ -32,6 +32,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -106,7 +107,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
          InetAddress address = iterator.next().getValue();
          String host = address.getHostAddress();
-         testConnection(host, host, true);
+         testConnection(host, host, true, 0);
       }
    }
 
@@ -117,7 +118,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       for (Entry<NetworkInterface, InetAddress> entry : set)
       {
          String host = entry.getValue().getHostAddress();
-         testConnection("0.0.0.0", host, true);
+         testConnection("0.0.0.0", host, true, 0);
       }
    }
 
@@ -135,7 +136,24 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Entry<NetworkInterface, InetAddress> acceptorEntry = iterator.next();
       Entry<NetworkInterface, InetAddress> connectorEntry = iterator.next();
 
-      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false);
+      testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false, 0);
+   }
+
+   public void testConnectToServerUsingLocalPort() throws Exception
+   {
+      Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
+      if (map.size() <= 1)
+      {
+         System.err.println("There must be at least 1 network interfaces: test will not be executed");
+         return;
+      }
+
+      Set<Entry<NetworkInterface, InetAddress>> set = map.entrySet();
+      Iterator<Entry<NetworkInterface, InetAddress>> iterator = set.iterator();
+      Entry<NetworkInterface, InetAddress> entry = iterator.next();
+      String host = entry.getValue().getHostAddress();
+
+      testConnection(host, host, true, 7777);
    }
 
    public void testConnectorToServerAcceptingAListOfHosts() throws Exception
@@ -154,8 +172,8 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
 
-      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
-      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true, 0);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true, 0);
    }
 
    public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
@@ -175,12 +193,12 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       String listOfHosts = entry1.getValue().getHostAddress() + ", " + entry2.getValue().getHostAddress();
 
-      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true);
-      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true);
-      testConnection(listOfHosts, entry3.getValue().getHostAddress(), false);
+      testConnection(listOfHosts, entry1.getValue().getHostAddress(), true, 0);
+      testConnection(listOfHosts, entry2.getValue().getHostAddress(), true, 0);
+      testConnection(listOfHosts, entry3.getValue().getHostAddress(), false, 0);
    }
 
-   public void testConnection(final String acceptorHost, final String connectorHost, final boolean mustConnect) throws Exception
+   public void testConnection(final String acceptorHost, final String connectorHost, final boolean mustConnect, final int localPort) throws Exception
    {
       System.out.println("acceptor=" + acceptorHost + ", connector=" + connectorHost + ", mustConnect=" + mustConnect);
 
@@ -197,13 +215,24 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       params = new HashMap<String, Object>();
       params.put(getHostPropertyKey(), connectorHost);
+      if(localPort != 0)
+      {
+         params.put(getLocalPortProperty(), localPort);
+      }
       TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(connectorConfig));
 
          if (mustConnect)
          {
-         ClientSessionFactory sf = createSessionFactory(locator);
-         sf.close();
+            ClientSessionFactory sf = createSessionFactory(locator);
+            if(localPort != 0)
+            {
+               Iterator<RemotingConnection> iterator = messagingService.getRemotingService().getConnections().iterator();
+               assertTrue("no connection created", iterator.hasNext());
+               String address = iterator.next().getTransportConnection().getRemoteAddress();
+               assertTrue(address.endsWith(":" + localPort));
+            }
+            sf.close();
             System.out.println("connection OK");
          }
          else
@@ -228,6 +257,9 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
    protected abstract String getConnectorFactoryClassName();
 
    protected abstract String getHostPropertyKey();
+
+   protected abstract String getLocalPortProperty();
+
 
    // Private -------------------------------------------------------
 

@@ -55,6 +55,10 @@ public class TransportConstants
 
    public static final String PORT_PROP_NAME = "port";
 
+   public static final String LOCAL_ADDRESS_PROP_NAME = "local-address";
+
+   public static final String LOCAL_PORT_PROP_NAME = "local-port";
+
    public static final String KEYSTORE_PATH_PROP_NAME = "key-store-path";
 
    public static final String KEYSTORE_PASSWORD_PROP_NAME = "key-store-password";
@@ -99,6 +103,10 @@ public class TransportConstants
    public static final String DEFAULT_HOST = "localhost";
 
    public static final int DEFAULT_PORT = 5445;
+
+   public static final String DEFAULT_LOCAL_ADDRESS = null;
+
+   public static final int DEFAULT_LOCAL_PORT = 0;
 
    public static final int DEFAULT_STOMP_PORT = 61613;
 
@@ -187,6 +195,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.USE_NIO_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.HOST_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.PORT_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.LOCAL_PORT_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);

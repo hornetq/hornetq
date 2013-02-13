@@ -41,6 +41,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
+import org.hornetq.ra.HornetQRABundle;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQRaUtils;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -528,7 +529,7 @@ public class HornetQActivation
             {
                if (destinationName == null)
                {
-                  throw e;
+                  throw HornetQRABundle.BUNDLE.noDestinationName();
                }
 
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
