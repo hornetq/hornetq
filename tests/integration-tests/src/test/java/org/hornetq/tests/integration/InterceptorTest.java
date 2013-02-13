@@ -27,7 +27,13 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
+import org.hornetq.core.protocol.core.impl.ChannelImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.MessagePacket;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.server.HornetQServer;
@@ -56,7 +62,7 @@ public class InterceptorTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(false, true);
+      server = createServer(true, true);
 
       server.start();
 
@@ -79,6 +85,77 @@ public class InterceptorTest extends ServiceTestBase
          }
 
          return true;
+      }
+
+   }
+
+   private class InterceptUserOnCreateQueue implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.CREATE_QUEUE)
+         {
+            String userName = getUsername(packet, connection);
+            CreateQueueMessage createQueue = (CreateQueueMessage) packet;
+            createQueue.setFilterString(new SimpleString("userName='" + userName + "'"));
+
+            System.out.println("userName = " + userName);
+         }
+         else
+         if (packet.getType() == PacketImpl.SESS_SEND)
+         {
+            String userName = getUsername(packet, connection);
+            MessagePacket msgPacket = (MessagePacket)packet;
+            msgPacket.getMessage().putStringProperty("userName", userName);
+
+            System.out.println("userName on send = " + userName);
+         }
+
+         return true;
+      }
+
+
+      public String getUsername(final Packet packet, final RemotingConnection connection)
+      {
+         RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
+         ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
+         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
+         return sessionHandler.getSession().getUsername();
+      }
+
+   }
+   private class InterceptUserOnCreateConsumer implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.SESS_CREATECONSUMER)
+         {
+            String userName = getUsername(packet, connection);
+            SessionCreateConsumerMessage createQueue = (SessionCreateConsumerMessage) packet;
+            createQueue.setFilterString(new SimpleString("userName='" + userName + "'"));
+
+            System.out.println("userName = " + userName);
+         }
+         else
+         if (packet.getType() == PacketImpl.SESS_SEND)
+         {
+            String userName = getUsername(packet, connection);
+            MessagePacket msgPacket = (MessagePacket)packet;
+            msgPacket.getMessage().putStringProperty("userName", userName);
+
+            System.out.println("userName on send = " + userName);
+         }
+
+         return true;
+      }
+
+
+      public String getUsername(final Packet packet, final RemotingConnection connection)
+      {
+         RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
+         ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
+         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
+         return sessionHandler.getSession().getUsername();
       }
 
    }
@@ -396,6 +473,115 @@ public class InterceptorTest extends ServiceTestBase
       }
 
       session.close();
+   }
+
+   // This is testing if it's possible to intercept usernames and do some real stuff as users want
+   public void testInterceptUsernameOnQueues() throws Exception
+   {
+
+      SimpleString ANOTHER_QUEUE = QUEUE.concat("another");
+      server.getSecurityManager().addUser("dumb", "dumber");
+      server.getSecurityManager().addUser("an", "other");
+
+      server.getRemotingService().addIncomingInterceptor(new InterceptUserOnCreateQueue());
+
+      locator.setBlockOnDurableSend(true);
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession("dumb", "dumber", false, false, false, false, 0);
+
+      ClientSession sessionAnotherUser = sf.createSession("an", "other", false, false, false, false, 0);
+
+      session.createQueue(QUEUE, QUEUE, null, true);
+
+      sessionAnotherUser.createQueue(QUEUE, ANOTHER_QUEUE, null, true);
+
+      ClientProducer prod = session.createProducer(QUEUE);
+
+      ClientProducer prodAnother = sessionAnotherUser.createProducer(QUEUE);
+
+
+      ClientMessage msg = session.createMessage(true);
+      prod.send(msg);
+      session.commit();
+
+      prodAnother.send(msg);
+      sessionAnotherUser.commit();
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientConsumer consumerAnother = sessionAnotherUser.createConsumer(ANOTHER_QUEUE);
+
+      session.start();
+      sessionAnotherUser.start();
+
+      msg = consumer.receive(1000);
+      assertNotNull(msg);
+      assertEquals("dumb", msg.getStringProperty("userName"));
+      msg.acknowledge();
+      assertNull(consumer.receiveImmediate());
+
+
+      msg = consumerAnother.receive(1000);
+      assertNotNull(msg);
+      assertEquals("an", msg.getStringProperty("userName"));
+      msg.acknowledge();
+      assertNull(consumerAnother.receiveImmediate());
+
+      session.close();
+      sessionAnotherUser.close();
+   }
+
+   // This is testing if it's possible to intercept usernames and do some real stuff as users want
+   public void testInterceptUsernameOnConsumer() throws Exception
+   {
+
+      server.getSecurityManager().addUser("dumb", "dumber");
+      server.getSecurityManager().addUser("an", "other");
+
+      server.getRemotingService().addIncomingInterceptor(new InterceptUserOnCreateConsumer());
+
+      locator.setBlockOnDurableSend(true);
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession("dumb", "dumber", false, false, false, false, 0);
+
+      ClientSession sessionAnotherUser = sf.createSession("an", "other", false, false, false, false, 0);
+
+      session.createQueue(QUEUE, QUEUE, null, true);
+
+      ClientProducer prod = session.createProducer(QUEUE);
+
+      ClientProducer prodAnother = sessionAnotherUser.createProducer(QUEUE);
+
+
+      ClientMessage msg = session.createMessage(true);
+      prod.send(msg);
+      session.commit();
+
+      prodAnother.send(msg);
+      sessionAnotherUser.commit();
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      ClientConsumer consumerAnother = sessionAnotherUser.createConsumer(QUEUE);
+
+      session.start();
+      sessionAnotherUser.start();
+
+      msg = consumer.receive(1000);
+      assertNotNull(msg);
+      assertEquals("dumb", msg.getStringProperty("userName"));
+      msg.acknowledge();
+      assertNull(consumer.receiveImmediate());
+
+
+      msg = consumerAnother.receive(1000);
+      assertNotNull(msg);
+      assertEquals("an", msg.getStringProperty("userName"));
+      msg.acknowledge();
+      assertNull(consumerAnother.receiveImmediate());
+
+      session.close();
+      sessionAnotherUser.close();
    }
 
    public void testServerInterceptorRejectPacket() throws Exception
