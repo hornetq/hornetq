@@ -82,6 +82,13 @@ public interface Channel
    void setHandler(ChannelHandler handler);
 
    /**
+    * Gets the {@link org.hornetq.core.protocol.core.ChannelHandler} that this channel should
+    * forward received packets to.
+    * @return the current channel handler
+    */
+   ChannelHandler getHandler();
+
+   /**
     * closes this channel.
     * <p/>
     * once closed no packets can be sent.

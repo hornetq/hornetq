@@ -88,6 +88,21 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return requiresResponse;
    }
 
+   public void setQueueName(SimpleString queueName)
+   {
+      this.queueName = queueName;
+   }
+
+   public void setFilterString(SimpleString filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   public void setBrowseOnly(boolean browseOnly)
+   {
+      this.browseOnly = browseOnly;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
