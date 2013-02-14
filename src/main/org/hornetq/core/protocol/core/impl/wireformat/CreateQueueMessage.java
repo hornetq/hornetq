@@ -15,21 +15,14 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 
- * @version <tt>$Revision$</tt>
  */
 public class CreateQueueMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(CreateQueueMessage.class);
-
-   // Attributes ----------------------------------------------------
 
    private SimpleString address;
 
@@ -43,10 +36,6 @@ public class CreateQueueMessage extends PacketImpl
 
    private boolean requiresResponse;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public CreateQueueMessage(final SimpleString address,
                              final SimpleString queueName,
                              final SimpleString filterString,
@@ -54,7 +43,7 @@ public class CreateQueueMessage extends PacketImpl
                              final boolean temporary,
                              final boolean requiresResponse)
    {
-      super(PacketImpl.CREATE_QUEUE);
+      this();
 
       this.address = address;
       this.queueName = queueName;
@@ -66,7 +55,7 @@ public class CreateQueueMessage extends PacketImpl
 
    public CreateQueueMessage()
    {
-      super(PacketImpl.CREATE_QUEUE);
+      super(CREATE_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -114,6 +103,31 @@ public class CreateQueueMessage extends PacketImpl
       return requiresResponse;
    }
 
+   public void setAddress(SimpleString address)
+   {
+      this.address = address;
+   }
+
+   public void setQueueName(SimpleString queueName)
+   {
+      this.queueName = queueName;
+   }
+
+   public void setFilterString(SimpleString filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   public void setDurable(boolean durable)
+   {
+      this.durable = durable;
+   }
+
+   public void setTemporary(boolean temporary)
+   {
+      this.temporary = temporary;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
@@ -152,12 +166,4 @@ public class CreateQueueMessage extends PacketImpl
              r.durable == durable &&
              r.temporary == temporary;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
