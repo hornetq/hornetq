@@ -1154,7 +1154,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    @Override
-   public void lineUpContex(IOCompletion callback)
+   public void lineUpContext(IOCompletion callback)
    {
       callback.storeLineUp();
    }

@@ -486,10 +486,10 @@ public class ReplicatedJournal implements Journal
       return localJournal.getUserVersion();
    }
 
-   public void lineUpContex(IOCompletion callback)
+   public void lineUpContext(IOCompletion callback)
    {
       ((OperationContext)callback).replicationLineUp();
-      localJournal.lineUpContex(callback);
+      localJournal.lineUpContext(callback);
    }
 
    @Override

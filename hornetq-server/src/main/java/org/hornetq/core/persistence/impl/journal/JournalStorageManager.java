@@ -1263,8 +1263,13 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional), lineUpContext);
          if (!lineUpContext && !syncTransactional)
          {
-            // if lineUpContext == false, we have previously lined up a context, hence we need to mark it as done even if
-            // syncTransactional = false
+            /**
+             * If {@code lineUpContext == false}, it means that we have previously lined up a
+             * context somewhere else (specifically see @{link TransactionImpl#asyncAppendCommit}),
+             * hence we need to mark it as done even if {@code syncTransactional = false} as in this
+             * case {@code getContext(syncTransactional=false)} would pass a dummy context to the
+             * {@code messageJournal.appendCommitRecord(...)} call above.
+             */
             getContext(true).done();
          }
       }
@@ -2175,7 +2180,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         messageJournal.lineUpContex(getContext());
+         messageJournal.lineUpContext(getContext());
       }
       finally
       {

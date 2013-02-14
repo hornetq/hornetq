@@ -146,7 +146,7 @@ public interface Journal extends HornetQComponent
     */
    JournalLoadInformation loadSyncOnly(JournalState state) throws Exception;
 
-   void lineUpContex(IOCompletion callback);
+   void lineUpContext(IOCompletion callback);
 
    JournalLoadInformation load(List<RecordInfo> committedRecords,
                                List<PreparedTransactionInfo> preparedTransactions,
