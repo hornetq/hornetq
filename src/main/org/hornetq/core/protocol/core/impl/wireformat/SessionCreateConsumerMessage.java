@@ -19,14 +19,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * @version <tt>$Revision$</tt>
  */
 public class SessionCreateConsumerMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private long id;
 
@@ -37,10 +32,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    private boolean browseOnly;
 
    private boolean requiresResponse;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public SessionCreateConsumerMessage(final long id,
                                        final SimpleString queueName,
@@ -61,8 +52,6 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       super(PacketImpl.SESS_CREATECONSUMER);
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public String toString()
@@ -99,6 +88,21 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return requiresResponse;
    }
 
+   public void setQueueName(SimpleString queueName)
+   {
+      this.queueName = queueName;
+   }
+
+   public void setFilterString(SimpleString filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   public void setBrowseOnly(boolean browseOnly)
+   {
+      this.browseOnly = browseOnly;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
@@ -132,12 +136,4 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return super.equals(other) && queueName.equals(r.queueName) && filterString == null ? r.filterString == null
                                                                                          : filterString.equals(r.filterString);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
