@@ -192,7 +192,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    {
       checkClosed();
 
-      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -397,7 +397,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer
@@ -414,7 +414,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(isXA(), transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(false, transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer
