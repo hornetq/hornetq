@@ -267,7 +267,7 @@ public class TransactionImpl implements Transaction
          // We use the Callback even for non persistence
          // If we are using non-persistence with replication, the replication manager will have
          // to execute this runnable in the correct order
-         // This also will only use a different thread if there are any IO pendings.
+         // This also will only use a different thread if there are any IO pending.
          // If the IO finished early by the time we got here, we won't need an executor
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {

@@ -829,7 +829,7 @@ public final class ReplicationTest extends ServiceTestBase
       }
 
       @Override
-      public void lineUpContex(IOCompletion callback)
+      public void lineUpContext(IOCompletion callback)
       {
 
       }

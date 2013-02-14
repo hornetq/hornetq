@@ -222,7 +222,7 @@ public final class FileWrapperJournal extends JournalBase
    }
 
    @Override
-   public void lineUpContex(IOCompletion callback)
+   public void lineUpContext(IOCompletion callback)
    {
       throw new UnsupportedOperationException();
    }
