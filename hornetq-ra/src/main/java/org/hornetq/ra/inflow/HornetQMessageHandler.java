@@ -371,9 +371,14 @@ public class HornetQMessageHandler implements MessageHandler
                }
             }
 
+            MessageEndpoint endToUse = endpoint;
             try
             {
-               endpoint.afterDelivery();
+               // to avoid a NPE that would happen while the RA is in tearDown
+               if (endToUse != null)
+               {
+                  endToUse.afterDelivery();
+               }
             }
             catch (ResourceException e1)
             {
