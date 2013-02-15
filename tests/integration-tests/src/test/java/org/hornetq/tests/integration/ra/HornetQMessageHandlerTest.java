@@ -186,12 +186,15 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
       clientProducer.send(message);
-      session.close();
       latch.await(5, TimeUnit.SECONDS);
 
       assertNull(endpoint.lastMessage);
+
+
       latch = new CountDownLatch(1);
       endpoint.reset(latch);
+      clientProducer.send(message);
+      session.close();
       latch.await(5, TimeUnit.SECONDS);
 
       assertNotNull(endpoint.lastMessage);

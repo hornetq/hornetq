@@ -33,6 +33,7 @@ import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.tests.util.JMSTestBase;
@@ -47,6 +48,7 @@ public abstract class HornetQRATestBase  extends JMSTestBase
    protected ServerLocator locator;
 
    protected static final String MDBQUEUE = "mdbQueue";
+   protected static final String DLQ = "dlqQueue";
    protected static final String MDBQUEUEPREFIXED = "jms.queue.mdbQueue";
    protected static final SimpleString MDBQUEUEPREFIXEDSIMPLE = new SimpleString("jms.queue.mdbQueue");
 
@@ -56,6 +58,16 @@ public abstract class HornetQRATestBase  extends JMSTestBase
       super.setUp();
       locator = createInVMNonHALocator();
       createQueue(MDBQUEUE);
+      createQueue(DLQ);
+      setupDLQ(1);
+   }
+
+   protected void setupDLQ(int maxDeliveries)
+   {
+      AddressSettings settings = new AddressSettings();
+      settings.setDeadLetterAddress(SimpleString.toSimpleString("jms.queue." + DLQ));
+      settings.setMaxDeliveryAttempts(maxDeliveries);
+      server.getAddressSettingsRepository().addMatch("#", settings);
    }
 
    @Override

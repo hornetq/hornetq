@@ -74,6 +74,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
 
    public void testXARollback() throws Exception
    {
+      setupDLQ(10);
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
