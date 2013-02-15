@@ -164,7 +164,7 @@ public class FailBackAutoTest extends FailoverTestBase
       log.info("restarting live node now");
       liveServer.start();
 
-      assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
+      assertTrue("expected a session failure", listener.getLatch().await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
 
@@ -172,11 +172,9 @@ public class FailBackAutoTest extends FailoverTestBase
 
       producer.send(message);
 
-      CountDownLatch latch3 = new CountDownLatch(1);
-
       session.removeFailureListener(listener);
 
-      listener = new CountDownSessionFailureListener(latch3);
+      listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
@@ -184,7 +182,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       liveServer.crash();
 
-      assertTrue(latch3.await(5, TimeUnit.SECONDS));
+      assertTrue("expected a session failure", listener.getLatch().await(5, TimeUnit.SECONDS));
 
       session.close();
 
