@@ -151,6 +151,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testSimpleMessageSendAndReceiveTransacted() throws Exception
    {
+      setupDLQ(10);
       resourceAdapter = newResourceAdapter();
       resourceAdapter.setUseLocalTx(true);
       MyBootstrapContext ctx = new MyBootstrapContext();
