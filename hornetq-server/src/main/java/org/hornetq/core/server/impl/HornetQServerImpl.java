@@ -2241,7 +2241,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                //locate the first live server to try to replicate
                nodeLocator.locateNode();
-               if(closed)
+               if (closed)
                {
                   return;
                }
@@ -2292,12 +2292,15 @@ public class HornetQServerImpl implements HornetQServer
                * {@link QuorumManager}
                */
                signal = quorumManager.waitForStatusChange();
-               //not sure why we stop this @Francisco
+               /**
+                * replicationEndpoint will be holding lots of open files. Make sure they get
+                * closed/sync'ed.
+                */
                stopComponent(replicationEndpoint);
-               //time to give up
+               // time to give up
                if (!isStarted() || signal == STOP)
                   return;
-               //time to fail over
+               // time to fail over
                else if (signal == FAIL_OVER)
                   break;
                // something has gone badly run restart from scratch
@@ -2350,7 +2353,6 @@ public class HornetQServerImpl implements HornetQServer
                initialisePart2();
                clusterManager.activate();
             }
-
          }
          catch (Exception e)
          {
