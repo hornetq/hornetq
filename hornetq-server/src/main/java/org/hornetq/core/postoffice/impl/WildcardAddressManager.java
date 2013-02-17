@@ -108,9 +108,12 @@ public class WildcardAddressManager extends SimpleAddressManager
             for (Address destAdd : add.getLinkedAddresses())
             {
                Bindings bindings = super.getBindingsForRoutingAddress(destAdd.getAddress());
-               for (Binding b : bindings.getBindings())
+               if (bindings != null)
                {
-                  super.addMappingInternal(binding.getAddress(), b);
+                  for (Binding b : bindings.getBindings())
+                  {
+                     super.addMappingInternal(binding.getAddress(), b);
+                  }
                }
             }
          }
