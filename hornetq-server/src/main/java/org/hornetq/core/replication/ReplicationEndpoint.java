@@ -311,23 +311,6 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             channel.close();
          }
 
-         for (ConcurrentMap<Integer, Page> map : pageIndex.values())
-         {
-            for (Page page : map.values())
-            {
-               try
-               {
-                  page.close();
-               }
-               catch (Exception e)
-               {
-                  HornetQServerLogger.LOGGER.errorClosingPageOnReplication(e);
-               }
-            }
-         }
-
-         pageIndex.clear();
-
          for (ReplicatedLargeMessage largeMessage : largeMessages.values())
          {
             largeMessage.releaseResources();
@@ -353,7 +336,24 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             }
          }
 
-         pageManager.stop();
+      for (ConcurrentMap<Integer, Page> map : pageIndex.values())
+      {
+         for (Page page : map.values())
+         {
+            try
+            {
+               page.sync();
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.errorClosingPageOnReplication(e);
+            }
+         }
+      }
+      pageManager.stop();
+
+
+      pageIndex.clear();
 
          // Storage needs to be the last to stop
          storage.stop();

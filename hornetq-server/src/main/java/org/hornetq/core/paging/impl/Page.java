@@ -36,7 +36,7 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class Page implements Comparable<Page>
+public final class Page implements Comparable<Page>
 {
    // Constants -----------------------------------------------------
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
