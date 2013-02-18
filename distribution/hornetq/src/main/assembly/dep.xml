@@ -77,6 +77,22 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq:hornetq-native</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>bin</outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+               <includes>
+                  <include>**/*.so</include>
+               </includes>
+            </unpackOptions>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:hornetq-core-client</include>
          </includes>
          <binaries>
