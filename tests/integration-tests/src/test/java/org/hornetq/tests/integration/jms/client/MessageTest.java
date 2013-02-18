@@ -24,6 +24,9 @@ import javax.jms.StreamMessage;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.core.postoffice.impl.WildcardAddressManager;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -312,6 +315,49 @@ public class MessageTest extends JMSTestBase
          // Ok
       }
    }
+
+   // https://issues.jboss.org/browse/HORNETQ-988
+   public void testShouldNotThrowException() throws Exception {
+      Connection conn = null;
+
+      createTopic(true, "Topic1");
+      try {
+         conn = cf.createConnection();
+
+         conn.start();
+
+         Session session1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         session1.createConsumer(HornetQJMSClient.createTopic("Topic1"));
+         Session session2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         session2.createConsumer(HornetQJMSClient.createTopic("*"));
+
+         session1.close();
+         session2.close();
+
+         Session session3 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageConsumer cons = session3.createConsumer(HornetQJMSClient.createTopic("Topic1"));
+         MessageProducer prod = session3.createProducer(HornetQJMSClient.createTopic("Topic1"));
+         MessageConsumer consGeral = session3.createConsumer(HornetQJMSClient.createTopic("*"));
+         prod.send(session3.createTextMessage("hello"));
+         assertNotNull(cons.receive(5000));
+         assertNotNull(consGeral.receive(5000));
+         createTopic(true, "Topic2");
+
+         MessageProducer prod2 = session3.createProducer(HornetQJMSClient.createTopic("Topic2"));
+
+         prod2.send(HornetQJMSClient.createTopic("Topic2"), session3.createTextMessage("test"));
+
+         assertNull(cons.receiveNoWait());
+
+         assertNotNull(consGeral.receive(5000));
+
+      } finally {
+         if (conn != null) {
+            conn.close();
+         }
+      }
+   }
+
 
    private Message sendAndConsumeMessage(final Message msg, final MessageProducer prod, final MessageConsumer cons) throws Exception
    {
