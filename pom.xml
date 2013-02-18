@@ -56,7 +56,7 @@
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin/ -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
+      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
    </properties>
 
    <scm>
@@ -458,6 +458,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+            <module>hornetq-native</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -477,6 +478,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+            <module>hornetq-native</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
