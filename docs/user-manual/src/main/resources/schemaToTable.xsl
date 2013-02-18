@@ -59,7 +59,12 @@
     <xsl:for-each-group select="xsd:schema/xsd:element/xsd:complexType/xsd:all/xsd:element"
                         group-by="@name">
 
-      <!-- the manual reference should list options in sorted order -->
+      <!-- the manual reference should list options in sorted order.
+           Notice that this is only OK because the first level of options is "xsd:all".
+
+           Options of sub-types are not ordered because they are often "xsd:sequence" (meaning that
+           their order matters), so those options should not have its order changed.
+      -->
       <xsl:sort select="@name" data-type="text" />
 
       <!-- <xsl:if test="not(./xsd:annotation/@hq:linkend)"> -->
@@ -70,7 +75,7 @@
       <!-- </xsl:if> -->
       <xsl:call-template name="xsd_element">
         <xsl:with-param name="prefix"/>
-        <xsl:with-param name="linkend" select="xsd:annotation/@hq:linkend"/>
+        <xsl:with-param name="parentLinkend" select="xsd:annotation/@hq:linkend"/>
       </xsl:call-template>
 
       <!-- Add 2 new lines between each option -->
@@ -90,17 +95,15 @@
 
     <xsl:apply-templates select="xsd:attribute">
       <xsl:with-param name="prefix" select="$prefix"/>
-      <xsl:with-param name="linkend" select="$linkend"/>
+      <xsl:with-param name="parentLinkend" select="$linkend"/>
     </xsl:apply-templates>
 
     <xsl:for-each select="(xsd:sequence|xsd:all)/xsd:element">
       <xsl:call-template name="xsd_element">
         <xsl:with-param name="prefix" select="$prefix"/>
-        <xsl:with-param name="linkend" select="$linkend"/>
+        <xsl:with-param name="parentLinkend" select="$linkend"/>
       </xsl:call-template>
     </xsl:for-each>
-
-    <!-- ATTRIBUTE TEMPLATE -->
   </xsl:template>
 
   <xsl:template name="entry-for-default-value">
@@ -137,7 +140,18 @@
 
   <xsl:template match="xsd:attribute">
     <xsl:param name="prefix" />
-    <xsl:param name="linkend" />
+    <xsl:param name="parentLinkend" />
+
+        <xsl:variable name="linkend">
+          <xsl:choose>
+            <xsl:when test="xsd:annotation/@hq:linkend">
+              <xsl:value-of select="xsd:annotation/@hq:linkend"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$parentLinkend"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
 
     <row>
       <entry>
@@ -164,7 +178,7 @@
   <!-- ELEMENT -->
   <xsl:template name="xsd_element">
     <xsl:param name="prefix" />
-    <xsl:param name="linkend" />
+    <xsl:param name="parentLinkend" />
 
     <xsl:comment>&#xa;ELEMENT TEMPLATE name=<xsl:value-of select="@name"/>
       <xsl:text>&#xa;</xsl:text>
@@ -181,6 +195,17 @@ We handle the following situations (differently):
 5. <element ref="foo">                        find definition using 'ref'
 
     -->
+
+        <xsl:variable name="linkend">
+          <xsl:choose>
+            <xsl:when test="xsd:annotation/@hq:linkend">
+              <xsl:value-of select="xsd:annotation/@hq:linkend"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$parentLinkend"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
 
     <xsl:choose>
 
@@ -297,7 +322,7 @@ We handle the following situations (differently):
          <xsl:for-each select="/xsd:schema/xsd:element[ @name = string($my-ref) ]">
            <xsl:call-template name="xsd_element">
              <xsl:with-param name="prefix" select="$prefix"/>
-             <xsl:with-param name="linkend" select="$linkend"/>
+             <xsl:with-param name="parentLinkend" select="$linkend"/>
            </xsl:call-template>
          </xsl:for-each>
       </xsl:when>
@@ -317,14 +342,7 @@ We handle the following situations (differently):
           <xsl:value-of select="$linkend"/>
         </xsl:attribute>
         <xsl:value-of select="$prefix"/>
-        <xsl:choose>
-          <xsl:when test="string-length('466') > 0">
-            <xsl:value-of select="@name"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="@name"/>
-          </xsl:otherwise>
-      </xsl:choose>
+        <xsl:value-of select="@name"/>
       </xsl:element>
     </entry>
   </xsl:template>
