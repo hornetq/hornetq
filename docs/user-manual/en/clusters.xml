@@ -165,7 +165,7 @@
                     </listitem>
                 </itemizedlist>
 
-                <para>Here is another example broadcast group that defines a JGroups broadcast group:</para>
+                <para id="clusters.jgroups-example">Here is another example broadcast group that defines a JGroups broadcast group:</para>
                 <programlisting>
 &lt;broadcast-groups>
    &lt;broadcast-group name="my-broadcast-group">
@@ -194,7 +194,7 @@
                     and UDP specific attributes described above are exclusive of each other. Only one set can be
                     specified in a broadcast group configuration. Don't mix them!</para>
                 </note>
-                <para>
+                <para id="clusters.jgroups-file">
                    The following is an example of a JGroups file
                    <programlisting>
 &lt;config xmlns="urn:org:jgroups"
@@ -712,8 +712,7 @@ ClientSession session = factory.createSession();</programlisting>
                         connected to this server. This parameter is optional.</para>
                 </listitem>
                 <listitem>
-                   <para><literal>confirmation-window-size</literal>. The size of the window used for sending confirmations
-                      from the server connected to, default is -1 which is no window.</para>
+                   <para><literal>confirmation-window-size</literal>. The size (in bytes) of the window used for sending confirmations from the server connected to. So once the server has received <literal>confirmation-window-size</literal> bytes it notifies its client, default is -1 which is no window.</para>
                 </listitem>
                 <listitem>
                    <para><literal>call-failover-timeout</literal>. Similar to <literal>call-timeout</literal> but used

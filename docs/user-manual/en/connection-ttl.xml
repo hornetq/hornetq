@@ -111,7 +111,7 @@ finally
         <para>The default value for connection ttl is <literal>60000</literal>ms, i.e. 1 minute. A
             value of <literal>-1</literal> for <literal>ConnectionTTL</literal> means the server
             will never time out the connection on the server side.</para>
-        <para>If you do not wish clients to be able to specify their own connection TTL, you can
+        <para id="connection-ttl.override">If you do not wish clients to be able to specify their own connection TTL, you can
             override all values used by a global value set on the server side. This can be done by
             specifying the <literal>connection-ttl-override</literal> attribute in the server side
             configuration. The default value for <literal>connection-ttl-override</literal> is

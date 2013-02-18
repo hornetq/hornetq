@@ -8,7 +8,8 @@
       <xsd:all>
         <xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>Node name. If set, it will be used in topology
+            notifications.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -157,7 +158,7 @@
 
         <xsd:element name="log-delegate-factory-class-name" type="xsd:string" maxOccurs="1"
                      minOccurs="0">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -190,7 +191,7 @@
         </xsd:element>
 
         <xsd:element name="message-counter-max-day-history" type="xsd:int" default="10" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.counters">
+          <xsd:annotation hq:linkend="configuring.message.counters" hq:default="(days)">
             <xsd:documentation>how many days to keep message counter history
             </xsd:documentation>
           </xsd:annotation>
@@ -198,10 +199,10 @@
 
         <xsd:element name="connection-ttl-override" type="xsd:long" default="-1"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="connection-ttl">
+          <xsd:annotation hq:linkend="connection-ttl.override">
             <xsd:documentation>
               if set, this will override how long (in ms) to keep a connection alive without
-              receiving a ping.
+              receiving a ping. -1 disables this setting.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -384,15 +385,15 @@
           </xsd:annotation>
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element maxOccurs="unbounded" minOccurs="1" name="acceptor">
+              <xsd:element name="acceptor" maxOccurs="unbounded" minOccurs="1">
                 <xsd:complexType>
                   <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="factory-class" type="xsd:string">
+                    <xsd:element name="factory-class" type="xsd:string" maxOccurs="1" minOccurs="1">
                       <xsd:annotation>
                         <xsd:documentation>Name of the AcceptorFactory implementation</xsd:documentation>
                       </xsd:annotation>
                     </xsd:element>
-                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType">
+                    <xsd:element name="param" type="paramType" maxOccurs="unbounded" minOccurs="0">
                       <xsd:annotation>
                         <xsd:documentation>
                           A key-value pair used to configure the acceptor. An acceptor can have many
@@ -518,15 +519,13 @@
 
         <xsd:element name="paging-directory" type="xsd:string" default="data/paging"  maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging.main.config">
-            <xsd:documentation>the directory to store paged messages in
-            </xsd:documentation>
+            <xsd:documentation>the directory to store paged messages in</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="bindings-directory" type="xsd:string" default="data/bindings" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.bindings.journal">
-            <xsd:documentation>the directory to store the persisted bindings to
-            </xsd:documentation>
+            <xsd:documentation>the directory to store the persisted bindings to</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -538,7 +537,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xsd:int">
+        <xsd:element name="page-max-concurrent-io" type="xsd:int" default="5" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging.mode">
             <xsd:documentation>The max number of concurrent reads allowed on paging
             </xsd:documentation>
@@ -547,8 +546,7 @@
 
         <xsd:element name="journal-directory" type="xsd:string" default="data/journal" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-directory">
-            <xsd:documentation>the directory to store the journal files in
-            </xsd:documentation>
+            <xsd:documentation>the directory to store the journal files in</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -595,8 +593,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional"
-          type="xsd:boolean" default="true">
+        <xsd:element name="journal-sync-non-transactional" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-sync-non-transactional">
             <xsd:documentation>if true wait for non transaction data to be synced to the journal
             before returning response to client.
@@ -641,28 +638,27 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="journal-max-io" maxOccurs="1" minOccurs="0" type="xsd:int"
-          default="500">
+        <xsd:element name="journal-max-io" type="xsd:int" default="500" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-max-io">
             <xsd:documentation>the maximum number of write requests that can be in the AIO queue at
             any one time</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xsd:int">
-          <xsd:annotation>
+        <xsd:element name="perf-blast-pages" type="xsd:int" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xsd:boolean">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xsd:long">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -695,13 +691,13 @@
           </xsd:annotation>
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element maxOccurs="unbounded" minOccurs="0" name="security-setting">
+              <xsd:element name="security-setting" maxOccurs="unbounded" minOccurs="0">
                 <xsd:complexType>
                   <xsd:annotation>
                     <xsd:documentation>a permission to add to the matched addresses</xsd:documentation>
                   </xsd:annotation>
                   <xsd:sequence>
-                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="permission">
+                    <xsd:element name="permission" maxOccurs="unbounded" minOccurs="0">
                       <xsd:complexType>
                         <xsd:attribute name="type" type="xsd:string" use="required">
                           <xsd:annotation>
@@ -719,8 +715,8 @@
                   </xsd:sequence>
                   <xsd:attribute name="match" type="xsd:string" use="required">
                   <xsd:annotation>
-                    <xsd:documentation>regular expression for matching security roles against an
-                    address</xsd:documentation>
+                    <xsd:documentation>regular expression for matching security roles against
+                    addresses</xsd:documentation>
                   </xsd:annotation>
                   </xsd:attribute>
                 </xsd:complexType>
@@ -770,7 +766,7 @@
   <xsd:element name="broadcast-group">
     <xsd:complexType>
       <xsd:sequence>
-        <!-- these 2 local-* here...-->
+        <!-- XXX these 2 local-* here...-->
         <xsd:element ref="local-bind-address"  maxOccurs="1" minOccurs="0" />
         <xsd:element ref="local-bind-port" maxOccurs="1" minOccurs="0"/>
         <xsd:element name="group-address" type="xsd:string" maxOccurs="1" minOccurs="1">
@@ -792,13 +788,13 @@
         </xsd:element>
 
         <xsd:element name="jgroups-file" type="xsd:string" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="clusters.jgroups-file">
             <xsd:documentation>Name of JGroups configuration file. If specified, the server uses JGroups for broadcasting.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="jgroups-channel" type="xsd:string" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
+          <xsd:annotation hq:linkend="clusters.jgroups-example">
             <xsd:documentation>Name of JGroups Channel. If specified, the server uses the named
             channel for broadcasting.</xsd:documentation>
           </xsd:annotation>
@@ -832,14 +828,14 @@
         </xsd:element>
 
         <xsd:element name="jgroups-file" type="xsd:string" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>Name of JGroups configuration file. If specified, the server uses JGroups for discovery.</xsd:documentation>
+          <xsd:annotation hq:linkend="clusters.jgroups-file">
+            <xsd:documentation>Name of a JGroups configuration file. If specified, the server uses JGroups for discovery.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="jgroups-channel" type="xsd:string" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>Name of JGroups Channel. If specified, the server uses the named channel for discovery.</xsd:documentation>
+          <xsd:annotation hq:linkend="clusters.jgroups-example">
+            <xsd:documentation>Name of a JGroups Channel. If specified, the server uses the named channel for discovery.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -905,28 +901,27 @@
   <!-- BRIDGE CONFIGURATION -->
   <xsd:complexType name="bridgeType">
     <xsd:sequence>
-      <xsd:element name="queue-name" type="xsd:IDREF"                 maxOccurs="1" minOccurs="1"  >
+      <xsd:element name="queue-name" type="xsd:IDREF" maxOccurs="1" minOccurs="1"  >
         <xsd:annotation>
           <xsd:documentation>name of queue that this bridge consumes from
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="forwarding-address" type="xsd:string"        maxOccurs="1" minOccurs="0">
+      <xsd:element name="forwarding-address" type="xsd:string" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>address to forward to. If omitted original address is
           used</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="ha" type="xsd:boolean"                      maxOccurs="1" minOccurs="0">
+      <xsd:element name="ha" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>whether this bridge supports fail-over</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="filter"                                       maxOccurs="1" minOccurs="0"/>
-
+      <xsd:element name="filter" maxOccurs="1" minOccurs="0"/>
 
       <xsd:element name="transformer-class-name" type="xsd:string"    maxOccurs="1" minOccurs="0"    >
         <xsd:annotation>
@@ -934,21 +929,24 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="min-large-message-size" type="xsd:int"       maxOccurs="1" minOccurs="0">
-      <xsd:annotation>
-        <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="min-large-message-size" type="xsd:int" default="102400" maxOccurs="1" minOccurs="0">
+      <xsd:annotation hq:default="(bytes)">
+        <xsd:documentation>Any message larger than this size is considered a large message (to be sent in
+        chunks)</xsd:documentation>
       </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="check-period" type="xsd:long"               maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="check-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)">
+          <xsd:documentation>The period (in milliseconds) a bridge's client will check if it failed
+          to receive a ping from the server. -1 disables this check.</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="connection-ttl" type="xsd:long"              maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="connection-ttl" type="xsd:long" default="60000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)">
+          <xsd:documentation>how long to keep a connection alive in the absence of any data arriving
+          from the client</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -960,13 +958,13 @@
 
       <xsd:element name="retry-interval-multiplier" type="xsd:double" default="1" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>>multiplier to apply to successive retry intervals</xsd:documentation>
+          <xsd:documentation>multiplier to apply to successive retry intervals</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
       <xsd:element name="max-retry-interval" type="xsd:long"         maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>Limit to the retry-interval growth (due to retry-interval-multiplier)</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1054,27 +1052,29 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="check-period" type="xsd:long"                       maxOccurs="1" minOccurs="0">
+      <xsd:element name="check-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)">
+          <xsd:documentation>The period (in milliseconds) used to check if the cluster connection
+          has failed to receive pings from another server</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+      <xsd:element name="connection-ttl" type="xsd:long" default="60000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)">
+          <xsd:documentation>how long to keep a connection alive in the absence of any data arriving
+          from the client</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+      <xsd:element name="min-large-message-size" type="xsd:int"  maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>XXX</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="connection-ttl" type="xsd:long"                     maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-
-      <xsd:element name="min-large-message-size" type="xsd:int"              maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-
-      <xsd:element name="call-timeout" type="xsd:long"                       maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="call-timeout" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(ms)">
+          <xsd:documentation>How long to wait for a reply</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1084,68 +1084,70 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="retry-interval-multiplier" type="xsd:double"        maxOccurs="1" minOccurs="0">
+      <xsd:element name="retry-interval-multiplier" type="xsd:double" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>XXX</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="max-retry-interval" type="xsd:long"                 maxOccurs="1" minOccurs="0">
+      <xsd:element name="max-retry-interval" type="xsd:long" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>XXX</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="reconnect-attempts" type="xsd:long"                 maxOccurs="1" minOccurs="0">
+      <xsd:element name="reconnect-attempts" type="xsd:long" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>XXX</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="use-duplicate-detection" type="xsd:boolean" default="true"         maxOccurs="1" minOccurs="0">
+      <xsd:element name="use-duplicate-detection" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>should duplicate detection headers be inserted in forwarded
           messages?</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="forward-when-no-consumers" type="xsd:boolean" default="false"       maxOccurs="1" minOccurs="0">
+      <xsd:element name="forward-when-no-consumers" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>should messages be load balanced if there are no matching consumers on
           target?</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="max-hops" type="xsd:int" default="-1"                            maxOccurs="1" minOccurs="0">
+      <xsd:element name="max-hops" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>maximum number of hops cluster topology is
           propagated</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="confirmation-window-size" type="xsd:int"            maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation></xsd:documentation>
+      <xsd:element name="confirmation-window-size" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="client-reconnection">
+          <xsd:documentation>The size (in bytes) of the window used for confirming data from
+          the server connected to, default is -1 which is no window.</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="call-failover-timeout" type="xsd:long"              maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation></xsd:documentation>
+      <xsd:element name="call-failover-timeout" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="clusters.cluster-connections" hq:default="(ms)">
+          <xsd:documentation>How long to wait for a reply if in the middle of a fail-over. -1 means
+          wait forever.</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="notification-interval" type="xsd:long"             maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+      <xsd:element name="notification-interval" type="xsd:long" default="1000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(ms)">
           <xsd:documentation>
-            how often the cluster connection will notify the cluster of its existence
+            how often the cluster connection will notify the cluster of its existence right after joining the cluster
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="notification-attempts" type="xsd:int" maxOccurs="1" minOccurs="0">
+      <xsd:element name="notification-attempts" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>
-            how many times cluster connection will notify the cluster of its existence
+            how many times this cluster connection will notify the cluster of its existence right after joining the cluster
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1273,13 +1275,11 @@
           </xsd:annotation>
         </xsd:element>
 
-
         <xsd:element name="expiry-delay" type="xsd:long" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="message-expiry.configuring">
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
-
 
         <xsd:element name="redelivery-delay" type="xsd:long" default="0" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="undelivered-messages.delay">
@@ -1288,13 +1288,11 @@
           </xsd:annotation>
         </xsd:element>
 
-
         <xsd:element name="redelivery-delay-multiplier" type="xsd:double"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>XXX</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
-
 
         <xsd:element name="max-redelivery-delay" type="xsd:long"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
@@ -1316,7 +1314,6 @@
           </xsd:annotation>
         </xsd:element>
 
-          <!-- XXX -->
         <xsd:element name="page-size-bytes" type="xsd:long" default="10485760" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging" hq:default="(10 * 1024 * 1024)">
             <xsd:documentation>the page size (in bytes) to use for an address</xsd:documentation>
@@ -1331,7 +1328,8 @@
 
         <xsd:element name="address-full-policy" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>what happens when an address where "max-size-bytes" is specified
+            becomes full</xsd:documentation>
           </xsd:annotation>
           <xsd:simpleType>
             <xsd:restriction base="xsd:string">
@@ -1343,9 +1341,9 @@
           </xsd:simpleType>
         </xsd:element>
 
-        <xsd:element name="message-counter-history-day-limit" type="xsd:int"  maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+        <xsd:element name="message-counter-history-day-limit" type="xsd:int" default="0" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:default="(days)">
+            <xsd:documentation>how many days to keep message counter history for this address</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -1364,7 +1362,7 @@
 
         <xsd:element name="send-to-dla-on-no-route" type="xsd:boolean"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXXX</xsd:documentation>
+            <xsd:documentation>if there are no queues matching this address, whether to forward message to DLA (if it exists for this address)</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
       </xsd:all>
