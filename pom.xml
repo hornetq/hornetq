@@ -46,6 +46,7 @@
       <resteasy.version>2.3.4.Final</resteasy.version>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
+      <skipBytemanTests>true</skipBytemanTests>
       <skipIntegrationTests>true</skipIntegrationTests>
       <skipJoramTests>true</skipJoramTests>
       <skipTimingTests>true</skipTimingTests>
