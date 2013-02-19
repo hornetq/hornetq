@@ -49,20 +49,10 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AddressControlTest extends ManagementTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
    protected ClientSession session;
    private ServerLocator locator;
    private ClientSessionFactory sf;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testGetAddress() throws Exception
    {
