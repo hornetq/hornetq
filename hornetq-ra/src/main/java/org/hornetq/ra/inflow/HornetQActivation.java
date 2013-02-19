@@ -15,7 +15,9 @@ package org.hornetq.ra.inflow;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -36,6 +38,7 @@ import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -102,12 +105,15 @@ public class HornetQActivation
    private SimpleString topicTemporaryQueue;
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
+   private final List<SessionFailureListener> failureListeners = new ArrayList<SessionFailureListener>();
 
    private HornetQConnectionFactory factory;
 
    // Whether we are in the failure recovery loop
    private final AtomicBoolean inFailure = new AtomicBoolean(false);
    private XARecoveryConfig resourceRecovery;
+   private AtomicInteger sessionFailureCount = new AtomicInteger(0);
+   private CountDownLatch reconnectionLatch = new CountDownLatch(1);
 
    static
    {
@@ -311,6 +317,10 @@ public class HornetQActivation
          {
             ClientSessionFactory cf = factory.getServerLocator().createSessionFactory();
             session = setupSession(cf);
+            HornetQRASessionFailureListener listener = new HornetQRASessionFailureListener();
+            session.addFailureListener(listener);
+            failureListeners.add(listener);
+            HornetQRALogger.LOGGER.debug("added failure listener: " + listener);
             HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, cf,  i);
             handler.setup();
             session.start();
@@ -342,10 +352,14 @@ public class HornetQActivation
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
 
-      for (HornetQMessageHandler handler : handlers)
+      for (int i = 0; i < handlers.size(); i++)
       {
-         handler.interruptConsumer();
+         HornetQRALogger.LOGGER.debug("removing failure listener: " + failureListeners.get(i));
+         handlers.get(i).getSession().removeFailureListener(failureListeners.get(i));
+         handlers.get(i).interruptConsumer();
       }
+
+      failureListeners.clear();
 
       Thread threadTearDown = new Thread("TearDown/HornetQActivation")
       {
@@ -403,6 +417,7 @@ public class HornetQActivation
          factory = null;
       }
 
+      handlers.clear();
 
       HornetQRALogger.LOGGER.debug("Tearing down complete " + this);
    }
@@ -618,7 +633,7 @@ public class HornetQActivation
       {
          HornetQRALogger.LOGGER.failureInActivation(failure, spec);
       }
-      int reconnectCount = 0;
+      int setupCount = 0;
       int setupAttempts = spec.getSetupAttempts();
       long setupInterval = spec.getSetupInterval();
 
@@ -628,7 +643,7 @@ public class HornetQActivation
       try
       {
          Throwable lastException = failure;
-         while (deliveryActive.get() && (setupAttempts == -1 || reconnectCount < setupAttempts))
+         while (deliveryActive.get() && (setupAttempts == -1 || setupCount < setupAttempts))
          {
             teardown();
 
@@ -642,7 +657,7 @@ public class HornetQActivation
                break;
             }
 
-            if (reconnectCount < 1)
+            if (setupCount < 1)
             {
                HornetQRALogger.LOGGER.attemptingReconnect(spec);
             }
@@ -675,19 +690,54 @@ public class HornetQActivation
                   HornetQRALogger.LOGGER.errorReconnecting(t, spec);
                }
             }
-            ++reconnectCount;
+            ++setupCount;
          }
       }
       finally
       {
          // Leaving failure recovery loop
          inFailure.set(false);
+         sessionFailureCount.getAndSet(0);
+         reconnectionLatch.countDown();
+
+         // reset the latch so that it works for future failures
+         reconnectionLatch = new CountDownLatch(1);
       }
    }
 
    public HornetQConnectionFactory getConnectionFactory()
    {
       return this.factory;
+   }
+
+   public CountDownLatch getReconnectionLatch()
+   {
+      return reconnectionLatch;
+   }
+
+   private class HornetQRASessionFailureListener implements SessionFailureListener
+   {
+      @Override
+      public void beforeReconnect(HornetQException exception)
+      {
+      }
+
+      @Override
+      public void connectionFailed(HornetQException exception, boolean failedOver)
+      {
+         if (!failedOver)
+         {
+            sessionFailureCount.incrementAndGet();
+
+            HornetQRALogger.LOGGER.debug(sessionFailureCount + " out of " + spec.getMaxSession() + " sessions have failed.");
+
+            // wait until all the sessions fail before we handleFailure()
+            if (sessionFailureCount.get() == spec.getMaxSession())
+            {
+               handleFailure(exception);
+            }
+         }
+      }
    }
 
    /**
