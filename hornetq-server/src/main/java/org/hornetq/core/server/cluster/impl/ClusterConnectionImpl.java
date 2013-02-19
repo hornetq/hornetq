@@ -759,7 +759,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          serverLocator.setBlockOnDurableSend(!useDuplicateDetection);
          serverLocator.setBlockOnNonDurableSend(!useDuplicateDetection);
          serverLocator.setCallTimeout(callTimeout);
-
+         serverLocator.setCallFailoverTimeout(callFailoverTimeout);
          // No producer flow control on the bridges, as we don't want to lock the queues
          serverLocator.setProducerWindowSize(-1);
 
