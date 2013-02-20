@@ -13,12 +13,11 @@
 package org.hornetq.core.postoffice.impl;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -31,8 +30,6 @@ import org.hornetq.core.postoffice.BindingsFactory;
  */
 public class WildcardAddressManager extends SimpleAddressManager
 {
-   private static final Logger log = Logger.getLogger(WildcardAddressManager.class);
-
    static final char SINGLE_WORD = '*';
 
    static final char ANY_WORDS = '#';
@@ -47,9 +44,9 @@ public class WildcardAddressManager extends SimpleAddressManager
     * These are all the addresses, we use this so we can link back from the actual address to its linked wilcard addresses
     * or vice versa
     */
-   private final Map<SimpleString, Address> addresses = new HashMap<SimpleString, Address>();
+   private final Map<SimpleString, Address> addresses = new ConcurrentHashMap<SimpleString, Address>();
 
-   private final Map<SimpleString, Address> wildCardAddresses = new HashMap<SimpleString, Address>();
+   private final Map<SimpleString, Address> wildCardAddresses = new ConcurrentHashMap<SimpleString, Address>();
 
    public WildcardAddressManager(final BindingsFactory bindingsFactory)
    {
@@ -135,21 +132,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       if (binding != null)
       {
          Address add = getAddress(binding.getAddress());
-         if (!add.containsWildCard())
-         {
-            for (Address theAddress : add.getLinkedAddresses())
-            {
-               Bindings bindings = super.getBindingsForRoutingAddress(theAddress.getAddress());
-               if (bindings != null)
-               {
-                  for (Binding b : bindings.getBindings())
-                  {
-                     super.removeBindingInternal(binding.getAddress(), b.getUniqueName());
-                  }
-               }
-            }
-         }
-         else
+         if (add.containsWildCard())
          {
             for (Address theAddress : add.getLinkedAddresses())
             {
