@@ -407,7 +407,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private String journalParametersToString(final JournalLoadInformation[] journalInformation)
    {
       return "**********************************************************\n" + "parameters:\n" +
-             "Bindings = " +
+             "BindingsImpl = " +
              journalInformation[0] +
              "\n" +
              "Messaging = " +
@@ -417,7 +417,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
              "\n" +
              "Expected:" +
              "\n" +
-             "Bindings = " +
+             "BindingsImpl = " +
              journalLoadInformation[0] +
              "\n" +
              "Messaging = " +

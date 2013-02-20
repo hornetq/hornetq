@@ -31,7 +31,7 @@ public class ReplicationAddMessage extends PacketImpl
 
    private long id;
 
-   /** 0 - Bindings, 1 - MessagesJournal */
+   /** 0 - BindingsImpl, 1 - MessagesJournal */
    private byte journalID;
 
    private boolean isUpdate;

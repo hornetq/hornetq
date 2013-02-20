@@ -17,7 +17,7 @@ public final class JournalRecordIds
    // grouping journal record type
    static final byte GROUP_RECORD = 20;
 
-   // Bindings journal record type
+   // BindingsImpl journal record type
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
