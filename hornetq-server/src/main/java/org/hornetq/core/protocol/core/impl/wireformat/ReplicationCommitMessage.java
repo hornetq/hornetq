@@ -26,7 +26,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationCommitMessage extends PacketImpl
 {
 
-   /** 0 - Bindings, 1 - MessagesJournal */
+   /** 0 - BindingsImpl, 1 - MessagesJournal */
    private byte journalID;
 
    private boolean rollback;

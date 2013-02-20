@@ -17,7 +17,7 @@ import java.util.Map;
 import org.hornetq.api.core.SimpleString;
 
 /**
- * Used to maintain addresses and Bindings.
+ * Used to maintain addresses and BindingsImpl.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>

@@ -2005,7 +2005,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   // Bindings operations
+   // BindingsImpl operations
 
    public void addQueueBinding(final long tx, final Binding binding) throws Exception
    {

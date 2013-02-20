@@ -232,7 +232,7 @@ public interface StorageManager extends HornetQComponent
 
    void deleteHeuristicCompletion(long id) throws Exception;
 
-   // Bindings related operations
+   // BindingsImpl related operations
 
    void addQueueBinding(long tx, Binding binding) throws Exception;
 
