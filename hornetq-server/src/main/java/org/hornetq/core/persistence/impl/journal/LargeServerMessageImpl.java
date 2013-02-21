@@ -474,7 +474,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
       {
          try
          {
-            cFile.close();
+            if (cFile != null)
+            {
+               cFile.close();
+            }
          }
          catch (Exception e)
          {

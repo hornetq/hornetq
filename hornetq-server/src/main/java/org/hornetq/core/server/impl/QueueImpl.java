@@ -127,7 +127,7 @@ public class QueueImpl implements Queue
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
-   private long messagesAdded;
+   private volatile long messagesAdded;
 
    protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
@@ -1028,16 +1028,13 @@ public class QueueImpl implements Queue
 
    public long getInstantMessagesAdded()
    {
-      synchronized (this)
+      if (pageSubscription != null)
       {
-         if (pageSubscription != null)
-         {
-            return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
-         }
-         else
-         {
-            return messagesAdded;
-         }
+         return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
+      }
+      else
+      {
+         return messagesAdded;
       }
     }
 
@@ -1600,13 +1597,7 @@ public class QueueImpl implements Queue
       return "QueueImpl[name=" + name.toString() + ", postOffice=" + this.postOffice + "]@" + Integer.toHexString(System.identityHashCode(this));
    }
 
-   /**
-    * The caller of this method requires synchronized on the queue.
-    * I'm not going to add synchronized to this method just for a precaution,
-    * as I'm not 100% sure this won't cause any extra runtime.
-    * @param ref
-    */
-   private void internalAddTail(final MessageReference ref)
+   private synchronized void internalAddTail(final MessageReference ref)
    {
       refAdded(ref);
       messageReferences.addTail(ref, ref.getMessage().getPriority());
@@ -1764,6 +1755,8 @@ public class QueueImpl implements Queue
 
                if (status == HandleStatus.HANDLED)
                {
+                  proceedDeliver(consumer, ref);
+
                   holder.iter.remove();
 
                   refRemoved(ref);
@@ -2113,71 +2106,116 @@ public class QueueImpl implements Queue
    /*
     * This method delivers the reference on the callers thread - this can give us better latency in the case there is nothing in the queue
     */
-   private synchronized boolean deliverDirect(final MessageReference ref)
+   private boolean deliverDirect(final MessageReference ref)
    {
-      if (paused || consumerList.isEmpty())
+      Consumer handledConsumer = null;
+      MessageReference handledReference = null;
+      try
       {
-         return false;
-      }
-
-      if (checkExpired(ref))
-      {
-         return true;
-      }
-
-      int startPos = pos;
-
-      int size = consumerList.size();
-
-      while (true)
-      {
-         ConsumerHolder holder = consumerList.get(pos);
-
-         Consumer consumer = holder.consumer;
-
-         Consumer groupConsumer = null;
-
-         // If a group id is set, then this overrides the consumer chosen round-robin
-
-         SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
-
-         if (groupID != null)
+         synchronized (this)
          {
-            groupConsumer = groups.get(groupID);
-
-            if (groupConsumer != null)
+            if (paused || consumerList.isEmpty())
             {
-               consumer = groupConsumer;
-            }
-         }
-
-         pos++;
-
-         if (pos == size)
-         {
-            pos = 0;
-         }
-
-         HandleStatus status = handle(ref, consumer);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            if (groupID != null && groupConsumer == null)
-            {
-               groups.put(groupID, consumer);
+               return false;
             }
 
-            messagesAdded++;
+            if (checkExpired(ref))
+            {
+               return true;
+            }
 
-            return true;
+            int startPos = pos;
+
+            int size = consumerList.size();
+
+            while (true)
+            {
+               ConsumerHolder holder = consumerList.get(pos);
+
+               Consumer consumer = holder.consumer;
+
+               Consumer groupConsumer = null;
+
+               // If a group id is set, then this overrides the consumer chosen round-robin
+
+               SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+               if (groupID != null)
+               {
+                  groupConsumer = groups.get(groupID);
+
+                  if (groupConsumer != null)
+                  {
+                     consumer = groupConsumer;
+                  }
+               }
+
+               pos++;
+
+               if (pos == size)
+               {
+                  pos = 0;
+               }
+
+               HandleStatus status = handle(ref, consumer);
+
+               if (status == HandleStatus.HANDLED)
+               {
+                  if (groupID != null && groupConsumer == null)
+                  {
+                     groups.put(groupID, consumer);
+                  }
+
+                  messagesAdded++;
+
+                  handledConsumer = consumer;
+                  handledReference = ref;
+                  break;
+               }
+
+               if (pos == startPos)
+               {
+                  // Tried them all
+                  break;
+               }
+            }
          }
-
-         if (pos == startPos)
+         return handledConsumer != null;
+      }
+      finally
+      {
+         // outside of any locks to avoid a permanent lock of the queue with unbehaved consumers
+         // also a successful handle will take a readLock on the consumer
+         // so we must do the proceedDeliver was successful
+         if (handledReference != null)
          {
-            // Tried them all
-
-            return false;
+            proceedDeliver(handledConsumer, handledReference);
          }
+      }
+   }
+
+   private void proceedDeliver(Consumer consumer, MessageReference reference)
+   {
+      try
+      {
+         consumer.proceedDeliver(reference);
+      }
+      catch (Throwable t)
+      {
+         HornetQServerLogger.LOGGER.removingBadConsumer(t, consumer, reference);
+
+         // If the consumer throws an exception we remove the consumer
+         try
+         {
+            removeConsumer(consumer);
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.errorRemovingConsumer(e);
+         }
+
+         // The message failed to be delivered, hence we try again
+         addHead(reference);
       }
    }
 
