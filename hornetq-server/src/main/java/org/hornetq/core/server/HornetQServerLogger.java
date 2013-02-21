@@ -1228,4 +1228,14 @@ public interface HornetQServerLogger extends BasicLogger
       value = "Bridge {0} timed out waiting for the completion of {1} messages, we will just shutdown the bridge after 10 seconds wait",
       format = Message.Format.MESSAGE_FORMAT)
    void timedOutWaitingCompletions(String bridgeName, long numberOfMessages);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+            id = 224060,
+            value = "Bridge {0} forwarding address {1} has confirmation-window-size ({2}) greater than address' max-size-bytes' ({3})",
+            format = Message.Format.MESSAGE_FORMAT)
+            void
+ bridgeConfirmationWindowTooSmall(String bridgeName, String address, int windowConfirmation,
+                                                  long maxSizeBytes);
+
 }
