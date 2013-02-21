@@ -66,7 +66,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public final class FileConfigurationParser
+public final class FileConfigurationParser extends XMLConfigurationUtil
 {
 
    // Constants -----------------------------------------------------
@@ -172,7 +172,7 @@ public final class FileConfigurationParser
    {
       XMLUtil.validate(e, FileConfigurationParser.CONFIGURATION_SCHEMA_URL);
 
-      config.setName(XMLConfigurationUtil.getString(e, "name", config.getName(), Validators.NO_CHECK));
+      config.setName(getString(e, "name", config.getName(), Validators.NO_CHECK));
 
       NodeList elems = e.getElementsByTagName("clustered");
       if (elems != null && elems.getLength() > -1)
@@ -181,119 +181,110 @@ public final class FileConfigurationParser
 
       }
 
-      config.setCheckForLiveServer(XMLConfigurationUtil.getBoolean(e, "check-for-live-server", config.isClustered()));
+      config.setCheckForLiveServer(getBoolean(e, "check-for-live-server", config.isClustered()));
 
-      config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
+      config.setAllowAutoFailBack(getBoolean(e, "allow-failback", config.isClustered()));
 
-      config.setBackupGroupName(XMLConfigurationUtil.getString(e, "backup-group-name", config.getBackupGroupName(),
+      config.setBackupGroupName(getString(e, "backup-group-name", config.getBackupGroupName(),
                                                                Validators.NO_CHECK));
 
-      config.setFailbackDelay(XMLConfigurationUtil.getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
+      config.setFailbackDelay(getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
 
-      config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e,
-                                                                         "failover-on-shutdown",
+      config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
                                                                          config.isFailoverOnServerShutdown()));
-      config.setReplicationClustername(XMLConfigurationUtil.getString(e, "replication-clustername", null,
-                                                                      Validators.NO_CHECK));
+      config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
+      config.setBackup(getBoolean(e, "backup", config.isBackup()));
 
-      config.setBackup(XMLConfigurationUtil.getBoolean(e, "backup", config.isBackup()));
-
-      config.setSharedStore(XMLConfigurationUtil.getBoolean(e, "shared-store", config.isSharedStore()));
+      config.setSharedStore(getBoolean(e, "shared-store", config.isSharedStore()));
 
       // Defaults to true when using FileConfiguration
-      config.setFileDeploymentEnabled(XMLConfigurationUtil.getBoolean(e,
-                                                                      "file-deployment-enabled",
-                                                                      config instanceof FileConfiguration));
+      config.setFileDeploymentEnabled(getBoolean(e, "file-deployment-enabled", config instanceof FileConfiguration));
 
-      config.setPersistenceEnabled(XMLConfigurationUtil.getBoolean(e,
-                                                                   "persistence-enabled",
+      config.setPersistenceEnabled(getBoolean(e, "persistence-enabled",
                                                                    config.isPersistenceEnabled()));
 
-      config.setPersistDeliveryCountBeforeDelivery(XMLConfigurationUtil.getBoolean(e,
-                                                                                   "persist-delivery-count-before-delivery",
+      config.setPersistDeliveryCountBeforeDelivery(getBoolean(e, "persist-delivery-count-before-delivery",
                                                                                    config.isPersistDeliveryCountBeforeDelivery()));
 
-      config.setScheduledThreadPoolMaxSize(XMLConfigurationUtil.getInteger(e,
-                                                                           "scheduled-thread-pool-max-size",
-                                                                           config.getScheduledThreadPoolMaxSize(),
-                                                                           Validators.GT_ZERO));
+      config.setScheduledThreadPoolMaxSize(getInteger(e, "scheduled-thread-pool-max-size",
+                                                      config.getScheduledThreadPoolMaxSize(), Validators.GT_ZERO));
 
-      config.setThreadPoolMaxSize(XMLConfigurationUtil.getInteger(e,
+      config.setThreadPoolMaxSize(getInteger(e,
                                                                   "thread-pool-max-size",
                                                                   config.getThreadPoolMaxSize(),
                                                                   Validators.MINUS_ONE_OR_GT_ZERO));
 
-      config.setSecurityEnabled(XMLConfigurationUtil.getBoolean(e, "security-enabled", config.isSecurityEnabled()));
+      config.setSecurityEnabled(getBoolean(e, "security-enabled", config.isSecurityEnabled()));
 
-      config.setJMXManagementEnabled(XMLConfigurationUtil.getBoolean(e,
+      config.setJMXManagementEnabled(getBoolean(e,
                                                                      "jmx-management-enabled",
                                                                      config.isJMXManagementEnabled()));
 
-      config.setJMXDomain(XMLConfigurationUtil.getString(e,
+      config.setJMXDomain(getString(e,
                                                          "jmx-domain",
                                                          config.getJMXDomain(),
                                                          Validators.NOT_NULL_OR_EMPTY));
 
-      config.setSecurityInvalidationInterval(XMLConfigurationUtil.getLong(e,
+      config.setSecurityInvalidationInterval(getLong(e,
                                                                           "security-invalidation-interval",
                                                                           config.getSecurityInvalidationInterval(),
                                                                           Validators.GT_ZERO));
 
-      config.setConnectionTTLOverride(XMLConfigurationUtil.getLong(e,
+      config.setConnectionTTLOverride(getLong(e,
                                                                    "connection-ttl-override",
                                                                    config.getConnectionTTLOverride(),
                                                                    Validators.MINUS_ONE_OR_GT_ZERO));
 
-      config.setEnabledAsyncConnectionExecution(XMLConfigurationUtil.getBoolean(e,
+      config.setEnabledAsyncConnectionExecution(getBoolean(e,
                                                                                 "async-connection-execution-enabled",
                                                                                 config.isAsyncConnectionExecutionEnabled()));
 
-      config.setTransactionTimeout(XMLConfigurationUtil.getLong(e,
+      config.setTransactionTimeout(getLong(e,
                                                                 "transaction-timeout",
                                                                 config.getTransactionTimeout(),
                                                                 Validators.GT_ZERO));
 
-      config.setTransactionTimeoutScanPeriod(XMLConfigurationUtil.getLong(e,
+      config.setTransactionTimeoutScanPeriod(getLong(e,
                                                                           "transaction-timeout-scan-period",
                                                                           config.getTransactionTimeoutScanPeriod(),
                                                                           Validators.GT_ZERO));
 
-      config.setMessageExpiryScanPeriod(XMLConfigurationUtil.getLong(e,
+      config.setMessageExpiryScanPeriod(getLong(e,
                                                                      "message-expiry-scan-period",
                                                                      config.getMessageExpiryScanPeriod(),
                                                                      Validators.MINUS_ONE_OR_GT_ZERO));
 
-      config.setMessageExpiryThreadPriority(XMLConfigurationUtil.getInteger(e,
+      config.setMessageExpiryThreadPriority(getInteger(e,
                                                                             "message-expiry-thread-priority",
                                                                             config.getMessageExpiryThreadPriority(),
                                                                             Validators.THREAD_PRIORITY_RANGE));
 
-      config.setIDCacheSize(XMLConfigurationUtil.getInteger(e,
+      config.setIDCacheSize(getInteger(e,
                                                             "id-cache-size",
                                                             config.getIDCacheSize(),
                                                             Validators.GT_ZERO));
 
-      config.setPersistIDCache(XMLConfigurationUtil.getBoolean(e, "persist-id-cache", config.isPersistIDCache()));
+      config.setPersistIDCache(getBoolean(e, "persist-id-cache", config.isPersistIDCache()));
 
-      config.setManagementAddress(new SimpleString(XMLConfigurationUtil.getString(e,
+      config.setManagementAddress(new SimpleString(getString(e,
                                                                                   "management-address",
                                                                                   config.getManagementAddress()
                                                                                         .toString(),
                                                                                   Validators.NOT_NULL_OR_EMPTY)));
 
-      config.setManagementNotificationAddress(new SimpleString(XMLConfigurationUtil.getString(e,
+      config.setManagementNotificationAddress(new SimpleString(getString(e,
                                                                                               "management-notification-address",
                                                                                               config.getManagementNotificationAddress()
                                                                                                     .toString(),
                                                                                               Validators.NOT_NULL_OR_EMPTY)));
 
-      config.setMaskPassword(XMLConfigurationUtil.getBoolean(e, "mask-password", false));
+      config.setMaskPassword(getBoolean(e, "mask-password", false));
 
-      config.setPasswordCodec(XMLConfigurationUtil.getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(),
+      config.setPasswordCodec(getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(),
                                                                    Validators.NOT_NULL_OR_EMPTY));
 
       // parsing cluster password
-      String passwordText = XMLConfigurationUtil.getString(e, "cluster-password", null, Validators.NO_CHECK);
+      String passwordText = getString(e, "cluster-password", null, Validators.NO_CHECK);
 
       final boolean maskText = config.isMaskPassword();
 
@@ -310,7 +301,7 @@ public final class FileConfigurationParser
          }
       }
 
-      config.setClusterUser(XMLConfigurationUtil.getString(e,
+      config.setClusterUser(getString(e,
                                                            "cluster-user",
                                                            config.getClusterUser(),
                                                            Validators.NO_CHECK));
@@ -466,39 +457,39 @@ public final class FileConfigurationParser
 
       // Persistence config
 
-      config.setLargeMessagesDirectory(XMLConfigurationUtil.getString(e,
+      config.setLargeMessagesDirectory(getString(e,
                                                                       "large-messages-directory",
                                                                       config.getLargeMessagesDirectory(),
                                                                       Validators.NOT_NULL_OR_EMPTY));
 
-      config.setBindingsDirectory(XMLConfigurationUtil.getString(e,
+      config.setBindingsDirectory(getString(e,
                                                                  "bindings-directory",
                                                                  config.getBindingsDirectory(),
                                                                  Validators.NOT_NULL_OR_EMPTY));
 
-      config.setCreateBindingsDir(XMLConfigurationUtil.getBoolean(e,
+      config.setCreateBindingsDir(getBoolean(e,
                                                                   "create-bindings-dir",
                                                                   config.isCreateBindingsDir()));
 
-      config.setJournalDirectory(XMLConfigurationUtil.getString(e,
+      config.setJournalDirectory(getString(e,
                                                                 "journal-directory",
                                                                 config.getJournalDirectory(),
                                                                 Validators.NOT_NULL_OR_EMPTY));
 
 
-      config.setPageMaxConcurrentIO(XMLConfigurationUtil.getInteger(e,
+      config.setPageMaxConcurrentIO(getInteger(e,
                                                                     "page-max-concurrent-io",
                                                                     config.getPageMaxConcurrentIO(),
                                                                     Validators.MINUS_ONE_OR_GT_ZERO));
 
-      config.setPagingDirectory(XMLConfigurationUtil.getString(e,
+      config.setPagingDirectory(getString(e,
                                                                "paging-directory",
                                                                config.getPagingDirectory(),
                                                                Validators.NOT_NULL_OR_EMPTY));
 
-      config.setCreateJournalDir(XMLConfigurationUtil.getBoolean(e, "create-journal-dir", config.isCreateJournalDir()));
+      config.setCreateJournalDir(getBoolean(e, "create-journal-dir", config.isCreateJournalDir()));
 
-      String s = XMLConfigurationUtil.getString(e,
+      String s = getString(e,
                                                 "journal-type",
                                                 config.getJournalType().toString(),
                                                 Validators.JOURNAL_TYPE);
@@ -530,32 +521,32 @@ public final class FileConfigurationParser
          }
       }
 
-      config.setJournalSyncTransactional(XMLConfigurationUtil.getBoolean(e,
+      config.setJournalSyncTransactional(getBoolean(e,
                                                                          "journal-sync-transactional",
                                                                          config.isJournalSyncTransactional()));
 
-      config.setJournalSyncNonTransactional(XMLConfigurationUtil.getBoolean(e,
+      config.setJournalSyncNonTransactional(getBoolean(e,
                                                                             "journal-sync-non-transactional",
                                                                             config.isJournalSyncNonTransactional()));
 
-      config.setJournalFileSize(XMLConfigurationUtil.getInteger(e,
+      config.setJournalFileSize(getInteger(e,
                                                                 "journal-file-size",
                                                                 config.getJournalFileSize(),
                                                                 Validators.GT_ZERO));
 
-      int journalBufferTimeout = XMLConfigurationUtil.getInteger(e,
+      int journalBufferTimeout = getInteger(e,
                                                                  "journal-buffer-timeout",
                                                                  config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
                                                                                                                : JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
                                                                  Validators.GT_ZERO);
 
-       int journalBufferSize = XMLConfigurationUtil.getInteger(e,
+       int journalBufferSize = getInteger(e,
                                                               "journal-buffer-size",
                                                               config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
                                                                                                             : JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
                                                               Validators.GT_ZERO);
 
-      int journalMaxIO = XMLConfigurationUtil.getInteger(e,
+      int journalMaxIO = getInteger(e,
                                                          "journal-max-io",
                                                          config.getJournalType() == JournalType.ASYNCIO ? HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_AIO
                                                                                                        : HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_NIO,
@@ -574,62 +565,62 @@ public final class FileConfigurationParser
          config.setJournalMaxIO_NIO(journalMaxIO);
       }
 
-      config.setJournalMinFiles(XMLConfigurationUtil.getInteger(e,
+      config.setJournalMinFiles(getInteger(e,
                                                                 "journal-min-files",
                                                                 config.getJournalMinFiles(),
                                                                 Validators.GT_ZERO));
 
-      config.setJournalCompactMinFiles(XMLConfigurationUtil.getInteger(e,
+      config.setJournalCompactMinFiles(getInteger(e,
                                                                        "journal-compact-min-files",
                                                                        config.getJournalCompactMinFiles(),
                                                                        Validators.GE_ZERO));
 
-      config.setJournalCompactPercentage(XMLConfigurationUtil.getInteger(e,
+      config.setJournalCompactPercentage(getInteger(e,
                                                                          "journal-compact-percentage",
                                                                          config.getJournalCompactPercentage(),
                                                                          Validators.PERCENTAGE));
 
-      config.setLogJournalWriteRate(XMLConfigurationUtil.getBoolean(e,
+      config.setLogJournalWriteRate(getBoolean(e,
                                                                     "log-journal-write-rate",
                                                                     HornetQDefaultConfiguration.DEFAULT_JOURNAL_LOG_WRITE_RATE));
 
-      config.setJournalPerfBlastPages(XMLConfigurationUtil.getInteger(e,
+      config.setJournalPerfBlastPages(getInteger(e,
                                                                       "perf-blast-pages",
                                                                       HornetQDefaultConfiguration.DEFAULT_JOURNAL_PERF_BLAST_PAGES,
                                                                       Validators.MINUS_ONE_OR_GT_ZERO));
 
-      config.setRunSyncSpeedTest(XMLConfigurationUtil.getBoolean(e, "run-sync-speed-test", config.isRunSyncSpeedTest()));
+      config.setRunSyncSpeedTest(getBoolean(e, "run-sync-speed-test", config.isRunSyncSpeedTest()));
 
-      config.setWildcardRoutingEnabled(XMLConfigurationUtil.getBoolean(e,
+      config.setWildcardRoutingEnabled(getBoolean(e,
                                                                        "wild-card-routing-enabled",
                                                                        config.isWildcardRoutingEnabled()));
 
-      config.setMessageCounterEnabled(XMLConfigurationUtil.getBoolean(e,
+      config.setMessageCounterEnabled(getBoolean(e,
                                                                       "message-counter-enabled",
                                                                       config.isMessageCounterEnabled()));
 
-      config.setMessageCounterSamplePeriod(XMLConfigurationUtil.getLong(e,
+      config.setMessageCounterSamplePeriod(getLong(e,
                                                                         "message-counter-sample-period",
                                                                         config.getMessageCounterSamplePeriod(),
                                                                         Validators.GT_ZERO));
 
-      config.setMessageCounterMaxDayHistory(XMLConfigurationUtil.getInteger(e,
+      config.setMessageCounterMaxDayHistory(getInteger(e,
                                                                             "message-counter-max-day-history",
                                                                             config.getMessageCounterMaxDayHistory(),
                                                                             Validators.GT_ZERO));
 
-      config.setServerDumpInterval(XMLConfigurationUtil.getLong(e,
+      config.setServerDumpInterval(getLong(e,
                                                                 "server-dump-interval",
                                                                 config.getServerDumpInterval(),
                                                                 Validators.MINUS_ONE_OR_GT_ZERO)); // in
       // milliseconds
 
-      config.setMemoryWarningThreshold(XMLConfigurationUtil.getInteger(e,
+      config.setMemoryWarningThreshold(getInteger(e,
                                                                        "memory-warning-threshold",
                                                                        config.getMemoryWarningThreshold(),
                                                                        Validators.PERCENTAGE));
 
-      config.setMemoryMeasureInterval(XMLConfigurationUtil.getLong(e,
+      config.setMemoryMeasureInterval(getLong(e,
                                                                    "memory-measure-interval",
                                                                    config.getMemoryMeasureInterval(),
                                                                    Validators.MINUS_ONE_OR_GT_ZERO)); // in
@@ -948,7 +939,7 @@ public final class FileConfigurationParser
 
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
-      String clazz = XMLConfigurationUtil.getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
+      String clazz = getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
 
       Map<String, Object> params = new HashMap<String, Object>();
 
@@ -996,7 +987,7 @@ public final class FileConfigurationParser
 
          if (child.getNodeName().equals("connector-ref"))
          {
-            String connectorName = XMLConfigurationUtil.getString(e,
+            String connectorName = getString(e,
                "connector-ref",
                null,
                Validators.NOT_NULL_OR_EMPTY);
@@ -1005,22 +996,22 @@ public final class FileConfigurationParser
          }
       }
 
-      long broadcastPeriod = XMLConfigurationUtil.getLong(e,
+      long broadcastPeriod = getLong(e,
          "broadcast-period",
          HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD,
          Validators.GT_ZERO);
 
-      String localAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+      String localAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
-      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      int localBindPort = getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NO_CHECK);
+      String groupAddress = getString(e, "group-address", null, Validators.NO_CHECK);
 
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      int groupPort = getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String jgroupsFile = XMLConfigurationUtil.getString(e, "jgroups-file", null, Validators.NO_CHECK);
+      String jgroupsFile = getString(e, "jgroups-file", null, Validators.NO_CHECK);
 
-      String jgroupsChannel = XMLConfigurationUtil.getString(e, "jgroups-channel", null, Validators.NO_CHECK);
+      String jgroupsChannel = getString(e, "jgroups-channel", null, Validators.NO_CHECK);
 
 
       // TODO: validate if either jgroups or UDP is being filled
@@ -1045,27 +1036,27 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
+      long discoveryInitialWaitTimeout = getLong(e,
          "initial-wait-timeout",
          HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
          Validators.GT_ZERO);
 
-      long refreshTimeout = XMLConfigurationUtil.getLong(e,
+      long refreshTimeout = getLong(e,
          "refresh-timeout",
          HornetQDefaultConfiguration.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
          Validators.GT_ZERO);
 
-      String localBindAddress = XMLConfigurationUtil.getString(e, "local-bind-address", null, Validators.NO_CHECK);
+      String localBindAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
-      int localBindPort = XMLConfigurationUtil.getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      int localBindPort = getInteger(e, "local-bind-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NO_CHECK);
+      String groupAddress = getString(e, "group-address", null, Validators.NO_CHECK);
 
-      int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      int groupPort = getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      String jgroupsFile = XMLConfigurationUtil.getString(e, "jgroups-file", null, Validators.NO_CHECK);
+      String jgroupsFile = getString(e, "jgroups-file", null, Validators.NO_CHECK);
 
-      String jgroupsChannel = XMLConfigurationUtil.getString(e, "jgroups-channel", null, Validators.NO_CHECK);
+      String jgroupsChannel = getString(e, "jgroups-channel", null, Validators.NO_CHECK);
 
       // TODO: validate if either jgroups or UDP is being filled
       BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration;
@@ -1096,57 +1087,57 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
+      String address = getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String connectorName = XMLConfigurationUtil.getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
+      String connectorName = getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
 
-      boolean duplicateDetection = XMLConfigurationUtil.getBoolean(e,
-                                                                   "use-duplicate-detection",
-                                                                   HornetQDefaultConfiguration.DEFAULT_CLUSTER_DUPLICATE_DETECTION);
+      boolean duplicateDetection =
+               getBoolean(e, "use-duplicate-detection", HornetQDefaultConfiguration.DEFAULT_CLUSTER_DUPLICATE_DETECTION);
 
-      boolean forwardWhenNoConsumers = XMLConfigurationUtil.getBoolean(e,
+      boolean forwardWhenNoConsumers = getBoolean(e,
                                                                        "forward-when-no-consumers",
                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
 
-      int maxHops = XMLConfigurationUtil.getInteger(e,
+      int maxHops = getInteger(e,
                                                     "max-hops",
                                                     HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_HOPS,
                                                     Validators.GE_ZERO);
 
-      long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e, "check-period",
-                                                                   HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
+      long clientFailureCheckPeriod = getLong(e, "check-period",
+ HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+                       Validators.GT_ZERO);
 
-      long connectionTTL = XMLConfigurationUtil.getLong(e, "connection-ttl",
+      long connectionTTL = getLong(e, "connection-ttl",
                                                         HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL, Validators.GT_ZERO) ;
 
 
-      long retryInterval = XMLConfigurationUtil.getLong(e,
+      long retryInterval = getLong(e,
                                                         "retry-interval",
                                                         HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
 
-      long callTimeout = XMLConfigurationUtil.getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
+      long callTimeout = getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
 
-      long callFailoverTimeout = XMLConfigurationUtil.getLong(e, "call-failover-timeout", HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
+      long callFailoverTimeout = getLong(e, "call-failover-timeout", HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
 
-      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier",
+      double retryIntervalMultiplier = getDouble(e, "retry-interval-multiplier",
                                                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER, Validators.GT_ZERO);
 
-      int minLargeMessageSize = XMLConfigurationUtil.getInteger(e, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, Validators.GT_ZERO);
+      int minLargeMessageSize = getInteger(e, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, Validators.GT_ZERO);
 
-      long maxRetryInterval = XMLConfigurationUtil.getLong(e, "max-retry-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
+      long maxRetryInterval = getLong(e, "max-retry-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
 
-      int reconnectAttempts = XMLConfigurationUtil.getInteger(e, "reconnect-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
+      int reconnectAttempts = getInteger(e, "reconnect-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
 
 
-      int confirmationWindowSize = XMLConfigurationUtil.getInteger(e,
+      int confirmationWindowSize = getInteger(e,
                                                                    "confirmation-window-size",
                                                                    FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                                                                    Validators.GT_ZERO);
 
-      long clusterNotificationInterval = XMLConfigurationUtil.getLong(e, "notification-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL, Validators.GT_ZERO);
+      long clusterNotificationInterval = getLong(e, "notification-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL, Validators.GT_ZERO);
 
-      int clusterNotificationAttempts = XMLConfigurationUtil.getInteger(e, "notification-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS, Validators.GT_ZERO);
+      int clusterNotificationAttempts = getInteger(e, "notification-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS, Validators.GT_ZERO);
 
       String discoveryGroupName = null;
 
@@ -1218,9 +1209,9 @@ public final class FileConfigurationParser
    private void parseGroupingHandlerConfiguration(final Element node, final Configuration mainConfiguration)
    {
       String name = node.getAttribute("name");
-      String type = XMLConfigurationUtil.getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
-      String address = XMLConfigurationUtil.getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
-      Integer timeout = XMLConfigurationUtil.getInteger(node,
+      String type = getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
+      String address = getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
+      Integer timeout = getInteger(node,
                                                         "timeout",
                                                         GroupingHandlerConfiguration.DEFAULT_TIMEOUT,
                                                         Validators.GT_ZERO);
@@ -1235,55 +1226,55 @@ public final class FileConfigurationParser
    {
       String name = brNode.getAttribute("name");
 
-      String queueName = XMLConfigurationUtil.getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
+      String queueName = getString(brNode, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = XMLConfigurationUtil.getString(brNode, "forwarding-address", null, Validators.NO_CHECK);
+      String forwardingAddress = getString(brNode, "forwarding-address", null, Validators.NO_CHECK);
 
-      String transformerClassName = XMLConfigurationUtil.getString(brNode,
+      String transformerClassName = getString(brNode,
                                                                    "transformer-class-name",
                                                                    null,
                                                                    Validators.NO_CHECK);
 
        // Default bridge conf
-      int confirmationWindowSize = XMLConfigurationUtil.getInteger(brNode,
+      int confirmationWindowSize = getInteger(brNode,
                                                                    "confirmation-window-size",
                                                                    FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                                                                    Validators.GT_ZERO);
 
-      long retryInterval = XMLConfigurationUtil.getLong(brNode,
+      long retryInterval = getLong(brNode,
                                                         "retry-interval",
                                                         HornetQClient.DEFAULT_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
 
-      long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(brNode, "check-period",
+      long clientFailureCheckPeriod = getLong(brNode, "check-period",
                                                                    HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
 
-      long connectionTTL = XMLConfigurationUtil.getLong(brNode, "connection-ttl",
+      long connectionTTL = getLong(brNode, "connection-ttl",
                                                         HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO) ;
 
-      int minLargeMessageSize = XMLConfigurationUtil.getInteger(brNode,
+      int minLargeMessageSize = getInteger(brNode,
                                                                 "min-large-message-size",
                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                 Validators.GT_ZERO);
 
-      long maxRetryInterval = XMLConfigurationUtil.getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
+      long maxRetryInterval = getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
 
 
-      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(brNode,
+      double retryIntervalMultiplier = getDouble(brNode,
                                                                       "retry-interval-multiplier",
                                                                       HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                       Validators.GT_ZERO);
 
-      int reconnectAttempts = XMLConfigurationUtil.getInteger(brNode,
+      int reconnectAttempts = getInteger(brNode,
                                                               "reconnect-attempts",
                                                               HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
                                                               Validators.MINUS_ONE_OR_GE_ZERO);
 
-      boolean useDuplicateDetection = XMLConfigurationUtil.getBoolean(brNode,
+      boolean useDuplicateDetection = getBoolean(brNode,
                                                                       "use-duplicate-detection",
                                                                       HornetQDefaultConfiguration.DEFAULT_BRIDGE_DUPLICATE_DETECTION);
 
-      String user = XMLConfigurationUtil.getString(brNode,
+      String user = getString(brNode,
                                                    "user",
                                                    HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
                                                    Validators.NO_CHECK);
@@ -1313,7 +1304,7 @@ public final class FileConfigurationParser
          password = HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD;
       }
 
-      boolean ha = XMLConfigurationUtil.getBoolean(brNode, "ha", false);
+      boolean ha = getBoolean(brNode, "ha", false);
 
       String filterString = null;
 
@@ -1407,18 +1398,18 @@ public final class FileConfigurationParser
    {
       String name = e.getAttribute("name");
 
-      String routingName = XMLConfigurationUtil.getString(e, "routing-name", null, Validators.NO_CHECK);
+      String routingName = getString(e, "routing-name", null, Validators.NO_CHECK);
 
-      String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
+      String address = getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = XMLConfigurationUtil.getString(e,
+      String forwardingAddress = getString(e,
                                                                 "forwarding-address",
                                                                 null,
                                                                 Validators.NOT_NULL_OR_EMPTY);
 
-      boolean exclusive = XMLConfigurationUtil.getBoolean(e, "exclusive", HornetQDefaultConfiguration.DEFAULT_DIVERT_EXCLUSIVE);
+      boolean exclusive = getBoolean(e, "exclusive", HornetQDefaultConfiguration.DEFAULT_DIVERT_EXCLUSIVE);
 
-      String transformerClassName = XMLConfigurationUtil.getString(e,
+      String transformerClassName = getString(e,
                                                                    "transformer-class-name",
                                                                    null,
                                                                    Validators.NO_CHECK);
@@ -1454,7 +1445,7 @@ public final class FileConfigurationParser
 
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
-      String clazz = XMLConfigurationUtil.getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
+      String clazz = getString(e, "factory-class", null, Validators.NOT_NULL_OR_EMPTY);
 
       Map<String, Object> params = new HashMap<String, Object>();
 

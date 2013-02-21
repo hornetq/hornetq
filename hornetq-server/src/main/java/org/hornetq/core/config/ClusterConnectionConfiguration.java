@@ -117,7 +117,7 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final long maxRetryInterval,
                                          final int reconnectAttempts,
                                          final long callTimeout,
-                                         final long callFAiloverTimeout,
+                                         final long callFailoverTimeout,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -148,7 +148,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       }
       this.duplicateDetection = duplicateDetection;
       this.callTimeout = callTimeout;
-      this.callFailoverTimeout = callFAiloverTimeout;
+      this.callFailoverTimeout = callFailoverTimeout;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       discoveryGroupName = null;
       this.maxHops = maxHops;

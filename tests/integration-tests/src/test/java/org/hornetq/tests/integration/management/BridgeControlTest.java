@@ -183,8 +183,8 @@ public class BridgeControlTest extends ManagementTestBase
       server_0.start();
    }
 
-   protected BridgeControl createBridgeControl(final String name, final MBeanServer mbeanServer) throws Exception
+   protected BridgeControl createBridgeControl(final String name, final MBeanServer mbeanServer1) throws Exception
    {
-      return ManagementControlHelper.createBridgeControl(name, mbeanServer);
+      return ManagementControlHelper.createBridgeControl(name, mbeanServer1);
    }
 }

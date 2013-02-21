@@ -54,6 +54,7 @@ import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionBridge;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
@@ -523,6 +524,19 @@ public final class ClusterManager implements HornetQComponent
 
       }
 
+      if (config.getForwardingAddress() != null)
+      {
+         AddressSettings addressConfig = configuration.getAddressesSettings().get(config.getForwardingAddress());
+         final int windowSize = config.getConfirmationWindowSize();
+         final long maxBytes = addressConfig.getMaxSizeBytes();
+
+         if (maxBytes !=-1 && maxBytes < windowSize)
+         {
+            HornetQServerLogger.LOGGER.bridgeConfirmationWindowTooSmall(config.getName(),
+                                                                        config.getForwardingAddress(), windowSize,
+                                                                        maxBytes);
+         }
+      }
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
 
       // We are going to manually retry on the bridge in case of failure

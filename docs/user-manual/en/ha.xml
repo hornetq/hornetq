@@ -73,6 +73,14 @@
                 amount of data to be synchronized and the connection speed.</para>
                <note>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
                current clients.</note>
+
+               <para>Replication will create a copy of the data at the backup. One issue to be aware
+               of is: in case of a successful fail-over, the backup's data will be newer than
+               the one at the live's storage. If you configure your live server to perform a <xref
+               linkend="ha.allow-fail-back">'fail-back'</xref> when restarted, it will synchronize
+               its data with the backup's. If both servers are shutdown, the administrator will have
+               to determine which one has the lastest data.</para>
+
                 <para>The replicating live and backup pair must be part of a cluster.  The Cluster
                 Connection also defines how backup servers will find the remote live servers to pair
                 with.  Refer to <xref linkend="clusters"/> for details on how this is done, and how
@@ -108,6 +116,15 @@
                    replicate with each live server in turn until it finds a live server that has no current backup configured.
                 If no live server is available it will wait until the cluster topology changes and repeats the process.</para>
 
+               <note>This is an important distinction from a shared-store backup, as in that case if
+               the backup starts and does not find its live server, the server will just activate
+               and start to serve client requests. In the replication case, the backup just keeps
+               waiting for a live server to pair with. Notice that in replication the backup server
+               does not know whether any data it might have is up to date, so it really cannot
+               decide to activate automatically. To activate a replicating backup server using the data
+               it has, the administrator must change its configuration to make a live server of it,
+               that change <literal>backup=true</literal> to <literal>backup=false</literal>.</note>
+
                 <para>Much like in the shared-store case, when the live server stops or crashes,
                 its replicating backup will become active and take over its duties. Specifically,
                 the backup will become active when it loses connection to its live server. This can
@@ -118,7 +135,6 @@
                 disappeared with the live, the backup will wait and try reconnecting with the live.
                 This avoids a split brain situation.
                 </para>
-
                 <section>
                 <title>Configuration</title>
 
