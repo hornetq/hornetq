@@ -1238,4 +1238,10 @@ public interface HornetQServerLogger extends BasicLogger
  bridgeConfirmationWindowTooSmall(String bridgeName, String address, int windowConfirmation,
                                                   long maxSizeBytes);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+      id = 224061,
+      value = "Bridge {0} forwarding address {1} couldn't be resolved on address-settings configuration",
+      format = Message.Format.MESSAGE_FORMAT)
+   void bridgeCantFindAddressConfig(String bridgeName, String forwardingAddress);
 }

@@ -527,14 +527,24 @@ public final class ClusterManager implements HornetQComponent
       if (config.getForwardingAddress() != null)
       {
          AddressSettings addressConfig = configuration.getAddressesSettings().get(config.getForwardingAddress());
-         final int windowSize = config.getConfirmationWindowSize();
-         final long maxBytes = addressConfig.getMaxSizeBytes();
 
-         if (maxBytes !=-1 && maxBytes < windowSize)
+         // The address config could be null on certain test cases or some Embedded environment
+         if (addressConfig == null)
          {
-            HornetQServerLogger.LOGGER.bridgeConfirmationWindowTooSmall(config.getName(),
-                                                                        config.getForwardingAddress(), windowSize,
-                                                                        maxBytes);
+            // We will certainly have this warning on testcases which is ok
+            HornetQServerLogger.LOGGER.bridgeCantFindAddressConfig(config.getName(), config.getForwardingAddress());
+         }
+         else
+         {
+            final int windowSize = config.getConfirmationWindowSize();
+            final long maxBytes = addressConfig.getMaxSizeBytes();
+
+            if (maxBytes !=-1 && maxBytes < windowSize)
+            {
+               HornetQServerLogger.LOGGER.bridgeConfirmationWindowTooSmall(config.getName(),
+                                                                           config.getForwardingAddress(), windowSize,
+                                                                           maxBytes);
+            }
          }
       }
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
