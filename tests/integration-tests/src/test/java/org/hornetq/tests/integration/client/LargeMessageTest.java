@@ -60,7 +60,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 {
    // Constants -----------------------------------------------------
 
-   final static int RECEIVE_WAIT_TIME = 60000;
+   final static int RECEIVE_WAIT_TIME = 10000;
 
    private final int LARGE_MESSAGE_SIZE = 20 * 1024;
 

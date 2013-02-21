@@ -41,6 +41,9 @@ public class AutoGroupingTest extends GroupingTest
       return cf;
    }
 
+   public void testManyGroups() throws Exception
+   {
+   }
 
    @Override
    protected void setProperty(Message message)

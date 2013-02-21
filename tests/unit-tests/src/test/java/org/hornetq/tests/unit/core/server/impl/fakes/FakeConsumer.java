@@ -153,6 +153,12 @@ public class FakeConsumer implements Consumer
    }
 
    @Override
+   public void proceedDeliver(MessageReference ref) throws Exception
+   {
+      // no op
+   }
+
+   @Override
    public void getDeliveringMessages(List<MessageReference> refList)
    {
    }

@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.jms.client;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -119,6 +120,74 @@ public class GroupingTest extends JMSTestBase
       connection.close();
 
 
+   }
+
+
+   public void testManyGroups() throws Exception
+   {
+      ConnectionFactory fact = getCF();
+
+      Connection connection = fact.createConnection();
+
+      Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+      MessageProducer producer = session.createProducer(queue);
+
+      MessageConsumer consumer1 = session.createConsumer(queue);
+      MessageConsumer consumer2 = session.createConsumer(queue);
+      MessageConsumer consumer3 = session.createConsumer(queue);
+
+      connection.start();
+
+      for (int j = 0; j < 1000; j++)
+      {
+         TextMessage message = session.createTextMessage();
+
+         message.setText("Message" + j);
+
+         message.setStringProperty("_HQ_GROUP_ID", "" + (j % 10));
+
+         producer.send(message);
+
+         String prop = message.getStringProperty("JMSXGroupID");
+
+         assertNotNull(prop);
+
+      }
+
+      int msg1 = flushMessages(consumer1);
+      int msg2 = flushMessages(consumer2);
+      int msg3 = flushMessages(consumer3);
+
+
+      assertNotSame(0, msg1);
+      assertNotSame(0, msg2);
+      assertNotSame(0, msg2);
+
+      consumer1.close();
+      consumer2.close();
+      consumer3.close();
+
+
+      connection.close();
+
+
+   }
+
+   private int flushMessages(MessageConsumer consumer) throws JMSException
+   {
+      int received = 0;
+      while (true)
+      {
+         TextMessage msg = (TextMessage)consumer.receiveNoWait();
+         if (msg == null)
+         {
+            break;
+         }
+         msg.acknowledge();
+         received++;
+      }
+      return received;
    }
 
 }

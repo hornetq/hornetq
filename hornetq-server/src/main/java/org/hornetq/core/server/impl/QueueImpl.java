@@ -25,14 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -93,6 +91,8 @@ public class QueueImpl implements Queue
    */
    private static final int DELIVERY_TIMEOUT = 1000;
 
+   private static final int FLUSH_TIMEOUT = 10000;
+
    private final long id;
 
    private final SimpleString name;
@@ -123,15 +123,25 @@ public class QueueImpl implements Queue
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
 
+   // used to control if we should recalculate certain positions inside deliverAsync
+   private volatile boolean consumersChanged = true;
+
    private final List<ConsumerHolder> consumerList = new CopyOnWriteArrayList<ConsumerHolder>();
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
-   private long messagesAdded;
+   private volatile long messagesAdded;
 
    protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private boolean paused;
+
+   private static final int MAX_SCHEDULED_RUNNERS = 2;
+
+   // We don't ever need more than two DeliverRunner on the executor's list
+   // that is getting the worse scenario possible when one runner is almost finishing before the second started
+   // for that we keep a counter of scheduled instances
+   private final AtomicInteger scheduledRunners = new AtomicInteger(0);
 
    private final Runnable deliverRunner = new DeliverRunner();
 
@@ -164,10 +174,6 @@ public class QueueImpl implements Queue
    private int pos;
 
    private final Executor executor;
-
-   private final AtomicInteger consumerWithFilterCount = new AtomicInteger();
-
-   private final Runnable concurrentPoller = new ConcurrentPoller();
 
    private boolean internalQueue;
 
@@ -464,7 +470,8 @@ public class QueueImpl implements Queue
 
       directDeliver = false;
 
-      getExecutor().execute(concurrentPoller);
+      // Delivery async will both poll for intermediate reference and deliver to clients
+      deliverAsync();
    }
 
    public void forceDelivery()
@@ -488,14 +495,19 @@ public class QueueImpl implements Queue
 
    public void deliverAsync()
    {
-      try
+      if (scheduledRunners.get() < MAX_SCHEDULED_RUNNERS)
       {
-         getExecutor().execute(deliverRunner);
+         scheduledRunners.incrementAndGet();
+         try
+         {
+            getExecutor().execute(deliverRunner);
+         }
+         catch (RejectedExecutionException ignored)
+         {
+            // no-op
+         }
       }
-      catch (RejectedExecutionException ignored)
-      {
-         // no-op
-      }
+
    }
 
    public void close() throws Exception
@@ -550,11 +562,7 @@ public class QueueImpl implements Queue
 
    public boolean flushExecutor()
    {
-      FutureLatch future = new FutureLatch();
-
-      getExecutor().execute(future);
-
-      boolean ok = future.await(10000);
+      boolean ok = internalFlushExecutor(10000);
 
       if (!ok)
       {
@@ -564,19 +572,25 @@ public class QueueImpl implements Queue
       return ok;
    }
 
+   private boolean internalFlushExecutor(long timeout)
+   {
+      FutureLatch future = new FutureLatch();
+
+      getExecutor().execute(future);
+
+      return future.await(timeout);
+   }
+
    public synchronized void addConsumer(final Consumer consumer) throws Exception
    {
+      consumersChanged = true;
+
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug(this + " adding consumer " + consumer);
       }
 
       cancelRedistributor();
-
-      if (consumer.getFilter() != null)
-      {
-         consumerWithFilterCount.incrementAndGet();
-      }
 
       consumerList.add(new ConsumerHolder(consumer));
 
@@ -585,6 +599,8 @@ public class QueueImpl implements Queue
 
    public synchronized void removeConsumer(final Consumer consumer)
    {
+      consumersChanged = true;
+
        for (ConsumerHolder holder : consumerList) {
            if (holder.consumer == consumer) {
                if (holder.iter != null) {
@@ -602,17 +618,29 @@ public class QueueImpl implements Queue
 
       consumerSet.remove(consumer);
 
+      LinkedList<SimpleString> groupsToRemove = null;
+
       for (SimpleString groupID : groups.keySet())
       {
          if (consumer == groups.get(groupID))
          {
-             groups.remove(groupID);
+            if (groupsToRemove == null)
+            {
+               groupsToRemove = new LinkedList<SimpleString>();
+            }
+            groupsToRemove.add(groupID);
          }
       }
 
-      if (consumer.getFilter() != null)
+      // We use an auxiliary List here to avoid concurrent modification exceptions on the keySet
+      // while the iteration is being done.
+      // Since that's a simple HashMap there's no Iterator's support with a remove operation
+      if (groupsToRemove != null)
       {
-         consumerWithFilterCount.decrementAndGet();
+         for (SimpleString groupID: groupsToRemove)
+         {
+            groups.remove(groupID);
+         }
       }
    }
 
@@ -788,31 +816,8 @@ public class QueueImpl implements Queue
 
    public long getMessageCount()
    {
-      final CountDownLatch latch = new CountDownLatch(1);
-      final AtomicLong count = new AtomicLong(0);
-
-      getExecutor().execute(new Runnable()
-      {
-         public void run()
-         {
-            count.set(getInstantMessageCount());
-            latch.countDown();
-         }
-      });
-
-      try
-      {
-         if (!latch.await(10, TimeUnit.SECONDS))
-         {
-            throw new IllegalStateException("Timed out on waiting for MessageCount");
-         }
-      }
-      catch (Exception e)
-      {
-         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-      }
-
-      return count.get();
+      internalFlushExecutor(FLUSH_TIMEOUT);
+      return getInstantMessageCount();
    }
 
    public long getInstantMessageCount()
@@ -873,7 +878,7 @@ public class QueueImpl implements Queue
    {
       if (ref.isPaged())
       {
-         pageSubscription.ack((PagedReference)ref);
+         pageSubscription.ack((PagedReference) ref);
          postAcknowledge(ref);
       }
       else
@@ -1001,45 +1006,19 @@ public class QueueImpl implements Queue
 
    public long getMessagesAdded()
    {
-      final CountDownLatch latch = new CountDownLatch(1);
-      final AtomicLong count = new AtomicLong(0);
+      internalFlushExecutor(FLUSH_TIMEOUT);
+      return getInstantMessagesAdded();
+   }
 
-      getExecutor().execute(new Runnable()
-      {
-         public void run()
-         {
-            count.set(getInstantMessagesAdded());
-            latch.countDown();
-         }
-      });
-
-      try
-      {
-         if (!latch.await(10, TimeUnit.SECONDS))
-         {
-            throw new IllegalStateException("Timed out on waiting for MessagesAdded");
-         }
-      }
-      catch (Exception e)
-      {
-         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-      }
-
-      return count.get();
-  }
-
-   public long getInstantMessagesAdded()
+   public synchronized long getInstantMessagesAdded()
    {
-      synchronized (this)
+      if (pageSubscription != null)
       {
-         if (pageSubscription != null)
-         {
-            return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
-         }
-         else
-         {
-            return messagesAdded;
-         }
+         return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
+      }
+      else
+      {
+         return messagesAdded;
       }
     }
 
@@ -1644,13 +1623,7 @@ public class QueueImpl implements Queue
       return "QueueImpl[name=" + name.toString() + ", postOffice=" + this.postOffice + "]@" + Integer.toHexString(System.identityHashCode(this));
    }
 
-   /**
-    * The caller of this method requires synchronized on the queue.
-    * I'm not going to add synchronized to this method just for a precaution,
-    * as I'm not 100% sure this won't cause any extra runtime.
-    * @param ref
-    */
-   private void internalAddTail(final MessageReference ref)
+   private synchronized void internalAddTail(final MessageReference ref)
    {
       refAdded(ref);
       messageReferences.addTail(ref, ref.getMessage().getPriority());
@@ -1669,19 +1642,22 @@ public class QueueImpl implements Queue
       messageReferences.addHead(ref, ref.getMessage().getPriority());
    }
 
-   private synchronized void doPoll()
+   private synchronized void doInternalPoll()
    {
-      MessageReference ref = intermediateMessageReferences.poll();
 
-      if (ref != null)
+      int added = 0;
+      MessageReference ref;
+
+      while ((ref = intermediateMessageReferences.poll()) != null)
       {
          internalAddTail(ref);
 
          messagesAdded++;
-
-         if (consumerWithFilterCount.get() > 0 || messageReferences.size() == 1)
+         if (added++ > MAX_DELIVERIES_IN_LOOP)
          {
-            deliver();
+            // if we just keep polling from the intermediate we could starve in case there's a sustained load
+            deliverAsync();
+            return;
          }
       }
    }
@@ -1692,54 +1668,80 @@ public class QueueImpl implements Queue
     */
    private void deliver()
    {
-      synchronized (this)
+      if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
-         if (paused || consumerList.isEmpty())
+         HornetQServerLogger.LOGGER.debug(this + " doing deliver. messageReferences=" + messageReferences.size());
+      }
+
+      doInternalPoll();
+
+      // Either the iterator is empty or the consumer is busy
+      int noDelivery = 0;
+
+      int size = 0;
+
+      int endPos = -1;
+
+      int handled = 0;
+
+      long timeout = System.currentTimeMillis() + DELIVERY_TIMEOUT;
+
+      while (true)
+      {
+         if (handled == MAX_DELIVERIES_IN_LOOP)
          {
+            // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too
+            // long
+
+            deliverAsync();
+
             return;
          }
 
-         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+         if (System.currentTimeMillis() > timeout)
          {
-            HornetQServerLogger.LOGGER.debug(this + " doing deliver. messageReferences=" + messageReferences.size());
+            if (isTrace)
+            {
+               HornetQServerLogger.LOGGER.trace("delivery has been running for too long. Scheduling another delivery task now");
+            }
+
+            deliverAsync();
+
+            return;
          }
 
-         int busyCount = 0;
 
-         int nullRefCount = 0;
+         MessageReference ref;
 
-         int size = consumerList.size();
+         Consumer handledconsumer = null;
 
-         int endPos = pos == size - 1 ? 0 : size - 1;
-
-         int numRefs = messageReferences.size();
-
-         int handled = 0;
-
-         long timeout = System.currentTimeMillis() + DELIVERY_TIMEOUT;
-
-         while (handled < numRefs)
+         synchronized (this)
          {
-            if (handled == MAX_DELIVERIES_IN_LOOP)
+
+            // Need to do these checks inside the synchronized
+            if (paused || consumerList.isEmpty())
             {
-               // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too
-               // long
-
-               deliverAsync();
-
                return;
             }
 
-            if (System.currentTimeMillis() > timeout)
+            if (messageReferences.size() == 0)
             {
-               if (isTrace)
+               break;
+            }
+
+            if (endPos < 0 || consumersChanged)
+            {
+               consumersChanged = false;
+
+               size = consumerList.size();
+
+               endPos = pos -1;
+
+               if (endPos < 0)
                {
-                  HornetQServerLogger.LOGGER.trace("delivery has been running for too long. Scheduling another delivery task now");
+                  endPos = size -1;
+                  noDelivery = 0;
                }
-
-               deliverAsync();
-
-               return;
             }
 
             ConsumerHolder holder = consumerList.get(pos);
@@ -1751,8 +1753,6 @@ public class QueueImpl implements Queue
                holder.iter = messageReferences.iterator();
             }
 
-            MessageReference ref;
-
             if (holder.iter.hasNext())
             {
                ref = holder.iter.next();
@@ -1761,10 +1761,9 @@ public class QueueImpl implements Queue
             {
                ref = null;
             }
-
             if (ref == null)
             {
-               nullRefCount++;
+               noDelivery++;
             }
             else
             {
@@ -1808,6 +1807,9 @@ public class QueueImpl implements Queue
 
                if (status == HandleStatus.HANDLED)
                {
+
+                  handledconsumer = consumer;
+
                   holder.iter.remove();
 
                   refRemoved(ref);
@@ -1823,10 +1825,11 @@ public class QueueImpl implements Queue
                {
                   holder.iter.repeat();
 
-                  busyCount++;
+                  noDelivery++;
                }
                else if (status == HandleStatus.NO_MATCH)
                {
+                  // nothing to be done on this case, the iterators will just jump next
                }
             }
 
@@ -1834,16 +1837,25 @@ public class QueueImpl implements Queue
             {
                // Round robin'd all
 
-               if (nullRefCount + busyCount == size)
+               if (noDelivery == size)
                {
-                  if (HornetQServerLogger.LOGGER.isDebugEnabled())
+                  if (handledconsumer != null)
                   {
-                     HornetQServerLogger.LOGGER.debug(this + "::All the consumers were busy, giving up now");
+                     // this shouldn't really happen,
+                     // however I'm keeping this as an assertion case future developers ever change the logic here on this class
+                     HornetQServerLogger.LOGGER.warn("Internal error! Delivery logic has identified a non delivery and still handled a consumer!");
                   }
-                  break;
+                  else
+                  {
+                     if (HornetQServerLogger.LOGGER.isDebugEnabled())
+                     {
+                        HornetQServerLogger.LOGGER.debug(this + "::All the consumers were busy, giving up now");
+                     }
+                     break;
+                  }
                }
 
-               nullRefCount = busyCount = 0;
+               noDelivery = 0;
             }
 
             pos++;
@@ -1853,6 +1865,12 @@ public class QueueImpl implements Queue
                pos = 0;
             }
          }
+
+         if (handledconsumer != null)
+         {
+            proceedDeliver(handledconsumer, ref);
+         }
+
       }
 
       if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
@@ -1974,6 +1992,8 @@ public class QueueImpl implements Queue
                                            QueueImpl.REDISTRIBUTOR_BATCH_SIZE);
 
          consumerList.add(new ConsumerHolder(redistributor));
+
+         consumersChanged = true;
 
          redistributor.start();
 
@@ -2157,70 +2177,118 @@ public class QueueImpl implements Queue
    /*
     * This method delivers the reference on the callers thread - this can give us better latency in the case there is nothing in the queue
     */
-   private synchronized boolean deliverDirect(final MessageReference ref)
+   private boolean deliverDirect(final MessageReference ref)
    {
-      if (paused || consumerList.isEmpty())
+      Consumer handledConsumer = null;
+      MessageReference handledReference = null;
+      try
       {
-         return false;
-      }
-
-      if (checkExpired(ref))
-      {
-         return true;
-      }
-
-      int startPos = pos;
-
-      int size = consumerList.size();
-
-      while (true)
-      {
-         ConsumerHolder holder = consumerList.get(pos);
-
-         Consumer consumer = holder.consumer;
-
-         Consumer groupConsumer = null;
-
-         // If a group id is set, then this overrides the consumer chosen round-robin
-
-         SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
-
-         if (groupID != null)
+         synchronized (this)
          {
-            groupConsumer = groups.get(groupID);
-
-            if (groupConsumer != null)
+            if (paused || consumerList.isEmpty())
             {
-               consumer = groupConsumer;
-            }
-         }
-
-         pos++;
-
-         if (pos == size)
-         {
-            pos = 0;
-         }
-
-         HandleStatus status = handle(ref, consumer);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            if (groupID != null && groupConsumer == null)
-            {
-               groups.put(groupID, consumer);
+               return false;
             }
 
-            messagesAdded++;
+            if (checkExpired(ref))
+            {
+               return true;
+            }
 
-            return true;
+            int startPos = pos;
+
+            int size = consumerList.size();
+
+            while (true)
+            {
+               ConsumerHolder holder = consumerList.get(pos);
+
+               Consumer consumer = holder.consumer;
+
+               Consumer groupConsumer = null;
+
+               // If a group id is set, then this overrides the consumer chosen round-robin
+
+               SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+               if (groupID != null)
+               {
+                  groupConsumer = groups.get(groupID);
+
+                  if (groupConsumer != null)
+                  {
+                     consumer = groupConsumer;
+                  }
+               }
+
+               pos++;
+
+               if (pos == size)
+               {
+                  pos = 0;
+               }
+
+               HandleStatus status = handle(ref, consumer);
+
+               if (status == HandleStatus.HANDLED)
+               {
+                  if (groupID != null && groupConsumer == null)
+                  {
+                     groups.put(groupID, consumer);
+                  }
+
+                  messagesAdded++;
+
+                  handledConsumer = consumer;
+                  handledReference = ref;
+                  break;
+               }
+
+               if (pos == startPos)
+               {
+                  // Tried them all
+                  break;
+               }
+            }
          }
-
-         if (pos == startPos)
+         return handledConsumer != null;
+      }
+      finally
+      {
+         // outside of any locks to avoid a permanent lock of the queue with unbehaved consumers
+         // also a successful handle will take a readLock on the consumer
+         // so we must do the proceedDeliver was successful
+         if (handledReference != null)
          {
-            // Tried them all
+            proceedDeliver(handledConsumer, handledReference);
+         }
+      }
+   }
 
-            return false;
+   private void proceedDeliver(Consumer consumer, MessageReference reference)
+   {
+      try
+      {
+         consumer.proceedDeliver(reference);
+      }
+      catch (Throwable t)
+      {
+         HornetQServerLogger.LOGGER.removingBadConsumer(t, consumer, reference);
+
+         synchronized (this)
+         {
+            // If the consumer throws an exception we remove the consumer
+            try
+            {
+               removeConsumer(consumer);
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.errorRemovingConsumer(e);
+            }
+
+            // The message failed to be delivered, hence we try again
+            addHead(reference);
          }
       }
    }
@@ -2523,6 +2591,10 @@ public class QueueImpl implements Queue
          {
             HornetQServerLogger.LOGGER.errorDelivering(e);
          }
+         finally
+         {
+            scheduledRunners.decrementAndGet();
+         }
       }
    }
 
@@ -2545,14 +2617,6 @@ public class QueueImpl implements Queue
          {
             HornetQServerLogger.LOGGER.errorDelivering(e);
          }
-      }
-   }
-
-   private final class ConcurrentPoller implements Runnable
-   {
-      public void run()
-      {
-         doPoll();
       }
    }
 
