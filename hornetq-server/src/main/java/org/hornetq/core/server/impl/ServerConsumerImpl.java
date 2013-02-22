@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -82,6 +84,13 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private final ServerSession session;
 
    private final Object lock = new Object();
+
+   /**
+    * We get a readLock when a message is handled, and return the readLock when the message is finally delivered
+    * When stopping the consumer we need to get a writeLock to make sure we had all delivery finished
+    * otherwise a rollback may get message sneaking in
+    */
+   private final ReadWriteLock lockDelivery = new ReentrantReadWriteLock();
 
    private volatile AtomicInteger availableCredits = new AtomicInteger(0);
 
@@ -315,14 +324,42 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          if (message.isLargeMessage())
          {
-            deliverLargeMessage(ref, message);
+            largeMessageDeliverer = new LargeMessageDeliverer((LargeServerMessage) message, ref);
+         }
+
+         lockDelivery.readLock().lock();
+
+         return HandleStatus.HANDLED;
+      }
+   }
+
+   public void proceedDeliver(MessageReference reference) throws Exception
+   {
+      try
+      {
+         ServerMessage message = reference.getMessage();
+
+         if (message.isLargeMessage())
+         {
+            if (largeMessageDeliverer == null)
+            {
+               // This can't really happen as handle had already crated the deliverer
+               // instead of throwing an exception in weird cases there is no problem on just go ahead and create it
+               // again here
+               largeMessageDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, reference);
+            }
+            // The deliverer was prepared during handle, as we can't have more than one pending large message
+            // as it would return busy if there is anything pending
+            largeMessageDeliverer.deliver();
          }
          else
          {
-            deliverStandardMessage(ref, message);
+            deliverStandardMessage(reference, message);
          }
-
-         return HandleStatus.HANDLED;
+      }
+      finally
+      {
+         lockDelivery.readLock().unlock();
       }
    }
 
@@ -337,9 +374,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       setStarted(false);
 
-      if (largeMessageDeliverer != null)
+      LargeMessageDeliverer del = largeMessageDeliverer;
+
+      if (del != null)
       {
-         largeMessageDeliverer.finish();
+         del.finish();
       }
 
       if (browseOnly)
@@ -514,7 +553,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       synchronized (lock)
       {
-         this.started = browseOnly || started;
+         // This is to make sure that the delivery process has finished any pending delivery
+         // otherwise a message may sneak in on the client while we are trying to stop the consumer
+         lockDelivery.writeLock().lock();
+         try
+         {
+            this.started = browseOnly || started;
+         }
+         finally
+         {
+            lockDelivery.writeLock().unlock();
+         }
       }
 
       // Outside the lock
@@ -528,7 +577,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       synchronized (lock)
       {
-         this.transferring = transferring;
+         // This is to make sure that the delivery process has finished any pending delivery
+         // otherwise a message may sneak in on the client while we are trying to stop the consumer
+         lockDelivery.writeLock().lock();
+         try
+         {
+            this.transferring = transferring;
+         }
+         finally
+         {
+            lockDelivery.writeLock().unlock();
+         }
       }
 
       // Outside the lock
@@ -803,15 +862,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       messageQueue.getExecutor().execute(resumeLargeMessageRunnable);
    }
 
-   private void deliverLargeMessage(final MessageReference ref, final ServerMessage message) throws Exception
-   {
-      final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
-
-      // it doesn't need lock because deliverLargeMesasge is already inside the lock()
-      largeMessageDeliverer = localDeliverer;
-      largeMessageDeliverer.deliver();
-   }
-
    /**
     * @param ref
     * @param message
@@ -886,7 +936,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       public boolean deliver() throws Exception
       {
-         synchronized (lock)
+         synchronized (lockDelivery)
          {
             if (largeMessage == null)
             {
@@ -1010,12 +1060,15 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             if (largeMessage == null)
             {
-               // handleClose could be calling close while handleDeliver is also calling finish.
+               // handleClose could be calling close while handle is also calling finish.
                // As a result one of them could get here after the largeMessage is already gone.
                // On that case we just ignore this call
                return;
             }
-            context.close();
+            if (context != null)
+            {
+               context.close();
+            }
 
             largeMessage.releaseResources();
 
@@ -1064,6 +1117,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                   return;
                }
 
+               if (status == HandleStatus.HANDLED)
+               {
+                  proceedDeliver(current);
+               }
+
                current = null;
             }
             catch (Exception e)
@@ -1079,6 +1137,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             try
             {
                HandleStatus status = handle(ref);
+               if (status == HandleStatus.HANDLED)
+               {
+                  proceedDeliver(ref);
+               }
+               else
                if (status == HandleStatus.BUSY)
                {
                   // keep a reference on the current message reference
