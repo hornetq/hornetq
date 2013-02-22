@@ -231,4 +231,13 @@ public class FakePostOffice implements PostOffice
 
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.PostOffice#startExpiryScanner()
+    */
+   public void startExpiryScanner()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }
