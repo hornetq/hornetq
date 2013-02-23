@@ -1546,6 +1546,8 @@ public class HornetQServerImpl implements HornetQServer
       clusterManager.start();
 
       remotingService.start();
+      
+      postOffice.startExpiryScanner();
 
       initialised = true;
 
