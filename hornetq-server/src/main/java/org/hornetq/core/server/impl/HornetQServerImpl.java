@@ -1552,6 +1552,9 @@ public class HornetQServerImpl implements HornetQServer
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
       activationLatch.countDown();
+
+      // We can only do this after everything is started otherwise we may get nasty races with expired messages
+      postOffice.startExpiryScanner();
    }
 
    private void deploySecurityFromConfiguration()

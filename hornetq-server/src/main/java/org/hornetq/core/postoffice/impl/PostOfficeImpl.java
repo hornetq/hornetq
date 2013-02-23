@@ -183,8 +183,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // This is to avoid thread leakages where the Reaper would run beyond the life cycle of the
       // PostOffice
       started = true;
-
-      startExpiryScanner();
    }
 
    public synchronized void stop() throws Exception
@@ -1278,7 +1276,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   private synchronized void startExpiryScanner()
+   /** The expiry scanner can't be started until the whole server has been started other wise you may get races */
+   public synchronized void startExpiryScanner()
    {
       if (reaperPeriod > 0)
       {

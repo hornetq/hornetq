@@ -1,0 +1,161 @@
+/*
+ * Copyright 2010 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hornetq.tests.integration.client;
+
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.ServiceTestBase;
+
+/**
+ * A ExpireTestOnRestartTest
+ *
+ * @author clebertsuconic
+ *
+ *
+ */
+public class ExpireTestOnRestartTest extends ServiceTestBase
+{
+
+   HornetQServer server;
+
+
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      server = createServer(true);
+      AddressSettings setting = new AddressSettings();
+      setting.setExpiryAddress(SimpleString.toSimpleString("exp"));
+      setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      setting.setPageSizeBytes(100 * 1024);
+      setting.setMaxSizeBytes(200 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", setting);
+      server.start();
+   }
+
+   public void tearDown() throws Exception
+   {
+      server.stop();
+      super.tearDown();
+   }
+
+   // The biggest problem on this test was the exceptions that happened. I couldn't find any wrong state beyond the exceptions
+   public void testRestartWithExpire() throws Exception
+   {
+      int NUMBER_OF_EXPIRED_MESSAGES = 10000;
+      server.getConfiguration().setMessageExpiryScanPeriod(Integer.MAX_VALUE);
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnDurableSend(false);
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession(true, true);
+
+      session.createQueue("test", "test", true);
+      session.createQueue("exp", "exp", true);
+      ClientProducer prod = session.createProducer("test");
+
+      for (int i = 0 ; i < 10; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeBytes(new byte[1024 * 10]);
+         prod.send(message);
+      }
+
+      for (int i = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("i", i);
+         message.getBodyBuffer().writeBytes(new byte[1024 * 10]);
+         message.setExpiration(System.currentTimeMillis() + 5000);
+         prod.send(message);
+      }
+
+      session.commit();
+
+      session.close();
+
+      server.stop();
+      server.getConfiguration().setMessageExpiryScanPeriod(1);
+
+      Thread.sleep(5500); // enough time for expiration of the messages
+
+      server.start();
+
+      Queue queue = server.locateQueue(SimpleString.toSimpleString("test"));
+
+      factory = locator.createSessionFactory();
+      session = factory.createSession(false, false);
+
+
+      ClientConsumer cons = session.createConsumer("test");
+      session.start();
+      for (int i = 0 ; i < 10; i++)
+      {
+         ClientMessage msg = cons.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+
+      assertNull(cons.receiveImmediate());
+      cons.close();
+
+      long timeout = System.currentTimeMillis() + 10000;
+      while (queue.getPageSubscription().getPagingStore().isPaging() && timeout > System.currentTimeMillis())
+      {
+         Thread.sleep(1);
+      }
+      assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
+
+
+      cons = session.createConsumer("exp");
+      for (int i  = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
+      {
+         ClientMessage msg = cons.receive(5000);
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("i").intValue());
+         msg.acknowledge();
+      }
+
+      session.commit();
+
+      int extras = 0;
+      ClientMessage msg;
+      while ((msg = cons.receiveImmediate()) != null)
+      {
+         System.out.println(msg);
+         extras++;
+      }
+
+      assertEquals("Received extra messages on expire address", 0, extras);
+
+
+      session.commit();
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+}

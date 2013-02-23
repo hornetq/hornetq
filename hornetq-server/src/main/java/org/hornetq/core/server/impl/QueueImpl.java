@@ -1222,8 +1222,17 @@ public class QueueImpl implements Queue
       }
    }
 
+
    public synchronized boolean expireReference(final long messageID) throws Exception
    {
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return false;
+      }
+
       LinkedListIterator<MessageReference> iter = iterator();
       try
       {
@@ -1250,6 +1259,14 @@ public class QueueImpl implements Queue
 
    public synchronized int expireReferences(final Filter filter) throws Exception
    {
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return 0;
+      }
+
       Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
@@ -1283,6 +1300,14 @@ public class QueueImpl implements Queue
 
    public void expireReferences()
    {
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return;
+      }
+
       getExecutor().execute(new Runnable(){
          public void run()
          {
@@ -1313,6 +1338,7 @@ public class QueueImpl implements Queue
                      {
                         HornetQServerLogger.LOGGER.errorExpiringReferencesOnQueue(e, ref);
                      }
+
                   }
 
                   // If empty we need to schedule depaging to make sure we would depage expired messages as well

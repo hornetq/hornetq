@@ -1241,7 +1241,7 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(
       id = 224061,
-      value = "Bridge {0} forwarding address {1} couldn't be resolved on address-settings configuration",
+      value = "Bridge {0} forwarding address {1} could not be resolved on address-settings configuration",
       format = Message.Format.MESSAGE_FORMAT)
    void bridgeCantFindAddressConfig(String bridgeName, String forwardingAddress);
 }

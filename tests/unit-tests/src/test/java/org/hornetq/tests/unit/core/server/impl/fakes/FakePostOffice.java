@@ -100,6 +100,11 @@ public class FakePostOffice implements PostOffice
    }
 
    @Override
+   public void startExpiryScanner()
+   {
+   }
+
+   @Override
    public Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
 
