@@ -33,11 +33,11 @@ import org.hornetq.utils.UUID;
 
 public class BackupSyncJournalTest extends FailoverTestBase
 {
-   private static final int BACKUP_WAIT_TIME = 20;
+   protected static final int BACKUP_WAIT_TIME = 20;
    private ServerLocatorInternal locator;
    protected ClientSessionFactoryInternal sessionFactory;
    protected ClientSession session;
-   private ClientProducer producer;
+   protected ClientProducer producer;
    private BackupSyncDelay syncDelay;
    protected int n_msgs = 20;
 
@@ -119,7 +119,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertNoMoreMessages();
    }
 
-   private void assertNoMoreMessages() throws HornetQException
+   protected void assertNoMoreMessages() throws HornetQException
    {
       session.start();
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -179,7 +179,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       }
    }
 
-   private void finishSyncAndFailover() throws Exception
+   protected void finishSyncAndFailover() throws Exception
    {
       syncDelay.deliverUpToDateMsg();
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());

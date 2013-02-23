@@ -396,6 +396,38 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
             long minPage = checkMinPage(cursorList);
 
+            //if minPage is complete, forward
+            if (minPage != Long.MAX_VALUE)
+            {
+               boolean isPageCompleted = true;
+               for (PageSubscription cursor : cursorList)
+               {
+                  if (!cursor.isComplete(minPage))
+                  {
+                     isPageCompleted = false;
+                     break;
+                  }
+               }
+
+               if (isPageCompleted)
+               {
+                  if (minPage == pagingStore.getNumberOfPages())
+                  {
+                     pagingStore.forceAnotherPage();
+
+                     Page currentPage = pagingStore.getCurrentPage();
+
+                     storeBookmark(cursorList, currentPage);
+
+                     pagingStore.stopPaging();
+                  }
+                  else if (minPage < pagingStore.getNumberOfPages())
+                  {
+                     minPage++;
+                  }
+               }
+            }
+
             // if the current page is being written...
             // on that case we need to move to verify it in a different way
             if (minPage == pagingStore.getCurrentWritingPage() && pagingStore.getCurrentPage().getNumberOfMessages() > 0)
