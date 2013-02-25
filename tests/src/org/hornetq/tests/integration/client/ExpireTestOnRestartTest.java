@@ -36,21 +36,26 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class ExpireTestOnRestartTest extends ServiceTestBase
 {
 
-   HornetQServer server = createServer(true);
-   
-   
+   HornetQServer server;
+
+
    public void setUp() throws Exception
    {
       super.setUp();
+      clearData();
+      server = createServer(true);
       AddressSettings setting = new AddressSettings();
       setting.setExpiryAddress(SimpleString.toSimpleString("exp"));
       setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       setting.setPageSizeBytes(100 * 1024);
       setting.setMaxSizeBytes(200 * 1024);
+      server.getConfiguration().setJournalSyncNonTransactional(false);
+      server.getConfiguration().setMessageExpiryScanPeriod(-1);
+      server.getConfiguration().setJournalSyncTransactional(false);
       server.getAddressSettingsRepository().addMatch("#", setting);
       server.start();
    }
-   
+
    public void tearDown() throws Exception
    {
       server.stop();
@@ -60,47 +65,49 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
    // The biggest problem on this test was the exceptions that happened. I couldn't find any wrong state beyond the exceptions
    public void testRestartWithExpire() throws Exception
    {
+      int NUMBER_OF_EXPIRED_MESSAGES = 1000;
       ServerLocator locator = createInVMNonHALocator();
       locator.setBlockOnDurableSend(false);
       ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(true, true);
-      
+
       session.createQueue("test", "test", true);
       session.createQueue("exp", "exp", true);
       ClientProducer prod = session.createProducer("test");
 
-      for (int i = 0 ; i < 10; i++) 
+      for (int i = 0 ; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024 * 10]);
          prod.send(message);
       }
-      
-      for (int i = 0 ; i < 10000; i++) 
+
+      for (int i = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
       {
          ClientMessage message = session.createMessage(true);
+         message.putIntProperty("i", i);
          message.getBodyBuffer().writeBytes(new byte[1024 * 10]);
          message.setExpiration(System.currentTimeMillis() + 5000);
          prod.send(message);
       }
-      
+
       session.commit();
-      
+
       session.close();
-      
+
       server.stop();
       server.getConfiguration().setMessageExpiryScanPeriod(1);
-      
+
       Thread.sleep(5500); // enough time for expiration of the messages
 
       server.start();
-      
+
       Queue queue = server.locateQueue(SimpleString.toSimpleString("test"));
-      
+
       factory = locator.createSessionFactory();
       session = factory.createSession(false, false);
-      
-      
+
+
       ClientConsumer cons = session.createConsumer("test");
       session.start();
       for (int i = 0 ; i < 10; i++)
@@ -109,34 +116,46 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
          assertNotNull(msg);
          msg.acknowledge();
       }
-      
+
       assertNull(cons.receiveImmediate());
       cons.close();
 
-      long timeout = System.currentTimeMillis() + 10000;
+      long timeout = System.currentTimeMillis() + 60000;
       while (queue.getPageSubscription().getPagingStore().isPaging() && timeout > System.currentTimeMillis())
       {
          Thread.sleep(1);
       }
       assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
-      
-      
+
+
       cons = session.createConsumer("exp");
-      for (int i  = 0 ; i < 10000; i++)
+      for (int i  = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
       {
          ClientMessage msg = cons.receive(5000);
          assertNotNull(msg);
          msg.acknowledge();
       }
-      
+
       session.commit();
-      
-      assertNull(cons.receiveImmediate());
-      
-      
+
+      int extras = 0;
+      ClientMessage msg;
+      while ((msg = cons.receiveImmediate()) != null)
+      {
+         System.out.println(msg);
+         extras++;
+      }
+
+      assertEquals("Received extra messages on expire address", 0, extras);
+
+
       session.commit();
+
+      session.close();
+
+      locator.close();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
