@@ -31,4 +31,33 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
       conf.put(ADDRESS.toString(), as);
       return createInVMFailoverServer(realFiles, configuration, PAGE_SIZE, PAGE_MAX, conf, nodeManager, id);
    }
+
+   public void testReplicationWithPageFileComplete() throws Exception
+   {
+      try
+      {
+         n_msgs = 10;
+         createProducerSendSomeMessages();
+         backupServer.start();
+         waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
+
+         sendMessages(session, producer, n_msgs);
+         session.commit();
+         
+         receiveMsgsInRange(0, n_msgs);
+         
+         finishSyncAndFailover();
+
+         receiveMsgsInRange(0, n_msgs);
+         assertNoMoreMessages();
+      }
+      catch (junit.framework.AssertionFailedError error)
+      {
+         printJournal(liveServer);
+         printJournal(backupServer);
+         // test failed
+         throw error;
+      }
+   }
+
 }
