@@ -177,6 +177,8 @@ public class QueueImpl implements Queue
 
    private AddressSettingsRepositoryListener addressSettingsRepositoryListener;
 
+   private ExpiryScanner expiryScanner = new ExpiryScanner();
+
    public String debug()
    {
       StringWriter str = new StringWriter();
@@ -1222,8 +1224,17 @@ public class QueueImpl implements Queue
       }
    }
 
+
    public synchronized boolean expireReference(final long messageID) throws Exception
    {
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return false;
+      }
+
       LinkedListIterator<MessageReference> iter = iterator();
       try
       {
@@ -1250,6 +1261,14 @@ public class QueueImpl implements Queue
 
    public synchronized int expireReferences(final Filter filter) throws Exception
    {
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return 0;
+      }
+
       Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
@@ -1283,51 +1302,76 @@ public class QueueImpl implements Queue
 
    public void expireReferences()
    {
-      getExecutor().execute(new Runnable(){
-         public void run()
+      if (expiryAddress != null && expiryAddress.equals(this.address))
+      {
+         // check expire with itself would be silly (waste of time)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            HornetQServerLogger.LOGGER.debug("Cannot expire from " + address + " into " + expiryAddress);
+         return;
+      }
+
+      if (expiryScanner.scannerRunning.get() == 0)
+      {
+         expiryScanner.scannerRunning.incrementAndGet();
+         getExecutor().execute(expiryScanner);
+      }
+   }
+
+   class ExpiryScanner implements Runnable
+   {
+      public AtomicInteger scannerRunning = new AtomicInteger(0);
+
+      public void run()
+      {
+         synchronized (QueueImpl.this)
          {
-            synchronized (QueueImpl.this)
+            LinkedListIterator<MessageReference> iter = iterator();
+
+            try
             {
-               LinkedListIterator<MessageReference> iter = iterator();
-
-               try
+               boolean expired = false;
+               boolean hasElements = false;
+               while (postOffice.isStarted() && iter.hasNext())
                {
-                  boolean expired = false;
-                  boolean hasElements = false;
-                  while (iter.hasNext())
+                  hasElements = true;
+                  MessageReference ref = iter.next();
+                  try
                   {
-                     hasElements = true;
-                     MessageReference ref = iter.next();
-                     try
+                     if (ref.getMessage().isExpired())
                      {
-                        if (ref.getMessage().isExpired())
-                        {
-                           deliveringCount.incrementAndGet();
-                           expired = true;
-                           expire(ref);
-                           iter.remove();
-                           refRemoved(ref);
-                        }
+                        deliveringCount.incrementAndGet();
+                        expired = true;
+                        expire(ref);
+                        iter.remove();
+                        refRemoved(ref);
                      }
-                     catch (Exception e)
-                     {
-                        HornetQServerLogger.LOGGER.errorExpiringReferencesOnQueue(e, ref);
-                     }
+                  }
+                  catch (Exception e)
+                  {
+                     HornetQServerLogger.LOGGER.errorExpiringReferencesOnQueue(e, ref);
                   }
 
-                  // If empty we need to schedule depaging to make sure we would depage expired messages as well
-                  if ((!hasElements || expired) && pageIterator != null && pageIterator.hasNext())
-                  {
-                     scheduleDepage(true);
-                  }
                }
-               finally
+
+               // If empty we need to schedule depaging to make sure we would depage expired messages as well
+               if ((!hasElements || expired) && pageIterator != null && pageIterator.hasNext())
+               {
+                  scheduleDepage(true);
+               }
+            }
+            finally
+            {
+               try
                {
                   iter.close();
                }
+               catch (Throwable ignored)
+               {
+               }
+               scannerRunning.decrementAndGet();
             }
          }
-      });
+      }
    }
 
    public synchronized boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
