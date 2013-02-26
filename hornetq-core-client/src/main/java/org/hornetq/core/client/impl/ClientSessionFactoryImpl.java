@@ -1587,9 +1587,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   serverLocator.notifyNodeDown(eventUID, topMessage.getNodeID());
                   return;
                }
-               if (ClientSessionFactoryImpl.isDebug)
+               if (ClientSessionFactoryImpl.isTrace)
                {
-                  HornetQClientLogger.LOGGER.debug("Node " + topMessage.getNodeID() +
+                  HornetQClientLogger.LOGGER.trace("Node " + topMessage.getNodeID() +
                                                      " going up, connector = " +
                                                      topMessage.getPair() +
                                                      ", isLast=" +
