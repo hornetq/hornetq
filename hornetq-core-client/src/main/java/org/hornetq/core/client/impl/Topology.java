@@ -78,9 +78,9 @@ public final class Topology implements Serializable
 
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
-      if (HornetQClientLogger.LOGGER.isDebugEnabled())
+      if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.debug(this + "::Adding topology listener " + listener, new Exception("Trace"));
+         HornetQClientLogger.LOGGER.trace(this + "::Adding topology listener " + listener, new Exception("Trace"));
       }
       synchronized (topologyListeners)
       {
@@ -90,9 +90,9 @@ public final class Topology implements Serializable
 
    public void removeClusterTopologyListener(final ClusterTopologyListener listener)
    {
-      if (HornetQClientLogger.LOGGER.isDebugEnabled())
+      if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.debug(this + "::Removing topology listener " + listener, new Exception("Trace"));
+         HornetQClientLogger.LOGGER.trace(this + "::Removing topology listener " + listener, new Exception("Trace"));
       }
       synchronized (topologyListeners)
       {
@@ -194,9 +194,9 @@ public final class Topology implements Serializable
 
          if (currentMember == null)
          {
-            if (HornetQClientLogger.LOGGER.isDebugEnabled())
+            if (HornetQClientLogger.LOGGER.isTraceEnabled())
             {
-               HornetQClientLogger.LOGGER.debug(this + "::NewMemeberAdd nodeId=" + nodeId + " member = " + memberInput,
+               HornetQClientLogger.LOGGER.trace(this + "::NewMemeberAdd nodeId=" + nodeId + " member = " + memberInput,
                                           new Exception("trace"));
             }
             memberInput.setUniqueEventID(uniqueEventID);
@@ -220,9 +220,9 @@ public final class Topology implements Serializable
                newMember.setBackup(currentMember.getBackup());
             }
 
-            if (HornetQClientLogger.LOGGER.isDebugEnabled())
+            if (HornetQClientLogger.LOGGER.isTraceEnabled())
             {
-               HornetQClientLogger.LOGGER.debug(this + "::updated currentMember=nodeID=" + nodeId + ", currentMember=" +
+               HornetQClientLogger.LOGGER.trace(this + "::updated currentMember=nodeID=" + nodeId + ", currentMember=" +
                                                    currentMember + ", memberInput=" + memberInput + "newMember=" +
                                                    newMember,
                                           new Exception("trace"));
@@ -327,9 +327,9 @@ public final class Topology implements Serializable
          }
       }
 
-      if (HornetQClientLogger.LOGGER.isDebugEnabled())
+      if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.debug("removeMember " + this +
+         HornetQClientLogger.LOGGER.trace("removeMember " + this +
                             " removing nodeID=" +
                             nodeId +
                             ", result=" +

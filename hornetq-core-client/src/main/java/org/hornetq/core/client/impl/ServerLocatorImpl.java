@@ -1471,9 +1471,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          return;
       }
 
-      if (HornetQClientLogger.LOGGER.isDebugEnabled())
+      if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
+         HornetQClientLogger.LOGGER.trace("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
 
       topology.removeMember(eventTime, nodeID);
@@ -1513,9 +1513,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
-      if (HornetQClientLogger.LOGGER.isDebugEnabled())
+      if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
+         HornetQClientLogger.LOGGER.trace("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
       TopologyMemberImpl member = new TopologyMemberImpl(nodeID, nodeName, connectorPair.getA(), connectorPair.getB());
