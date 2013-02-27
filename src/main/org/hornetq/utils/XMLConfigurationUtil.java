@@ -15,6 +15,7 @@ package org.hornetq.utils;
 
 import org.hornetq.core.config.impl.Validators;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -27,7 +28,15 @@ import org.w3c.dom.NodeList;
 public class XMLConfigurationUtil
 {
 
-   public static Double getDouble(final Element e,
+   public static final String getTrimmedTextContent(Node element)
+      { 
+          String content = element.getTextContent();
+          if (content == null)
+              return null;
+          return content.trim();
+      } 
+
+   public static final Double getDouble(final Element e,
                                   final String name,
                                   final double def,
                                   final Validators.Validator validator)
@@ -46,7 +55,7 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static String getString(final Element e,
+   public static final String getString(final Element e,
                                   final String name,
                                   final String def,
                                   final Validators.Validator validator)
@@ -65,7 +74,7 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static Long getLong(final Element e, final String name, final long def, final Validators.Validator validator)
+   public static final Long getLong(final Element e, final String name, final long def, final Validators.Validator validator)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -81,7 +90,7 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static Integer getInteger(final Element e,
+   public static final Integer getInteger(final Element e,
                                     final String name,
                                     final int def,
                                     final Validators.Validator validator)
@@ -100,7 +109,7 @@ public class XMLConfigurationUtil
       }
    }
 
-   public static Boolean getBoolean(final Element e, final String name, final boolean def)
+   public static final Boolean getBoolean(final Element e, final String name, final boolean def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -112,23 +121,4 @@ public class XMLConfigurationUtil
          return def;
       }
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

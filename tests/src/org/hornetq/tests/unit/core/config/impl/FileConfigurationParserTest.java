@@ -150,7 +150,7 @@ public class FileConfigurationParserTest extends UnitTestCase
             "<expiry-address>jms.queue.ExpiryQueue</expiry-address>" + "\n" +
             "<redelivery-delay>0</redelivery-delay>" + "\n" +
             "<max-size-bytes>10485760</max-size-bytes>" + "\n" +
-            "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n" +
+            "<message-counter-history-day-limit>10 </message-counter-history-day-limit>" + "\n" +
             "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
             "</address-setting>" + "\n" +
             "</address-settings>";
