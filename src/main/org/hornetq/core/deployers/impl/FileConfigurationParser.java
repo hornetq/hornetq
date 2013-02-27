@@ -315,7 +315,7 @@ public class FileConfigurationParser
          {
             if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
             {
-               String clazz = interceptors.item(i).getTextContent();
+               String clazz = getTrimmedTextContent(interceptors.item(i));
 
                interceptorList.add(clazz);
             }
@@ -790,37 +790,37 @@ public class FileConfigurationParser
 
          if (FileConfigurationParser.DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            SimpleString queueName = new SimpleString(child.getTextContent());
+            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
             addressSettings.setDeadLetterAddress(queueName);
          }
          else if (FileConfigurationParser.EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            SimpleString queueName = new SimpleString(child.getTextContent());
+            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
             addressSettings.setExpiryAddress(queueName);
          }
          else if (FileConfigurationParser.REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
+            addressSettings.setRedeliveryDelay(XMLUtil.parseLong(child));
          }
          else if (FileConfigurationParser.MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setMaxSizeBytes(Long.valueOf(child.getTextContent()));
+            addressSettings.setMaxSizeBytes(XMLUtil.parseLong(child));
          }
          else if (FileConfigurationParser.PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setPageSizeBytes(Long.valueOf(child.getTextContent()));
+            addressSettings.setPageSizeBytes(XMLUtil.parseLong(child));
          }
          else if (FileConfigurationParser.PAGE_MAX_CACHE_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setPageCacheMaxSize(Integer.valueOf(child.getTextContent()));
+            addressSettings.setPageCacheMaxSize(XMLUtil.parseInt(child));
          }
          else if (FileConfigurationParser.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
+            addressSettings.setMessageCounterHistoryDayLimit(XMLUtil.parseInt(child));
          }
          else if (FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            String value = child.getTextContent().trim();
+            String value = getTrimmedTextContent(child);
             Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME,
                                                                  value);
             AddressFullMessagePolicy policy = null;
@@ -840,19 +840,19 @@ public class FileConfigurationParser
          }
          else if (FileConfigurationParser.LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setLastValueQueue(Boolean.valueOf(child.getTextContent().trim()));
+            addressSettings.setLastValueQueue(XMLUtil.parseBoolean(child));
          }
          else if (FileConfigurationParser.MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setMaxDeliveryAttempts(Integer.valueOf(child.getTextContent().trim()));
+            addressSettings.setMaxDeliveryAttempts(XMLUtil.parseInt(child));
          }
          else if (FileConfigurationParser.REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setRedistributionDelay(Long.valueOf(child.getTextContent().trim()));
+            addressSettings.setRedistributionDelay(XMLUtil.parseLong(child));
          }
          else if (FileConfigurationParser.SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(child.getTextContent().trim()));
+            addressSettings.setSendToDLAOnNoRoute(XMLUtil.parseBoolean(child));
          }
       }
       return setting;
@@ -873,7 +873,7 @@ public class FileConfigurationParser
 
          if (child.getNodeName().equals("address"))
          {
-            address = child.getTextContent().trim();
+            address = getTrimmedTextContent(child);
          }
          else if (child.getNodeName().equals("filter"))
          {
@@ -881,7 +881,7 @@ public class FileConfigurationParser
          }
          else if (child.getNodeName().equals("durable"))
          {
-            durable = Boolean.parseBoolean(child.getTextContent().trim());
+            durable = XMLUtil.parseBoolean(child);
          }
       }
 
