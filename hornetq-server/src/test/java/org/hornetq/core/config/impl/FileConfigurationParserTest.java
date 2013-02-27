@@ -148,13 +148,13 @@ public class FileConfigurationParserTest extends UnitTestCase
             "</security-setting>" + "\n" +
             "</security-settings>" + "\n" +
             "<address-settings>" + "\n" +
-            "<address-setting match=\"#\">" + "\n" +
-            "<dead-letter-address>jms.queue.DLQ</dead-letter-address>" + "\n" +
-            "<expiry-address>jms.queue.ExpiryQueue</expiry-address>" + "\n" +
-            "<redelivery-delay>0</redelivery-delay>" + "\n" +
-            "<max-size-bytes>10485760</max-size-bytes>" + "\n" +
-            "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n" +
-            "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
+ "<address-setting match=\"#\">"
+                     + "\n" + "<dead-letter-address>jms.queue.DLQ\n</dead-letter-address>" + "\n"
+                     + "<expiry-address>jms.queue.ExpiryQueue\n</expiry-address>" + "\n"
+                     + "<redelivery-delay>0\n</redelivery-delay>" + "\n"
+                     + "<max-size-bytes>10485760\n</max-size-bytes>" + "\n"
+                     + "<message-counter-history-day-limit>10  </message-counter-history-day-limit>" + "\n"
+                     + "<address-full-policy>BLOCK\n</address-full-policy>" + "\n" +
             "</address-setting>" + "\n" +
             "</address-settings>";
 
