@@ -15,6 +15,7 @@ package org.hornetq.utils;
 
 import org.hornetq.core.config.impl.Validators;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -23,6 +24,19 @@ import org.w3c.dom.NodeList;
  */
 public class XMLConfigurationUtil
 {
+
+   public static final String getAttributeValue(Node element, String attribute)
+   {
+      return element.getAttributes().getNamedItem(attribute).getNodeValue();
+   }
+
+   public static final String getTrimmedTextContent(Node element)
+   {
+      String content = element.getTextContent();
+      if (content == null)
+         return null;
+      return content.trim();
+   }
 
    public static final Double getDouble(final Element e,
                                   final String name,
